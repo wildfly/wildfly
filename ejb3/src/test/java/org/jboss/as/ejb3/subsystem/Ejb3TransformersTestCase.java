@@ -30,6 +30,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -230,6 +231,8 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             // reject the resource /subsystem=ejb3/service=identity
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
+            // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
 
             //Special handling for this test!!!!
             //Don't transform the resulting composite, instead rather transform the individual steps
@@ -277,6 +280,9 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // reject the resource /subsystem=ejb3/service=identity
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
+            // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
         }
 
         return config;

@@ -63,6 +63,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 
@@ -140,6 +141,8 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         registerStrictMaxPoolTransformers(builder);
         registerApplicationSecurityDomainDTransformers(builder);
         registerIdentityTransformers(builder);
+        registerThreadPoolTransformers(builder);
+
         builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
         if (version.equals(VERSION_1_2_1)) {
             registerTimerTransformers_1_2_0(builder);
@@ -168,6 +171,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         registerStrictMaxPoolTransformers(builder);
         registerApplicationSecurityDomainDTransformers(builder);
         registerIdentityTransformers(builder);
+        registerThreadPoolTransformers(builder);
 
         // Rename new statistics-enabled attribute to old enable-statistics
         builder.getAttributeBuilder().addRename(EJB3SubsystemModel.STATISTICS_ENABLED, EJB3SubsystemModel.ENABLE_STATISTICS);
@@ -179,6 +183,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
 
         registerApplicationSecurityDomainDTransformers(builder);
         registerIdentityTransformers(builder);
+        registerThreadPoolTransformers(builder);
         builder.addChildResource(RemotingProfileResourceDefinition.INSTANCE).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, StaticEJBDiscoveryDefinition.INSTANCE)
                 .end();
@@ -202,6 +207,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
+        registerThreadPoolTransformers(builder);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_5_0_0);
     }
@@ -228,6 +234,13 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(StrictMaxPoolResourceDefinition.DeriveSize.NONE.toString())), DERIVE_SIZE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, DERIVE_SIZE);
+    }
+
+    private static void registerThreadPoolTransformers(ResourceTransformationDescriptionBuilder parent) {
+        parent.addChildResource(PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL))
+                .getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, PoolAttributeDefinitions.CORE_THREADS)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, PoolAttributeDefinitions.CORE_THREADS).end();
     }
 
     private static void registerMdbDeliveryGroupTransformers(ResourceTransformationDescriptionBuilder parent) {

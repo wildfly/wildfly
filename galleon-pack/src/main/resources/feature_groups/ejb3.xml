@@ -60,8 +60,8 @@
             <param name="thread-pool" value="default"/>
             <param name="max-threads" value="10"/>
             <feature spec="subsystem.ejb3.thread-pool.keepalive-time">
-                <param name="time" value="100"/>
-                <param name="unit" value="MILLISECONDS"/>
+                <param name="time" value="60"/>
+                <param name="unit" value="SECONDS"/>
             </feature>
         </feature>
     </feature>

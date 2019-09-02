@@ -26,6 +26,8 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -55,9 +57,9 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.MissingMethodPermissionsDenyAccessMergingProcessor;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.threads.EnhancedQueueExecutorResourceDefinition;
 import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
-import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -348,8 +350,13 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         subsystemRegistration.registerSubModel(new TimerServiceResourceDefinition(pathManager));
 
         // subsystem=ejb3/thread-pool=*
-        subsystemRegistration.registerSubModel(UnboundedQueueThreadPoolResourceDefinition.create(EJB3SubsystemModel.THREAD_POOL,
-                new EJB3ThreadFactoryResolver(), EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME, registerRuntimeOnly));
+        subsystemRegistration.registerSubModel(EnhancedQueueExecutorResourceDefinition.create(
+                PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL),
+                new EJB3ThreadFactoryResolver(),
+                EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME,
+                registerRuntimeOnly,
+                ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class),
+                false));
 
         // subsystem=ejb3/service=iiop
         subsystemRegistration.registerSubModel(EJB3IIOPResourceDefinition.INSTANCE);
