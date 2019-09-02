@@ -3,6 +3,7 @@
     <dependencies>
         <layer name="web-server"/>
         <layer name="cdi" optional="true"/>
+        <layer name="ee-security" optional="true"/>
         <layer name="jaxrs" optional="true"/>
         <layer name="jms-activemq" optional="true"/>
         <layer name="jpa" optional="true"/>
