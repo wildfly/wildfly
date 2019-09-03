@@ -29,7 +29,9 @@ import java.util.concurrent.ThreadFactory;
 /**
  * {@link ThreadFactory} decorator that associates a specific class loader to created threads.
  * @author Paul Ferraro
+ * @deprecated Use {@link org.jboss.as.clustering.context.DefaultThreadFactory} instead.
  */
+@Deprecated
 public class ClassLoaderThreadFactory implements ThreadFactory {
 
     private final ThreadFactory factory;
