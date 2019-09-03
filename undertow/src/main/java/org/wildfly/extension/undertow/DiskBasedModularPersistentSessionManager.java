@@ -21,15 +21,16 @@
  */
 package org.wildfly.extension.undertow;
 
+import io.undertow.servlet.api.SessionPersistenceManager;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.marshalling.InputStreamByteInput;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.OutputStreamByteOutput;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.IoUtils;
 
@@ -38,27 +39,34 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Persistent session manager that stores persistent session information to disk
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class DiskBasedModularPersistentSessionManager extends AbstractPersistentSessionManager {
     private final String path;
     private final String pathRelativeTo;
+    private final Supplier<PathManager> pathManager;
     private File baseDir;
     private PathManager.Callback.Handle callbackHandle;
 
-    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
-
-    public DiskBasedModularPersistentSessionManager(String path, String pathRelativeTo) {
+    DiskBasedModularPersistentSessionManager(final Consumer<SessionPersistenceManager> serviceConsumer,
+                                             final Supplier<ModuleLoader> moduleLoader,
+                                             final Supplier<PathManager> pathManager,
+                                             final String path, final String pathRelativeTo) {
+        super(serviceConsumer, moduleLoader);
+        this.pathManager = pathManager;
         this.path = path;
         this.pathRelativeTo = pathRelativeTo;
     }
 
     @Override
-    public synchronized void stop(StopContext stopContext) {
+    public void stop(final StopContext stopContext) {
         super.stop(stopContext);
         if (callbackHandle != null) {
             callbackHandle.remove();
@@ -66,12 +74,12 @@ public class DiskBasedModularPersistentSessionManager extends AbstractPersistent
     }
 
     @Override
-    public synchronized void start(StartContext startContext) throws StartException {
+    public void start(final StartContext startContext) throws StartException {
         super.start(startContext);
         if (pathRelativeTo != null) {
-            callbackHandle = pathManager.getValue().registerCallback(pathRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+            callbackHandle = pathManager.get().registerCallback(pathRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
         }
-        baseDir = new File(pathManager.getValue().resolveRelativePathEntry(path, pathRelativeTo));
+        baseDir = new File(pathManager.get().resolveRelativePathEntry(path, pathRelativeTo));
         if (!baseDir.exists()) {
             if (!baseDir.mkdirs()) {
                 throw UndertowLogger.ROOT_LOGGER.failedToCreatePersistentSessionDir(baseDir);
@@ -126,9 +134,5 @@ public class DiskBasedModularPersistentSessionManager extends AbstractPersistent
             IoUtils.safeClose(in);
         }
 
-    }
-
-    public InjectedValue<PathManager> getPathManager() {
-        return pathManager;
     }
 }
