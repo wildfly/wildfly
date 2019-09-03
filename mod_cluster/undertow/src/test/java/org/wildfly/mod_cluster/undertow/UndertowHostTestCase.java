@@ -45,7 +45,7 @@ public class UndertowHostTestCase {
     private final String hostName = "host";
     private final String alias = "alias";
     private final org.wildfly.extension.undertow.Server server = new TestServer("serverName", "defaultHost");
-    private final UndertowService service = new TestUndertowService("default-container", "default-server", "default-virtual-host", "instance-id", false, this.server);
+    private final UndertowService service = new TestUndertowService(null, "default-container", "default-server", "default-virtual-host", "instance-id", false, this.server);
     private final org.wildfly.extension.undertow.Host undertowHost = new TestHost(this.hostName, Collections.singletonList(this.alias), this.service, this.server);
     private final Engine engine = mock(Engine.class);
     private final Host host = new UndertowHost(this.undertowHost, this.engine);

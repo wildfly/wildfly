@@ -46,6 +46,7 @@ import org.wildfly.extension.undertow.security.jacc.HttpServletRequestPolicyCont
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @SuppressWarnings("ALL")
 public class UndertowService implements Service<UndertowService> {
@@ -87,8 +88,12 @@ public class UndertowService implements Service<UndertowService> {
     private final boolean obfuscateSessionRoute;
     private volatile boolean statisticsEnabled;
     private final Set<Consumer<Boolean>> statisticsChangeListenters = new HashSet<>();
+    private final Consumer<UndertowService> serviceConsumer;
 
-    protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, boolean obfuscateSessionRoute, boolean statisticsEnabled) {
+    protected UndertowService(final Consumer<UndertowService> serviceConsumer, final String defaultContainer,
+                              final String defaultServer, final String defaultVirtualHost,
+                              final String instanceId, final boolean obfuscateSessionRoute, final boolean statisticsEnabled) {
+        this.serviceConsumer = serviceConsumer;
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
         this.defaultVirtualHost = defaultVirtualHost;
@@ -178,7 +183,7 @@ public class UndertowService implements Service<UndertowService> {
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(final StartContext context) throws StartException {
         UndertowLogger.ROOT_LOGGER.serverStarting(Version.getVersionString());
         // Register the active request PolicyContextHandler
         try {
@@ -187,10 +192,12 @@ public class UndertowService implements Service<UndertowService> {
         } catch (PolicyContextException pce) {
             UndertowLogger.ROOT_LOGGER.failedToRegisterPolicyContextHandler(SecurityConstants.WEB_REQUEST_KEY, pce);
         }
+        serviceConsumer.accept(this);
     }
 
     @Override
-    public void stop(StopContext context) {
+    public void stop(final StopContext context) {
+        serviceConsumer.accept(null);
         // Remove PolicyContextHandler
         Set handlerKeys = PolicyContext.getHandlerKeys();
         handlerKeys.remove(SecurityConstants.WEB_REQUEST_KEY);
