@@ -26,10 +26,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import javax.transaction.TransactionManager;
+
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.near.NearCacheService;
+import org.wildfly.clustering.Registrar;
+import org.wildfly.clustering.infinispan.client.RegisteredRemoteCache;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 /**
@@ -41,15 +47,22 @@ public class RemoteCacheManager extends org.infinispan.client.hotrod.RemoteCache
 
     private final Map<String, Function<ClientListenerNotifier, NearCacheService<?, ?>>> nearCacheFactories = new ConcurrentHashMap<>();
     private final String name;
+    private final Registrar<String> registrar;
 
-    public RemoteCacheManager(String name, Configuration configuration) {
+    public RemoteCacheManager(String name, Configuration configuration, Registrar<String> registrar) {
         super(configuration, false);
         this.name = name;
+        this.registrar = registrar;
     }
 
     @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue, TransactionMode transactionMode, TransactionManager transactionManager) {
+        return new RegisteredRemoteCache<>(this, super.getCache(cacheName, forceReturnValue, transactionMode, transactionManager), this.registrar);
     }
 
     @SuppressWarnings("unchecked")

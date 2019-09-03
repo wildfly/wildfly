@@ -29,6 +29,8 @@ import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -42,6 +44,7 @@ import org.jboss.as.clustering.infinispan.subsystem.TransactionMode;
 import org.jboss.as.clustering.infinispan.subsystem.TransactionResourceCapabilityReference;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -56,7 +59,7 @@ import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
  * Resource definition for the transaction component of a remote cache container.
  * @author Paul Ferraro
  */
-public class RemoteTransactionResourceDefinition extends ComponentResourceDefinition {
+public class RemoteTransactionResourceDefinition extends ComponentResourceDefinition implements ResourceServiceConfiguratorFactory {
 
     public static final PathElement PATH = pathElement("transaction");
 
@@ -110,8 +113,13 @@ public class RemoteTransactionResourceDefinition extends ComponentResourceDefini
                 // Add a requirement on the tm capability to the parent cache capability
                 .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, CommonRequirement.LOCAL_TRANSACTION_PROVIDER, Attribute.MODE, EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)))
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(RemoteTransactionServiceConfigurator::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
         return registration;
+    }
+
+    @Override
+    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+        return new RemoteTransactionServiceConfigurator(address);
     }
 }

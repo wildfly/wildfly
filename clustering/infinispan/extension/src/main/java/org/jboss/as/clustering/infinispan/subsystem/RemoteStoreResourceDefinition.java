@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -114,7 +115,12 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     RemoteStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), RemoteStoreServiceConfigurator::new);
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
         this.setDeprecated(InfinispanModel.VERSION_7_0_0.getVersion());
+    }
+
+    @Override
+    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+        return new RemoteStoreServiceConfigurator(address);
     }
 }

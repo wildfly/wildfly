@@ -22,20 +22,20 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.util.Set;
+import java.util.function.Function;
+
+import javax.transaction.TransactionManager;
+
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.near.NearCacheService;
-import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
-
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.transaction.TransactionManager;
+import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
 
 /**
  * Container managed {@link RemoteCacheContainer} decorator, whose lifecycle methods are no-ops.
@@ -45,75 +45,60 @@ import javax.transaction.TransactionManager;
  */
 public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
-    private final RemoteCacheContainer container;
+    private final RemoteCacheManager manager;
 
-    public ManagedRemoteCacheContainer(RemoteCacheContainer container) {
-        this.container = container;
+    public ManagedRemoteCacheContainer(RemoteCacheManager container) {
+        this.manager = container;
     }
 
     @Override
     public String getName() {
-        return this.container.getName();
+        return this.manager.getName();
     }
 
     @Override
     public RemoteCacheManagerAdmin administration() {
-        return this.container.administration();
+        return this.manager.administration();
     }
 
     @Override
     public <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, Function<ClientListenerNotifier, NearCacheService<K, V>> factory) {
-        return this.container.registerNearCacheFactory(cacheName, factory);
-    }
-
-    @Override
-    public <K, V> BasicCache<K, V> getCache() {
-        return this.container.getCache();
-    }
-
-    @Override
-    public <K, V> BasicCache<K, V> getCache(String cacheName) {
-        return this.container.getCache(cacheName);
-    }
-
-    @Override
-    public <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
-        return this.container.getCache(cacheName, transactionMode, transactionManager);
+        return this.manager.registerNearCacheFactory(cacheName, factory);
     }
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue, TransactionMode transactionMode, TransactionManager transactionManager) {
-        return this.container.getCache(cacheName, forceReturnValue, transactionMode, transactionManager);
+        return this.manager.getCache(cacheName, forceReturnValue, transactionMode, transactionManager);
     }
 
     @Override
     public Configuration getConfiguration() {
-        return this.container.getConfiguration();
+        return this.manager.getConfiguration();
     }
 
     @Override
     public boolean isStarted() {
-        return this.container.isStarted();
+        return this.manager.isStarted();
     }
 
     @Override
     public boolean switchToCluster(String clusterName) {
-        return this.container.switchToCluster(clusterName);
+        return this.manager.switchToCluster(clusterName);
     }
 
     @Override
     public boolean switchToDefaultCluster() {
-        return this.container.switchToDefaultCluster();
+        return this.manager.switchToDefaultCluster();
     }
 
     @Override
     public Marshaller getMarshaller() {
-        return this.container.getMarshaller();
+        return this.manager.getMarshaller();
     }
 
     @Override
     public Set<String> getCacheNames() {
-        return this.container.getCacheNames();
+        return this.manager.getCacheNames();
     }
 
     @Override
@@ -124,5 +109,25 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     @Override
     public void stop() {
         // no-op - lifecycle controller by the container
+    }
+
+    @Override
+    public String[] getServers() {
+        return this.manager.getServers();
+    }
+
+    @Override
+    public int getActiveConnectionCount() {
+        return this.manager.getActiveConnectionCount();
+    }
+
+    @Override
+    public int getConnectionCount() {
+        return this.manager.getConnectionCount();
+    }
+
+    @Override
+    public int getIdleConnectionCount() {
+        return this.manager.getIdleConnectionCount();
     }
 }

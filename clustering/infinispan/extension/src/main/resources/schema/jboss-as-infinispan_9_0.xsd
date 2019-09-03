@@ -1241,6 +1241,13 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Enables statistics gathering for this remote cache.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="tcp-no-delay" type="xs:boolean" default="true">
             <xs:annotation>
                 <xs:documentation>

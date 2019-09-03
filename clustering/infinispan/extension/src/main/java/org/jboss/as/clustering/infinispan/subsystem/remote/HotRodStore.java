@@ -33,8 +33,10 @@ import java.util.function.Predicate;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
-import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
+import org.infinispan.client.hotrod.impl.Util;
+import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
 import org.infinispan.client.hotrod.impl.operations.PingOperation;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.marshall.WrappedByteArray;
@@ -223,7 +225,9 @@ public class HotRodStore<K, V> implements SegmentedAdvancedLoadWriteStore<K, V>,
 
     @Override
     public boolean isAvailable() {
-        PingOperation.PingResponse response = ((RemoteCacheImpl<?, ?>) this.remoteCache).ping();
+        RemoteCacheManager manager = this.remoteCache.getRemoteCacheManager();
+        OperationsFactory operationsFactory = new OperationsFactory(manager.getChannelFactory(), manager.getCodec(), null, manager.getConfiguration());
+        PingOperation.PingResponse response = Util.await(operationsFactory.newFaultTolerantPingOperation().execute());
         return response.isSuccess();
     }
 

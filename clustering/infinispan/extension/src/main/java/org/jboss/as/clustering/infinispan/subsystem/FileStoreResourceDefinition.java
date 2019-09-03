@@ -27,9 +27,11 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -90,7 +92,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     FileStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), FileStoreServiceConfigurator::new);
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
 
     @Override
@@ -107,5 +109,10 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         }
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+        return new FileStoreServiceConfigurator(address);
     }
 }
