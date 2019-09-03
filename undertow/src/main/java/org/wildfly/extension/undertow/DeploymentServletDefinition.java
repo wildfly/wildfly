@@ -135,7 +135,7 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
                             return;
                         }
                         final UndertowDeploymentService deploymentService = (UndertowDeploymentService) deploymentServiceController.getService();
-                        final DeploymentInfo deploymentInfo = deploymentService.getDeploymentInfoInjectedValue().getValue();
+                        final DeploymentInfo deploymentInfo = deploymentService.getDeploymentInfo();
                         final ServletInfo servlet = deploymentInfo.getServlets().get(context.getCurrentAddressValue());
 
                         ModelNode response = new ModelNode();
@@ -172,7 +172,7 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
                         return;
                     }
                     final UndertowDeploymentService deploymentService = (UndertowDeploymentService) deploymentServiceController.getService();
-                    final DeploymentInfo deploymentInfo = deploymentService.getDeploymentInfoInjectedValue().getValue();
+                    final DeploymentInfo deploymentInfo = deploymentService.getDeploymentInfo();
                     final UndertowMetricsCollector collector = (UndertowMetricsCollector)deploymentInfo.getMetricsCollector();
 
                     MetricsHandler.MetricResult result = collector != null ? collector.getMetrics(context.getCurrentAddressValue()) : null;

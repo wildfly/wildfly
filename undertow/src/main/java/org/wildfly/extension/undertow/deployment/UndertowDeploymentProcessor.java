@@ -39,9 +39,12 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import javax.security.jacc.PolicyConfiguration;
 
@@ -129,6 +132,9 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
+/**
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ */
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Function<SessionManagerFactoryConfiguration, SessionManagerFactory> {
 
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
@@ -458,22 +464,20 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             throw UndertowLogger.ROOT_LOGGER.duplicateHostContextDeployments(deploymentInfoServiceName, e.getMessage());
         }
 
-        final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer, true);
-        final ServiceBuilder<UndertowDeploymentService> builder = serviceTarget.addService(deploymentServiceName, service)
-                .addAliases(legacyDeploymentServiceName)
-                .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, service.getContainer())
-                .addDependency(hostServiceName, Host.class, service.getHost())
-                .addDependency(deploymentInfoServiceName, DeploymentInfo.class, service.getDeploymentInfoInjectedValue());
+        final ServiceBuilder<?> udsBuilder = serviceTarget.addService(deploymentServiceName);
+        final Consumer<UndertowDeploymentService> sConsumer = udsBuilder.provides(deploymentServiceName, legacyDeploymentServiceName);
+        final Supplier<ServletContainerService> cSupplier = udsBuilder.requires(UndertowService.SERVLET_CONTAINER.append(defaultContainer));
+        final Supplier<ExecutorService> seSupplier = Services.requireServerExecutor(udsBuilder);
+        final Supplier<Host> hSupplier = udsBuilder.requires(hostServiceName);
+        final Supplier<DeploymentInfo> diSupplier = udsBuilder.requires(deploymentInfoServiceName);
         for (final ServiceName webDependency : deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES)) {
-            builder.requires(webDependency);
+            udsBuilder.requires(webDependency);
         }
         for (final ServiceName dependentComponent : dependentComponents) {
-            builder.requires(dependentComponent);
+            udsBuilder.requires(dependentComponent);
         }
-        // inject the server executor which can be used by the WebDeploymentService for blocking tasks in start/stop
-        // of that service
-        Services.addServerExecutorDependency(builder, service.getServerExecutorInjector());
-        builder.install();
+        udsBuilder.setInstance(new UndertowDeploymentService(sConsumer, cSupplier, seSupplier, hSupplier, diSupplier, injectionContainer, true));
+        udsBuilder.install();
 
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
