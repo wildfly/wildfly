@@ -835,6 +835,11 @@ public class AggregateRealmTestCase {
                     identity, attributeName, String.join(",", values)));
         }
 
+        public void remove(CLIWrapper cli) throws Exception {
+            // No action required as the overall realm is removed - however this override is
+            // required as ConfigurableElement.remove(CLIWrapper) throws an IllegalStateException.
+        }
+
     }
 
 }
