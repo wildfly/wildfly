@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ee.concurrent.service;
 
+import org.jboss.as.ee.subsystem.ContextServiceResourceDefinition;
+import org.jboss.as.ee.subsystem.ManagedExecutorServiceResourceDefinition;
+import org.jboss.as.ee.subsystem.ManagedScheduledExecutorServiceResourceDefinition;
+import org.jboss.as.ee.subsystem.ManagedThreadFactoryResourceDefinition;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -37,32 +41,52 @@ public class ConcurrentServiceNames {
 
     private static final ServiceName CONTEXT_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("context");
 
-    private static final ServiceName CONTEXT_SERVICE_BASE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("service");
-
-    private static final ServiceName MANAGED_THREAD_FACTORY_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("threadfactory");
-
-    private static final ServiceName MANAGED_EXECUTOR_SERVICE_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("executor");
-
-    private static final ServiceName MANAGED_SCHEDULED_EXECUTOR_SERVICE_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("scheduledexecutor");
-
     public static final ServiceName TRANSACTION_SETUP_PROVIDER_SERVICE_NAME = BASE_SERVICE_NAME.append("tsp");
 
     public static final ServiceName CONCURRENT_CONTEXT_BASE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("config");
 
+    /**
+     *
+     * @param name
+     * @return
+     * @deprecated Use "org.wildfly.ee.concurrent.context.service" dynamic capability's service name instead.
+     */
+    @Deprecated
     public static ServiceName getContextServiceServiceName(String name) {
-        return CONTEXT_SERVICE_BASE_SERVICE_NAME.append(name);
+        return ContextServiceResourceDefinition.CAPABILITY.getCapabilityServiceName(name);
     }
 
+    /**
+     *
+     * @param name
+     * @return
+     * @deprecated Use "org.wildfly.ee.concurrent.thread-factory" dynamic capability's service name instead.
+     */
+    @Deprecated
     public static ServiceName getManagedThreadFactoryServiceName(String name) {
-        return MANAGED_THREAD_FACTORY_BASE_SERVICE_NAME.append(name);
+        return ManagedThreadFactoryResourceDefinition.CAPABILITY.getCapabilityServiceName(name);
     }
 
+    /**
+     *
+     * @param name
+     * @return
+     * @deprecated Use "org.wildfly.ee.concurrent.executor" dynamic capability's service name instead.
+     */
+    @Deprecated
     public static ServiceName getManagedExecutorServiceServiceName(String name) {
-        return MANAGED_EXECUTOR_SERVICE_BASE_SERVICE_NAME.append(name);
+        return ManagedExecutorServiceResourceDefinition.CAPABILITY.getCapabilityServiceName(name);
     }
 
+    /**
+     *
+     * @param name
+     * @return
+     * @deprecated Use "org.wildfly.ee.concurrent.scheduled-executor" dynamic capability's service name instead.
+     */
+    @Deprecated
     public static ServiceName getManagedScheduledExecutorServiceServiceName(String name) {
-        return MANAGED_SCHEDULED_EXECUTOR_SERVICE_BASE_SERVICE_NAME.append(name);
+        return ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY.getCapabilityServiceName(name);
     }
 
     public static ServiceName getConcurrentContextServiceName(String app, String module, String component) {

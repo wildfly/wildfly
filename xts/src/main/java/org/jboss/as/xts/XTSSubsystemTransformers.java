@@ -55,14 +55,14 @@ public class XTSSubsystemTransformers implements ExtensionTransformerRegistratio
         ResourceTransformationDescriptionBuilder builderEap72 = chainedBuilder.createBuilder(XTSExtension.CURRENT_MODEL_VERSION, MODEL_VERSION_EAP71);
         builderEap72.getAttributeBuilder()
             .addRejectCheck(RejectAttributeChecker.DEFINED, XTSSubsystemDefinition.ASYNC_REGISTRATION)
-            .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), XTSSubsystemDefinition.ASYNC_REGISTRATION)
+            .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), XTSSubsystemDefinition.ASYNC_REGISTRATION)
             .end();
 
         // 2.0.0 --> 1.0.0
         ResourceTransformationDescriptionBuilder builderEap70 = chainedBuilder.createBuilder(MODEL_VERSION_EAP71, MODEL_VERSION_EAP64);
         builderEap70.getAttributeBuilder()
             .addRejectCheck(RejectAttributeChecker.DEFINED, XTSSubsystemDefinition.HOST_NAME, XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
-            .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
+            .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
             .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
                    @Override
                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {

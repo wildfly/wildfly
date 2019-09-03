@@ -103,6 +103,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Signature;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -3184,4 +3185,23 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 509, value = "Clustered EJBs in Node: %s are bound to INADDR_ANY(%s). Either use a non-wildcard server bind address or add client-mapping entries to the relevant socket-binding for the Remoting connector")
     void clusteredEJBsBoundToINADDRANY(String nodeName, String ip);
 
+    @LogMessage(level = WARN)
+    @Message(id = 510, value = "@RunAs annotation is required when using @RunAsPrincipal on class %s")
+    void missingRunAsAnnotation(String className);
+
+    @Message(id = 511, value = "Cannot build reflection index for server interceptor class %s")
+    RuntimeException cannotBuildIndexForServerInterceptor(String interceptorClass, @Cause Exception e);
+
+    @Message(id = 512, value = "Server interceptor class %s does not have a no parameter constructor")
+    RuntimeException serverInterceptorNoEmptyConstructor(String interceptorClass, @Cause Exception e);
+
+    @Message(id = 513, value = "Method %s in server interceptor %s annotated with %s has invalid signature")
+    RuntimeException serverInterceptorInvalidMethod(String methodName, String interceptorClass, String annotationClass, @Cause Exception e);
+
+    @Message(id = 514, value = "Cannot load server interceptor module %s")
+    RuntimeException cannotLoadServerInterceptorModule(ModuleIdentifier moduleId, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 515, value = "[EJB3.2 spec, section 4.9.2] Singleton session beans are not allowed to implement 'javax.ejb.SessionBean' interface. This interface on bean '%s' is going to be ignored and should be removed.")
+    void singletonCantImplementSessionBean(String className);
 }

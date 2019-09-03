@@ -1592,6 +1592,18 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 readAttribute(reader, index, operation, TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE);
                 break;
             }
+            case CREATE_ON_START: {
+                if (this.schema.since(InfinispanSchema.VERSION_9_0)) {
+                    readAttribute(reader, index, operation, TableResourceDefinition.Attribute.CREATE_ON_START);
+                    break;
+                }
+            }
+            case DROP_ON_STOP: {
+                if (this.schema.since(InfinispanSchema.VERSION_9_0)) {
+                    readAttribute(reader, index, operation, TableResourceDefinition.Attribute.DROP_ON_STOP);
+                    break;
+                }
+            }
             default: {
                 throw ParseUtils.unexpectedAttribute(reader, index);
             }
@@ -1861,6 +1873,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case VALUE_SIZE_ESTIMATE: {
                     readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE);
                     break;
+                }
+                case STATISTICS_ENABLED: {
+                    if (this.schema.since(InfinispanSchema.VERSION_9_0)) {
+                        readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED);
+                        break;
+                    }
                 }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);

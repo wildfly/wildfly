@@ -30,6 +30,7 @@ import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
+import org.wildfly.clustering.web.cache.session.SessionActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
 
 /**
@@ -38,28 +39,31 @@ import org.wildfly.clustering.web.cache.session.SessionAttributes;
  */
 public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes implements SessionAttributes {
     private final Map<String, Object> attributes;
-    private final Set<String> mutations;
+    private final Set<String> mutations = ConcurrentHashMap.newKeySet();
     private final Mutator mutator;
     private final Marshallability marshallability;
     private final Immutability immutability;
     private final CacheProperties properties;
+    private final SessionActivationNotifier notifier;
 
-    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, Marshallability marshallability, Immutability immutability, CacheProperties properties) {
+    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, Marshallability marshallability, Immutability immutability, CacheProperties properties, SessionActivationNotifier notifier) {
         super(attributes);
         this.attributes = attributes;
-        this.mutations = !properties.isTransactional() ? ConcurrentHashMap.newKeySet() : null;
         this.mutator = mutator;
         this.marshallability = marshallability;
         this.immutability = immutability;
         this.properties = properties;
+        this.notifier = notifier;
+        if (this.properties.isPersistent()) {
+            this.notifier.postActivate();
+        }
     }
 
     @Override
     public Object removeAttribute(String name) {
         Object value = this.attributes.remove(name);
-        this.mutator.mutate();
-        if (this.mutations != null) {
-            this.mutations.remove(name);
+        if (value != null) {
+            this.mutations.add(name);
         }
         return value;
     }
@@ -73,14 +77,8 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
             throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
         Object old = this.attributes.put(name, value);
-        this.mutator.mutate();
-        if (this.mutations != null) {
-            // If the object is mutable, we need to indicate trigger a mutation on close
-            if (this.immutability.test(value)) {
-                this.mutations.remove(name);
-            } else {
-                this.mutations.add(name);
-            }
+        if (old != value) {
+            this.mutations.add(name);
         }
         return old;
     }
@@ -89,19 +87,20 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     public Object getAttribute(String name) {
         Object value = this.attributes.get(name);
         if (!this.immutability.test(value)) {
-            if (this.mutations != null) {
-                this.mutations.add(name);
-            } else {
-                this.mutator.mutate();
-            }
+            this.mutations.add(name);
         }
         return value;
     }
 
     @Override
     public void close() {
-        if ((this.mutations != null) && !this.mutations.isEmpty()) {
+        if (this.properties.isPersistent()) {
+            this.notifier.prePassivate();
+        }
+
+        if (!this.mutations.isEmpty()) {
             this.mutator.mutate();
         }
+        this.mutations.clear();
     }
 }

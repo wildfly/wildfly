@@ -22,20 +22,23 @@
 
 package org.jboss.as.test.clustering;
 
-import java.io.IOException;
-
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
+ * Servlet returning the serving node name.
+ *
  * @author Ondrej Chaloupka
  */
-@WebServlet(urlPatterns = {"/nodename"})
+@WebServlet(urlPatterns = { NodeInfoServlet.SERVLET_PATH })
 public class NodeInfoServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    public static final String URL = "nodename";
+
+    public static final String SERVLET_NAME = "nodename";
+    public static final String SERVLET_PATH = "/" + SERVLET_NAME;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {

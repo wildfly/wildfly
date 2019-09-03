@@ -76,6 +76,7 @@ public abstract class AbstractClusteringTestCase {
     public static final String DEPLOYMENT_3 = "deployment-3";
     public static final String DEPLOYMENT_4 = "deployment-4";
     public static final String[] TWO_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
+    public static final String[] THREE_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3 };
     public static final String[] FOUR_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
 
     // Helper deployment names
@@ -88,6 +89,9 @@ public abstract class AbstractClusteringTestCase {
 
     // Infinispan Server
     public static final String INFINISPAN_SERVER_1 = "infinispan-server-1";
+
+    // Undertow-based WildFly load-balancer
+    public static final String LOAD_BALANCER_1 = "load-balancer-1";
 
     // Timeouts
     public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);
@@ -188,6 +192,10 @@ public abstract class AbstractClusteringTestCase {
 
     protected void stop(String... containers) {
         NodeUtil.stop(this.controller, containers);
+    }
+
+    protected boolean isStarted(String container) {
+        return NodeUtil.isStarted(this.controller, container);
     }
 
     protected void stop(int timeout, String... containers) {

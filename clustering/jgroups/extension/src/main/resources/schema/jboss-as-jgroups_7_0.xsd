@@ -23,9 +23,12 @@
 <xs:schema targetNamespace="urn:jboss:domain:jgroups:7.0"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:tns="urn:jboss:domain:jgroups:7.0"
+           xmlns:credential-reference="urn:wildfly:credential-reference:1.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="7.0">
+
+    <xs:import namespace="urn:wildfly:credential-reference:1.0" schemaLocation="wildfly-credential-reference_1_0.xsd"/>
 
     <xs:element name="subsystem" type="tns:subsystem">
         <xs:annotation>
@@ -275,7 +278,7 @@
         <xs:complexContent>
             <xs:extension base="tns:generic-protocol">
                 <xs:sequence>
-                    <xs:element name="key-credential-reference" type="tns:credential-reference">
+                    <xs:element name="key-credential-reference" type="credential-reference:credentialReferenceType">
                         <xs:annotation>
                             <xs:documentation>References the password credential with which the key is protected.</xs:documentation>
                         </xs:annotation>
@@ -321,7 +324,7 @@
 
     <xs:complexType name="plain-token">
         <xs:sequence>
-            <xs:element name="shared-secret-reference" type="tns:credential-reference">
+            <xs:element name="shared-secret-reference" type="credential-reference:credentialReferenceType">
                 <xs:annotation>
                     <xs:documentation>References a shared secret used to authenticate new members.</xs:documentation>
                 </xs:annotation>
@@ -345,7 +348,7 @@
         <xs:complexContent>
             <xs:extension base="tns:plain-token">
                 <xs:sequence>
-                    <xs:element name="key-credential-reference" type="tns:credential-reference">
+                    <xs:element name="key-credential-reference" type="credential-reference:credentialReferenceType">
                         <xs:annotation>
                             <xs:documentation>References the credential required to obtain the specified key from the specified store.</xs:documentation>
                         </xs:annotation>
@@ -368,41 +371,6 @@
                 </xs:attribute>
             </xs:extension>
         </xs:complexContent>
-    </xs:complexType>
-
-    <!-- Copied from elytron subsystem schema -->
-    <xs:complexType name="credential-reference">
-        <xs:attribute name="store" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Credential store name used to fetch credential with given 'alias' from.
-                    Credential store name has to be defined elsewhere.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="alias" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Alias of credential in the credential store.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="type" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Type of credential to be fetched from credential store.
-                    It is usually fully qualified class name.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="clear-text" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Credential/password in clear text. Use just for testing purpose.
-                    Otherwise use credential store to mask the actual credential from your configuration.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="transport">

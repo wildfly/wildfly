@@ -23,14 +23,11 @@
 package org.wildfly.clustering.web.cache.session;
 
 import org.wildfly.clustering.ee.Creator;
-import org.wildfly.clustering.ee.Locator;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * @author Paul Ferraro
  */
-public interface SessionMetaDataFactory<V, L> extends Creator<String, V, Void>, Locator<String, V>, Remover<String> {
+public interface SessionMetaDataFactory<V> extends ImmutableSessionMetaDataFactory<V>, Creator<String, V, Void>, Remover<String> {
     InvalidatableSessionMetaData createSessionMetaData(String id, V value);
-    ImmutableSessionMetaData createImmutableSessionMetaData(String id, V value);
 }

@@ -67,7 +67,7 @@ interface) relate to the notion of managed resources in the AS.
 
 Each subsystem is responsible for managing one or more management
 resources. The conceptual characteristics of a management resource are
-covered in some detail in the link:Admin_Guide{outfilesuffix}#Management_resources[Admin
+covered in some detail in the link:Admin_Guide{outfilesuffix}#management-resources[Admin
 Guide]; here we'll just summarize the main points. A management resource
 has
 

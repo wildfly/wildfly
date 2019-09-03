@@ -61,7 +61,7 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         DECAY("decay", ModelType.DOUBLE, new ModelNode((double) DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR)),
         HISTORY("history", ModelType.INT, new ModelNode(DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY)),
-        INITIAL_LOAD("initial-load", ModelType.INT, new ModelNode(0)) {
+        INITIAL_LOAD("initial-load", ModelType.INT, ModelNode.ZERO) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder simpleAttributeDefinitionBuilder) {
                 return simpleAttributeDefinitionBuilder.setValidator(new IntRangeValidator(-1, 100, true, true));

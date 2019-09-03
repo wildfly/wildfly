@@ -68,7 +68,7 @@ public class IORASContextDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition REQUIRED =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_AS_CONTEXT_REQUIRED, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
 

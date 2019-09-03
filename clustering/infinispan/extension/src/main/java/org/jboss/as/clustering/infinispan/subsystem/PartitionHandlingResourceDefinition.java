@@ -47,7 +47,7 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
     static final PathElement PATH = pathElement("partition-handling");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(false)),
+        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.FALSE),
         ;
         private final AttributeDefinition definition;
 

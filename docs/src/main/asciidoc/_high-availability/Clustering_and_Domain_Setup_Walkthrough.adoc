@@ -1,6 +1,6 @@
 [[Clustering_and_Domain_Setup_Walkthrough]]
 = Clustering and Domain Setup Walkthrough
-ifdef::env-github[:imagesdir: ../]
+ifdef::env-github[:imagesdir: ../images/]
 
 In this article, I'd like to show you how to setup WildFly in domain
 mode and enable clustering so we could get HA and session replication

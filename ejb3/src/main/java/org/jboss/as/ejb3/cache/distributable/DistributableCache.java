@@ -48,6 +48,8 @@ import org.wildfly.clustering.ejb.RemoveListener;
  * @param <V> the cache value type
  */
 public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>> implements Cache<K, V> {
+    private static final Object UNSET = Boolean.TRUE;
+
     private final BeanManager<K, V, Batch> manager;
     private final StatefulObjectFactory<V> factory;
     private final TransactionSynchronizationRegistry tsr;
@@ -70,28 +72,27 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
         return this.manager.getWeakAffinity(id);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public K createIdentifier() {
-        K id = this.manager.getIdentifierFactory().createIdentifier();
-        K group = (K) CURRENT_GROUP.get();
-        if (group == null) {
-            group = id;
-            CURRENT_GROUP.set(group);
-        }
-        return id;
+        return this.manager.getIdentifierFactory().createIdentifier();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public V create() {
         boolean newGroup = CURRENT_GROUP.get() == null;
+        if (newGroup) {
+            CURRENT_GROUP.set(UNSET);
+        }
         try (Batch batch = this.manager.getBatcher().createBatch()) {
             try {
                 // This will invoke Cache.create() for nested beans
                 // Nested beans will share the same group identifier
                 V instance = this.factory.createInstance();
                 K id = instance.getId();
+                if (CURRENT_GROUP.get() == UNSET) {
+                    CURRENT_GROUP.set(id);
+                }
                 this.manager.createBean(id, (K) CURRENT_GROUP.get(), instance).close();
                 return instance;
             } catch (RuntimeException | Error e) {

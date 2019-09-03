@@ -18,6 +18,7 @@ e.g.
 </web-app>
 ----
 
+[[distributable-web-subsystem]]
 == Distributable Web Subsystem
 
 The distributable-web subsystem manages a set of session management profiles that encapsulate the configuration of a distributable session manager.
@@ -81,6 +82,10 @@ affinity=primary-owner:::
 Web requests will have an affinity to the primary owner of a given session.
 This is the default affinity for this distributed session manager.
 Behaves the same as affinity=local if the backing cache is not distributed nor replicated.
+affinity=ranked:::
+Web requests will have an affinity to the first available node in a ranked list comprised of: primary owner, backup nodes, local node (if not a primary nor backup owner).
+Only for use with load balancers that support multiple routes.
+Behaves the same as affinity=local if cache is not distributed nor replicated.
 
 e.g. Creating a new session management profile, using ATTRIBUTE granularity with local session affinity:
 
@@ -152,7 +157,7 @@ e.g.
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
     <session-management name="foo"/>
 </distributable-web>
 ----
@@ -166,7 +171,7 @@ e.g.
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss xmlns="urn:jboss:1.0">
-    <distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
         <session-management name="foo"/>
     </distributable-web>
 </jboss>
@@ -183,7 +188,7 @@ e.g.
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
     <infinispan-session-management cache-container="foo" cache="bar" granularity="SESSION">
         <primary-owner-affinity/>
     </infinispan-session-management>
@@ -199,7 +204,7 @@ e.g.
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss xmlns="urn:jboss:1.0">
-    <distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
         <infinispan-session-management cache-container="foo" cache="bar" granularity="ATTRIBUTE">
             <local-affinity/>
         </infinispan-session-management>
@@ -229,7 +234,7 @@ e.g.
             </cookie-config>
         </session-config>
     </shared-session-config>
-    <distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
         <session-management name="foo"/>
     </distributable-web>
 </jboss>
@@ -331,7 +336,7 @@ Alternatively, immutable classes can be enumerated via the distributable-web dep
 e.g.
 [source,xml]
 ----
-<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
     <session-management>
         <immutable-class>foo.bar.ImmutableClass</immutable-class>
         <immutable-class>...</immutable-class>

@@ -16,16 +16,16 @@
 
 package org.wildfly.test.integration.microprofile.metrics.metadata.resources;
 
-import org.eclipse.microprofile.metrics.Histogram;
-import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
-
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
+
+import org.eclipse.microprofile.metrics.Histogram;
+import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
 
 @Path("/histogram")
 public class MicroProfileMetricsHistogramResource {
@@ -36,10 +36,10 @@ public class MicroProfileMetricsHistogramResource {
    @GET
    @Path("/hello/{n}")
    public Response hello(@PathParam("n") String n) {
-      Metadata histogramMetadata = new Metadata("helloHistogram", MetricType.HISTOGRAM);
-
-      // TODO: Remove following line once https://github.com/smallrye/smallrye-metrics/issues/42 is fixed
-      histogramMetadata.setReusable(true); // workaround
+      Metadata histogramMetadata =  Metadata.builder()
+              .withName("helloHistogram")
+              .withType(MetricType.HISTOGRAM)
+              .build();
 
       Histogram histogram = registry.histogram(histogramMetadata);
       histogram.update(Long.valueOf(n));

@@ -72,7 +72,7 @@ public class DeploymentProcessor implements ApplicationArchiveProcessor {
             final File archiveDir = new File("target/archives");
             archiveDir.mkdirs();
             File moduleFile = new File(archiveDir, "testapp.war");
-            war.as(ZipExporter.class).exportTo(moduleFile);
+            war.as(ZipExporter.class).exportTo(moduleFile, true);
         }
     }
 }

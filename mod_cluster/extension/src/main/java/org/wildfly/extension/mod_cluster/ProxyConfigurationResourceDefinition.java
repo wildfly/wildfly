@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.AttributeTranslation;
+import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
@@ -107,7 +108,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ADVERTISE("advertise", ModelType.BOOLEAN, new ModelNode(true)),
+        ADVERTISE("advertise", ModelType.BOOLEAN, ModelNode.TRUE),
         ADVERTISE_SECURITY_KEY("advertise-security-key", ModelType.STRING, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -126,10 +127,10 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                         ;
             }
         },
-        AUTO_ENABLE_CONTEXTS("auto-enable-contexts", ModelType.BOOLEAN, new ModelNode(true)),
+        AUTO_ENABLE_CONTEXTS("auto-enable-contexts", ModelType.BOOLEAN, ModelNode.TRUE),
         BALANCER("balancer", ModelType.STRING, null),
         EXCLUDED_CONTEXTS("excluded-contexts", ModelType.STRING, null),
-        FLUSH_PACKETS("flush-packets", ModelType.BOOLEAN, new ModelNode(false)),
+        FLUSH_PACKETS("flush-packets", ModelType.BOOLEAN, ModelNode.FALSE),
         FLUSH_WAIT("flush-wait", ModelType.INT, new ModelNode(-1)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -261,9 +262,9 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                         .setValidator(new IntRangeValidator(1, true, true));
             }
         },
-        STICKY_SESSION("sticky-session", ModelType.BOOLEAN, new ModelNode(true)),
-        STICKY_SESSION_REMOVE("sticky-session-remove", ModelType.BOOLEAN, new ModelNode(false)),
-        STICKY_SESSION_FORCE("sticky-session-force", ModelType.BOOLEAN, new ModelNode(false)),
+        STICKY_SESSION("sticky-session", ModelType.BOOLEAN, ModelNode.TRUE),
+        STICKY_SESSION_REMOVE("sticky-session-remove", ModelType.BOOLEAN, ModelNode.FALSE),
+        STICKY_SESSION_FORCE("sticky-session-force", ModelType.BOOLEAN, ModelNode.FALSE),
         STOP_CONTEXT_TIMEOUT("stop-context-timeout", ModelType.INT, new ModelNode(10)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -422,10 +423,40 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         return registration;
     }
 
-    private AttributeTranslation SIMPLE_LOAD_PROVIDER_TRANSLATION = new AttributeTranslation() {
+    private static final AttributeTranslation SIMPLE_LOAD_PROVIDER_TRANSLATION = new AttributeTranslation() {
         @Override
         public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
             return SimpleLoadProviderResourceDefinition.Attribute.FACTOR;
+        }
+
+        private final AttributeValueTranslator simpleLoadFactorDefinedValidator = new AttributeValueTranslator() {
+            @Override
+            public ModelNode translate(OperationContext context, ModelNode value) throws OperationFailedException {
+                // Skip if executed on the existing current resource
+                PathAddress currentAddress = context.getCurrentAddress();
+                if (currentAddress.getLastElement().equals(SimpleLoadProviderResourceDefinition.PATH)) {
+                    return value;
+                }
+
+                try {
+                    // Otherwise, fail if operation executed on the legacy resource if dynamic load provider is defined
+                    PathAddress address = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.PATH);
+                    context.readResource(address, false);
+                } catch (Resource.NoSuchResourceException ignore) {
+                    return value;
+                }
+                throw ROOT_LOGGER.simpleLoadFactorProviderIsNotConfigured();
+            }
+        };
+
+        @Override
+        public AttributeValueTranslator getReadTranslator() {
+            return simpleLoadFactorDefinedValidator;
+        }
+
+        @Override
+        public AttributeValueTranslator getWriteTranslator() {
+            return simpleLoadFactorDefinedValidator;
         }
 
         @Override
@@ -454,7 +485,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         ResourceTransformationDescriptionBuilder builder = ModClusterModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(WILDCARD_PATH, new PathAddressTransformer.BasicPathAddressTransformer(LEGACY_PATH), new ProxyConfigurationDynamicDiscardPolicy()) : parent.addChildResource(WILDCARD_PATH);
 
         if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.discardChildResource(SimpleLoadProviderResourceDefinition.PATH);
             builder.setCustomResourceTransformer(new ResourceTransformer() {
                 @Override
                 public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {

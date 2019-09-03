@@ -58,7 +58,7 @@ public class PolicyContextTestCase {
         ear.addAsModule(war);
         ear.addAsModule(jar);
 
-        ear.addAsManifestResource(createPermissionsXmlAsset(new SecurityPermission("getPolicy")), "permissions.xml");
+        ear.addAsManifestResource(createPermissionsXmlAsset(new SecurityPermission("setPolicy")), "permissions.xml");
 
         return ear;
     }

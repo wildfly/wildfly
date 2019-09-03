@@ -54,7 +54,7 @@ public class UndertowEventHandlerAdapterServiceConfigurator extends UndertowEven
     private final Duration statusInterval;
 
     private volatile Supplier<ContainerEventHandler> eventHandler;
-    private volatile Supplier<SuspendController> suspendController;
+    private volatile SupplierDependency<SuspendController> suspendController;
 
     private volatile SupplierDependency<UndertowService> service;
     private volatile SupplierDependency<UndertowListener> listener;
@@ -70,15 +70,15 @@ public class UndertowEventHandlerAdapterServiceConfigurator extends UndertowEven
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         this.service = new ServiceSupplierDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_UNDERTOW));
         this.listener = new ServiceSupplierDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_LISTENER, this.listenerName));
+        this.suspendController = new ServiceSupplierDependency<>(support.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER));
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
-        new CompositeDependency(this.service, this.listener).register(builder);
+        new CompositeDependency(this.service, this.listener, this.suspendController).register(builder);
         this.eventHandler = builder.requires(ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(proxyName));
-        this.suspendController = builder.requires(SuspendController.SERVICE_NAME);
         Service service = new UndertowEventHandlerAdapterService(this);
         return builder.setInstance(service);
     }

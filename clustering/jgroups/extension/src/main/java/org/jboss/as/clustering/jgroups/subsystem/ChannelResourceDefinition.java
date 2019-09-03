@@ -109,7 +109,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
                         ;
             }
         },
-        MODULE("module", ModelType.STRING) {
+        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode("org.wildfly.clustering.server"))
@@ -118,10 +118,10 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
             }
         },
         CLUSTER("cluster", ModelType.STRING),
-        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN) {
+        STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(false));
+                return builder.setDefaultValue(ModelNode.FALSE);
             }
         },
         ;

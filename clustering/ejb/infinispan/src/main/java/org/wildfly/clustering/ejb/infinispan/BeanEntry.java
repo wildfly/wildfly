@@ -30,11 +30,11 @@ import java.time.Instant;
  *
  * @param <G> the group identifier type
  */
-public interface BeanEntry<G> {
+public interface BeanEntry<G> extends ImmutableBeanEntry<G> {
 
-    G getGroupId();
-    String getBeanName();
-
-    Instant getLastAccessedTime();
+    /**
+     * Updates the last time this bean was accessed.
+     * @param time an instant in time
+     */
     void setLastAccessedTime(Instant time);
 }

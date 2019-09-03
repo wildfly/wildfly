@@ -21,17 +21,7 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
-import org.wildfly.clustering.web.cache.session.CompositeSessionMetaData;
-import org.wildfly.clustering.web.cache.session.SessionAccessMetaData;
-import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
-import org.wildfly.clustering.web.cache.session.SimpleSessionAccessMetaData;
-import org.wildfly.clustering.web.cache.session.SimpleSessionCreationMetaData;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
@@ -51,29 +41,11 @@ public class ScheduleSchedulerCommand implements Command<Void, Scheduler> {
 
     @Override
     public Void execute(Scheduler scheduler) {
-        scheduler.schedule(this.sessionId, this.metaData);
+        if (this.metaData != null) {
+            scheduler.schedule(this.sessionId, this.metaData);
+        } else {
+            scheduler.schedule(this.sessionId);
+        }
         return null;
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        Instant creationTime = this.metaData.getCreationTime();
-        Duration maxInactiveInterval = this.metaData.getMaxInactiveInterval();
-        Duration lastAccessedDuration = Duration.between(creationTime, this.metaData.getLastAccessedTime());
-        out.defaultWriteObject();
-        DefaultExternalizer.INSTANT.writeObject(out, creationTime);
-        DefaultExternalizer.DURATION.writeObject(out, maxInactiveInterval);
-        DefaultExternalizer.DURATION.writeObject(out, lastAccessedDuration);
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        Instant creationTime = DefaultExternalizer.INSTANT.cast(Instant.class).readObject(in);
-        Duration maxInactiveInterval = DefaultExternalizer.DURATION.cast(Duration.class).readObject(in);
-        Duration lastAccessedDuration = DefaultExternalizer.DURATION.cast(Duration.class).readObject(in);
-        SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData(creationTime);
-        creationMetaData.setMaxInactiveInterval(maxInactiveInterval);
-        SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
-        accessMetaData.setLastAccessedDuration(lastAccessedDuration);
-        this.metaData = new CompositeSessionMetaData(creationMetaData, accessMetaData);
     }
 }

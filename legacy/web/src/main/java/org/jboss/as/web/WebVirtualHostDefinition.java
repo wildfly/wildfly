@@ -63,7 +63,7 @@ public class WebVirtualHostDefinition extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.ENABLE_WELCOME_ROOT, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.ENABLE_WELCOME_ROOT)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     static final WebVirtualHostDefinition INSTANCE = new WebVirtualHostDefinition();
 

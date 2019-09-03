@@ -61,7 +61,7 @@ public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDe
                 return builder.setValidator(new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE).configure(builder).build());
             }
         },
-        L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(0L)) {
+        L1_LIFESPAN("l1-lifespan", ModelType.LONG, ModelNode.ZERO_LONG) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build())

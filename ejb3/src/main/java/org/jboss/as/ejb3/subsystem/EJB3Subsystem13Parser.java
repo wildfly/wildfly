@@ -144,7 +144,7 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        operation.get(EJB3SubsystemModel.EXECUTE_IN_WORKER).set(new ModelNode(false));
+        operation.get(EJB3SubsystemModel.EXECUTE_IN_WORKER).set(ModelNode.FALSE);
         operations.add(operation);
 
         // set the address for this operation

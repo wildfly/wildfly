@@ -115,11 +115,11 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
                            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
                            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
                            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
-        String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
+        String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.SERVLET_NAME, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName1, DEPLOYMENT_1);
         node2container.put(nodeName1, NODE_1);
         log.trace("URL1 nodename: " + nodeName1);
-        String nodeName2 = HttpRequest.get(baseURL2.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
+        String nodeName2 = HttpRequest.get(baseURL2.toString() + NodeInfoServlet.SERVLET_NAME, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName2, DEPLOYMENT_2);
         node2container.put(nodeName2, NODE_2);
         log.trace("URL2 nodename: " + nodeName2);

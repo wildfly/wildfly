@@ -1,0 +1,96 @@
+= Logging Filters
+:author:            James R. Perkins
+:email:             jperkins@redhat.com
+:idprefix:
+:idseparator:       -
+
+Filters are used to add fine grained control over a log message. A filter can be assigned to a logger or log handler.
+See the {oracle-javadoc}/java/util/logging/Filter.html[Filter] documentation for details on filters.
+
+== Filter
+
+The filter resource allows a custom filter to be used. The custom filter must reside in a module and implement the
+{oracle-javadoc}/java/util/logging/Filter.html[Filter] interface.
+
+It's generally suggested to add filters to a handler. By default loggers do no inherit filters. This means if a filter
+is placed on a logger named `org.jboss.as.logging` is only checked if the logger name is equal to `org.jboss.as.logging`.
+
+=== Examples
+
+.Adding a filter
+----
+/subsystem=logging/filter=myFilter:add(class=org.jboss.example.MyFilter, module=org.jboss.example, properties={matches="true"}, constructor-properties={pattern="*.WFLYLOG.*"))
+----
+
+.Nesting a filter
+----
+/subsystem=logging/console-handler=CONSOLE:write-attribute(name=filter-spec, value=not(myFilter))
+----
+
+[[filter-expressions]]
+== Filter Expressions
+
+[cols=",,,,",options="header"]
+|=======================================================================
+|Filter Type |Expression |Description |Parameter(s) |Examples
+
+|accept |accept |Accepts all log messages. |None |accept
+
+|deny |deny |Denies all log messages. |None |deny
+
+|not |not(filterExpression) |Accepts a filter as an argument and inverts
+the returned value. |The expression takes a single filter for it's
+argument. |not(match("JBAS"))
+
+|all |all(filterExpressions) |A filter consisting of several filters in
+a chain. If any filter find the log message to be unloggable, the
+message will not be logged and subsequent filters will not be checked.
+|The expression takes a comma delimited list of filters for it's
+argument. |all(match("JBAS"), match("WELD"))
+
+|any |any(filterExpressions) |A filter consisting of several filters in
+a chain. If any filter fins the log message to be loggable, the message
+will be logged and the subsequent filters will not be checked. |The
+expression takes a comma delimited list of filters for it's argument.
+|any(match("JBAS"), match("WELD"))
+
+|levelChange |levelChange(level) |A filter which modifies the log record
+with a new level. |The expression takes a single string based level for
+it's argument. |levelChange(WARN)
+
+|levels |levels(levels) |A filter which includes log messages with a
+level that is listed in the list of levels. |The expression takes a
+comma delimited list of string based levels for it's argument.
+|levels(DEBUG, INFO, WARN, ERROR)
+
+|levelRange |levelRange([minLevel,maxLevel]) |A filter which logs
+records that are within the level range. |The filter expression uses a
+"[" to indicate a minimum inclusive level and a "]" to indicate a
+maximum inclusive level. Otherwise use "(" or ")" respectively indicate
+exclusive. The first argument for the expression is the minimum level
+allowed, the second argument is the maximum level allowed. |minimum
+level must be less than ERROR and the maximum level must be greater than
+DEBUGlevelRange(ERROR, DEBUG) minimum level must be less than or equal
+to ERROR and the maximum level must be greater than
+DEBUGlevelRange[ERROR, DEBUG) minimum level must be less than or equal
+to ERROR and the maximum level must be greater or equal to
+INFOlevelRange[ERROR, INFO]
+
+|match |match("pattern") |A regular-expression based filter. The raw
+unformatted message is used against the pattern. |The expression takes a
+regular expression for it's argument. match("JBAS\d+") |
+
+|substitute |substitute("pattern", "replacement value") |A filter which
+replaces the first match to the pattern with the replacement value. |The
+first argument for the expression is the pattern the second argument is
+the replacement text. |substitute("JBAS", "EAP")
+
+|substituteAll |substituteAll("pattern", "replacement value") |A filter
+which replaces all matches of the pattern with the replacement value.
+|The first argument for the expression is the pattern the second
+argument is the replacement text. |substituteAll("JBAS", "EAP")
+
+|_filterName_ |myCustomFilter |A custom filter which is defined on a `filter` resource.
+|None |myCustomFilter +
+any(myFilter1, myFilter2, myFilter3)
+|=======================================================================

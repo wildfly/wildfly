@@ -22,6 +22,35 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DISTINCT_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SECURITY_DOMAIN;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_GRACEFUL_TXN_SHUTDOWN;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDENTITY;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LOG_SYSTEM_EXCEPTIONS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PROFILE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTING_EJB_RECEIVER;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTING_PROFILE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STATISTICS_ENABLED;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+
+import java.util.List;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.remoting.Attribute;
@@ -30,12 +59,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-
-import java.util.List;
-
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
 
 /**
  * The {@link XMLElementWriter} that handles the EJB subsystem. As we only write out the most recent version of
@@ -53,7 +76,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_5_0.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_6_0.getUriString(), false);
         writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();
@@ -284,6 +307,17 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX).asString());
             writer.writeEndElement();
         }
+
+        if (model.hasDefined(SERVER_INTERCEPTORS)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.SERVER_INTERCEPTORS.getLocalName());
+            for (final ModelNode interceptor : model.get(SERVER_INTERCEPTORS).asList()) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.INTERCEPTOR.getLocalName());
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.MODULE.getLocalName(), interceptor.get(EJB3SubsystemXMLAttribute.MODULE.getLocalName()).asString());
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.CLASS.getLocalName(), interceptor.get(EJB3SubsystemXMLAttribute.CLASS.getLocalName()).asString());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
     }
 
     private void writeIIOP(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
@@ -293,7 +327,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
 
     private void writeThreadPools(final XMLExtendedStreamWriter writer, final ModelNode threadPoolsModel) throws XMLStreamException {
         for (Property threadPool : threadPoolsModel.asPropertyList()) {
-            ThreadsParser.getInstance().writeUnboundedQueueThreadPool(writer, threadPool, EJB3SubsystemXMLElement.THREAD_POOL.getLocalName(), true);
+            ThreadsParser.getInstance().writeEnhancedQueueThreadPool(writer, threadPool, EJB3SubsystemXMLElement.THREAD_POOL.getLocalName(), true);
         }
     }
 

@@ -23,6 +23,7 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.GAUGE_METRIC;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
 
@@ -74,27 +75,32 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
 
     static final AttributeDefinition DURABLE_MESSAGE_COUNT = create(CommonAttributes.DURABLE_MESSAGE_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     static final AttributeDefinition NON_DURABLE_MESSAGE_COUNT = create(CommonAttributes.NON_DURABLE_MESSAGE_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     static final AttributeDefinition SUBSCRIPTION_COUNT = create(CommonAttributes.SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     static final AttributeDefinition DURABLE_SUBSCRIPTION_COUNT = create(CommonAttributes.DURABLE_SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     static final AttributeDefinition NON_DURABLE_SUBSCRIPTION_COUNT = create(CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     static final AttributeDefinition[] METRICS = { CommonAttributes.DELIVERING_COUNT,

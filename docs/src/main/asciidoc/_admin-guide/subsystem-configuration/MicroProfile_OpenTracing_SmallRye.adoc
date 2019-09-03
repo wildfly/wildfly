@@ -30,7 +30,7 @@ element to the xml or by using the following CLI operation:
 
 == Supported instrumentation libraries
 
-WildFly's MicroProfile OpenTracing subsystem implements MicroProfile 1.1, which includes support for tracing JAX-RS and
+WildFly's MicroProfile OpenTracing subsystem implements MicroProfile 1.3, which includes support for tracing JAX-RS and
 CDI.
 
 Additionally, applications being deployed are able to provide their own tracers via the

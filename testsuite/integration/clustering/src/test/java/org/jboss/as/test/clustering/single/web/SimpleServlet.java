@@ -46,6 +46,7 @@ public class SimpleServlet extends HttpServlet {
     public static final String VALUE_HEADER = "value";
     public static final String SESSION_ID_HEADER = "sessionId";
     public static final String ATTRIBUTE = "test";
+    public static final String HEADER_NODE_NAME = "nodename";
 
     public static URI createURI(URL baseURL) throws URISyntaxException {
         return createURI(baseURL.toURI());
@@ -69,19 +70,27 @@ public class SimpleServlet extends HttpServlet {
         resp.addHeader(SESSION_ID_HEADER, session.getId());
         Mutable custom = (Mutable) session.getAttribute(ATTRIBUTE);
         if (custom == null) {
+            if (!session.isNew()) throw new IllegalStateException();
             custom = new Mutable(1);
             session.setAttribute(ATTRIBUTE, custom);
         } else {
+            if (session.isNew()) throw new IllegalStateException();
             custom.increment();
         }
         resp.setIntHeader(VALUE_HEADER, custom.getValue());
         resp.setHeader(HEADER_SERIALIZED, Boolean.toString(custom.wasSerialized()));
 
+        try {
+            String nodeName = System.getProperty("jboss.node.name");
+            resp.setHeader(HEADER_NODE_NAME, nodeName);
+        } catch (Exception ignore) {
+        }
+
         this.getServletContext().log(req.getRequestURI() + ", value = " + custom.getValue());
 
         // Long running request?
         if (req.getParameter(REQUEST_DURATION_PARAM) != null) {
-            int duration = Integer.valueOf(req.getParameter(REQUEST_DURATION_PARAM));
+            int duration = Integer.parseInt(req.getParameter(REQUEST_DURATION_PARAM));
             try {
                 Thread.sleep(duration);
             } catch (InterruptedException e) {

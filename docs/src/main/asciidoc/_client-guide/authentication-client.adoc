@@ -80,6 +80,7 @@ The <protection-paramter-credentials /> element can contain one more more child 
     <key-store-reference>...</key-store-reference>
     <credential-store-reference store="..." alias="..." clear-text="..." />
     <clear-password password="..." />
+    <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
     <key-pair public-key-pem="..." private-key-pem="..." />
     <certificate private-key-pem="..." pem="..." />
     <public-key-pem>...</public-key-pem>
@@ -98,6 +99,7 @@ The overall structure of this element is: -
 ----
 <key-store-reference key-store-name="..." alias="...">
    <key-store-clear-password password="..." />
+   <key-store-masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
    <credential-store-reference store="..." alias="..." clear-text="..." />
    <key-store-credential>...</key-store-credential>
 </key-store-reference>
@@ -108,6 +110,8 @@ This structure is identical to the structure use in [<key-store-credential />|#k
  <credential-store-reference store="..." alias="..." clear-text="..." />:: Reference to a credential stored in a credential store.
 
  <clear-password password="..." />:: A password specified in the clear.
+
+ <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />:: A masked password.
 
  <key-pair public-key-pem="..." private-key-pem="..." />:: A public and private key pair.
 
@@ -125,7 +129,13 @@ The full structure of this element is: -
 ----
 <oauth2-bearer-token token-endpoint-uri="...">
     <client-credentials client-id="..." client-secret="..." />
+    <masked-client-credentials client-id="...">
+        <masked-client-secret algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+    </masked-client-credentials>
     <resource-owner-credentials name="..." password="..." />
+    <masked-resource-owner-credentials name="...">
+            <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+    </masked-resource-owner-credentials >
 </oauth2-bearer-token>
 ----
 
@@ -148,6 +158,7 @@ The <key-stores /> element can be used to define individual key-store definition
                <resource name="..." />
                <!-- One of the following to specify the protection parameter to unlock the KeyStore. -->
                <key-store-clear-password password="..." />
+               <key-store-masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
                <key-store-credential>...</key-store-credential>
             </key-store>
         </key-stores>
@@ -165,6 +176,7 @@ An individual <key-store /> definition must contain exactly one of the following
 Exactly one of the following elements must also be present to specify the protection parameter for initialisation of the KeyStore.
 
 <key-store-clear-password password="..." />:: A password specified in the clear.
+<key-store-masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />:: A masked password.
 <key-store-credential>...</key-store-credential>:: A reference to another KeyStore to obtain an Entry to use as the protection parameter to access this KeyStore.
 
 [[key-store-credential]]
@@ -174,6 +186,7 @@ The structure of the <key-store-credential /> element is:
 ----
 <key-store-credential key-store-name="..." alias="...">
    <key-store-clear-password password="..." />
+   <key-store-masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
    <credential-store-reference store="..." alias="..." clear-text="..." />
    <key-store-credential>...</key-store-credential>
 </key-store-credential>
@@ -187,6 +200,7 @@ This element contains two attributes: -
 Java KeyStores also make use of a protection parameter when accessing a single entry in addition to the protection parameter to load the KeyStore, exactly one of the following elements must be present to specify the protection parameter of the entry being loaded.
 
  <key-store-clear-password password="..." />:: A password specified in the clear.
+ <key-store-masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />:: A masked password.
  <credential-store-reference store="..." alias="..." clear-text="..." />:: Reference to a credential stored in a credential store.
  <key-store-credential>...</key-store-credential>:: A reference to another KeyStore to obtain an Entry to use as the protection parameter to access the alias.
 
@@ -335,6 +349,7 @@ The content of this element is the same as documented for [<protection-parameter
     <key-store-reference>...</key-store-reference>
     <credential-store-reference store="..." alias="..." clear-text="..." />
     <clear-password password="..." />
+    <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
     <key-pair public-key-pem="..." private-key-pem="..." />
     <certificate private-key-pem="..." pem="..." />
     <public-key-pem>...</public-key-pem>
@@ -396,6 +411,7 @@ The overall structure of this element is: -
 ----
 <key-store-ssl-certificate key-store-name="..." alias="..." provider-name="..." algorithm="...">
    <key-store-clear-password password="..." />
+   <key-store-masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
    <credential-store-reference store="..." alias="..." clear-text="..." />
    <key-store-credential>...</key-store-credential>
 </key-store-ssl-certificate>
@@ -491,3 +507,32 @@ Where no <provider /> configuration exists the default behaviour is the equivale
 ----
 
 This gives the WildFly Elytron Provider priority over any globally registered Providers but also allows for the globally registered providers to be used.
+
+[[MaskedPasswords]]
+== Masked Password Types
+The authentication client supports the following masked password types:
+[source,xml,options="nowrap"]
+----
+<masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+<key-store-masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+
+<!--In oauth2-bearer-token!-->
+<masked-resource-owner-credentials name="...">
+        <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+</masked-resource-owner-credentials >
+<masked-client-credentials client-id="...">
+    <masked-client-secret algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+</masked-client-credentials>
+
+----
+
+The following attributes are used to define the masked password:
+
+`algorithm`:: The algorithm that was used to encrypt the password. If this attribute is not specified, the default value is "masked-MD5-DES".
+A list of the supported algorithm types can be found in
+link:https://github.com/wildfly/wildfly/blob/master/docs/src/main/asciidoc/_elytron/Passwords.adoc#masked-password-types[Masked Password Type]
+`key-material`:: The initial key material that was used to encrypt the password. If this attribute is not specified, the default value is "somearbitrarycrazystringthatdoesnotmatter".
+`iteration-count`:: The iteration count that was used to encrypt the password. This attribute is required.
+`salt`:: The salt that was used to encrypt the password. This attribute is required.
+`masked-password`:: The base64 encrypted password (without the "MASK-" prefix). This attribute is required.
+`initialization-vector`:: The initialization vector that was used to encrypt the password. This attribute is optional.

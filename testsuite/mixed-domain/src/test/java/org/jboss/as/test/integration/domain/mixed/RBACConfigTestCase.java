@@ -95,7 +95,7 @@ public class RBACConfigTestCase {
     public void testAddRoleMapping() throws IOException {
         PathAddress address = RBAC_BASE.append(ROLE_MAPPING, "Operator");
         String attribute = INCLUDE_ALL;
-        ModelNode value = new ModelNode(true);
+        ModelNode value = ModelNode.TRUE;
         ModelNode addOp = Util.createAddOperation(address);
         addOp.get(attribute).set(value);
 
@@ -132,7 +132,7 @@ public class RBACConfigTestCase {
         PathAddress mapping = RBAC_BASE.append(CONSTRAINT, SENSITIVITY_CLASSIFICATION)
                 .append(TYPE, CORE)
                 .append(CLASSIFICATION, "socket-config");
-        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true), true);
+        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, ModelNode.TRUE, true);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class RBACConfigTestCase {
         PathAddress mapping = RBAC_BASE.append(CONSTRAINT, SENSITIVITY_CLASSIFICATION)
                 .append(TYPE, CORE)
                 .append(CLASSIFICATION, "server-ssl");
-        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true), getSupportsServerSSL());
+        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, ModelNode.TRUE, getSupportsServerSSL());
     }
 
     @Test
@@ -150,14 +150,14 @@ public class RBACConfigTestCase {
         PathAddress mapping = RBAC_BASE.append(CONSTRAINT, APPLICATION_CLASSIFICATION)
                 .append(TYPE, CORE)
                 .append(CLASSIFICATION, "deployment");
-        modifyTest(mapping, CONFIGURED_APPLICATION, new ModelNode(true), true);
+        modifyTest(mapping, CONFIGURED_APPLICATION, ModelNode.TRUE, true);
     }
 
     @Test
     public void testModifySensitiveExpressionsConstraint() throws IOException {
 
         PathAddress mapping = RBAC_BASE.append(CONSTRAINT, VAULT_EXPRESSION);
-        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true), true);
+        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, ModelNode.TRUE, true);
     }
 
     /** Override this to return false in subclasses that test EAP < 6.4.7 */

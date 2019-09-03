@@ -61,7 +61,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
 
     protected static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -160,13 +160,11 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
 
     private final PathElement legacyPath;
     private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceHandler handler;
 
-    protected StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
+    protected StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
         super(path, resolver);
         this.legacyPath = legacyPath;
         this.configurator = configurator;
-        this.handler = new SimpleResourceServiceHandler(serviceConfiguratorFactory);
     }
 
     @SuppressWarnings("deprecation")
@@ -182,7 +180,8 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
-        new SimpleResourceRegistration(descriptor, this.handler).register(registration);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new StoreMetricExecutor(), StoreMetric.class).register(registration);

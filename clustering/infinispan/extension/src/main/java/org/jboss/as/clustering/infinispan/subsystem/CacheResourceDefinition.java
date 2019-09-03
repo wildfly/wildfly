@@ -47,6 +47,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -89,16 +90,16 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        MODULE("module", ModelType.STRING) {
+        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
             }
         },
-        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN) {
+        STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(false));
+                return builder.setDefaultValue(ModelNode.FALSE);
             }
         },
         ;
@@ -119,7 +120,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         BATCHING("batching", ModelType.BOOLEAN, InfinispanModel.VERSION_3_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(false));
+                return builder.setDefaultValue(ModelNode.FALSE);
             }
         },
         INDEXING("indexing", ModelType.STRING, InfinispanModel.VERSION_4_0_0) {

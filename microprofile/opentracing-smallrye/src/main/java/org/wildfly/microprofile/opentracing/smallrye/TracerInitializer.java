@@ -67,17 +67,17 @@ public class TracerInitializer implements ServletContextListener {
 
         TracingLogger.ROOT_LOGGER.registeringTracer(tracer.getClass().getName());
         sce.getServletContext().setAttribute(SMALLRYE_OPENTRACING_TRACER, tracer);
-        addJaxRsIntegration(sce.getServletContext(), tracer);
+        addJaxRsIntegration(sce.getServletContext());
 
         TracingLogger.ROOT_LOGGER.initializing(tracer.toString());
     }
 
-    private void addJaxRsIntegration(ServletContext servletContext, Tracer tracer) {
+    private void addJaxRsIntegration(ServletContext servletContext) {
         servletContext.setInitParameter("resteasy.providers", TracerDynamicFeature.class.getName());
         FilterRegistration.Dynamic filterRegistration = servletContext.addFilter(SpanFinishingFilter.class.getName(),
-                new SpanFinishingFilter(tracer));
+                new SpanFinishingFilter());
         filterRegistration.setAsyncSupported(true);
-        filterRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "*");
+        filterRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "*");
     }
 
     @Override

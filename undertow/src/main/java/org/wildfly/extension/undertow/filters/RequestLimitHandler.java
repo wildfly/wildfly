@@ -52,7 +52,7 @@ public class RequestLimitHandler extends Filter {
             .setValidator(new IntRangeValidator(0, true, true))
             .setAllowExpression(true)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setRestartAllServices()
             .build();
 

@@ -365,4 +365,14 @@ public class CalendarTimer extends TimerImpl {
         // no match found
         return null;
     }
+
+    /**
+     * {@inheritDoc}. For calendar-based timer, the string output also includes its schedule expression value.
+     *
+     * @return a string representation of calendar-based timer
+     */
+    @Override
+    public String toString() {
+        return super.toString() + " " + getScheduleExpression();
+    }
 }

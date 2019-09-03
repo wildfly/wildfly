@@ -46,4 +46,15 @@ public interface UnaryServiceNameFactory {
      * @return a {@link ServiceName}
      */
     ServiceName getServiceName(CapabilityServiceSupport support, String name);
+
+    /**
+     * Creates a {@link ServiceName} appropriate for the address of the specified {@link OperationContext}
+     * @param context an operation context
+     * @param resolver a capability name resolver
+     * @return a {@link ServiceName}
+     */
+    default ServiceName getServiceName(OperationContext context, UnaryCapabilityNameResolver resolver) {
+        String[] parts = resolver.apply(context.getCurrentAddress());
+        return this.getServiceName(context, parts[0]);
+    }
 }

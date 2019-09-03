@@ -246,7 +246,7 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
                 // The attribute won't be defined in the :write-attribute(name=<attribute name>,.. boot operation so don't reject in that case
                 return false;
             }
-            return !attribute.equals(new ModelNode(true));
+            return !attribute.equals(ModelNode.TRUE);
         }
 
         @Override
@@ -256,7 +256,7 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
 
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return new ModelNode(true);
+            return ModelNode.TRUE;
         }
     }
 }

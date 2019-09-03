@@ -298,7 +298,7 @@ public class Constants {
 
 
     static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -307,14 +307,14 @@ public class Constants {
     static final SimpleAttributeDefinition WM_SECURITY = new SimpleAttributeDefinitionBuilder(WM_SECURITY_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_MAPPING_REQUIRED = new SimpleAttributeDefinitionBuilder(WM_SECURITY_MAPPING_REQUIRED_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setXmlName(WorkManagerSecurity.Tag.MAPPING_REQUIRED.getLocalName())
             .setRestartAllServices()
             .build();
@@ -524,7 +524,7 @@ public class Constants {
 
     static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setXmlName(ConnectionDefinition.Attribute.ENLISTMENT_TRACE.getLocalName())
             .build();
@@ -642,7 +642,7 @@ public class Constants {
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinitionBuilder(NO_RECOVERY_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Recovery.Attribute.NO_RECOVERY.getLocalName())
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -681,47 +681,47 @@ public class Constants {
 
     static SimpleAttributeDefinition WORK_ACTIVE = new SimpleAttributeDefinitionBuilder(WORK_ACTIVE_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static SimpleAttributeDefinition WORK_SUCCESSFUL = new SimpleAttributeDefinitionBuilder(WORK_SUCEESSFUL_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static SimpleAttributeDefinition WORK_FAILED = new SimpleAttributeDefinitionBuilder(WORK_FAILED_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static SimpleAttributeDefinition DO_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(DO_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static SimpleAttributeDefinition DO_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(DO_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static SimpleAttributeDefinition SCHEDULED_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(SCHEDULED_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static SimpleAttributeDefinition SCHEDULED_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(SCHEDULED_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static SimpleAttributeDefinition START_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(START_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static SimpleAttributeDefinition START_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(START_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
 

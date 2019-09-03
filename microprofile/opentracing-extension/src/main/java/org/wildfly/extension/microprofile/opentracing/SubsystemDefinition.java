@@ -49,11 +49,13 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
             "io.opentracing.opentracing-api",
             "io.opentracing.opentracing-util",
             "org.eclipse.microprofile.opentracing",
+            "org.eclipse.microprofile.restclient"
     };
 
     static final String[] EXPORTED_MODULES = {
             "io.smallrye.opentracing",
             "org.wildfly.microprofile.opentracing-smallrye",
+            "io.opentracing.contrib.opentracing-interceptors",
     };
     protected SubsystemDefinition() {
         super( new SimpleResourceDefinition.Parameters(SubsystemExtension.SUBSYSTEM_PATH, SubsystemExtension.getResourceDescriptionResolver(SubsystemExtension.SUBSYSTEM_NAME))

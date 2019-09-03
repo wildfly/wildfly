@@ -85,7 +85,16 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
                 for (Property property : model.get(attribute.getName()).asPropertyList()) {
                     writer.writeStartElement(Element.PROPERTY.getLocalName());
                     writer.writeAttribute(Element.NAME.getLocalName(), property.getName());
-                    writer.writeCharacters(property.getValue().asString());
+                    // TODO if WFCORE-4625 goes in, use the util method.
+                    String content = property.getValue().asString();
+                    if (content.indexOf('\n') > -1) {
+                        // Multiline content. Use the overloaded variant that staxmapper will format
+                        writer.writeCharacters(content);
+                    } else {
+                        // Staxmapper will just output the chars without adding newlines if this is used
+                        char[] chars = content.toCharArray();
+                        writer.writeCharacters(chars, 0, chars.length);
+                    }
                     writer.writeEndElement();
                 }
             }

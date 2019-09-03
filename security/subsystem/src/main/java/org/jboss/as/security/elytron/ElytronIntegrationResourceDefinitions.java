@@ -75,7 +75,7 @@ public class ElytronIntegrationResourceDefinitions {
     public static final SimpleAttributeDefinition APPLY_ROLE_MAPPERS =
             new SimpleAttributeDefinitionBuilder(Constants.APPLY_ROLE_MAPPERS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .setAllowExpression(true)
                     .build();
 

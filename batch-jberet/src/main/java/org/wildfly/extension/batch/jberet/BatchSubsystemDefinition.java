@@ -35,7 +35,6 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -43,7 +42,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -67,7 +65,6 @@ import org.wildfly.extension.batch.jberet.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
-import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 import org.wildfly.security.auth.server.SecurityDomain;
 
 public class BatchSubsystemDefinition extends SimpleResourceDefinition {
@@ -97,7 +94,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition RESTART_JOBS_ON_RESUME = SimpleAttributeDefinitionBuilder.create("restart-jobs-on-resume", ModelType.BOOLEAN, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAttributeParser(AttributeParsers.VALUE)
             .setAttributeMarshaller(AttributeMarshallers.VALUE)
             .build();
@@ -182,7 +179,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
-            final boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
+            final boolean rcPresent = context.hasOptionalCapability("org.wildfly.request-controller", null, null);
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {

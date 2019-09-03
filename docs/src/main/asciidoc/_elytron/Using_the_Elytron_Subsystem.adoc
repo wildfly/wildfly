@@ -413,6 +413,114 @@ truststore configured in _ksRealm_.
 *IMPORTANT:* The decoded principal * *MUST** must be the _alias_ value
 you set in your server's truststore for the client's certificate.
 
+[[configure-an-evidence-decoder.]]
+==== Configure an evidence-decoder
+
+By default, the principal associated with a certificate will be the subject name
+from the certificate. This subject name will then be rewritten using any configured
+principal decoders and principal transformers to obtain the name that should be used
+when locating and loading the identity from the underlying identity store.
+
+To specify that a subject alternative name from a certificate should be used as the
+principal associated with that certificate, an `x509-subject-alt-name-evidence-decoder`
+needs to be configured. This element has two attributes:
+
+** `alt-name-type` - The subject alternative name type to decode. This attribute is
+required. Must be one of the subject alternative name types that can be represented
+as a `String`:
+*** `rfc822Name`
+*** `dNSName`
+*** `uniformResourceIdentifier`
+*** `iPAddress`
+*** `registeredID`
+*** `directoryName`
+
+** `segment` - The 0-based occurrence of the subject alternative name to map. This
+attribute is optional and only used when there is more than one subject alternative
+name of the given `alt-name-type`. The default value is `0`.
+
+For example, consider the following X.509 v3 Subject Alternative Name extension from
+the first certificate in an X.509 certificate chain:
+
+[source,xml]
+----
+X509v3 Subject Alternative Name:
+DNS:one.example.org, IP Address:127.0.0.1
+----
+
+To associate the certificate chain evidence with the principal "one.example.org", the
+following `x509-subject-alt-name-evidence-decoder` could be configured:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/x509-subject-alt-name-evidence-decoder=exampleDnsDecoder:add(alt-name-type=dNSName)
+----
+
+Next, consider the following X.509 v3 Subject Alternative Name extension from the first
+certificate in an X.509 certificate chain:
+
+[source,xml]
+----
+X509v3 Subject Alternative Name:
+DNS:one.example.org, DNS:two.example.org, IP Address:127.0.0.1
+----
+
+To associate the evidence with the principal "two.example.org", the following
+`x509-subject-alt-name-evidence-decoder` could be configured:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/x509-subject-alt-name-evidence-decoder=anotherDnsDecoder:add(alt-name-type=dNSName, segment=1)
+----
+
+It is also possible to configure an `x500-subject-evidence-decoder`. This evidence decoder
+will extract the subject from the first certificate in the certificate chain, as an `X500Principal`.
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/x500-subject-evidence-decoder=exampleSubjectDecoder:add()
+----
+
+To make use of a custom `org.wildfly.security.auth.server.EvidenceDecoder` implementation, a
+`custom-evidence-decoder` can be configured. The custom implementation class needs to first be
+packaged in a JAR. A module can then be added to WildFly that contains this JAR. See
+<<Custom_Components#, Custom Components>> for more information on how to add a custom Elytron
+component to WildFly.
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/custom-evidence-decoder=myCustomEvidenceDecoder:add(module=org.wildfly.security.examples, class-name=org.wildfly.security.examples.MyCustomEvidenceDecoder)
+----
+
+Finally, it is also possible to configure an `aggregate-evidence-decoder`. This consists of
+two or more `evidence-decoder` elements where each element is reference to a configured
+evidence decoder. Given evidence, these evidence decoders will be attempted in order until
+one returns a non-null principal or until there are no more evidence decoders left to try.
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/x509-subject-alt-name-evidence-decoder=emailDecoder:add(alt-name-type=rfc822Name)
+/subsystem=elytron/x509-subject-alt-name-evidence-decoder=dnsDecoder:add(alt-name-type=dNSName)
+/subsystem=elytron/x500-subject-evidence-decoder=subjectDecoder:add()
+/subsystem=elytron/aggregate-evidence-decoder=aggregateDecoder:add(evidence-decoders=[emailDecoder,subjectDecoder,dnsDecoder])
+----
+
+Once an `evidence-decoder` has been configured, it can be referenced from a `security-domain`:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/security-domain=exampleCertSD:add(..., evidence-decoder=aggregateDecoder)
+----
+
+If no `evidence-decoder` is specified for a `security-domain`, then the principal associated with the evidence will
+just be the default principal for the evidence type, i.e., for an X.509 certificate chain, this would continue to
+default to the subject from the first certificate in the certificate chain.
+
 [[add-a-constant-role-mapper-for-assigning-roles.]]
 ==== Add a constant-role-mapper for assigning roles.
 
@@ -1336,6 +1444,91 @@ trusted certificate into the browser's truststore.
 
 Two-Way HTTPS is now enabled for applications.
 
+
+[[configure-certificate-revocation-in-trust-manager]]
+=== Configure certificate revocation in trust-manager
+
+
+[[configure-certificate-revocation-list]]
+==== Configure Certificate Revocation List:
+
+You can configure your trust-manager to use certificate-revocation-list (CRL) to check revocation status of obtained certificates.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=certificate-revocation-list, value={})
+----
+
+This will use CRLs obtained from distribution points referenced in your certificates.
+
+*NOTE:* To use a CRL your trust store must contain the certificate chain in order to check validity of both CRL list.
+
+[[override-crl-location-obtained-from-certificates]]
+===== Override CRL location obtained from certificates:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=certificate-revocation-list.path, value=intermediate.crl.pem)
+----
+
+[[configure-ocsp-certificate-revocation]]
+==== Configure OCSP certificate revocation:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=ocsp, value={})
+----
+
+This will enable OCSP certificate revocation by using OCSP responder inside the certificate. In case the responder is known but OCSP revocation status is unknown, the verification will fail.
+
+[[override-ocsp-responder-uri-extracted-from-certificate]]
+===== Override OCSP responder URI extracted from certificate:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=ocsp.responder, value="http://example.com/ocsp-responder")
+----
+
+[[configure-order-of-certificate-revocation-mechanisms]]
+==== Configure order of revocation mechanisms:
+
+If both CRL and OCSP are defined, Elytron will use OCSP for obtaining revocation status as first by default. In case you want to prefer CRL:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=ocsp.prefer-crls, value="true")
+----
+
+[[other-trust-manager-configuration]]
+==== Other trust-manager configuration:
+
+[[configure-trust-manager-to-only-check-leaf-certificates-for-revocation-status]]
+===== Configure trust-manager to only check leaf certificates for revocation status
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=only-leaf-cert, value="true")
+----
+
+[[configure-trust-manager-to-accept-certificates-with-unknown-revocation-status]]
+===== Configure trust-manager to accept certificates with unknown revocation status
+In case you want to accept certificates with unknown revocation status, you can enable soft-fail behaviour in your trust-manager.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=soft-fail, value=true)
+----
+
+[[set-maximum-number-of-intermediate-certificates-of-trust-manager]]
+===== Set maximum number of intermediate certificates of trust-manager
+
+Sets the value of the maximum number of non-self-issued intermediate certificates that may exist in a certification path with default value of 5.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=maximum-cert-path, value=10)
+----
+
 [[enable-one-way-ssltls-for-the-management-interfaces]]
 === Enable One-way SSL/TLS for the Management Interfaces
 
@@ -1698,6 +1891,13 @@ a Let's Encrypt account using the following commands.
 /subsystem=elytron/certificate-authority-account=myLEAccount:add(alias=example,key-store=accountsKS,contact-urls=[mailto:admin@example.org])
 ----
 
+*Note:* Let's Encrypt is the default certificate authority and therefore the `certificate-authority` attribute can be omitted when creating a `certificate-authority-account`.
+It is also possible to configure an account with different certificate authority than Let's Encrypt by adding custom `certificate-authority` resource and passing it to `certificate-authority-account`.
+[source,options="nowrap"]
+----
+/subsystem=elytron/certificate-authority=myCA:add(url="https://my.example.url/acme/directory", staging-url="https://my.example.staging.url/acme/directory")
+/subsystem=elytron/certificate-authority-account=myCAAccount:add(certificate-authority=myCA,alias=example,key-store=accountsKS,contact-urls=[mailto:admin@example.org])
+----
 [[obtain-signed-certificate]]
 ===== Obtain a signed certificate from Let's Encrypt
 
@@ -2008,6 +2208,81 @@ use custom implementations of the following components:
 
 When creating custom implementations of Elytron components, they must
 present the appropriate capabilities and requirements.
+
+=== Configuring a server SSLContext
+
+Using the Elytron subsystem, it is possible to configure an `SSLContext` for use on the server side of a connection.
+
+Adding a server `SSLContext` takes the general form:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/server-ssl-context=test-server-ssl-context:add(...)
+----
+
+The following attributes can be specified when creating a `server-ssl-context`:
+
+security-domain:: _(Optional)_ A reference to the `security-domain` to use for authentication during SSL session
+establishment.
+key-manager:: _(Optional)_ A reference to the `KeyManager` to be used by this `SSLContext`.
+trust-manager:: _(Optional)_ A reference to the `TrustManager` to be used by this `SSLContext`.
+cipher-suite-filter:: _(Optional)_ The filter to be applied to the cipher suites for TLSv1.2 and below made available
+by this SSLContext. The format of this attribute is described in detail in
+http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
+excludes any cipher suites that have no authentication.
+protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`.
+want-client-auth:: _(Optional)_ To request (but not to require) a client certificate on SSL handshake. If a
+`security-domain` is configured and supports X509 evidence, this will be set to `true` automatically. Ignored when
+`need-client-auth` is set. The default value is `false`.
+need-client-auth:: _(Optional)_ If `true`, a client certificate is required on SSL handshake. A connection without a
+trusted client certificate will be rejected. The default value is `false`.
+authentication-optional:: _(Optional)_ Rejection of the client certificate by the configured `security-domain` will not
+prevent the connection. This allows a fall through to use other authentication mechanisms (like form login) when the
+client certificate is rejected by the
+`security-domain`. This has an effect only when the `security-domain` is configured. The default value is `false`.
+use-cipher-suites-order:: _(Optional)_ If `true`, the cipher suites order defined on the server will be used. If `false`,
+the cipher suites order presented by the client will be used. The default value is `true`.
+provider-name:: _(Optional)_ The name of the provider to use. If not specified, all providers from `providers` will be
+passed to the `SSLContext`.
+providers:: _(Optional)_ The name of the providers to obtain the `Provider[]` to use to load the `SSLContext`.
+maximum-session-cache-size:: _(Optional)_ The maximum number of SSL sessions to be cached. The default value `-1`
+indicates that the JVM default value should be used. A value of `0` means there is no limit.
+session-timeout:: _(Optional)_ The timeout for SSL sessions. The default value `-1` indicates that the JVM default value
+should be used. A value of `0` means there is no limit.
+wrap:: _(Optional)_ If `true`, the returned `SSLEngine`, `SSLSocket`, and `SSLServerSocket` instances will be wrapped to
+protect against further modification. The default value is `false`.
+pre-realm-principal-transformer:: _(Optional)_ A principal transformer to apply before the realm is selected.
+post-realm-principal-transformer:: _(Optional)_ A principal transformer to apply after the realm is selected.
+final-principal-transformer:: _(Optional)_ A final principal transformer to apply for this mechanism realm.
+realm-mapper:: _(Optional)_ The realm mapper to be used for SSL authentication.
+
+
+=== Configuring a client SSLContext
+
+Using the Elytron subsystem, it is possible to configure an `SSLContext` for use on the client side of a connection.
+
+Adding a client `SSLContext` takes the general form:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/client-ssl-context=test-client-ssl-context:add(...)
+----
+
+The following attributes can be specified when creating a `client-ssl-context`:
+
+key-manager:: _(Optional)_ A reference to the `KeyManager` to be used by this `SSLContext`.
+trust-manager:: _(Optional)_ A reference to the `TrustManager` to be used by this `SSLContext`.
+cipher-suite-filter:: _(Optional)_ The filter to be applied to the cipher suites for TLSv1.2 and below made available
+by this SSLContext. The format of this attribute is described in detail in
+http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
+excludes any cipher suites that have no authentication.
+protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`.
+provider-name:: _(Optional)_ The name of the provider to use. If not specified, all providers from `providers` will be
+passed to the `SSLContext`.
+providers:: _(Optional)_ The name of the providers to obtain the `Provider[]` to use to load the `SSLContext`.
+
 
 === Default SSLContext
 

@@ -39,6 +39,7 @@ import org.wildfly.clustering.web.cache.routing.LocalRouteLocatorServiceConfigur
 import org.wildfly.clustering.web.cache.routing.NullRouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementProvider;
 import org.wildfly.clustering.web.infinispan.routing.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementProvider;
 import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
@@ -62,9 +63,11 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     private static final String NO_AFFINITY = "no-affinity";
     private static final String LOCAL_AFFINITY = "local-affinity";
     private static final String PRIMARY_OWNER_AFFINITY = "primary-owner-affinity";
+    private static final String RANKED_AFFINITY = "ranked-affinity";
+    private static final String DELIMITER = "delimiter";
+    private static final String MAX_ROUTES = "max-routes";
     private static final String IMMUTABLE_CLASS = "immutable-class";
 
-    @SuppressWarnings("unused")
     private final DistributableWebDeploymentSchema schema;
 
     public DistributableWebDeploymentXMLReader(DistributableWebDeploymentSchema schema) {
@@ -192,7 +195,6 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
         return affinityFactory;
     }
 
-    @SuppressWarnings("static-method")
     private RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> readInfinispanAffinity(XMLExtendedStreamReader reader) throws XMLStreamException {
         if (!reader.hasNext() || reader.nextTag() == XMLStreamConstants.END_ELEMENT) {
             throw ParseUtils.missingRequiredElement(reader, new TreeSet<>(Arrays.asList(NO_AFFINITY, LOCAL_AFFINITY, PRIMARY_OWNER_AFFINITY)));
@@ -201,6 +203,30 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
             case PRIMARY_OWNER_AFFINITY: {
                 ParseUtils.requireNoContent(reader);
                 return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory();
+            }
+            case RANKED_AFFINITY: {
+                if (this.schema.since(DistributableWebDeploymentSchema.VERSION_2_0)) {
+                    MutableRankedRoutingConfiguration config = new MutableRankedRoutingConfiguration();
+                    for (int i = 0; i < reader.getAttributeCount(); ++i) {
+                        String value = reader.getAttributeValue(i);
+
+                        switch (reader.getAttributeLocalName(i)) {
+                            case DELIMITER: {
+                                config.setDelimiter(value);
+                                break;
+                            }
+                            case MAX_ROUTES: {
+                                config.setMaxRoutes(Integer.parseInt(value));
+                                break;
+                            }
+                            default: {
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                        }
+                    }
+                    ParseUtils.requireNoContent(reader);
+                    return new RankedRouteLocatorServiceConfiguratorFactory(config);
+                }
             }
             default: {
                 return this.readAffinity(reader);

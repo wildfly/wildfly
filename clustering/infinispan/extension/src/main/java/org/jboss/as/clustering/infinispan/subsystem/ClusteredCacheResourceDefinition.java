@@ -83,7 +83,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, new ModelNode(false), InfinispanModel.VERSION_4_0_0),
+        ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, ModelNode.FALSE, InfinispanModel.VERSION_4_0_0),
         MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), InfinispanModel.VERSION_6_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -91,7 +91,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             }
         },
         QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L), InfinispanModel.VERSION_4_1_0),
-        QUEUE_SIZE("queue-size", ModelType.INT, new ModelNode(0), InfinispanModel.VERSION_4_1_0),
+        QUEUE_SIZE("queue-size", ModelType.INT, ModelNode.ZERO, InfinispanModel.VERSION_4_1_0),
         ;
         private final AttributeDefinition definition;
 

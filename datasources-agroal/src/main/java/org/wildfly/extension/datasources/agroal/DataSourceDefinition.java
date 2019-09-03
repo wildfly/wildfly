@@ -45,14 +45,14 @@ class DataSourceDefinition extends AbstractDataSourceDefinition {
 
     static final SimpleAttributeDefinition JTA_ATTRIBUTE = create("jta", ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition CONNECTABLE_ATTRIBUTE = create("connectable", ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setRestartAllServices()
             .build();

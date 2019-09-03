@@ -16,14 +16,14 @@
 
 package org.wildfly.test.integration.microprofile.metrics.metadata.resources;
 
-import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
-
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
+
+import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
 
 @Path("/counter")
 public class MicroProfileMetricsCounterResource {
@@ -34,10 +34,10 @@ public class MicroProfileMetricsCounterResource {
    @GET
    @Path("/hello")
    public Response hello() {
-      Metadata counterMetadata = new Metadata("helloCounter", MetricType.COUNTER);
-
-      // TODO: Remove following line once https://github.com/smallrye/smallrye-metrics/issues/43 is fixed
-      counterMetadata.setReusable(true); // workaround
+      Metadata counterMetadata = Metadata.builder()
+              .withName("helloCounter")
+              .withType(MetricType.COUNTER)
+              .build();
 
       registry.counter(counterMetadata).inc();
       return Response.ok("Hello World!").build();

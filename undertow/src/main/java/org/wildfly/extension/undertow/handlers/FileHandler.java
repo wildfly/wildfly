@@ -71,14 +71,14 @@ public class FileHandler extends Handler {
     public static final AttributeDefinition DIRECTORY_LISTING = new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY_LISTING, ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition FOLLOW_SYMLINK = new SimpleAttributeDefinitionBuilder("follow-symlink", ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -91,7 +91,7 @@ public class FileHandler extends Handler {
     public static final AttributeDefinition CASE_SENSITIVE = new SimpleAttributeDefinitionBuilder("case-sensitive", ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 

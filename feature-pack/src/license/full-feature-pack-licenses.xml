@@ -555,6 +555,17 @@
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-interceptors</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jaxrs2</artifactId>
       <licenses>
         <license>
@@ -610,7 +621,18 @@
     </dependency>
     <dependency>
       <groupId>io.smallrye</groupId>
-      <artifactId>smallrye-health</artifactId>
+      <artifactId>smallrye-health-2.0</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye</groupId>
+      <artifactId>smallrye-metrics-2.0</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -637,6 +659,22 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.security.enterprise</groupId>
+      <artifactId>jakarta.security.enterprise-api</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -669,22 +707,6 @@
         <license>
           <name>Eclipse Distribution License, Version 1.0</name>
           <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>javax.security.enterprise</groupId>
-      <artifactId>javax.security.enterprise-api</artifactId>
-      <licenses>
-        <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>https://javaee.github.io/glassfish/LICENSE</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1917,7 +1939,7 @@
     </dependency>
     <dependency>
       <groupId>org.glassfish.soteria</groupId>
-      <artifactId>javax.security.enterprise</artifactId>
+      <artifactId>jakarta.security.enterprise</artifactId>
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.1</name>
@@ -3768,17 +3790,6 @@
           <url>https://javaee.github.io/glassfish/LICENSE</url>
           <distribution>repo</distribution>
         </license>
-        <license>
-          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.spec.javax.rmi</groupId>
-      <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-      <licenses>
         <license>
           <name>GNU General Public License, Version 2 with the Classpath Exception</name>
           <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>

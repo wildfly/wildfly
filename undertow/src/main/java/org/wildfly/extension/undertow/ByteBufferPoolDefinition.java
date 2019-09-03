@@ -90,7 +90,7 @@ public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .setValidator(new IntRangeValidator(0, true, true))
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .build();
 
     private static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(BUFFER_SIZE, MAX_POOL_SIZE, DIRECT, THREAD_LOCAL_CACHE_SIZE, LEAK_DETECTION_PERCENT);

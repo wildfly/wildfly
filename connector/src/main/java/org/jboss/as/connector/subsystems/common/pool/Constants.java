@@ -208,7 +208,7 @@ public class Constants {
             .build();
 
     public static final SimpleAttributeDefinition POOL_FAIR = new SimpleAttributeDefinitionBuilder(POOL_FAIR_NAME, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .setXmlName(Pool.Tag.FAIR.getLocalName())
             .build();

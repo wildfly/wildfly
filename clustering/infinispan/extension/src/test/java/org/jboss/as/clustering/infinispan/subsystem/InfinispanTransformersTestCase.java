@@ -35,6 +35,12 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteTransactionResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.clustering.subsystem.RejectedValueConfig;
 import org.jboss.as.controller.ModelVersion;
@@ -132,8 +138,9 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         return new InfinispanSubsystemInitialization()
                 .require(CommonRequirement.PATH_MANAGER)
                 .require(CommonUnaryRequirement.PATH, ServerEnvironment.SERVER_TEMP_DIR)
-                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
+                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2", "jdg1", "jdg2", "jdg3", "jdg4", "jdg5", "jdg6")
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
+                .require(CommonUnaryRequirement.SSL_CONTEXT, "hotrod-elytron")
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
                 .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
                 .require(CommonRequirement.LOCAL_TRANSACTION_PROVIDER)
@@ -159,10 +166,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testTransformerEAP720() throws Exception {
         testTransformation(ModelTestControllerVersion.EAP_7_2_0);
-    }
-
-    private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
-        return this.buildKernelServices(this.getSubsystemXml(), controllerVersion, version, mavenResourceURLs);
     }
 
     private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
@@ -369,8 +372,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer-reject.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(services, version, xmlOps, createFailedOperationConfig(version));
+        List<ModelNode> operations = builder.parseXmlResource("infinispan-transformer-reject.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(services, version, operations, createFailedOperationConfig(version));
     }
 
     @SuppressWarnings("deprecation")
@@ -379,9 +382,24 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH);
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
+        PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
+
+        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()));
+
+            if (!InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+                PathAddress storeAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH, MixedKeyedJDBCStoreResourceDefinition.PATH);
+                config.addFailedAttribute(storeAddress.append(BinaryTableResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+                config.addFailedAttribute(storeAddress.append(StringTableResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            }
+        }
 
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH, StateTransferResourceDefinition.PATH), new RejectedValueConfig(StateTransferResourceDefinition.Attribute.TIMEOUT, value -> value.asLong() <= 0));
+            config.addFailedAttribute(remoteContainerAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            for (PathElement path : Arrays.asList(ThreadPoolResourceDefinition.CLIENT.getPathElement(), ConnectionPoolResourceDefinition.PATH, InvalidationNearCacheResourceDefinition.PATH, RemoteClusterResourceDefinition.WILDCARD_PATH, RemoteTransactionResourceDefinition.PATH, SecurityResourceDefinition.PATH) ) {
+                config.addFailedAttribute(remoteContainerAddress.append(path), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            }
 
             PathAddress cacheAddress = containerAddress.append(ScatteredCacheResourceDefinition.WILDCARD_PATH);
             config.addFailedAttribute(cacheAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);

@@ -127,6 +127,8 @@ public class OperationsTestCase extends OperationTestCaseBase {
         stringKeyedTable.get(StringTableResourceDefinition.Attribute.PREFIX.getName()).set("ispn_bucket");
         stringKeyedTable.get(TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE.getName()).set(100);
         stringKeyedTable.get(TableResourceDefinition.Attribute.FETCH_SIZE.getName()).set(100);
+        stringKeyedTable.get(TableResourceDefinition.Attribute.CREATE_ON_START.getName()).set(false);
+        stringKeyedTable.get(TableResourceDefinition.Attribute.DROP_ON_STOP.getName()).set(true);
 
         ModelNode idColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.ID.getName()).setEmptyObject();
         idColumn.get(TableResourceDefinition.ColumnAttribute.ID.getColumnName().getName()).set("id");

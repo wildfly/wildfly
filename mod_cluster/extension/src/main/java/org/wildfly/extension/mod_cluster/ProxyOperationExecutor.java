@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ActiveServiceSupplier;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * @author Radoslav Husar
@@ -72,7 +72,7 @@ public class ProxyOperationExecutor implements OperationExecutor<ModClusterServi
     @Override
     public ModelNode execute(OperationContext context, ModelNode operation, Operation<ModClusterServiceMBean> executable) throws OperationFailedException {
         ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(context.getCurrentAddress());
-        ModClusterServiceMBean service = new ActiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(true), serviceName).get();
+        ModClusterServiceMBean service = new PassiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(!executable.isReadOnly()), serviceName).get();
 
         return (service != null) ? executable.execute(context, operation, service) : null;
     }

@@ -30,6 +30,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,7 +68,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_5_0.xsd";
+        return "schema/wildfly-ejb3_6_0.xsd";
     }
 
     @Override
@@ -84,27 +85,12 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformerEAP620() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_2_0;
-        testTransformation(ModelVersion.create(1, 2, 1), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
-    }
-
-    @Test
-    public void testTransformerEAP630() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_3_0;
-        testTransformation(ModelVersion.create(1, 2, 1), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
-    }
-
-    @Test
     public void testTransformerEAP640() throws Exception {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_0;
         testTransformation(ModelVersion.create(1, 3, 0), controller,
                 formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller),
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
     }
 
     /**
@@ -154,27 +140,12 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectionsEAP620() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_2_0;
-        this.testRejections(ModelVersion.create(1, 2, 1), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
-    }
-
-    @Test
-    public void testRejectionsEAP630() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_3_0;
-        this.testRejections(ModelVersion.create(1, 2, 1), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
-    }
-
-    @Test
     public void testRejectionsEAP640() throws Exception {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_0;
         this.testRejections(ModelVersion.create(1, 3, 0), controller,
                 formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT,
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
     }
 
     @Override
@@ -260,6 +231,8 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             // reject the resource /subsystem=ejb3/service=identity
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
+            // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
 
             //Special handling for this test!!!!
             //Don't transform the resulting composite, instead rather transform the individual steps
@@ -307,6 +280,9 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // reject the resource /subsystem=ejb3/service=identity
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
+            // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
         }
 
         return config;
@@ -330,7 +306,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return new ModelNode(false);
+            return ModelNode.FALSE;
         }
 
     }

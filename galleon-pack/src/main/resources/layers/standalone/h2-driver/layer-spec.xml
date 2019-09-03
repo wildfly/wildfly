@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="h2-driver">
+    <dependencies>
+        <layer name="base-server"/>
+    </dependencies>
+    <feature-group name="h2-driver"/>
+    <packages>
+        <package name="com.h2database.h2"/>
+    </packages>
+</layer-spec>

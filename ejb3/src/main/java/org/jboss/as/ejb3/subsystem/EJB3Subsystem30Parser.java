@@ -178,7 +178,7 @@ public class EJB3Subsystem30Parser extends EJB3Subsystem20Parser {
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        operation.get(EJB3SubsystemModel.EXECUTE_IN_WORKER).set(new ModelNode(false));
+        operation.get(EJB3SubsystemModel.EXECUTE_IN_WORKER).set(ModelNode.FALSE);
         // each profile adds it's own operation
         operations.add(operation);
 

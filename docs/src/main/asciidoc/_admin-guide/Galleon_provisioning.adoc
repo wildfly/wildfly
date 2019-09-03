@@ -116,23 +116,20 @@ WildFly defined layers to assemble a custom configuration. <<galleon-cli-recipes
 Basic layers:
 
 * _cdi_: Support for cdi.
-* _jaxrs_: Support for jaxrs.
+* _datasources_: Support for datasources.
+* _ee-security_: Support for Java EE Security API
+* _jaxrs_: Support for jaxrs. Depends on _web-server_ (layer defined in the WildFly servlet feature-pack).
 * _jms-activemq_: Support for connections to a remote jms broker. 
 * _jpa_: Support for jpa (latest WildFly supported hibernate release).
 * _observability_: Support for microprofile monitoring and configuration features (config, health, metrics, open-tracing).
 * _resource-adapters_: Support for deployment of JCA adapters.
-* _h2-database_: Support for h2 database.
+* _h2-driver_: Support for h2 driver.
+* _h2-datasource_: Support for h2 datasource.
+* _h2-default-datasource_: Support for h2 datasource set as ee subsystem default datasource.
 
 Aggregation layers:
 
-* _cloud-profile_, an aggregation of the basic layers (except _h2-database_).
-
-[NOTE]
-====
-These layers depend at least on the _web-server_ layer defined in the WildFly servlet 
-feature-pack (on which WildFly feature-pack depends). This means that when creating an 
-installation with these layers, the installed WildFly server is also configured to be a servlet container. 
-====
+* _cloud-profile_, an aggregation of the basic layers (except _h2-*_ layers) and a _web-server_ .
 
 ==== WildFly servlet layers
 
@@ -142,6 +139,7 @@ Basic layers:
 * _legacy-security_: Support for legacy web security. 
 * _naming_: Support for JNDI.
 * _undertow_: Support for the Undertow HTTP server.
+* _undertow-legacy-https_: Support for the Undertow HTTPS server secured using ApplicationRealm.
 * _undertow-load-balancer_: Support for Undertow configured as a load balancer.
 * _vault_: Support Picketbox security vaults.
 
@@ -156,6 +154,7 @@ Basic layers:
 
 * _base-server_: Empty runnable server.
 * _core-management_: Support for server management services.
+* _core-security-realms_: Support for core Application and Management realms.
 * _deployment-scanner_: Support for deployment directory scanning.
 * _discovery_: Support for discovery.
 * _elytron_: Support for Elytron security.
@@ -163,7 +162,8 @@ Basic layers:
 * _jmx_: Support for registration of Management Model MBeans.
 * _jmx-remoting_: Support for registration of Management Model MBeans and a JMX remoting connector.
 * _logging_: Support for logging subsystem.
-* _management_: Support for remote access to management interfaces.
+* _legacy-management_: Support for remote access to management interfaces secured with core ManagementRealm.
+* _management_: Support for remote access to management interfaces (unsecured).
 * _remoting_: Support for inbound and outbound JBOSS Remoting connections.
 * _request-controller_: Support for request management.
 * _secure-management_: Support for remote access secured thanks to Elytron to management interfaces.
@@ -171,7 +171,7 @@ Basic layers:
 
 Aggregation layers:
 
-* _core-server_: Aggregation of layers that compose a typical core server: _secure-management_, 
+* _core-server_: Aggregation of layers that compose a typical core server: _core-security-realms_, _secure-management_, 
 _jmx-remoting_, _logging_, _core-management_, _request-controller_ and _security-manager_.
 
 Tools layers:
@@ -188,6 +188,13 @@ Tools layers:
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-profile,core-server,core-tools
 ----
 
+==== Installation of a cloud-profile with support for https (using legacy core ApplicationRealm)
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-profile,undertow-legacy-https
+----
+
 ==== Installation of jaxrs, cdi, elytron and logging
 
 [source,options="nowrap"]
@@ -202,11 +209,25 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=jaxrs,cdi,el
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,core-server
 ----
 
+==== Installation of a servlet container with support for https (using legacy core ApplicationRealm)
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,undertow-legacy-https
+----
+
 ==== Installation of an Undertow http server with logging
 
 [source,options="nowrap"]
 ----
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=undertow,logging
+----
+
+==== Installation of an Undertow https server (using legacy core ApplicationRealm)
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=undertow-legacy-https
 ----
 
 ==== Installation of a core server

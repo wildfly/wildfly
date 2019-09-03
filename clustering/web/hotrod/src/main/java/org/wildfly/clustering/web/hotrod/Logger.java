@@ -39,8 +39,8 @@ public interface Logger extends BasicLogger {
 
     Logger ROOT_LOGGER = org.jboss.logging.Logger.getMessageLogger(Logger.class, ROOT_LOGGER_CATEGORY);
 
-    @Message(id = 3, value = "Session %s is not valid")
-    IllegalStateException invalidSession(String sessionId);
+//    @Message(id = 3, value = "Session %s is not valid")
+//    IllegalStateException invalidSession(String sessionId);
 
     @LogMessage(level = WARN)
     @Message(id = 7, value = "Failed to activate attributes of session %s")

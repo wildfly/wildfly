@@ -1,7 +1,7 @@
 [[Java_API_for_RESTful_Web_Services_JAX-RS]]
 = Java API for RESTful Web Services (JAX-RS)
 
-ifdef::env-github[:imagesdir: ../]
+ifdef::env-github[:imagesdir: ../images/]
 
 [[content-java-api-restful-web-services]]
 == Content
@@ -364,7 +364,7 @@ http://www.eclipse.org/downloads/packages/eclipse-classic-37/indigor[Eclipse].
 First, go to File|Import... and choose "Existing Maven Projects" to
 import the tutorial sources
 
-image:images/jaxrs/ImportExistingMavenProject.png[images/jaxrs/ImportExistingMavenProject.png]
+image:jaxrs/ImportExistingMavenProject.png[images/jaxrs/ImportExistingMavenProject.png]
 
 You project view should look like this
 
@@ -373,27 +373,27 @@ image:images/jaxrs/ProjectExplorerA.png[images/jaxrs/ProjectExplorerA.png]
 Then go to File|New|Android Project and fill out the first wizard page
 like this
 
-image:images/jaxrs/NewAndroidProject.png[images/jaxrs/NewAndroidProject.png]
+image:jaxrs/NewAndroidProject.png[images/jaxrs/NewAndroidProject.png]
 
 Click Finish. Next, go to Project|Properties|Build Path|Libraries and
 add these external libraries to your android project.
 
-image:images/jaxrs/AndroidLibraries.png[images/jaxrs/AndroidLibraries.png]
+image:jaxrs/AndroidLibraries.png[images/jaxrs/AndroidLibraries.png]
 
 You final project view should look like this
 
-image:images/jaxrs/ProjectExplorerB.png[images/jaxrs/ProjectExplorerB.png]
+image:jaxrs/ProjectExplorerB.png[images/jaxrs/ProjectExplorerB.png]
 
 To run the application in the emulator, we need an Android Virtual
 Device (AVD). Go to Window|Android SDK and AVD Manager and create a new
 AVD like this
 
-image:images/jaxrs/CreateAVD_.png[images/jaxrs/CreateAVD_.png]
+image:jaxrs/CreateAVD_.png[images/jaxrs/CreateAVD_.png]
 
 Now go to Run|Configuration to create a new run configuration for the
 client app.
 
-image:images/jaxrs/RunConfiguration.png[images/jaxrs/RunConfiguration.png]
+image:jaxrs/RunConfiguration.png[images/jaxrs/RunConfiguration.png]
 
 Now you should be able to launch the application in the debugger. Right
 click on the javaee-tutorial-jaxrs-android project and select Debug
@@ -402,28 +402,28 @@ though a series of boot screens until it eventually displays the Android
 home screen. This will take a minute or two if you do this for the first
 time.
 
-image:images/jaxrs/2_2_HVGA_Initial.png[images/jaxrs/2_2_HVGA_Initial.png]
+image:jaxrs/2_2_HVGA_Initial.png[images/jaxrs/2_2_HVGA_Initial.png]
 
-image:images/jaxrs/2_2_HVGA_Next.png[images/jaxrs/2_2_HVGA_Next.png]
+image:jaxrs/2_2_HVGA_Next.png[images/jaxrs/2_2_HVGA_Next.png]
 
-image:images/jaxrs/2_2_HVGA_Final.png[images/jaxrs/2_2_HVGA_Final.png]
+image:jaxrs/2_2_HVGA_Final.png[images/jaxrs/2_2_HVGA_Final.png]
 
 When you unlock the home screen by dragging the little green lock to the
 right. You should see the the running JAX-RS client application.
 
-image:images/jaxrs/NoBooks.png[images/jaxrs/NoBooks.png]
+image:jaxrs/NoBooks.png[images/jaxrs/NoBooks.png]
 
 Finally, you need to configure the host that the client app connects to.
 This would be the same as you used above to curl the library list. In
 the emulator click Menu|Host Settings and enter the host address of your
 OpenShift application.
 
-image:images/jaxrs/HostSettings.png[images/jaxrs/HostSettings.png]
+image:jaxrs/HostSettings.png[images/jaxrs/HostSettings.png]
 
 When going back to the application using the little back arrow next to
 Menu, you should see a list of books.
 
-image:images/jaxrs/ListOfBooks.png[images/jaxrs/ListOfBooks.png]
+image:jaxrs/ListOfBooks.png[images/jaxrs/ListOfBooks.png]
 
 You can now add, edit and delete books and switch between your browser
 and the emulator to verify that the client app is not cheating and that

@@ -19,7 +19,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:8.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:9.0">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
@@ -173,7 +173,7 @@
                          min-evictable-idle-time="4"
                          min-idle="5"
         />
-        <invalidation-near-cache max-entries="20"/>
+        <invalidation-near-cache/>
         <remote-clusters>
             <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3"/>
             <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6"/>

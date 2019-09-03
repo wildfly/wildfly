@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.manualmode.messaging.ha;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -31,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,6 +41,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -59,6 +60,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -102,8 +104,7 @@ public abstract class AbstractMessagingHATestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP).set("take-snapshot");
         ModelNode result = execute(client, operation);
-        String snapshot = result.asString();
-        return snapshot;
+        return result.asString();
     }
 
     protected static void waitForHornetQServerActivation(JMSOperations operations, boolean expectedActive) throws IOException {
@@ -151,22 +152,24 @@ public abstract class AbstractMessagingHATestCase {
     protected static InitialContext createJNDIContextFromServer1() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://127.0.0.1:8080"));
+        String ipAdddress = TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0", "127.0.0.1"));
+        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":8080"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);
     }
 
-    protected static  InitialContext createJNDIContextFromServer2() throws NamingException {
+    protected static InitialContext createJNDIContextFromServer2() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://127.0.0.1:8180"));
+        String ipAdddress = TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node1", "127.0.0.1"));
+        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":8180"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);
     }
 
-    protected static  void sendMessage(Context ctx, String destinationLookup, String text) throws NamingException {
+    protected static void sendMessage(Context ctx, String destinationLookup, String text) throws NamingException {
         ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
         assertNotNull(cf);
         Destination destination = (Destination) ctx.lookup(destinationLookup);
@@ -177,7 +180,7 @@ public abstract class AbstractMessagingHATestCase {
         }
     }
 
-    protected static  void receiveMessage(Context ctx, String destinationLookup, String expectedText) throws NamingException {
+    protected static void receiveMessage(Context ctx, String destinationLookup, String expectedText) throws NamingException {
         ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
         assertNotNull(cf);
         Destination destination = (Destination) ctx.lookup(destinationLookup);
@@ -191,7 +194,7 @@ public abstract class AbstractMessagingHATestCase {
         }
     }
 
-    protected static  void sendAndReceiveMessage(Context ctx, String destinationLookup) throws NamingException {
+    protected static void sendAndReceiveMessage(Context ctx, String destinationLookup) throws NamingException {
         String text = UUID.randomUUID().toString();
         sendMessage(ctx, destinationLookup, text);
         receiveMessage(ctx, destinationLookup, text);
@@ -207,8 +210,8 @@ public abstract class AbstractMessagingHATestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(INCLUDE_RUNTIME).set(true);
-       // ModelNode result = execute(client, operation);
-       // System.out.println(runtimeAttributeName + " = " + result.get(runtimeAttributeName));
+        // ModelNode result = execute(client, operation);
+        // System.out.println(runtimeAttributeName + " = " + result.get(runtimeAttributeName));
         //assertEquals(result.toJSONString(true), active, result.get(runtimeAttributeName).isDefined());
 
         // runtime operation
@@ -220,20 +223,19 @@ public abstract class AbstractMessagingHATestCase {
         }
     }
 
-    private void restoreSnapshot(String snapshot) {
-        File snapshotFile = new File(snapshot);
-        File configurationDir = snapshotFile.getParentFile().getParentFile().getParentFile();
-        File standaloneConfiguration = new File(configurationDir, "standalone-full-ha.xml");
-        snapshotFile.renameTo(standaloneConfiguration);
+    private void restoreSnapshot(String snapshot) throws IOException {
+        Path snapshotFile = new File(snapshot).toPath();
+        Path standaloneConfiguration = snapshotFile.getParent().getParent().getParent().resolve("standalone-full-ha.xml");
+        Files.move(snapshotFile, standaloneConfiguration, StandardCopyOption.REPLACE_EXISTING);
     }
 
     protected static ModelNode execute(ModelControllerClient client, ModelNode operation) throws Exception {
         ModelNode response = client.execute(operation);
-        boolean success = SUCCESS.equals(response.get(OUTCOME).asString());
+        boolean success = Operations.isSuccessfulOutcome(response);
         if (success) {
             return response.get(RESULT);
         }
-        throw new Exception("Operation failed");
+        throw new Exception("Operation failed " + Operations.getFailureDescription(response));
     }
 
     protected static void executeWithFailure(ModelControllerClient client, ModelNode operation) throws IOException {
@@ -285,6 +287,7 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     protected abstract void setUpServer1(ModelControllerClient client) throws Exception;
+
     protected abstract void setUpServer2(ModelControllerClient client) throws Exception;
 
     @After

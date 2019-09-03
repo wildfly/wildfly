@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.PassiveServiceSupplier;
 
@@ -47,7 +48,8 @@ public class BackupOperationExecutor implements OperationExecutor<BackupOperatio
         String cacheName = cacheAddress.getLastElement().getValue();
         String containerName = cacheAddress.getParent().getLastElement().getValue();
 
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
+        ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName);
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(!executable.isReadOnly()), name).get();
 
         BackupOperationContext operationContext = new BackupOperationContext() {
             @Override

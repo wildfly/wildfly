@@ -101,7 +101,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .build();
 
     protected static final OptionAttributeDefinition ENABLE_SPDY = OptionAttributeDefinition.builder(Constants.ENABLE_SPDY, UndertowOptions.ENABLE_SPDY)
@@ -109,7 +109,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setDeprecated(ModelVersion.create(3, 2))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .build();
 
     public static final OptionAttributeDefinition SSL_SESSION_CACHE_SIZE = OptionAttributeDefinition.builder(Constants.SSL_SESSION_CACHE_SIZE, Options.SSL_SERVER_SESSION_CACHE_SIZE)

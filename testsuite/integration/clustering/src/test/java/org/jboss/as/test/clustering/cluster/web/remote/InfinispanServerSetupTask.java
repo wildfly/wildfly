@@ -26,14 +26,16 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 
 /**
+ * Server setup task that configures a hotrod client to connect to an Infinispan server.
  * @author Paul Ferraro
  */
 public class InfinispanServerSetupTask extends CLIServerSetupTask {
     public InfinispanServerSetupTask() {
         this.builder.node(AbstractClusteringTestCase.THREE_NODES)
                 .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=11622,host=%s)", AbstractClusteringTestCase.TESTSUITE_NODE0)
-                .setup("/subsystem=infinispan/remote-cache-container=web:add(default-remote-cluster=infinispan-server-cluster, module=org.wildfly.clustering.web.hotrod)")
+                .setup("/subsystem=infinispan/remote-cache-container=web:add(default-remote-cluster=infinispan-server-cluster, module=org.wildfly.clustering.web.hotrod, statistics-enabled=true)")
                 .setup("/subsystem=infinispan/remote-cache-container=web/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
+                .setup("/subsystem=infinispan/remote-cache-container=web/near-cache=invalidation:add()")
                 .teardown("/subsystem=infinispan/remote-cache-container=web:remove")
                 .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:remove")
                 ;

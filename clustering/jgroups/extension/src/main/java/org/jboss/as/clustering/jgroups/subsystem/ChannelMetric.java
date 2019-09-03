@@ -55,13 +55,13 @@ public enum ChannelMetric implements Metric<JChannel> {
     NUM_TASKS_IN_TIMER("num-tasks-in-timer", ModelType.INT, JGroupsModel.VERSION_5_0_0) {
         @Override
         public ModelNode execute(JChannel channel) {
-            return new ModelNode(0);
+            return ModelNode.ZERO;
         }
     },
     NUM_TIMER_THREADS("num-timer-threads", ModelType.INT, JGroupsModel.VERSION_5_0_0) {
         @Override
         public ModelNode execute(JChannel channel) {
-            return new ModelNode(0);
+            return ModelNode.ZERO;
         }
     },
     RECEIVED_BYTES("received-bytes", ModelType.LONG) {

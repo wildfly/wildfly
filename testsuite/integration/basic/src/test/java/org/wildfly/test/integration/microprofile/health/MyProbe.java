@@ -25,6 +25,7 @@ package org.wildfly.test.integration.microprofile.health;
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.Liveness;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
@@ -38,6 +39,17 @@ public class MyProbe implements HealthCheck {
     public HealthCheckResponse call() {
         return HealthCheckResponse.named("myProbe")
                 .state(up)
+                .build();
+    }
+}
+
+@Liveness
+class MyLiveProbe implements HealthCheck {
+
+    @Override
+    public HealthCheckResponse call() {
+        return HealthCheckResponse.named("myLiveProbe")
+                .state(MyProbe.up)
                 .build();
     }
 }

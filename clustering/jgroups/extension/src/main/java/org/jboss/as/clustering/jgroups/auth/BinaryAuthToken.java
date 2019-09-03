@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.auth;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.jgroups.Message;
@@ -67,12 +68,12 @@ public class BinaryAuthToken extends AuthToken {
     }
 
     @Override
-    public void writeTo(DataOutput output) throws Exception {
+    public void writeTo(DataOutput output) throws IOException {
         Util.writeByteBuffer(this.sharedSecret, output);
     }
 
     @Override
-    public void readFrom(DataInput input) throws Exception {
+    public void readFrom(DataInput input) throws IOException {
         this.sharedSecret = Util.readByteBuffer(input);
     }
 }

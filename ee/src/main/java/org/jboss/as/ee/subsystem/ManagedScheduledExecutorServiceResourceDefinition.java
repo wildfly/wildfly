@@ -22,13 +22,16 @@
 package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
+import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -45,6 +48,12 @@ import org.jboss.dmr.ModelType;
  * @author Eduardo Martins
  */
 public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleResourceDefinition {
+
+    /**
+     * the resource definition's dynamic runtime capability
+     */
+    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ee.concurrent.scheduled-executor", true, ManagedScheduledExecutorServiceAdapter.class)
+            .build();
 
     public static final String JNDI_NAME = "jndi-name";
     public static final String CONTEXT_SERVICE = "context-service";
@@ -66,6 +75,7 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
                     .setAllowExpression(false)
                     .setValidator(new StringLengthValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setCapabilityReference(ContextServiceResourceDefinition.CAPABILITY.getName(), CAPABILITY)
                     .build();
 
     public static final SimpleAttributeDefinition THREAD_FACTORY_AD =
@@ -73,6 +83,7 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
                     .setAllowExpression(false)
                     .setValidator(new StringLengthValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setCapabilityReference(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), CAPABILITY)
                     .build();
 
     public static final SimpleAttributeDefinition HUNG_TASK_THRESHOLD_AD =
@@ -80,14 +91,14 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
                     .setAllowExpression(true)
                     .setValidator(new LongRangeValidator(0, Long.MAX_VALUE, true, true))
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition LONG_RUNNING_TASKS_AD =
             new SimpleAttributeDefinitionBuilder(LONG_RUNNING_TASKS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
@@ -121,7 +132,10 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
     public static final ManagedScheduledExecutorServiceResourceDefinition INSTANCE = new ManagedScheduledExecutorServiceResourceDefinition();
 
     private ManagedScheduledExecutorServiceResourceDefinition() {
-        super(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE), ManagedScheduledExecutorServiceAdd.INSTANCE, ManagedScheduledExecutorServiceRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE))
+                .setAddHandler(ManagedScheduledExecutorServiceAdd.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(ManagedScheduledExecutorServiceAdd.INSTANCE))
+                .addCapabilities(CAPABILITY));
     }
 
     @Override

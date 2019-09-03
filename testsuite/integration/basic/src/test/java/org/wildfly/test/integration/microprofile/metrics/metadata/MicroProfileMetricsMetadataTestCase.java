@@ -22,9 +22,18 @@
 
 package org.wildfly.test.integration.microprofile.metrics.metadata;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.io.StringReader;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpOptions;
-import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -34,15 +43,6 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import java.io.IOException;
-import java.io.StringReader;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -55,9 +55,11 @@ public class MicroProfileMetricsMetadataTestCase {
         final String endpointURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + "/metrics";
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpOptions request = new HttpOptions(endpointURL);
-            request.setHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON));
+            // Due to a regression in https://github.com/smallrye/smallrye-metrics/issues/151, the media type can not specify its charset
+            request.setHeader("Accept", "application/json");
             CloseableHttpResponse resp = client.execute(request);
-            assertEquals(200, resp.getStatusLine().getStatusCode());
+            String content = EntityUtils.toString(resp.getEntity());
+            assertEquals(content, 200, resp.getStatusLine().getStatusCode());
         }
     }
 
@@ -67,9 +69,10 @@ public class MicroProfileMetricsMetadataTestCase {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
 
             CloseableHttpResponse resp = client.execute(new HttpOptions(endpointURL));
-            assertEquals(406, resp.getStatusLine().getStatusCode());
             String content = EntityUtils.toString(resp.getEntity());
             resp.close();
+            // smallrye-metrics no reports 405 Method Not Allowed when an Options is requested with out the JSON type
+            assertEquals( 405, resp.getStatusLine().getStatusCode());
             assertTrue("'OPTIONS method is only allowed with application/json media type.' message is expected, but was: " + content,
                     content.contains("OPTIONS method is only allowed with application/json media type."));
         }
@@ -110,10 +113,10 @@ public class MicroProfileMetricsMetadataTestCase {
     }
 
     private void checkJvmUptime(JsonObject jvmUptime) {
-        assertEquals(jvmUptime.getString("type"), "gauge");
-        assertEquals(jvmUptime.getString("unit"), "milliseconds");
-        assertEquals(jvmUptime.getString("displayName"), "JVM Uptime");
-        assertEquals(jvmUptime.getString("description"), "Displays the uptime of the Java virtual machine");
+        assertEquals("gauge", jvmUptime.getString("type"));
+        assertEquals("milliseconds", jvmUptime.getString("unit"));
+        assertEquals("JVM Uptime", jvmUptime.getString("displayName"));
+        assertEquals("Displays the uptime of the Java virtual machine", jvmUptime.getString("description"));
     }
 
     private String getMetricsMetadata(String metricsPath) throws IOException {

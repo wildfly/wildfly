@@ -72,7 +72,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setXmlName(Attribute.ENABLED.getLocalName())
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES) // we need to register new WS endpoints
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .build();
 
     @Deprecated //just legacy support
