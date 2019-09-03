@@ -22,42 +22,17 @@
 
 package org.wildfly.clustering.service.concurrent;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
 
 /**
  * {@link ThreadFactory} decorator that associates a specific class loader to created threads.
  * @author Paul Ferraro
+ * @deprecated Use {@link ContextualThreadFactory} instead.
  */
-public class ClassLoaderThreadFactory implements ThreadFactory {
-
-    private final ThreadFactory factory;
-    private final ClassLoader loader;
+@Deprecated
+public class ClassLoaderThreadFactory extends ContextualThreadFactory<ClassLoader> {
 
     public ClassLoaderThreadFactory(ThreadFactory factory, ClassLoader loader) {
-        this.factory = factory;
-        this.loader = loader;
-    }
-
-    @Override
-    public Thread newThread(Runnable r) {
-        Runnable task = () -> {
-            try {
-                r.run();
-            } finally {
-                // Defensively reset the TCCL
-                this.setContextClassLoader(Thread.currentThread());
-            }
-        };
-        return this.setContextClassLoader(this.factory.newThread(task));
-    }
-
-    private Thread setContextClassLoader(Thread thread) {
-        PrivilegedAction<Thread> action = () -> {
-            thread.setContextClassLoader(this.loader);
-            return thread;
-        };
-        return AccessController.doPrivileged(action);
+        super(factory, loader, ContextClassLoaderReference.INSTANCE);
     }
 }
