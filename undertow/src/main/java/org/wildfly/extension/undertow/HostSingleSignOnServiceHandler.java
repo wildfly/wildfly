@@ -30,9 +30,12 @@ import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.SE
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -93,14 +96,12 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         };
         this.provider.getServiceConfigurator(managerServiceName, configuration).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
-        target.addCapability(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY)
-                .setInstance(service)
-                .addAliases(serviceName)
-                .addDependency(virtualHostServiceName, Host.class, service.getHost())
-                .addDependency(managerServiceName, SingleSignOnManager.class, service.getSingleSignOnSessionManager())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        final CapabilityServiceBuilder<?> sb = target.addCapability(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY);
+        final Consumer<SingleSignOnService> sConsumer = sb.provides(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY, serviceName);
+        final Supplier<Host> hSupplier = sb.requires(virtualHostServiceName);
+        final Supplier<SingleSignOnManager> mSupplier = sb.requires(managerServiceName);
+        sb.setInstance(new SingleSignOnService(sConsumer, hSupplier, mSupplier, domain, path, httpOnly, secure, cookieName));
+        sb.install();
     }
 
     @Override
