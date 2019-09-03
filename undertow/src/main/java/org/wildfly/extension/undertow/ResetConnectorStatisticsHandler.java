@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
 
 
 /**
- * Defines and handles reseting connector statistics
+ * Defines and handles resetting connector statistics
  *
  * @author Stuart Douglas
  */

@@ -24,8 +24,13 @@ package org.wildfly.clustering.infinispan.client;
 
 import java.util.function.Function;
 
+import javax.transaction.TransactionManager;
+
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
+import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
 import org.infinispan.client.hotrod.near.NearCacheService;
 
 /**
@@ -35,7 +40,7 @@ import org.infinispan.client.hotrod.near.NearCacheService;
  * @author Radoslav Husar
  * @author Paul Ferraro
  */
-public interface RemoteCacheContainer extends org.infinispan.client.hotrod.RemoteCacheContainer {
+public interface RemoteCacheContainer extends org.infinispan.client.hotrod.RemoteCacheContainer, RemoteCacheManagerMXBean {
 
     interface NearCacheRegistration extends AutoCloseable {
         @Override
@@ -55,6 +60,21 @@ public interface RemoteCacheContainer extends org.infinispan.client.hotrod.Remot
      * @return administration utility
      */
     RemoteCacheManagerAdmin administration();
+
+    @Override
+    default <K, V> RemoteCache<K, V> getCache() {
+        return this.getCache(this.getConfiguration().forceReturnValues());
+    }
+
+    @Override
+    default <K, V> RemoteCache<K, V> getCache(String cacheName) {
+        return this.getCache(cacheName, null, null);
+    }
+
+    @Override
+    default <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
+        return this.getCache(cacheName, this.getConfiguration().forceReturnValues(), transactionMode, transactionManager);
+    }
 
     /**
      * Registers a factory for creating a near cache for a given cache.

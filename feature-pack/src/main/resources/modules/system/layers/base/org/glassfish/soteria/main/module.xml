@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.glassfish.soteria:javax.security.enterprise}"/>
+        <artifact name="${org.glassfish.soteria:jakarta.security.enterprise}"/>
     </resources>
 
     <dependencies>

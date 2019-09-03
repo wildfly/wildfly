@@ -109,7 +109,7 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
         @Deprecated SHARED("shared", ModelType.BOOLEAN) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(false))
+                return builder.setDefaultValue(ModelNode.FALSE)
                         .setDeprecated(JGroupsModel.VERSION_4_0_0.getVersion())
                         ;
             }

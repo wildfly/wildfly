@@ -22,7 +22,6 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ejb.Bean;
 
 /**
  * Command that cancels the scheduling of a session.
@@ -33,8 +32,8 @@ public class CancelSchedulerCommand<I> implements Command<Void, Scheduler<I>> {
 
     private final I beanId;
 
-    public CancelSchedulerCommand(Bean<I, ?> bean) {
-        this.beanId = bean.getId();
+    public CancelSchedulerCommand(I beanId) {
+        this.beanId = beanId;
     }
 
     @Override

@@ -34,6 +34,7 @@
         <dependencies>
             <module name="deployment.module.ignored"/>
             <module name="deployment.aaa" meta-inf="export"/>
+            <module name="deployment.ccc" annotations="true" meta-inf="export"/>
         </dependencies>
         <module-alias name="deployment.bbb" />
     </sub-deployment>
@@ -51,6 +52,13 @@
             <resource-root path="available.jar" use-physical-code-source="true"/>
         </resources>
         <module-alias name="deployment.aaa" />
+    </module>
+
+    <module name="deployment.module.available2">
+        <resources>
+            <resource-root path="available2.jar" use-physical-code-source="true"/>
+        </resources>
+        <module-alias name="deployment.ccc" />
     </module>
 
 </jboss-deployment-structure>

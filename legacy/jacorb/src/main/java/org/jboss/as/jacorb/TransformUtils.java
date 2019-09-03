@@ -90,9 +90,9 @@ public class TransformUtils {
                     case JacORBSubsystemConstants.NAMING_EXPORT_CORBALOC:
                     case JacORBSubsystemConstants.INTEROP_IONA:
                         if (legacyValue.asString().equals(JacORBSubsystemConstants.ON)) {
-                            value = new ModelNode(true);
+                            value = ModelNode.TRUE;
                         } else {
-                            value = new ModelNode(false);
+                            value = ModelNode.FALSE;
                         }
                         break;
                     default:

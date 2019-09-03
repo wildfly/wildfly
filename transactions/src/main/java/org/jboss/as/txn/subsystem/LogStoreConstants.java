@@ -100,7 +100,7 @@ class LogStoreConstants {
     static final SimpleAttributeDefinition EXPOSE_ALL_LOGS = new SimpleAttributeDefinitionBuilder(EXPOSE_ALL_LOGS_ATTRIBUTE, ModelType.BOOLEAN)
             .setAllowExpression(true)
             .setRequired(false)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setStorageRuntime()
             .build();

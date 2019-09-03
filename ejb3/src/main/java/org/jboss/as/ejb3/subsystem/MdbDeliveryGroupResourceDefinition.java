@@ -46,7 +46,7 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
     private static final ServiceName DELIVERY_GROUP_SERVICE_NAME = ServiceName.of("org", "wildfly", "ejb3", "mdb", "delivery", "group");
     public static final SimpleAttributeDefinition ACTIVE = new SimpleAttributeDefinitionBuilder(
             EJB3SubsystemModel.MDB_DELVIERY_GROUP_ACTIVE, ModelType.BOOLEAN, true).setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .build();
 
     public static final MdbDeliveryGroupResourceDefinition INSTANCE = new MdbDeliveryGroupResourceDefinition();

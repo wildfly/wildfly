@@ -32,7 +32,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-@ServerSetup(ConcurrentWebFailoverServerSetup.class)
+@ServerSetup(ConcurrentSessionServerSetup.class)
 public class ConcurrentCoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
     private static final String MODULE_NAME = ConcurrentCoarseWebFailoverTestCase.class.getSimpleName();
@@ -66,7 +66,7 @@ public class ConcurrentCoarseWebFailoverTestCase extends AbstractWebFailoverTest
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-web_concurrent_coarse.xml", "jboss-web.xml");
+        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-all_concurrent_coarse.xml", "jboss-all.xml");
         return war;
     }
 }

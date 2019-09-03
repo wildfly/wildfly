@@ -80,29 +80,31 @@ public class MetricsContextService implements Service {
                     public void handleRequest(HttpServerExchange exchange) throws Exception {
                         String requestPath = exchange.getRequestPath();
                         String method = exchange.getRequestMethod().toString();
-                        StringBuffer buffer = new StringBuffer();
                         HeaderValues acceptHeaders = exchange.getRequestHeaders().get(Headers.ACCEPT);
                         metricsRequestHandler.handleRequest(requestPath, method, acceptHeaders == null ? null : acceptHeaders.stream(), (status, message, headers) -> {
                             exchange.setStatusCode(status);
+                            StringBuffer buffer = new StringBuffer();
                             for (Map.Entry<String, String> entry : headers.entrySet()) {
                                 exchange.getResponseHeaders().put(new HttpString(entry.getKey()), entry.getValue());
                             }
                             buffer.append(message);
-                        });
 
-                        if (exchange.getRequestPath().equals(CONTEXT_NAME) ||
-                                exchange.getRequestPath().equals(CONTEXT_NAME + '/')) {
-                            String acceptHeader = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
-                            boolean jsonOutput = acceptHeader != null && acceptHeader.startsWith("application/json");
-                            if (!jsonOutput) {
-                                try (StringWriter sw = new StringWriter()) {
-                                    CollectorRegistry registry = CollectorRegistry.defaultRegistry;
-                                    TextFormat.write004(sw, registry.metricFamilySamples());
-                                    buffer.append(sw.toString());
+                            // add metrics from the subsystems only when the request is acceptable
+                            if (status / 100 == 2
+                                && (exchange.getRequestPath().equals(CONTEXT_NAME) ||
+                                    exchange.getRequestPath().equals(CONTEXT_NAME + '/'))) {
+                                String acceptHeader = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
+                                boolean jsonOutput = acceptHeader != null && acceptHeader.startsWith("application/json");
+                                if (!jsonOutput) {
+                                    try (StringWriter sw = new StringWriter()) {
+                                        CollectorRegistry registry = CollectorRegistry.defaultRegistry;
+                                        TextFormat.write004(sw, registry.metricFamilySamples());
+                                        buffer.append(sw.toString());
+                                    }
                                 }
                             }
-                        }
-                        exchange.getResponseSender().send(buffer.toString());
+                            exchange.getResponseSender().send(buffer.toString());
+                        });
                     }
                 });
     }

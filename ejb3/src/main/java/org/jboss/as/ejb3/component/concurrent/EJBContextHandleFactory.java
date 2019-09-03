@@ -74,6 +74,7 @@ public class EJBContextHandleFactory implements ContextHandleFactory {
 
     private static class EJBContextHandle implements SetupContextHandle, ResetContextHandle {
 
+        private static final long serialVersionUID = 9158258921823908698L;
         private final transient InterceptorContext interceptorContext;
 
         private EJBContextHandle() {

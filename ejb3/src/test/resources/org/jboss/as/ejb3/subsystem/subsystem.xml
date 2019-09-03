@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:ejb3:5.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:6.0">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -67,7 +67,8 @@
     <thread-pools>
         <thread-pool name="default">
             <max-threads count="${prop.max-thread-count:10}"/>
-            <keepalive-time time="${prop.keepalive-time:100}" unit="${prop.idle-timeout-unit:milliseconds}"/>
+            <core-threads count="${prop.core-thread-count:10}"/>
+            <keepalive-time time="${prop.keepalive-time:60}" unit="${prop.idle-timeout-unit:seconds}"/>
         </thread-pool>
     </thread-pools>
 

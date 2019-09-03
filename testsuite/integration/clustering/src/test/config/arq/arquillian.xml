@@ -107,6 +107,18 @@
             </configuration>
         </container>
 
+        <container qualifier="load-balancer-1" mode="custom">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly-load-balancer-1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.socket.binding.port-offset=500</property>
+                <property name="serverConfig">standalone-load-balancer.xml</property>
+                <property name="managementAddress">${node0}</property>
+                <property name="managementPort">10490</property>
+                <property name="waitForPorts">10490</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
         <container qualifier="node-non-ha" mode="custom">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly-1</property>

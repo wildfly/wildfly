@@ -130,6 +130,18 @@ public class DatabaseTimerPersistenceTestCase {
         method.invoke(object);
         Assert.assertEquals("mssql", field.get(object));
 
+        field.set(object, "mssql");
+        method.invoke(object);
+        Assert.assertEquals("mssql", field.get(object));
+
+        field.set(object, "MSSQL");
+        method.invoke(object);
+        Assert.assertEquals("mssql", field.get(object));
+
+        field.set(object, "mssql-version-x");
+        method.invoke(object);
+        Assert.assertEquals("mssql", field.get(object));
+
         // test sybase
         field.set(object, "jconnectTest");
         method.invoke(object);

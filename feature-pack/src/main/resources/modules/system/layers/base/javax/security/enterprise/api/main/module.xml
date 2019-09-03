@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${javax.security.enterprise:javax.security.enterprise-api}"/>
+        <artifact name="${jakarta.security.enterprise:jakarta.security.enterprise-api}"/>
     </resources>
 
     <dependencies>

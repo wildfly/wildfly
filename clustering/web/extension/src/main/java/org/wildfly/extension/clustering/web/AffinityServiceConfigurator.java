@@ -23,6 +23,7 @@
 package org.wildfly.extension.clustering.web;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.PathAddress;
@@ -37,7 +38,7 @@ import org.wildfly.clustering.web.session.DistributableSessionManagementConfigur
 /**
  * @author Paul Ferraro
  */
-public abstract class AffinityServiceConfigurator<C extends DistributableSessionManagementConfiguration> extends AffinityServiceNameProvider implements ResourceServiceConfigurator, RouteLocatorServiceConfiguratorFactory<C> {
+public abstract class AffinityServiceConfigurator<C extends DistributableSessionManagementConfiguration> extends AffinityServiceNameProvider implements ResourceServiceConfigurator, Supplier<RouteLocatorServiceConfiguratorFactory<C>> {
 
     public AffinityServiceConfigurator(PathAddress address) {
         super(address.getParent());
@@ -48,7 +49,7 @@ public abstract class AffinityServiceConfigurator<C extends DistributableSession
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
         Consumer<RouteLocatorServiceConfiguratorFactory<C>> factory = builder.provides(name);
-        Service service = Service.newInstance(factory, this);
+        Service service = Service.newInstance(factory, this.get());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

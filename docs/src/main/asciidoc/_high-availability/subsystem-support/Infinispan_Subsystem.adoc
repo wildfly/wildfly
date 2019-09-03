@@ -397,15 +397,26 @@ e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
 /subsystem=infinispan/cache-container=foo/local-cache=bar/store=jdbc:add(data-source=ExampleDS, dialect=H2)
 ----
 
-===== Remote cache store
+[[hotrod_store]]
+=== HotRod store
 
-A remote store persists cache entries to a set of remote Infinispan server instances via the HotRod protocol.
+The HotRod store uses one dedicated remote cache for each cache created by the server.
+For Infinispan Server versions supporting protocol version 2.7 and above (Infinispan Server version 9.2)
+a persistent remote cache will be automatically created based on default configuration.
+The recommended configuration for the remote cache where session data will be offloaded is transactional distribution mode cache with pessimistic locking.
+When using Infinispan Server version prior to 9.2, the caches need to be configured manually on the server where cache names correspond to the deployment file names (e.g. `test.war`).
+
+Once a <<remote_cache_container>> is configured a `hotrod` store can be configured replacing any existing store.
+The following CLI script demonstrates a typical use case for offloading sessions using an `invalidation-cache` with a shared, persistent infinispan-server store referencing an existing `remote-cache-container`:
 
 [source,options="nowrap"]
 ----
-/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node1:add(host=server1, port=1000)
-/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node2:add(host=server2, port=1000)
-/subsystem=infinispan/cache-container=foo/local-cache=bar/store=remote:add(remote-servers=[node1,node2])
+batch
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo:add()
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo/store=hotrod:add(remote-cache-container=web, cache-configuration=transactional, fetch-state=false, purge=false, passivation=false, shared=true)
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo/component=transaction:add(mode=BATCH)
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo/component=locking:add(isolation=REPEATABLE_READ)
+run-batch
 ----
 
 ==== State transfer
@@ -433,3 +444,97 @@ e.g. To configure a non-blocking state transfer:
 ----
 
 For a complete list of state-transfer attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+[[remote_cache_container]]
+== Remote Cache Container
+
+While Infinispan project is used as a library internally by WildFly to provide data distribution, Infinispan project is also distributed in a standalone server mode.
+The Infinispan Server cluster operates as a language-independent service accessed remotely over a number of protocols (HotRod, REST, etc).
+
+HotRod is Infinispan's custom optimized binary protocol which was designed to:
+
+* enable faster client/server interactions compared to other existing text-based protocols,
+* allow clients to make more intelligent decisions with regards to load-balancing, failover,
+* and provide advanced cache operations.
+
+To learn more about the HotRod protocol itself and how to setup and run Infinispan Server,
+refer to http://infinispan.org/documentation/[Infinispan documentation] for the appropriate version.
+
+=== Configuration
+
+To configure a `remote-cache-container` ensure you have a list of available Infinispan Server nodes.
+The following example CLI script first adds socket bindings to two known Infinispan Server nodes,
+followed by configuration of the cluster.
+
+[source,options="nowrap"]
+----
+batch
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:add(host=server1.example.com, port=11622)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-2:add(host=server2.example.com, port=11722)
+/subsystem=infinispan/remote-cache-container=foo:add(default-remote-cluster=bar)
+/subsystem=infinispan/remote-cache-container=foo/remote-cluster=bar:add(socket-bindings=[infinispan-server-1, infinispan-server-2])
+run-batch
+----
+
+Upon reload, this will register necessary services for the client.
+A HotRod client can be injected directly into Java EE applications using the `@Resource` annotation.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/remote-container/foo")
+private org.infinispan.client.hotrod.RemoteCacheContainer client;
+----
+
+==== Security
+
+Securing the store is just a matter of configuring the `remote-cache-container` with an SSL context.
+Please follow the Elytron security guide on how to configure new SSL context
+and http://infinispan.org/documentation/[Infinispan documentation] on how to secure Infinispan Server instances.
+
+Once the SSL Context is configured, use the following CLI script to configure `remote-cache-container`:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/remote-cache-container=foo/component=security:write-attribute(name=ssl-context, value=hotrod-ssl-context)
+----
+
+==== Statistics
+
+To enable the gathering of statistics for a given `remote-cache-container`, use the `statistics-enabled` attribute:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/remote-cache-container=foo:write-attribute(name=statistics-enabled, value=true)
+----
+
+Using the exposed runtime metrics, users can tune the HotRod thread pool configuration by looking at active vs idle connections.
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan:remote-cache-container=foo:read-resource(include-runtime=true)
+----
+
+The Infinispan subsystem additionally exposes a runtime resource for each started remote cache instance.
+The runtime remote cache resource exposes usage metrics (e.g. reads, writes, removes, etc) as well as metrics for tuning near-cache sizes (e.g. hits vs misses).
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan:remote-cache-container=foo/remote-cache=bar:read-resource(include-runtime=true)
+----
+
+==== Switching remote clusters
+
+If a remote-cache-container configures multiple remote-clusters (e.g. when the infinispan servers are configured with cross site replication),
+the hotrod client can toggle the remote-cluster with which it interacts via a runtime management operation.
+
+For example, when the client is configured with multiple remote clusters, typically representing multiple data centers (this presumes that the infinispan servers are configured with cross-site replication),
+if connectivity to the default remote cluster fails, the client will automatically fail over to a backup remote cluster.
+Once the underlying connectivity issue is resolved, a user can manually fail back to the local site via the `switch-cluster` operation:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/remote-cache-container=foo/remote-cluster=bar:switch-cluster()
+----
+
+This operation returns `true` if the switch was successful, or `false` otherwise.
+See the server log for specifics in the event that the switch was unsuccessful.

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.clustering.cluster.jpa2lc;
 
-import java.util.Collections;
-import java.util.Set;
 import javax.ws.rs.ApplicationPath;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Jan Martiska
@@ -34,7 +34,9 @@ public class DummyEntityControllingApplication extends javax.ws.rs.core.Applicat
 
     @Override
     public Set<Class<?>> getClasses() {
-        return Collections.singleton(DummyEntityRESTResource.class);
+        Set<Class<?>> s = new HashSet<Class<?>>();
+        s.add(DummyEntityRESTResource.class);
+        return s;
     }
 
 }

@@ -46,11 +46,11 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
+import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.notifications.cachelistener.event.Event;
-import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.notifications.cachelistener.filter.EventType;
 import org.infinispan.remoting.transport.Address;
@@ -59,6 +59,7 @@ import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.infinispan.retry.RetryingInvoker;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
@@ -68,6 +69,7 @@ import org.wildfly.clustering.registry.RegistryListener;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
+import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -77,7 +79,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <V> value type
  */
 @org.infinispan.notifications.Listener
-public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Object, Object> {
+public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Object, Object>, ExceptionRunnable<CacheException> {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
@@ -91,6 +93,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
     private final Group<Address> group;
     private final Runnable closeTask;
     private final Map.Entry<K, V> entry;
+    private final Invoker invoker;
 
     public CacheRegistry(CacheRegistryConfiguration<K, V> config, Map.Entry<K, V> entry, Runnable closeTask) {
         this.cache = config.getCache();
@@ -98,11 +101,13 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
         this.group = config.getGroup();
         this.closeTask = closeTask;
         this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
-        new RetryingInvoker(this.cache).invoke(this::populateRegistry);
+        this.invoker = new RetryingInvoker(this.cache);
+        this.invoker.invoke(this);
         this.cache.addListener(this, new CacheRegistryFilter(), null);
     }
 
-    private void populateRegistry() {
+    @Override
+    public void run() {
         try (Batch batch = this.batcher.createBatch()) {
             this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getAddress(this.group.getLocalMember()), this.entry);
         }
@@ -163,11 +168,9 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
             addresses.add(this.group.getAddress(member));
         }
         Map<K, V> result = new HashMap<>();
-        try (Batch batch = this.batcher.createBatch()) {
-            for (Map.Entry<K, V> entry : this.cache.getAdvancedCache().getAll(addresses).values()) {
-                if (entry != null) {
-                    result.put(entry.getKey(), entry.getValue());
-                }
+        for (Map.Entry<K, V> entry : this.cache.getAdvancedCache().getAll(addresses).values()) {
+            if (entry != null) {
+                result.put(entry.getKey(), entry.getValue());
             }
         }
         return result;
@@ -176,18 +179,16 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
     @Override
     public Map.Entry<K, V> getEntry(Node node) {
         Address address = this.group.getAddress(node);
-        try (Batch batch = this.batcher.createBatch()) {
-            return this.cache.get(address);
-        }
+        return this.cache.get(address);
     }
 
-    @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<Address, Map.Entry<K, V>> event) {
+    @DataRehashed
+    public void dataRehashed(DataRehashedEvent<Address, Map.Entry<K, V>> event) {
         if (event.isPre()) return;
 
-        ConsistentHash previousHash = event.getWriteConsistentHashAtStart();
+        ConsistentHash previousHash = event.getConsistentHashAtStart();
         List<Address> previousMembers = previousHash.getMembers();
-        ConsistentHash hash = event.getWriteConsistentHashAtEnd();
+        ConsistentHash hash = event.getConsistentHashAtEnd();
         List<Address> members = hash.getMembers();
         Address localAddress = this.group.getAddress(this.group.getLocalMember());
 
@@ -230,7 +231,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
                     if (!previousMembers.contains(localAddress)) {
                         // If this node is not a member at merge start, its mapping is lost and needs to be recreated and listeners notified
                         try {
-                            this.populateRegistry();
+                            this.invoker.invoke(this);
                             // Local cache events do not trigger notifications
                             this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, this.entry);
                         } catch (CacheException e) {

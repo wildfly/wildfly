@@ -55,14 +55,17 @@ public class ReplicationMasterDefinition extends PersistentResourceDefinition {
             INITIAL_REPLICATION_SYNC_TIMEOUT
     ));
 
-    public static final ReplicationMasterDefinition INSTANCE = new ReplicationMasterDefinition(MessagingExtension.REPLICATION_MASTER_PATH, false);
-    public static final ReplicationMasterDefinition CONFIGURATION_INSTANCE = new ReplicationMasterDefinition(MessagingExtension.CONFIGURATION_MASTER_PATH, true);
+    public static final ReplicationMasterDefinition INSTANCE = new ReplicationMasterDefinition(MessagingExtension.REPLICATION_MASTER_PATH, false, true);
+    public static final ReplicationMasterDefinition HC_INSTANCE = new ReplicationMasterDefinition(MessagingExtension.REPLICATION_MASTER_PATH, false, false);
+    public static final ReplicationMasterDefinition CONFIGURATION_INSTANCE = new ReplicationMasterDefinition(MessagingExtension.CONFIGURATION_MASTER_PATH, true, true);
 
-    private ReplicationMasterDefinition(PathElement path, boolean allowSibling) {
+    private final boolean registerRuntime;
+    private ReplicationMasterDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.registerRuntime = registerRuntime;
     }
 
     @Override
@@ -70,6 +73,9 @@ public class ReplicationMasterDefinition extends PersistentResourceDefinition {
         AbstractWriteAttributeHandler writeAttribute = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttribute);
+        }
+        if(registerRuntime) {
+            HAPolicySynchronizationStatusReadHandler.registerMasterAttributes(resourceRegistration);
         }
     }
 

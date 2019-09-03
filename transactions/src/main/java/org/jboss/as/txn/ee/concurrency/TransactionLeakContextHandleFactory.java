@@ -24,9 +24,8 @@ package org.jboss.as.txn.ee.concurrency;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
 import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
+import org.jboss.as.server.deployment.DelegatingSupplier;
 import org.jboss.as.txn.logging.TransactionLogger;
-import org.jboss.msc.inject.InjectionException;
-import org.jboss.msc.inject.Injector;
 
 import javax.enterprise.concurrent.ContextService;
 import javax.transaction.Status;
@@ -42,16 +41,17 @@ import java.util.Map;
  * A context handle factory which is responsible for preventing transaction leaks.
  *
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class TransactionLeakContextHandleFactory implements ContextHandleFactory, Injector<TransactionManager> {
+public class TransactionLeakContextHandleFactory implements ContextHandleFactory {
 
     public static final String NAME = "TRANSACTION_LEAK";
 
-    private TransactionManager transactionManager;
+    private final DelegatingSupplier<TransactionManager> transactionManager = new DelegatingSupplier<>();
 
     @Override
     public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return new TransactionLeakSetupContextHandle(transactionManager);
+        return new TransactionLeakSetupContextHandle(transactionManager.get());
     }
 
     @Override
@@ -71,21 +71,16 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
 
     @Override
     public SetupContextHandle readSetupContextHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        return new TransactionLeakSetupContextHandle(transactionManager);
+        return new TransactionLeakSetupContextHandle(transactionManager.get());
     }
 
-    @Override
-    public void inject(TransactionManager value) throws InjectionException {
-        transactionManager = value;
-    }
-
-    @Override
-    public void uninject() {
-        transactionManager = null;
+    public DelegatingSupplier<TransactionManager> getTransactionManagerSupplier() {
+        return transactionManager;
     }
 
     private static class TransactionLeakSetupContextHandle implements SetupContextHandle {
 
+        private static final long serialVersionUID = -8142799455606311295L;
         private final TransactionManager transactionManager;
 
         private TransactionLeakSetupContextHandle(TransactionManager transactionManager) {
@@ -123,6 +118,7 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
 
     private static class TransactionLeakResetContextHandle implements ResetContextHandle {
 
+        private static final long serialVersionUID = -1726741825781759990L;
         private final TransactionManager transactionManager;
         private final Transaction transactionOnSetup;
 

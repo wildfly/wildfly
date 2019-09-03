@@ -345,7 +345,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         if(view.isEjb2xView()) {
             view.getConfigurators().add(getSessionBeanObjectViewConfigurator());
         }
-
     }
 
     protected abstract ViewConfigurator getSessionBeanObjectViewConfigurator();
@@ -394,7 +393,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 configuration.addViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
             }
         });
-
     }
 
     @Override

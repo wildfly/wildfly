@@ -38,6 +38,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     static final ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 5);
     static final ModelVersion MODEL_VERSION_EAP70 = ModelVersion.create(3, 0);
     static final ModelVersion MODEL_VERSION_EAP71 = ModelVersion.create(4, 0);
+    static final ModelVersion MODEL_VERSION_EAP72 = ModelVersion.create(5, 0);
 
 
     @Override
@@ -48,8 +49,12 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
+        // 5.1.0 --> 5.0.0
+        ResourceTransformationDescriptionBuilder builderEap72 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP72);
+        builderEap72.getAttributeBuilder().end(); // node-id attribute requires restart of JVM instead of reload
+
         // 5.0.0 --> 4.0.0
-        ResourceTransformationDescriptionBuilder builderEap71 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP71);
+        ResourceTransformationDescriptionBuilder builderEap71 = chainedBuilder.createBuilder(MODEL_VERSION_EAP72, MODEL_VERSION_EAP71);
         builderEap71.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(MAXIMUM_TIMEOUT.getDefaultValue()), MAXIMUM_TIMEOUT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MAXIMUM_TIMEOUT)
@@ -95,7 +100,8 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
                 MODEL_VERSION_EAP64,
                 MODEL_VERSION_EAP70,
                 MODEL_VERSION_EAP71,
-                // v4_1_0
+                MODEL_VERSION_EAP72,
+                // v5_1_0
         });
     }
 }

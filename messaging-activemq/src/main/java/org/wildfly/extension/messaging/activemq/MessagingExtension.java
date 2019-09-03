@@ -86,13 +86,26 @@ import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_QUEUE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_TOPIC;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
 import org.wildfly.extension.messaging.activemq.jms.ExternalPooledConnectionFactoryDefinition;
 
 /**
  * Domain extension that integrates Apache ActiveMQ 6.
  *
  * <dl>
- * <dt><strong>Current</strong> - WildFly 17</dt>
+ * <dt><strong>Current</strong> - WildFly 18</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:7.0
+ *       <li>Management model: 8.0.0
+ *     </ul>
+ *   </dd>
+ * <dt>WildFly 17</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging-activemq:7.0
@@ -196,6 +209,7 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    protected static final ModelVersion VERSION_8_0_0 = ModelVersion.create(8, 0, 0);
     protected static final ModelVersion VERSION_7_0_0 = ModelVersion.create(7, 0, 0);
     protected static final ModelVersion VERSION_6_0_0 = ModelVersion.create(6, 0, 0);
     protected static final ModelVersion VERSION_5_0_0 = ModelVersion.create(5, 0, 0);
@@ -203,9 +217,34 @@ public class MessagingExtension implements Extension {
     protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_7_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_8_0_0;
 
     private static final MessagingSubsystemParser_7_0 CURRENT_PARSER = new MessagingSubsystemParser_7_0();
+
+    // ARTEMIS-2273 introduced audit logging at a info level which is rather verbose. We need to use static loggers
+    // to ensure the log levels are set to WARN and there is a strong reference to the loggers. This hack will likely
+    // be removed in the future.
+    private static final Logger BASE_AUDIT_LOGGER;
+    private static final Logger MESSAGE_AUDIT_LOGGER;
+
+    static {
+        // There is no guarantee that the configured loggers will contain the logger names even if they've been
+        // configured, however it's unlikely it will be an issue. Checking the logger names is to avoid overriding
+        // the loggers if they were previously configured.
+        final Collection<String> configuredLoggers = Collections.list(LogManager.getLogManager().getLoggerNames());
+        if (configuredLoggers.contains("org.apache.activemq.audit.base")) {
+            BASE_AUDIT_LOGGER = null;
+        } else {
+            BASE_AUDIT_LOGGER = Logger.getLogger("org.apache.activemq.audit.base");
+            BASE_AUDIT_LOGGER.setLevel(Level.WARNING);
+        }
+        if (configuredLoggers.contains("org.apache.activemq.audit.message")) {
+            MESSAGE_AUDIT_LOGGER = null;
+        } else {
+            MESSAGE_AUDIT_LOGGER = Logger.getLogger("org.apache.activemq.audit.message");
+            MESSAGE_AUDIT_LOGGER.setLevel(Level.WARNING);
+        }
+    }
 
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {

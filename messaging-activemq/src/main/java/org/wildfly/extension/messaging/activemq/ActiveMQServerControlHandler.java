@@ -71,11 +71,15 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final AttributeDefinition STARTED = new SimpleAttributeDefinitionBuilder(CommonAttributes.STARTED, ModelType.BOOLEAN,
             false).setStorageRuntime().build();
 
+    public static final AttributeDefinition RUNTIME_JOURNAL_TYPE = create("runtime-journal-type", STRING)
+            .setStorageRuntime()
+            .setAllowedValues("ASYNCIO", "NIO", "DATABASE", "NONE")
+            .build();
 
     public static final AttributeDefinition VERSION = new SimpleAttributeDefinitionBuilder(CommonAttributes.VERSION, ModelType.STRING,
             true).setStorageRuntime().build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION, ACTIVE };
+    private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION, ACTIVE, RUNTIME_JOURNAL_TYPE};
     public static final String GET_CONNECTORS_AS_JSON = "get-connectors-as-json";
 //    public static final String ENABLE_MESSAGE_COUNTERS = "enable-message-counters";
 //    public static final String DISABLE_MESSAGE_COUNTERS = "disable-message-counters";
@@ -357,6 +361,20 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         } else if (ACTIVE.getName().equals(name)) {
             boolean active = server != null ? server.isActive() : false;
             context.getResult().set(active);
+        } else if (RUNTIME_JOURNAL_TYPE.getName().equals(name)) {
+            if (server != null) {
+                // if the configured journal type is not supported (e.g. using ASYNCIO without having installed libaio),
+                // ActiveMQ will override its configuration to use the NIO journal type (that is available on any platform).
+                if (server.getConfiguration().isPersistenceEnabled()) {
+                    if (server.getConfiguration().getStoreConfiguration() != null && "DATABASE".equals(server.getConfiguration().getStoreConfiguration().getStoreType().name())) {
+                        context.getResult().set("DATABASE");
+                    } else {
+                        context.getResult().set(server.getConfiguration().getJournalType().toString());
+                    }
+                } else {
+                    context.getResult().set("NONE");
+                }
+            }
         } else {
             // Bug
             throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);

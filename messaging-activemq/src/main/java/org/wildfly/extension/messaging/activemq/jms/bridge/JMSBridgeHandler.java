@@ -23,13 +23,13 @@
 package org.wildfly.extension.messaging.activemq.jms.bridge;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAUSED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.STARTED;
+import static org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition.ABORTED_MESSAGE_COUNT;
 import static org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition.PAUSE;
 import static org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition.RESUME;
 
@@ -37,8 +37,6 @@ import org.apache.activemq.artemis.jms.bridge.JMSBridge;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -47,101 +45,110 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.CommonAttributes;
 
 /**
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
 public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
 
-    public static final JMSBridgeHandler INSTANCE = new JMSBridgeHandler();
+    public static final JMSBridgeHandler INSTANCE = new JMSBridgeHandler(false);
+    public static final JMSBridgeHandler READ_ONLY_INSTANCE = new JMSBridgeHandler(true);
 
-    private ParametersValidator readAttributeValidator = new ParametersValidator();
+    private final ParametersValidator readAttributeValidator = new ParametersValidator();
+    private final boolean readOnly;
 
-    private JMSBridgeHandler() {
+    private JMSBridgeHandler(boolean readOnly) {
+        this.readOnly = readOnly;
         readAttributeValidator.registerValidator(NAME, new StringLengthValidator(1));
     }
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final String bridgeName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement()
-                .getValue();
+        final String bridgeName = context.getCurrentAddressValue();
         final String operationName = operation.require(OP).asString();
-
-        final boolean modify;
-        if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
-            modify = false;
-        } else {
-            modify = true;
+        if (null == operationName) {
+            throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
         }
+        final boolean modify = !READ_ATTRIBUTE_OPERATION.equals(operationName);
         final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
         final ServiceController<?> bridgeService = context.getServiceRegistry(modify).getService(bridgeServiceName);
         if (bridgeService == null) {
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
+            if (!readOnly) {
+                throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(context.getCurrentAddress());
+            }
+            return;
         }
-
         final JMSBridge bridge = JMSBridge.class.cast(bridgeService.getValue());
-
-        if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
-            readAttributeValidator.validate(operation);
-            final String name = operation.require(NAME).asString();
-            if (STARTED.equals(name)) {
-                context.getResult().set(bridge.isStarted());
-            } else if (PAUSED.getName().equals(name)) {
-                context.getResult().set(bridge.isPaused());
-            } else {
-                throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
-            }
-        }
-        else if (START.equals(operationName)) {
-            try {
-                // we do not start the bridge directly but call startBridge() instead
-                // to ensure the class loader will be able to load any external resources
-                JMSBridgeService service = (JMSBridgeService) bridgeService.getService();
-                service.startBridge();
-            } catch (Exception e) {
-                context.getFailureDescription().set(e.getLocalizedMessage());
-            }
-        } else if (STOP.equals(operationName)) {
-            try {
-                bridge.stop();
-            } catch (Exception e) {
-                context.getFailureDescription().set(e.getLocalizedMessage());
-            }
-        } else if (PAUSE.equals(operationName)) {
-            try {
-                bridge.pause();
-            } catch (Exception e) {
-                context.getFailureDescription().set(e.getLocalizedMessage());
-            }
-        } else if (RESUME.equals(operationName)) {
-            try {
-                bridge.resume();
-            } catch (Exception e) {
-                context.getFailureDescription().set(e.getLocalizedMessage());
-            }
-        } else {
-            throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
+        switch (operationName) {
+            case READ_ATTRIBUTE_OPERATION:
+                readAttributeValidator.validate(operation);
+                final String name = operation.require(NAME).asString();
+                if (STARTED.equals(name)) {
+                    context.getResult().set(bridge.isStarted());
+                } else if (PAUSED.getName().equals(name)) {
+                    context.getResult().set(bridge.isPaused());
+                }  else if (CommonAttributes.MESSAGE_COUNT.getName().equals(name)) {
+                    context.getResult().set(bridge.getMessageCount());
+                }  else if (ABORTED_MESSAGE_COUNT.getName().equals(name)) {
+                    context.getResult().set(bridge.getAbortedMessageCount());
+                } else {
+                    throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
+                }
+                break;
+            case START:
+                try {
+                    // we do not start the bridge directly but call startBridge() instead
+                    // to ensure the class loader will be able to load any external resources
+                    JMSBridgeService service = (JMSBridgeService) bridgeService.getService();
+                    service.startBridge();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }   break;
+            case STOP:
+                try {
+                    bridge.stop();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }   break;
+            case PAUSE:
+                try {
+                    bridge.pause();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }   break;
+            case RESUME:
+                try {
+                    bridge.resume();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            default:
+                throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
         }
 
         context.completeStep(new OperationContext.RollbackHandler() {
             @Override
             public void handleRollback(OperationContext context, ModelNode operation) {
                 try {
-                    if (START.equals(operationName)) {
-                        bridge.stop();
-                    } else if (STOP.equals(operationName)) {
-                        JMSBridgeService service = (JMSBridgeService) bridgeService.getService();
-                        service.startBridge();
-                    } else if (PAUSE.equals(operationName)) {
-                        bridge.resume();
-                    } else if (RESUME.equals(operationName)) {
-                        bridge.pause();
+                    switch (operationName) {
+                        case START:
+                            bridge.stop();
+                            break;
+                        case STOP:
+                            JMSBridgeService service = (JMSBridgeService) bridgeService.getService();
+                            service.startBridge();
+                            break;
+                        case PAUSE:
+                            bridge.resume();
+                            break;
+                        case RESUME:
+                            bridge.pause();
+                            break;
                     }
                 } catch (Exception e) {
-                    MessagingLogger.ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(), operation
-                            .require(ModelDescriptionConstants.OP).asString(), PathAddress.pathAddress(operation
-                            .require(ModelDescriptionConstants.OP_ADDR)));
+                    MessagingLogger.ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(), operationName, context.getCurrentAddress());
                 }
             }
         });

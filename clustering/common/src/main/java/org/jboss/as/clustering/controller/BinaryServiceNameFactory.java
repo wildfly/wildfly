@@ -49,4 +49,15 @@ public interface BinaryServiceNameFactory {
      * @return a {@link ServiceName}
      */
     ServiceName getServiceName(CapabilityServiceSupport support, String parent, String child);
+
+    /**
+     * Creates a {@link ServiceName} appropriate for the address of the specified {@link OperationContext}
+     * @param context an operation context
+     * @param resolver a capability name resolver
+     * @return a {@link ServiceName}
+     */
+    default ServiceName getServiceName(OperationContext context, BinaryCapabilityNameResolver resolver) {
+        String[] parts = resolver.apply(context.getCurrentAddress());
+        return this.getServiceName(context, parts[0], parts[1]);
+    }
 }

@@ -154,70 +154,6 @@ subdirectory of the distribution:
 |Server |./standalone/log/server.log
 |===================================
 
-[[filter-expressions]]
-== Filter Expressions
-
-[cols=",,,,",options="header"]
-|=======================================================================
-|Filter Type |Expression |Description |Parameter(s) |Examples
-
-|accept |accept |Accepts all log messages. |None |accept
-
-|deny |deny |Denies all log messages. |None |deny
-
-|not |not(filterExpression) |Accepts a filter as an argument and inverts
-the returned value. |The expression takes a single filter for it's
-argument. |not(match("JBAS"))
-
-|all |all(filterExpressions) |A filter consisting of several filters in
-a chain. If any filter find the log message to be unloggable, the
-message will not be logged and subsequent filters will not be checked.
-|The expression takes a comma delimited list of filters for it's
-argument. |all(match("JBAS"), match("WELD"))
-
-|any |any(filterExpressions) |A filter consisting of several filters in
-a chain. If any filter fins the log message to be loggable, the message
-will be logged and the subsequent filters will not be checked. |The
-expression takes a comma delimited list of filters for it's argument.
-|any(match("JBAS"), match("WELD"))
-
-|levelChange |levelChange(level) |A filter which modifies the log record
-with a new level. |The expression takes a single string based level for
-it's argument. |levelChange(WARN)
-
-|levels |levels(levels) |A filter which includes log messages with a
-level that is listed in the list of levels. |The expression takes a
-comma delimited list of string based levels for it's argument.
-|levels(DEBUG, INFO, WARN, ERROR)
-
-|levelRange |levelRange([minLevel,maxLevel]) |A filter which logs
-records that are within the level range. |The filter expression uses a
-"[" to indicate a minimum inclusive level and a "]" to indicate a
-maximum inclusive level. Otherwise use "(" or ")" respectively indicate
-exclusive. The first argument for the expression is the minimum level
-allowed, the second argument is the maximum level allowed. |minimum
-level must be less than ERROR and the maximum level must be greater than
-DEBUGlevelRange(ERROR, DEBUG) minimum level must be less than or equal
-to ERROR and the maximum level must be greater than
-DEBUGlevelRange[ERROR, DEBUG) minimum level must be less than or equal
-to ERROR and the maximum level must be greater or equal to
-INFOlevelRange[ERROR, INFO]
-
-|match |match("pattern") |A regular-expression based filter. The raw
-unformatted message is used against the pattern. |The expression takes a
-regular expression for it's argument. match("JBAS\d+") |
-
-|substitute |substitute("pattern", "replacement value") |A filter which
-replaces the first match to the pattern with the replacement value. |The
-first argument for the expression is the pattern the second argument is
-the replacement text. |substitute("JBAS", "EAP")
-
-|substituteAll |substituteAll("pattern", "replacement value") |A filter
-which replaces all matches of the pattern with the replacement value.
-|The first argument for the expression is the pattern the second
-argument is the replacement text. |substituteAll("JBAS", "EAP")
-|=======================================================================
-
 [[list-log-files-and-reading-log-files]]
 == List Log Files and Reading Log Files
 
@@ -322,5 +258,7 @@ include::Logging_Handlers.adoc[]
 include::Logging_How_To.adoc[]
 
 include::Logging_Loggers.adoc[]
+
+include::Logging_Filters.adoc[]
 
 :leveloffset: -1

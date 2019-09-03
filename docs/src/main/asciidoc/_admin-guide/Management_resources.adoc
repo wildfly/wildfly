@@ -241,7 +241,7 @@ configuration:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=undertow/server=default-server/http-listener=default:read-resource(include-runtime=false
+[standalone@localhost:9990 /] /subsystem=undertow/server=default-server/http-listener=default:read-resource(include-runtime=false)
 {
     "outcome" => "success",
     "result" => {
@@ -289,7 +289,7 @@ exposes.
 == Children
 
 Management resources may support child resources. The
-<<children,_types_ of children>> a
+<<address,_types_ of children>> a
 resource supports (e.g. `connector` for the web subsystem resource) can
 be obtained by querying the resource's description (see
 <<descriptions,Descriptions>> below)

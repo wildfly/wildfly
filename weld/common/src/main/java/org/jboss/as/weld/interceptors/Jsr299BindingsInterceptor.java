@@ -55,6 +55,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
     private final InterceptionType interceptionType;
     private final ComponentInterceptorSupport interceptorSupport;
     private final Supplier<InterceptorBindings> interceptorBindingsSupplier;
+    private volatile InterceptorBindings interceptorBindings;
 
     private Jsr299BindingsInterceptor(final InterceptionType interceptionType, final ComponentInterceptorSupport interceptorSupport, final Supplier<InterceptorBindings> interceptorBindingsSupplier) {
         this.interceptionType = interceptionType;
@@ -96,7 +97,11 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
         final InterceptorInstances interceptorInstances = interceptorSupport.getInterceptorInstances(componentInstance);
-        final InterceptorBindings interceptorBindings = interceptorBindingsSupplier.get();
+        InterceptorBindings interceptorBindings = this.interceptorBindings;
+        if (interceptorBindings == null) {
+            // Cache the bindings as reading the interceptorBindingsSupplier is contended
+            interceptorBindings = this.interceptorBindings = interceptorBindingsSupplier.get();
+        }
         switch (interceptionType) {
             case AROUND_INVOKE:
                 return doMethodInterception(context.getInvocationContext(), InterceptionType.AROUND_INVOKE, interceptorInstances, interceptorBindings);

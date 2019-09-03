@@ -33,6 +33,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -65,7 +66,15 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
         super(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name));
     }
 
+    /**
+     * @deprecated Use {@link AbstractHandlerDefinition#AbstractHandlerDefinition(org.jboss.as.controller.SimpleResourceDefinition.Parameters)} instead.
+     */
+    @Deprecated
     protected AbstractHandlerDefinition(final Parameters parameters) {
+        super(parameters);
+    }
+
+    protected AbstractHandlerDefinition(final SimpleResourceDefinition.Parameters parameters) {
         super(parameters);
     }
 

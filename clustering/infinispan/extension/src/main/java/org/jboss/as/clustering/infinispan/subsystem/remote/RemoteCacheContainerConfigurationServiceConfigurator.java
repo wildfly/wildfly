@@ -31,6 +31,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.management.MBeanServer;
+
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.configuration.ClusterConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.Configuration;
@@ -41,8 +43,10 @@ import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.TransactionConfiguration;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
 import org.jboss.as.controller.OperationContext;
@@ -66,6 +70,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Radoslav Husar
+ * @author Paul Ferraro
  */
 public class RemoteCacheContainerConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<Configuration> {
 
@@ -77,6 +82,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     private final SupplierDependency<SecurityConfiguration> security;
     private final SupplierDependency<TransactionConfiguration> transaction;
 
+    private volatile SupplierDependency<MBeanServer> server;
     private volatile int connectionTimeout;
     private volatile String defaultRemoteCluster;
     private volatile int keySizeEstimate;
@@ -86,6 +92,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     private volatile boolean tcpNoDelay;
     private volatile boolean tcpKeepAlive;
     private volatile int valueSizeEstimate;
+    private volatile boolean statisticsEnabled;
 
     RemoteCacheContainerConfigurationServiceConfigurator(PathAddress address) {
         super(RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, address);
@@ -108,6 +115,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         this.tcpNoDelay = Attribute.TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean();
         this.tcpKeepAlive = Attribute.TCP_KEEP_ALIVE.resolveModelAttribute(context, model).asBoolean();
         this.valueSizeEstimate = Attribute.VALUE_SIZE_ESTIMATE.resolveModelAttribute(context, model).asInt();
+        this.statisticsEnabled = Attribute.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         this.clusters.clear();
 
@@ -123,13 +131,15 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
             this.clusters.put(clusterName, bindingDependencies);
         }
 
+        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
+
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<Configuration> configuration = new CompositeDependency(this.module, this.connectionPool, this.nearCache, this.security, this.transaction).register(builder).provides(this.getServiceName());
+        Consumer<Configuration> configuration = new CompositeDependency(this.module, this.connectionPool, this.nearCache, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
@@ -144,6 +154,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
     @Override
     public Configuration get() {
+        MBeanServer server = (this.server != null) ? this.server.get() : null;
         ConfigurationBuilder builder = new ConfigurationBuilder()
                 .marshaller(new HotRodMarshaller(this.module.get()))
                 .connectionTimeout(this.connectionTimeout)
@@ -151,6 +162,11 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                 .maxRetries(this.maxRetries)
                 .version(ProtocolVersion.parseVersion(this.protocolVersion))
                 .socketTimeout(this.socketTimeout)
+                .statistics()
+                    .enabled(this.statisticsEnabled)
+                    .jmxDomain("org.wildfly.clustering.infinispan")
+                    .jmxEnabled(server != null)
+                    .mBeanServerLookup(new MBeanServerProvider(server))
                 .tcpNoDelay(this.tcpNoDelay)
                 .tcpKeepAlive(this.tcpKeepAlive)
                 .valueSizeEstimate(this.valueSizeEstimate);

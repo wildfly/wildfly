@@ -71,6 +71,7 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
 
     static class ClassLoaderSetupContextHandle implements SetupContextHandle {
 
+        private static final long serialVersionUID = -2669625643479981561L;
         private final ClassLoader classLoader;
 
         ClassLoaderSetupContextHandle(ClassLoader classLoader) {
@@ -102,6 +103,7 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
 
     private static class ClassLoaderResetContextHandle implements ResetContextHandle {
 
+        private static final long serialVersionUID = -579159484365527468L;
         private final ClassLoader previous;
 
         private ClassLoaderResetContextHandle(ClassLoader previous) {

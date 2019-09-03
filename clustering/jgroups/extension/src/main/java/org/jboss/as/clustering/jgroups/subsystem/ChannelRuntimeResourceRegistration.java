@@ -71,7 +71,7 @@ public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegist
         String channelName = address.getParent().getLastElement().getValue();
         String protocolName = address.getLastElement().getValue();
 
-        ServiceRegistry registry = context.getServiceRegistry(true);
+        ServiceRegistry registry = context.getServiceRegistry(false);
         JChannel channel = new PassiveServiceSupplier<JChannel>(registry, JGroupsRequirement.CHANNEL.getServiceName(context, channelName)).get();
         if (channel != null) {
             ChannelFactory factory = new PassiveServiceSupplier<ChannelFactory>(registry, JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channelName)).get();

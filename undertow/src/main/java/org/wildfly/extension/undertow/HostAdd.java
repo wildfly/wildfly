@@ -100,7 +100,7 @@ class HostAdd extends AbstractAddStepHandler {
                 .setInstance(service)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServerInjection(), serverName)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class, service.getUndertowService())
-                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, service.getSuspendControllerInjectedValue())
+                .addDependency(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class), SuspendController.class, service.getSuspendControllerInjectedValue())
                 .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjectedValue());
 
         builder.setInitialMode(Mode.ON_DEMAND);

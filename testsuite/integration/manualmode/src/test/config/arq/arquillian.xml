@@ -22,6 +22,23 @@
             </configuration>
         </container>
 
+        <container qualifier="default-full-jbossas" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas</property>
+                <property name="serverConfig">standalone-full.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
         <container qualifier="jbossas-non-clustered" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly</property>
@@ -185,11 +202,11 @@
         <container qualifier="jbossas-messaging-ha-server1" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-messaging-ha-server1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-messaging-ha-server1 -Djboss.node.name=default-jbossas-messaging-ha-server1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.modcluster.multicast.address=${mcast} -Djboss.inst=${basedir}/target/jbossas-messaging-ha-server1 -Djboss.node.name=default-jbossas-messaging-ha-server1</property>
                 <property name="serverConfig">standalone-full-ha.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
-                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
 
                 <!-- AS7-4070 -->
@@ -201,11 +218,11 @@
         <container qualifier="jbossas-messaging-ha-server2" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-messaging-ha-server2</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.socket.binding.port-offset=100 -Djboss.inst=${basedir}/target/jbossas-messaging-ha-server2 -Djboss.node.name=default-jbossas-messaging-ha-server2</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.private=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.socket.binding.port-offset=100 -Djboss.inst=${basedir}/target/jbossas-messaging-ha-server2 -Djboss.node.name=default-jbossas-messaging-ha-server2</property>
                 <property name="serverConfig">standalone-full-ha.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
-                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementAddress">${node1}</property>
                 <property name="managementPort">${as.managementPort:10090}</property>
 
                 <!-- AS7-4070 -->

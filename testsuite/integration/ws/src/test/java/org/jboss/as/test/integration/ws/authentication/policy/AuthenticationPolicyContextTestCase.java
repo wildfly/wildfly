@@ -127,7 +127,7 @@ public class AuthenticationPolicyContextTestCase {
         war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
         war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-webservices.xml", "jboss-webservices.xml");
         war.addAsManifestResource(createPermissionsXmlAsset(
-                new SecurityPermission("getPolicy"),
+                new SecurityPermission("setPolicy"),
                 new RuntimePermission("org.jboss.security.getSecurityContext")
         ), "permissions.xml");
         return war;
@@ -149,7 +149,7 @@ public class AuthenticationPolicyContextTestCase {
         war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-webservices.xml", "jboss-webservices.xml");
         war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "dummmy-ws-handler.xml", "org/jboss/as/test/integration/ws/authentication/policy/resources/dummmy-ws-handler.xml");
         war.addAsManifestResource(createPermissionsXmlAsset(
-                new SecurityPermission("getPolicy"),
+                new SecurityPermission("setPolicy"),
                 new RuntimePermission("org.jboss.security.getSecurityContext")
         ), "permissions.xml");
         return war;

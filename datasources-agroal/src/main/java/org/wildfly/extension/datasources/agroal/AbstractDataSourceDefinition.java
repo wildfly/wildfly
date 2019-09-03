@@ -90,7 +90,7 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     static final SimpleAttributeDefinition STATISTICS_ENABLED_ATTRIBUTE = create("statistics-enabled", ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .build();
 
@@ -175,14 +175,14 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     static final SimpleAttributeDefinition MIN_SIZE_ATTRIBUTE = create("min-size", ModelType.INT)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setRequired(false)
             .setValidator(new IntRangeValidator(0) )
             .build();
 
     static final SimpleAttributeDefinition INITIAL_SIZE_ATTRIBUTE = create("initial-size", ModelType.INT)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setRequired(false)
             .setRestartAllServices()
             .setValidator(new IntRangeValidator(0) )
@@ -192,14 +192,14 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     static final SimpleAttributeDefinition BLOCKING_TIMEOUT_MILLIS_ATTRIBUTE = create("blocking-timeout", ModelType.INT)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setRequired(false)
             .build();
 
     static final SimpleAttributeDefinition BACKGROUND_VALIDATION_ATTRIBUTE = create("background-validation", ModelType.INT)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setRequired(false)
             .setRestartAllServices()
@@ -207,7 +207,7 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     static final SimpleAttributeDefinition LEAK_DETECTION_ATTRIBUTE = create("leak-detection", ModelType.INT)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setRequired(false)
             .setRestartAllServices()
@@ -215,7 +215,7 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     static final SimpleAttributeDefinition IDLE_REMOVAL_ATTRIBUTE = create("idle-removal", ModelType.INT)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setMeasurementUnit(MeasurementUnit.MINUTES)
             .setRequired(false)
             .setRestartAllServices()

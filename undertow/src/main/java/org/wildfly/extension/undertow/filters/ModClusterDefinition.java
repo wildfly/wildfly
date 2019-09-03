@@ -22,21 +22,36 @@
 
 package org.wildfly.extension.undertow.filters;
 
+import static org.jboss.as.controller.PathElement.pathElement;
+import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_MOD_CLUSTER_FILTER;
+import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
 import io.undertow.UndertowOptions;
 import io.undertow.predicate.Predicate;
 import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
 import io.undertow.protocols.http2.Http2Channel;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.AddStepHandlerDescriptor;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceRemoveStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -55,28 +70,32 @@ import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-
-import static org.jboss.as.controller.PathElement.pathElement;
-import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_MOD_CLUSTER_FILTER;
-import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
-
-
 /**
- * mod_cluster front end handler. This acts like a filter, but does not re-use a lot of the filter code as it
+ * mod_cluster front-end handler. This acts like a filter, but does not re-use a lot of the filter code as it
  * needs to inject various services.
  *
  * @author Stuart Douglas
+ * @author Radoslav Husar
  */
 public class ModClusterDefinition extends AbstractHandlerDefinition {
 
+    public static final PathElement PATH = pathElement(Constants.MOD_CLUSTER);
+    public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();
 
-    static final RuntimeCapability<Void> MOD_CLUSTER_FILTER_CAPABILITY = RuntimeCapability
-            .Builder.of(CAPABILITY_MOD_CLUSTER_FILTER, true, FilterService.class)
-            //.addDynamicOptionalRequirements(REF_SSL_CONTEXT) -- has no function so don't use it
-            .build();
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        MOD_CLUSTER_FILTER_CAPABILITY(CAPABILITY_MOD_CLUSTER_FILTER, FilterService.class),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name, Class<?> serviceValueType) {
+            this.definition = RuntimeCapability.Builder.of(name, true, serviceValueType).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
+        }
+
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
+    }
 
     public static final AttributeDefinition MANAGEMENT_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
@@ -218,14 +237,14 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     public static final SimpleAttributeDefinition USE_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.USE_ALIAS, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .build();
 
 
     public static final SimpleAttributeDefinition ENABLE_HTTP2 = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_HTTP2, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .build();
 
@@ -243,7 +262,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .build();
 
     public static final OptionAttributeDefinition HTTP2_HEADER_TABLE_SIZE = OptionAttributeDefinition.builder("http2-header-table-size", UndertowOptions.HTTP2_SETTINGS_HEADER_TABLE_SIZE)
@@ -299,19 +318,9 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             ADVERTISE_PATH, ADVERTISE_FREQUENCY, FAILOVER_STRATEGY, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
             CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, SSL_CONTEXT, USE_ALIAS, ENABLE_HTTP2, MAX_AJP_PACKET_SIZE,
             HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH, MAX_RETRIES));
-    public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();
 
-    private ModClusterDefinition() {
-        super(new Parameters(pathElement(Constants.MOD_CLUSTER), UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER))
-                .setAddHandler(new ModClusterAdd())
-                .setRemoveHandler(new ServiceRemoveStepHandler(UndertowService.FILTER, new ModClusterAdd()))
-                .setCapabilities(MOD_CLUSTER_FILTER_CAPABILITY)
-        );
-    }
-
-    @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
+    public ModClusterDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH, UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER)));
     }
 
     @Override
@@ -322,29 +331,63 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     @Override
     public HttpHandler createHttpHandler(Predicate predicate, ModelNode model, HttpHandler next) {
         throw new IllegalStateException(); //this is not used for mod_cluster, as it required injection and socket binding
+    }
 
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(ATTRIBUTES)
+                .addCapabilities(Capability.class)
+                .addRequiredSingletonChildren(SingleAffinityResourceDefinition.PATH)
+                ;
+        ModClusterResourceServiceHandler handler = new ModClusterResourceServiceHandler();
+        new ModClusterResourceRegistration(descriptor, handler).register(resourceRegistration);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        new NoAffinityResourceDefinition().register(resourceRegistration);
+        new SingleAffinityResourceDefinition().register(resourceRegistration);
+        new RankedAffinityResourceDefinition().register(resourceRegistration);
+
         resourceRegistration.registerSubModel(ModClusterBalancerDefinition.INSTANCE);
     }
 
-    static class ModClusterAdd extends AbstractAddStepHandler {
-        ModClusterAdd() {
-            super(ATTRIBUTES);
+    static class ModClusterResourceRegistration extends ResourceRegistration {
+
+        ModClusterResourceRegistration(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+            super(descriptor, handler, new ModClusterAddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler));
+        }
+    }
+
+    static class ModClusterResourceServiceHandler implements ResourceServiceHandler {
+
+        @Override
+        public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
+            String name = context.getCurrentAddressValue();
+            ModelNode recursiveModel = Resource.Tools.readModel(context.readResourceFromRoot(context.getCurrentAddress(), true));
+            ModClusterService.install(name, context.getCapabilityServiceTarget(), recursiveModel, context);
         }
 
         @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            final String name = context.getCurrentAddressValue();
-            ModClusterService.install(name, context.getCapabilityServiceTarget(), model, context);
+        public void removeServices(OperationContext context, ModelNode model) {
+            context.removeService(UndertowService.FILTER.append(Constants.MOD_CLUSTER));
+        }
+    }
+
+    static class ModClusterAddStepHandler extends AddStepHandler {
+
+        ModClusterAddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+            super(descriptor, handler);
         }
 
+        /**
+         * Wraps a standard {@link Resource} implementation which can dynamically register runtime resources at
+         * {@code ../mod-cluster=X/balancer=Y} address.
+         */
         @Override
         protected Resource createResource(OperationContext context, ModelNode operation) {
             if (context.isDefaultRequiresRuntime()) {
-                // Wrap a standard Resource impl in our custom variant that understands runtime-only children
                 Resource delegate = Resource.Factory.create();
                 Resource result = new ModClusterResource(delegate, context.getCurrentAddressValue());
                 context.addResource(PathAddress.EMPTY_ADDRESS, result);
@@ -353,5 +396,6 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
                 return super.createResource(context, operation);
             }
         }
+
     }
 }

@@ -766,4 +766,37 @@ public class AggregateRealmTestCase {
         }
     }
 
+     static class CustomFSAttributes implements ConfigurableElement {
+
+        private final String realm;
+        private final String identity;
+        private final String attributeName;
+        private final String[] values;
+
+        CustomFSAttributes(String realm, String identity, String attributeName, String... values) {
+            this.realm = realm;
+            this.identity = identity;
+            this.attributeName = attributeName;
+            this.values = values;
+        }
+
+        @Override
+        public String getName() {
+            return String.format("Attribute '$s' for identity '%s' in realm '%s'", attributeName, identity, realm);
+        }
+
+        @Override
+        public void create(CLIWrapper cli) throws Exception {
+            cli.sendLine(String.format(
+                    "/subsystem=elytron/filesystem-realm=%s:add-identity-attribute(identity=%s, name=%s, value=[%s])", realm,
+                    identity, attributeName, String.join(",", values)));
+        }
+
+        public void remove(CLIWrapper cli) throws Exception {
+            // No action required as the overall realm is removed - however this override is
+            // required as ConfigurableElement.remove(CLIWrapper) throws an IllegalStateException.
+        }
+
+    }
+
 }

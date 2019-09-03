@@ -31,6 +31,7 @@ import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
@@ -269,6 +270,11 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     }
 
     JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
-        super(path, legacyPath, resolver, new ResourceDescriptorConfigurator(configurator), JDBCStoreServiceConfigurator::new);
+        super(path, legacyPath, resolver, new ResourceDescriptorConfigurator(configurator));
+    }
+
+    @Override
+    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+        return new JDBCStoreServiceConfigurator(address);
     }
 }

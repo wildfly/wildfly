@@ -39,8 +39,8 @@ public class MessageDrivenBeanResourceDefinition extends AbstractEJBComponentRes
 
     public static final MessageDrivenBeanResourceDefinition INSTANCE = new MessageDrivenBeanResourceDefinition();
 
-    public static final AttributeDefinition DELIVERY_ACTIVE = new SimpleAttributeDefinitionBuilder("delivery-active", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+    public static final AttributeDefinition DELIVERY_ACTIVE = new SimpleAttributeDefinitionBuilder("delivery-active", ModelType.BOOLEAN, true)
+            .setDefaultValue(ModelNode.TRUE)
             .setStorageRuntime()
             .build();
 

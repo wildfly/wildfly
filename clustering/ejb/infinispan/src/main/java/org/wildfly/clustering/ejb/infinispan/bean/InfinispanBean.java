@@ -76,10 +76,7 @@ public class InfinispanBean<I, T> implements Bean<I, T> {
 
     @Override
     public boolean isExpired() {
-        if ((this.timeout == null) || this.timeout.isNegative()) return false;
-        if (this.timeout.isZero()) return true;
-        Instant lastAccessedTime = this.entry.getLastAccessedTime();
-        return (lastAccessedTime != null) ? !lastAccessedTime.plus(this.timeout).isAfter(Instant.now()) : false;
+        return this.entry.isExpired(this.timeout);
     }
 
     @Override

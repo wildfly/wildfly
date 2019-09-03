@@ -27,6 +27,8 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -43,6 +45,8 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -50,7 +54,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Paul Ferraro
  */
-public abstract class TableResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public abstract class TableResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String value) {
@@ -59,6 +63,8 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         FETCH_SIZE("fetch-size", ModelType.INT, new ModelNode(100)),
+        CREATE_ON_START("create-on-start", ModelType.BOOLEAN, ModelNode.TRUE),
+        DROP_ON_STOP("drop-on-stop", ModelType.BOOLEAN, ModelNode.FALSE),
         ;
         private final AttributeDefinition definition;
 
@@ -142,19 +148,28 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.CREATE_ON_START.getDefinition(), Attribute.DROP_ON_STOP.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CREATE_ON_START.getDefinition(), Attribute.DROP_ON_STOP.getDefinition())
+                    ;
+        }
         if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            Converter converter = (PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) -> {
-                PathAddress storeAddress = address.getParent();
-                PathElement storePath = storeAddress.getLastElement();
-                if (storePath.equals(StringKeyedJDBCStoreResourceDefinition.STRING_JDBC_PATH) || storePath.equals(StringKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
-                    storeAddress = storeAddress.getParent().append(StringKeyedJDBCStoreResourceDefinition.PATH);
-                } else if (storePath.equals(BinaryKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
-                    storeAddress = storeAddress.getParent().append(BinaryKeyedJDBCStoreResourceDefinition.PATH);
-                } else if (storePath.equals(MixedKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
-                    storeAddress = storeAddress.getParent().append(MixedKeyedJDBCStoreResourceDefinition.PATH);
+            Converter converter = new Converter() {
+                @Override
+                public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
+                    PathAddress storeAddress = address.getParent();
+                    PathElement storePath = storeAddress.getLastElement();
+                    if (storePath.equals(StringKeyedJDBCStoreResourceDefinition.STRING_JDBC_PATH) || storePath.equals(StringKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
+                        storeAddress = storeAddress.getParent().append(StringKeyedJDBCStoreResourceDefinition.PATH);
+                    } else if (storePath.equals(BinaryKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
+                        storeAddress = storeAddress.getParent().append(BinaryKeyedJDBCStoreResourceDefinition.PATH);
+                    } else if (storePath.equals(MixedKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
+                        storeAddress = storeAddress.getParent().append(MixedKeyedJDBCStoreResourceDefinition.PATH);
+                    }
+                    ModelNode store = context.readResourceFromRoot(storeAddress).getModel();
+                    value.set(store.hasDefined(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName()) ? store.get(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName()) : StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getDefinition().getDefaultValue());
                 }
-                ModelNode store = context.readResourceFromRoot(storeAddress).getModel();
-                value.set(store.hasDefined(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName()) ? store.get(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName()) : StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getDefinition().getDefaultValue());
             };
             builder.getAttributeBuilder().setValueConverter(new SimpleAttributeConverter(converter), DeprecatedAttribute.BATCH_SIZE.getDefinition());
         }
@@ -194,9 +209,14 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
                 .addAttributes(ColumnAttribute.class)
                 .addAttributeTranslation(DeprecatedAttribute.BATCH_SIZE, BATCH_SIZE_TRANSLATION)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> new TableServiceConfigurator(this.prefixAttribute, address));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+        return new TableServiceConfigurator(this.prefixAttribute, address);
     }
 }

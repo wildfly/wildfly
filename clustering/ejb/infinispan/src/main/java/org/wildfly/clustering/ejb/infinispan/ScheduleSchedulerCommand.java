@@ -22,7 +22,6 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ejb.Bean;
 
 /**
  * Command that schedules a session.
@@ -32,14 +31,20 @@ public class ScheduleSchedulerCommand<I> implements Command<Void, Scheduler<I>> 
     private static final long serialVersionUID = -2606847692331278614L;
 
     private final I beanId;
+    private transient ImmutableBeanEntry<I> entry = null;
 
-    public ScheduleSchedulerCommand(Bean<I, ?> bean) {
-        this.beanId = bean.getId();
+    public ScheduleSchedulerCommand(I beanId, ImmutableBeanEntry<I> entry) {
+        this.beanId = beanId;
+        this.entry = entry;
     }
 
     @Override
     public Void execute(Scheduler<I> scheduler) {
-        scheduler.schedule(this.beanId);
+        if (this.entry != null) {
+            scheduler.schedule(this.beanId, this.entry);
+        } else {
+            scheduler.schedule(this.beanId);
+        }
         return null;
     }
 }

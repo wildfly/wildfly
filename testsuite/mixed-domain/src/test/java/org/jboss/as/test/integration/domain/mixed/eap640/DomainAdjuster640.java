@@ -108,10 +108,11 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
     private List<ModelNode> adjustEe(final PathAddress subsystem) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
         //Concurrency resources are not available
-        list.add(createRemoveOperation(subsystem.append("context-service", "default")));
-        list.add(createRemoveOperation(subsystem.append("managed-thread-factory", "default")));
         list.add(createRemoveOperation(subsystem.append("managed-executor-service", "default")));
         list.add(createRemoveOperation(subsystem.append("managed-scheduled-executor-service", "default")));
+        list.add(createRemoveOperation(subsystem.append("managed-thread-factory", "default")));
+        list.add(createRemoveOperation(subsystem.append("context-service", "default")));
+
         //default-bindings are not available
         list.add(createRemoveOperation(subsystem.append("service", "default-bindings")));
         return list;

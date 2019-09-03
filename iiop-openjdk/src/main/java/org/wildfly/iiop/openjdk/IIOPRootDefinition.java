@@ -134,7 +134,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     protected static final AttributeDefinition EXPORT_CORBALOC = new SimpleAttributeDefinitionBuilder(
             Constants.NAMING_EXPORT_CORBALOC, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.NAMING)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -143,7 +143,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     public static final AttributeDefinition SUPPORT_SSL = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SUPPORT_SSL, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.SECURITY)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .addAccessConstraint(IIOP_SECURITY_DEF)
@@ -187,7 +187,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.BOOLEAN, true)
             .setDeprecated(IIOPExtension.VERSION_1)
             .setAttributeGroup(Constants.SECURITY)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .addAccessConstraint(IIOP_SECURITY_DEF)
@@ -267,7 +267,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     public static final AttributeDefinition INTEROP_IONA = new SimpleAttributeDefinitionBuilder(
             Constants.INTEROP_IONA, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.INTEROP)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -363,7 +363,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_AS_CONTEXT_REQUIRED, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.IOR_AS_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .build();
 

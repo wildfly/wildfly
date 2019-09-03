@@ -57,17 +57,17 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition EXECUTION_TIME = new SimpleAttributeDefinitionBuilder("execution-time", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC)
             .build();
 
     private static final AttributeDefinition INVOCATIONS = new SimpleAttributeDefinitionBuilder("invocations", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC)
             .build();
 
     private static final AttributeDefinition PEAK_CONCURRENT_INVOCATIONS = new SimpleAttributeDefinitionBuilder("peak-concurrent-invocations", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
@@ -76,7 +76,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition WAIT_TIME = new SimpleAttributeDefinitionBuilder("wait-time", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC)
             .build();
 
@@ -97,18 +97,18 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition CACHE_SIZE = new SimpleAttributeDefinitionBuilder("cache-size", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
     private static final AttributeDefinition PASSIVATED_SIZE = new SimpleAttributeDefinitionBuilder("passivated-count",
             ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
     private static final AttributeDefinition TOTAL_SIZE = new SimpleAttributeDefinitionBuilder("total-size", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 

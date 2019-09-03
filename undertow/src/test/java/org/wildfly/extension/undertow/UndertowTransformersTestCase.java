@@ -213,17 +213,6 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
 
         List<ModelNode> ops = builder.parseXmlResource("undertow-reject.xml");
 
-        if (controllerVersion == ModelTestControllerVersion.EAP_7_1_0) {
-            // The EAP 7.1 tests load a legacy version of undertow in the child first classloader
-            // But the current version is in the parent. PredicateValidator's use of PredicateParser
-            // fails in this situation as it results in ServiceLoader trying to load classes from both
-            // jars. So just disable testing of params that involve PredicateValidator.
-            for (ModelNode op : ops) {
-                op.remove(Constants.PREDICATE);
-                op.remove(Constants.MANAGEMENT_ACCESS_PREDICATE);
-            }
-        }
-
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, targetVersion, ops, config);
     }
 
@@ -297,9 +286,9 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
         if (controllerVersion == ModelTestControllerVersion.EAP_7_1_0 || controllerVersion == ModelTestControllerVersion.EAP_7_2_0) {
             init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-clustering-common:" + controllerVersion.getMavenGavVersion());
             init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-web-common:" + controllerVersion.getMavenGavVersion());
-            // The version here appears to be required to be set to the current version of undertow
-            init.addMavenResourceURL("io.undertow:undertow-servlet:2.0.20.Final");
-            init.addMavenResourceURL("io.undertow:undertow-core:2.0.20.Final");
+            // Prevent service loader loading of io.undertow.predicate.PredicateBuilder or io.undertow.attribute.ExchangeAttributeBuilder
+            // from the parent as the parent includes classes not available in the child
+            init.excludeResourceFromParent("META-INF/services/io.undertow.*");
         }
     }
 

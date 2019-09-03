@@ -83,14 +83,14 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
                     .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition ENABLE_LOOKUPS =
             new SimpleAttributeDefinitionBuilder(Constants.ENABLE_LOOKUPS, ModelType.BOOLEAN)
                     .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition PROXY_BINDING =
@@ -138,7 +138,7 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
                     .setRequired(false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     protected static final SimpleAttributeDefinition REDIRECT_BINDING =
             new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_BINDING, ModelType.STRING)

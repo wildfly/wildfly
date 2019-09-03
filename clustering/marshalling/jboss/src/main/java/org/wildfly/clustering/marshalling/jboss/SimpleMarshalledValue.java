@@ -64,7 +64,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         return this.object;
     }
 
-    byte[] getBytes() throws IOException {
+    synchronized byte[] getBytes() throws IOException {
         byte[] bytes = this.bytes;
         if (bytes != null) return bytes;
         if (this.object == null) return null;
@@ -120,7 +120,8 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
      */
     @Override
     public int hashCode() {
-        return (this.object != null) ? this.object.hashCode() : 0;
+        Object object = this.object;
+        return (object != null) ? object.hashCode() : 0;
     }
 
     @Override
@@ -128,8 +129,10 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         if ((object == null) || !(object instanceof SimpleMarshalledValue)) return false;
         @SuppressWarnings("unchecked")
         SimpleMarshalledValue<T> value = (SimpleMarshalledValue<T>) object;
-        if ((this.object != null) && (value.object != null)) {
-            return this.object.equals(value.object);
+        Object ourObject = this.object;
+        Object theirObject = value.object;
+        if ((ourObject != null) && (theirObject != null)) {
+            return ourObject.equals(theirObject);
         }
         try {
             byte[] us = this.getBytes();
@@ -142,7 +145,8 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
 
     @Override
     public String toString() {
-        if (this.object != null) return this.object.toString();
+        Object object = this.object;
+        if (object != null) return object.toString();
         byte[] bytes = this.bytes;
         return (bytes != null) ? bytes.toString() : null;
     }

@@ -147,7 +147,8 @@ public interface EJB3SubsystemModel {
     PathElement FILE_DATA_STORE_PATH = PathElement.pathElement(FILE_DATA_STORE);
     PathElement DATABASE_DATA_STORE_PATH = PathElement.pathElement(DATABASE_DATA_STORE);
 
-    ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3");
+    String BASE_EJB_THREAD_POOL_NAME = "ejb3";
+    ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append(BASE_EJB_THREAD_POOL_NAME);
     String EXECUTE_IN_WORKER = "execute-in-worker";
 
     // Elytron integration
@@ -159,4 +160,13 @@ public interface EJB3SubsystemModel {
     String ENABLE_JACC = "enable-jacc";
 
     PathElement IDENTITY_PATH = PathElement.pathElement(SERVICE, IDENTITY);
+
+    //Server interceptors
+    String SERVER_INTERCEPTOR = "server-interceptor";
+    String SERVER_INTERCEPTORS = "server-interceptors";
+    String MODULE = "module";
+    String CLASS = "class";
+    String BINDING = "binding";
+
+
 }

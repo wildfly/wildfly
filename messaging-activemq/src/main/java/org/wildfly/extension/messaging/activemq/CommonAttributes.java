@@ -26,6 +26,7 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METRIC;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.GAUGE_METRIC;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.DOUBLE;
@@ -100,6 +101,7 @@ public interface CommonAttributes {
     AttributeDefinition CONSUMER_COUNT = create("consumer-count", INT)
             .setStorageRuntime()
             .setRequired(false)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = create("confirmation-window-size", INT)
@@ -131,7 +133,8 @@ public interface CommonAttributes {
 
     AttributeDefinition DELIVERING_COUNT = create("delivering-count", INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     StringListAttributeDefinition DESTINATION_ENTRIES = new StringListAttributeDefinition.Builder(ENTRIES)
@@ -153,7 +156,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition DURABLE = create("durable", BOOLEAN)
-            .setDefaultValue(new ModelNode().set(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -179,7 +182,7 @@ public interface CommonAttributes {
      * @see ActiveMQClient.DEFAULT_HA
      */
     SimpleAttributeDefinition HA = create("ha", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -229,13 +232,14 @@ public interface CommonAttributes {
 
     AttributeDefinition MESSAGE_COUNT = create("message-count", LONG)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     AttributeDefinition MESSAGES_ADDED = create("messages-added", LONG)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
-            .setFlags(COUNTER_METRIC)
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(COUNTER_METRIC)
             .build();
 
     /**
@@ -299,7 +303,8 @@ public interface CommonAttributes {
 
     AttributeDefinition SCHEDULED_COUNT = create("scheduled-count", LONG)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
+            .addFlag(GAUGE_METRIC)
             .build();
 
     SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)

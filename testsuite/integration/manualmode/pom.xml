@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>17.0.0.Final-SNAPSHOT</version>
+        <version>18.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -32,6 +32,11 @@
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-client-all</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Required for Java 11 -->
@@ -86,6 +91,11 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -145,7 +155,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
                         <executions>
                             <execution>
                                 <id>generate-jboss-stores</id>
@@ -199,7 +208,7 @@
                             <reuseForks>false</reuseForks>
 
                             <environmentVariables>
-                                        <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
+                                <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
                             </environmentVariables>
 
                             <!-- Parameters to test cases. -->
@@ -216,6 +225,11 @@
                                 <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
                                 <!-- EJB client library hack, see WFLY-4973-->
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                <node0>${node0}</node0>
+                                <node1>${node1}</node1>
+                                <node2>${node2}</node2>
+                                <node3>${node3}</node3>
+                                <mcast>${mcast}</mcast>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

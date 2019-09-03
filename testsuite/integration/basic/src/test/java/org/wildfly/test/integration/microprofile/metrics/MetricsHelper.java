@@ -63,13 +63,13 @@ public class MetricsHelper {
         String[] lines = prometheusContent.split("\\R");
 
         for (String line : lines) {
-            if (line.startsWith(scope + ":" + metricName)) {
-                String longStr = line.substring((scope + ":" + metricName).length()).trim();
-                return Double.parseDouble(longStr);
+            if (line.startsWith(scope + "_" + metricName)) {
+                String longStr = line.substring(line.lastIndexOf(' '));
+                return Double.parseDouble(longStr.trim());
             }
         }
 
-        Assert.fail(scope + ":" + metricName + " metric not found in " + prometheusContent);
+        Assert.fail(scope + "_" + metricName + " metric not found in " + prometheusContent);
         return -1;
     }
 

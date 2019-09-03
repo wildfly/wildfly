@@ -74,6 +74,7 @@ public class OtherEESetupActionsContextHandleFactory implements ContextHandleFac
 
     private static class OtherEESetupActionsSetupContextHandle implements SetupContextHandle {
 
+        private static final long serialVersionUID = 5698880356954066079L;
         private final List<SetupAction> setupActions;
 
         private OtherEESetupActionsSetupContextHandle(List<SetupAction> setupActions) {
@@ -114,6 +115,7 @@ public class OtherEESetupActionsContextHandleFactory implements ContextHandleFac
 
     private static class OtherEESetupActionsResetContextHandle implements ResetContextHandle {
 
+        private static final long serialVersionUID = -1279030727101664631L;
         private List<SetupAction> resetActions;
 
         private OtherEESetupActionsResetContextHandle(List<SetupAction> resetActions) {

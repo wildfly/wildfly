@@ -63,7 +63,7 @@ public class JcaBeanValidationDefinition extends SimpleResourceDefinition {
         BEAN_VALIDATION_ENABLED(SimpleAttributeDefinitionBuilder.create("enabled", ModelType.BOOLEAN)
                 .setAllowExpression(true)
                 .setRequired(false)
-                .setDefaultValue(new ModelNode().set(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("enabled")

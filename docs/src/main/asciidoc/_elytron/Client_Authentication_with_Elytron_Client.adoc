@@ -97,8 +97,49 @@ authentication configuration, authentication context, and match rules.
 </configuration>
 ----
 
-You can then reference that file in your client's code by setting a
-system property when running your client.
+The above example shows how the password for authentication can be specified in the clear. However, it's also possible
+to use a masked password instead.
+
+*custom-config.xml*
+
+[source,xml,options="nowrap"]
+----
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.4">
+        <authentication-rules>
+            <rule use-configuration="monitor">
+                <match-host name="127.0.0.1" />
+            </rule>
+            <rule use-configuration="administrator">
+                <match-host name="localhost" />
+            </rule>
+        </authentication-rules>
+        <authentication-configurations>
+            <configuration name="monitor">
+                <allow-sasl-mechanisms names="DIGEST-MD5" />
+                 <use-service-loader-providers />
+                 <set-user-name name="monitor" />
+                 <credentials>
+                     <masked-password iteration-count="100" salt="12345678" masked-password="/Nym2s/dssMrabfdIGsZfQ==" />
+                 </credentials>
+                 <set-mechanism-realm name="ManagementRealm" />
+             </configuration>
+
+             <configuration name="administrator">
+                <allow-sasl-mechanisms names="DIGEST-MD5" />
+                 <use-service-loader-providers />
+                 <set-user-name name="administrator" />
+                 <credentials>
+                     <masked-password iteration-count="100" salt="12345678" masked-password="/Nym2s/dssMrabfdIGsZfQ==" />
+                 </credentials>
+                 <set-mechanism-realm name="ManagementRealm" />
+             </configuration>
+        </authentication-configurations>
+    </authentication-client>
+</configuration>
+----
+
+You can then reference that file in your client's code by setting a system property when running your client.
 
 [source,options="nowrap"]
 ----
@@ -191,6 +232,40 @@ Runnable runnable =
 context.run(runnable);
 ----
 
+The above example shows how the password for authentication can be specified in the clear. However, it's also possible
+to use a masked password instead.
+
+[source,java,options="nowrap"]
+----
+//create your authentication configuration
+AuthenticationConfiguration adminConfig =
+    AuthenticationConfiguration.EMPTY
+      .useProviders(() -> new Provider[] { new WildFlyElytronProvider() })
+      .allowSaslMechanisms("DIGEST-MD5")
+      .useRealm("ManagementRealm")
+      .useName("administrator")
+      .usePassword("/Nym2s/dssMrabfdIGsZfQ==", null, null, "100", "12345678", null);
+ 
+//create your authentication context
+AuthenticationContext context = AuthenticationContext.empty();
+context = context.with(MatchRule.ALL.matchHost("127.0.0.1"), adminConfig);
+ 
+ 
+//create your runnable for establishing a connection
+Runnable runnable =
+    new Runnable() {
+      public void run() {
+        try {
+           //Establish your connection and do some work
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    };
+ 
+//use your authentication context to run your client
+context.run(runnable);
+----
 When adding configuration details to _AuthenticationConfiguration_ and
 _AuthenticationContext_, each method call returns a new instance of that
 object. For example, if you wanted separate configurations when

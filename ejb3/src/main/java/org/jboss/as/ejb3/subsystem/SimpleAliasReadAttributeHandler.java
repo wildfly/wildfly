@@ -38,7 +38,7 @@ class SimpleAliasReadAttributeHandler implements OperationStepHandler {
 
     private static final SimpleAttributeDefinition INCLUDE_DEFAULTS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INCLUDE_DEFAULTS, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .build();
 
     private final SimpleAttributeDefinition aliasedAttribute;

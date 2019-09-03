@@ -156,7 +156,7 @@ class JacORBSubsystemDefinitions {
 
     public static final SimpleAttributeDefinition ORB_CONN_CLIENT_TIMEOUT = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_CONN_CLIENT_TIMEOUT, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
@@ -164,7 +164,7 @@ class JacORBSubsystemDefinitions {
 
     public static final SimpleAttributeDefinition ORB_CONN_SERVER_TIMEOUT = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_CONN_SERVER_TIMEOUT, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)

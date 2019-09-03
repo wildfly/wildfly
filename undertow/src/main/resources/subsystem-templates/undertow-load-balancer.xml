@@ -24,7 +24,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.undertow</extension-module>
-    <subsystem xmlns="urn:jboss:domain:undertow:9.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
+    <subsystem xmlns="urn:jboss:domain:undertow:10.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
         <buffer-cache name="default" />
         <server name="default-server">
             <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"  />
@@ -35,7 +35,9 @@
         </server>
         <servlet-container name="default" />
         <filters>
-            <mod-cluster name="load-balancer" management-socket-binding="mcmp-management" advertise-socket-binding="modcluster" enable-http2="true" max-retries="3"  />
+            <mod-cluster name="load-balancer" management-socket-binding="mcmp-management" advertise-socket-binding="modcluster" enable-http2="true" max-retries="3">
+                <single-affinity/>
+            </mod-cluster>
         </filters>
     </subsystem>
     <socket-binding name="http" port="${jboss.http.port:8080}"/>

@@ -65,7 +65,7 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
         @Override
         public List<ModelNode> getAllowedValues() {
             List<ModelNode> values = new ArrayList<>();
-            values.add(new ModelNode(0));
+            values.add(ModelNode.ZERO);
             values.add(new ModelNode(2));
             values.add(new ModelNode(3));
             values.add(new ModelNode(4));

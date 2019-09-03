@@ -93,7 +93,7 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
                 ModelTestUtils.checkOutcome(services.executeOperation(addOp));
 
                 //Try to write the cache attribute, which should fail
-                ModelTestUtils.checkFailed(services.executeOperation(Util.getWriteAttributeOperation(addr, NamingBindingResourceDefinition.CACHE.getName(), new ModelNode(true))));
+                ModelTestUtils.checkFailed(services.executeOperation(Util.getWriteAttributeOperation(addr, NamingBindingResourceDefinition.CACHE.getName(), ModelNode.TRUE)));
 
             } else {
                 ModelTestUtils.checkOutcome(services.executeOperation(addOp));

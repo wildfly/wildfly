@@ -58,7 +58,7 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
 
     private static SimpleAttributeDefinition create(final String name) {
         return SimpleAttributeDefinitionBuilder.create(name, BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setFlags(RESTART_NONE)
                 .build();
@@ -71,7 +71,7 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition CREATE_NON_DURABLE_QUEUE = create("create-non-durable-queue");
     static final SimpleAttributeDefinition DELETE_NON_DURABLE_QUEUE = create("delete-non-durable-queue");
     static final SimpleAttributeDefinition MANAGE = SimpleAttributeDefinitionBuilder.create("manage", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setFlags(RESTART_NONE)
             .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)

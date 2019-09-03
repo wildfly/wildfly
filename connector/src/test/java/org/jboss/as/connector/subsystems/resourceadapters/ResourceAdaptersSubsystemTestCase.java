@@ -261,7 +261,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
                                     @Override
                                     protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-                                        return new ModelNode(false);
+                                        return ModelNode.FALSE;
                                     }
 
                                 })
@@ -387,7 +387,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
                                     @Override
                                     protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-                                        return new ModelNode(false);
+                                        return ModelNode.FALSE;
                                     }
 
                                 })

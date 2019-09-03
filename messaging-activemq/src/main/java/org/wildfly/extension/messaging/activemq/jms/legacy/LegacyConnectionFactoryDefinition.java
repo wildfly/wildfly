@@ -71,7 +71,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_AUTO_GROUP
      */
     public static final AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -81,7 +81,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE
      */
     public static final AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -91,7 +91,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND
      */
     public static final AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -101,7 +101,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND
      */
     public static final AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -111,7 +111,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT
      */
     public static final AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -133,7 +133,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES
      */
     public static final AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -229,7 +229,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION
      */
     public static final AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -242,7 +242,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .build();
 
     public static final SimpleAttributeDefinition HA = create("ha", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -294,7 +294,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_PRE_ACKNOWLEDGE
      */
     public static final AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -329,7 +329,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_RECONNECT_ATTEMPTS
      */
     public static final AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

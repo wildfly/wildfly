@@ -24,8 +24,10 @@ package org.wildfly.extension.undertow;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 import javax.net.ssl.SSLContext;
 
@@ -51,6 +53,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -65,6 +68,8 @@ import org.wildfly.extension.undertow.filters.ModClusterService;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+import org.xnio.Xnio;
+import org.xnio.XnioWorker;
 
 public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
     public AbstractUndertowSubsystemTestCase() {
@@ -215,7 +220,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             try {
                 SSLContext sslContext = SSLContext.getDefault();
 
-                target.addService(SuspendController.SERVICE_NAME, new SuspendController()).install();
+                target.addService(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER), new SuspendController()).install();
 
                 target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
                 target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
@@ -223,16 +228,25 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
                 target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService())
                         .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-                target.addService(IOServices.WORKER.append("default"),
-                        new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                ServiceBuilder<?> builder1 = target.addService(IOServices.WORKER.append("default"));
+                Consumer<XnioWorker> workerConsumer1 = builder1.provides(IOServices.WORKER.append("default"));
+                builder1.setInstance(
+                        new WorkerService(
+                                workerConsumer1,
+                                () -> Executors.newFixedThreadPool(1),
+                                Xnio.getInstance().createWorkerBuilder().populateFromOptions(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap())));
+                builder1.install();
 
-                target.addService(IOServices.WORKER.append("non-default"),
-                        new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                ServiceBuilder<?> builder2 = target.addService(IOServices.WORKER.append("non-default"));
+                Consumer<XnioWorker> workerConsumer2 = builder2.provides(IOServices.WORKER.append("non-default"));
+                builder2.setInstance(
+                        new WorkerService(
+                                workerConsumer2,
+                                () -> Executors.newFixedThreadPool(1),
+                                Xnio.getInstance().createWorkerBuilder().populateFromOptions(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap())));
+                builder2.install();
 
-                target.addService(ControlledProcessStateService.SERVICE_NAME, new AbstractService<ControlledProcessStateService>() {
-                }).install();
+                target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new AbstractService<ControlledProcessStateService>() {}).install();
 
                 target.addService(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"), new ValueService<>(new ImmediateValue<>(new DefaultByteBufferPool(true, 2048))))
                         .setInitialMode(ServiceController.Mode.ACTIVE).install();

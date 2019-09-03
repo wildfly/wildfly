@@ -38,7 +38,7 @@ public class CacheContainerMetricExecutor implements MetricExecutor<EmbeddedCach
     @Override
     public ModelNode execute(OperationContext context, Metric<EmbeddedCacheManager> metric) throws OperationFailedException {
         String containerName = context.getCurrentAddressValue();
-        CacheContainer container = new PassiveServiceSupplier<CacheContainer>(context.getServiceRegistry(true), InfinispanRequirement.CONTAINER.getServiceName(context, containerName)).get();
+        CacheContainer container = new PassiveServiceSupplier<CacheContainer>(context.getServiceRegistry(false), InfinispanRequirement.CONTAINER.getServiceName(context, containerName)).get();
         return (container != null) ? metric.execute(container) : null;
     }
 }
