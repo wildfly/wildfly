@@ -191,10 +191,6 @@
                                     <artifactId>jboss-connector-api_1.7_spec</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.rmi</groupId>
-                                    <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                                </dependency>
-                                <dependency>
                                     <groupId>org.jboss.spec.javax.security.jacc</groupId>
                                     <artifactId>jboss-jacc-api_1.5_spec</artifactId>
                                 </dependency>
