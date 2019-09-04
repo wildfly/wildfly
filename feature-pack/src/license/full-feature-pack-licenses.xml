@@ -4158,6 +4158,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.jvnet.staxex</groupId>
+      <artifactId>stax-ex</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-core</artifactId>
       <licenses>

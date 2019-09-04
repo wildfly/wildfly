@@ -124,7 +124,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.xml.soap</groupId>
-      <artifactId>jboss-saaj-api_1.3_spec</artifactId>
+      <artifactId>jboss-saaj-api_1.4_spec</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.xml.ws</groupId>

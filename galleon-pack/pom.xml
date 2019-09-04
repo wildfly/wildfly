@@ -608,6 +608,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jvnet.staxex</groupId>
+            <artifactId>stax-ex</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>net.jcip</groupId>
             <artifactId>jcip-annotations</artifactId>
             <scope>provided</scope>
@@ -1800,7 +1812,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.javax.xml.soap</groupId>
-            <artifactId>jboss-saaj-api_1.3_spec</artifactId>
+            <artifactId>jboss-saaj-api_1.4_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
