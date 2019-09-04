@@ -95,6 +95,8 @@ public class EETransformers implements ExtensionTransformerRegistration {
     }
 
     private static void registerTransformers5_0(ResourceTransformationDescriptionBuilder builder) {
+        ManagedExecutorServiceResourceDefinition.registerTransformers5_0(builder);
+        ManagedScheduledExecutorServiceResourceDefinition.registerTransformers5_0(builder);
     }
 
     /**
