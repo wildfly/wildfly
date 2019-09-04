@@ -109,6 +109,7 @@ public enum EJB3SubsystemXMLElement {
 
     //server interceptors
     SERVER_INTERCEPTORS("server-interceptors"),
+    CLIENT_INTERCEPTORS("client-interceptors"),
     INTERCEPTOR("interceptor")
     ;
 

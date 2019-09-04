@@ -279,3 +279,52 @@ public class FooInterceptor {
     }
 }
 ----
+
+[[client-interceptors]]
+== <client-interceptors>
+
+This element configures a number of client-side interceptors which can be
+configured without changing the deployments.
+
+Each interceptor is configured in _<interceptor>_ tag which contains the
+following fields:
+
+* `module` - the module in which the interceptor is defined
+* `class` - the class which implements the interceptor
+
+In order to use server interceptors you have to create a module that implements
+them and place it into _${WILDFLY_HOME}/modules_ directory.
+
+Interceptor implementations must implement _org.jboss.ejb.client.EJBClientInterceptor_
+interface.
+
+Sample configuration:
+
+[source,xml,options="nowrap"]
+----
+<client-interceptors>
+	<interceptor module="org.foo:FooInterceptor:1.0" class="org.foo.FooInterceptor"/>
+</client-interceptors>
+----
+
+Sample interceptor implementation:
+[source:java,options="nowrap"]
+----
+package org.foo;
+
+import org.jboss.ejb.client.EJBClientInterceptor;
+import org.jboss.ejb.client.EJBClientInvocationContext;
+
+public class FooInterceptor implements EJBClientInterceptor {
+
+    @Override
+    public void handleInvocation(EJBClientInvocationContext context) throws Exception {
+        context.sendRequest();
+    }
+
+    @Override
+    public Object handleInvocationResult(EJBClientInvocationContext context) throws Exception {
+        return context.getResult();
+    }
+}
+----

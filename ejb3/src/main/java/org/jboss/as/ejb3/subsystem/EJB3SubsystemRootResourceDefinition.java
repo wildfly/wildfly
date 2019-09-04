@@ -200,6 +200,23 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             .setMaxSize(Integer.MAX_VALUE)
             .build();
 
+    private static final ObjectTypeAttributeDefinition CLIENT_INTERCEPTOR = ObjectTypeAttributeDefinition.Builder.of(EJB3SubsystemModel.CLIENT_INTERCEPTOR,
+            create(EJB3SubsystemModel.CLASS, ModelType.STRING, false)
+                    .setAllowExpression(false)
+                    .build(),
+            create(EJB3SubsystemModel.MODULE, ModelType.STRING, false)
+                    .setAllowExpression(false)
+                    .build())
+            .build();
+
+    public static final ObjectListAttributeDefinition CLIENT_INTERCEPTORS = ObjectListAttributeDefinition.Builder.of(EJB3SubsystemModel.CLIENT_INTERCEPTORS, CLIENT_INTERCEPTOR)
+            .setRequired(false)
+            .setAllowExpression(false)
+            .setAllowNull(true)
+            .setMinSize(1)
+            .setMaxSize(Integer.MAX_VALUE)
+            .build();
+
     public static final RuntimeCapability<Void> CLUSTERED_SINGLETON_CAPABILITY =  RuntimeCapability.Builder.of(
             "org.wildfly.ejb3.clustered.singleton", Void.class).build();
 
@@ -257,7 +274,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             ENABLE_GRACEFUL_TXN_SHUTDOWN,
             LOG_EJB_EXCEPTIONS,
             ALLOW_EJB_NAME_REGEX,
-            SERVER_INTERCEPTORS
+            SERVER_INTERCEPTORS,
+            CLIENT_INTERCEPTORS
     };
 
     @Override
@@ -306,6 +324,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         });
         resourceRegistration.registerReadWriteAttribute(ENABLE_GRACEFUL_TXN_SHUTDOWN, null, EnableGracefulTxnShutdownWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(SERVER_INTERCEPTORS, null,  new ReloadRequiredWriteAttributeHandler(SERVER_INTERCEPTORS));
+        resourceRegistration.registerReadWriteAttribute(CLIENT_INTERCEPTORS, null,  new ReloadRequiredWriteAttributeHandler(CLIENT_INTERCEPTORS));
     }
 
     @Override

@@ -92,4 +92,12 @@
     <disable-default-ejb-permissions value="true"/>
     <statistics enabled="${ejb.enable-statistics:true}" />
     <log-system-exceptions value="false"/>
+    <!-- should be rejected -->
+    <server-interceptors>
+        <interceptor module="foo" class="foo.bar.FooInterceptor"/>
+    </server-interceptors>
+    <!-- should be rejected -->
+    <client-interceptors>
+        <interceptor module="foo" class="foo.bar.FooInterceptor"/>
+    </client-interceptors>
 </subsystem>
