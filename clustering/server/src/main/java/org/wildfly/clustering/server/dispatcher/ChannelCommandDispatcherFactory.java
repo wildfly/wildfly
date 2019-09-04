@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedAction;
 import java.time.Duration;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,14 +37,15 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.clustering.concurrent.DefaultContextualizer;
+import org.jboss.as.clustering.concurrent.DefaultExecutorService;
+import org.jboss.as.clustering.concurrent.DefaultThreadFactory;
 import org.jboss.as.clustering.logging.ClusteringLogger;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
-import org.jboss.threads.JBossThreadFactory;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
@@ -69,7 +71,8 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.server.group.AddressableNode;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
+import org.wildfly.clustering.service.concurrent.Contextualizer;
+import org.wildfly.clustering.service.concurrent.ExecutorServiceFactory;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -83,15 +86,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, MembershipListener, Runnable {
 
-    private static ThreadFactory createThreadFactory(Class<?> targetClass) {
-        PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
-        return WildFlySecurityManager.doUnchecked(action);
-    }
-
     private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
-    // Store execution context using an Optional so we can differentiate an unknown service from a known service with a null context
-    private final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
-    private final ExecutorService executorService = Executors.newCachedThreadPool(createThreadFactory(this.getClass()));
+    private final Map<Object, Map.Entry<Object, Contextualizer>> contexts = new ConcurrentHashMap<>();
+    private final ExecutorService executorService = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final AtomicReference<View> view = new AtomicReference<>();
@@ -166,13 +163,15 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
-                Optional<Object> context = this.contexts.get(clientId);
-                if (context == null) return () -> NoSuchService.INSTANCE;
+                Map.Entry<Object, Contextualizer> entry = this.contexts.get(clientId);
+                if (entry == null) return () -> NoSuchService.INSTANCE;
+                Object context = entry.getKey();
+                Contextualizer contextualizer = entry.getValue();
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 // Wrap execution result in an Optional, since command execution might return null
-                ExceptionSupplier<Optional<Object>, Exception> task = () -> Optional.ofNullable(command.execute(context.orElse(null)));
-                return () -> this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
+                ExceptionSupplier<Optional<Object>, Exception> task = () -> Optional.ofNullable(command.execute(context));
+                return () -> this.executor.execute(contextualizer.contextualize(task)).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
             }
         }
     }
@@ -184,7 +183,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
-        if (this.contexts.putIfAbsent(id, Optional.ofNullable(context)) != null) {
+        if (this.contexts.putIfAbsent(id, new AbstractMap.SimpleImmutableEntry<>(context, new DefaultContextualizer())) != null) {
             throw ClusteringServerLogger.ROOT_LOGGER.commandDispatcherAlreadyExists(id);
         }
         CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id);
@@ -197,7 +196,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     @Override
     public Registration register(GroupListener listener) {
-        this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
+        this.listeners.computeIfAbsent(listener, key -> new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD));
         return () -> this.unregister(listener);
     }
 
