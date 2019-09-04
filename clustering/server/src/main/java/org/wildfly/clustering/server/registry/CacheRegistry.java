@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
@@ -79,7 +79,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <V> value type
  */
 @org.infinispan.notifications.Listener
-public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Object, Object>, ExceptionRunnable<CacheException> {
+public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Object, Object>, ExceptionRunnable<CacheException>, Function<RegistryListener<K, V>, ExecutorService> {
 
     private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
     private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
@@ -134,8 +134,13 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
 
     @Override
     public Registration register(RegistryListener<K, V> listener) {
-        this.listeners.computeIfAbsent(listener, key -> new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD));
+        this.listeners.computeIfAbsent(listener, this);
         return () -> this.unregister(listener);
+    }
+
+    @Override
+    public ExecutorService apply(RegistryListener<K, V> listener) {
+        return new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD);
     }
 
     private void unregister(RegistryListener<K, V> listener) {
@@ -303,8 +308,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
     }
 
     private void shutdown(ExecutorService executor) {
-        PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
-        WildFlySecurityManager.doUnchecked(action);
+        WildFlySecurityManager.doUnchecked(executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
         try {
             executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
