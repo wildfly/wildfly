@@ -114,7 +114,7 @@
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.spec.javax.transaction</groupId>
-                                    <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                                    <artifactId>jboss-transaction-api_1.3_spec</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.spec.javax.ejb</groupId>
@@ -187,6 +187,13 @@
                                     <dependencyArtifactId>wildfly-discovery-client</dependencyArtifactId>
                                     <exclusionGroupId>*</exclusionGroupId>
                                     <exclusionArtifactId>*</exclusionArtifactId>
+                                </exclusion>
+                                <exclusion>
+                                    <!-- remove once jboss-connector-api_1.7_spec depends instead on jboss-transaction-api_1.3_spec -->
+                                    <dependencyGroupId>org.jboss.spec.javax.resource</dependencyGroupId>
+                                    <dependencyArtifactId>jboss-connector-api_1.7_spec</dependencyArtifactId>
+                                    <exclusionGroupId>jakarta.transaction</exclusionGroupId>
+                                    <exclusionArtifactId>jakarta.transaction-api</exclusionArtifactId>
                                 </exclusion>
                             </addExclusions>
                         </configuration>
