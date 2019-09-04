@@ -25,13 +25,11 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -39,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import org.jboss.as.clustering.concurrent.DefaultContextualizer;
 import org.jboss.as.clustering.concurrent.DefaultExecutorService;
@@ -76,6 +75,7 @@ import org.wildfly.clustering.service.concurrent.ExecutorServiceFactory;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.common.function.Functions;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -84,7 +84,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * all of which will share the same {@link MessageDispatcher} instance.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, MembershipListener, Runnable {
+public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, MembershipListener, Runnable, Function<GroupListener, ExecutorService> {
+
+    static final Optional<Object> NO_SUCH_SERVICE = Optional.of(NoSuchService.INSTANCE);
+    static final ExceptionSupplier<Object, Exception> NO_SUCH_SERVICE_SUPPLIER = Functions.constantExceptionSupplier(NoSuchService.INSTANCE);
 
     private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
     private final Map<Object, Map.Entry<Object, Contextualizer>> contexts = new ConcurrentHashMap<>();
@@ -115,18 +118,12 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     @Override
     public void run() {
-        this.executorService.shutdownNow();
-        try {
-            this.executorService.awaitTermination(this.timeout.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        this.shutdown(this.executorService);
         this.dispatcher.stop();
         this.dispatcher.getChannel().setUpHandler(null);
         // Cleanup any stray listeners
         for (ExecutorService executor : this.listeners.values()) {
-            PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
-            WildFlySecurityManager.doUnchecked(action);
+            this.shutdown(executor);
         }
         this.listeners.clear();
     }
@@ -136,42 +133,66 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         this.executor.close(this);
     }
 
+    private void shutdown(ExecutorService executor) {
+        WildFlySecurityManager.doUnchecked(executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
+        try {
+            executor.awaitTermination(this.timeout.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     @Override
     public Object handle(Message request) throws Exception {
-        return this.read(request).call();
+        return this.read(request).get();
     }
 
     @Override
     public void handle(Message request, Response response) throws Exception {
-        Callable<Object> task = this.read(request);
-        try {
-            this.executorService.submit(() -> {
+        ExceptionSupplier<Object, Exception> commandTask = this.read(request);
+        Runnable responseTask = new Runnable() {
+            @Override
+            public void run() {
                 try {
-                    response.send(task.call(), false);
+                    response.send(commandTask.get(), false);
                 } catch (Exception e) {
                     response.send(e, true);
                 }
-            });
+            }
+        };
+        try {
+            this.executorService.submit(responseTask);
         } catch (RejectedExecutionException e) {
             response.send(NoSuchService.INSTANCE, false);
         }
     }
 
-    private Callable<Object> read(Message message) throws IOException, ClassNotFoundException {
+    private ExceptionSupplier<Object, Exception> read(Message message) throws IOException, ClassNotFoundException {
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
             int version = IndexSerializer.VARIABLE.readInt(input);
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
                 Map.Entry<Object, Contextualizer> entry = this.contexts.get(clientId);
-                if (entry == null) return () -> NoSuchService.INSTANCE;
+                if (entry == null) return NO_SUCH_SERVICE_SUPPLIER;
                 Object context = entry.getKey();
                 Contextualizer contextualizer = entry.getValue();
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 // Wrap execution result in an Optional, since command execution might return null
-                ExceptionSupplier<Optional<Object>, Exception> task = () -> Optional.ofNullable(command.execute(context));
-                return () -> this.executor.execute(contextualizer.contextualize(task)).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
+                ExceptionSupplier<Optional<Object>, Exception> commandExecutionTask = new ExceptionSupplier<Optional<Object>, Exception>() {
+                    @Override
+                    public Optional<Object> get() throws Exception {
+                        return Optional.ofNullable(command.execute(context));
+                    }
+                };
+                ServiceExecutor executor = this.executor;
+                return new ExceptionSupplier<Object, Exception>() {
+                    @Override
+                    public Object get() throws Exception {
+                        return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE).orElse(null);
+                    }
+                };
             }
         }
     }
@@ -196,19 +217,19 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     @Override
     public Registration register(GroupListener listener) {
-        this.listeners.computeIfAbsent(listener, key -> new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD));
+        this.listeners.computeIfAbsent(listener, this);
         return () -> this.unregister(listener);
+    }
+
+    @Override
+    public ExecutorService apply(GroupListener listener) {
+        return new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD);
     }
 
     private void unregister(GroupListener listener) {
         ExecutorService executor = this.listeners.remove(listener);
         if (executor != null) {
-            executor.shutdownNow();
-            try {
-                executor.awaitTermination(this.timeout.toMillis(), TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            this.shutdown(executor);
         }
     }
 
@@ -271,8 +292,18 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
                     GroupListener listener = entry.getKey();
                     ExecutorService executor = entry.getValue();
+                    Runnable listenerTask = new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                listener.membershipChanged(oldMembership, membership, view instanceof MergeView);
+                            } catch (Throwable e) {
+                                ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                            }
+                        }
+                    };
                     try {
-                        executor.submit(new ListenerTask(listener, oldMembership, membership, view instanceof MergeView));
+                        executor.submit(listenerTask);
                     } catch (RejectedExecutionException e) {
                         // Executor was shutdown
                     }
@@ -291,28 +322,5 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     @Override
     public void unblock() {
-    }
-
-    private static class ListenerTask implements Runnable {
-        private final GroupListener listener;
-        private final Membership oldMembership;
-        private final Membership membership;
-        private final boolean merged;
-
-        ListenerTask(GroupListener listener, Membership oldMembership, Membership membership, boolean merged) {
-            this.listener = listener;
-            this.oldMembership = oldMembership;
-            this.membership = membership;
-            this.merged = merged;
-        }
-
-        @Override
-        public void run() {
-            try {
-                this.listener.membershipChanged(this.oldMembership, this.membership, this.merged);
-            } catch (Throwable e) {
-                ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-            }
-        }
     }
 }
