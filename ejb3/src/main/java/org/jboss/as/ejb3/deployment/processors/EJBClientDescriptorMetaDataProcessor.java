@@ -111,7 +111,20 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         }
 
         // check for EJB client interceptor configuration
-        final List<EJBClientInterceptor> ejbClientInterceptors = getClassPathInterceptors(module.getClassLoader());
+        final List<EJBClientInterceptor> deploymentEjbClientInterceptors = getClassPathInterceptors(module.getClassLoader());
+
+        List<EJBClientInterceptor> staticEjbClientInterceptors = deploymentUnit.getAttachment(org.jboss.as.ejb3.subsystem.Attachments.STATIC_EJB_CLIENT_INTERCEPTORS);
+
+        List<EJBClientInterceptor> ejbClientInterceptors = new ArrayList<>();
+
+        if(deploymentEjbClientInterceptors != null){
+            ejbClientInterceptors.addAll(deploymentEjbClientInterceptors);
+        }
+
+        if(staticEjbClientInterceptors != null){
+            ejbClientInterceptors.addAll(staticEjbClientInterceptors);
+        }
+
         final boolean interceptorsDefined = ejbClientInterceptors != null && ! ejbClientInterceptors.isEmpty();
 
         final EJBClientDescriptorMetaData ejbClientDescriptorMetaData = deploymentUnit

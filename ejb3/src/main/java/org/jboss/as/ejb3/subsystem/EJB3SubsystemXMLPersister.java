@@ -26,6 +26,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EJB_NAME_REGE
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DISTINCT_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SECURITY_DOMAIN;
@@ -311,6 +312,16 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (model.hasDefined(SERVER_INTERCEPTORS)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.SERVER_INTERCEPTORS.getLocalName());
             for (final ModelNode interceptor : model.get(SERVER_INTERCEPTORS).asList()) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.INTERCEPTOR.getLocalName());
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.MODULE.getLocalName(), interceptor.get(EJB3SubsystemXMLAttribute.MODULE.getLocalName()).asString());
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.CLASS.getLocalName(), interceptor.get(EJB3SubsystemXMLAttribute.CLASS.getLocalName()).asString());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+        if (model.hasDefined(CLIENT_INTERCEPTORS)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.CLIENT_INTERCEPTORS.getLocalName());
+            for (final ModelNode interceptor : model.get(CLIENT_INTERCEPTORS).asList()) {
                 writer.writeStartElement(EJB3SubsystemXMLElement.INTERCEPTOR.getLocalName());
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.MODULE.getLocalName(), interceptor.get(EJB3SubsystemXMLAttribute.MODULE.getLocalName()).asString());
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.CLASS.getLocalName(), interceptor.get(EJB3SubsystemXMLAttribute.CLASS.getLocalName()).asString());

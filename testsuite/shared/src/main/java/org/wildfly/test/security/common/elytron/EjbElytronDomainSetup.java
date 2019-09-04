@@ -126,7 +126,7 @@ public class EjbElytronDomainSetup implements ServerSetupTask {
         applyUpdate(managementClient.getControllerClient(), compositeOp, false);
         // TODO: add {"allow-resource-service-restart" => true} to ejbDomainAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
         //       and remove this reload
-        ServerReload.reloadIfRequired(managementClient.getControllerClient());
+        ServerReload.reloadIfRequired(managementClient);
     }
 
     @Override
