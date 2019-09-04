@@ -62,7 +62,7 @@ public class DistributableWebDeploymentDependencyProcessor implements Deployment
         WarMetaData warMetaData = unit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         SharedSessionManagerConfig sharedConfig = unit.getAttachment(SharedSessionManagerConfig.ATTACHMENT_KEY);
 
-        if (((warMetaData != null) && (warMetaData.getMergedJBossWebMetaData().getDistributable() != null)) || ((sharedConfig != null) && sharedConfig.isDistributable())) {
+        if (((warMetaData != null) && (warMetaData.getMergedJBossWebMetaData() != null && warMetaData.getMergedJBossWebMetaData().getDistributable() != null)) || ((sharedConfig != null) && sharedConfig.isDistributable())) {
             CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             DistributableWebDeploymentConfiguration config = unit.getAttachment(CONFIGURATION_KEY);
 
