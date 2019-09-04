@@ -56,7 +56,6 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
     private final String ejbName;
     private final ComponentInterceptorSupport interceptorSupport;
     private volatile BeanManagerImpl beanManager;
-    private volatile InterceptorBindings interceptorBindings;
 
     public Jsr299BindingsCreateInterceptor(final Supplier<WeldBootstrapService> weldContainerSupplier,
                                            final Supplier<InterceptorBindings> interceptorBindingsSupplier,
@@ -93,11 +92,7 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
                 bean = beanManager.getBean(descriptor);
             }
         }
-        InterceptorBindings interceptorBindings = this.interceptorBindings;
-        if (interceptorBindings == null) {
-            // Cache the bindings as reading the interceptorBindingsSupplier is contended
-            interceptorBindings = this.interceptorBindings = interceptorBindingsSupplier.get();
-        }
+        InterceptorBindings interceptorBindings = interceptorBindingsSupplier.get();
 
         final ComponentInstance componentInstance = interceptorContext.getPrivateData(ComponentInstance.class);
         InterceptorInstances existing = interceptorSupport.getInterceptorInstances(componentInstance);
