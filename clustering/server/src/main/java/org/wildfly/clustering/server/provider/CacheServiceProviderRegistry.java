@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,11 +110,19 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         for (Map.Entry<Listener, ExecutorService> entry : this.listeners.values()) {
             ExecutorService executor = entry.getValue();
             if (executor != null) {
-                PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
-                WildFlySecurityManager.doUnchecked(action);
+                this.shutdown(executor);
             }
         }
         this.listeners.clear();
+    }
+
+    private void shutdown(ExecutorService executor) {
+        WildFlySecurityManager.doUnchecked(executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
+        try {
+            executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
@@ -157,13 +164,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                 if (oldEntry != null) {
                     ExecutorService executor = oldEntry.getValue();
                     if (executor != null) {
-                        PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
-                        WildFlySecurityManager.doUnchecked(action);
-                        try {
-                            executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
+                        this.shutdown(executor);
                     }
                 }
             }
