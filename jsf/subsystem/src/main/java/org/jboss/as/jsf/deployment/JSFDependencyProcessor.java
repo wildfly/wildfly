@@ -153,7 +153,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
                 jsfInjectionDependency.addImportFilter(PathFilters.is("META-INF/1.2/faces-config.xml"), false);
             }
         } catch (ModuleLoadException e) {
-            throw JSFLogger.ROOT_LOGGER.jsfInjectionFailed(jsfVersion);
+            throw JSFLogger.ROOT_LOGGER.jsfInjectionFailed(jsfVersion, e);
         }
 
         moduleSpecification.addSystemDependency(jsfInjectionDependency);
