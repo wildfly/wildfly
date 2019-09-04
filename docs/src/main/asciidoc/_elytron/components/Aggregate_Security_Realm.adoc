@@ -1,0 +1,109 @@
+[[aggregate-security-realm]]
+= Aggregate Security Realm
+
+The aggregate security realm allows for two or more security realms to be aggregated into a single security realm allowing one to be used during the authentication steps and one or more to be used to assemble the identity used for authorization decisions and aggregating any associated attributes.
+
+The `aggregate-realm` resource contains the following attributes: -
+
+ * `authentication-realm` - This realm use used to load the credentials of the identity or perform evidence verification.
+ * `authorization-realm` - The realm to use to load the identities attributes used for authorization.
+ * `authorization-realms` - A list of one or more realms to use to load the identities attributes and aggregate into a single set of attributes.
+ * `principal-transformer` - A principal transformer that can be used to transform the principal after loading the credentials
+ for authentication but before loading the identities attributes for authorization. This attribute is optional.
+
+NOTE: `authorization-realm` and `authorization-realms` are mutually exclusive so exactly one of these must be specified.
+
+== Defining a Simple Aggregation
+
+Assuming two realms `properties-realm` and `jdbc-realm` already exist an `aggregate-realm` combining these two can be created with the following command.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/aggregate-realm=combined:add(
+    authentication-realm=properties-realm, 
+    authorization-realm=jdbc-realm)
+----
+
+Where this realm is used the `properties-realm` will be used to load an identity's credentials and the `jdbc-realm` will be used to load the attributes for the identity.
+
+The following command is exactly the same except the `authorization-realms` attribute is used instead.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/aggregate-realm=combined:add(
+    authentication-realm=properties-realm, 
+    authorization-realms=[jdbc-realm])
+----
+
+The following command will reference a principal transformer defined in the mappers configuration to be used to transform the principal
+after authentication.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/aggregate-realm=combined:add(
+    authentication-realm=properties-realm,
+    authorization-realms=[jdbc-realm],
+    principal-transformer=custom-transformer)
+----
+
+== Aggregating Attributes
+
+If a third realm `ldap-realm` also exists that shoud also be used for the loading of attributes an `aggregate-realm` can be defined using the following command: -
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/aggregate-realm=combined:add(
+    authentication-realm=properties-realm, 
+    authorization-realms=[jdbc-realm, ldap-realm])
+----
+
+As before the `properties-realm` will be used to load the identity's credentials or perform evidence verification but the attributes for the identity will be loaded both from the `jdbc-realm` and `ldap-realm` then combined together.
+
+The approach taken to combine attributes makes use of the first instance of each attribute, if the same attribute is loaded by multiple realms only the first occurrence will be used. Later occurrences of an existing attribtue will be ignored.
+
+As an example if the following attributes were loaded from the `jdbc-realm`: -
+
+.JDBC Attributes
+[width=33%]
+|===
+|ATTRIBUTE |VALUES
+
+|e-mail
+|example@wildfly.org
+
+|groups
+|Supervisor, User
+|===
+
+And the following attributes were loaded from the `ldap-realm`: -
+
+.LDAP Attributes
+[width=33%]
+|===
+|ATTRIBUTE |VALUES
+
+|e-mail
+|administrator@wildfly.org
+
+|phone
+|0000 0000 0000
+|===
+
+The resulting attributes would be: -
+
+.Combined Attributes
+[width=33%]
+|===
+|ATTRIBUTE |VALUES
+
+|e-mail
+|example@wildfly.org
+
+|groups
+|Supervisor, User
+
+|phone
+|0000 0000 0000
+|===
+
+
