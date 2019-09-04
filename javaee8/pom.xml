@@ -145,8 +145,8 @@
                                     <artifactId>javax.persistence-api</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.security.enterprise</groupId>
-                                    <artifactId>javax.security.enterprise-api</artifactId>
+                                    <groupId>jakarta.security.enterprise</groupId>
+                                    <artifactId>jakarta.security.enterprise-api</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>javax.validation</groupId>
@@ -220,7 +220,7 @@
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.spec.javax.transaction</groupId>
-                                    <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                                    <artifactId>jboss-transaction-api_1.3_spec</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.spec.javax.ws.rs</groupId>
@@ -490,6 +490,15 @@
                                     <version>org.infinispan:infinispan-core:jar</version>
                                 </dependency>
                             </versionRefDependencies>
+                            <addExclusions>
+                                <exclusion>
+                                    <!-- remove once jboss-connector-api_1.7_spec depends instead on jboss-transaction-api_1.3_spec -->
+                                    <dependencyGroupId>org.jboss.spec.javax.resource</dependencyGroupId>
+                                    <dependencyArtifactId>jboss-connector-api_1.7_spec</dependencyArtifactId>
+                                    <exclusionGroupId>jakarta.transaction</exclusionGroupId>
+                                    <exclusionArtifactId>jakarta.transaction-api</exclusionArtifactId>
+                                </exclusion>
+                            </addExclusions>
                         </configuration>
                     </execution>
                 </executions>
