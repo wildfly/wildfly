@@ -34,9 +34,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
@@ -48,7 +46,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.threads.JBossThreadFactory;
+import org.jboss.as.clustering.concurrent.DefaultExecutorService;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
@@ -71,7 +69,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
+import org.wildfly.clustering.service.concurrent.ExecutorServiceFactory;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -83,11 +81,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 @org.infinispan.notifications.Listener
 public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, GroupListener, AutoCloseable {
-
-    private static ThreadFactory createThreadFactory(Class<?> targetClass) {
-        PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
-        return WildFlySecurityManager.doUnchecked(action);
-    }
 
     final Batcher<? extends Batch> batcher;
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
@@ -141,7 +134,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         // Only create executor for new registrations
         Map.Entry<Listener, ExecutorService> entry = this.listeners.computeIfAbsent(service, key -> {
             if (listener != null) {
-                newEntry.setValue(Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
+                newEntry.setValue(new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD));
             }
             return newEntry;
         });
