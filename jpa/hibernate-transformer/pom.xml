@@ -124,7 +124,7 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                    <artifactId>jboss-transaction-api_1.3_spec</artifactId>
                     <groupId>org.jboss.spec.javax.transaction</groupId>
                 </exclusion>
                 <exclusion>

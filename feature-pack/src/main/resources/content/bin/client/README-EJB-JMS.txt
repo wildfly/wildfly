@@ -5,7 +5,7 @@ This jar contains the classes required for remote JMS and EJB usage, and consist
 
 org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec
 org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec
-org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec
+org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec
 
 com.google.guava:guava
 commons-beanutils:commons-beanutils
