@@ -95,7 +95,7 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     protected static ModelControllerClient createClient2() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
+        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddressNode1()),
                 TestSuiteEnvironment.getServerPort() + 100,
                 Authentication.getCallbackHandler());
     }
@@ -209,10 +209,6 @@ public abstract class AbstractMessagingHATestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).set(address);
         operation.get(OP).set(READ_RESOURCE_OPERATION);
-        operation.get(INCLUDE_RUNTIME).set(true);
-        // ModelNode result = execute(client, operation);
-        // System.out.println(runtimeAttributeName + " = " + result.get(runtimeAttributeName));
-        //assertEquals(result.toJSONString(true), active, result.get(runtimeAttributeName).isDefined());
 
         // runtime operation
         operation.get(OP).set("list-messages");
@@ -309,7 +305,7 @@ public abstract class AbstractMessagingHATestCase {
     private void executeReloadAndWaitForCompletionOfServer2(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
         executeReloadAndWaitForCompletion(initialClient, ServerReload.TIMEOUT,
                 adminOnly,
-                TestSuiteEnvironment.getServerAddress(),
+                TestSuiteEnvironment.getServerAddressNode1(),
                 TestSuiteEnvironment.getServerPort() + 100);
     }
 }
