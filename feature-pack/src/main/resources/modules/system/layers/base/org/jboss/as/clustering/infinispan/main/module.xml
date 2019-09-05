@@ -59,7 +59,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.threads"/>
         <module name="org.jgroups"/>
         <module name="org.reactivestreams"/>
         <module name="org.wildfly.clustering.api"/>

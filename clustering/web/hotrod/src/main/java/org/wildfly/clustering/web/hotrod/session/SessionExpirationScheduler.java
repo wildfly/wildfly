@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.web.hotrod.session;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.time.Instant;
@@ -31,10 +30,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.threads.JBossThreadFactory;
+import org.jboss.as.clustering.concurrent.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.hotrod.Logger;
@@ -53,20 +51,11 @@ public class SessionExpirationScheduler implements Scheduler {
     private final ScheduledExecutorService executor;
 
     public SessionExpirationScheduler(Remover<String> remover) {
-        this(remover, createScheduledExecutor(createThreadFactory()));
+        this(remover, createScheduledExecutor());
     }
 
-    private static ThreadFactory createThreadFactory() {
-        return AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
-            @Override
-            public ThreadFactory run() {
-                return new JBossThreadFactory(new ThreadGroup(SessionExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-            }
-        });
-    }
-
-    private static ScheduledExecutorService createScheduledExecutor(ThreadFactory factory) {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, factory);
+    private static ScheduledExecutorService createScheduledExecutor() {
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory(SessionExpirationScheduler.class));
         executor.setRemoveOnCancelPolicy(true);
         executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         return executor;
