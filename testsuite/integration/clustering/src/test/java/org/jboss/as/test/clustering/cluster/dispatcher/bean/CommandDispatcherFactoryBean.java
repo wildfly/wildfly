@@ -27,6 +27,9 @@ import javax.annotation.Resource;
 import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
@@ -40,7 +43,7 @@ import org.wildfly.clustering.group.Membership;
 @Local(CommandDispatcherFactory.class)
 public class CommandDispatcherFactoryBean implements CommandDispatcherFactory, GroupListener {
 
-    @Resource(lookup = "java:jboss/clustering/dispatcher/default")
+    @Resource(name = "clustering/dispatcher")
     private CommandDispatcherFactory factory;
     private Registration registration;
 
@@ -69,7 +72,16 @@ public class CommandDispatcherFactoryBean implements CommandDispatcherFactory, G
         try {
             // Ensure the thread context classloader of the notification is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+            // Ensure the correct naming context is set
+            Context context = new InitialContext();
+            try {
+                context.lookup("java:comp/env/clustering/dispatcher");
+            } finally {
+                context.close();
+            }
         } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
         System.out.println(String.format("Previous membership = %s, current membership = %s, merged = %s", previousMembership, membership, merged));
