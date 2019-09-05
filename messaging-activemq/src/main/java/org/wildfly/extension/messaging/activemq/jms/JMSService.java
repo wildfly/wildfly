@@ -136,7 +136,12 @@ public class JMSService implements Service<JMSServerManager> {
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
         ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(getClass());
         try {
-            jmsServer = new JMSServerManagerImpl(activeMQServer.getValue(), new WildFlyBindingRegistry(context.getController().getServiceContainer()));
+            jmsServer = new JMSServerManagerImpl(activeMQServer.getValue(), new WildFlyBindingRegistry(context.getController().getServiceContainer())) {
+                @Override
+                public void stop(ActiveMQServer server) {
+                    // Suppress ARTEMIS-2438
+                }
+            };
 
             activeMQServer.getValue().registerActivationFailureListener(e -> {
                 StartException se = new StartException(e);

@@ -84,6 +84,12 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-cli</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.qpid</groupId>
+                    <artifactId>qpid-jms-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -146,10 +152,10 @@
             <artifactId>wildfly-naming</artifactId>
         </dependency>
 
-	    <dependency>
-	        <groupId>org.wildfly.core</groupId>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-network</artifactId>
-	    </dependency>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>

@@ -119,7 +119,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
             settings.setRedistributionDelay(AddressSettingDefinition.REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
         }
         if (config.hasDefined(AddressSettingDefinition.PAGE_SIZE_BYTES.getName())) {
-            settings.setPageSizeBytes(AddressSettingDefinition.PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
+            settings.setPageSizeBytes(AddressSettingDefinition.PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asInt());
         }
         if (config.hasDefined(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.getName())) {
             settings.setPageCacheMaxSize(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());

@@ -89,6 +89,15 @@ public interface JMSOperations {
      */
     void removeRemoteAcceptor(String name);
 
+ /**
+     * Creates remote connector
+     *
+     * @param name          name of the remote connector
+     * @param socketBinding name of socket binding
+     * @param params        params
+     */
+    void createRemoteConnector(String name, String socketBinding, Map<String, String> params);
+
     void close();
 
     void addHttpConnector(String connectorName, String socketBinding, String endpoint, Map<String, String> parameters);
@@ -108,4 +117,8 @@ public interface JMSOperations {
     void setSystemProperties(String destination, String resourceAdapter);
 
     void removeSystemProperties();
+
+    void enableMessagingTraces();
+
+    void createSocketBinding(String name, String interfaceName, int port);
 }
