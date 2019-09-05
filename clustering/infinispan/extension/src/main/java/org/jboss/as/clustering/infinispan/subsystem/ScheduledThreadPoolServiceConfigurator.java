@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.security.PrivilegedAction;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -31,20 +30,18 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
+import org.jboss.as.clustering.concurrent.DefaultThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Radoslav Husar
  * @version August 2015
  */
 public class ScheduledThreadPoolServiceConfigurator extends GlobalComponentServiceConfigurator<ThreadPoolConfiguration> {
-    static final PrivilegedAction<ClassLoader> GET_CLASS_LOADER_ACTION = () -> ThreadPoolExecutorFactory.class.getClassLoader();
 
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ScheduledThreadPoolDefinition definition;
@@ -64,7 +61,7 @@ public class ScheduledThreadPoolServiceConfigurator extends GlobalComponentServi
             @Override
             public ScheduledExecutorService createExecutor(ThreadFactory factory) {
                 // Use fixed size, based on maxThreads
-                ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(maxThreads, new ClassLoaderThreadFactory(factory, WildFlySecurityManager.doUnchecked(GET_CLASS_LOADER_ACTION)));
+                ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(maxThreads, new DefaultThreadFactory(factory));
                 executor.setKeepAliveTime(keepAliveTime, TimeUnit.MILLISECONDS);
                 executor.setRemoveOnCancelPolicy(true);
                 executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
