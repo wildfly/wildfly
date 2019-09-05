@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.glassfish.javax.json"/>
+        <module name="org.glassfish.jakarta.json"/>
         <module name="javax.json.bind.api" export="true"/>
         <module name="org.eclipse.yasson"/>
         <module name="javax.api"/>
