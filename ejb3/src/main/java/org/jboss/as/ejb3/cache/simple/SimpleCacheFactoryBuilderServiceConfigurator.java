@@ -21,14 +21,11 @@
  */
 package org.jboss.as.ejb3.cache.simple;
 
-import static java.security.AccessController.doPrivileged;
-
-import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceConfiguratorAdapter;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -42,7 +39,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceConfigurator;
@@ -56,13 +52,6 @@ import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutor
  * @param <V> the cache value type
  */
 public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K>> extends CacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, CacheFactoryBuilder<K, V> {
-
-    private static final ThreadFactory THREAD_FACTORY = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
-        @Override
-        public JBossThreadFactory run() {
-            return new JBossThreadFactory(new ThreadGroup(SimpleCache.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        }
-    });
 
     private final String name;
 
@@ -82,7 +71,7 @@ public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifia
 
     @Override
     public Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
-        ServiceConfigurator configurator = new RemoveOnCancelScheduledExecutorServiceConfigurator(this.getExpirationSchedulerServiceName(unit.getServiceName()), THREAD_FACTORY);
+        ServiceConfigurator configurator = new RemoveOnCancelScheduledExecutorServiceConfigurator(this.getExpirationSchedulerServiceName(unit.getServiceName()), new DefaultThreadFactory(SimpleCache.class));
         return Collections.singleton(new ServiceConfiguratorAdapter(configurator));
     }
 

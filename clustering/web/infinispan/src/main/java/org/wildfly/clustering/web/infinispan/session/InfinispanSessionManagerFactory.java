@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -41,7 +40,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
-import org.jboss.threads.JBossThreadFactory;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
@@ -85,11 +84,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 @Listener
 public class InfinispanSessionManagerFactory<C extends Marshallability, L> implements SessionManagerFactory<L, TransactionBatch> {
 
-    private static ThreadFactory createThreadFactory() {
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(InfinispanSessionManager.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return WildFlySecurityManager.doUnchecked(action);
-    }
-
     final Batcher<TransactionBatch> batcher;
     final Registrar<SessionExpirationListener> expirationRegistrar;
     final CacheProperties properties;
@@ -100,7 +94,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     private final SessionFactory<CompositeSessionMetaDataEntry<L>, ?, L> factory;
     private final Scheduler expirationScheduler;
     private final SessionCreationMetaDataKeyFilter filter = new SessionCreationMetaDataKeyFilter();
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(createThreadFactory());
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(InfinispanSessionManager.class));
     private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
 
     public InfinispanSessionManagerFactory(InfinispanSessionManagerFactoryConfiguration<C, L> config) {
