@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -36,6 +34,7 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.commons.executors.ExecutorFactory;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentServiceConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -43,7 +42,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 
 /**
  * @author Radoslav Husar
@@ -69,7 +67,7 @@ public class ClientThreadPoolServiceConfigurator extends ComponentServiceConfigu
         this.factory = new ExecutorFactory() {
             @Override
             public ExecutorService getExecutor(Properties property) {
-                ThreadFactory factory = new ClassLoaderThreadFactory(new DaemonThreadFactory(DefaultAsyncExecutorFactory.THREAD_NAME), AccessController.doPrivileged((PrivilegedAction<ClassLoader>) ClassLoaderThreadFactory.class::getClassLoader));
+                ThreadFactory factory = new DefaultThreadFactory(new DaemonThreadFactory(DefaultAsyncExecutorFactory.THREAD_NAME));
 
                 return new ThreadPoolExecutor(minThreads, maxThreads, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(queueLength), factory);
             }
