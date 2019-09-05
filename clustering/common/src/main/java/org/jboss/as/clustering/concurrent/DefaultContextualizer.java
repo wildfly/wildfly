@@ -31,6 +31,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Default {@link org.wildfly.clustering.service.concurrent.Contextualizer} that applies the following contexts:
  * <ol>
  * <li>Thread context {@link ClassLoader}</li>
+ * <li>JNDI namespace</li>
  * </ol>
  * @author Paul Ferraro
  */
@@ -45,6 +46,6 @@ public class DefaultContextualizer extends CompositeContextualizer {
     }
 
     private DefaultContextualizer(ClassLoader loader) {
-        super(new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE));
+        super(new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE), new NamespaceContextExecutor());
     }
 }
