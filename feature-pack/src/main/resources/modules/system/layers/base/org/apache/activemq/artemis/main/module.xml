@@ -49,6 +49,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager"/>
         <module name="io.netty"/>
+        <module name="org.jctools"/>
         <module name="javax.resource.api"/>
         <!-- WFLY-5213 Optional dependency to use the org.apache.activemq.artemis as a naming's external-context module -->
         <module name="org.jboss.invocation" optional="true"/>
