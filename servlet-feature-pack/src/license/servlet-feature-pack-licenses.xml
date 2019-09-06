@@ -62,8 +62,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
+      <groupId>jakarta.inject</groupId>
+      <artifactId>jakarta.inject-api</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
