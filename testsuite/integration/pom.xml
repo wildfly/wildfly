@@ -289,6 +289,17 @@
                             </system-properties>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <!-- Re-enable the default surefire execution -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>test</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
