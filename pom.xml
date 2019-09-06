@@ -110,6 +110,7 @@
         <module>xts</module>
         <module>rts</module>
         <module>testsuite/shared</module>
+        <module>testsuite/test-feature-pack</module>
         <module>testsuite</module>
     </modules>
 
