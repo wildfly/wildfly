@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 /**
- * An instance of a Java EE component.
+ * An instance of a Jakarta EE component.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

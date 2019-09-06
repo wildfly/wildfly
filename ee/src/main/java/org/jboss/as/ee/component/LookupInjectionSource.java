@@ -110,7 +110,7 @@ public final class LookupInjectionSource extends InjectionSource {
                 // an absolute non java name
                 final ManagedReferenceFactory managedReferenceFactory;
                 if (URL_SCHEMES.contains(scheme)) {
-                    // a Java EE Standard Resource Manager Connection Factory for URLs, using lookup to define value of URL, inject factory that creates URL instances
+                    // a Jakarta EE Standard Resource Manager Connection Factory for URLs, using lookup to define value of URL, inject factory that creates URL instances
                     managedReferenceFactory = new ManagedReferenceFactory() {
                         @Override
                         public ManagedReference getReference() {

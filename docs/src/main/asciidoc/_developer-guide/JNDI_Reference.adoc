@@ -6,7 +6,7 @@
 WildFly offers several mechanisms to retrieve components by name. Every
 WildFly instance has it's own local JNDI namespace ( `java:`) which is
 unique per JVM. The layout of this namespace is primarily governed by
-the Java EE specification. Applications which share the same WildFly
+the Jakarta EE specification. Applications which share the same WildFly
 instance can use this namespace to intercommunicate. In addition to
 local JNDI, a variety of mechanisms exist to access remote components.
 
@@ -32,7 +32,7 @@ This centralized directory is, however, _a single point of failure_.
 * EE Application Client / Server-To-Server Delegation - This approach is
 where local names are bound as an _alias_ to a remote name using one of
 the above mechanisms. This is useful in that it allows applications to
-only ever reference standard portable Java EE names in both code and
+only ever reference standard portable Jakarta EE names in both code and
 deployment descriptors. It also allows for the application to be unaware
 of network topology details/ This can even work with Java SE clients by
 using the little known EE Application Client feature. This feature

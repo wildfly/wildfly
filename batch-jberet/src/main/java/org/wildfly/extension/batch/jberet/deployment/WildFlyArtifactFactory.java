@@ -19,7 +19,7 @@ package org.wildfly.extension.batch.jberet.deployment;
 import org.jberet.spi.ArtifactFactory;
 
 /**
- * ArtifactFactory for Java EE runtime environment.
+ * ArtifactFactory for Jakarta EE runtime environment.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

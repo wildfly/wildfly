@@ -7,10 +7,10 @@ JBoss AS versions prior to WildFly8 allowed a JBoss specific way to
 plug-in user application specific interceptors on the server side so
 that those interceptors get invoked during an EJB invocation. Such
 interceptors differed from the typical (portable) spec provided Java EE
-interceptors. The Java EE interceptors are expected to run after the
+interceptors. The Jakarta EE interceptors are expected to run after the
 container has done necessary invocation processing which involves
 security context propagation, transaction management and other such
-duties. As a result, these Java EE interceptors come too late into the
+duties. As a result, these Jakarta EE interceptors come too late into the
 picture, if the user applications have to intercept the call before
 certain container specific interceptor(s) are run.
 
@@ -35,7 +35,7 @@ relevant portion of the flow shown below):
 2.  WildFly specific interceptor (a.k.a container interceptor) 2
 3.  ....
 4.  WildFly specific interceptor (a.k.a container interceptor) N
-5.  User application specific Java EE interceptor(s) (if any)
+5.  User application specific Jakarta EE interceptor(s) (if any)
 6.  Invocation on the EJB instance's method
 
 The WildFly specific interceptors include the security context
@@ -59,14 +59,14 @@ As of WildFly 8, this feature was implemented.
 As you can see from the JIRA https://issues.jboss.org/browse/AS7-5897,
 one of the goals of this feature implementation was to make sure that we
 don't introduce any new WildFly specific library dependencies for the
-container interceptors. So we decided to allow the Java EE interceptors
+container interceptors. So we decided to allow the Jakarta EE interceptors
 (which are just POJO classes with lifecycle callback annotations) to be
 used as container interceptors. As such you won't need any dependency on
 any WildFly specific libraries. That will allow us to support this
 feature for a longer time in future versions of WildFly.
 
 Furthermore, configuring these container interceptors is similar to
-configuring the Java EE interceptors for EJBs. In fact, it uses the same
+configuring the Jakarta EE interceptors for EJBs. In fact, it uses the same
 xsd elements that are allowed in ejb-jar.xml for 3.1 version of ejb-jar
 deployment descriptor.
 
@@ -132,7 +132,7 @@ container-interceptors elements to be configured
 * The container-interceptors element which contain the interceptor
 bindings
 * The interceptor bindings themselves are the same elements as what the
-EJB3.1 xsd allows for standard Java EE interceptors
+EJB3.1 xsd allows for standard Jakarta EE interceptors
 * The interceptors can be bound either to all EJBs in the deployment
 (using the the * wildcard) or individual bean level (using the specific
 EJB name) or at specific method level for the EJBs.
@@ -175,7 +175,7 @@ context data before the invocation proceeds.
 interceptor(s) API
 
 Although the container interceptors are modeled to be similar to the
-Java EE interceptors, there are some differences in the API semantics.
+Jakarta EE interceptors, there are some differences in the API semantics.
 One such difference is that invoking on
 javax.interceptor.InvocationContext.getTarget() method is illegal for
 container interceptors since these interceptors are invoked way before

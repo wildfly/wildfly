@@ -76,7 +76,7 @@ model.
 [[endpoint-configuration-deployment-descriptor]]
 === Endpoint Configuration Deployment Descriptor
 
-Java EE archives that can contain JAX-WS client and endpoint
+Jakarta EE archives that can contain JAX-WS client and endpoint
 implementations can also contain predefined client and endpoint
 configuration declarations. All endpoint/client configuration
 definitions for a given archive must be provided in a single deployment

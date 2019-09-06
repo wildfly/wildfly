@@ -1,15 +1,15 @@
 [[EE_Application_Deployment_Configuration]]
-= Java EE Application Deployment
+= Jakarta EE Application Deployment
 
 The EE subsystem configuration allows the customisation of the
-deployment behaviour for Java EE Applications.
+deployment behaviour for Jakarta EE Applications.
 
 [[global-modules]]
 == Global Modules
 
 Global modules is a set of JBoss Modules that will be added as
-dependencies to the JBoss Module of every Java EE deployment. Such
-dependencies allows Java EE deployments to see the classes exported by
+dependencies to the JBoss Module of every Jakarta EE deployment. Such
+dependencies allows Jakarta EE deployments to see the classes exported by
 the global modules.
 
 Each global module is defined through the `module` resource, an example
@@ -82,7 +82,7 @@ classes from that `.war`. This is as per spec.
 
 The EE subsystem configuration includes flags to configure whether
 system property replacement will be done on XML descriptors and Java
-Annotations included in Java EE deployments.
+Annotations included in Jakarta EE deployments.
 
 [NOTE]
 
@@ -97,7 +97,7 @@ prevented.
 === Spec Descriptor Property Replacement
 
 Flag indicating whether system property replacement will be performed on
-standard Java EE XML descriptors. If not configured this defaults to
+standard Jakarta EE XML descriptors. If not configured this defaults to
 `true`, however it is set to `false` in the standard configuration files
 shipped with WildFly.
 

@@ -1,17 +1,16 @@
 [[EE_Concurrency_Utilities_Configuration]]
 = EE Concurrency Utilities
 
-EE Concurrency Utilities (JSR 236) were introduced with Java EE 7, to
-ease the task of writing multithreaded Java EE applications. Instances
-of these utilities are managed by WildFly, and the related configuration
-provided by the EE subsystem.
+EE Concurrency Utilities (JSR 236) were introduced to
+ease the task of writing multithreaded applications. Instances
+of these utilities are managed by WildFly, and the related configuration.
 
 [[context-services]]
 == Context Services
 
 The Context Service is a concurrency utility which creates contextual
 proxies from existent objects. WildFly Context Services are also used to
-propagate the context from a Java EE application invocation thread, to
+propagate the context from a Jakarta EE application invocation thread, to
 the threads internally used by the other EE Concurrency Utilities.
 Context Service instances may be created using the subsystem XML
 configuration:
@@ -50,9 +49,9 @@ one named `other`:
 [[managed-thread-factories]]
 == Managed Thread Factories
 
-The Managed Thread Factory allows Java EE applications to create new
+The Managed Thread Factory allows Jakarta EE applications to create new
 threads. WildFly Managed Thread Factory instances may also, optionally,
-use a Context Service instance to propagate the Java EE application
+use a Context Service instance to propagate the Jakarta EE application
 thread's context to the new threads. Instance creation is done through
 the EE subsystem, by editing the subsystem XML configuration:
 
@@ -93,8 +92,8 @@ configure Managed Thread Factory instances. An example to `add` and
 [[managed-executor-services]]
 == Managed Executor Services
 
-The Managed Executor Service is the Java EE adaptation of Java SE
-Executor Service, providing to Java EE applications the functionality of
+The Managed Executor Service is the Jakarta EE adaptation of Java SE
+Executor Service, providing to Jakarta EE applications the functionality of
 asynchronous task execution. WildFly is responsible to manage the
 lifecycle of Managed Executor Service instances, which are specified
 through the EE subsystem XML configuration:
@@ -185,8 +184,8 @@ configure Managed Executor Service instances. An example to `add` and
 [[managed-scheduled-executor-services]]
 == Managed Scheduled Executor Services
 
-The Managed Scheduled Executor Service is the Java EE adaptation of Java
-SE Scheduled Executor Service, providing to Java EE applications the
+The Managed Scheduled Executor Service is the Jakarta EE adaptation of Java
+SE Scheduled Executor Service, providing to Jakarta EE applications the
 functionality of scheduling task execution. WildFly is responsible to
 manage the lifecycle of Managed Scheduled Executor Service instances,
 which are specified through the EE subsystem XML configuration:

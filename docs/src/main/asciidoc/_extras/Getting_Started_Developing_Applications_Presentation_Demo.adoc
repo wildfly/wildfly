@@ -4,10 +4,10 @@
 This document is a "script" for use with the quickstarts associated with
 the link:Getting_Started_Developing_Applications_Guide.html[Getting
 Started Developing Applications Guide]. It can be used as the basis for
-demoing/explaining the Java EE 6 programming model with JBoss AS 7.
+demoing/explaining the Jakarta EE programming model with JBoss AS 7.
 
 There is an associated presentation – JBoss AS - Getting Started
-Developing Applications – which can be used to introduce the Java EE 6
+Developing Applications – which can be used to introduce the Jakarta EE
 ecosystem.
 
 The emphasis here is on the programming model, not on OAM/dev-ops,
@@ -510,7 +510,7 @@ to express once, apply often.
 ..  Show the message output
 .  `Member.java`
 ...  Hightlight the various validation annotations
-.  Java EE automatically applies the validators in both the persistence
+.  Jakarta EE automatically applies the validators in both the persistence
 layer and in your views
 
 [[jax-rs]]

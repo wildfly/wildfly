@@ -208,7 +208,7 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
     /**
      * Determines if a class from this {@link BeanDeploymentArchiveImpl} instance can access a class in the
      * {@link BeanDeploymentArchive} instance represented by the specified <code>BeanDeploymentArchive</code> parameter
-     * according to the Java EE class accessibility requirements.
+     * according to the Jakarta EE class accessibility requirements.
      *
      * @param target
      * @return true if an only if a class this archive can access a class from the archive represented by the specified parameter

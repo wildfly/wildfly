@@ -10,7 +10,7 @@ following global JNDI namespaces:
 
 [NOTE]
 
-If WildFly is to be used as a Java EE application server, then it's
+If WildFly is to be used as a Jakarta EE application server, then it's
 recommended to opt for `java:global`, since it is a standard (i.e.
 portable) namespace.
 

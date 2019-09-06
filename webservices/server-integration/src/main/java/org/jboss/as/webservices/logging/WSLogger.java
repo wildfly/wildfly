@@ -262,7 +262,7 @@ public interface WSLogger extends BasicLogger {
 
     @Message(id = 59, value = "%s library (%s) detected in ws endpoint deployment; either provide a proper deployment replacing embedded libraries with container module "
             + "dependencies or disable the webservices subsystem for the current deployment adding a proper jboss-deployment-structure.xml descriptor to it. "
-            + "The former approach is recommended, as the latter approach causes most of the webservices Java EE and any JBossWS specific functionality to be disabled.")
+            + "The former approach is recommended, as the latter approach causes most of the webservices Jakarta EE and any JBossWS specific functionality to be disabled.")
     DeploymentUnitProcessingException invalidLibraryInDeployment(String libraryName, String jar);
 
     @Message(id = 60, value = "Web service endpoint class %s not found")
@@ -286,7 +286,7 @@ public interface WSLogger extends BasicLogger {
 
     @Message(id = 66, value = "Servlet class %s declared in web.xml; either provide a proper deployment relying on JBossWS or disable the webservices subsystem for the "
             + "current deployment adding a proper jboss-deployment-structure.xml descriptor to it. "
-            + "The former approach is recommended, as the latter approach causes most of the webservices Java EE and any JBossWS specific functionality to be disabled.")
+            + "The former approach is recommended, as the latter approach causes most of the webservices Jakarta EE and any JBossWS specific functionality to be disabled.")
     WSFException invalidWSServlet(String servletClass);
 
     @LogMessage(level = ERROR)

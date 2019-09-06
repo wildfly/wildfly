@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests Bean Validation within a Java EE component
+ * Tests Bean Validation within a Jakarta EE component
  * <p/>
  * User: Jaikiran Pai
  */

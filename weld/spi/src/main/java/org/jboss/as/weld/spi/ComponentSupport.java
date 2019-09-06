@@ -28,7 +28,7 @@ import org.jboss.weld.manager.api.WeldInjectionTarget;
 import org.jboss.weld.manager.api.WeldManager;
 
 /**
- * Java EE component support tools.
+ * Jakarta EE component support tools.
  *
  * @author Martin Kouba
  */

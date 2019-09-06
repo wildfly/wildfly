@@ -744,7 +744,7 @@ The `WebServiceRef` annotation is used to declare a reference to a Web
 service. It follows the resource pattern exemplified by the
 `javax.annotation.Resource` annotation in JSR-250 [JBWS:32]. The
 `WebServiceRef` annotation is required to be honored when running on the
-Java EE 5 platform, where it is subject to the common resource injection
+Jakarta EE platform, where it is subject to the common resource injection
 rules described by the platform specification [JBWS:33].
 
 [[javax.xml.ws.webservicerefs]]
@@ -761,7 +761,7 @@ JSR-250.
 Since no name and type can be inferred in this case, each
 `WebServiceRef` annotation inside a WebServiceRefs MUST contain name and
 type elements with non-default values. The `WebServiceRef` annotation is
-required to be honored when running on the Java EE 5 platform, where it
+required to be honored when running on the Jakarta EE platform, where it
 is subject to the common resource injection rules described by the
 platform specification.
 

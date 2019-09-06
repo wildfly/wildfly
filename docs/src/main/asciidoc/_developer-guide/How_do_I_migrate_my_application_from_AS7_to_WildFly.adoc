@@ -16,13 +16,13 @@ The purpose of this guide is to document changes that are needed to successfully
 
 The list of {ProductName} new functionality is extensive, being the most relevant, with respect to server and application migrations:
 
-* Java EE7 - {ProductName} is a certified implementation of Java EE7, meeting both the Web and the Full profiles, and already includes support for the latest iterations of CDI (1.2) and Web Sockets (1.1).
+* Jakarta EE - {ProductName} is a certified implementation of Jakarta EE, meeting both the Web and the Full profiles, and already includes support for the latest iterations of CDI (1.2) and Web Sockets (1.1).
 * Undertow - A new cutting-edge web server in {ProductName}, designed for maximum throughput and scalability, including environments with over a million connections. And the latest web technologies, such as the new HTTP/2 standard, are already onboard.
 * Apache ActiveMQ Artemis - {ProductName}'s new JMS broker. Based on an code donation from HornetQ, this Apache subproject provides outstanding performance based on a proven non-blocking architecture.
 * IronJacamar 1.2 - The latest IronJacamar provides a stable and feature rich JCA & Datasources support.
 * JBossWS 5 - The fifth generation of JBossWS, a major leap forward, brings new features and performances improvements to {ProductName} Web Services
-* RESTEasy 3 - {ProductName} includes the latest generation of RESTEasy, which goes beyond the standard Java EE REST APIs (JAX-RS 2.0), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, JSON-P, and Jettison.
-* OpenJDK ORB - {ProductName} switched the IIOP implementation from JacORB, to a downstream branch of the OpenJDK Orb, leading to better interoperability with the JVM ORB and the Java EE RI.
+* RESTEasy 3 - {ProductName} includes the latest generation of RESTEasy, which goes beyond the standard Jakarta EE REST APIs (JAX-RS 2.0), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, JSON-P, and Jettison.
+* OpenJDK ORB - {ProductName} switched the IIOP implementation from JacORB, to a downstream branch of the OpenJDK Orb, leading to better interoperability with the JVM ORB and the Jakarta EE RI.
 * Feature Rich Clustering - Clustering support was heavily refactored in {ProductName}, and includes several APIs for applications
 * Port Reduction - By utilizing HTTP upgrade, {ProductName} has moved nearly all of its protocols to be multiplexed over just two HTTP ports: a management port (9990), and an application port (8080).
 * Enhanced Logging - The management API now supports the ability to list and view the available log files on a server, or even define custom formatters other than the default pattern formatter. Deployment's logging setup is also greatly enhanced.
@@ -419,7 +419,7 @@ In {PrevProductName} {PrevProductVersion}, to use WebSockets, you had to configu
 /subsystem=web/connector=http/:write-attribute(name=protocol,value=org.apache.coyote.http11.Http11NioProtocol)
 ----
 
-WebSockets are a requirement of the Java EE 7 specification and the default configuration is included in {ProductName}. More complex WebSocket configuration is done in the `servlet-container` of the `undertow` subsystem of the server configuration file.
+WebSockets are a requirement of the Jakarta EE specification and the default configuration is included in {ProductName}. More complex WebSocket configuration is done in the `servlet-container` of the `undertow` subsystem of the server configuration file.
 
 You no longer need to configure the server for default WebSocket support.
 
@@ -611,7 +611,7 @@ Before you migrate your application, you should be aware that some features that
 [[cmp-entity-ejbs]]
 ==== CMP Entity EJBs
 
-Container-Managed Persistence entity beans support is optional in Java EE 7, and {ProductName} does not provide support for these.
+Container-Managed Persistence entity beans support is optional in Jakarta EE, and {ProductName} does not provide support for these.
 
 CMP entity beans are defined in the `ejb-jar.xml` descriptor, in concrete an entity bean is CMP only if the `<entity/>` child element named `persistence-type` is included and has a value of `Container`. An example:
 
@@ -689,7 +689,7 @@ External applications using JNDI, to remotely lookup up EJBs in a {ProductName} 
 [[proprietary-jms-resource-definitions]]
 ==== Proprietary JMS Resource Definitions
 
-The proprietary XML descriptors, previously used to setup JMS resources, are deprecated in {ProductName}. Java EE 7 (section EE.5.18) standardized such functionality.
+The proprietary XML descriptors, previously used to setup JMS resources, are deprecated in {ProductName}. Jakarta EE (section EE.5.18) standardized such functionality.
 
 The deprecated descriptors are files bundled in the application package, which name ends with `-jms.xml`. Their namespace has been changed to `urn:jboss:messaging-activemq-deployment:1.0`.
 
@@ -769,12 +769,12 @@ can be replaced by
 
 The setup of web service's endpoints and clients, through a Spring XML descriptor, driving a CXF bus creation, is no longer supported in {ProductName}.
 
-Any application containing a `jbossws-cxf.xml` must migrate all functionality specified in such XML descriptor, mostly already supported by the JAX-WS specification, included in Java EE 7. It is still possible to rely on direct Apache CXF API usage, loosing the Java EE portability of the application, for instance when specific Apache CXF functionalities are needed. See the Apache CXF Integration document for further information.
+Any application containing a `jbossws-cxf.xml` must migrate all functionality specified in such XML descriptor, mostly already supported by the JAX-WS specification, included in Jakarta EE. It is still possible to rely on direct Apache CXF API usage, loosing the Jakarta EE portability of the application, for instance when specific Apache CXF functionalities are needed. See the Apache CXF Integration document for further information.
 
 [[jax-rpc]]
 ==== JAX-RPC
 
-JAX-RPC is an API for building Web services and clients that used remote procedure calls (RPC) and XML, which was deprecated in Java EE 6, and is no longer supported by {ProductName}.
+JAX-RPC is an API for building Web services and clients that used remote procedure calls (RPC) and XML, which was deprecated in Jakarta EE, and is no longer supported by {ProductName}.
 
 JAX-RPC Web Services may be identified by the presence of the XML descriptor named `webservices.xml`, containing a `<webservice-description/>` element that includes a child element named `<jaxrpc-mapping-file/>`. An example:
 
@@ -799,7 +799,7 @@ JAX-RPC Web Services may be identified by the presence of the XML descriptor nam
 </webservices>
 ----
 
-Applications using JAX-RPC should be migrated to use JAX-WS, the current Java EE standard web service framework.
+Applications using JAX-RPC should be migrated to use JAX-WS, the current Jakarta EE standard web service framework.
 
 [[jax-rs-2.0]]
 ==== JAX-RS 2.0
@@ -967,7 +967,7 @@ java.naming.provider.url=http-remoting://localhost:8080
 [[jsr-88]]
 ==== JSR-88
 
-The specification which aimed to standardize deployment tasks got very little adoption, due to much more "feature rich" proprietary solutions already included in every vendor application server. It was no surprise that JSR-88 support was dropped from Java EE 7, and {ProductName} followed that and dropped support too.
+The specification which aimed to standardize deployment tasks got very little adoption, due to much more "feature rich" proprietary solutions already included in every vendor application server. It was no surprise that JSR-88 support was dropped from Jakarta EE, and {ProductName} followed that and dropped support too.
 
 A JSR-88 deployment plan is identified by a XML descriptor named `deployment-plan.xml`, bundled in a zip/jar archive.
 

@@ -58,12 +58,12 @@ descriptors.
 === Portable applications
 
 WildFly is much more then a servlet container; it actually provides
-users with a fully compliant target platform for Java EE applications.
+users with a fully compliant target platform for Jakarta EE applications.
 
 Generally speaking, _users are encouraged to write portable
 applications_ by relying only on _JAX-WS specification_ whenever
 possible. That would by the way ensure easy migrations to and from other
-compliant platforms. Being a Java EE container, WildFly already comes
+compliant platforms. Being a Jakarta EE container, WildFly already comes
 with a JAX-WS compliant implementation, which is basically Apache CXF
 plus the JBossWS-CXF integration layer. So users just need to write
 their JAX-WS application; _no need for embedding any Apache CXF or any
@@ -229,7 +229,7 @@ created and associated to the thread before building up a JAXWS client.
 
 The drawback of the strategy is that the link between the Bus instance
 and the thread needs to be eventually cleaned up (when not needed
-anymore). This is really evident in a Java EE environment (hence when
+anymore). This is really evident in a Jakarta EE environment (hence when
 running in-container), as threads from pools (e.g. serving web requests)
 are re-used.
 

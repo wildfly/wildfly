@@ -46,7 +46,7 @@ public interface EntityManagerFactoryBuilder {
     void cancel();
 
     /**
-     * Allows passing in a Java EE ValidatorFactory (delayed from constructing the builder, AKA phase 2) to be used
+     * Allows passing in a Jakarta EE ValidatorFactory (delayed from constructing the builder, AKA phase 2) to be used
      * in building the EntityManagerFactory
      *
      * @param validatorFactory The ValidatorFactory

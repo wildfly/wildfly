@@ -1,7 +1,7 @@
 [[Application_Client_Reference]]
 = Application Client Reference
 
-As a Java EE6 compliant server, WildFly {wildflyVersion} contains an application
+As a Jakarta EE compliant server, WildFly {wildflyVersion} contains an application
 client. An application client is essentially a cut down server instance,
 that allow you to use EE features such as injection in a client side
 program.

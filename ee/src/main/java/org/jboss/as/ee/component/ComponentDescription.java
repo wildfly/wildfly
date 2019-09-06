@@ -46,7 +46,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
+ * A description of a generic Jakarta EE component.  The description is pre-classloading so it references everything by name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

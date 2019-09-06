@@ -540,9 +540,9 @@ rollback the operation across the whole domain.
 
 Now for the `weld` example we have been using there is a slight twist.
 We have the new `require-bean-descriptor` and `non-portable-mode`
-attributes. These have been added in WildFly {wildflyVersion} which supports Java EE 7,
-and thus CDI 1.1. JBoss AS 7.x supports Java EE 6, and thus CDI 1.0. In
-CDI 1.1 the values of these attributes are tweakable, so they can be set
+attributes. These have been added in WildFly {wildflyVersion} which supports Jakarta EE,
+and thus CDI.
+In CDI 1.1 the values of these attributes are tweakable, so they can be set
 to either `true` or `false`. The default behaviour for these in CDI 1.1,
 if not set, is that they are `false`. However, for CDI 1.0 these were
 not tweakable, and with the way the subsystem in JBoss AS 7.x worked is

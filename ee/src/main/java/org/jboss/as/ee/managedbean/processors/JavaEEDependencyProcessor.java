@@ -98,7 +98,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         // add dep for naming permission
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.create(WILDFLY_NAMING), false, false, false, false));
 
-        //we always add all Java EE API modules, as the platform spec requires them to always be available
+        //we always add all Jakarta EE API modules, as the platform spec requires them to always be available
         //we do not just add the javaee.api module, as this breaks excludes
 
         for (final ModuleIdentifier moduleIdentifier : JAVA_EE_API_MODULES) {

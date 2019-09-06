@@ -5,7 +5,7 @@
 == What are High Availability services?
 
 WildFly's High Availability services are used to guarantee availability
-of a deployed Java EE application.
+of a deployed Jakarta EE application.
 
 Deploying critical applications on a single node suffers from two
 potential problems:
@@ -16,9 +16,9 @@ crashes (single point of failure)
 response time during high volumes of requests (overwhelmed server)
 
 WildFly supports two features which ensure high availability of critical
-Java EE applications:
+Jakarta EE applications:
 
-* *fail-over:* allows a client interacting with a Java EE application to
+* *fail-over:* allows a client interacting with a Jakarta EE application to
 have uninterrupted access to that application, even in the presence of
 node failures
 * *load balancing:* allows a client to have timely responses from the
@@ -39,9 +39,9 @@ We now take a brief look at what these services can guarantee.
 [[high-availability-through-fail-over]]
 == High Availability through fail-over
 
-Fail-over allows a client interacting with a Java EE application to have
+Fail-over allows a client interacting with a Jakarta EE application to have
 uninterrupted access to that application, even in the presence of node
-failures. For example, consider a Java EE application which makes use of
+failures. For example, consider a Jakarta EE application which makes use of
 the following features:
 
 * session-oriented servlets to provide user interaction
@@ -103,7 +103,7 @@ high-availability/clustering
 
 As high availability features and their configuration depend on the
 particular component they affect (e.g. HTTP sessions, EJB SFSB sessions,
-Hibernate), we organize the discussion around those Java EE features. We
+Hibernate), we organize the discussion around those Jakarta EE features. We
 strive to make each section as self-contained as possible. Also, when
 discussing a feature, we will introduce any WildFly subsystems upon
 which the feature depends.

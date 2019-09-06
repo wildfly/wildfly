@@ -24,7 +24,7 @@ package org.jboss.as.weld.spi;
 import org.jboss.as.ee.component.ComponentDescription;
 
 /**
- * Certain Java EE components imply an existence of an implicit bean archive.
+ * Certain Jakarta EE components imply an existence of an implicit bean archive.
  *
  * @author Martin Kouba
  */
