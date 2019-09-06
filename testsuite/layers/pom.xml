@@ -22,6 +22,25 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <!-- TODO: Remove this once wildfly core supplies jakarta.inject. -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.wildfly.core</groupId>
+                    <artifactId>wildfly-core-test-runner</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- TODO: Remove this once wildfly core supplies jakarta.inject. -->
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-test-runner</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <properties>

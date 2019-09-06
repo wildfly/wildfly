@@ -418,7 +418,8 @@
         <!-- Apache xml-resolver -->
         <version.xom>1.2.10</version.xom>
 
-
+        <!-- TODO: Remove this once wildfly core supplies jakarta.inject -->
+        <version.jakarta.inject.jakarta.inject-api>1.0</version.jakarta.inject.jakarta.inject-api>
     </properties>
 
     <dependencyManagement>
@@ -430,6 +431,20 @@
                 <version>${version.org.wildfly.core}</version>
                 <type>pom</type>
                 <scope>import</scope>
+                <!-- TODO: Remove this once wildfly core supplies jakarta.inject -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- TODO: Remove this once wildfly core supplies jakarta.inject -->
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${version.jakarta.inject.jakarta.inject-api}</version>
             </dependency>
 
             <dependency>
