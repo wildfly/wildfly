@@ -48,7 +48,7 @@
 
     <dependencies>
 
-		<!-- feature pack dependencies -->
+        <!-- feature pack dependencies -->
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -135,8 +135,8 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
         </dependency>
 
         <dependency>

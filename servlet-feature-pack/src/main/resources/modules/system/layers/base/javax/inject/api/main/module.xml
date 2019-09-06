@@ -24,6 +24,6 @@
 
 <module xmlns="urn:jboss:module:1.5" name="javax.inject.api">
     <resources>
-        <artifact name="${javax.inject:javax.inject}"/>
+        <artifact name="${jakarta.inject:jakarta.inject-api}"/>
     </resources>
 </module>

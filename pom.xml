@@ -1748,6 +1748,10 @@
                         <groupId>javax.el</groupId>
                         <artifactId>javax.el-api</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1904,6 +1908,10 @@
                     <exclusion>
                         <groupId>org.apache.qpid</groupId>
                         <artifactId>qpid-jms-client</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -5266,6 +5274,12 @@
                 <groupId>org.eclipse.microprofile.health</groupId>
                 <artifactId>microprofile-health-api</artifactId>
                 <version>${version.org.eclipse.microprofile.health.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.microprofile.health</groupId>
@@ -5693,6 +5707,10 @@
                     <exclusion>
                         <groupId>org.hornetq</groupId>
                         <artifactId>hornetq-journal</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7990,6 +8008,10 @@
                         <groupId>org.jboss.sasl</groupId>
                         <artifactId>jboss-sasl</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -8514,7 +8536,8 @@
                                             <exclude>javax.persistence:persistence-api</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
                                             <exclude>javax.transaction:jta</exclude>
-					    <exclude>javax.xml:jaxrpc-api</exclude>
+                                            <exclude>javax.inject:javax.inject</exclude>
+                                            <exclude>javax.xml:jaxrpc-api</exclude>
                                             <exclude>javax.xml.soap:saaj-api</exclude>
                                             <exclude>javax.xml.stream:stax-api</exclude>
                                             <exclude>jboss:jboss-logging-spi</exclude>
