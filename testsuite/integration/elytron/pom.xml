@@ -427,7 +427,10 @@
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <phase>process-test-resources</phase>
+                                <!-- run in test-compile instead of process-test-resources
+                                     as getting correct execution order of different process-test-resources
+                                     executions has proven problematic when different profiles are used. -->
+                                <phase>test-compile</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>

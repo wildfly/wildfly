@@ -315,5 +315,35 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
+        <profile>
+            <id>elytron.profile</id>
+            <activation>
+                <property>
+                    <name>elytron</name>
+                </property>
+                <file>
+                    <exists>${ts.elytron.cli}</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default</id>
+                                <!-- run in test-compile instead of process-test-resources
+                                     as we want this to run after build-manual-mode-servers
+                                     has created all the servers other than target/wildfly -->
+                                <phase>test-compile</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
