@@ -9747,6 +9747,20 @@
         </profile>
 
         <profile>
+            <id>security.manager.profile</id>
+            <activation>
+                <property>
+                    <name>security.manager</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable the default surefire tests  for all modules except for
+                     those where this profile turns them on. -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
+
+        <profile>
             <id>victims-scan</id>
             <activation>
                 <property>
