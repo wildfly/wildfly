@@ -116,26 +116,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformerEAP62() throws Exception {
-        testTransformer("datasources-full.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 2, 0));
-    }
-
-    @Test
-    public void testTransformerExpressionEAP62() throws Exception {
-        testTransformer("datasources-full-expression111.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 2, 0));
-    }
-
-    @Test
-    public void testTransformerEAP63() throws Exception {
-        testTransformer("datasources-full.xml", ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
-    }
-
-    @Test
-    public void testTransformerExpressionEAP63() throws Exception {
-        testTransformer("datasources-full-expression111.xml", ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
-    }
-
-    @Test
     public void testTransformerEAP64() throws Exception {
         testTransformer("datasources-full.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
     }

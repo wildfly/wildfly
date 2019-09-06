@@ -32,7 +32,6 @@ import static org.jboss.as.web.Constants.ACCESS_LOG;
 import static org.jboss.as.web.Constants.CONFIGURATION;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.DIRECTORY;
-import static org.jboss.as.web.Constants.PREFIX;
 import static org.jboss.as.web.Constants.SETTING;
 import static org.jboss.as.web.Constants.SSL;
 import static org.jboss.as.web.Constants.SSO;
@@ -41,29 +40,14 @@ import static org.jboss.as.web.WebExtension.SUBSYSTEM_NAME;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.List;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
-import org.jboss.as.model.test.ModelFixer;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.web.WebExtension;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -112,144 +96,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         testSSLAlias(services, noAliasModel, aliasModel);
         testSSOAlias(services, noAliasModel, aliasModel);
         testAccessLogAlias(services, noAliasModel, aliasModel);
-    }
-
-    @Test
-    public void testTransformationEAP620() throws Exception {
-        testTransformation_1_3_0(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testTransformationEAP630() throws Exception {
-        testTransformation_1_4_0(ModelTestControllerVersion.EAP_6_3_0);
-    }
-
-    @Test
-    public void testRejectingTransformersAS620() throws Exception {
-        testRejectingTransformers_1_3_0(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testRejectingTransformersAS630() throws Exception {
-        testRejectingTransformers_1_4_0(ModelTestControllerVersion.EAP_6_3_0);
-    }
-    //no need to test target 6.4 as current == 6.4
-
-
-
-    private void testTransformation_1_4_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 4, 0);
-        String subsystemXml = readResource("subsystem-1.4.0.xml");
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml);
-
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.web.WebExtension")
-                .configureReverseControllerCheck(createAdditionalInitialization(), null);
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer.CumulativeModelFixer(SSLConfigurationNameFixer.INSTANCE, AccessLogPrefixFixer_1_2_0.INSTANCE));
-    }
-
-
-    private void testTransformation_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
-        String subsystemXml = readResource("subsystem-1.3.0.xml");
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml);
-
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.web.WebExtension")
-                .configureReverseControllerCheck(createAdditionalInitialization(), null);
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer.CumulativeModelFixer(SSLConfigurationNameFixer.INSTANCE, AccessLogPrefixFixer_1_2_0.INSTANCE));
-    }
-
-    private void testRejectingTransformers_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
-
-        ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.web.WebExtension")
-                .configureReverseControllerCheck(createAdditionalInitialization(), null);
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
-
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
-
-        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
-        .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
-        .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "http")),
-                            new FailedOperationTransformationConfig.NewAttributesConfig("redirect-binding", "proxy-binding"))
-        .addFailedAttribute(subsystem.append("virtual-server", "default-host").append("configuration", "sso"), new BooleanExpressionConfig("http-only"));
-
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
-
-        checkUndefinedCipherSuite(mainServices, modelVersion);
-    }
-
-    private void testRejectingTransformers_1_4_0(ModelTestControllerVersion controllerVersion) throws Exception {
-
-        ModelVersion modelVersion = ModelVersion.create(1, 4, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.web.WebExtension")
-                .configureReverseControllerCheck(createAdditionalInitialization(), null);
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
-
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
-
-        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
-        .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
-        .addFailedAttribute(subsystem.append("virtual-server", "default-host").append("configuration", "sso"), new BooleanExpressionConfig("http-only"));
-
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
-    }
-
-    private void checkUndefinedCipherSuite(KernelServices services, ModelVersion version) throws Exception  {
-        final ModelNode success = new ModelNode();
-        success.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
-        success.get(ModelDescriptionConstants.RESULT);
-        success.protect();
-
-        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
-                PathElement.pathElement("connector", "https"), PathElement.pathElement("configuration", "ssl"));
-
-        ModelNode op = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, addr);
-        op.get(NAME).set("cipher-suite");
-        op.get(VALUE).set(new ModelNode());
-        TransformedOperation transOp = services.transformOperation(version, op);
-        Assert.assertTrue(transOp.rejectOperation(success));
-
-        op.get(VALUE).set("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
-        transOp = services.transformOperation(version, op);
-        Assert.assertFalse(transOp.rejectOperation(success));
     }
 
 
@@ -361,70 +207,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 //        Assert.assertTrue("The subsystem describe operation must fail",
 //                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
 //    }
-
-    private static class SSLConfigurationNameFixer implements ModelFixer {
-        private static final ModelFixer INSTANCE = new SSLConfigurationNameFixer();
-
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            //In the current and legacy models this is handled by a read attribute handler rather than existing in the model
-            modelNode.get("connector","https", "configuration", "ssl", "name").set("ssl");
-            return modelNode;
-        }
-
-    }
-
-
-    private static class AccessLogPrefixFixer_1_2_0 implements ModelFixer {
-
-        private static final ModelFixer INSTANCE = new AccessLogPrefixFixer_1_2_0();
-
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            if (modelNode.hasDefined(VIRTUAL_SERVER)) {
-                for (Property property : modelNode.get(VIRTUAL_SERVER).asPropertyList()) {
-                    ModelNode virtualServer = property.getValue();
-                    if (virtualServer.hasDefined(CONFIGURATION)) {
-                        if (virtualServer.get(CONFIGURATION).hasDefined(ACCESS_LOG)) {
-                            ModelNode prefix = virtualServer.get(CONFIGURATION, ACCESS_LOG, PREFIX);
-                            if (prefix.getType() == ModelType.BOOLEAN) {
-                                modelNode.get(VIRTUAL_SERVER, property.getName(), CONFIGURATION, ACCESS_LOG, PREFIX).set("access_log.");
-                            }
-                        }
-                    }
-                }
-            }
-            return modelNode;
-        }
-    }
-
-    private static final class IntExpressionConfig extends RejectExpressionsConfig {
-
-        public IntExpressionConfig(String... attributes) {
-            // FIXME GlobalSessionTimeOutConfig constructor
-            super(attributes);
-        }
-
-        @Override
-        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            ModelNode value = super.correctValue(toResolve, isWriteAttribute);
-            return new ModelNode(value.asInt());
-        }
-    }
-
-    private static final class BooleanExpressionConfig extends RejectExpressionsConfig {
-
-        public BooleanExpressionConfig(String... attributes) {
-            // FIXME GlobalSessionTimeOutConfig constructor
-            super(attributes);
-        }
-
-        @Override
-        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            ModelNode value = super.correctValue(toResolve, isWriteAttribute);
-            return new ModelNode(value.asBoolean());
-        }
-    }
 
     private static class TestAdditionalInitialization extends AdditionalInitialization implements Serializable {
 
