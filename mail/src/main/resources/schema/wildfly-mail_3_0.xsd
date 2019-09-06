@@ -26,13 +26,13 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="urn:jboss:domain:mail:3.0"
-           xmlns:credential-reference="urn:wildfly:credential-reference:1.0"
+           xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
            targetNamespace="urn:jboss:domain:mail:3.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
 
-    <xs:import namespace="urn:wildfly:credential-reference:1.0" schemaLocation="wildfly-credential-reference_1_0.xsd"/>
+    <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
 
     <!-- The mail subsystem root element -->
     <xs:element name="subsystem" type="mail-subsystemType"/>
