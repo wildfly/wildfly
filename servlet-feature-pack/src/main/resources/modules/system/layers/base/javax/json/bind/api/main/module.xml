@@ -16,13 +16,12 @@
   ~ limitations under the License.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="javax.json.bind.api">
-
+<module xmlns="urn:jboss:module:1.9" name="javax.json.bind.api">
     <properties>
         <property name="jboss.api" value="public"/>
     </properties>
     <resources>
-        <artifact name="${javax.json.bind:javax.json.bind-api}"/>
+        <artifact name="${jakarta.json.bind:jakarta.json.bind-api}"/>
     </resources>
     <dependencies>
         <module name="javax.json.api"/>
