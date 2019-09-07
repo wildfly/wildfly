@@ -52,7 +52,7 @@
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.api"/>
         <module name="org.wildfly.clustering.web.container"/>
-        <module name="org.wildfly.clustering.web.infinispan" services="import"/>
+        <module name="org.wildfly.clustering.web.infinispan" services="import" optional="true"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="org.wildfly.security.elytron-private"/>

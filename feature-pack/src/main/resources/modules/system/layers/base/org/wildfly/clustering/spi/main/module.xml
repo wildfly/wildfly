@@ -41,6 +41,6 @@
         <module name="org.wildfly.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton"/>
-        <module name="org.wildfly.clustering.web.infinispan" services="import"/>
+        <module name="org.wildfly.clustering.web.infinispan" services="import" optional="true"/>
     </dependencies>
 </module>
