@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
-import org.wildfly.clustering.web.hotrod.Logger;
+import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionExpirationListener;

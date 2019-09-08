@@ -34,7 +34,7 @@ import org.wildfly.clustering.web.cache.sso.AuthenticationEntry;
 import org.wildfly.clustering.web.cache.sso.CompositeSSO;
 import org.wildfly.clustering.web.cache.sso.SSOFactory;
 import org.wildfly.clustering.web.cache.sso.SessionsFactory;
-import org.wildfly.clustering.web.hotrod.Logger;
+import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
