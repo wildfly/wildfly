@@ -25,6 +25,7 @@ import java.nio.CharBuffer;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 
+import org.wildfly.common.string.CompositeCharSequence;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
