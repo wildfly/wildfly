@@ -34,6 +34,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -107,7 +108,7 @@ public interface JSFLogger extends BasicLogger {
     void phaseListenersConfigParseFailed(VirtualFile facesConfig);
 
     @Message(id = 16, value = "Failed to inject JSF from slot %s")
-    DeploymentUnitProcessingException jsfInjectionFailed(String slotName);
+    DeploymentUnitProcessingException jsfInjectionFailed(String slotName, @Cause Throwable cause);
 
     @LogMessage(level = DEBUG)
     @Message(id = 17, value = "JSF 1.2 classes detected. Using org.jboss.as.jsf.injection.weld.legacy.WeldApplicationFactoryLegacy.")
