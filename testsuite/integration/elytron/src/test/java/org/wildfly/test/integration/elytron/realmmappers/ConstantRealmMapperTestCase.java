@@ -107,7 +107,7 @@ public class ConstantRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:add(realm-name=nonExistRealm)",
                         NON_EXIST_MAPPER));
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -122,7 +122,7 @@ public class ConstantRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:remove()",
                         NON_EXIST_MAPPER));
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }

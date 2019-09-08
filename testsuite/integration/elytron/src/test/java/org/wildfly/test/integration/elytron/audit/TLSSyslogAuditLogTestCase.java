@@ -119,7 +119,7 @@ public class TLSSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
 
                 setEventListenerOfApplicationDomain(cli, NAME);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -133,7 +133,7 @@ public class TLSSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
                 trustManager.remove(cli);
                 trustStore.remove(cli);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }

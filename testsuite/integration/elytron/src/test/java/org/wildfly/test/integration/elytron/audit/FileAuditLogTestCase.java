@@ -166,7 +166,7 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
 
                 setEventListenerOfApplicationDomain(cli, NAME);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -176,7 +176,7 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
                 auditLog.remove(cli);
                 FileUtils.deleteDirectory(WORK_DIR);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }

@@ -276,7 +276,7 @@ public class MappedRegexRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/mapped-regex-realm-mapper=%s:add(delegate-realm-mapper=%s,pattern=\".*&(.*)\",realm-map={%s=%s}",
                         DELEGATE_REALM_MAPPER_WITH_MAPPING, DELEGATED_REALM_MAPPER, REALM1, REALM2));
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -292,7 +292,7 @@ public class MappedRegexRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/mapped-regex-realm-mapper=%s:remove()", COMMON_REALM_MAPPER));
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:remove()", DELEGATED_REALM_MAPPER));
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }
