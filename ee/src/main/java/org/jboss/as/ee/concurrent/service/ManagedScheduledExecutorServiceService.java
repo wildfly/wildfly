@@ -25,8 +25,7 @@ package org.jboss.as.ee.concurrent.service;
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
-import org.jboss.as.ee.concurrent.ElytronManagedThreadFactory;
+import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.concurrent.ManagedScheduledExecutorServiceImpl;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.inject.Injector;
@@ -73,7 +72,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
      * @param keepAliveTimeUnit
      * @param threadLifeTime
      * @param rejectPolicy
-     * @see ManagedScheduledExecutorServiceImpl#ManagedScheduledExecutorServiceImpl(String, org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl, long, boolean, int, long, java.util.concurrent.TimeUnit, long, org.glassfish.enterprise.concurrent.ContextServiceImpl, org.glassfish.enterprise.concurrent.AbstractManagedExecutorService.RejectPolicy, org.wildfly.extension.requestcontroller.ControlPoint)
+     * @see ManagedScheduledExecutorServiceImpl#ManagedScheduledExecutorServiceImpl(String, org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl, long, boolean, int, long, java.util.concurrent.TimeUnit, long, org.glassfish.enterprise.concurrent.ContextServiceImpl, org.glassfish.enterprise.concurrent.AbstractManagedExecutorService.RejectPolicy, org.wildfly.extension.requestcontroller.ControlPoint)
      */
     public ManagedScheduledExecutorServiceService(String name, String jndiName, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, AbstractManagedExecutorService.RejectPolicy rejectPolicy) {
         super(jndiName);
@@ -92,11 +91,8 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
     @Override
     void startValue(StartContext context) throws StartException {
         ManagedThreadFactoryImpl managedThreadFactory = managedThreadFactoryInjectedValue.getOptionalValue();
-        if(managedThreadFactory == null) {
-            // if not injected create one using normal thread priority
-            final String threadFactoryName = "EE-ManagedScheduledExecutorService-" + name;
-            managedThreadFactory = new ElytronManagedThreadFactory(threadFactoryName, null, Thread.NORM_PRIORITY);
-        }
+        final int priority = managedThreadFactory != null ? managedThreadFactory.getPriority() : Thread.NORM_PRIORITY;
+        managedThreadFactory = new ManagedThreadFactoryImpl("EE-ManagedScheduledExecutorService-" + name, null, Thread.NORM_PRIORITY);
         if(requestController.getOptionalValue() != null) {
             controlPoint = requestController.getValue().getControlPoint(name, "managed-scheduled-executor-service");
         }
@@ -107,10 +103,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
     void stopValue(StopContext context) {
         if (executorService != null) {
             executorService.shutdownNow();
-            if(managedThreadFactoryInjectedValue.getOptionalValue() == null) {
-                // if not injected the thread factory was created on start, and now needs to stop
-                executorService.getManagedThreadFactory().stop();
-            }
+            executorService.getManagedThreadFactory().stop();
             this.executorService = null;
         }
         if(controlPoint != null) {

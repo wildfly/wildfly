@@ -23,8 +23,7 @@
 package org.jboss.as.ee.concurrent.service;
 
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
-import org.jboss.as.ee.concurrent.ElytronManagedThreadFactory;
+import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
@@ -47,7 +46,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
      * @param name
      * @param jndiName
      * @param priority
-     * @see ManagedThreadFactoryImpl#ManagedThreadFactoryImpl(String, org.glassfish.enterprise.concurrent.ContextServiceImpl, int)
+     * @see org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl#ManagedThreadFactoryImpl(String, org.glassfish.enterprise.concurrent.ContextServiceImpl, int)
      */
     public ManagedThreadFactoryService(String name, String jndiName, int priority) {
         super(jndiName);
@@ -59,7 +58,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
     @Override
     void startValue(StartContext context) throws StartException {
         final String threadFactoryName = "EE-ManagedThreadFactory-"+name;
-        managedThreadFactory = new ElytronManagedThreadFactory(threadFactoryName, contextService.getOptionalValue(), priority);
+        managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, contextService.getOptionalValue(), priority);
     }
 
     @Override
