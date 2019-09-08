@@ -23,7 +23,6 @@ package org.jboss.as.ee.concurrent;
 
 import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 
 import javax.enterprise.concurrent.LastExecution;

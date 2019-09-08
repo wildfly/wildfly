@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ee.subsystem;
 
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -35,6 +34,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

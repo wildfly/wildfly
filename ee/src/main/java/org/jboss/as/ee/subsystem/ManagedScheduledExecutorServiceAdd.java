@@ -24,12 +24,12 @@ package org.jboss.as.ee.subsystem;
 import java.util.concurrent.TimeUnit;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ee.concurrent.ContextServiceImpl;
+import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.concurrent.service.ManagedScheduledExecutorServiceService;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.common.cpu.ProcessorInfo;

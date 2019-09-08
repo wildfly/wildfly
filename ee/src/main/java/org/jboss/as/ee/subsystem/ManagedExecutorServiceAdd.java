@@ -22,13 +22,13 @@
 package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.concurrent.ContextServiceImpl;
+import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorServiceService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.subsystem.ManagedExecutorServiceResourceDefinition.ExecutorQueueValidationStepHandler;
