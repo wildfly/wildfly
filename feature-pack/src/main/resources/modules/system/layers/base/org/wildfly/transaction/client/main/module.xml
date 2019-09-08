@@ -36,7 +36,7 @@
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
 
-        <module name="org.jboss.ejb-client" services="import"/>
+        <module name="org.jboss.ejb-client" services="import" optional="true"/>
         <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
         <module name="org.jboss.jboss-transaction-spi" optional="true"/>
         <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
