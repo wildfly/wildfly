@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Web session clustering - Infinispan service provider</name>
+    <description>
+        A distributable HTTP session manager and single sign-on manager (an implementation of wildfly-clustering-web-spi) based on an embedded Infinispan cache.
+    </description>
 
     <dependencies>
         <dependency>

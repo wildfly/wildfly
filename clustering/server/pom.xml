@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering API implementation</name>
+    <description>
+        Contains implementations of the clustering capabilities described by the wildfly-clustering-api module.
+    </description>
 
     <dependencies>
         <dependency>

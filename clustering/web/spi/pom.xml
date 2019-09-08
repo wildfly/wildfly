@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Web session clustering SPI</name>
+    <description>
+        A set of SPIs for implementing a container-independent distributable HTTP session manager and single sign-on manager for use by a servlet container.
+    </description>
 
     <dependencies>
         <dependency>

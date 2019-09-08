@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Web session clustering - Container SPI</name>
+    <description>
+        Defines the contract between subsystem that deploys distributable web applications (e.g. wildfly-undertow) and the distributable-web subsystem.
+    </description>
 
     <dependencies>
         <dependency>

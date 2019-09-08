@@ -40,5 +40,8 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Web session clustering API</name>
+    <description>
+        Public module containing interfaces and annotations for use by applications to optimize behavior of the distributable session manager.
+    </description>
 
 </project>

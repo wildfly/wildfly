@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: SFSB clustering - Infinispan integration</name>
+    <description>
+        An implementation of wildfly-clustering-ejb-spi based on an embedded Infinispan cache.
+    </description>
 
     <dependencies>
         <dependency>

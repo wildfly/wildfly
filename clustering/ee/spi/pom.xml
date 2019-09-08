@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: EE clustering SPI</name>
+    <description>
+        This module contains code that is common to the wildlfy-clustering-ejb-spi and wildlfy-clustering-web-spi modules.
+    </description>
 
     <dependencies>
         <dependency>

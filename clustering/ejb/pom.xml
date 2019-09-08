@@ -40,6 +40,9 @@
     <packaging>pom</packaging>
 
     <name>WildFly: SFSB clustering</name>
+    <description>
+        Parent module for modules related to distributable @Stateful EJBs.
+    </description>
 
     <modules>
         <module>spi</module>

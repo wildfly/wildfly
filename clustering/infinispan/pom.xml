@@ -40,6 +40,9 @@
     <packaging>pom</packaging>
 
     <name>WildFly: Infinispan modules</name>
+    <description>
+        Parent module for modules relating to Infinispan.
+    </description>
 
     <modules>
         <module>client</module>

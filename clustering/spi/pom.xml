@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering SPI</name>
+    <description>
+        An integration module for use by subsystem/modules that use or install mechanisms from the public clustering API.
+    </description>
 
     <dependencies>
         <dependency>

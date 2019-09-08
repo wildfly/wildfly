@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering services</name>
+    <description>
+        Extensions to JBoss MSC to simplify building MSC services.
+    </description>
 
     <dependencies>
         <dependency>

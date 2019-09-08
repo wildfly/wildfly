@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: JGroups SPI</name>
+    <description>
+        An integration module for use by subsystem/modules that use or install JGroups channels from server managed protocol stacks.
+    </description>
 
     <dependencies>
         <dependency>

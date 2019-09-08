@@ -40,6 +40,9 @@
     <packaging>pom</packaging>
 
     <name>WildFly: JGroups modules</name>
+    <description>
+        Parent module for modules relating to JGroups.
+    </description>
 
     <modules>
         <module>api</module>

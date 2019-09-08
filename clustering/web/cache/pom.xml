@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Common abstractions for cache-based session manager implementations.</name>
+    <description>
+        Contains code common to the wildfly-clustering-web-hotrod and wildfly-clustering-web-infinispan modules.
+    </description>
 
     <dependencies>
         <dependency>

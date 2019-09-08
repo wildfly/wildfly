@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering marshalling Infinispan adapters</name>
+    <description>
+        Adapts implementations of wildfly-clustering-marshalling-api to the Infinispan marshaller.
+    </description>
 
     <dependencies>
         <dependency>

@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Distributable Web Subsystem</name>
+    <description>
+        Installs an extension that provides the distributable-web subsystem, that defines a set of profiles for use by distributable web applications.
+    </description>
 
     <dependencies>
         <dependency>

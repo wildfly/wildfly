@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Infinispan Client SPI</name>
+    <description>
+        Contains extensions to the HotRod client API, as well as integration code for use by subsystem/modules that which to use or install server managed remote caches.
+    </description>
 
     <dependencies>
         <dependency>

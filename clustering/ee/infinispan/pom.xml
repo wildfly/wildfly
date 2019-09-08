@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: EE clustering - Infinispan service provider</name>
+    <description>
+        This module contains code that is common to the wildlfy-clustering-ejb-infinispan and wildlfy-clustering-web-infinispan modules.
+    </description>
 
     <dependencies>
         <dependency>

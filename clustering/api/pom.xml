@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering public API</name>
+    <description>
+        This module contains a public API for a variety of clustering capabilities for use by both applications and other subsystems.
+    </description>
 
     <dependencies>
         <dependency>

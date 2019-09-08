@@ -40,6 +40,9 @@
     <packaging>pom</packaging>
 
     <name>WildFly: Web session clustering</name>
+    <description>
+        Parent module for modules related to distributable HTTP sessions and single sign-on.
+    </description>
 
     <modules>
         <module>api</module>

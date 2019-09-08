@@ -40,6 +40,10 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering marshalling SPI</name>
+    <description>
+        Contains a set of marshalling interfaces for use by the wildfly-clustering-ejb-spi and wildfly-clustering-web-spi modules
+        as well as a default set of wildfly-clustering-marshalling-api implementations.
+    </description>
 
     <dependencies>
         <dependency>
