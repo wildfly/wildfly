@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.cache.session.Scheduler;
-import org.wildfly.clustering.web.hotrod.Logger;
+import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.security.manager.WildFlySecurityManager;
 

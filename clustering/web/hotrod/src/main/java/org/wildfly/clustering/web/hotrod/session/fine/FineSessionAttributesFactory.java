@@ -44,7 +44,7 @@ import org.wildfly.clustering.web.cache.session.SessionAttributes;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.fine.FineImmutableSessionAttributes;
 import org.wildfly.clustering.web.cache.session.fine.FineSessionAttributes;
-import org.wildfly.clustering.web.hotrod.Logger;
+import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;

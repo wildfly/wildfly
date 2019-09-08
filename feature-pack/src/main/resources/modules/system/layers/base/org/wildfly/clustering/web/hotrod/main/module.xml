@@ -28,7 +28,7 @@
     </properties>
 
     <exports>
-        <exclude path="org/wildfly/clustering/web/infinispan/logging"/>
+        <exclude path="org/wildfly/clustering/web/hotrod/logging"/>
     </exports>
 
     <resources>

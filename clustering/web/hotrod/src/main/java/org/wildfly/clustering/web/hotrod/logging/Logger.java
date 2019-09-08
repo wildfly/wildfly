@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod;
+package org.wildfly.clustering.web.hotrod.logging;
 
 import static org.jboss.logging.Logger.Level.*;
 
