@@ -77,7 +77,7 @@ public class TCPSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
 
                 setEventListenerOfApplicationDomain(cli, NAME);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -88,7 +88,7 @@ public class TCPSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
                 auditLog.remove(cli);
                 stopSyslogServer();
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }

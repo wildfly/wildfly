@@ -76,7 +76,7 @@ public class UDPSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
 
                 setEventListenerOfApplicationDomain(cli, NAME);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -87,7 +87,7 @@ public class UDPSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
                 auditLog.remove(cli);
                 stopSyslogServer();
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }

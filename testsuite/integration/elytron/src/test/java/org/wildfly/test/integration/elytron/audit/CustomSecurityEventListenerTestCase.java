@@ -106,7 +106,7 @@ public class CustomSecurityEventListenerTestCase extends AbstractAuditLogTestCas
 
                 setEventListenerOfApplicationDomain(cli, NAME);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -117,7 +117,7 @@ public class CustomSecurityEventListenerTestCase extends AbstractAuditLogTestCas
                 cli.sendLine("/subsystem=elytron/custom-security-event-listener=" + NAME + ":remove");
             }
             module.remove();
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }

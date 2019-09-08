@@ -195,7 +195,7 @@ public class SimpleRoleDecoderTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/simple-role-decoder=%s:remove()", DECODE_FROM_ROLE_ATTRIBUTE_B));
                 cli.sendLine(String.format("/subsystem=elytron/simple-role-decoder=%s:remove()", DECODE_FROM_ROLE_ATTRIBUTE_A));
             }
-            ServerReload.reloadIfRequired(mc.getControllerClient());
+            ServerReload.reloadIfRequired(mc);
         }
 
         @Override

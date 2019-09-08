@@ -262,7 +262,7 @@ public class LdapRealmTestCase {
                         "/subsystem=undertow/application-security-domain=%s:add(http-authentication-factory=%s)",
                         DEPLOYMENT, LDAP_REALM_RELATED_CONFIGURATION_NAME));
             }
-            ServerReload.reloadIfRequired(mc.getControllerClient());
+            ServerReload.reloadIfRequired(mc);
         }
 
         @Override
@@ -276,7 +276,7 @@ public class LdapRealmTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/ldap-realm=%s:remove()", LDAP_REALM_NAME));
                 cli.sendLine(String.format("/subsystem=elytron/dir-context=%s:remove()", DIR_CONTEXT_NAME));
             }
-            ServerReload.reloadIfRequired(mc.getControllerClient());
+            ServerReload.reloadIfRequired(mc);
         }
 
     }

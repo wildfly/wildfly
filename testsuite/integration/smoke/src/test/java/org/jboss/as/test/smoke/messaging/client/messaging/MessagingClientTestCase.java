@@ -161,7 +161,7 @@ public class MessagingClientTestCase {
         jmsOperations.createRemoteAcceptor(remoteAcceptorName, messagingSocketBindingName, null);
         jmsOperations.addCoreQueue(queueName, queueName, true, "ANYCAST");
 
-        ServerReload.reloadIfRequired(managementClient.getControllerClient());
+        ServerReload.reloadIfRequired(managementClient);
     }
 
     @After
@@ -172,7 +172,7 @@ public class MessagingClientTestCase {
         jmsOperations.removeCoreQueue(queueName);
         removeSocketBinding(managementClient.getControllerClient(), messagingSocketBindingName);
 
-        ServerReload.reloadIfRequired(managementClient.getControllerClient());
+        ServerReload.reloadIfRequired(managementClient);
     }
 
     public final void createSocketBinding(final ModelControllerClient modelControllerClient, final String name, int port) {

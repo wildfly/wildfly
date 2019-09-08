@@ -339,7 +339,7 @@ public class SecurityDomainAsElytronSecurityRealmTestCase {
                 prepareAuthenticationWithElytron(cli, ELY_TWO_LOGIN_MODULES, PB_TWO_LOGIN_MODULES);
                 prepareAuthenticationWithElytron(cli, ELY_WITH_MAPPING_MODULE, PB_WITH_MAPPING_MODULE);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -351,7 +351,7 @@ public class SecurityDomainAsElytronSecurityRealmTestCase {
                 cli.sendLine(String.format(
                         "/subsystem=elytron/simple-role-decoder=%s:remove()", SIMPLE_ROLE_DECODER));
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         private void prepareAuthenticationWithElytron(CLIWrapper cli, String elytronName, String legacySecurityDomain) {

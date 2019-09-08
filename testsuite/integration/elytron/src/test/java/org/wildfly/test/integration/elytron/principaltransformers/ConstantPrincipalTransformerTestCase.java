@@ -154,7 +154,7 @@ public class ConstantPrincipalTransformerTestCase {
                         "/subsystem=undertow/application-security-domain=%s:add(http-authentication-factory=%s)",
                         DEP_SECURITY_DOMAIN, ELYTRON_SECURITY));
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -168,7 +168,7 @@ public class ConstantPrincipalTransformerTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/constant-principal-transformer=%s:remove()", PRINCIPAL_TRANSFORMER));
                 domain.remove(cli);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }

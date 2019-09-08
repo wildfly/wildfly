@@ -25,6 +25,7 @@ package org.wildfly.test.security.common;
 import java.util.Arrays;
 import java.util.ListIterator;
 
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.ServerReload;
@@ -43,17 +44,28 @@ public abstract class AbstractElytronSetupTask
     private static final Logger LOGGER = Logger.getLogger(AbstractElytronSetupTask.class);
 
     private ConfigurableElement[] configurableElements;
+    private ManagementClient cachedManagementClient;
 
     @Override
-    public void setup(final org.jboss.as.arquillian.container.ManagementClient managementClient, final String containerId)
+    public void setup(final ManagementClient managementClient, final String containerId)
             throws Exception {
+        // WFLY-12514. The overridable setup(ModelControllerClient) method used ServerReload.reloadIfRequired(ModelControllerClient)
+        // but it's more robust to use ServerReload.reloadIfRequired(ManagementClient). To let it do that
+        // without breaking compatibility, cache the ManagementClient
+        this.cachedManagementClient = managementClient;
         setup(managementClient.getControllerClient());
+        this.cachedManagementClient = null;
     }
 
     @Override
-    public void tearDown(final org.jboss.as.arquillian.container.ManagementClient managementClient, final String containerId)
+    public void tearDown(final ManagementClient managementClient, final String containerId)
             throws Exception {
+        // WFLY-12514. The overridable setup(ModelControllerClient) method used ServerReload.reloadIfRequired(ModelControllerClient)
+        // but it's more robust to use ServerReload.reloadIfRequired(ManagementClient). To let it do that
+        // without breaking compatibility, cache the ManagementClient
+        this.cachedManagementClient = managementClient;
         tearDown(managementClient.getControllerClient());
+        this.cachedManagementClient = null;
     }
 
     /**
@@ -61,6 +73,7 @@ public abstract class AbstractElytronSetupTask
      * {@link ConfigurableElement#create(CLIWrapper)} for them.
      */
     protected void setup(final ModelControllerClient modelControllerClient) throws Exception {
+
         configurableElements = getConfigurableElements();
 
         if (configurableElements == null || configurableElements.length == 0) {
@@ -75,7 +88,8 @@ public abstract class AbstractElytronSetupTask
                 configurableElement.create(modelControllerClient, cli);
             }
         }
-        ServerReload.reloadIfRequired(modelControllerClient);
+
+        reloadIfRequired(modelControllerClient);
     }
 
     /**
@@ -99,7 +113,8 @@ public abstract class AbstractElytronSetupTask
             }
         }
         this.configurableElements = null;
-        ServerReload.reloadIfRequired(modelControllerClient);
+
+        reloadIfRequired(modelControllerClient);
     }
 
     /**
@@ -108,5 +123,18 @@ public abstract class AbstractElytronSetupTask
      * @return not-{@code null} array of instances to be created
      */
     protected abstract ConfigurableElement[] getConfigurableElements();
+
+    private void reloadIfRequired(ModelControllerClient modelControllerClient) throws Exception {
+
+        if (cachedManagementClient != null) {
+            ServerReload.reloadIfRequired(cachedManagementClient);
+        } else {
+            // Some subclass must have overridden setup(ManagementClient, String) or tearDown(ManagementClient, String).
+            // Probably ok; might hit WFLY-12514 type problems if the server isn't on the default address/port
+            // in which case the fix is to correct the overriding code.
+            //noinspection deprecation
+            ServerReload.reloadIfRequired(modelControllerClient);
+        }
+    }
 
 }

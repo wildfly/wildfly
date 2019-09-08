@@ -172,7 +172,7 @@ public class ChainedPrincipalTransformerTestCase {
                         "/subsystem=elytron/chained-principal-transformer=%s:add(principal-transformers=[" + REGEX_TRANSFORMED_FIRST
                         + "," + REGEX_TRANSFORMED_SECOND + "])");
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -191,7 +191,7 @@ public class ChainedPrincipalTransformerTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/regex-principal-transformer=%s:remove()", REGEX_TRANSFORMER_B));
                 cli.sendLine(String.format("/subsystem=elytron/regex-principal-transformer=%s:remove()", REGEX_TRANSFORMER_A));
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         private PropertyFileBasedDomain prepareSingleConfiguration(CLIWrapper cli, String elytronName, String transformerName,

@@ -93,7 +93,7 @@ public class EJBClientDescriptorTestCase {
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             EJBManagementUtil.removeRemoteOutboundConnection(managementClient.getControllerClient(), outboundConnectionName, Authentication.getCallbackHandler());
             logger.trace("Removed remote outbound connection " + outboundConnectionName);
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
 
             EJBManagementUtil.removeLocalOutboundSocket(managementClient.getControllerClient(), "standard-sockets", outboundSocketName, Authentication.getCallbackHandler());
             logger.trace("Removed local outbound socket " + outboundSocketName);

@@ -98,7 +98,7 @@ public abstract class AbstractAuditLogTestCase {
                         .withApplicationDomains(SD_WITHOUT_LOGIN_PERMISSION).build();
                 applicationSecurityDomain.create(cli);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -107,7 +107,7 @@ public abstract class AbstractAuditLogTestCase {
                 applicationSecurityDomain.remove(cli);
                 securityDomain.remove(managementClient.getControllerClient(), cli);
             }
-            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
     }

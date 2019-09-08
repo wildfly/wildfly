@@ -292,7 +292,9 @@ public class ElytronRemoteOutboundConnectionTestCase {
         removeIfExists(serverSideMCC, getElytronSecurityDomainAddress(SECURITY_DOMAIN));
         removeIfExists(serverSideMCC, getPropertiesRealmAddress(PROPERTIES_REALM));
 
-        ServerReload.reloadIfRequired(serverSideMCC);
+
+        //noinspection deprecation
+        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
 
         try {
             clientSideMCC.close();

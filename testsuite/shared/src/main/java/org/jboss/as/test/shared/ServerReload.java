@@ -173,7 +173,12 @@ public class ServerReload {
     /**
      * Checks if the container status is "reload-required" and if it's the case executes reload and waits for completion.
      * Otherwise
+     *
+     * @deprecated Use {@link #reloadIfRequired(ManagementClient)} which will allow completion waiting to check on
+     *             the correct address for reload completion if the server is not using the default management
+     *             address or port
      */
+    @Deprecated
     public static void reloadIfRequired(final ModelControllerClient controllerClient) throws Exception {
         String runningState = getContainerRunningState(controllerClient);
         if ("reload-required".equalsIgnoreCase(runningState)) {
@@ -240,7 +245,7 @@ public class ServerReload {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             if (before) {
-                reloadIfRequired(managementClient.getControllerClient());
+                reloadIfRequired(managementClient);
             }
         }
 
@@ -252,7 +257,7 @@ public class ServerReload {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             if (after) {
-                reloadIfRequired(managementClient.getControllerClient());
+                reloadIfRequired(managementClient);
             }
         }
     }
