@@ -129,7 +129,7 @@ public abstract class AbstractClientInterceptorsSetupTask {
                 }
                 modifyClientInterceptors(interceptorModules, managementClient);
                 // reload in order to apply server-interceptors changes
-                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
 
@@ -141,7 +141,7 @@ public abstract class AbstractClientInterceptorsSetupTask {
                 }
                 revertClientInterceptors(managementClient);
                 // reload in order to apply server-interceptors changes
-                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
     }
