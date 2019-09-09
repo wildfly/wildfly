@@ -283,14 +283,14 @@
         <version.jakarta.inject.jakarta.inject-api>1.0</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.json.jakarta-json-api>1.1.6</version.jakarta.json.jakarta-json-api>
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
+        <version.jakarta.persistence>2.2.3</version.jakarta.persistence>
         <version.jakarta.security.enterprise>1.0.1</version.jakarta.security.enterprise>
+        <version.jakarta.validation>2.0.2</version.jakarta.validation>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0.2</version.javax.enterprise>
         <version.javax.json.bind.api>1.0</version.javax.json.bind.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.6.2</version.javax.mail>
-        <version.jakarta.persistence>2.2.3</version.jakarta.persistence>
-        <version.javax.validation>2.0.1.Final</version.javax.validation>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.3.GA</version.jboss.jaxbintros>
         <version.joda-time>2.9.7</version.joda-time>
@@ -1740,6 +1740,12 @@
             </dependency>
 
             <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${version.jakarta.validation}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>javax.activation</groupId>
                 <artifactId>activation</artifactId>
                 <version>${version.javax.activation}</version>
@@ -1805,12 +1811,6 @@
                 <groupId>javax.jws</groupId>
                 <artifactId>jsr181-api</artifactId>
                 <version>${version.javax.jws.jsr181-api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${version.javax.validation}</version>
             </dependency>
 
             <dependency>
@@ -5713,6 +5713,14 @@
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>${version.org.hibernate.validator}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports Jakarta Validation -->
+                    <!-- Superceded by jakarta.validation:jakarta.validation-api -->
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -6280,6 +6288,12 @@
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports Jakarta Validation -->
+                    <!-- Superceded by jakarta.validation:jakarta.validation-api -->
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -6635,6 +6649,12 @@
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports Jakarta Validation -->
+                    <!-- Superceded by jakarta.validation:jakarta.validation-api -->
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -6806,6 +6826,12 @@
                     <exclusion>
                         <groupId>javax.annotation</groupId>
                         <artifactId>jsr250-api</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this supports Jakarta Validation -->
+                    <!-- Superceded by jakarta.validation:jakarta.validation-api -->
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -8576,6 +8602,7 @@
                                             <exclude>javax.persistence:persistence-api</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
                                             <exclude>javax.transaction:jta</exclude>
+                                            <exclude>javax.validation:validation-api</exclude>
 					    <exclude>javax.xml:jaxrpc-api</exclude>
                                             <exclude>javax.xml.soap:saaj-api</exclude>
                                             <exclude>javax.xml.stream:stax-api</exclude>
