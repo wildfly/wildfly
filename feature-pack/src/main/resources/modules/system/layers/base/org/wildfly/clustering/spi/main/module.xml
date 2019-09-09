@@ -33,14 +33,12 @@
 
     <dependencies>
         <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.api"/>
-        <module name="org.wildfly.clustering.ejb.infinispan" services="import"/>
-        <module name="org.wildfly.clustering.server" services="import"/>
+        <!-- Enable dynamic installation of clustering services for EJB affinity support -->
+        <module name="org.wildfly.clustering.ejb.infinispan" services="import" optional="true"/>
+        <!-- Enable dynamic installation of clustering services per channel or cache -->
+        <module name="org.wildfly.clustering.server" services="import" optional="true"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton"/>
-        <module name="org.wildfly.clustering.web.infinispan" services="import"/>
     </dependencies>
 </module>

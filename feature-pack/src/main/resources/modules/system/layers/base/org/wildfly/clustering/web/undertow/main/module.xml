@@ -46,13 +46,10 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.service"/>
-        <module name="org.wildfly.clustering.web.api"/>
         <module name="org.wildfly.clustering.web.container"/>
-        <module name="org.wildfly.clustering.web.infinispan" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="org.wildfly.security.elytron-private"/>

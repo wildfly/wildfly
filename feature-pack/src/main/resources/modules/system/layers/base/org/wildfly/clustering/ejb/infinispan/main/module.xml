@@ -36,7 +36,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.transaction.api"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
         <module name="org.jboss.as.clustering.common"/>
@@ -49,7 +48,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.threads"/>
-        <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
@@ -59,7 +57,6 @@
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss" services="import"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
-        <module name="org.wildfly.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.common"/>

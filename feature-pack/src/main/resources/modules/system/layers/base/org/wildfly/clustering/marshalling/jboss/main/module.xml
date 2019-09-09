@@ -32,10 +32,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.modules"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.security.elytron-private"/>
