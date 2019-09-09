@@ -29,6 +29,6 @@
     </dependencies>
 
     <resources>
-        <artifact name="${com.sun.mail:javax.mail}"/>
+        <artifact name="${com.sun.mail:jakarta.mail}"/>
     </resources>
 </module>
