@@ -27,17 +27,19 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.security.AccessController;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Supplier;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.cache.spi.Wrapper;
 import org.jipijapa.event.spi.EventListener;
@@ -92,25 +94,19 @@ public class InfinispanCacheDeploymentListener implements EventListener {
                 builder.requires(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(container, cache));
             }
         }
-
-        ServiceController<?> controller = builder.install();
-
-        // Ensure cache configuration services are started
-        StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(controller);
-        try {
-            monitor.awaitStability();
-            // TODO Figure out why the awaitStability() returns prematurely while there are still dependencies starting
-            while (controller.getState() == ServiceController.State.DOWN) {
-                Thread.yield();
-                monitor.awaitStability();
+        final CountDownLatch latch = new CountDownLatch(1);
+        builder.addListener(new LifecycleListener() {
+            @Override
+            public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                if (event == LifecycleEvent.UP) {
+                    latch.countDown();
+                    controller.removeListener(this);
+                }
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw e;
-        } finally {
-            monitor.removeController(controller);
-        }
+        });
+        ServiceController<?> controller = builder.install();
+        // Ensure cache configuration services are started
+        latch.await();
 
         return new CacheWrapper(manager.get(), controller);
     }
@@ -151,21 +147,24 @@ public class InfinispanCacheDeploymentListener implements EventListener {
             if (ROOT_LOGGER.isTraceEnabled()) {
                 ROOT_LOGGER.tracef("stop second level cache by removing dependency on service '%s'", this.controller.getName().getCanonicalName());
             }
-            StabilityMonitor monitor = new StabilityMonitor();
-            monitor.addController(this.controller);
-            this.controller.setMode(ServiceController.Mode.REMOVE);
+            final CountDownLatch latch = new CountDownLatch(1);
+            controller.addListener(new LifecycleListener() {
+                @Override
+                public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                    if (event == LifecycleEvent.REMOVED) latch.countDown();
+                }
+            });
+            controller.setMode(ServiceController.Mode.REMOVE);
             try {
-                monitor.awaitStability();
-            } catch (InterruptedException e) {
+                latch.await();
+            } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-            } finally {
-                monitor.removeController(this.controller);
             }
         }
     }
 
     private static ServiceContainer currentServiceContainer() {
-        if(System.getSecurityManager() == null) {
+        if (System.getSecurityManager() == null) {
             return CurrentServiceContainer.getServiceContainer();
         }
         return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
