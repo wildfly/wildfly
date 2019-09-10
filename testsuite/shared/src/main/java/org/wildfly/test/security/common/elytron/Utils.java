@@ -67,6 +67,17 @@ class Utils {
         }
     }
 
+    static ModelNode applyRead(final ModelControllerClient client, ModelNode read, boolean allowFailure) throws IOException {
+        ModelNode result = client.execute(new OperationBuilder(read).build());
+        if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
+            return result.get("result");
+        } else if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        } else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+        }
+    }
+
     static void applyRemoveAllowReload(final ModelControllerClient client, PathAddress address, boolean allowFailure) {
         ModelNode op = Util.createRemoveOperation(address);
         op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
