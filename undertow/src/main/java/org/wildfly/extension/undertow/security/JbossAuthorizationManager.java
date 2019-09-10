@@ -96,7 +96,7 @@ public class JbossAuthorizationManager implements AuthorizationManager {
             //    callerSubject = getSubjectFromRequestPrincipal(principal);
             //}
 
-            authzDecision = helper.hasRole(roleName, account.getPrincipal(), servletName, getPrincipalRoles(account),
+            authzDecision = SecurityActions.hasRole(helper, roleName, account.getPrincipal(), servletName, getPrincipalRoles(account),
                     PolicyContext.getContextID(), callerSubject, new ArrayList<String>(account.getRoles()));
         }
         boolean finalDecision = baseDecision && authzDecision;
