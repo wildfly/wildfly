@@ -91,10 +91,11 @@ public class InfinispanBeanTestCase {
 
     @Test
     public void isExpired() {
-        when(this.entry.isExpired(this.timeout)).thenReturn(true);
+        when(this.entry.getLastAccessedTime()).thenReturn(Instant.now().minus(Duration.ofMinutes(2)));
+        when(this.entry.isExpired(this.timeout)).thenCallRealMethod();
         Assert.assertTrue(this.bean.isExpired());
 
-        when(this.entry.isExpired(this.timeout)).thenReturn(false);
+        when(this.entry.getLastAccessedTime()).thenReturn(Instant.now());
         Assert.assertFalse(this.bean.isExpired());
 
         // Validate BeanEntry.isExpired(...)
