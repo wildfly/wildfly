@@ -23,7 +23,9 @@
 package org.wildfly.extension.undertow.security;
 
 import java.security.AccessController;
+import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +34,7 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SecurityRolesAssociation;
+import org.jboss.security.javaee.AbstractWebAuthorizationHelper;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -238,4 +241,17 @@ class SecurityActions {
             return subject;
         }
     }
+
+    static boolean hasRole(AbstractWebAuthorizationHelper helper, String roleName, Principal principal, String servletName, Set<Principal> principalRoles, String contextID, Subject callerSubject, List<String> roles) {
+        if (WildFlySecurityManager.isChecking()) {
+            return doPrivileged(new PrivilegedAction<Boolean>() {
+                public Boolean run() {
+                    return helper.hasRole(roleName, principal, servletName, principalRoles, contextID, callerSubject, roles);
+                }
+            });
+        } else {
+            return helper.hasRole(roleName, principal, servletName, principalRoles, contextID, callerSubject, roles);
+        }
+    }
+
 }
