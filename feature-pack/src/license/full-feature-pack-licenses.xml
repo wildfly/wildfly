@@ -684,8 +684,8 @@
       <artifactId>jakarta.security.enterprise-api</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <name>Eclipse Public License - v 2.0</name>
+          <url>https://www.eclipse.org/legal/epl-2.0/</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -1942,8 +1942,8 @@
       <artifactId>jakarta.security.enterprise</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <name>Eclipse Public License - v 2.0</name>
+          <url>https://www.eclipse.org/legal/epl-2.0/</url>
           <distribution>repo</distribution>
         </license>
         <license>
