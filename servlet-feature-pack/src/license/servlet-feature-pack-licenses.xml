@@ -393,8 +393,8 @@
       <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License 1.0</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Eclipse Public License 2.0</name>
+          <url>http://www.eclipse.org/legal/epl-2.0</url>
           <distribution>repo</distribution>
         </license>
         <license>
