@@ -285,10 +285,11 @@
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
         <version.jakarta.security.enterprise>1.0.1</version.jakarta.security.enterprise>
         <version.javax.activation>1.1.1</version.javax.activation>
-        <version.javax.enterprise>2.0.SP1</version.javax.enterprise>
+        <version.javax.enterprise>2.0.2</version.javax.enterprise>
+        <version.javax.json.bind.api>1.0</version.javax.json.bind.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.6.2</version.javax.mail>
-        <version.javax.persistence>2.2</version.javax.persistence>
+        <version.jakarta.persistence>2.2.3</version.jakarta.persistence>
         <version.javax.validation>2.0.1.Final</version.javax.validation>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.3.GA</version.jboss.jaxbintros>
@@ -377,7 +378,7 @@
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.CR1</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>2.0.0.CR1</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>2.0.0.CR2</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
-        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.CR2</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
+        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>1.0.3.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>2.0.0.CR1</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>
         <version.org.jboss.spec.javax.websockets>2.0.0.CR1</version.org.jboss.spec.javax.websockets>
@@ -395,7 +396,7 @@
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>3.2.3.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.6.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
-        <version.org.jgroups>4.1.1.Final</version.org.jgroups>
+        <version.org.jgroups>4.1.4.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.2.1.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>1.0.12.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
@@ -1727,6 +1728,12 @@
             </dependency>
 
             <dependency>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>${version.jakarta.persistence}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>jakarta.security.enterprise</groupId>
                 <artifactId>jakarta.security.enterprise-api</artifactId>
                 <version>${version.jakarta.security.enterprise}</version>
@@ -1739,17 +1746,29 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.enterprise</groupId>
-                <artifactId>cdi-api</artifactId>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
                 <version>${version.javax.enterprise}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.interceptor</groupId>
-                        <artifactId>javax.interceptor-api</artifactId>
+                        <groupId>jakarta.inject</groupId>
+                        <artifactId>jakarta.inject-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.el</groupId>
-                        <artifactId>javax.el-api</artifactId>
+                        <groupId>jakarta.interceptor</groupId>
+                        <artifactId>jakarta.interceptor-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jakarta.transaction</groupId>
+                        <artifactId>jakarta.transaction-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jakarta.el</groupId>
+                        <artifactId>jakarta.el-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>javax.inject</groupId>
@@ -1786,12 +1805,6 @@
                 <groupId>javax.jws</groupId>
                 <artifactId>jsr181-api</artifactId>
                 <version>${version.javax.jws.jsr181-api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.persistence</groupId>
-                <artifactId>javax.persistence-api</artifactId>
-                <version>${version.javax.persistence}</version>
             </dependency>
 
             <dependency>

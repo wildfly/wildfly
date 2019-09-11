@@ -169,10 +169,10 @@ public class MixedDomainTestSuite {
     }
 
     private static synchronized void stop() {
+        version = null;
         if(support != null) {
             support.stop();
             support = null;
-            version = null;
         }
     }
 

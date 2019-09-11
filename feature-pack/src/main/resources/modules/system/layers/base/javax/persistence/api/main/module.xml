@@ -29,6 +29,6 @@
     </dependencies>
 
     <resources>
-        <artifact name="${javax.persistence:javax.persistence-api}"/>
+        <artifact name="${jakarta.persistence:jakarta.persistence-api}"/>
     </resources>
 </module>
