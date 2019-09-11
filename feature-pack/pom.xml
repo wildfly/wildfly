@@ -453,7 +453,7 @@
 
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
+            <artifactId>jakarta.mail</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

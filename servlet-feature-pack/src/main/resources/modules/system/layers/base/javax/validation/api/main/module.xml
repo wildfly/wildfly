@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.7" name="javax.validation.api">
     <resources>
-        <artifact name="${javax.validation:validation-api}"/>
+        <artifact name="${jakarta.validation:jakarta.validation-api}"/>
     </resources>
 
     <dependencies>

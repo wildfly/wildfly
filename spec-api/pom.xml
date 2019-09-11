@@ -140,15 +140,15 @@
     </dependency>
     <dependency>
       <groupId>com.sun.mail</groupId>
-      <artifactId>javax.mail</artifactId>
+      <artifactId>jakarta.mail</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.annotation</groupId>
       <artifactId>jboss-annotations-api_1.3_spec</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.management.j2ee</groupId>
