@@ -101,7 +101,7 @@ import org.wildfly.extension.messaging.activemq.jms.ExternalPooledConnectionFact
  * <dt><strong>Current</strong> - WildFly 18</dt>
  *   <dd>
  *     <ul>
- *       <li>XML namespace: urn:jboss:domain:messaging-activemq:7.0
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:8.0
  *       <li>Management model: 8.0.0
  *     </ul>
  *   </dd>
@@ -219,7 +219,7 @@ public class MessagingExtension implements Extension {
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
     private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_8_0_0;
 
-    private static final MessagingSubsystemParser_7_0 CURRENT_PARSER = new MessagingSubsystemParser_7_0();
+    private static final MessagingSubsystemParser_8_0 CURRENT_PARSER = new MessagingSubsystemParser_8_0();
 
     // ARTEMIS-2273 introduced audit logging at a info level which is rather verbose. We need to use static loggers
     // to ensure the log levels are set to WARN and there is a strong reference to the loggers. This hack will likely
@@ -326,6 +326,7 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_4_0.NAMESPACE, MessagingSubsystemParser_4_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_5_0.NAMESPACE, MessagingSubsystemParser_5_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_6_0.NAMESPACE, MessagingSubsystemParser_6_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_7_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_7_0.NAMESPACE, MessagingSubsystemParser_7_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_8_0.NAMESPACE, CURRENT_PARSER);
     }
 }
