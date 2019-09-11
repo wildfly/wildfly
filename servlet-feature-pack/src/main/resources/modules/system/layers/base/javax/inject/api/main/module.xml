@@ -21,9 +21,8 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
-<module xmlns="urn:jboss:module:1.5" name="javax.inject.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.inject.api">
     <resources>
-        <artifact name="${javax.inject:javax.inject}"/>
+        <artifact name="${jakarta.inject:jakarta.inject-api}"/>
     </resources>
 </module>

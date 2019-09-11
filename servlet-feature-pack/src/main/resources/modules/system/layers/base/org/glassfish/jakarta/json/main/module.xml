@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright 2018 Red Hat, Inc.
+  ~ Copyright 2019 Red Hat, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,14 +16,22 @@
   ~ limitations under the License.
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="javax.json.bind.api">
+<module xmlns="urn:jboss:module:1.9" name="org.glassfish.jakarta.json">
     <properties>
-        <property name="jboss.api" value="public"/>
+        <property name="jboss.api" value="private"/>
     </properties>
-    <resources>
-        <artifact name="${jakarta.json.bind:jakarta.json.bind-api}"/>
-    </resources>
+
     <dependencies>
-        <module name="javax.json.api"/>
+        <module name="javax.json.api" />
     </dependencies>
+    <resources>
+        <artifact name="${org.glassfish:jakarta.json}">
+            <filter>
+                <!-- This artifact packages both the API and the impl in the same jar,
+                     but we want to use our own API jar (see javax.json.api module).
+                     So suppress the API packages. -->
+                <exclude path="javax/*"/>
+            </filter>
+        </artifact>
+    </resources>
 </module>

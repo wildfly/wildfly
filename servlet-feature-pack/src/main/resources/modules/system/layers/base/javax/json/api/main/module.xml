@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright 2018 Red Hat, Inc.
+  ~ Copyright 2019 Red Hat, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,15 +15,21 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+<module xmlns="urn:jboss:module:1.9" name="javax.json.api">
 
-<module xmlns="urn:jboss:module:1.9" name="javax.json.bind.api">
     <properties>
         <property name="jboss.api" value="public"/>
     </properties>
+
     <resources>
-        <artifact name="${jakarta.json.bind:jakarta.json.bind-api}"/>
+        <artifact name="${jakarta.json:jakarta.json-api}"/>
     </resources>
     <dependencies>
-        <module name="javax.json.api"/>
+        <!--
+            This is required as a circular dependency because the RI does not include a META-INF/services provider file.
+            It must also be exported so that modules that depend on the API, e.g. deployments, will be able to see the
+            implementation.
+        -->
+        <module name="org.glassfish.jakarta.json" export="true"/>
     </dependencies>
 </module>

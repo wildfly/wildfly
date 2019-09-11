@@ -47,6 +47,11 @@
    <dependencies>
 
       <dependency>
+         <groupId>jakarta.inject</groupId>
+         <artifactId>jakarta.inject-api</artifactId>
+      </dependency>
+
+      <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-ee</artifactId>
       </dependency>

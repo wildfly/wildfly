@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright 2018 Red Hat, Inc.
+  ~ Copyright 2019 Red Hat, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,14 +16,4 @@
   ~ limitations under the License.
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="javax.json.bind.api">
-    <properties>
-        <property name="jboss.api" value="public"/>
-    </properties>
-    <resources>
-        <artifact name="${jakarta.json.bind:jakarta.json.bind-api}"/>
-    </resources>
-    <dependencies>
-        <module name="javax.json.api"/>
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.9" name="org.glassfish.javax.json" target-name="org.glassfish.jakarta.json"/>
