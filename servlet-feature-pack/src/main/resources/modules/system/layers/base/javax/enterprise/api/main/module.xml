@@ -34,7 +34,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="${javax.enterprise:cdi-api}"/>
+        <artifact name="${jakarta.enterprise:jakarta.enterprise.cdi-api}"/>
     </resources>
 
 </module>
