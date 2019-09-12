@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: EE clustering - Infinispan service provider</name>
+    <description>
+        This module contains code that is common to the wildlfy-clustering-ejb-infinispan and wildlfy-clustering-web-infinispan modules.
+    </description>
 
     <dependencies>
         <dependency>
@@ -53,11 +56,6 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

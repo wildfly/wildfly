@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Infinispan SPI</name>
+    <description>
+        An integration module for use by subsystem/modules that use or install server managed embedded caches.
+    </description>
 
     <dependencies>
         <dependency>

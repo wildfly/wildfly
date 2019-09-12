@@ -40,6 +40,10 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering integration with JBoss Marshalling</name>
+    <description>
+        Adapts implementations of wildfly-clustering-marshalling-api to JBoss marshalling.
+        Also contains wildfly-clustering-marshalling-spi implementations that use JBoss marshalling.
+    </description>
 
     <dependencies>
         <dependency>
@@ -60,17 +64,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.modules</groupId>
-            <artifactId>jboss-modules</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -40,6 +40,9 @@
     <packaging>pom</packaging>
 
     <name>WildFly: Singleton modules</name>
+    <description>
+        Parent module for modules relating to singleton deployments and MSC services.
+    </description>
 
     <modules>
         <module>api</module>

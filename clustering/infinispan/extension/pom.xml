@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Infinispan subsystem</name>
+    <description>
+        Installs an extension that provides the infinispan subsystem.
+    </description>
 
     <dependencies>
         <dependency>
@@ -65,10 +68,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

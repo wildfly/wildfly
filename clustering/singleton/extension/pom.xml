@@ -40,6 +40,10 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Singleton extension</name>
+    <description>
+        Installs an extension that provides the singleton subsystem, that defines a set of singleton policies
+        for installing singleton deployments and MSC services.
+    </description>
 
     <dependencies>
         <dependency>

@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: JGroups API</name>
+    <description>
+        Defines a user facing API for use by applications to create JGroups channels.
+    </description>
 
     <dependencies>
         <dependency>

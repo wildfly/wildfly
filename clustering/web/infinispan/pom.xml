@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Web session clustering - Infinispan service provider</name>
+    <description>
+        A distributable HTTP session manager and single sign-on manager (an implementation of wildfly-clustering-web-spi) based on an embedded Infinispan cache.
+    </description>
 
     <dependencies>
         <dependency>
@@ -89,11 +92,6 @@
                   projects that depend on this project.-->
             <scope>provided</scope>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>

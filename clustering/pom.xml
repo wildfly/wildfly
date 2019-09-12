@@ -39,7 +39,11 @@
     <artifactId>wildfly-clustering</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly: Clustering Subsystems</name>
+    <name>WildFly: Clustering subsystems and modules</name>
+    <description>
+        Contains modules containing subsystems related to clustering, modules implementing clustering behavior,
+        and modules used to integration with other (non-clustering) subsystems.
+    </description>
 
     <modules>
         <module>api</module>

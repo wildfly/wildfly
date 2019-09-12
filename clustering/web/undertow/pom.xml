@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Web session clustering - Undertow integration</name>
+    <description>
+        This module adapts an implementation of wildfly-clustering-web-spi to the Undertow servlet container.
+    </description>
 
     <dependencies>
         <dependency>

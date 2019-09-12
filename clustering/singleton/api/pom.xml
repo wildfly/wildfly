@@ -40,6 +40,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Singleton API</name>
+    <description>
+        Public API for installing singleton MSC services.
+    </description>
 
     <dependencies>
         <dependency>

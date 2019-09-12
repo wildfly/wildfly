@@ -40,6 +40,10 @@
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering marshalling API</name>
+    <description>
+        Public module containing interfaces to be implemented by applications and internal modules to optimize marshalling behavior for both distributable @Stateful EJBs and HTTP sessions.
+        The API is independent of the backing marshalling framework.
+    </description>
 
     <build>
         <plugins>

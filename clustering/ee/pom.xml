@@ -40,6 +40,9 @@
     <packaging>pom</packaging>
 
     <name>WildFly: EE clustering</name>
+    <description>
+        These modules contain interfaces and implementations that are common to the wildfly-clustering-ejb and wildfly-clustering-web modules.
+    </description>
 
     <modules>
         <module>spi</module>
