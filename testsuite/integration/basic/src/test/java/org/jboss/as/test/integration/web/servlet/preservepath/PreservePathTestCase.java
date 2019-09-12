@@ -17,6 +17,11 @@
 
 package org.jboss.as.test.integration.web.servlet.preservepath;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilePermission;
@@ -33,10 +38,10 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.UrlAsset;
@@ -46,9 +51,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 @RunAsClient
 @RunWith(Arquillian.class)
@@ -62,8 +64,18 @@ public class PreservePathTestCase {
 
    static final String tempDir = TestSuiteEnvironment.getTmpDir();
 
+   static final int TIMEOUT = TimeoutUtil.adjust(5000);
+
    @Before
    public void setUp() throws Exception {
+
+      ModelNode setPreservePathOp = createOpNode("subsystem=undertow/servlet-container=default", UNDEFINE_ATTRIBUTE_OPERATION);
+
+      setPreservePathOp.get("name").set("preserve-path-on-forward");
+
+      CoreUtils.applyUpdate(setPreservePathOp, managementClient.getControllerClient());
+
+      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
    }
 
    @After
@@ -71,10 +83,10 @@ public class PreservePathTestCase {
       File file = new File(tempDir + "/output.txt");
       if (file.exists()) {
          file.delete();
-
       }
 
-      ModelNode setPreservePathOp = createOpNode("system-property=io.undertow.servlet.dispatch.preserve_path_of_forward", ModelDescriptionConstants.REMOVE);
+      ModelNode setPreservePathOp = createOpNode("subsystem=undertow/servlet-container=default", UNDEFINE_ATTRIBUTE_OPERATION);
+      setPreservePathOp.get("name").set("preserve-path-on-forward");
       CoreUtils.applyUpdate(setPreservePathOp, managementClient.getControllerClient());
       ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
    }
@@ -95,33 +107,66 @@ public class PreservePathTestCase {
 
    @Test
    public void testPreservePath() throws Exception {
-      setPreservePathOnForward("true");
-
-      HttpClient httpclient = HttpClientBuilder.create().build();
-      HttpGet httpget = new HttpGet(url.toString() + "/test?path="+ URLEncoder.encode(tempDir));
-      HttpResponse response = httpclient.execute(httpget);
-
-      Thread.sleep(100);
-      FileReader fr = new FileReader(new File(tempDir + "/output.txt"));
-      Assert.assertEquals("servletPath: /test", new BufferedReader(fr).readLine());
+      runTestPreservePath(true);
    }
 
    @Test
    public void testDontPreservePath() throws Exception {
-      setPreservePathOnForward("false");
+      runTestPreservePath(false);
+   }
+
+   @Test
+   public void testDefaultPreservePath() throws Exception {
+      runTestPreservePath(null);
+   }
+
+   private void runTestPreservePath(Boolean preservePathOnForward) throws Exception {
+      setPreservePathOnForward(preservePathOnForward);
 
       HttpClient httpclient = HttpClientBuilder.create().build();
       HttpGet httpget = new HttpGet(url.toString() + "/test?path="+ URLEncoder.encode(tempDir));
       HttpResponse response = httpclient.execute(httpget);
 
-      Thread.sleep(100);
-      FileReader fr = new FileReader(new File(tempDir + "/output.txt"));
-      Assert.assertEquals("servletPath: /preserve-path.jsp", new BufferedReader(fr).readLine());
+      long end = System.currentTimeMillis() + TIMEOUT;
+      File file = new File(tempDir + "/output.txt");
+      while (!file.exists() && System.currentTimeMillis() < end) {
+         Thread.sleep(100);
+      }
+      Assert.assertTrue(file + " was not created within the timeout", file.exists());
+
+      final String expectedServletPath;
+      final String expectedRequestURL;
+
+      if (preservePathOnForward != null && preservePathOnForward) {
+         expectedServletPath = "/test";
+         // Note that in the true case, there is an extra slash before test. This might be removed in the future
+         expectedRequestURL = url + "/test";
+      } else{
+         expectedServletPath = "/preserve-path.jsp";
+         // Note that in the true case, there is an extra slash before test. This might be removed in the future
+         expectedRequestURL = url + "preserve-path.jsp";
+      }
+
+      final String expectedRequestURI = new URL(expectedRequestURL).getPath();
+
+      try (BufferedReader r = new BufferedReader(new FileReader(file))) {
+         String servletPath = r.readLine();
+         Assert.assertEquals("servletPath: " + expectedServletPath, servletPath);
+         String requestUrl = r.readLine();
+         Assert.assertEquals("requestUrl: " + expectedRequestURL, requestUrl);
+         String requestUri = r.readLine();
+         Assert.assertEquals("requestUri: " + expectedRequestURI, requestUri);
+      }
    }
 
-   private void setPreservePathOnForward(String s) throws Exception {
-      ModelNode setPreservePathOp = createOpNode("system-property=io.undertow.servlet.dispatch.preserve_path_of_forward", ModelDescriptionConstants.ADD);
-      setPreservePathOp.get("value").set(s);
+   private void setPreservePathOnForward(Boolean preservePathOnForward) throws Exception {
+      String opName = preservePathOnForward == null ? UNDEFINE_ATTRIBUTE_OPERATION : WRITE_ATTRIBUTE_OPERATION;
+      ModelNode setPreservePathOp = createOpNode("subsystem=undertow/servlet-container=default", opName);
+
+      setPreservePathOp.get("name").set("preserve-path-on-forward");
+      if (preservePathOnForward != null) {
+         setPreservePathOp.get("value").set(preservePathOnForward);
+      }
 
       CoreUtils.applyUpdate(setPreservePathOp, managementClient.getControllerClient());
 
