@@ -42,12 +42,16 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-public class ReplicatedFailoverTestCase extends FailoverTestCase {
+public class ReplicatedNettyFailoverTestCase extends FailoverTestCase {
     private static final ModelNode MASTER_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-master").toModelNode();
     private static final ModelNode SLAVE_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-slave").toModelNode();
 
     @Override
     protected void setUpServer1(ModelControllerClient client) throws Exception {
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
+        jmsOperations.createSocketBinding("messaging", null, 5445);
+        jmsOperations.createRemoteAcceptor("netty", "messaging", null);
+        jmsOperations.createRemoteConnector("netty", "messaging", null);
         configureCluster(client);
 
         // /subsystem=messaging-activemq/server=default/ha-policy=replication-master:add(cluster-name=my-cluster, check-for-live-server=true)
@@ -56,13 +60,16 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
         operation.get("check-for-live-server").set(true);
         execute(client, operation);
 
-        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
         jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
         jmsOperations.enableMessagingTraces();
     }
 
     @Override
     protected void setUpServer2(ModelControllerClient client) throws Exception {
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
+        jmsOperations.createSocketBinding("messaging", null, 5445);
+        jmsOperations.createRemoteAcceptor("netty", "messaging", null);
+        jmsOperations.createRemoteConnector("netty", "messaging", null);
         configureCluster(client);
 
         // /subsystem=messaging-activemq/server=default/ha-policy=replication-slave:add(cluster-name=my-cluster, restart-backup=true)
@@ -71,7 +78,6 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
         operation.get("restart-backup").set(true);
         execute(client, operation);
 
-        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
         jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
         jmsOperations.enableMessagingTraces();
     }
@@ -124,6 +130,20 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
         operation.get(VALUE).set(0);
         execute(client, operation);
 
+        operation = Operations.createWriteAttributeOperation(
+                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/broadcast-group=bg-group1").toModelNode(),
+                "connectors", new ModelNode().add("netty"));
+        execute(client, operation);
+
+        operation = Operations.createWriteAttributeOperation(
+                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/broadcast-group=bg-group1").toModelNode(),
+                "connectors", new ModelNode().add("netty"));
+        execute(client, operation);
+
+        operation = Operations.createWriteAttributeOperation(
+                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/cluster-connection=my-cluster").toModelNode(),
+                "connector-name", "netty");
+        execute(client, operation);
     }
 
     @Override

@@ -266,6 +266,7 @@
         <version.httpunit>1.7.2</version.httpunit>
         <version.io.agroal>1.3</version.io.agroal>
         <version.io.jaegertracing>0.34.0</version.io.jaegertracing>
+<!--        <version.io.netty>4.1.40.Final-SNAPSHOT</version.io.netty>-->
         <version.io.netty>4.1.34.Final</version.io.netty>
         <version.io.opentracing>0.31.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.2.1</version.io.opentracing.concurrent>
@@ -394,7 +395,7 @@
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>3.2.3.Final</version.org.jboss.ws.spi>
         <version.org.jgroups>4.1.4.Final</version.org.jgroups>
-        <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.8.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
+        <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final-SNAPSHOT</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.1</version.org.jctools.jctools-core>
         <version.org.jgroups.azure>1.2.1.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>1.0.12.Final</version.org.jgroups.kubernetes>

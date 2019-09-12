@@ -39,6 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.execute;
 
+import org.jboss.as.controller.PathAddress;
+
 
 /**
  * An implementation of JMSOperations for Apache ActiveMQ 6.
@@ -322,5 +324,62 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         ModelNode address = getSubsystemAddress()
                 .add("http-connector", connectorName);
         executeOperation(address, REMOVE_OPERATION, null);
+    }
+
+    @Override
+    public void enableMessagingTraces() {
+        final ModelNode attributes = new ModelNode();
+        attributes.get("level").set("TRACE");
+        ModelNode address = PathAddress.parseCLIStyleAddress("/subsystem=logging/logger=org.wildfly.extension.messaging-activemq").toModelNode();
+        try {
+            executeOperation(address, REMOVE_OPERATION, null);
+        } catch (Exception e) {
+        }
+        executeOperation(address, ADD, attributes);
+
+        address = PathAddress.parseCLIStyleAddress("/subsystem=logging/logger=org.apache.activemq.artemis.core.protocol.core.ServerSessionPacketHandler").toModelNode();
+        try {
+            executeOperation(address, REMOVE_OPERATION, null);
+        } catch (Exception e) {
+        }
+        executeOperation(address, ADD, attributes);
+
+        address = PathAddress.parseCLIStyleAddress("/subsystem=logging/logger=org.apache.activemq.artemis.core.protocol.core.impl.ChannelImpl").toModelNode();
+        try {
+            executeOperation(address, REMOVE_OPERATION, null);
+        } catch (Exception e) {
+        }
+        executeOperation(address, ADD, attributes);
+    }
+
+    @Override
+    public void createRemoteConnector(String name, String socketBinding, Map<String, String> params) {
+        ModelNode address = PathAddress.parseCLIStyleAddress(" /subsystem=messaging-activemq/server=default/remote-connector=" + name).toModelNode();
+        ModelNode attributes = new ModelNode();
+        attributes.get("socket-binding").set(socketBinding);
+        if (params != null) {
+            for (String key : params.keySet()) {
+                attributes.get("params").add(key, params.get(key));
+            }
+        }
+        try {
+            executeOperation(address, REMOVE_OPERATION, null);
+        } catch (Exception e) {
+        }
+        executeOperation(address, ADD, attributes);
+    }
+
+    @Override
+    public void createSocketBinding(String name, String interfaceName, int port) {
+        String interfaceValue = interfaceName == null || interfaceName.isEmpty() ? "public" : interfaceName;
+        ModelNode address = PathAddress.parseCLIStyleAddress("/socket-binding-group=standard-sockets/socket-binding=" + name).toModelNode();
+        ModelNode attributes = new ModelNode();
+        attributes.get("interface").set(interfaceValue);
+        attributes.get("port").set(port);
+        try {
+            executeOperation(address, REMOVE_OPERATION, null);
+        } catch (Exception e) {
+        }
+        executeOperation(address, ADD, attributes);
     }
 }
