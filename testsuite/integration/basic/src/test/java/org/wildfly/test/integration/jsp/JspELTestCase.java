@@ -140,12 +140,9 @@ public class JspELTestCase {
     @OperateOnDeployment(Servlet_Spec_3_0_War)
     @Test
     public void testJavaLangImplicitClassELEvaluationForLesserSpecVersion(@ArquillianResource URL url) throws Exception {
-        final String responseBody = HttpRequest.get(url + "index.jsp", 10, TimeUnit.SECONDS);
-        // since this is a servlet spec version lesser than 3.1, we don't expect the Integer.MAX_VALUE and Boolean.TRUE to be correctly evaluated.
-        // instead they will have empty values wherever those EL expressions occur
-        Assert.assertTrue("Unexpected EL evaluation for ${Boolean.TRUE}", responseBody.contains("Boolean.TRUE: --- " + " ---"));
-        Assert.assertTrue("Unexpected EL evaluation for ${Integer.MAX_VALUE}", responseBody.contains("Integer.MAX_VALUE: --- " + " ---"));
-        Assert.assertTrue("Unexpected EL evaluation for ${DummyConstants.FOO}", responseBody.contains("DummyConstants.FOO: --- " + " ---"));
-        Assert.assertTrue("Unexpected EL evaluation for ${DummyEnum.VALUE}", responseBody.contains("DummyEnum.VALUE: --- " + " ---"));
+        // with the Jakarta upgrade for jsp spec (WFLY-12439), we can now evaluate Boolean.TRUE and Integer.MAX_VALUE
+        // even when using the previous spec version
+        commonTestPart(url, POSSIBLE_ISSUES_LINKS);
+        commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
 }
