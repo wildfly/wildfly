@@ -220,8 +220,10 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
             new GenericProtocolResourceDefinition(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
         }
 
-        for (LegacyProtocol protocol : EnumSet.allOf(LegacyProtocol.class)) {
-            new LegacyProtocolResourceDefinition(protocol.name, protocol.targetName, protocol.deprecation, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+        if (registration.getProcessType().isServer()) { // only auto-update legacy protocols in server processes
+            for (LegacyProtocol protocol : EnumSet.allOf(LegacyProtocol.class)) {
+                new LegacyProtocolResourceDefinition(protocol.name, protocol.targetName, protocol.deprecation, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            }
         }
     }
 }
