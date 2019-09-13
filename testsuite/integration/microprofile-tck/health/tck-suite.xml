@@ -1,0 +1,20 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="microprofile-Health-TCK" verbose="2" configfailurepolicy="continue" >
+
+    <test name="microprofile-health 2.1 TCK">
+        <packages>
+            <package name="org.eclipse.microprofile.health.tck.*">
+            </package>
+        </packages>
+        <classes>
+            <!-- Exclude this class as WildFly does not support CDI Producer for the @Health annoation WFLY-12557 -->
+            <class name="org.eclipse.microprofile.health.tck.CDIProducedProceduresTest">
+                <methods>
+                    <exclude name=".*" />
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>
