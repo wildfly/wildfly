@@ -19,6 +19,7 @@ package org.jboss.as.test.integration.web.servlet.preservepath;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FilePermission;
 import java.io.FileReader;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -47,6 +48,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 @RunAsClient
 @RunWith(Arquillian.class)
@@ -58,7 +60,7 @@ public class PreservePathTestCase {
    @ArquillianResource
    private ManagementClient managementClient;
 
-   final String tempDir = TestSuiteEnvironment.getTmpDir();
+   static final String tempDir = TestSuiteEnvironment.getTmpDir();
 
    @Before
    public void setUp() throws Exception {
@@ -69,6 +71,7 @@ public class PreservePathTestCase {
       File file = new File(tempDir + "/output.txt");
       if (file.exists()) {
          file.delete();
+
       }
 
       ModelNode setPreservePathOp = createOpNode("system-property=io.undertow.servlet.dispatch.preserve_path_of_forward", ModelDescriptionConstants.REMOVE);
@@ -83,6 +86,10 @@ public class PreservePathTestCase {
       war.addClass(PreservePathFilter.class);
       war.add(new UrlAsset(PreservePathTestCase.class.getResource("preserve-path.jsp")), "preserve-path.jsp");
       war.addAsWebInfResource(PreservePathTestCase.class.getPackage(), "web.xml", "web.xml");
+      war.addAsManifestResource(createPermissionsXmlAsset(
+              new FilePermission(tempDir + "/*", "write")
+      ), "permissions.xml");
+
       return war;
    }
 
