@@ -1083,6 +1083,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
             d.setCrawlerSessionManagerConfig(servletContainer.getCrawlerSessionManagerConfig());
 
+            d.setPreservePathOnForward(servletContainer.isPreservePathOnForward());
+
             return d;
         } catch (ClassNotFoundException e) {
             throw new StartException(e);
