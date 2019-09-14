@@ -37,6 +37,7 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
     private final String serverAddress;
     private final String sslContext;
     private final String transport;
+    private final Integer maxReconnectAttempts;
 
     private SyslogAuditLog(Builder builder) {
         super(builder);
@@ -46,6 +47,7 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
         this.serverAddress = builder.serverAddress;
         this.sslContext = builder.sslContext;
         this.transport = builder.transport;
+        this.maxReconnectAttempts = builder.maxReconnectAttempts;
     }
 
     @Override
@@ -70,6 +72,9 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
         }
         if (isNotBlank(transport)) {
             command.append("transport=\"").append(transport).append("\", ");
+        }
+        if (maxReconnectAttempts != null) {
+            command.append("reconnect-attempts=").append(maxReconnectAttempts).append(", ");
         }
 
         command.append(")");
@@ -102,6 +107,7 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
         private String serverAddress;
         private String sslContext;
         private String transport;
+        private Integer maxReconnectAttempts;
 
         private Builder() {
         }
@@ -133,6 +139,11 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
 
         public Builder withSslContext(String sslContext) {
             this.sslContext = sslContext;
+            return this;
+        }
+
+        public Builder setMaxReconnectAttempts(int maxReconnectAttempts) {
+            this.maxReconnectAttempts = maxReconnectAttempts;
             return this;
         }
 

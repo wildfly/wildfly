@@ -72,6 +72,7 @@ public class TCPSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
                         .withPort(PORT)
                         .withHostName(HOSTNAME)
                         .withTransportProtocol("TCP")
+                        .setMaxReconnectAttempts(5) // a random number to avoid intermittent failures
                         .build();
                 auditLog.create(cli);
 
