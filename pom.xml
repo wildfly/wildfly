@@ -249,6 +249,7 @@
         <version.com.microsoft.azure>6.1.0</version.com.microsoft.azure>
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
+        <version.com.sun.activation.jakarta.activation>1.2.1</version.com.sun.activation.jakarta.activation>
         <version.com.sun.faces>2.3.9.SP03</version.com.sun.faces>
         <version.com.sun.istack>3.0.7</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
@@ -285,7 +286,6 @@
         <version.jakarta.persistence>2.2.3</version.jakarta.persistence>
         <version.jakarta.security.enterprise>1.0.2</version.jakarta.security.enterprise>
         <version.jakarta.validation>2.0.2</version.jakarta.validation>
-        <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0.2</version.javax.enterprise>
         <version.javax.json.bind.api>1.0</version.javax.json.bind.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
@@ -1393,6 +1393,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.sun.activation</groupId>
+                <artifactId>jakarta.activation</artifactId>
+                <version>${version.com.sun.activation.jakarta.activation}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.sun.faces</groupId>
                 <artifactId>jsf-impl</artifactId>
                 <version>${version.com.sun.faces}</version>
@@ -1749,12 +1755,6 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>activation</artifactId>
-                <version>${version.javax.activation}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
                 <version>${version.javax.enterprise}</version>
@@ -1995,6 +1995,12 @@
                     <exclusion>
                         <groupId>javax.xml.bind</groupId>
                         <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this supports Jakarta Activation -->
+                    <!-- Superceded by com.sun.activation:jakarta.activation -->
+                    <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -6817,6 +6823,12 @@
                         <groupId>javax.validation</groupId>
                         <artifactId>validation-api</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports Jakarta Activation -->
+                    <!-- Superceded by com.sun.activation:jakarta.activation -->
+                    <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -8553,6 +8565,7 @@
                                             <exclude>com.google.gwt.inject:gin</exclude>
                                             <exclude>com.google.inject:guice</exclude>
                                             <exclude>com.gwtplatform:gwtp-all</exclude>
+                                            <exclude>com.sun.activation:javax.activation</exclude>
                                             <exclude>com.sun.mail:javax.mail</exclude>
                                             <exclude>com.sun.xml.bind:jaxb-core</exclude>
                                             <exclude>com.sun.xml.bind:jaxb-impl</exclude>
@@ -8564,6 +8577,7 @@
                                             <exclude>dom4j:dom4j</exclude>
                                             <exclude>jacorb:jacorb</exclude>
                                             <exclude>javassist:javassist</exclude>
+                                            <exclude>javax.activation:activation</exclude>
                                             <exclude>javax.persistence:persistence-api</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
                                             <exclude>javax.transaction:jta</exclude>

@@ -44,8 +44,8 @@
         </dependency>
         <!-- Required for Java 11 -->
         <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Required for Java 11 -->
