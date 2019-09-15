@@ -38,16 +38,19 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -57,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -290,7 +294,7 @@ public class FormAuthUnitTestCase {
      */
     @Test
     public void testFlushOnSessionInvalidation() throws Exception {
-        AssumeTestGroupUtil.assumeElytronProfileEnabled(); // not supported in Elytron
+        assumeNotElytron(); // not supported in Elytron
 
         log.trace("+++ testFlushOnSessionInvalidation");
 
@@ -424,5 +428,13 @@ public class FormAuthUnitTestCase {
         Header[] errorHeaders = response.getHeaders("X-NoJException");
         assertTrue("Wrong response code: " + statusCode, statusCode == HttpURLConnection.HTTP_OK);
         assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
+    }
+
+    private void assumeNotElytron() throws IOException {
+
+        ModelNode op = Util.createEmptyOperation("read-resource", PathAddress.pathAddress("subsystem", "undertow"));
+        final ModelNode response = managementClient.getControllerClient().execute(op);
+        assertEquals(response.toString(), "success", response.get("outcome").asString());
+        Assume.assumeTrue("flushOnSessionInvalidation is not supported with Elytron", !response.hasDefined("result", "application-security-domain"));
     }
 }

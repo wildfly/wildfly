@@ -85,10 +85,123 @@
                         <MP_METRICS_TAGS>tier=integration</MP_METRICS_TAGS>
                     </environmentVariables>
                     <systemProperties>
+                        <microprofile.jvm.args>${microprofile.jvm.args} -DMP_METRICS_TAGS=tier=integration</microprofile.jvm.args>
                         <test.url>http://localhost:9990/metrics</test.url>
                     </systemProperties>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Test against slimmed servers provisioned by Galleon -->
+        <profile>
+            <id>layers.profile</id>
+            <activation>
+                <property>
+                    <name>ts.layers</name>
+                </property>
+            </activation>
+            <properties>
+                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Provision a datasources-web-server with observability decorator added -->
+                            <execution>
+                                <id>observability-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>observability</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                <module.path>${project.build.directory}/wildfly/modules</module.path>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

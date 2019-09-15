@@ -104,6 +104,7 @@
                     </environmentVariables>
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables combine.children="append">
+                        <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                     </systemPropertyVariables>
                     <additionalClasspathElements>
@@ -137,5 +138,562 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Test against slimmed servers provisioned by Galleon -->
+        <profile>
+            <id>layers.profile</id>
+            <activation>
+                <property>
+                    <name>ts.layers</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+		            <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources into the other installations we add
+                                 so tests against that can utilize those. -->
+                            <execution>
+                                <id>ts.config-as.copy-users-legacy</id>
+                                <phase>generate-test-resources</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-legacy-https/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>application*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.config-as.copy-users-jaxrs</id>
+                                <phase>generate-test-resources</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-jaxrs/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>application*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.config-as.copy-users-cloud</id>
+                                <phase>generate-test-resources</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-cloud/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>application*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Provision a datasources-web-server -->
+                            <execution>
+                                <id>web-profile-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                            <!-- TODO exclude datasources layer when plugin with GAL-287 is in -->
+                                            <!--<excluded-layers>
+                                                <layer>datasources</layer>
+                                            </excluded-layers>-->
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+		                    <!-- Provision a datasources-web-server with legacy-security as well -->
+                            <execution>
+                                <id>web-legacy-security-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-legacy-security</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>legacy-security</layer>
+                                            </layers>
+                                            <!-- TODO exclude datasources layer when plugin with GAL-287 is in -->
+                                            <!--<excluded-layers>
+                                                <layer>datasources</layer>
+                                            </excluded-layers>-->
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a datasources-web-server with support for HTTPS via an autogenerated cert -->
+                            <execution>
+                                <id>web-undertow-https-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-legacy-https</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>undertow-legacy-https</layer>
+                                            </layers>
+                                            <!-- TODO exclude datasources layer when plugin with GAL-287 is in -->
+                                            <!--<excluded-layers>
+                                                <layer>datasources</layer>
+                                            </excluded-layers>-->
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a jaxrs-server -->
+                            <execution>
+                                <id>jaxrs-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jaxrs</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>jaxrs-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a cloud-server -->
+                            <execution>
+                                <id>cloud-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-cloud</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+
+                            <!-- Tests against the datasource-web-server without legacy security -->
+                            <execution>
+                                <id>web-profile-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${project.build.directory}/wildfly</jboss.install.dir>
+                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <excludes>
+                                        <!-- requires legacy-security -->
+                                        <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
+                                        <!-- requires ee-concurrency -->
+                                        <exclude>org/jboss/as/test/integration/ee/concurrent/*TestCase.java</exclude>
+                                        <!-- Requires javax.validation.api module -->
+                                        <exclude>org/jboss/as/test/integration/web/annotationsmodule/WebModuleDeploymentTestCase.java</exclude>
+                                        <!-- requires https -->
+                                        <exclude>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with legacy security -->
+                            <execution>
+                                <id>legacy-security-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
+                                        <jboss.install.dir>${project.build.directory}/wildfly-legacy-security</jboss.install.dir>
+                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/web/security/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with undertow-legacy-https -->
+                            <execution>
+                                <id>legacy-https-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-https</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-https</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-https</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-https</jboss.dist>
+                                        <jboss.install.dir>${project.build.directory}/wildfly-legacy-https</jboss.install.dir>
+                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-https/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-https</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
+                                        <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
+                                             where elytron is configured but -Delytron is not set. -->
+                                        <!--include>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</include-->
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the jaxrs-server install -->
+                            <execution>
+                                <id>jaxrs-server-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${project.build.directory}/wildfly-jaxrs</jboss.install.dir>
+                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <module.path>${project.build.directory}/wildfly-jaxrs/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <excludes>
+                                        <!-- requires legacy-security -->
+                                        <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
+                                        <!-- requires ee-concurrency -->
+                                        <exclude>org/jboss/as/test/integration/ee/concurrent/*TestCase.java</exclude>
+                                        <!-- Requires javax.validation.api module -->
+                                        <exclude>org/jboss/as/test/integration/web/annotationsmodule/WebModuleDeploymentTestCase.java</exclude>
+                                        <!-- requires https -->
+                                        <exclude>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the cloud-server install -->
+                            <execution>
+                                <id>cloud-server-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${project.build.directory}/wildfly-cloud</jboss.install.dir>
+                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <module.path>${project.build.directory}/wildfly-cloud/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <excludes>
+                                        <!-- requires legacy-security -->
+                                        <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
+                                        <!-- requires ee-concurrency -->
+                                        <exclude>org/jboss/as/test/integration/ee/concurrent/*TestCase.java</exclude>
+                                        <!-- Requires javax.validation.api module -->
+                                        <exclude>org/jboss/as/test/integration/web/annotationsmodule/WebModuleDeploymentTestCase.java</exclude>
+                                        <!-- requires https -->
+                                        <exclude>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 </project>

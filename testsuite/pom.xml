@@ -484,7 +484,10 @@
         <profile>
             <id>layers_.module.profile</id>
             <activation><property><name>ts.layers</name></property></activation>
-            <modules><module>layers</module></modules>
+            <modules>
+                <module>integration</module>
+                <module>layers</module>
+            </modules>
         </profile>
 
 

@@ -472,6 +472,7 @@
                                 <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
                             </environmentVariables>
                             <systemPropertyVariables combine.children="append">
+                                <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                                 <!-- Narayana transaction data storage for transaction started at client side -->
                                 <ObjectStoreEnvironmentBean.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.objectStoreDir>
                                 <ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>
@@ -792,6 +793,373 @@
                                         <argument>org.jboss.as.test.integration.ejb.iiop.naming.IIOPStatefulNamingHome
                                         </argument>
                                     </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Test against slimmed servers provisioned by Galleon -->
+        <profile>
+            <id>layers.profile</id>
+            <activation>
+                <property>
+                    <name>ts.layers</name>
+                </property>
+            </activation>
+            <properties>
+                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Provision a cloud-profile server -->
+                            <execution>
+                                <id>cloud-profile-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a cloud-profile server with legacy-security as well -->
+                            <execution>
+                                <id>legacy-security-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-legacy-security</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>legacy-security</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the standard test executions. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-full.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-web.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-ldap.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Tests against the install without legacy security -->
+                            <execution>
+                                <id>cloud-profile-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/beanvalidation/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/beanvalidation/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/bc/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/bc/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/deployment/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/deployment/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/jaxb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jaxb/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/jaxrs/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jaxrs/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/json/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/json/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/jsp/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jsp/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/logging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/logging/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/management/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/management/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/messaging/mgmt/ExternalConnectionFactoryManagementTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/microprofile/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/microprofile/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/security/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/weld/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/weld/**/*Test.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
+                                        <!-- requires webservices picketlink federation -->
+                                        <exclude>org/jboss/as/test/integration/security/xacml/**/*TestCase.java</exclude>
+                                        <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
+                                        <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
+                                        <!-- no ejb -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/xacml/EjbXACMLAuthorizationModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/jacc/context/PolicyContextTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
+                                        
+                                        <!-- no console -->
+                                        <exclude>org/jboss/as/test/integration/management/console/**/*</exclude>
+                                        <!-- no jts -->
+                                        <exclude>org/jboss/as/test/integration/management/cli/objectstore/TransactionObjectStoreTestCase.java</exclude>
+                                        <!-- requires welcome page -->
+                                        <exclude>org/jboss/as/test/integration/management/api/SocketsAndInterfacesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/api/web/ListenerTestCase.java</exclude>
+                                        <!-- requires https-server-->
+                                        <exclude>org/jboss/as/test/integration/management/cli/SecurityCommandsTestCase.java</exclude>
+                                        <!-- requires legacy security -->
+                                        <exclude>org/jboss/as/test/integration/management/api/ClientCompatibilityUnitTestCase.java</exclude>
+                                        <!-- requires some subsystem not present -->
+                                        <exclude>org/jboss/as/test/integration/management/api/SimpleSubsystemsTestCase.java</exclude>
+                                        <!-- requires ejb and remoting3 (deprecated) -->
+                                        <exclude>org/jboss/as/test/integration/management/api/expression/ExpressionSubstitutionInContainerTestCase.java</exclude>
+                                        <!-- requires ejb -->
+                                        <exclude>org/jboss/as/test/integration/management/cli/RemoveEJBSubsystemTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatefulEJBRemoteHomeRuntimeNameTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatelessEJBRemoteHomeRuntimeNameTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/TimerEJBRuntimeNameTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatelessEJBRuntimeNameTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatefulEJBRuntimeNameTestCase.java</exclude>
+                                        <!-- no full jms -->
+                                        <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/beanvalidation/BeanValidationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/SubDeploymentOperationsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/classloading/ear/subdeployments/SubDeploymentAvailableInClassPathTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/classloading/war/WarChildFirstClassLoadingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/classloading/war/WarInEarChildFirstClassLoadingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/subdirectory/SubDirectoryModuleDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/dependencies/InterDeploymentDependenciesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/dependencies/ear/InterDeploymentDependenciesEarTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/deploymentoverlay/**/*</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/jcedeployment/JCETestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/moduleslisting/DeploymentModulesListTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/structure/ear/EarJBossDeploymentStructureTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/structure/jar/JarJBossDeploymentStructureTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/structure/war/WarJBossDeploymentStructureTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/structure/parsing/JBossDeploymentStructure11ParsingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/deployment/xml/datasource/DeployedXmlJpaDataSourceTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxrs/integration/ejb/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxrs/packaging/ear/*TestCase.java</exclude>
+                                        <!-- No legacy security -->
+                                        <exclude>org/jboss/as/test/integration/management/**/security/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/aselytron/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/auditing/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/auditing/*Test.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/cli/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/builtin/**/*TestCase.java</exclude>
+                                        <!-- no sar subsystem -->
+                                        <exclude>org/jboss/as/test/integration/deployment/classloading/sar/SarClassLoadingTestCase.java</exclude>
+                                        <!-- requires javaee.api -->
+                                        <exclude>org/jboss/as/test/integration/weld/multideployment/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/multideployment/*Test.java</exclude>
+                                        <!-- requires ejb -->
+                                        <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/ejb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/ejb/**/*Test.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/jndi/WeldJndiLookupTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/PortableExtensionInExternalModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/deployment/enterprise/EnterpriseBeanDiscoveryTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/extensions/ExtensionsInEarDiscoveredTestCase.java</exclude>
+                                        <!-- requires web-services-->
+                                        <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <!-- Tests against the install with legacy security -->
+                            <execution>
+                                <id>legacy-security-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-security</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/management/api/security/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/aselytron/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/auditing/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/auditing/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/security/cli/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/jaspi/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
+                                        <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
+                                        <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
+                                        <!-- no ejb -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
