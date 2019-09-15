@@ -114,7 +114,7 @@ public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTest
             operation.get("address").add("location","/");
             cob.addStep(operation);
             executeOperation(cob.build().getOperation());
-            executeReloadAndWaitForCompletion(getModelControllerClient());
+            executeReloadAndWaitForCompletion(getManagementClient());
             deployer.deploy("test");
             HttpGet httpget = null;
             HttpResponse response = null;

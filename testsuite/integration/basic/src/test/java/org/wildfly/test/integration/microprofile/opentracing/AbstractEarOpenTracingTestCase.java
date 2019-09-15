@@ -57,7 +57,7 @@ public abstract class AbstractEarOpenTracingTestCase {
     public void testEarServicesUseDifferentTracersAfterReload() throws Exception {
         //TODO the tracer instance is same after reload as before it - check whether this is correct or no
         testHttpInvokation();
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
         testHttpInvokation();
     }
 

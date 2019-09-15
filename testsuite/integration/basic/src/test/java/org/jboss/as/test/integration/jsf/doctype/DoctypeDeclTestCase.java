@@ -147,13 +147,13 @@ public class DoctypeDeclTestCase {
         final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, "jsf");
         final ModelNode op = Operations.createWriteAttributeOperation(address, "disallow-doctype-decl", value);
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private void undefineDisallowDoctypeDeclAttributeAndReload() throws Exception {
         final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, "jsf");
         final ModelNode op = Operations.createUndefineAttributeOperation(address, "disallow-doctype-decl");
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 }

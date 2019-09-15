@@ -118,7 +118,7 @@ public class PooledConnectionFactoryStatisticsTestCase {
         op.get(NAME).set(STATISTICS_ENABLED);
         op.get(VALUE).set(true);
         execute(op, true);
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private int readStatistic(String name) throws IOException {

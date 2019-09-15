@@ -101,12 +101,12 @@ public class OnOffOpenTracingTestCase {
         serverSnapshot.close();
     }
 
-    private void opentracingSubsystem(String operationName, ModelControllerClient client) throws Exception {
+    private void opentracingSubsystem(String operationName, ManagementClient client) throws Exception {
         final String OT_SUBSYSTEM_NAME = "microprofile-opentracing-smallrye";
 
         // remove the OpenTracing subsystem
         ModelNode operation = createOpNode("subsystem=" + OT_SUBSYSTEM_NAME, operationName);
-        Utils.applyUpdate(operation, client);
+        Utils.applyUpdate(operation, client.getControllerClient());
 
         executeReloadAndWaitForCompletion(client, 100000);
     }
@@ -121,7 +121,7 @@ public class OnOffOpenTracingTestCase {
 
         Utils.applyUpdate(operation, client);
 
-        executeReloadAndWaitForCompletion(client, 100000);
+        executeReloadAndWaitForCompletion(managementClient, 100000);
     }
 
     @Test
@@ -139,7 +139,7 @@ public class OnOffOpenTracingTestCase {
         Assert.assertTrue(response.contains("Tracer instance is: JaegerTracer"));
 
         // Remove OpenTracing subsystem to disable it.
-        opentracingSubsystem(ModelDescriptionConstants.REMOVE, managementClient.getControllerClient());
+        opentracingSubsystem(ModelDescriptionConstants.REMOVE, managementClient);
 
         try {
             // Perform request to the deployment on server where OpenTracing is disabled. Deployment must not have a Tracer instance available.
@@ -150,7 +150,7 @@ public class OnOffOpenTracingTestCase {
                     response.matches("(?s).*java\\.lang\\.NoClassDefFoundError: L*io.opentracing.Tracer.*"));
             // really dots because openjdk uses '/' whereas ibmjdk uses '.'      ---^        ---^
         } finally {
-            opentracingSubsystem(ModelDescriptionConstants.ADD, managementClient.getControllerClient());
+            opentracingSubsystem(ModelDescriptionConstants.ADD, managementClient);
         }
 
         // And again perform request to the deployment on the server where OpenTracing is enabled.

@@ -137,13 +137,13 @@ public class ExportImportJournalTestCase {
         sendMessage(remoteContext, jmsQueueLookup, text);
 
         // reload in admin-only mode
-        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), true);
+        executeReloadAndWaitForCompletion(managementClient, true);
 
         // export the journal (must be performed in admin-only mode)
         String dumpFilePath = exportJournal();
 
         // reload in normal mode
-        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), false);
+        executeReloadAndWaitForCompletion(managementClient, false);
 
         // remove all messages
         removeAllMessagesFromQueue(jmsQueueName);

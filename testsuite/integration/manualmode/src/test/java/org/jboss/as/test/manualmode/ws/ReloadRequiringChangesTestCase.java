@@ -111,7 +111,7 @@ public class ReloadRequiringChangesTestCase {
             //change wsdl-host to "foo-host" and reload
             final String hostname = "foo-host";
             setWsdlHost(client, hostname);
-            ServerReload.executeReloadAndWaitForCompletion(client);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
             //change wsdl-host to "bar-host" and verify deployment still uses "foo-host"
             setWsdlHost(client, "bar-host");
@@ -143,7 +143,7 @@ public class ReloadRequiringChangesTestCase {
             //change wsdl-host to "my-host" and reload
             final String hostname = "my-host";
             setWsdlHost(client, hostname);
-            ServerReload.executeReloadAndWaitForCompletion(client);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
             //undefine wsdl-host and verify deployment still uses "foo-host"
             setWsdlHost(client, null);

@@ -80,7 +80,7 @@ public abstract class ReloadableCliTestBase extends AbstractCliTestBase {
      * Executes server reload command and waits for completion.
      */
     protected void reloadServer() {
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     /**

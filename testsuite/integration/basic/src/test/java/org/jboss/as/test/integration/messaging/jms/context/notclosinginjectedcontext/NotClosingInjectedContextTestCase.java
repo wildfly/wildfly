@@ -223,7 +223,7 @@ public class NotClosingInjectedContextTestCase {
             operation.get("value").set("true");
             client.getControllerClient().execute(operation);
 
-            ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), TimeoutUtil.adjust(50000));
+            ServerReload.executeReloadAndWaitForCompletion(client, TimeoutUtil.adjust(50000));
         }
     }
 }

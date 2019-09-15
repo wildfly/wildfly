@@ -115,7 +115,7 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
             jmsOperations.removeJmsConnectionFactory(CF_NAME);
             managementClient.getControllerClient().execute( Operations.createRemoveOperation(address));
         }
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private static ModelNode execute(ModelControllerClient client, ModelNode operation) throws Exception {
