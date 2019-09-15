@@ -267,7 +267,7 @@
         <version.io.agroal>1.3</version.io.agroal>
         <version.io.jaegertracing>0.34.0</version.io.jaegertracing>
 <!--        <version.io.netty>4.1.40.Final-SNAPSHOT</version.io.netty>-->
-        <version.io.netty>4.1.34.Final</version.io.netty>
+        <version.io.netty>4.1.41.Final</version.io.netty>
         <version.io.opentracing>0.31.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.2.1</version.io.opentracing.concurrent>
         <version.io.opentracing.interceptors>0.0.4</version.io.opentracing.interceptors>
