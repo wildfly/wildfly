@@ -41,6 +41,7 @@ class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> CONFIG_CAPABILITY =
             RuntimeCapability.Builder.of(CONFIG_CAPABILITY_NAME)
+                    .setServiceType(Void.class)
                     .addRequirements(WELD_CAPABILITY_NAME)
                     .build();
 

@@ -38,6 +38,7 @@ class MicroProfileConfigSubsystemRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        context.removeService(MicroProfileSubsystemDefinition.CONFIG_CAPABILITY.getCapabilityServiceName(Void.class));
         context.removeService(ServiceNames.CONFIG_PROVIDER);
     }
 
