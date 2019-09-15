@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.ee.naming.defaultbindings.concurrency;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -46,6 +47,7 @@ public class DefaultConcurrencyCDITestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addClasses(DefaultConcurrencyCDITestCase.class, DefaultConcurrencyTestCDIBean.class);
         jar.addAsManifestResource(new StringAsset(""), "beans.xml");
+        jar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
         return jar;
     }
 
