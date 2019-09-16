@@ -99,8 +99,6 @@ public class MetricsCollectorService implements Service<MetricCollector> {
             }
         }
 
-        metricCollector.close();
-
         modelControllerClient.close();
 
         jmxRegistrar = null;

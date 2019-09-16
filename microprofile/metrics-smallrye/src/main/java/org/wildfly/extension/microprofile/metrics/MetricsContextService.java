@@ -24,12 +24,9 @@ package org.wildfly.extension.microprofile.metrics;
 
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.HTTP_CONTEXT_SERVICE;
 
-import java.io.StringWriter;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.exporter.common.TextFormat;
 import io.smallrye.metrics.MetricsRequestHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -83,27 +80,10 @@ public class MetricsContextService implements Service {
                         HeaderValues acceptHeaders = exchange.getRequestHeaders().get(Headers.ACCEPT);
                         metricsRequestHandler.handleRequest(requestPath, method, acceptHeaders == null ? null : acceptHeaders.stream(), (status, message, headers) -> {
                             exchange.setStatusCode(status);
-                            StringBuffer buffer = new StringBuffer();
                             for (Map.Entry<String, String> entry : headers.entrySet()) {
                                 exchange.getResponseHeaders().put(new HttpString(entry.getKey()), entry.getValue());
                             }
-                            buffer.append(message);
-
-                            // add metrics from the subsystems only when the request is acceptable
-                            if (status / 100 == 2
-                                && (exchange.getRequestPath().equals(CONTEXT_NAME) ||
-                                    exchange.getRequestPath().equals(CONTEXT_NAME + '/'))) {
-                                String acceptHeader = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
-                                boolean jsonOutput = acceptHeader != null && acceptHeader.startsWith("application/json");
-                                if (!jsonOutput) {
-                                    try (StringWriter sw = new StringWriter()) {
-                                        CollectorRegistry registry = CollectorRegistry.defaultRegistry;
-                                        TextFormat.write004(sw, registry.metricFamilySamples());
-                                        buffer.append(sw.toString());
-                                    }
-                                }
-                            }
-                            exchange.getResponseSender().send(buffer.toString());
+                            exchange.getResponseSender().send(message);
                         });
                     }
                 });

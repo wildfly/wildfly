@@ -32,7 +32,6 @@
     </resources>
 
     <dependencies>
-        <module name="io.prometheus.simpleclient" />
         <module name="io.smallrye.metrics" export="true"/>
         <module name="io.undertow.core"/>
         <module name="javax.api"/>
