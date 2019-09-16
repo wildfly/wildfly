@@ -23,13 +23,22 @@
 package org.jboss.as.test.manualmode.messaging.ha;
 
 
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSConsumer;
+import javax.jms.JMSContext;
+import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.logging.Logger;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
@@ -197,6 +206,28 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
 
         //Assert.fail("wth");
 
+        log.trace("====================");
+        log.trace("START SERVER1 A 2ND TIME...");
+        log.trace("====================");
+        // restart the live server
+        container.start(SERVER1);
+        // let some time for the backup to detect the live node and failback
+        client1 = createClient1();
+        liveJMSOperations = JMSOperationsProvider.getInstance(client1);
+        waitForHornetQServerActivation(liveJMSOperations, true);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+
+        // let some time for the backup to detect the failure
+        waitForHornetQServerActivation(backupJMSOperations, false);
+        // backup server has been restarted in passive mode
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
+
+        checkJMSQueue(backupJMSOperations, jmsQueueName, false);
+
+        context1 = createJNDIContextFromServer1();
+        // There should be no message to receive as it was consumed from the backup
+        receiveNoMessage(context1, jmsQueueLookup);
+
     }
 
     protected void testMasterInSyncWithReplica(ModelControllerClient client) throws Exception {}
@@ -206,4 +237,18 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
     protected void testMasterOutOfSyncWithReplica(ModelControllerClient client) throws Exception {}
 
     protected void testSlaveOutOfSyncWithReplica(ModelControllerClient client) throws Exception  {}
+
+    private void receiveNoMessage(Context ctx, String destinationLookup) throws NamingException {
+        ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
+        assertNotNull(cf);
+        Destination destination = (Destination) ctx.lookup(destinationLookup);
+        assertNotNull(destination);
+
+        try (JMSContext context = cf.createContext("guest", "guest")) {
+            JMSConsumer consumer = context.createConsumer(destination);
+            String text = consumer.receiveBody(String.class, 5000);
+            assertNull(text);
+        }
+
+    }
 }
