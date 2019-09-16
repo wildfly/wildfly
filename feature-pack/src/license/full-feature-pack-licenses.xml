@@ -3775,8 +3775,13 @@
       <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <name>EPL 2.0</name>
+          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GPL2 w/ CPE</name>
+          <url>https://www.gnu.org/software/classpath/license.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
