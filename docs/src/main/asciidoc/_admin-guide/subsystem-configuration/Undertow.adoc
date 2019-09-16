@@ -333,6 +333,15 @@ responses.
 
 |use-listener-encoding |If this is true then the default encoding will
 be the same as that used by the listener that received the request.
+
+| preserve-path-on-forward | If this is `true`, the return values of the
+`getServletPath()`, `getRequestURL()` and `getRequestURI()` methods from
+ `HttpServletRequest` will be unchanged following a
+ `RequestDispatcher.forward()` call, and point to the original resource requested.
+If `false`, following the `RequestDispatcher.forward()` call, they will
+point to the resource being forwarded to.
+
+
 |=======================================================================
 
 [[jsp-configuration]]
