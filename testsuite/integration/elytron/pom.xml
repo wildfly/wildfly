@@ -53,6 +53,14 @@
         <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
 
         <enforcer.skip>true</enforcer.skip>
+
+        <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
+        <version.org.hsqldb.hsqldb>2.5.0</version.org.hsqldb.hsqldb>
+        <version.org.mock-server.mockserver>5.6.1</version.org.mock-server.mockserver>
+        <version.org.mock-server.mockserver-netty>5.6.1</version.org.mock-server.mockserver-netty>
+        <version.org.xipki.pki.ocsp-server>3.0.0</version.org.xipki.pki.ocsp-server>
+        <version.javax.xml.bind.jaxb-api>2.4.0-b180830.0359</version.javax.xml.bind.jaxb-api>
+        <version.org.glassfish.jaxb.jaxb-runtime>2.4.0-b180830.0438</version.org.glassfish.jaxb.jaxb-runtime>
     </properties>
 
     <dependencies>
@@ -123,11 +131,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
             <scope>test</scope>
@@ -138,6 +141,88 @@
             <artifactId>wildfly-batch-jberet</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- crl and ocsp -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>${version.org.bouncycastle}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcmail-jdk15on</artifactId>
+            <version>${version.org.bouncycastle}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>${version.org.bouncycastle}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xipki.pki</groupId>
+            <artifactId>ocsp-server</artifactId>
+            <version>${version.org.xipki.pki.ocsp-server}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${version.javax.xml.bind.jaxb-api}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${version.org.glassfish.jaxb.jaxb-runtime}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-netty</artifactId>
+            <version>${version.org.mock-server.mockserver-netty}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver</artifactId>
+            <version>${version.org.mock-server.mockserver}</version>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>${version.org.hsqldb.hsqldb}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.fge</groupId>
+            <artifactId>jackson-coreutils</artifactId>
+            <version>${version.com.github.fge.jackson-coreutils}</version>
+        </dependency>
+        <!-- /crl and ocsp -->
+
+        <!-- This needs to be after the org.bouncycaslte dependencies. The reason is that apacheds-all dependency,
+             which is part of wildfly-testsuite-shared module, contains implementation of BouncyCastle provider based
+             on older version of BouncyCastle. -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
