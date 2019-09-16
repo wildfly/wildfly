@@ -3727,13 +3727,13 @@
       <artifactId>jboss-ejb-api_3.2_spec</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License 1.0</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>EPL 2.0</name>
+          <url>https://www.eclipse.org/legal/epl-2.0</url>
           <distribution>repo</distribution>
         </license>
         <license>
-          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <name>GPL2 w/ CPE</name>
+          <url>https://www.gnu.org/software/classpath/license.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
