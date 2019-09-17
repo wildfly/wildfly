@@ -497,9 +497,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case ALIASES: {
-                    for (String alias : reader.getListAttributeValue(i)) {
-                        CacheFactoryResourceDefinition.ALIASES.parseAndAddParameterElement(alias, operation, reader);
-                    }
+                    CacheFactoryResourceDefinition.ALIASES.getParser().parseAndSetParameter(CacheFactoryResourceDefinition.ALIASES, value, operation, reader);
                     break;
                 }
                 default: {
