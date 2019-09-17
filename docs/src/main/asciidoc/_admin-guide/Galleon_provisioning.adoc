@@ -122,6 +122,7 @@ Basic layers:
 * _jms-activemq_: Support for connections to a remote jms broker. 
 * _jpa_: Support for jpa (latest WildFly supported hibernate release).
 * _observability_: Support for microprofile monitoring and configuration features (config, health, metrics, open-tracing).
+* _open-tracing_: Support for microprofile open-tracing. This layer is an optional dependency of _observability_ layer.
 * _resource-adapters_: Support for deployment of JCA adapters.
 * _h2-driver_: Support for h2 driver.
 * _h2-datasource_: Support for h2 datasource.
