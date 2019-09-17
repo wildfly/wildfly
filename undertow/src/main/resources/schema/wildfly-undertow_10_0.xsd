@@ -271,6 +271,7 @@
         <xs:attribute name="file-cache-metadata-size" type="xs:integer" use="optional" default="100"/>
         <xs:attribute name="file-cache-time-to-live" type="xs:integer" use="optional"/>
         <xs:attribute name="default-cookie-version" type="xs:integer"  use="optional"/>
+        <xs:attribute name="preserve-path-on-forward" type="xs:boolean" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="mime-mappingsType">

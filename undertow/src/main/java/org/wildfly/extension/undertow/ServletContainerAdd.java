@@ -92,7 +92,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode fileCacheTtlNode = ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE.resolveModelAttribute(context, model);
         final Integer fileCacheTimeToLive = fileCacheTtlNode.isDefined()  ? fileCacheTtlNode.asInt() : null;
         final int defaultCookieVersion = ServletContainerDefinition.DEFAULT_COOKIE_VERSION.resolveModelAttribute(context, model).asInt();
-        final boolean preservePathOnForward = Boolean.parseBoolean(System.getProperty("io.undertow.servlet.dispatch.preserve_path_of_forward", "false"));
+        final boolean preservePathOnForward = ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD.resolveModelAttribute(context, model).asBoolean();
 
         Boolean directoryListingEnabled = null;
         if(model.hasDefined(Constants.DIRECTORY_LISTING)) {

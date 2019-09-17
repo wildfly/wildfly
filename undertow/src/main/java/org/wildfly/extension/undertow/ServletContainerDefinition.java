@@ -190,6 +190,13 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setValidator(new IntRangeValidator(0, 1, true,true))
                     .build();
 
+    protected static final AttributeDefinition PRESERVE_PATH_ON_FORWARD =
+            new SimpleAttributeDefinitionBuilder("preserve-path-on-forward", ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.FALSE)
+                    .build();
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
@@ -210,7 +217,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             FILE_CACHE_METADATA_SIZE,
             FILE_CACHE_MAX_FILE_SIZE,
             FILE_CACHE_TIME_TO_LIVE,
-            DEFAULT_COOKIE_VERSION
+            DEFAULT_COOKIE_VERSION,
+            PRESERVE_PATH_ON_FORWARD
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();

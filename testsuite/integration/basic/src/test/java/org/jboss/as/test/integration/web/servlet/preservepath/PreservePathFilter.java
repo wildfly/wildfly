@@ -23,6 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -42,9 +44,11 @@ public class PreservePathFilter implements Filter {
       String tmpFolder = request.getParameter("path");
       File file = new File(tmpFolder + "/output.txt");
       file.createNewFile();
-      try(FileWriter fw = new FileWriter(file)) {
-         fw.write("servletPath: " + request.getServletPath());
+      try( BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
+         String text = "servletPath: " + request.getServletPath() +
+                 "\nrequestUrl: " + request.getRequestURL().toString() +
+                 "\nrequestUri: " + request.getRequestURI();
+         bufferedWriter.write(text);
       }
-
    }
 }
