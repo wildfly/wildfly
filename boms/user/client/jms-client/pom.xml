@@ -124,11 +124,11 @@
                                 <!-- Required by the artemis-jms-client -->
                                 <dependency>
                                     <groupId>org.glassfish</groupId>
-                                    <artifactId>javax.json</artifactId>
+                                    <artifactId>jakarta.json</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.json</groupId>
-                                    <artifactId>javax.json-api</artifactId>
+                                    <groupId>jakarta.json</groupId>
+                                    <artifactId>jakarta.json-api</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.logging</groupId>

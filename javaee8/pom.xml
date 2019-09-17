@@ -113,24 +113,24 @@
 
                                 <!-- include javax specs APIs -->
                                 <dependency>
-                                    <groupId>javax.activation</groupId>
-                                    <artifactId>activation</artifactId>
+                                    <groupId>com.sun.activation</groupId>
+                                    <artifactId>jakarta.activation</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.enterprise</groupId>
-                                    <artifactId>cdi-api</artifactId>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.inject</groupId>
-                                    <artifactId>javax.inject</artifactId>
+                                    <groupId>jakarta.inject</groupId>
+                                    <artifactId>jakarta.inject-api</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.json</groupId>
-                                    <artifactId>javax.json-api</artifactId>
+                                    <groupId>jakarta.json</groupId>
+                                    <artifactId>jakarta.json-api</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.json.bind</groupId>
-                                    <artifactId>javax.json.bind-api</artifactId>
+                                    <groupId>jakarta.json.bind</groupId>
+                                    <artifactId>jakarta.json.bind-api</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>javax.jws</groupId>
@@ -138,19 +138,19 @@
                                 </dependency>
                                 <dependency>
                                     <groupId>com.sun.mail</groupId>
-                                    <artifactId>javax.mail</artifactId>
+                                    <artifactId>jakarta.mail</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.persistence</groupId>
-                                    <artifactId>javax.persistence-api</artifactId>
+                                    <groupId>jakarta.persistence</groupId>
+                                    <artifactId>jakarta.persistence-api</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>jakarta.security.enterprise</groupId>
                                     <artifactId>jakarta.security.enterprise-api</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.validation</groupId>
-                                    <artifactId>validation-api</artifactId>
+                                    <groupId>jakarta.validation</groupId>
+                                    <artifactId>jakarta.validation-api</artifactId>
                                 </dependency>
 
                                 <!-- include JBoss spec APIs -->
