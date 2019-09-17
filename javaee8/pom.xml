@@ -129,8 +129,8 @@
                                     <artifactId>javax.json-api</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>javax.json.bind</groupId>
-                                    <artifactId>javax.json.bind-api</artifactId>
+                                    <groupId>jakarta.json.bind</groupId>
+                                    <artifactId>jakarta.json.bind-api</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>javax.jws</groupId>
