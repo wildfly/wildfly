@@ -79,6 +79,11 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
     }
 
     @Override
+    public void prepareRescheduling(I id) {
+        cancel(id);
+    }
+
+    @Override
     public void cancel(I id) {
         Future<?> future = this.expirationFutures.remove(id);
         if (future != null) {

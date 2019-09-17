@@ -87,7 +87,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author Paul Ferraro
  *
- * @param <G> the group identifier type
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
@@ -152,7 +151,13 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         List<Scheduler<I>> schedulers = new ArrayList<>(2);
         Duration timeout = this.expiration.getTimeout();
         if ((timeout != null) && !timeout.isNegative()) {
-            schedulers.add(new BeanExpirationScheduler<>(this.batcher, this.beanFactory, this.expiration));
+            if (dispatcherFactory.getGroup().isSingleton()) {
+                schedulers.add(new NonClusteredBeanExpirationScheduler<>(
+                        this.batcher, this.beanFactory, this.expiration));
+            } else {
+                schedulers.add(new BeanExpirationScheduler<>(
+                        this.batcher, this.beanFactory, this.expiration));
+            }
         }
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
@@ -161,7 +166,13 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         if (idleTimeout != null) {
             Duration idleDuration = Duration.parse(idleTimeout);
             if (!idleDuration.isNegative()) {
-                schedulers.add(new EagerEvictionScheduler<>(this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
+                if (dispatcherFactory.getGroup().isSingleton()) {
+                    schedulers.add(new NonClusteredEagerEvictionScheduler<>(
+                            this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration));
+                } else {
+                    schedulers.add(new EagerEvictionScheduler<>(
+                            this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
+                }
             }
         }
 
@@ -222,8 +233,26 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         return Affinity.NONE;
     }
 
+    private void prepareRescheduling(I id) {
+        if (this.dispatcher != null) {
+            if (dispatcherFactory.getGroup().isSingleton()) {
+                scheduler.prepareRescheduling(id);
+                return;
+            }
+            try {
+                this.executeOnPrimaryOwner(id, new PrepareReschedulingSchedulerCommand<>(id));
+            } catch (Exception e) {
+                InfinispanEjbLogger.ROOT_LOGGER.failedToCancelBean(e, id);
+            }
+        }
+    }
+
     private void cancel(I id) {
         if (this.dispatcher != null) {
+            if (dispatcherFactory.getGroup().isSingleton()) {
+                scheduler.cancel(id);
+                return;
+            }
             try {
                 this.executeOnPrimaryOwner(id, new CancelSchedulerCommand<>(id));
             } catch (Exception e) {
@@ -234,6 +263,10 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     void schedule(I id, ImmutableBeanEntry<I> entry) {
         if (this.dispatcher != null) {
+            if (dispatcherFactory.getGroup().isSingleton()) {
+                scheduler.schedule(id);
+                return;
+            }
             try {
                 this.executeOnPrimaryOwner(id, new ScheduleSchedulerCommand<>(id, entry));
             } catch (Exception e) {
@@ -279,7 +312,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
             InfinispanEjbLogger.ROOT_LOGGER.debugf("Could not find bean %s", id);
             return null;
         }
-        this.cancel(bean.getId());
+        this.prepareRescheduling(id);
         return new SchedulableBean(bean, entry);
     }
 
@@ -417,7 +450,10 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         @Override
         public void close() {
             this.bean.close();
-            if (this.bean.isValid()) {
+            if (!this.bean.isValid()) {
+                InfinispanBeanManager.this.cancel(this.getId());
+            }
+            else {
                 InfinispanBeanManager.this.schedule(this.getId(), this.entry);
             }
         }
