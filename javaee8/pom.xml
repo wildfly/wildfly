@@ -138,7 +138,7 @@
                                 </dependency>
                                 <dependency>
                                     <groupId>com.sun.mail</groupId>
-                                    <artifactId>javax.mail</artifactId>
+                                    <artifactId>jakarta.mail</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>jakarta.persistence</groupId>
