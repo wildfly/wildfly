@@ -45,8 +45,9 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
 
     static final String CLIENT_FACTORY_CAPABILITY ="org.wildfly.management.model-controller-client-factory";
     static final String MANAGEMENT_EXECUTOR ="org.wildfly.management.executor";
+    static final String MP_CONFIG = "org.wildlfy.microprofile.config";
     static final RuntimeCapability<Void> METRICS_COLLECTOR_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(METRICS_COLLECTOR_CAPABILITY, MetricsCollectorService.class)
-            .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR)
+            .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR, MP_CONFIG)
             .build();
 
     public static final ServiceName WILDFLY_COLLECTOR_SERVICE = METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();

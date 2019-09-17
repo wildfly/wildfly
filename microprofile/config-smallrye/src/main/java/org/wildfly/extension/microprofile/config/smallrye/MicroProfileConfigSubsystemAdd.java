@@ -28,6 +28,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.SubsystemDeploymentProcessor;
@@ -51,6 +52,11 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
         MicroProfileConfigLogger.ROOT_LOGGER.activatingSubsystem();
 
         ConfigProviderService.install(context);
+
+        // Add a void service other capabilities can use to ensure MP Config is ready
+        ServiceBuilder capSvc = context.getCapabilityServiceTarget().addCapability(MicroProfileSubsystemDefinition.CONFIG_CAPABILITY);
+        capSvc.requires(ServiceNames.CONFIG_PROVIDER);
+        capSvc.install();
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
