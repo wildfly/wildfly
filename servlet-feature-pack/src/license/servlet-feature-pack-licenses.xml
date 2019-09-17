@@ -361,8 +361,8 @@
           <distribution>repo</distribution>
         </license>
         <license>
-          <name>GNU General Public License Version 2, with Classpath exception</name>
-          <url>https://www.gnu.org/software/classpath/license.html</url>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
