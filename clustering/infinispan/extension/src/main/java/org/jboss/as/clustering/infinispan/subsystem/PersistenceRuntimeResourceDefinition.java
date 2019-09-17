@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.interceptors.impl.CacheLoaderInterceptor;
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -40,7 +42,7 @@ public class PersistenceRuntimeResourceDefinition extends CacheComponentRuntimeR
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = super.register(parent);
-        new MetricHandler<>(new StoreMetricExecutor(),  StoreMetric.class).register(registration);
+        new MetricHandler<>(new CacheInterceptorMetricExecutor<>(CacheLoaderInterceptor.class, BinaryCapabilityNameResolver.GRANDPARENT_PARENT), StoreMetric.class).register(registration);
         return registration;
     }
 }

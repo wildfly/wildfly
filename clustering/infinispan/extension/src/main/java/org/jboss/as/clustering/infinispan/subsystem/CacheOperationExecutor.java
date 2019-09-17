@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,13 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.AbstractMap;
-import java.util.Map;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.infinispan.xsite.XSiteAdminOperations;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.controller.OperationExecutor;
@@ -37,17 +36,25 @@ import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
- * Operation handler for backup site operations.
  * @author Paul Ferraro
  */
-public class BackupOperationExecutor implements OperationExecutor<Map.Entry<String, XSiteAdminOperations>> {
+public abstract class CacheOperationExecutor<C> implements OperationExecutor<C>, Function<Cache<?, ?>, C> {
+
+    private final BinaryCapabilityNameResolver resolver;
+
+    CacheOperationExecutor() {
+        this(BinaryCapabilityNameResolver.PARENT_CHILD);
+    }
+
+    CacheOperationExecutor(BinaryCapabilityNameResolver resolver) {
+        this.resolver = resolver;
+    }
 
     @Override
-    public ModelNode execute(OperationContext context, ModelNode operation, Operation<Map.Entry<String, XSiteAdminOperations>> executable) throws OperationFailedException {
-        String site = context.getCurrentAddressValue();
-        ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(!executable.isReadOnly()), name).get();
-
-        return (cache != null) ? executable.execute(context, operation, new AbstractMap.SimpleImmutableEntry<>(site, cache.getAdvancedCache().getComponentRegistry().getLocalComponent(XSiteAdminOperations.class))) : null;
+    public ModelNode execute(OperationContext context, ModelNode op, Operation<C> operation) throws OperationFailedException {
+        ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, this.resolver);
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(!operation.isReadOnly()), name).get();
+        C operationContext = (cache != null) ? this.apply(cache) : null;
+        return (operationContext != null) ? operation.execute(context, op, operationContext) : null;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,23 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
+import org.infinispan.interceptors.AsyncInterceptor;
 
 /**
- * Executor for partition handling operations.
+ * Executor for metrics based on a cache interceptor.
  * @author Paul Ferraro
  */
-public class PartitionHandlingOperationExecutor extends CacheOperationExecutor<AdvancedCache<?, ?>> {
+public class CacheInterceptorOperationExecutor<I extends AsyncInterceptor> extends CacheOperationExecutor<I> {
 
-    public PartitionHandlingOperationExecutor() {
-        super(BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
+    private final Class<I> interceptorClass;
+
+    public CacheInterceptorOperationExecutor(Class<I> interceptorClass) {
+        this.interceptorClass = interceptorClass;
     }
 
     @Override
-    public AdvancedCache<?, ?> apply(Cache<?, ?> cache) {
-        return cache.getAdvancedCache();
+    public I apply(Cache<?, ?> cache) {
+        return cache.getAdvancedCache().getAsyncInterceptorChain().findInterceptorExtending(this.interceptorClass);
     }
 }

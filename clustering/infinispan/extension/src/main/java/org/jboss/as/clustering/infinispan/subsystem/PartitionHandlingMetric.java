@@ -26,6 +26,7 @@ import org.infinispan.AdvancedCache;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -35,7 +36,7 @@ import org.jboss.dmr.ModelType;
  */
 public enum PartitionHandlingMetric implements Metric<AdvancedCache<?, ?>> {
 
-    AVAILABILITY("availability", ModelType.STRING) {
+    AVAILABILITY("availability", ModelType.STRING, AttributeAccess.Flag.GAUGE_METRIC) {
         @Override
         public ModelNode execute(AdvancedCache<?, ?> cache) {
             return new ModelNode(cache.getAvailability().name());
@@ -44,8 +45,11 @@ public enum PartitionHandlingMetric implements Metric<AdvancedCache<?, ?>> {
     ;
     private final AttributeDefinition definition;
 
-    PartitionHandlingMetric(String name, ModelType type) {
-        this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
+    PartitionHandlingMetric(String name, ModelType type, AttributeAccess.Flag metricType) {
+        this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                .setFlags(metricType)
+                .setStorageRuntime()
+                .build();
     }
 
     @Override

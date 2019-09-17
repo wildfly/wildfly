@@ -40,6 +40,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -171,8 +172,11 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                     }
                 } else {
                     ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(targetAddress, targetAttribute, targetValue);
-                    ImmutableManagementResourceRegistration targetRegistration = translation.getResourceRegistrationTransformation().apply(context.getResourceRegistration());
-                    OperationStepHandler writeAttributeHandler = targetRegistration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetAttribute.getName()).getWriteHandler();
+                    ImmutableManagementResourceRegistration registration = (currentAddress == targetAddress) ? context.getResourceRegistration() : context.getRootResourceRegistration().getSubModel(targetAddress);
+                    if (registration == null) {
+                        throw new OperationFailedException(ControllerLogger.MGMT_OP_LOGGER.noSuchResourceType(targetAddress));
+                    }
+                    OperationStepHandler writeAttributeHandler = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetAttribute.getName()).getWriteHandler();
                     context.addStep(writeAttributeOperation, writeAttributeHandler, OperationContext.Stage.MODEL);
                 }
             }
