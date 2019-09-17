@@ -21,10 +21,11 @@
  */
 package org.wildfly.extension.undertow.security.jaspi;
 
+import static org.wildfly.extension.undertow.security.jaspi.SecurityActions.getAuthConfigFactory;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.MessageInfo;
-import javax.security.auth.message.config.AuthConfigFactory;
 import javax.security.auth.message.config.AuthConfigProvider;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -81,7 +82,7 @@ class JASPICSecurityContext extends SecurityContextImpl {
     public boolean login(final String username, final String password) {
         // if there is an AuthConfigProvider for the HttpServlet layer and appContext, this method must throw an exception.
         String appContext = this.buildAppContext();
-        AuthConfigProvider provider = AuthConfigFactory.getFactory().getConfigProvider(layer, appContext, null);
+        AuthConfigProvider provider = getAuthConfigFactory().getConfigProvider(layer, appContext, null);
         if (provider != null) {
             ServletException se = new ServletException("login is not supported by the JASPIC mechanism");
             throw new SecurityException(se);
@@ -111,7 +112,7 @@ class JASPICSecurityContext extends SecurityContextImpl {
 
         // call cleanSubject() if there is an AuthConfigProvider for the HttpServlet layer and appContext.
         String appContext = this.buildAppContext();
-        if (AuthConfigFactory.getFactory().getConfigProvider(layer, appContext, null) != null) {
+        if (getAuthConfigFactory().getConfigProvider(layer, appContext, null) != null) {
             Subject authenticatedSubject = this.getAuthenticatedSubject();
             MessageInfo messageInfo = this.buildMessageInfo();
             this.manager.cleanSubject(messageInfo, authenticatedSubject, layer, appContext, handler);
@@ -196,4 +197,6 @@ class JASPICSecurityContext extends SecurityContextImpl {
             subject = picketBoxContext.getSubjectInfo().getAuthenticatedSubject();
         return subject != null ? subject : new Subject();
     }
+
+
 }

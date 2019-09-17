@@ -22,7 +22,10 @@
 
 package org.wildfly.extension.undertow.security.jaspi;
 
+import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
+
+import javax.security.auth.message.config.AuthConfigFactory;
 
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
@@ -36,6 +39,18 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 class SecurityActions {
 
+    private static final PrivilegedAction<AuthConfigFactory> GET_AUTH_CONFIG_FACTORY_ACTION = new PrivilegedAction<AuthConfigFactory>() {
+
+        @Override
+        public AuthConfigFactory run() {
+            return AuthConfigFactory.getFactory();
+        }
+
+    };
+
+    static AuthConfigFactory getAuthConfigFactory() {
+        return WildFlySecurityManager.isChecking() ?  doPrivileged(GET_AUTH_CONFIG_FACTORY_ACTION) : GET_AUTH_CONFIG_FACTORY_ACTION.run();
+    }
 
     /**
      * Get the current {@code SecurityContext}
