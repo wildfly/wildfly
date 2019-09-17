@@ -124,7 +124,7 @@
                                 <!-- Required by the artemis-jms-client -->
                                 <dependency>
                                     <groupId>org.glassfish</groupId>
-                                    <artifactId>javax.json</artifactId>
+                                    <artifactId>jakarta.json</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>jakarta.json</groupId>
