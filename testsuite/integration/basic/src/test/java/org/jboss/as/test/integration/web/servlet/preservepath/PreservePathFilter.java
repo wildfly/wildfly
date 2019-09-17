@@ -44,10 +44,11 @@ public class PreservePathFilter implements Filter {
       String tmpFolder = request.getParameter("path");
       File file = new File(tmpFolder + "/output.txt");
       file.createNewFile();
-      try( BufferedWriter fw = new BufferedWriter(new FileWriter(file))) {
-         fw.write("servletPath: " + request.getServletPath());
-         fw.write("\nrequestUrl: " + request.getRequestURL().toString());
-         fw.write("\nrequestUri: " + request.getRequestURI());
+      try( BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
+         String text = "servletPath: " + request.getServletPath() +
+                 "\nrequestUrl: " + request.getRequestURL().toString() +
+                 "\nrequestUri: " + request.getRequestURI();
+         bufferedWriter.write(text);
       }
    }
 }

@@ -129,10 +129,11 @@ public class PreservePathTestCase {
 
       long end = System.currentTimeMillis() + TIMEOUT;
       File file = new File(tempDir + "/output.txt");
-      while (!file.exists() && System.currentTimeMillis() < end) {
+      while ((!file.exists() || file.length() == 0) && System.currentTimeMillis() < end) {
          Thread.sleep(100);
       }
       Assert.assertTrue(file + " was not created within the timeout", file.exists());
+      Assert.assertTrue(file + " is empty", file.length() > 0);
 
       final String expectedServletPath;
       final String expectedRequestURL;
