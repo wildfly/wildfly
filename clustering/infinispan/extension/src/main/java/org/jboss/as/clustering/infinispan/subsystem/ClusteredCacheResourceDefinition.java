@@ -22,17 +22,21 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
+import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
+import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -110,6 +114,44 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         }
     }
 
+    enum DeprecatedMetric implements AttributeTranslation, UnaryOperator<PathAddress>, Registration<ManagementResourceRegistration> {
+        AVERAGE_REPLICATION_TIME(ClusteredCacheMetric.AVERAGE_REPLICATION_TIME),
+        REPLICATION_COUNT(ClusteredCacheMetric.REPLICATION_COUNT),
+        REPLICATION_FAILURES(ClusteredCacheMetric.REPLICATION_FAILURES),
+        SUCCESS_RATIO(ClusteredCacheMetric.SUCCESS_RATIO),
+        ;
+        private final AttributeDefinition definition;
+        private final org.jboss.as.clustering.controller.Attribute targetAttribute;
+
+        DeprecatedMetric(ClusteredCacheMetric metric) {
+            this.targetAttribute = metric;
+            this.definition = new SimpleAttributeDefinitionBuilder(metric.getName(), metric.getDefinition().getType())
+                    .setStorageRuntime()
+                    .setDeprecated(InfinispanModel.VERSION_11_0_0.getVersion())
+                    .build();
+        }
+
+        @Override
+        public void register(ManagementResourceRegistration registration) {
+            registration.registerReadOnlyAttribute(this.definition, new ReadAttributeTranslationHandler(this));
+        }
+
+        @Override
+        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
+            return this.targetAttribute;
+        }
+
+        @Override
+        public UnaryOperator<PathAddress> getPathAddressTransformation() {
+            return this;
+        }
+
+        @Override
+        public PathAddress apply(PathAddress address) {
+            return address.getParent().append(CacheRuntimeResourceDefinition.pathElement(address.getLastElement().getValue()));
+        }
+    }
+
     static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
         return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
@@ -164,7 +206,9 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         ManagementResourceRegistration registration = super.register(parent);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
+            for (DeprecatedMetric metric : EnumSet.allOf(DeprecatedMetric.class)) {
+                metric.register(registration);
+            }
         }
 
         return registration;

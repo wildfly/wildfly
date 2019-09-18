@@ -21,15 +21,16 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
- * A handler for cache-container metrics.
+ * Executor for cache-container metrics.
  *
  * @author Paul Ferraro
  */
@@ -37,8 +38,8 @@ public class CacheContainerMetricExecutor implements MetricExecutor<EmbeddedCach
 
     @Override
     public ModelNode execute(OperationContext context, Metric<EmbeddedCacheManager> metric) throws OperationFailedException {
-        String containerName = context.getCurrentAddressValue();
-        CacheContainer container = new PassiveServiceSupplier<CacheContainer>(context.getServiceRegistry(false), InfinispanRequirement.CONTAINER.getServiceName(context, containerName)).get();
+        ServiceName name = InfinispanRequirement.CONTAINER.getServiceName(context, UnaryCapabilityNameResolver.DEFAULT);
+        EmbeddedCacheManager container = new PassiveServiceSupplier<EmbeddedCacheManager>(context.getServiceRegistry(false), name).get();
         return (container != null) ? metric.execute(container) : null;
     }
 }

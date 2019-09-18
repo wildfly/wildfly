@@ -22,7 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.MetricHandler;
+import java.util.EnumSet;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
@@ -35,12 +36,15 @@ public class MemoryRuntimeResourceDefinition extends CacheComponentRuntimeResour
 
     MemoryRuntimeResourceDefinition() {
         super(PATH, MemoryResourceDefinition.WILDCARD_PATH);
+        this.setDeprecated(InfinispanModel.VERSION_11_0_0.getVersion());
     }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = super.register(parent);
-        new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);
+        for (EvictionMetric metric : EnumSet.allOf(EvictionMetric.class)) {
+            metric.register(registration);
+        }
         return registration;
     }
 }

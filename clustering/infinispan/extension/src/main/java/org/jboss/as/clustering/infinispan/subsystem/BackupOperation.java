@@ -21,6 +21,9 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Map;
+
+import org.infinispan.xsite.XSiteAdminOperations;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
@@ -32,24 +35,24 @@ import org.jboss.dmr.ModelType;
  * Backup site operations.
  * @author Paul Ferraro
  */
-public enum BackupOperation implements Operation<BackupOperationContext> {
+public enum BackupOperation implements Operation<Map.Entry<String, XSiteAdminOperations>> {
 
     BRING_SITE_ONLINE("bring-site-online", false) {
         @Override
-        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, BackupOperationContext context) {
-            return new ModelNode(context.getOperations().bringSiteOnline(context.getSite()));
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, Map.Entry<String, XSiteAdminOperations> context) {
+            return new ModelNode(context.getValue().bringSiteOnline(context.getKey()));
         }
     },
     TAKE_SITE_OFFLINE("take-site-offline", false) {
         @Override
-        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, BackupOperationContext context) {
-            return new ModelNode(context.getOperations().takeSiteOffline(context.getSite()));
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, Map.Entry<String, XSiteAdminOperations> context) {
+            return new ModelNode(context.getValue().takeSiteOffline(context.getKey()));
         }
     },
     SITE_STATUS("site-status", true) {
         @Override
-        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, BackupOperationContext context) {
-            return new ModelNode(context.getOperations().siteStatus(context.getSite()));
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, Map.Entry<String, XSiteAdminOperations> context) {
+            return new ModelNode(context.getValue().siteStatus(context.getKey()));
         }
     },
     ;

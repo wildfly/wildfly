@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,38 +22,37 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.partitionhandling.AvailabilityMode;
-import org.jboss.as.clustering.controller.Operation;
-import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.infinispan.eviction.PassivationManager;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
- * Enumerates partition handling operations.
  * @author Paul Ferraro
  */
-public enum PartitionHandlingOperation implements Operation<AdvancedCache<?, ?>> {
+public enum CachePassivationMetric implements Metric<PassivationManager> {
 
-    FORCE_AVAILABLE("force-available") {
+    PASSIVATIONS("passivations", ModelType.LONG, AttributeAccess.Flag.COUNTER_METRIC) {
         @Override
-        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, AdvancedCache<?, ?> cache) {
-            cache.setAvailability(AvailabilityMode.AVAILABLE);
-            return null;
+        public ModelNode execute(PassivationManager manager) {
+            return new ModelNode(manager.getPassivations());
         }
     },
     ;
-    private final OperationDefinition definition;
+    private final AttributeDefinition definition;
 
-    PartitionHandlingOperation(String name) {
-        this.definition = new SimpleOperationDefinitionBuilder(name, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PartitionHandlingRuntimeResourceDefinition.PATH))
-                .setRuntimeOnly()
+    CachePassivationMetric(String name, ModelType type, AttributeAccess.Flag metricType) {
+        this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                .setFlags(metricType)
+                .setStorageRuntime()
                 .build();
     }
 
     @Override
-    public OperationDefinition getDefinition() {
+    public AttributeDefinition getDefinition() {
         return this.definition;
     }
 }

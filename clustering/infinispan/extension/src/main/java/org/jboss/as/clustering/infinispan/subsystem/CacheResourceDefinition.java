@@ -29,12 +29,16 @@ import java.util.NoSuchElementException;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.Index;
+import org.infinispan.lifecycle.ComponentStatus;
+import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
+import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
+import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -43,7 +47,9 @@ import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBu
 import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -166,6 +172,90 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         }
     }
 
+    enum DeprecatedMetric implements org.jboss.as.clustering.controller.Attribute, AttributeTranslation, UnaryOperator<PathAddress>, Registration<ManagementResourceRegistration> {
+
+        ACTIVATIONS(CacheActivationMetric.ACTIVATIONS),
+        AVERAGE_READ_TIME(CacheMetric.AVERAGE_READ_TIME),
+        AVERAGE_WRITE_TIME(CacheMetric.AVERAGE_WRITE_TIME),
+        ELAPSED_TIME("elapsed-time", CacheMetric.TIME_SINCE_START),
+        HIT_RATIO(CacheMetric.HIT_RATIO),
+        HITS(CacheMetric.HITS),
+        INVALIDATIONS(CacheInvalidationInterceptorMetric.INVALIDATIONS),
+        MISSES(CacheMetric.MISSES),
+        NUMBER_OF_ENTRIES(CacheMetric.NUMBER_OF_ENTRIES),
+        PASSIVATIONS(CachePassivationMetric.PASSIVATIONS),
+        READ_WRITE_RATIO(CacheMetric.READ_WRITE_RATIO),
+        REMOVE_HITS(CacheMetric.REMOVE_HITS),
+        REMOVE_MISSES(CacheMetric.REMOVE_MISSES),
+        STORES("stores", CacheMetric.WRITES),
+        TIME_SINCE_RESET(CacheMetric.TIME_SINCE_RESET),
+        ;
+        private final AttributeDefinition definition;
+        private final org.jboss.as.clustering.controller.Attribute targetAttribute;
+
+        DeprecatedMetric(Metric<?> metric) {
+            this(metric.getName(), metric);
+        }
+
+        DeprecatedMetric(String name, Metric<?> metric) {
+            this.targetAttribute = metric;
+            this.definition = new SimpleAttributeDefinitionBuilder(name, metric.getDefinition().getType())
+                    .setDeprecated(InfinispanModel.VERSION_11_0_0.getVersion())
+                    .setStorageRuntime()
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public void register(ManagementResourceRegistration registration) {
+            registration.registerReadOnlyAttribute(this.definition, new ReadAttributeTranslationHandler(this));
+        }
+
+        @Override
+        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
+            return this.targetAttribute;
+        }
+
+        @Override
+        public UnaryOperator<PathAddress> getPathAddressTransformation() {
+            return this;
+        }
+
+        @Override
+        public PathAddress apply(PathAddress address) {
+            return address.getParent().append(CacheRuntimeResourceDefinition.pathElement(address.getLastElement().getValue()));
+        }
+    }
+
+    enum FixedMetric implements OperationStepHandler, Registration<ManagementResourceRegistration> {
+        CACHE_STATUS("cache-status", ModelType.STRING, new ModelNode(ComponentStatus.RUNNING.toString())),
+        ;
+        private final ModelNode result;
+        private final AttributeDefinition definition;
+
+        FixedMetric(String name, ModelType type, ModelNode result) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setDeprecated(InfinispanModel.VERSION_11_0_0.getVersion())
+                    .setStorageRuntime()
+                    .build();
+            this.result = result;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) {
+            context.getResult().set(this.result);
+        }
+
+        @Override
+        public void register(ManagementResourceRegistration registration) {
+            registration.registerReadOnlyAttribute(this.definition, this);
+        }
+    }
+
     static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
         return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
@@ -248,7 +338,12 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         new SimpleResourceRegistration(descriptor, this.handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
+            for (DeprecatedMetric metric : EnumSet.allOf(DeprecatedMetric.class)) {
+                metric.register(registration);
+            }
+            for (FixedMetric metric : EnumSet.allOf(FixedMetric.class)) {
+                metric.register(registration);
+            }
         }
 
         new ObjectMemoryResourceDefinition().register(registration);

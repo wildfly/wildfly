@@ -16,34 +16,42 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
+
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.Function;
+
 import org.infinispan.Cache;
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
- * Handler for cache metrics.
- *
- * @author Tristan Tarrant
- * @author Richard Achmatowicz
  * @author Paul Ferraro
  */
-public class CacheMetricExecutor implements MetricExecutor<Cache<?, ?>> {
+public abstract class CacheMetricExecutor<C> implements MetricExecutor<C>, Function<Cache<?, ?>, C> {
+
+    private final BinaryCapabilityNameResolver resolver;
+
+    protected CacheMetricExecutor() {
+        this(BinaryCapabilityNameResolver.PARENT_CHILD);
+    }
+
+    protected CacheMetricExecutor(BinaryCapabilityNameResolver resolver) {
+        this.resolver = resolver;
+    }
 
     @Override
-    public ModelNode execute(OperationContext context, Metric<Cache<?, ?>> metric) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-        String containerName = address.getParent().getLastElement().getValue();
-        String cacheName = address.getLastElement().getValue();
-
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
-        return (cache != null) ? metric.execute(cache) : null;
+    public ModelNode execute(OperationContext context, Metric<C> metric) throws OperationFailedException {
+        ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, this.resolver);
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(false), name).get();
+        C metricContext = (cache != null) ? this.apply(cache) : null;
+        return (metricContext != null) ? metric.execute(metricContext) : null;
     }
 }

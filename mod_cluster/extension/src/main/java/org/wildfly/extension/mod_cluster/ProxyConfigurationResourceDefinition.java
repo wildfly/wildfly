@@ -58,7 +58,6 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AliasEntry;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -465,16 +464,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                 @Override
                 public PathAddress apply(PathAddress pathAddress) {
                     return pathAddress.append(SimpleLoadProviderResourceDefinition.PATH);
-                }
-            };
-        }
-
-        @Override
-        public UnaryOperator<ImmutableManagementResourceRegistration> getResourceRegistrationTransformation() {
-            return new UnaryOperator<ImmutableManagementResourceRegistration>() {
-                @Override
-                public ImmutableManagementResourceRegistration apply(ImmutableManagementResourceRegistration registration) {
-                    return registration.getSubModel(PathAddress.pathAddress(SimpleLoadProviderResourceDefinition.PATH));
                 }
             };
         }

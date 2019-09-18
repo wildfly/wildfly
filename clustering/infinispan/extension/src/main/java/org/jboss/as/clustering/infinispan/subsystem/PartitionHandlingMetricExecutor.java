@@ -24,29 +24,20 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.Metric;
-import org.jboss.as.clustering.controller.MetricExecutor;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 
 /**
  * Executor for partition handling metrics.
  * @author Paul Ferraro
  */
-public class PartitionHandlingMetricExecutor implements MetricExecutor<AdvancedCache<?, ?>> {
+public class PartitionHandlingMetricExecutor extends CacheMetricExecutor<AdvancedCache<?, ?>> {
+
+    public PartitionHandlingMetricExecutor() {
+        super(BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
+    }
 
     @Override
-    public ModelNode execute(OperationContext context, Metric<AdvancedCache<?, ?>> metric) throws OperationFailedException {
-        PathAddress cacheAddress = context.getCurrentAddress().getParent();
-        String containerName = cacheAddress.getParent().getLastElement().getValue();
-        String cacheName = cacheAddress.getLastElement().getValue();
-
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
-
-        return (cache != null) ? metric.execute(cache.getAdvancedCache()) : null;
+    public AdvancedCache<?, ?> apply(Cache<?, ?> cache) {
+        return cache.getAdvancedCache();
     }
 }
