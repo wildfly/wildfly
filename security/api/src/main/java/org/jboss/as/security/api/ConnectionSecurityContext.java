@@ -72,7 +72,7 @@ public class ConnectionSecurityContext {
             if (localIdentity != null) {
                 final Principal principal = localIdentity.getPrincipal();
                 final String realm = principal instanceof RealmPrincipal ? ((RealmPrincipal) principal).getRealm() : null;
-                principals.add(new RealmUser(realm, principal.getName()));
+                principals.add(realm == null ? new RealmUser(principal.getName()) : new RealmUser(realm, principal.getName()));
                 for (String role : localIdentity.getRoles()) {
                     principals.add(new RealmGroup(role));
                     principals.add(new RealmRole(role));
