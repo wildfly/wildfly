@@ -68,9 +68,6 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <suiteXmlFiles>
-                        <suiteXmlFile>tck-suite.xml</suiteXmlFile>
-                    </suiteXmlFiles>
                     <dependenciesToScan>
                         <dependency>org.eclipse.microprofile.health:microprofile-health-tck</dependency>
                     </dependenciesToScan>
