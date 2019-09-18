@@ -97,6 +97,13 @@ public interface TimerPersistence {
         void timerAdded(TimerImpl timer);
 
         /**
+         * Invoked when a timer needs to be sync with the underlying store
+         * @param oldTimer The timer in Server memory
+         * @param newtimer The timer coming from the store
+         */
+        void timerSync(TimerImpl oldTimer, TimerImpl newTimer);
+
+        /**
          * Invoked when a timer is removed from the underlying store
          * @param timerId The timer
          */
