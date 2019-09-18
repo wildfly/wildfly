@@ -53,6 +53,13 @@ public class CompositeScheduler<I> implements Scheduler<I> {
     }
 
     @Override
+    public void prepareRescheduling(I id) {
+        for (Scheduler<I> scheduler : this.schedulers) {
+            scheduler.prepareRescheduling(id);
+        }
+    }
+
+    @Override
     public void cancel(I id) {
         for (Scheduler<I> scheduler : this.schedulers) {
             scheduler.cancel(id);

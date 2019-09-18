@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
+package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * A SPI for managing beans.
- *
- * @author Paul Ferraro
- *
- * @param <I> the bean identifier type
- * @param <T> the bean instance type
+ * Command that temporarily holds off the sheduling of a session, preventing
+ * the cost of a cancellation. The scheduling must be canceled or rescheduled at
+ * the near future.
+ * @author Flavia Rainone
  */
-public interface BeanManager<I, T, B extends Batch> extends AffinitySupport<I>, BeanManagerStatistics {
-    Bean<I, T> createBean(I id, I group, T bean);
-    Bean<I, T> findBean(I id);
+public class PrepareReschedulingSchedulerCommand<I> implements Command<Void, Scheduler<I>> {
+    private static final long serialVersionUID = 788517670339502640L;
 
-    boolean containsBean(I id);
+    private final I beanId;
 
-    IdentifierFactory<I> getIdentifierFactory();
+    public PrepareReschedulingSchedulerCommand(I beanId) {
+        this.beanId = beanId;
+    }
 
-    Batcher<B> getBatcher();
+    @Override
+    public Void execute(Scheduler<I> scheduler) {
+        scheduler.prepareRescheduling(beanId);
+        return null;
 
-    void start();
-    void stop();
-
-    boolean isRemotable(Throwable throwable);
+    }
 }
