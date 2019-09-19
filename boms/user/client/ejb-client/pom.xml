@@ -188,13 +188,6 @@
                                     <exclusionGroupId>*</exclusionGroupId>
                                     <exclusionArtifactId>*</exclusionArtifactId>
                                 </exclusion>
-                                <exclusion>
-                                    <!-- remove once jboss-connector-api_1.7_spec depends instead on jboss-transaction-api_1.3_spec -->
-                                    <dependencyGroupId>org.jboss.spec.javax.resource</dependencyGroupId>
-                                    <dependencyArtifactId>jboss-connector-api_1.7_spec</dependencyArtifactId>
-                                    <exclusionGroupId>jakarta.transaction</exclusionGroupId>
-                                    <exclusionArtifactId>jakarta.transaction-api</exclusionArtifactId>
-                                </exclusion>
                             </addExclusions>
                         </configuration>
                     </execution>

@@ -478,7 +478,6 @@
                                     <artifactId>hibernate-validator-annotation-processor</artifactId>
                                     <version>org.hibernate.validator:hibernate-validator:jar</version>
                                 </dependency>
-                                <!-- TODO still needed? -->
                                 <dependency>
                                     <groupId>org.hibernate</groupId>
                                     <artifactId>hibernate-jpamodelgen</artifactId>
@@ -492,11 +491,10 @@
                             </versionRefDependencies>
                             <addExclusions>
                                 <exclusion>
-                                    <!-- remove once jboss-connector-api_1.7_spec depends instead on jboss-transaction-api_1.3_spec -->
-                                    <dependencyGroupId>org.jboss.spec.javax.resource</dependencyGroupId>
-                                    <dependencyArtifactId>jboss-connector-api_1.7_spec</dependencyArtifactId>
-                                    <exclusionGroupId>jakarta.transaction</exclusionGroupId>
-                                    <exclusionArtifactId>jakarta.transaction-api</exclusionArtifactId>
+                                    <dependencyGroupId>org.hibernate</dependencyGroupId>
+                                    <dependencyArtifactId>hibernate-jpamodelgen</dependencyArtifactId>
+                                    <exclusionGroupId>javax.xml.bind</exclusionGroupId>
+                                    <exclusionArtifactId>jaxb-api</exclusionArtifactId>
                                 </exclusion>
                             </addExclusions>
                         </configuration>
