@@ -144,6 +144,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jvnet.staxex</groupId>
+            <artifactId>stax-ex</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-federation</artifactId>
             <scope>test</scope>

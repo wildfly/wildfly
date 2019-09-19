@@ -30,6 +30,6 @@
     </dependencies>
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.3_spec}"/>
+        <artifact name="${org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.4_spec}"/>
     </resources>
 </module>
