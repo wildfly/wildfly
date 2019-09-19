@@ -1686,9 +1686,17 @@
                 <artifactId>smallrye-config</artifactId>
                 <version>${version.io.smallrye.smallrye-config}</version>
                 <exclusions>
+                    <!-- TODO remove this exclusion once this depends on Jakarta Annotations -->
+                    <!-- Superceded by jakarta.annotation:jakarta.annotation-api -->
                     <exclusion>
                         <groupId>javax.annotation</groupId>
                         <artifactId>javax.annotation-api</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this depends on Jakarta CDI -->
+                    <!-- Superceded by jakarta.enterprise:jakarta.cdi-api -->
+                    <exclusion>
+                        <groupId>javax.enterprise</groupId>
+                        <artifactId>cdi-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -5475,8 +5483,20 @@
                         <artifactId>javassist</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>javax.activation-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.persistence</groupId>
+                        <artifactId>javax.persistence-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>javax.transaction</groupId>
                         <artifactId>jta</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -5497,6 +5517,12 @@
                     <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this depends on Jakarta Persistence -->
+                    <!-- superseded by jakarta.persistence:jakarta.persistence-api -->
+                    <exclusion>
+                        <groupId>javax.persistence</groupId>
+                        <artifactId>javax.persistence-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -5522,6 +5548,10 @@
                     <exclusion>
                         <groupId>javassist</groupId>
                         <artifactId>javassist</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.persistence</groupId>
+                        <artifactId>javax.persistence-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>javax.transaction</groupId>
@@ -6913,6 +6943,10 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.spec.javax.annotation</groupId>
                         <artifactId>jboss-annotations-api_1.2_spec</artifactId>
                     </exclusion>
@@ -7191,6 +7225,20 @@
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-api</artifactId>
                 <version>${version.org.jboss.weld.weld-api}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this depends on Jakarta CDI -->
+                    <!-- superseded by jakarta.enterprise:jakarta.enterprise.cdi-api -->
+                    <exclusion>
+                        <groupId>javax.enterprise</groupId>
+                        <artifactId>cdi-api</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this depends on Jakarta Inject -->
+                    <!-- superseded by jakarta.inject:jakarta.inject-api -->
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -8041,6 +8089,12 @@
                         <groupId>org.jboss.sasl</groupId>
                         <artifactId>jboss-sasl</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this depends on Jakarta Inject -->
+                    <!-- superseded by jakarta.inject:jakarta.inject-api -->
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -8262,6 +8316,12 @@
                     <exclusion>
                         <groupId>org.glassfish</groupId>
                         <artifactId>javax.json</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this depends on Jakarta JSON-P -->
+                    <!-- superseded by jakarta.json:jakarta.json-api -->
+                    <exclusion>
+                        <groupId>javax.json</groupId>
+                        <artifactId>javax.json-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -8565,11 +8625,18 @@
                                             <exclude>jacorb:jacorb</exclude>
                                             <exclude>javassist:javassist</exclude>
                                             <exclude>javax.activation:activation</exclude>
+                                            <exclude>javax.activation:javax.activation-api</exclude>
+                                            <exclude>javax.enterprise:cdi-api</exclude>
+                                            <exclude>javax.inject:javax.inject</exclude>
+                                            <exclude>javax.json:javax.json-api</exclude>
+                                            <exclude>javax.persistence:javax.persistence-api</exclude>
                                             <exclude>javax.persistence:persistence-api</exclude>
+                                            <exclude>javax.security.enterprise:javax.security.enterprise-api</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
                                             <exclude>javax.transaction:jta</exclude>
                                             <exclude>javax.validation:validation-api</exclude>
-					    <exclude>javax.xml:jaxrpc-api</exclude>
+                                            <exclude>javax.xml:jaxrpc-api</exclude>
+                                            <exclude>javax.xml.bind:jaxb-api</exclude>
                                             <exclude>javax.xml.soap:saaj-api</exclude>
                                             <exclude>javax.xml.stream:stax-api</exclude>
                                             <exclude>jboss:jboss-logging-spi</exclude>
@@ -8584,6 +8651,8 @@
                                             <exclude>org.apache.geronimo.specs:geronimo-stax-api_1.0_spec</exclude>
                                             <exclude>org.apache.xalan:serializer</exclude>
                                             <exclude>org.apache.xalan:xalan</exclude>
+                                            <exclude>org.glassfish:javax.json</exclude>
+                                            <exclude>org.glassfish.soteria:javax.security.enterprise</exclude>
                                             <exclude>org.hibernate:ejb3-persistence</exclude>
                                             <exclude>org.hibernate.java-persistence:jpa-api</exclude>
                                             <!-- replaced by wildfly-naming-client -->

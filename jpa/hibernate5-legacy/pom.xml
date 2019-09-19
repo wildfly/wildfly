@@ -39,6 +39,12 @@
     <dependencies>
 
         <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <scope>provided</scope>
@@ -70,7 +76,7 @@
             <scope>provided</scope>
         </dependency>
 
-      <dependency>
+        <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-hibernate-cache-commons</artifactId>
             <scope>provided</scope>
