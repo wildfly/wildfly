@@ -8715,6 +8715,7 @@
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
                                             <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</exclude>
                                             <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec</exclude>
+                                            <exclude>org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.3_spec</exclude>
                                             <exclude>org.ops4j.base</exclude>
                                             <exclude>org.ops4j.pax.swissbox</exclude>
                                             <exclude>org.ops4j.pax.web</exclude>
