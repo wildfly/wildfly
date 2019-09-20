@@ -162,7 +162,7 @@ public class CommonBase {
             responseString = EntityUtils.toString(httpEntity);
         } finally {
             Assert.assertEquals(HttpStatus.SC_OK, statusCode);
-            Assert.assertTrue(responseString.contains("Welcome to WildFly"));
+            Assert.assertTrue(responseString.contains("Welcome to "));
 
             if (httpEntity != null) {
                 EntityUtils.consumeQuietly(httpEntity);
