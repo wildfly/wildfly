@@ -88,6 +88,7 @@
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-core-galleon-pack</artifactId>
                                     <version>${version.org.wildfly.core}</version>
+                                    <inheritConfigs>false</inheritConfigs>
                                 </feature-pack>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>

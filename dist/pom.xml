@@ -97,12 +97,14 @@
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-core-galleon-pack</artifactId>
                                     <version>${version.org.wildfly.core}</version>
+                                    <inheritConfigs>false</inheritConfigs>
                                 </feature-pack>
                                 <feature-pack>
                                     <transitive>true</transitive>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
+                                    <inheritConfigs>false</inheritConfigs>
                                 </feature-pack>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
