@@ -41,6 +41,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
@@ -52,7 +53,7 @@ import org.wildfly.clustering.web.session.SessionExpirationListener;
  * If/When Infinispan implements expiration notifications (ISPN-694), this will be obsolete.
  * @author Paul Ferraro
  */
-public class SessionExpirationScheduler<MV> implements Scheduler {
+public class SessionExpirationScheduler<MV> implements Scheduler<String, ImmutableSessionMetaData> {
 
     final Collection<SessionExpirationListener> listeners = new CopyOnWriteArraySet<>();
     final Map<String, Future<?>> expirationFutures = new ConcurrentHashMap<>();

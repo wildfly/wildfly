@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.ee.infinispan.scheduler;
 
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
@@ -32,53 +32,54 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.cache.retry.RetryingInvoker;
+import org.wildfly.clustering.ee.infinispan.logging.Logger;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
- * {@link Scheduler} decorator that executes schedule and cancellation commands on the primary owner of a given session.
+ * Scheduler decorator that schedules/cancels a given object on the primary owner.
  * @author Paul Ferraro
  */
-public class PrimaryOwnerScheduler implements org.wildfly.clustering.web.cache.session.Scheduler {
+public class PrimaryOwnerScheduler<I, K, M> implements org.wildfly.clustering.ee.Scheduler<I, M> {
     private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(10), Duration.ofMillis(100));
 
-    private final Function<Key<String>, Node> primaryOwnerLocator;
-    private final CommandDispatcher<Scheduler> dispatcher;
+    private final Function<K, Node> primaryOwnerLocator;
+    private final Function<I, K> keyFactory;
+    private final CommandDispatcher<Scheduler<I, M>> dispatcher;
 
-    public <C extends Marshallability, L> PrimaryOwnerScheduler(CommandDispatcherFactory dispatcherFactory, String name, Scheduler scheduler, Function<Key<String>, Node> primaryOwnerLocator) {
+    public <C extends Marshallability, L> PrimaryOwnerScheduler(CommandDispatcherFactory dispatcherFactory, String name, Scheduler<I, M> scheduler, Function<K, Node> primaryOwnerLocator, Function<I, K> keyFactory) {
         this.dispatcher = dispatcherFactory.createCommandDispatcher(name, scheduler);
         this.primaryOwnerLocator = primaryOwnerLocator;
+        this.keyFactory = keyFactory;
     }
 
     @Override
-    public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
+    public void schedule(I id, M metaData) {
         try {
-            this.executeOnPrimaryOwner(sessionId, new ScheduleSchedulerCommand(sessionId, metaData));
+            this.executeOnPrimaryOwner(id, new ScheduleCommand<>(id, metaData));
         } catch (Exception e) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToScheduleSession(e, sessionId);
+            Logger.ROOT_LOGGER.failedToSchedule(e, id);
         }
     }
 
     @Override
-    public void cancel(String sessionId) {
+    public void cancel(I id) {
         try {
-            this.executeOnPrimaryOwner(sessionId, new CancelSchedulerCommand(sessionId));
+            this.executeOnPrimaryOwner(id, new CancelCommand<>(id));
         } catch (Exception e) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToCancelSession(e, sessionId);
+            Logger.ROOT_LOGGER.failedToCancel(e, id);
         }
     }
 
-    private void executeOnPrimaryOwner(String sessionId, Command<Void, Scheduler> command) throws CommandDispatcherException {
-        Function<Key<String>, Node> primaryOwnerLocator = this.primaryOwnerLocator;
-        CommandDispatcher<Scheduler> dispatcher = this.dispatcher;
+    private void executeOnPrimaryOwner(I id, Command<Void, Scheduler<I, M>> command) throws CommandDispatcherException {
+        K key = this.keyFactory.apply(id);
+        Function<K, Node> primaryOwnerLocator = this.primaryOwnerLocator;
+        CommandDispatcher<Scheduler<I, M>> dispatcher = this.dispatcher;
         ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException> action = new ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException>() {
             @Override
             public CompletionStage<Void> get() throws CommandDispatcherException {
-                Node node = primaryOwnerLocator.apply(new Key<>(sessionId));
+                Node node = primaryOwnerLocator.apply(key);
                 // This should only go remote following a failover
                 return dispatcher.executeOnMember(command, node);
             }
@@ -89,5 +90,6 @@ public class PrimaryOwnerScheduler implements org.wildfly.clustering.web.cache.s
     @Override
     public void close() {
         this.dispatcher.close();
+        this.dispatcher.getContext().close();
     }
 }

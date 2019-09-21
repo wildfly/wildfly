@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Remover;
+import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -66,7 +67,7 @@ public class SessionExpirationSchedulerTestCase {
         when(expiringSessionMetaData.getLastAccessedTime()).thenReturn(now);
         when(canceledSessionMetaData.getLastAccessedTime()).thenReturn(now);
 
-        try (Scheduler scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover)) {
+        try (Scheduler<String, ImmutableSessionMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover)) {
             scheduler.schedule(immortalSessionId, immortalSessionMetaData);
             scheduler.schedule(canceledSessionId, canceledSessionMetaData);
             scheduler.schedule(expiringSessionId, expiringSessionMetaData);

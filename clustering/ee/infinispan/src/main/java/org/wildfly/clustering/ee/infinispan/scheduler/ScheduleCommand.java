@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,30 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.cache.session;
+package org.wildfly.clustering.ee.infinispan.scheduler;
 
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * A scheduler for some task.
+ * Command that scheduled an item.
  * @author Paul Ferraro
  */
-public interface Scheduler extends AutoCloseable {
-    /**
-     * Schedules a task for the specified session.
-     * @param session a web session.
-     */
-    void schedule(String sessionId, ImmutableSessionMetaData metaData);
+public class ScheduleCommand<I, M> implements Command<Void, Scheduler<I, M>> {
+    private static final long serialVersionUID = 6254782388444864112L;
 
-    /**
-     * Cancels a previously scheduled task for the specified session
-     * @param sessionId the web session identifier
-     */
-    void cancel(String sessionId);
+    private final I id;
+    private final transient M metaData;
 
-    /**
-     * Closes any resources used by this scheduler.
-     */
+    public ScheduleCommand(I id, M metaData) {
+        this.id = id;
+        this.metaData = metaData;
+    }
+
     @Override
-    void close();
+    public Void execute(Scheduler<I, M> scheduler) {
+        if (this.metaData != null) {
+            scheduler.schedule(this.id, this.metaData);
+        } else {
+            scheduler.schedule(this.id);
+        }
+        return null;
+    }
 }

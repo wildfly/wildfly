@@ -22,7 +22,9 @@
 
 package org.wildfly.clustering.web.cache.session;
 
+import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.web.cache.logging.Logger;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionMetaData;
@@ -33,9 +35,9 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  */
 public class ValidSession<L> implements Session<L> {
     private final Session<L> session;
-    private final Scheduler scheduler;
+    private final Scheduler<String, ImmutableSessionMetaData> scheduler;
 
-    public ValidSession(Session<L> session, Scheduler scheduler) {
+    public ValidSession(Session<L> session, Scheduler<String, ImmutableSessionMetaData> scheduler) {
         this.session = session;
         this.scheduler = scheduler;
     }

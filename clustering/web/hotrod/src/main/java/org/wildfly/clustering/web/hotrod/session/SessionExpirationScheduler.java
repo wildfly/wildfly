@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.cache.session.Scheduler;
+import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -46,7 +46,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * If/When Infinispan implements expiration notifications (ISPN-694), this will be obsolete.
  * @author Paul Ferraro
  */
-public class SessionExpirationScheduler implements Scheduler {
+public class SessionExpirationScheduler implements Scheduler<String, ImmutableSessionMetaData> {
 
     final Map<String, Future<?>> expirationFutures = new ConcurrentHashMap<>();
     final Remover<String> remover;
