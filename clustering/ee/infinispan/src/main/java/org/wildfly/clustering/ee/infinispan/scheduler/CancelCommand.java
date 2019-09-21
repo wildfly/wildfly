@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.ee.infinispan.scheduler;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
+import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * A scheduler for some task.
+ * Command that cancels a previously scheduled item.
  * @author Paul Ferraro
  */
-public interface Scheduler extends org.wildfly.clustering.web.cache.session.Scheduler {
-    /**
-     * Schedules the session with the specified identifier.
-     * @param sessionId a session identifier
-     */
-    void schedule(String sessionId);
+public class CancelCommand<I, M> implements Command<Void, Scheduler<I, M>> {
+    private static final long serialVersionUID = 7990530622481705411L;
 
-    /**
-     * Cancels any previous scheduled tasks for session which are no longer local to the current node
-     * @param location the cache locality
-     */
-    void cancel(Locality locality);
+    private final I id;
+
+    public CancelCommand(I id) {
+        this.id = id;
+    }
+
+    @Override
+    public Void execute(Scheduler<I, M> scheduler) {
+        scheduler.cancel(this.id);
+        return null;
+    }
 }
