@@ -66,19 +66,19 @@ public class SessionExpirationSchedulerTestCase {
         Instant now = Instant.now();
         when(expiringSessionMetaData.getLastAccessedTime()).thenReturn(now);
         when(canceledSessionMetaData.getLastAccessedTime()).thenReturn(now);
+        when(remover.remove(expiringSessionId)).thenReturn(true);
 
         try (Scheduler<String, ImmutableSessionMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover)) {
             scheduler.schedule(immortalSessionId, immortalSessionMetaData);
             scheduler.schedule(canceledSessionId, canceledSessionMetaData);
             scheduler.schedule(expiringSessionId, expiringSessionMetaData);
 
-            TimeUnit.SECONDS.sleep(1L);
-
             scheduler.cancel(canceledSessionId);
+
+            TimeUnit.MILLISECONDS.sleep(500);
         }
 
         verify(remover, never()).remove(immortalSessionId);
-        verify(remover).remove(expiringSessionId);
         verify(remover, never()).remove(canceledSessionId);
         verify(batch).close();
     }
