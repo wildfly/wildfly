@@ -35,7 +35,6 @@ import java.util.function.Function;
 import javax.servlet.ServletContext;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
@@ -44,7 +43,6 @@ import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.cache.CacheProperties;
@@ -65,7 +63,6 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
@@ -228,7 +225,6 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     }
 
     private void schedule(Locality oldLocality, Locality newLocality) {
-        ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = this.factory.getMetaDataFactory();
         // Iterate over sessions in memory
         try (CloseableIterator<Key<String>> keys = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().iterator()) {
             while (keys.hasNext()) {
@@ -237,18 +233,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
                 // If we are the new primary owner of this session then schedule expiration of this session locally
                 if (this.filter.test(key) && !oldLocality.isLocal(key) && newLocality.isLocal(key)) {
                     String id = key.getValue();
-                    try (Batch batch = this.batcher.createBatch()) {
-                        try {
-                            // We need to lookup the session to obtain its meta data
-                            CompositeSessionMetaDataEntry<L> value = metaDataFactory.tryValue(id);
-                            if (value != null) {
-                                this.expirationScheduler.schedule(id, metaDataFactory.createImmutableSessionMetaData(id, value));
-                            }
-                            return;
-                        } catch (CacheException e) {
-                            batch.discard();
-                        }
-                    }
+                    this.expirationScheduler.schedule(id);
                 }
             }
         }
