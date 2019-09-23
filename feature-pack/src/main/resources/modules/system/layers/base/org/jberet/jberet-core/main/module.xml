@@ -33,7 +33,10 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javaee.api"/>
+        <module name="javax.batch.api"/>
+        <module name="javax.inject.api"/>
+        <module name="javax.enterprise.api"/>
+        <module name="javax.annotation.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.marshalling"/>
