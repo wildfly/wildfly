@@ -40,7 +40,7 @@ public class AsyncBeanSynchronizeSingleton implements AsyncBeanSynchronizeSingle
     public void reset() {
         latch = new CountDownLatch(1);
         latch2 = new CountDownLatch(1);
-        System.out.println("RESET " + latch);
+        //System.out.println("RESET " + latch);
     }
 
     public void latchCountDown() {
@@ -52,7 +52,7 @@ public class AsyncBeanSynchronizeSingleton implements AsyncBeanSynchronizeSingle
     }
 
     public void latchAwaitSeconds(int sec) throws InterruptedException {
-        System.out.println("AWAIT " + latch);
+        //System.out.println("AWAIT " + latch);
         if (!latch.await(sec, TimeUnit.SECONDS)) {
             throw new RuntimeException("Await failed");
         }

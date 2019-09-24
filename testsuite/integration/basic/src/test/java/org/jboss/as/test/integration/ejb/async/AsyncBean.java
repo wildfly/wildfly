@@ -87,11 +87,11 @@ public class AsyncBean implements AsyncBeanCancelRemoteInterface {
 
     public Future<String> asyncRemoteCancelMethod() throws InterruptedException {
         try {
-            System.out.println("ASYNC REMOTE ");
+            //System.out.println("ASYNC REMOTE ");
             String result;
             result = ctx.wasCancelCalled() ? "true" : "false";
 
-            System.out.println("DO COUNTDOWN ");
+            //System.out.println("DO COUNTDOWN ");
             synchronizeBean.latchCountDown();
             long end = System.currentTimeMillis() + 5000;
             while (System.currentTimeMillis() < end) {
