@@ -248,7 +248,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             }
         };
         // invoke the method and write out the response, possibly on a separate thread
-        execute(invocationRequest, runnable, isAsync);
+        execute(invocationRequest, runnable, isAsync, false);
         return cancellationFlag::cancel;
     }
 
@@ -286,14 +286,16 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     }
 
-    private void execute(Request request, Runnable task, final boolean isAsync) {
+    private void execute(Request request, Runnable task, final boolean isAsync, boolean alwaysDispatch) {
         if (request.getProtocol().equals("local") && ! isAsync) {
             task.run();
         } else {
             if(executor != null) {
                 executor.execute(task);
-            } else {
+            } else if(isAsync || alwaysDispatch){
                 request.getRequestExecutor().execute(task);
+            } else {
+                task.run();
             }
         }
     }
@@ -363,7 +365,7 @@ final class AssociationImpl implements Association, AutoCloseable {
 
             sessionOpenRequest.convertToStateful(sessionID);
         };
-        execute(sessionOpenRequest, runnable, false);
+        execute(sessionOpenRequest, runnable, false, true);
         return ignored -> cancelled.set(true);
     }
 
