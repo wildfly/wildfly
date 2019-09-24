@@ -65,8 +65,8 @@ public class HotRodSessionManagerFactory<L, C extends Marshallability> implement
         this.sessionFactory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         ExpiredSessionRemover<CompositeSessionMetaDataEntry<L>, ?, L> remover = new ExpiredSessionRemover<>(this.sessionFactory);
         this.expirationRegistrar = remover;
-        this.expirationScheduler = new SessionExpirationScheduler(remover);
         this.batcher = new HotRodBatcher(config.getCache());
+        this.expirationScheduler = new SessionExpirationScheduler(this.batcher, remover);
         this.transactionTimeout = Duration.ofMillis(config.getCache().getRemoteCacheManager().getConfiguration().transaction().timeout());
     }
 
