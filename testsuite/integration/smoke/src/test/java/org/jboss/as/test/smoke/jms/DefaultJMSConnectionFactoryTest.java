@@ -57,7 +57,7 @@ import org.junit.runner.RunWith;
 /**
  * Tests sending JMS messages using the server's default JMS Connection Factory.
  *
- * Java EE 7 spec, §EE.5.20 Default JMS Connection Factory
+ * Jakarta EE 8 spec, §EE.5.20 Default JMS Connection Factory
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2013 Red Hat Inc.
  */

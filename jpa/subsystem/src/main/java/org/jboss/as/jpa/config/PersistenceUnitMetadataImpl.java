@@ -367,9 +367,9 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
      * Return a classloader that the provider can use to load the entity classes.
      * <p/>
      * Note from JPA 8.2:
-     * All persistence classes defined at the level of the Java EE EAR must be accessible to other Java EE
+     * All persistence classes defined at the level of the Jakarta EE EAR must be accessible to other Java EE
      * components in the application—i.e. loaded by the application classloader—such that if the same entity
-     * class is referenced by two different Java EE components (which may be using different persistence
+     * class is referenced by two different Jakarta EE components (which may be using different persistence
      * units), the referenced class is the same identical class.
      *
      * @return

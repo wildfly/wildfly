@@ -36,8 +36,8 @@
   </parent>
 
   <artifactId>wildfly-spec-api-test</artifactId>
-  <name>WildFly: Validation Tests for Exported Java EE Specification APIs</name>
-  <description>Validation Tests for Java EE Specification APIs exported by the Application Server</description>
+  <name>WildFly: Validation Tests for Exported Jakarta EE Specification APIs</name>
+  <description>Validation Tests for Jakarta EE Specification APIs exported by the Application Server</description>
   <properties>
     <!-- we want unused imports in tish case, so lets skip checkstyle-->
     <checkstyle.skip>true</checkstyle.skip>

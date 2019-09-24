@@ -38,7 +38,7 @@
 
     <artifactId>wildfly-ee-security</artifactId>
 
-    <name>WildFly: Java EE Security</name>
+    <name>WildFly: Jakarta EE Security</name>
 
     <dependencies>
 

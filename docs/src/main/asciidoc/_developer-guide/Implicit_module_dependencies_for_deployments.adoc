@@ -17,7 +17,7 @@ need access to classes from the javax.ejb.* package and other Java EE
 API packages. The jars containing these packages are already shipped in
 WildFly and are available as "modules". The module which contains the
 javax.ejb.* classes has a specific name and so does the module which
-contains all the Java EE API classes. For an application to be able to
+contains all the Jakarta EE API classes. For an application to be able to
 use these classes, it has to add a dependency on the relevant modules.
 Forcing the application developers to add module dependencies like these
 (i.e. dependencies which can be "inferred") isn't a productive approach.
@@ -56,8 +56,8 @@ will see that the deployment contains a class with the @Stateless
 annotation and thus identifies this as a EJB deployment. *This is just
 one of the several ways, various deployment processors can identify a
 deployment of some specific type.* The EJB deployment processor will
-then add an implicit dependency on the Java EE API module, so that all
-the Java EE API classes are visible to the deployment.
+then add an implicit dependency on the Jakarta EE API module, so that all
+the Jakarta EE API classes are visible to the deployment.
 
 Some subsystems will always add a API classes, even if the trigger
 condition is not met. These are listed separately below.

@@ -7,7 +7,7 @@ http://wildfly.org
 * Modular Design
 * Unified Configuration and Management
 
-And of course Java EE!
+And of course Jakarta EE!
 
 Building
 -------------------
@@ -78,7 +78,7 @@ The testsuite module contains several submodules including the following:
 * "cluster" -- tests of the WildFly HA clustering features. Should be run with no failures before any major commits.
 * "domain" -- tests of the domain management features. Should be run with no failures before any major commits.
 * "integration" -- tests of a WildFly standalone server's internals. Should be run with no failures before any major commits.
-* "spec" -- tests of features that only involve end user use of the Java EE 7 spec APIs. Should be run with no failures before any major commits.
+* "spec" -- tests of features that only involve end user use of the Jakarta EE spec APIs. Should be run with no failures before any major commits.
 
 For basic smoke tests, simply: `mvn test`
 

@@ -57,7 +57,7 @@ WildFly.
 builds on what you learnt in the
 link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting Started
 Developing Applications Guide], and shows you how to build a complex
-application using Java EE and portable extensions.
+application using Jakarta EE and portable extensions.
 
 * The link:Extending_WildFly{outfilesuffix}[Extending WildFly] guide walks you
 through creating a new WildFly subsystem extension, in order to add more

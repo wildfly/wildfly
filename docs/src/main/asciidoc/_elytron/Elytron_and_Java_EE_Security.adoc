@@ -1,5 +1,5 @@
 [[Elytron_and_Java_EE_Security]]
-= Elytron and Java EE Security
+= Elytron and Jakarta EE Security
 
 [abstract]
 == Introduction

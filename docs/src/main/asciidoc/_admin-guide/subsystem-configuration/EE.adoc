@@ -1,14 +1,14 @@
 [[EE]]
 = EE Subsystem Configuration
 :leveloffset: +1
-The EE subsystem provides common functionality in the Java EE platform,
+The EE subsystem provides common functionality in the Jakarta EE platform,
 such as the EE Concurrency Utilities (JSR 236) and `@Resource`
 injection. The subsystem is also responsible for managing the lifecycle
-of Java EE application's deployments, that is, `.ear` files.
+of Jakarta EE application's deployments, that is, `.ear` files.
 
 The EE subsystem configuration may be used to:
 
-* customise the deployment of Java EE applications
+* customise the deployment of Jakarta EE applications
 * create EE Concurrency Utilities instances
 * define the default bindings
 

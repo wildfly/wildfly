@@ -59,7 +59,7 @@ Spring applications using JPA may choose between:
 === Using server-deployed persistence units
 
 Applications that use a server-deployed persistence unit must observe
-the typical Java EE rules in what concerns dependency management, i.e.
+the typical Jakarta EE rules in what concerns dependency management, i.e.
 the javax.persistence classes and persistence provider (Hibernate) are
 contained in modules which are added automatically by the application
 when the persistence unit is deployed.
@@ -124,7 +124,7 @@ When the application server encounters a deployment that has a file
 named META-INF/persistence.xml (or, for that matter,
 WEB-INF/classes/META-INF/persistence.xml), it will attempt to create a
 persistence unit based on what is provided in the file. In most cases,
-such definition files are not compliant with the Java EE requirements,
+such definition files are not compliant with the Jakarta EE requirements,
 mostly because required elements such as the datasource of the
 persistence unit are supposed to be provided by the Spring context
 definitions, which will fail the deployment of the persistence unit, and

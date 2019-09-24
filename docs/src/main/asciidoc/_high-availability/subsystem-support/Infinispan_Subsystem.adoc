@@ -477,7 +477,7 @@ run-batch
 ----
 
 Upon reload, this will register necessary services for the client.
-A HotRod client can be injected directly into Java EE applications using the `@Resource` annotation.
+A HotRod client can be injected directly into Jakarta EE applications using the `@Resource` annotation.
 
 [source,java,options="nowrap"]
 ----

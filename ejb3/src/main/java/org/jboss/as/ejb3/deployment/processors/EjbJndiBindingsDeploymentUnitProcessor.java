@@ -109,7 +109,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         }
 
         // In case of EJB bindings, appname == .ear file name/application-name set in the application.xml (if it's an .ear deployment)
-        // NOTE: Do NOT use the app name from the EEModuleDescription.getApplicationName() because the Java EE spec has a different and conflicting meaning for app name
+        // NOTE: Do NOT use the app name from the EEModuleDescription.getApplicationName() because the Jakarta EE spec has a different and conflicting meaning for app name
         // (where app name == module name in the absence of a .ear). Use EEModuleDescription.getEarApplicationName() instead
         final String applicationName = sessionBean.getModuleDescription().getEarApplicationName();
         final String distinctName = sessionBean.getModuleDescription().getDistinctName(); // default to empty string

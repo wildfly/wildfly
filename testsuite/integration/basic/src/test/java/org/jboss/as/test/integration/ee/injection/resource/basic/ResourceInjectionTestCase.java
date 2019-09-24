@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that the Resource injection as specified by Java EE spec works as expected
+ * Tests that the Resource injection as specified by Jakarta EE spec works as expected
  * <p/>
  * User: Jaikiran Pai
  */

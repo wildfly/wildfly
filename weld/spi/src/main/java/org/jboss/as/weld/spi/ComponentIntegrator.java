@@ -29,7 +29,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Java EE component integrator.
+ * Jakarta EE component integrator.
  *
  * @author Martin Kouba
  */

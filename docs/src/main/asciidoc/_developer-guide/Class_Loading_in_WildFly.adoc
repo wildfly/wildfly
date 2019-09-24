@@ -28,7 +28,7 @@ of how to add an explicit module dependency are explained below.
 Even though in WildFly modules are isolated by default, as part of the
 deployment process some dependencies on modules defined by the
 application server are set up for you automatically. For instance, if
-you are deploying a Java EE application a dependency on the Java EE
+you are deploying a Jakarta EE application a dependency on the Java EE
 API's will be added to your module automatically. Similarly if your
 module contains a beans.xml file a dependency on
 http://seamframework.org/Weld[Weld]will be added automatically, along
@@ -53,7 +53,7 @@ situation from occurring.
 In order of highest priority to lowest priority
 
 1.  System Dependencies - These are dependencies that are added to the
-module automatically by the container, including the Java EE api's.
+module automatically by the container, including the Jakarta EE api's.
 2.  User Dependencies - These are dependencies that are added through
 `jboss-deployment-structure.xml` or through the `Dependencies:` manifest
 entry.
@@ -128,7 +128,7 @@ Portability
 
 [TIP]
 
-The Java EE specification says that portable applications should not
+The Jakarta EE specification says that portable applications should not
 rely on sub deployments having access to other sub deployments unless an
 explicit Class-Path entry is set in the MANIFEST.MF. So portable
 applications should always use Class-Path entry to explicitly state

@@ -110,7 +110,7 @@ public class RarTransientDependenciesTestCase {
 
     /**
      * Tests that a class available in a jar, which is added as a Class-Path manifest attribute of a .rar is available for access from within a class
-     * in a .war deployment, belonging to the same .ear top level deployment. This tests section 8.3 of Java EE6 spec
+     * in a .war deployment, belonging to the same .ear top level deployment. This tests section EE.8.3 (Class Loading Requirements) of Jakarta EE 8 spec
      *
      * @param baseUrl
      * @throws Exception

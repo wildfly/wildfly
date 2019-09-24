@@ -26,7 +26,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
 /**
- * Java EE component description processor.
+ * Jakarta EE component description processor.
  * <p>
  * Processors may be stateful and are not suitable for sharing between threads.
  *

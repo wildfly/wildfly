@@ -1,18 +1,18 @@
 [[Securing_EJBs]]
 = Securing EJBs
 
-The Java EE spec specifies certain annotations (like @RolesAllowed,
+The Jakarta EE spec specifies certain annotations (like @RolesAllowed,
 @PermitAll, @DenyAll) which can be used on EJB implementation classes
 and/or the business method implementations of the beans. Like with all
 other configurations, these security related configurations can also be
 done via the deployment descriptor (ejb-jar.xml). We _won't_ be going
-into the details of Java EE specific annotations/deployment descriptor
+into the details of Jakarta EE specific annotations/deployment descriptor
 configurations in this chapter but instead will be looking at the vendor
 specific extensions to the security configurations.
 
 == Security Domain
 
-The Java EE spec doesn't mandate a specific way to configure security
+The Jakarta EE spec doesn't mandate a specific way to configure security
 domain for a bean. It leaves it to the vendor implementations to allow
 such configurations, the way they wish. In WildFly {wildflyVersion}, the use of
 `@org.jboss.ejb3.annotation.SecurityDomain` annotation allows the

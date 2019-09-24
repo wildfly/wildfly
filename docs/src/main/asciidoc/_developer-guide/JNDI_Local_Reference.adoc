@@ -1,7 +1,7 @@
 [[JNDI_Local_Reference]]
 = Local JNDI
 
-The Java EE platform specification defines the following JNDI contexts:
+The Jakarta EE platform specification defines the following JNDI contexts:
 
 * `java:comp` - The namespace is scoped to the current component (i.e.
 EJB)
@@ -34,7 +34,7 @@ WildFly.
 [[using-a-deployment-descriptor]]
 === Using a deployment descriptor
 
-For Java EE applications the recommended way is to use a
+For Jakarta EE applications the recommended way is to use a
 <<Deployment_Descriptors_used_In_WildFly,deployment descriptor>> to create the binding. For
 example the following `web.xml` binds the string `"Hello World"` to
 `java:global/mystring` and the string `"Hello Module"` to
@@ -67,12 +67,12 @@ Platform Specification].
 === Programatically
 
 [[java-ee-applications]]
-==== Java EE Applications
+==== Jakarta EE Applications
 
-Standard Java EE applications may use the standard JNDI API, included
+Standard Jakarta EE applications may use the standard JNDI API, included
 with Java SE, to bind entries in the global namespaces (the standard
 `java:comp`, `java:module` and `java:app` namespaces are read-only, as
-mandated by the Java EE Platform Specification).
+mandated by the Jakarta EE Platform Specification).
 
 [source,java,options="nowrap"]
 ----
@@ -90,7 +90,7 @@ are automatically removed when the deployment is undeployed.
 ==== WildFly Modules and Extensions
 
 With respect to code in WildFly Modules/Extensions, which is executed
-out of a Java EE application context, using the standard JNDI API may
+out of a Jakarta EE application context, using the standard JNDI API may
 result in a UnsupportedOperationException if the target namespace uses a
 WritableServiceBasedNamingStore. To work around that, the bind()
 invocation needs to be wrapped using WildFly proprietary APIs:
@@ -173,7 +173,7 @@ the Naming subsystem configuration.
 [[resource-injection]]
 === Resource Injection
 
-For Java EE applications the recommended way to lookup a JNDI entry is
+For Jakarta EE applications the recommended way to lookup a JNDI entry is
 to use `@Resource` injection:
 
 [source,java,options="nowrap"]
@@ -221,7 +221,7 @@ Concurrency Utilities 1.0 Specification (JSR 236).
 [[standard-java-se-jndi-api]]
 === Standard Java SE JNDI API
 
-Java EE applications may use, without any additional configuration
+Jakarta EE applications may use, without any additional configuration
 needed, the standard JNDI API to lookup an entry from JNDI:
 
 [source,java,options="nowrap"]

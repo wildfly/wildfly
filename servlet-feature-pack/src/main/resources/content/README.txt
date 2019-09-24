@@ -9,7 +9,7 @@ for additional information.
 
 Key Features
 ------------
-* Java EE 8 support
+* Jakarta EE 8 support
 * Fast Startup
 * Small Footprint
 * Modular Design

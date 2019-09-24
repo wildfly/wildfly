@@ -39,7 +39,7 @@ import org.jboss.modules.ModuleLoader;
 import org.wildfly.iiop.openjdk.deployment.IIOPDeploymentMarker;
 
 /**
- * Responsible for adding appropriate Java EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
+ * Responsible for adding appropriate Jakarta EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
  * <p/>
  * Author : Jaikiran Pai
  */
@@ -62,7 +62,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
 
     /**
-     * Adds Java EE module as a dependency to any deployment unit which is an EJB deployment
+     * Adds Jakarta EE module as a dependency to any deployment unit which is an EJB deployment
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException

@@ -23,16 +23,15 @@ ifdef::basebackend-html[toc::[]]
 
 WildFly {wildflyVersion} is the latest release in a series of JBoss open-source
 application server offerings. WildFly {wildflyVersion} is an exceptionally fast,
-lightweight and powerful implementation of the Java Enterprise Edition {javaee_version}
+lightweight and powerful implementation of the Jakarta
 Platform specifications. The state-of-the-art architecture built on the
 Modular Service Container enables services on-demand when your
-application requires them. The table below lists the Java Enterprise
-Edition {javaee_version} technologies and the technologies available in WildFly {wildflyVersion}
+application requires them. The table below lists the technologies available in WildFly {wildflyVersion}
 server configuration profiles.
 
 [cols=",,,,",options="header"]
 |=======================================================================
-|Java EE {javaee_version} Platform Technology |Java EE {javaee_version} Full Profile |Java EE {javaee_version} Web
+|Jakarta EE Platform Technology |Jakarta EE Full Profile |Jakarta EE Web
 Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Profile
 
 |JSR-356: Java API for Web Socket |X |X |X |X
@@ -54,7 +53,7 @@ Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Pro
 
 |JSR-352: Batch Applications for the Java Platform 1.0 |X |-- |X |--
 
-|JSR-236: Concurrency Utilities for Java EE 1.0 |X |X |X |X
+|JSR-236: Concurrency Utilities for Jakarta EE |X |X |X |X
 
 |JSR-365: Contexts and Dependency Injection for Java 2.0 |X |X |X |X
 
@@ -67,7 +66,7 @@ Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Pro
 
 |JSR-318: Interceptors 1.2 |X |X |X |X
 
-|JSR-322: Java EE Connector Architecture 1.7 |X |-- |X |X
+|JSR-322: Jakarta EE Connector Architecture 1.7 |X |-- |X |X
 
 |JSR-338: Java Persistence 2.2 |X |X |X |X
 
@@ -100,13 +99,13 @@ Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Pro
 
 |JSR-115: Java Authorization Contract for Containers 1.5 |X |-- |X |--
 
-|JSR-88: Java EE Application Deployment 1.2 |Optional |-- |-- |--
+|JSR-88: Jakarta EE Application Deployment 1.2 |Optional |-- |-- |--
 
 |JSR-77: J2EE Management 1.1 |X |  |X | 
 
 |JSR-45: Debugging Support for Other Languages 1.0 |X |X |X |X
 
-|JSR-375: Java EE Security API 1.0 |X |X |X |X
+|JSR-375: Jakarta EE Security API 1.0 |X |X |X |X
 |=======================================================================
 
 Missing ActiveMQ Artemis and JMS?
@@ -289,26 +288,26 @@ process.
 ===== Standalone Server Configurations
 
 * standalone.xml (_default_)
-** Java Enterprise Edition {javaee_version} web profile certified configuration with
+** Jakarta web profile certified configuration with
 the required technologies plus those noted in the table above.
 
 * standalone-ha.xml
-** Java Enterprise Edition {javaee_version} web profile certified configuration with
+** Jakarta web profile certified configuration with
 high availability
 
 * standalone-full.xml
-** Java Enterprise Edition {javaee_version} full profile certified configuration
-including all the required EE {javaee_version} technologies
+** Jakarta full profile certified configuration
+including all the required technologies
 
 * standalone-full-ha.xml
-** Java Enterprise Edition {javaee_version} full profile certified configuration with
+** Jakarta full profile certified configuration with
 high availability
 
 [[domain-server-configurations]]
 ===== Domain Server Configurations
 
 * domain.xml
-** Java Enterprise Edition {javaee_version} full and web profiles available with or
+** Jakarta full and web profiles available with or
 without high availability
 
 Important to note is that the *_domain_* and *_standalone_* modes

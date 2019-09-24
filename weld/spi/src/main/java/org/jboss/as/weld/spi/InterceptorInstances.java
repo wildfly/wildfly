@@ -29,7 +29,7 @@ import javax.enterprise.inject.spi.Interceptor;
 import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
 
 /**
- * Holds interceptor instances of a Java EE component.
+ * Holds interceptor instances of a Jakarta EE component.
  *
  * @author Martin Kouba
  */

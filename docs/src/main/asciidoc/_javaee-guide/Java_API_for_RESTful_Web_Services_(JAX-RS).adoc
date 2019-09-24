@@ -57,7 +57,7 @@ services, by allowing clients to access data and resources using
 predictable URLs. Many well-known public web services expose RESTful
 APIs.
 
-The Java 6 Enterprise Edition specification for RESTful services is
+The Jakarta specification for RESTful services is
 JAX-RS. It is covered by JSR-311 ( http://jcp.org/jsr/detail/311.jsp).
 In the REST model, the server exposes APIs through specific URIs
 (typically URLs), and clients access those URIs to query or modify data.

@@ -36,7 +36,7 @@ import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * An extension of Java EE RI {@link org.glassfish.enterprise.concurrent.ContextServiceImpl}, which properly supports a security manager.
+ * An extension of Jakarta EE RI {@link org.glassfish.enterprise.concurrent.ContextServiceImpl}, which properly supports a security manager.
  * @author Eduardo Martins
  */
 public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.ContextServiceImpl {

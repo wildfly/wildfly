@@ -42,7 +42,7 @@ import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
 
 /**
- * A processor which sets up the default Java EE permission set.
+ * A processor which sets up the default Jakarta EE permission set.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

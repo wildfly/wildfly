@@ -36,8 +36,8 @@
   </parent>
 
   <artifactId>wildfly-spec-api</artifactId>
-  <name>WildFly: Exported Java EE Specification APIs</name>
-  <description>Java EE Specification APIs exported by the Application Server</description>
+  <name>WildFly: Exported Jakarta EE Specification APIs</name>
+  <description>Jakarta EE Specification APIs exported by the Application Server</description>
 
   <packaging>pom</packaging>
 
