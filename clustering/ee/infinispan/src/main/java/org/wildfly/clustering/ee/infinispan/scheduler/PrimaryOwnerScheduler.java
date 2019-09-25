@@ -66,13 +66,13 @@ public class PrimaryOwnerScheduler<I, K, M> implements org.wildfly.clustering.ee
     @Override
     public void cancel(I id) {
         try {
-            this.executeOnPrimaryOwner(id, new CancelCommand<>(id));
+            this.executeOnPrimaryOwner(id, new CancelCommand<>(id)).toCompletableFuture().join();
         } catch (Exception e) {
             Logger.ROOT_LOGGER.failedToCancel(e, id);
         }
     }
 
-    private void executeOnPrimaryOwner(I id, Command<Void, Scheduler<I, M>> command) throws CommandDispatcherException {
+    private CompletionStage<Void> executeOnPrimaryOwner(I id, Command<Void, Scheduler<I, M>> command) throws CommandDispatcherException {
         K key = this.keyFactory.apply(id);
         Function<K, Node> primaryOwnerLocator = this.primaryOwnerLocator;
         CommandDispatcher<Scheduler<I, M>> dispatcher = this.dispatcher;
@@ -84,7 +84,7 @@ public class PrimaryOwnerScheduler<I, K, M> implements org.wildfly.clustering.ee
                 return dispatcher.executeOnMember(command, node);
             }
         };
-        INVOKER.invoke(action).toCompletableFuture().join();
+        return INVOKER.invoke(action);
     }
 
     @Override

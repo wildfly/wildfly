@@ -57,9 +57,11 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
 
     @Override
     public void schedule(I id) {
-        BeanEntry<I> entry = this.factory.findValue(id);
-        if (entry != null) {
-            this.schedule(id, entry);
+        try (Batch batch = this.batcher.createBatch()) {
+            BeanEntry<I> entry = this.factory.findValue(id);
+            if (entry != null) {
+                this.schedule(id, entry);
+            }
         }
     }
 

@@ -171,7 +171,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
                             this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration));
                 } else {
                     schedulers.add(new EagerEvictionScheduler<>(
-                            this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
+                            this.batcher, this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
                 }
             }
         }
