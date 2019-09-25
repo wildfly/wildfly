@@ -34,6 +34,9 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 
@@ -44,14 +47,15 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 public class EagerEvictionScheduler<I, T> implements Scheduler<I>, BeanGroupEvictor<I>, Consumer<I> {
 
     private final Map<I, Future<?>> evictionFutures = new ConcurrentHashMap<>();
-
+    private final Batcher<TransactionBatch> batcher;
     private final BeanFactory<I, T> factory;
     private final ScheduledExecutorService executor;
     private final Duration idleTimeout;
 
     private final CommandDispatcher<BeanGroupEvictor<I>> dispatcher;
 
-    public EagerEvictionScheduler(BeanFactory<I, T> factory, BeanGroupEvictor<I> evictor, ScheduledExecutorService executor, Duration idleTimeout, CommandDispatcherFactory dispatcherFactory, String dispatcherName) {
+    public EagerEvictionScheduler(Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, BeanGroupEvictor<I> evictor, ScheduledExecutorService executor, Duration idleTimeout, CommandDispatcherFactory dispatcherFactory, String dispatcherName) {
+        this.batcher = batcher;
         this.factory = factory;
         this.executor = executor;
         this.idleTimeout = idleTimeout;
@@ -65,9 +69,11 @@ public class EagerEvictionScheduler<I, T> implements Scheduler<I>, BeanGroupEvic
 
     @Override
     public void schedule(I id) {
-        BeanEntry<I> entry = this.factory.findValue(id);
-        if (entry != null) {
-            this.schedule(id, entry);
+        try (Batch batch = this.batcher.createBatch()) {
+            BeanEntry<I> entry = this.factory.findValue(id);
+            if (entry != null) {
+                this.schedule(id, entry);
+            }
         }
     }
 
