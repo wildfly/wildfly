@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 import org.infinispan.Cache;
@@ -64,7 +63,6 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     private final BeanManagerFactoryServiceConfiguratorConfiguration configuration;
 
     private final SupplierDependency<MarshallingConfigurationRepository> repository;
-    private final SupplierDependency<ScheduledExecutorService> scheduler;
 
     private volatile SupplierDependency<Cache<?, ?>> cache;
     private volatile SupplierDependency<KeyAffinityServiceFactory> affinityFactory;
@@ -79,7 +77,6 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
         this.configuration = configuration;
         ServiceName deploymentUnitServiceName = context.getDeploymentUnitServiceName();
         this.repository = new ServiceSupplierDependency<>(deploymentUnitServiceName.append("marshalling"));
-        this.scheduler = new ServiceSupplierDependency<>(deploymentUnitServiceName.append(name, "expiration"));
     }
 
     @Override
@@ -97,7 +94,7 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        new CompositeDependency(this.cache, this.affinityFactory, this.repository, this.scheduler, this.group, this.registry, this.dispatcherFactory).register(builder);
+        new CompositeDependency(this.cache, this.affinityFactory, this.repository, this.group, this.registry, this.dispatcherFactory).register(builder);
         Consumer<BeanManagerFactory<I, T, TransactionBatch>> factory = builder.provides(this.getServiceName());
         Service service = Service.newInstance(factory, new InfinispanBeanManagerFactory<>(this));
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
@@ -127,11 +124,6 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     @Override
     public MarshallingConfigurationRepository getMarshallingConfigurationRepository() {
         return this.repository.get();
-    }
-
-    @Override
-    public ScheduledExecutorService getScheduler() {
-        return this.scheduler.get();
     }
 
     @Override
