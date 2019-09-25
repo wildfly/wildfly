@@ -54,6 +54,7 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
     private static final Hibernate51CompatibilityTransformer instance = new Hibernate51CompatibilityTransformer();
     private static final File showTransformedClassFolder;
+    private static final String[] excludeClasses;
     public static final BasicLogger logger = Logger.getLogger("org.jboss.as.hibernate.transformer");
 
     static {
@@ -62,6 +63,16 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
             showTransformedClassFolder = new File(folderName);
         } else {
             showTransformedClassFolder = null;
+        }
+        // exclude the classes specified in comma separated list,
+        // short hand matching string can be specified with '*' as last character which means a "startsWith" check is
+        // done against application class name.
+        String excludeList = WildFlySecurityManager.getPropertyPrivileged("Hibernate51CompatibilityTransformer.excludeClasses", null);
+        if (excludeList != null) {
+            excludeClasses = excludeList.split(",");
+            logger.tracef("Hibernate51CompatibilityTransformer.excludeClasses is set to ignore classes that start with any of the following: %s", excludeList);
+        } else {
+            excludeClasses = null;
         }
     }
 
@@ -84,6 +95,23 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
             logger.debugf("Hibernate51CompatibilityTransformer ignoring class '%s' from '%s'", className, getModuleName(loader));
             return null;
         }
+        if (excludeClasses != null) {
+            String properClassName = className.replace('/', '.');
+            for(String name:excludeClasses) {
+                if (name.endsWith("*")) // wildcard specified
+                {
+                    name = name.substring(0,name.length() - 1);
+                    if ( properClassName.startsWith(name)) {
+                        logger.debugf("Hibernate51CompatibilityTransformer ignoring class '%s' from '%s' because it starts with '%s'", className, getModuleName(loader), name);
+                        return null;
+                    }
+                } else if ( properClassName.equals(name)) {
+                    logger.debugf("Hibernate51CompatibilityTransformer ignoring class '%s' from '%s' because it matches '%s'", className, getModuleName(loader), name);
+                    return null;
+                }
+            }
+        }
+
         logger.debugf("Hibernate51CompatibilityTransformer transforming deployment class '%s' from '%s'", className, getModuleName(loader));
 
         final Set<String> parentClassesAndInterfaces = new HashSet<>();
