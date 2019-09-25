@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -43,7 +41,6 @@ public interface InfinispanBeanManagerFactoryConfiguration {
     <K, V> Cache<K, V> getCache();
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();
     MarshallingConfigurationRepository getMarshallingConfigurationRepository();
-    ScheduledExecutorService getScheduler();
     BeanPassivationConfiguration getPassivationConfiguration();
     NodeFactory<Address> getNodeFactory();
     Registry<String, ?> getRegistry();
