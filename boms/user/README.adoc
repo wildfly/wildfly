@@ -1,10 +1,19 @@
 = WildFly BOMs
 
-The WildFly BOMs project provides Maven BOM files enhancing Java EE 8 with deployment and test tooling. These files manage the version of the dependencies you use in your project, ensuring you always get a compatible stack.
+The WildFly BOMs project provides Maven BOM files, which includes dependency management compatible with (same version) WildFly. These files manage the version of the dependencies you may need to build, test or debug your project, ensuring you always get a compatible stack.
+
+The following BOMs are available:
+
+* EJB Client (Maven coordinates "org.wildfly:wildfly-ejb-client-bom", built by /clients/ejb-client/pom.xml)
+* EJB Legacy Client (Maven coordinates "org.wildfly:wildfly-ejb-client-legacy-bom", built by /clients/ejb-legacy-client/pom.xml)
+* JAXWS Client (Maven coordinates "org.wildfly:wildfly-jaxws-client-bom", built by /clients/jaxws-client/pom.xml)
+* JMS Client (Maven coordinates "org.wildfly:wildfly-jms-client-bom", built by /clients/jms-client/pom.xml)
+* Jakarta EE 8 (Maven coordinates "org.wildfly.bom:wildfly-jakartaee8", built by /jakartaee8/pom.xml)
+* Jakarta EE 8 with Tools (Maven coordinates "org.wildfly.bom:wildfly-jakartaee8-with-tools", built by /jakartaee8/jakartaee8-with-tools/pom.xml)
 
 == Usage
 
-To use the BOM, import into your dependency management. For example, if you wanted "Java EE with WildFly", use:
+To use a BOM, import into your dependency management. For example, if you want "Jakarta EE 8 with Tools" artifacts, use:
 
 [source, xml]
 ----
@@ -12,31 +21,11 @@ To use the BOM, import into your dependency management. For example, if you want
     <dependencies>
         <dependency>
             <groupId>org.wildfly.bom</groupId>
-            <artifactId>wildfly-javaee8</artifactId>
+            <artifactId>wildfly-jakartaee8-with-tools</artifactId>
             <scope>import</scope>
             <type>pom</type>
-            <version>18.0.0.Final-SNAPSHOT</version>
+            <version>${wildfly.version}</version>
         </dependency>
     </dependencies>
 </dependencyManagement> 
 ----
-
-Unfortunately, Maven doesn't allow you to specify plugin versions this way. The readme for each BOM calls out any plugin versions you should use. For example, to use the plugins associated with "Java EE with Tools recommended by WildFly":
-
-[source, xml]
-----
-<pluginManagement>
-    <plugins>
-        <!-- The WildFly Maven Plugin deploys your war to a local WildFly container -->
-        <!-- To use, set the JBOSS_HOME environment variable and run:
-             mvn package wildfly:deploy -->
-        <plugin>
-            <groupId>org.wildfly.plugins</groupId>
-            <artifactId>wildfly-maven-plugin</artifactId>
-            <version>${version.org.wildfly.plugin}</version>
-        </plugin>
-    </plugins>
-</pluginManagement>
-----
-
-You'll need to take a look at the POM source in order to find the latest versions of plugins recommended.

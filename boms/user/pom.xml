@@ -160,7 +160,7 @@
 
     <modules>
         <module>client</module>
-        <module>javaee8</module>
+        <module>jakartaee8</module>
     </modules>
 
 </project>
