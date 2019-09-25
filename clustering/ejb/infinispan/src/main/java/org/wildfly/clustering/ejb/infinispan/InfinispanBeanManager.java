@@ -307,7 +307,16 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     public Bean<I, T> findBean(I id) {
         InfinispanEjbLogger.ROOT_LOGGER.tracef("Locating bean %s", id);
         BeanEntry<I> entry = this.beanFactory.findValue(id);
-        Bean<I, T> bean = (entry != null) ? this.beanFactory.createBean(id, entry) : null;
+        if (entry == null) {
+            InfinispanEjbLogger.ROOT_LOGGER.debugf("Could not find bean %s", id);
+            return null;
+        }
+        if (entry.isExpired(this.expiration.getTimeout())) {
+            InfinispanEjbLogger.ROOT_LOGGER.debugf("Bean %s was found, but has expired", id);
+            this.beanFactory.remove(id, this.expiration.getRemoveListener());
+            return null;
+        }
+        Bean<I, T> bean = this.beanFactory.createBean(id, entry);
         if (bean == null) {
             InfinispanEjbLogger.ROOT_LOGGER.debugf("Could not find bean %s", id);
             return null;
