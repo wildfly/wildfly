@@ -95,7 +95,18 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
         final TransformedState transformedState = new TransformedState();
         final ClassReader classReader = new ClassReader(classfileBuffer);
-        final ClassWriter classWriter = new ClassWriter(classReader, COMPUTE_FRAMES);
+
+        final ClassWriter classWriter = new ClassWriter(classReader, COMPUTE_FRAMES) {
+
+            // Pass the classloader in so org.objectweb.asm.ClassWriter.getCommonSuperClass() uses the app classloader
+            // instead of ASM classloader, for loading super classes.
+            @Override
+            protected ClassLoader getClassLoader() {
+                return loader;
+            }
+
+        };
+
         PrintWriter traceAfterPrintWriter = null;
 
         try {
