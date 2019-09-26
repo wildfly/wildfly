@@ -31,8 +31,8 @@ server configuration profiles.
 
 [cols=",,,,",options="header"]
 |=======================================================================
-|Jakarta EE Platform Technology |Jakarta EE Full Profile |Jakarta EE Web
-Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Profile
+|Jakarta EE Platform Technology |Jakarta EE Full Platform |Jakarta EE Web
+Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Profile
 
 |JSR-356: Java API for Web Socket |X |X |X |X
 
@@ -114,7 +114,7 @@ Missing ActiveMQ Artemis and JMS?
 
 The WildFly Web Profile doesn't include JMS (provided by ActiveMQ Artemis) by
 default. If you want to use messaging, make sure you start the server
-using the "Full Profile" configuration.
+// using the "Full Platform" configuration.
 
 This document provides a quick overview on how to download and get
 started using WildFly {wildflyVersion} for your application development. For in-depth
@@ -296,11 +296,11 @@ the required technologies plus those noted in the table above.
 high availability
 
 * standalone-full.xml
-** Jakarta full profile certified configuration
+** Jakarta Full Platform certified configuration
 including all the required technologies
 
 * standalone-full-ha.xml
-** Jakarta full profile certified configuration with
+** Jakarta Full Platform certified configuration with
 high availability
 
 [[domain-server-configurations]]
@@ -340,7 +340,7 @@ If you choose to start your server with one of the other provided
 configurations, they can be accessed by passing the --server-config
 argument with the server-config file to be used.
 
-To use the full profile with clustering capabilities, use the following
+To use the Full Platform with clustering capabilities, use the following
 syntax from $JBOSS_HOME/bin:
 
 [source,options="nowrap"]

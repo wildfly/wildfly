@@ -103,7 +103,7 @@ Tests should execute quickly.
 
 Divided into two Surefire executions:
 
-* One with full profile
+* One with full platform
 * Second with web profile (majority of tests).
 
 [[basic--dts.basic]]
@@ -114,7 +114,7 @@ like cluster.
 
 Divided into three Surefire executions:
 
-* One with full profile,
+* One with full platform,
 * Second with web profile (majority of tests).
 * Third with web profile, but needs to be run after server restart to
 check whether persistent data are really persisted.
