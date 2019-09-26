@@ -25,9 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 
-import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceConfiguratorAdapter;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
@@ -40,8 +38,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
-import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceConfigurator;
 
 /**
  * Service that provides a simple {@link CacheFactoryBuilder}.
@@ -53,11 +49,8 @@ import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutor
  */
 public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K>> extends CacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, CacheFactoryBuilder<K, V> {
 
-    private final String name;
-
     public SimpleCacheFactoryBuilderServiceConfigurator(String name) {
         super(name);
-        this.name = name;
     }
 
     @Override
@@ -71,17 +64,12 @@ public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifia
 
     @Override
     public Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
-        ServiceConfigurator configurator = new RemoveOnCancelScheduledExecutorServiceConfigurator(this.getExpirationSchedulerServiceName(unit.getServiceName()), new DefaultThreadFactory(SimpleCache.class));
-        return Collections.singleton(new ServiceConfiguratorAdapter(configurator));
+        return Collections.emptySet();
     }
 
     @Override
     public CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration) {
-        return new SimpleCacheFactoryServiceConfigurator<>(name, description, new ServiceSupplierDependency<>(this.getExpirationSchedulerServiceName(description.getDeploymentUnitServiceName())));
-    }
-
-    private ServiceName getExpirationSchedulerServiceName(ServiceName deploymentUnitServiceName) {
-        return deploymentUnitServiceName.append(this.name, "expiration");
+        return new SimpleCacheFactoryServiceConfigurator<>(name, description);
     }
 
     @Override
