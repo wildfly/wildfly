@@ -42,7 +42,7 @@
     <security-role>
         <role-name>Users</role-name>
     </security-role>
-    <ejb-ref>
+    <!--<ejb-ref>
         <ejb-ref-name>ejb/OptimizedEJB</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
         <home>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionHome</home>
@@ -55,5 +55,5 @@
         <local-home>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocalHome</local-home>
         <local>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocal</local>
         <ejb-link>jbosstest-web-ejbs.jar#SecuredEJB</ejb-link>
-    </ejb-local-ref>
+    </ejb-local-ref>-->
 </web-app>

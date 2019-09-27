@@ -20,7 +20,7 @@
             <context-root>/war6</context-root>
         </web>
     </module>
-    <module>
+    <!--<module>
         <ejb>jbosstest-web-ejbs.jar</ejb>
-    </module>
+    </module>-->
 </application>

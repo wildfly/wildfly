@@ -385,7 +385,7 @@ public abstract class SSOTestBase {
         ear.addAsModule(war1);
         ear.addAsModule(war2);
         ear.addAsModule(war3);
-        ear.addAsModule(webEjbs);
+        //ear.addAsModule(webEjbs);
 
         return ear;
     }
