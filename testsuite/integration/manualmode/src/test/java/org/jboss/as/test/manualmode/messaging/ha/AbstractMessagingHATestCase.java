@@ -34,6 +34,7 @@ import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompl
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -66,6 +67,7 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -80,6 +82,7 @@ public abstract class AbstractMessagingHATestCase {
 
     public static final String SERVER1 = "jbossas-messaging-ha-server1";
     public static final String SERVER2 = "jbossas-messaging-ha-server2";
+    private static final Logger log = Logger.getLogger(AbstractMessagingHATestCase.class);
 
     // maximum time for HornetQ activation to detect node failover/failback
     protected static int ACTIVATION_TIMEOUT = 30000;
@@ -95,7 +98,7 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     protected static ModelControllerClient createClient2() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
+        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddressNode1()),
                 TestSuiteEnvironment.getServerPort() + 100,
                 Authentication.getCallbackHandler());
     }
@@ -152,7 +155,7 @@ public abstract class AbstractMessagingHATestCase {
     protected static InitialContext createJNDIContextFromServer1() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        String ipAdddress = TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0", "127.0.0.1"));
+        String ipAdddress = TestSuiteEnvironment.getServerAddress("node0");
         env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":8080"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
@@ -162,7 +165,7 @@ public abstract class AbstractMessagingHATestCase {
     protected static InitialContext createJNDIContextFromServer2() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        String ipAdddress = TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node1", "127.0.0.1"));
+        String ipAdddress = TestSuiteEnvironment.getServerAddressNode1();
         env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":8180"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
@@ -170,8 +173,10 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     protected static void sendMessage(Context ctx, String destinationLookup, String text) throws NamingException {
+        log.trace("Looking up for the RemoteConnectionFactory with " + ctx);
         ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
         assertNotNull(cf);
+        log.trace("Looking up for the destination with " + ctx);
         Destination destination = (Destination) ctx.lookup(destinationLookup);
         assertNotNull(destination);
 
@@ -181,8 +186,10 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     protected static void receiveMessage(Context ctx, String destinationLookup, String expectedText) throws NamingException {
+        log.trace("Looking up for the RemoteConnectionFactory with " + ctx);
         ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
         assertNotNull(cf);
+        log.trace("Looking up for the destination with " + ctx);
         Destination destination = (Destination) ctx.lookup(destinationLookup);
         assertNotNull(destination);
 
@@ -200,6 +207,19 @@ public abstract class AbstractMessagingHATestCase {
         receiveMessage(ctx, destinationLookup, text);
     }
 
+    protected static void receiveNoMessage(Context ctx, String destinationLookup) throws NamingException {
+        ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
+        assertNotNull(cf);
+        Destination destination = (Destination) ctx.lookup(destinationLookup);
+        assertNotNull(destination);
+
+        try (JMSContext context = cf.createContext("guest", "guest")) {
+            JMSConsumer consumer = context.createConsumer(destination);
+            String text = consumer.receiveBody(String.class, 5000);
+            assertNull(text);
+        }
+
+    }
     protected static void checkJMSQueue(JMSOperations operations, String jmsQueueName, boolean active) throws Exception {
         ModelNode address = operations.getServerAddress().add("jms-queue", jmsQueueName);
         checkQueue0(operations.getControllerClient(), address, "queue-address", active);
@@ -309,7 +329,7 @@ public abstract class AbstractMessagingHATestCase {
     private void executeReloadAndWaitForCompletionOfServer2(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
         executeReloadAndWaitForCompletion(initialClient, ServerReload.TIMEOUT,
                 adminOnly,
-                TestSuiteEnvironment.getServerAddress(),
+                TestSuiteEnvironment.getServerAddressNode1(),
                 TestSuiteEnvironment.getServerPort() + 100);
     }
 }

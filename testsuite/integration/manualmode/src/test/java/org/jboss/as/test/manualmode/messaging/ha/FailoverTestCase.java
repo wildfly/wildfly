@@ -195,7 +195,27 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         receiveMessage(context2, jmsQueueLookup, text3);
         context2.close();
 
-        //Assert.fail("wth");
+        log.trace("====================");
+        log.trace("START SERVER1 A 2ND TIME...");
+        log.trace("====================");
+        // restart the live server
+        container.start(SERVER1);
+        // let some time for the backup to detect the live node and failback
+        client1 = createClient1();
+        liveJMSOperations = JMSOperationsProvider.getInstance(client1);
+        waitForHornetQServerActivation(liveJMSOperations, true);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+
+        // let some time for the backup to detect the failure
+        waitForHornetQServerActivation(backupJMSOperations, false);
+        // backup server has been restarted in passive mode
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
+
+        checkJMSQueue(backupJMSOperations, jmsQueueName, false);
+
+        context1 = createJNDIContextFromServer1();
+        // There should be no message to receive as it was consumed from the backup
+        receiveNoMessage(context1, jmsQueueLookup);
 
     }
 
