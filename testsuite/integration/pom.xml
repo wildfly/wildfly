@@ -220,6 +220,7 @@
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
                 <module>basic</module>
+                <module>elytron</module>
                 <module>microprofile-tck</module>
             </modules>
         </profile>

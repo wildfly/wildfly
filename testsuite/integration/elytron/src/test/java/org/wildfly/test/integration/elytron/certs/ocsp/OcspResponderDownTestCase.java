@@ -35,6 +35,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.elytron.util.WelcomeContent;
 
 /**
  * Tests to check OCSP feature when no OCSP responder is available.
@@ -43,7 +44,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({OcspTestBase.OcspResponderDownServerSetup.class })
+@ServerSetup({OcspTestBase.OcspResponderDownServerSetup.class, WelcomeContent.SetupTask.class })
 public class OcspResponderDownTestCase extends OcspTestBase {
 
     /**
