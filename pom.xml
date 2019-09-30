@@ -402,6 +402,7 @@
         <version.org.ow2.asm>7.1</version.org.ow2.asm>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP12-redhat-00006</version.org.picketlink>
+        <version.org.picketlink.bindings>2.5.5.SP12-redhat-00009-jbossorg-1</version.org.picketlink.bindings>
         <version.org.reactivestreams>1.0.2</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
@@ -8090,7 +8091,7 @@
             <dependency>
                 <groupId>org.picketlink.distribution</groupId>
                 <artifactId>picketlink-wildfly8</artifactId>
-                <version>${version.org.picketlink}</version>
+                <version>${version.org.picketlink.bindings}</version>
             </dependency>
 
             <dependency>
