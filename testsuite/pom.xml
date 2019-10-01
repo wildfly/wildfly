@@ -334,9 +334,9 @@
                 <jdk>[1.9,)</jdk>
             </activation>
             <properties>
-                <!-- needed for arquillian-bytenman-extension -->
+                <!-- needed for arquillian-byteman-extension -->
                 <surefire.byteman.argline>-Djdk.attach.allowAttachSelf=true</surefire.byteman.argline>
-                <surefire.byteman.args>-Djboss.modules.system.packages=org.jboss.byteman -Djdk.attach.allowAttachSelf=true</surefire.byteman.args>
+                <surefire.byteman.args>-Djboss.modules.system.packages=com.sun.tools.attach,org.jboss.byteman -Djdk.attach.allowAttachSelf=true</surefire.byteman.args>
             </properties>
             <dependencies/>
         </profile>

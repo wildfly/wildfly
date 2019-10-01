@@ -84,7 +84,7 @@
         <dependency>
             <groupId>org.jboss.arquillian.extension</groupId>
             <artifactId>arquillian-extension-byteman</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -418,10 +418,13 @@
             </build>
         </profile>
         <profile>
-            <!-- Selectively disable executions for tests that only work on Java 8 -->
-            <id>ts.clustering.java8</id>
+            <!-- Selectively disable executions for clustering tests that do not work on IBM JDK -->
+            <id>ts.clustering.ibm-exclusions</id>
             <activation>
-                <jdk>[1.9,)</jdk>
+                <property>
+                    <name>java.vendor</name>
+                    <value>IBM Corporation</value>
+                </property>
             </activation>
             <build>
                 <plugins>
