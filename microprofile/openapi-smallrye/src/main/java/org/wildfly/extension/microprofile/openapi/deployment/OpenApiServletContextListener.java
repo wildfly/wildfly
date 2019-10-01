@@ -21,6 +21,8 @@
  */
 package org.wildfly.extension.microprofile.openapi.deployment;
 
+import static org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger.LOGGER;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -32,7 +34,6 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.OASModelReader;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger;
 
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
@@ -59,16 +60,16 @@ public class OpenApiServletContextListener implements ServletContextListener {
         OpenApiDocument openApiDocument = OpenApiDocument.INSTANCE;
         OpenAPI model = modelFromReader(config);
 
-        if (model != null) {
-            MicroProfileOpenAPILogger.LOGGER.modelReaderSuccessful(model.getClass().getName());
+        if (model != null && LOGGER.isDebugEnabled()) {
+            LOGGER.modelReaderSuccessful(model.getClass().getName());
         }
 
         openApiDocument.modelFromReader(model);
 
         OASFilter filter = getFilter(config);
 
-        if (filter != null && MicroProfileOpenAPILogger.LOGGER.isDebugEnabled()) {
-            MicroProfileOpenAPILogger.LOGGER.filterImplementationLoaded(filter.getClass().getName());
+        if (filter != null && LOGGER.isDebugEnabled()) {
+            LOGGER.filterImplementationLoaded(filter.getClass().getName());
         }
 
         openApiDocument.filter(filter);

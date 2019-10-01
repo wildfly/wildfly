@@ -32,6 +32,7 @@
 
     <dependencies>
         <module name="io.smallrye.openapi" export="true"/>
+        <module name="org.wildfly.extension.undertow"/>
         <module name="io.undertow.core"/>
         <module name="javax.api"/>
         <module name="javax.servlet.api"/>

@@ -21,8 +21,6 @@
  */
 package org.wildfly.extension.microprofile.openapi;
 
-import static org.wildfly.extension.microprofile.openapi.MicroProfileOpenAPISubsystemDefinition.HTTP_CONTEXT_SERVICE;
-
 import java.io.IOException;
 import java.util.Deque;
 import java.util.Map;
@@ -30,11 +28,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger;
+import org.wildfly.extension.undertow.Host;
 
 import io.smallrye.openapi.api.OpenApiDocument;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
@@ -55,37 +55,35 @@ public class OpenAPIContextService implements Service {
     private static final String OAI = "/openapi";
     private static final String ALLOWED_METHODS = "GET, HEAD, OPTIONS";
     private static final String QUERY_PARAM_FORMAT = "format";
+
+    private final Supplier<Host> hostService;
     private final Map<Format, String> cachedModels;
 
-    private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
-    private final boolean securityEnabled;
+    static void install(OperationContext context, String virtualHost) {
+        ServiceName openApiContextName = MicroProfileOpenAPISubsystemDefinition.HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(openApiContextName);
 
-    static void install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(HTTP_CONTEXT_SERVICE);
-        Supplier<ExtensibleHttpManagement> extensibleHttpManagement = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileOpenAPISubsystemDefinition.CAPABILITY_NAME_HTTP_EXTENSIBILITY,
-                                                                                                                               ExtensibleHttpManagement.class));
-
+        final ServiceName hostServiceName = context.getCapabilityServiceName(MicroProfileOpenAPISubsystemDefinition.CAPABILITY_UNDERTOW_SERVER, Host.class, "default-server", virtualHost);
+        Supplier<Host> hostService = serviceBuilder.requires(hostServiceName);
         serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileOpenAPISubsystemDefinition.CAPABILITY_NAME_MP_CONFIG, null));
-        Service openApiContextService = new OpenAPIContextService(extensibleHttpManagement, securityEnabled);
-
-        serviceBuilder.setInstance(openApiContextService).install();
+        serviceBuilder.setInstance(new OpenAPIContextService(hostService)).install();
     }
 
-    OpenAPIContextService(Supplier<ExtensibleHttpManagement> extensibleHttpManagement, boolean securityEnabled) {
-        this.extensibleHttpManagement = extensibleHttpManagement;
-        this.securityEnabled = securityEnabled;
+    OpenAPIContextService(Supplier<Host> hostService) {
+        this.hostService = hostService;
         this.cachedModels = new ConcurrentHashMap<>();
     }
 
     @Override
     public void start(StartContext context) {
         // access to the /openapi endpoint is unsecured
-        extensibleHttpManagement.get().addManagementHandler(OAI, securityEnabled, new OpenAPIHandler());
+        hostService.get().registerHandler(OAI, new OpenAPIHandler());
+        MicroProfileOpenAPILogger.LOGGER.documentPathRegistered(OAI);
     }
 
     @Override
     public void stop(StopContext context) {
-        extensibleHttpManagement.get().removeContext(OAI);
+        hostService.get().unregisterHandler(OAI);
     }
 
     private class OpenAPIHandler implements HttpHandler {

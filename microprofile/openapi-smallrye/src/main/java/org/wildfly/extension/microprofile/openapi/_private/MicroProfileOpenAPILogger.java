@@ -57,7 +57,7 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     @Message(id = 2, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     String deploymentRequiresCapability(String deploymentName, String capabilityName);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = DEBUG)
     @Message(id = 3, value = "OpenAPI model initialized using OASModelReader: %s")
     void modelReaderSuccessful(String modelReaderClass);
 
@@ -68,4 +68,9 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 5, value = "IOException loading OpenAPI static file from deployment")
     void staticFileLoadException(@Cause IOException e);
+
+    @LogMessage(level = INFO)
+    @Message(id = 6, value = "Eclipse MicroProfile OpenAPI hosted at %s")
+    void documentPathRegistered(String path);
+
 }

@@ -32,7 +32,7 @@
     <!-- The subsystem root element -->
     <xs:element name="subsystem">
         <xs:complexType>
-            <xs:attribute name="security-enabled" type="xs:boolean" default="true" />
+            <xs:attribute name="virtual-host" type="xs:string" default="default-host" />
         </xs:complexType>
     </xs:element>
 </xs:schema>

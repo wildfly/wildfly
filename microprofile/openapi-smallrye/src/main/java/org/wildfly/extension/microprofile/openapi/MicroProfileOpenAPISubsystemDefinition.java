@@ -32,7 +32,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * @author
@@ -41,34 +40,31 @@ public class MicroProfileOpenAPISubsystemDefinition extends PersistentResourceDe
 
     static final String CAPABILITY_NAME_MP_OAI_HTTP_CONTEXT = "org.wildfly.extension.microprofile.openapi.http-context";
 
-    static final String CAPABILITY_NAME_HTTP_EXTENSIBILITY = "org.wildfly.management.http.extensible";
-    static final String CAPABILITY_NAME_HTTP_HANDLER = "org.wildfly.extension.undertow.handler";
+    static final String CAPABILITY_UNDERTOW_SERVER = "org.wildfly.undertow.host";
     static final String CAPABILITY_NAME_MP_CONFIG = "org.wildlfy.microprofile.config";
 
     static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of(CAPABILITY_NAME_MP_OAI_HTTP_CONTEXT,
                                                                                                 OpenAPIContextService.class)
-            .addRequirements(CAPABILITY_NAME_HTTP_EXTENSIBILITY,
-                             /*CAPABILITY_NAME_HTTP_HANDLER,*/
-                             CAPABILITY_NAME_MP_CONFIG)
+            .addRequirements(CAPABILITY_NAME_MP_CONFIG)
             .build();
 
-    static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
+    static final AttributeDefinition VIRTUAL_HOST = SimpleAttributeDefinitionBuilder.create("virtual-host", ModelType.STRING)
+                .setDefaultValue(new ModelNode("default-host"))
+                //.setCapabilityReference(CAPABILITY_UNDERTOW_SERVER, HTTP_CONTEXT_CAPABILITY)
+                .setRequired(true)
+                .setAllowExpression(true)
+                .setRestartAllServices()
+                //.addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                .build();
 
-    static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
-            .setDefaultValue(ModelNode.TRUE)
-            .setRequired(false)
-            .setRestartAllServices()
-            .setAllowExpression(true)
-            .build();
-
-    static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED };
+    static final AttributeDefinition[] ATTRIBUTES = { VIRTUAL_HOST };
 
     protected MicroProfileOpenAPISubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(MicroProfileOpenAPIExtension.SUBSYSTEM_PATH,
-                MicroProfileOpenAPIExtension.getResourceDescriptionResolver(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME))
-                .setAddHandler(MicroProfileOpenAPISubsystemAdd.INSTANCE)
-                .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileOpenAPISubsystemAdd.INSTANCE))
-                .setCapabilities(HTTP_CONTEXT_CAPABILITY));
+                                                      MicroProfileOpenAPIExtension.getResourceDescriptionResolver(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME))
+                                          .setAddHandler(MicroProfileOpenAPISubsystemAdd.INSTANCE)
+                                          .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileOpenAPISubsystemAdd.INSTANCE))
+                                          .setCapabilities(HTTP_CONTEXT_CAPABILITY));
     }
 
     @Override

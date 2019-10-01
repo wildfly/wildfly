@@ -63,8 +63,8 @@ class MicroProfileOpenAPISubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        final boolean securityEnabled = MicroProfileOpenAPISubsystemDefinition.SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean();
-        OpenAPIContextService.install(context, securityEnabled);
+        String virtualHost = MicroProfileOpenAPISubsystemDefinition.VIRTUAL_HOST.resolveModelAttribute(context, model).asString();
+        OpenAPIContextService.install(context, virtualHost);
 
         MicroProfileOpenAPILogger.LOGGER.activatingSubsystem();
     }

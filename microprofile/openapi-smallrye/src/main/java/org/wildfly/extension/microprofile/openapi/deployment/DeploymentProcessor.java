@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -85,7 +86,8 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
-        // No action
+        OpenApiDocument openApiDocument = OpenApiDocument.INSTANCE;
+        openApiDocument.reset();
     }
 
     private void addListeners(DeploymentUnit deploymentUnit) {
@@ -118,8 +120,9 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
 
     private void loadOpenAPIModels(DeploymentUnit deploymentUnit) {
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        Config mpConfig = ConfigProvider.getConfig(module.getClassLoader());
 
-        OpenApiConfig config = new OpenApiConfigImpl(ConfigProvider.getConfig(module.getClassLoader()));
+        OpenApiConfig config = new OpenApiConfigImpl(mpConfig);
         IndexView index = getIndex(deploymentUnit, config);
 
         // Set models from annotations and static file

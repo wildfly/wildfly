@@ -40,7 +40,7 @@ public class MicroProfileOpenAPIParser_1_0 extends PersistentResourceXMLParser {
 
     static {
         xmlDescription = builder(MicroProfileOpenAPIExtension.SUBSYSTEM_PATH, NAMESPACE)
-                .addAttribute(MicroProfileOpenAPISubsystemDefinition.SECURITY_ENABLED)
+                .addAttribute(MicroProfileOpenAPISubsystemDefinition.VIRTUAL_HOST)
                 .build();
     }
 

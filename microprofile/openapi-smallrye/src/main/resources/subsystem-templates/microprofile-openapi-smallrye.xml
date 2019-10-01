@@ -4,5 +4,5 @@
 <config>
     <extension-module>org.wildfly.extension.microprofile.openapi-smallrye</extension-module>
     <subsystem xmlns="urn:wildfly:microprofile-openapi-smallrye:1.0"
-               security-enabled="false"/>
+               virtual-host="default-host"/>
 </config>
