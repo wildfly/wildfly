@@ -51,7 +51,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketlink.common.exceptions.fed.WSTrustException;
@@ -89,7 +88,6 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
  *
  * @author Daniel Cihak
  */
-@Ignore("WFLY-12484: Picketlink SMALHandler doesn't support SAAJ 1.4")
 @RunWith(Arquillian.class)
 public class AuthenticationPolicyContextTestCase {
 
