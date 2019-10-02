@@ -77,13 +77,13 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
         return null;
     }
 
-    private org.hibernate.stat.EntityStatistics getStatistics(EntityManagerFactory entityManagerFactory, String entityName) {
+    private org.hibernate.stat.EntityStatistics getStatistics(EntityManagerFactory entityManagerFactory, PathAddress pathAddress) {
         if (entityManagerFactory == null) {
             return null;
         }
         SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
-            return sessionFactory.getStatistics().getEntityStatistics(entityName);
+            return sessionFactory.getStatistics().getEntityStatistics(pathAddress.getValue(HibernateStatistics.ENTITY));
         }
         return null;
     }
@@ -91,7 +91,7 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     private Operation entityDeleteCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getDeleteCount() : 0);
         }
     };
@@ -99,7 +99,7 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     private Operation entityFetchCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getFetchCount() : 0);
         }
     };
@@ -107,7 +107,7 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     private Operation entityInsertCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getInsertCount() : 0);
         }
     };
@@ -115,7 +115,7 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     private Operation entityLoadCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getLoadCount() : 0);
         }
     };
@@ -123,7 +123,7 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     private Operation entityUpdateCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getUpdateCount() : 0);
         }
     };
@@ -131,7 +131,7 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     private Operation optimisticFailureCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            org.hibernate.stat.EntityStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getOptimisticFailureCount() : 0);
         }
     };
