@@ -22,14 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
-import java.time.Duration;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ActiveServiceSupplier;
-import org.wildfly.clustering.service.ServiceSupplier;
+import org.wildfly.clustering.service.ChildTargetService;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.service.SingletonPolicy;
 
@@ -42,9 +43,9 @@ public class NodeServicePolicyActivator implements ServiceActivator {
 
     @Override
     public void activate(ServiceActivatorContext context) {
-        ServiceTarget target = context.getServiceTarget();
-        ServiceSupplier<SingletonPolicy> policySupplier = new ActiveServiceSupplier<>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.POLICY.getName()));
-        SingletonPolicy policy = policySupplier.setTimeout(Duration.ofSeconds(30)).get();
-        policy.createSingletonServiceConfigurator(SERVICE_NAME).build(target).install();
+        ServiceBuilder<?> builder = context.getServiceTarget().addService(ServiceName.JBOSS.append("test", "service", "installer"));
+        Supplier<SingletonPolicy> policy = builder.requires(ServiceName.parse(SingletonDefaultRequirement.POLICY.getName()));
+        Consumer<ServiceTarget> installer = target -> policy.get().createSingletonServiceConfigurator(SERVICE_NAME).build(target).install();
+        builder.setInstance(new ChildTargetService(installer)).install();
     }
 }
