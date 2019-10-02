@@ -34,30 +34,38 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * @author
+ * @author Michael Edgar
  */
 public class MicroProfileOpenAPISubsystemDefinition extends PersistentResourceDefinition {
 
     static final String CAPABILITY_NAME_MP_OAI_HTTP_CONTEXT = "org.wildfly.extension.microprofile.openapi.http-context";
 
+    // Dependencies
     static final String CAPABILITY_UNDERTOW_SERVER = "org.wildfly.undertow.host";
     static final String CAPABILITY_NAME_MP_CONFIG = "org.wildlfy.microprofile.config";
 
-    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of(CAPABILITY_NAME_MP_OAI_HTTP_CONTEXT,
-                                                                                                OpenAPIContextService.class)
-            .addRequirements(CAPABILITY_NAME_MP_CONFIG)
-            .build();
+    public static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder
+                .of(CAPABILITY_NAME_MP_OAI_HTTP_CONTEXT, OpenAPIContextService.class)
+                .addRequirements(CAPABILITY_NAME_MP_CONFIG)
+                .build();
 
-    static final AttributeDefinition VIRTUAL_HOST = SimpleAttributeDefinitionBuilder.create("virtual-host", ModelType.STRING)
-                .setDefaultValue(new ModelNode("default-host"))
-                //.setCapabilityReference(CAPABILITY_UNDERTOW_SERVER, HTTP_CONTEXT_CAPABILITY)
+    static final AttributeDefinition SERVER = SimpleAttributeDefinitionBuilder
+                .create("server", ModelType.STRING)
+                .setDefaultValue(new ModelNode("default-server"))
                 .setRequired(true)
                 .setAllowExpression(true)
                 .setRestartAllServices()
-                //.addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                 .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = { VIRTUAL_HOST };
+    static final AttributeDefinition VIRTUAL_HOST = SimpleAttributeDefinitionBuilder
+                .create("virtual-host", ModelType.STRING)
+                .setDefaultValue(new ModelNode("default-host"))
+                .setRequired(true)
+                .setAllowExpression(true)
+                .setRestartAllServices()
+                .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = { SERVER, VIRTUAL_HOST };
 
     protected MicroProfileOpenAPISubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(MicroProfileOpenAPIExtension.SUBSYSTEM_PATH,

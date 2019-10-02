@@ -36,6 +36,8 @@ import org.jboss.modules.ModuleLoader;
 /**
  * Add dependencies required by the deployment unit to access the MicroProfile
  * OpenAPI
+ *
+ * @author Michael Edgar
  */
 public class DependencyProcessor implements DeploymentUnitProcessor {
 

@@ -46,6 +46,7 @@ import org.jboss.jandex.IndexView;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.modules.Module;
+import org.wildfly.extension.microprofile.openapi.OpenAPIContextService;
 import org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger;
 
 import io.smallrye.openapi.api.OpenApiConfig;
@@ -57,6 +58,9 @@ import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
 import io.smallrye.openapi.runtime.scanner.FilteredIndexView;
 
 /**
+ *
+ * @author Michael Edgar
+ *
  */
 public class DeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -72,6 +76,12 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
         STATIC_FILES.put("/WEB-INF/classes/META-INF/openapi.json", Format.JSON);
     }
 
+    private final OpenAPIContextService service;
+
+    public DeploymentProcessor(OpenAPIContextService service) {
+        this.service = service;
+    }
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -80,14 +90,14 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
+        service.reset();
         addListeners(deploymentUnit);
         loadOpenAPIModels(deploymentUnit);
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
-        OpenApiDocument openApiDocument = OpenApiDocument.INSTANCE;
-        openApiDocument.reset();
+        service.reset();
     }
 
     private void addListeners(DeploymentUnit deploymentUnit) {
@@ -128,7 +138,7 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
         // Set models from annotations and static file
         OpenApiDocument openApiDocument = OpenApiDocument.INSTANCE;
         openApiDocument.config(config);
-        archiveToStaticFile(module, openApiDocument);
+        moduleToStaticFile(module, openApiDocument);
         openApiDocument.modelFromAnnotations(OpenApiProcessor.modelFromAnnotations(config, index));
     }
 
@@ -146,7 +156,7 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
      * @param module Module containing the application
      * @param openApiDocument OpenApiDocument instance with which the static file will be merged
      */
-    private void archiveToStaticFile(Module module, OpenApiDocument openApiDocument) {
+    private void moduleToStaticFile(Module module, OpenApiDocument openApiDocument) {
         for (Map.Entry<String, Format> file : STATIC_FILES.entrySet()) {
             URL filePath = module.getExportedResource(file.getKey());
 

@@ -47,7 +47,7 @@ import io.smallrye.openapi.runtime.OpenApiProcessor;
  * of the application.
  *
  * @author Martin Kouba
- * @author Michael Edgar (adapted from Thorntail to Wildfly)
+ * @author Michael Edgar
  */
 @WebListener
 public class OpenApiServletContextListener implements ServletContextListener {

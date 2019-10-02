@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -36,6 +38,8 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger;
 import org.wildfly.extension.undertow.Host;
 
+import io.smallrye.openapi.api.OpenApiConfig;
+import io.smallrye.openapi.api.OpenApiConfigImpl;
 import io.smallrye.openapi.api.OpenApiDocument;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
@@ -48,7 +52,7 @@ import io.undertow.util.Methods;
 import io.undertow.util.StatusCodes;
 
 /**
- * @author
+ * @author Michael Edgar
  */
 public class OpenAPIContextService implements Service {
 
@@ -59,14 +63,16 @@ public class OpenAPIContextService implements Service {
     private final Supplier<Host> hostService;
     private final Map<Format, String> cachedModels;
 
-    static void install(OperationContext context, String virtualHost) {
+    static OpenAPIContextService install(OperationContext context, String server, String virtualHost) {
         ServiceName openApiContextName = MicroProfileOpenAPISubsystemDefinition.HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
         ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(openApiContextName);
 
-        final ServiceName hostServiceName = context.getCapabilityServiceName(MicroProfileOpenAPISubsystemDefinition.CAPABILITY_UNDERTOW_SERVER, Host.class, "default-server", virtualHost);
+        final ServiceName hostServiceName = context.getCapabilityServiceName(MicroProfileOpenAPISubsystemDefinition.CAPABILITY_UNDERTOW_SERVER, Host.class, server, virtualHost);
         Supplier<Host> hostService = serviceBuilder.requires(hostServiceName);
         serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileOpenAPISubsystemDefinition.CAPABILITY_NAME_MP_CONFIG, null));
-        serviceBuilder.setInstance(new OpenAPIContextService(hostService)).install();
+        OpenAPIContextService instance = new OpenAPIContextService(hostService);
+        serviceBuilder.setInstance(instance).install();
+        return instance;
     }
 
     OpenAPIContextService(Supplier<Host> hostService) {
@@ -76,6 +82,13 @@ public class OpenAPIContextService implements Service {
 
     @Override
     public void start(StartContext context) {
+        // Serve an empty document until a module is deployed
+        OpenApiDocument.INSTANCE.reset();
+        Config mpConfig = ConfigProvider.getConfig(getClass().getClassLoader());
+        OpenApiConfig config = new OpenApiConfigImpl(mpConfig);
+        OpenApiDocument.INSTANCE.config(config);
+        OpenApiDocument.INSTANCE.initialize();
+
         // access to the /openapi endpoint is unsecured
         hostService.get().registerHandler(OAI, new OpenAPIHandler());
         MicroProfileOpenAPILogger.LOGGER.documentPathRegistered(OAI);
@@ -84,6 +97,11 @@ public class OpenAPIContextService implements Service {
     @Override
     public void stop(StopContext context) {
         hostService.get().unregisterHandler(OAI);
+    }
+
+    public void reset() {
+        cachedModels.clear();
+        OpenApiDocument.INSTANCE.reset();
     }
 
     private class OpenAPIHandler implements HttpHandler {
