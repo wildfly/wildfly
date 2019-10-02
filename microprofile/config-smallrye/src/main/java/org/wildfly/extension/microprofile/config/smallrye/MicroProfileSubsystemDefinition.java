@@ -37,7 +37,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * @author <a href="mailto:tcerar@redhat.com">Tomaz Cerar</a>
  */
 class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
-    static final String CONFIG_CAPABILITY_NAME = "org.wildlfy.microprofile.config";
+    static final String CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
 
     static final RuntimeCapability<Void> CONFIG_CAPABILITY =
             RuntimeCapability.Builder.of(CONFIG_CAPABILITY_NAME)
