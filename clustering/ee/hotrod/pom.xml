@@ -39,7 +39,7 @@
 
     <name>WildFly: EE clustering - HotRod service provider</name>
     <description>
-        This module contains code that is common to the wildlfy-clustering-ejb-hotrod and wildlfy-clustering-web-hotrod modules.
+        This module contains code that is common to the wildfly-clustering-ejb-hotrod and wildfly-clustering-web-hotrod modules.
     </description>
 
     <dependencies>

@@ -29,7 +29,7 @@ import org.wildfly.test.integration.vdx.utils.server.ServerConfig;
 import java.nio.file.Files;
 
 /**
- * Smoke test case - it tests whether Wildlfy/EAP test automation is working and basic VDX functionality.
+ * Smoke test case - it tests whether WildFly/EAP test automation is working and basic VDX functionality.
  */
 @RunAsClient
 @RunWith(Arquillian.class)
