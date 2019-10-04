@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.6" name="interceptor-module" version="1.0.0">
+    <resources>
+        <resource-root path="server-side-interceptor-substitute.jar"/>
+    </resources>
+    <dependencies>
+        <module name="javax.interceptor.api"/>
+    </dependencies>
+</module>

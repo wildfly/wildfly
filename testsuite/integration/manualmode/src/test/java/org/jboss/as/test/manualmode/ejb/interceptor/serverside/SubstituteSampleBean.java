@@ -19,18 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.interceptor.serverside;
+package org.jboss.as.test.manualmode.ejb.interceptor.serverside;
 
-import java.util.List;
-import org.jboss.as.arquillian.container.ManagementClient;
+import javax.ejb.Stateless;
 
-public interface InterceptorsSetupTask {
-
-    void packModule(InterceptorModule module) throws Exception;
-
-    List<InterceptorModule> getModules();
-
-    void modifyServerInterceptors(List<InterceptorModule> interceptorModules, ManagementClient managementClient) throws Exception;
-
-    void revertServerInterceptors(ManagementClient managementClient) throws Exception;
+@Stateless
+public class SubstituteSampleBean implements SubstituteSampleBeanRemote {
+    public String getSimpleName() {
+        return SubstituteSampleBean.class.getSimpleName();
+    }
 }

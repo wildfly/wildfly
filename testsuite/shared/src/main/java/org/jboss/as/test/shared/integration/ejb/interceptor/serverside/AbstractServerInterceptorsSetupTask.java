@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.interceptor.serverside;
+package org.jboss.as.test.shared.integration.ejb.interceptor.serverside;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
