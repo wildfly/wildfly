@@ -50,17 +50,15 @@ public class MicroProfileOpenAPISubsystemDefinition extends PersistentResourceDe
                 .build();
 
     static final AttributeDefinition SERVER = SimpleAttributeDefinitionBuilder
-                .create("server", ModelType.STRING)
+                .create("server", ModelType.STRING, true)
                 .setDefaultValue(new ModelNode("default-server"))
-                .setRequired(true)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
     static final AttributeDefinition VIRTUAL_HOST = SimpleAttributeDefinitionBuilder
-                .create("virtual-host", ModelType.STRING)
+                .create("virtual-host", ModelType.STRING, true)
                 .setDefaultValue(new ModelNode("default-host"))
-                .setRequired(true)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
