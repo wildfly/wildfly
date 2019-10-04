@@ -1015,6 +1015,12 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-microprofile-metrics-smallrye</artifactId>
                 <version>${project.version}</version>
             </dependency>
