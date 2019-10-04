@@ -422,17 +422,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.dom4j</groupId>
-      <artifactId>dom4j</artifactId>
-      <licenses>
-        <license>
-          <name>Plexus Classworlds License</name>
-          <url>https://fedoraproject.org/wiki/Licensing/Plexus_Classworlds_License</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>gnu.getopt</groupId>
       <artifactId>java-getopt</artifactId>
       <licenses>
@@ -1798,6 +1787,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.dom4j</groupId>
+      <artifactId>dom4j</artifactId>
+      <licenses>
+        <license>
+          <name>Plexus Classworlds License</name>
+          <url>https://fedoraproject.org/wiki/Licensing/Plexus_Classworlds_License</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.microprofile.config</groupId>
       <artifactId>microprofile-config-api</artifactId>
       <licenses>
@@ -1811,6 +1811,17 @@
     <dependency>
       <groupId>org.eclipse.microprofile.health</groupId>
       <artifactId>microprofile-health-api</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.microprofile.metrics</groupId>
+      <artifactId>microprofile-metrics-api</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2454,6 +2465,28 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-ee-cache</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-ee-hotrod</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ee-infinispan</artifactId>
       <licenses>
         <license>
@@ -2488,6 +2521,17 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ejb-spi</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-infinispan-client</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2653,6 +2697,50 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-web-api</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-web-cache</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-web-container</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-web-extension</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-web-hotrod</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2906,6 +2994,17 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-microprofile-health-smallrye</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-microprofile-metrics-smallrye</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3331,8 +3430,8 @@
       <artifactId>mod_cluster-container-spi</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v3.0 only</name>
-          <url>http://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
+          <name>GNU Lesser General Public License v3.0 or later</name>
+          <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3342,8 +3441,8 @@
       <artifactId>mod_cluster-core</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v3.0 only</name>
-          <url>http://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
+          <name>GNU Lesser General Public License v3.0 or later</name>
+          <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3353,8 +3452,8 @@
       <artifactId>mod_cluster-load-spi</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v3.0 only</name>
-          <url>http://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
+          <name>GNU Lesser General Public License v3.0 or later</name>
+          <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3669,7 +3768,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-validator-provider-11</artifactId>
+      <artifactId>resteasy-validator-provider</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
