@@ -3143,6 +3143,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.eclipse.microprofile.jwt</groupId>
+            <artifactId>microprofile-jwt-auth-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-metrics</artifactId>
             <exclusions>

@@ -322,6 +322,7 @@
         <version.org.eclipse.microprofile.config.api>1.3</version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>2.0.2</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>2.1</version.org.eclipse.microprofile.health.api>
+        <version.org.eclipse.microprofile.jwt.api>1.1.1</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.metrics.api>2.2.1</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.openapi.api>1.1.2</version.org.eclipse.microprofile.openapi.api>
         <version.org.eclipse.microprofile.opentracing>1.3.1</version.org.eclipse.microprofile.opentracing>
@@ -5460,6 +5461,12 @@
                 <artifactId>microprofile-health-tck</artifactId>
                 <version>${version.org.eclipse.microprofile.health.api}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.jwt</groupId>
+                <artifactId>microprofile-jwt-auth-api</artifactId>
+                <version>${version.org.eclipse.microprofile.jwt.api}</version>
             </dependency>
 
             <dependency>
