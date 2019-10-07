@@ -127,7 +127,7 @@ import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServic
  */
 class SecurityDomainAdd extends AbstractAddStepHandler {
 
-    private static final String DEFAULT_MODULE = "org.picketbox";
+    //private static final String DEFAULT_MODULE = "org.picketbox";
     private static final String LEGACY_CACHE_NAME = "auth-cache";
 
     static final SecurityDomainAdd INSTANCE = new SecurityDomainAdd();
@@ -254,8 +254,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
                 mappingInfo.addJBossModuleName(moduleName.asString());
-            } else {
-                mappingInfo.addJBossModuleName(DEFAULT_MODULE);
+//            } else {
+//                mappingInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
 
@@ -281,8 +281,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
                 identityTrustInfo.addJBossModuleName(moduleName.asString());
-            } else {
-                identityTrustInfo.addJBossModuleName(DEFAULT_MODULE);
+//            } else {
+//                identityTrustInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setIdentityTrustInfo(identityTrustInfo);
@@ -305,8 +305,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             ModelNode moduleName = MappingProviderModuleDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
                 auditInfo.addJBossModuleName(moduleName.asString());
-            } else {
-                auditInfo.addJBossModuleName(DEFAULT_MODULE);
+//            } else {
+//                auditInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setAuditInfo(auditInfo);
@@ -332,8 +332,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
                 aclInfo.addJBossModuleName(moduleName.asString());
-            } else {
-                aclInfo.addJBossModuleName(DEFAULT_MODULE);
+//            } else {
+//                aclInfo.addJBossModuleName(DEFAULT_MODULE);
             }
 
         }
@@ -360,8 +360,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
                 authzInfo.addJBossModuleName(moduleName.asString());
-            } else {
-                authzInfo.addJBossModuleName(DEFAULT_MODULE);
+//            } else {
+//                authzInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
 
@@ -418,8 +418,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, authModule);
             if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
                 authenticationInfo.addJBossModuleName(moduleName.asString());
-            } else {
-                authenticationInfo.addJBossModuleName(DEFAULT_MODULE);
+//            } else {
+//                authenticationInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setAuthenticationInfo(authenticationInfo);
@@ -476,8 +476,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
                 authInfo.addJBossModuleName(moduleName.asString());
-            } else {
-                authInfo.addJBossModuleName(DEFAULT_MODULE);
+//            } else {
+//                authInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
     }
