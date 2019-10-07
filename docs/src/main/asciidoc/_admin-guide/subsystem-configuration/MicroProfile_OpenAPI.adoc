@@ -1,0 +1,54 @@
+[[MicroProfile_OpenAPI_SmallRye]]
+= MicroProfile OpenAPI Subsystem Configuration
+
+Support for https://microprofile.io/project/eclipse/microprofile-open-api[Eclipse MicroProfile OpenAPI] is provided by
+ the _microprofile-openapi-smallrye_ subsystem.
+
+[[required-extension-microprofile-openapi-smallrye]]
+== Required Extension
+
+This extension is included in the standalone configurations included in the
+WildFly distribution.
+
+You can also add the extension to a configuration without it either by adding
+an `<extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>`
+element to the xml or by using the following CLI operation:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.openapi-smallrye:add
+----
+
+== HTTP Endpoints
+
+The MicroProfile OpenAPI specification defines an HTTP endpoint at path `/openapi` to retrieve
+the OpenAPI 3.0 document in YAML (the default) and JSON formats. The OpenAPI HTTP endpoint
+is accessible by default at http://localhost:8080/openapi[http://localhost:8080/openapi]. If the
+default YAML format is not desired, JSON may be used by providing either an HTTP `Accept` header
+or a query parameter `format` with value `application/json`.
+
+[source,shell]
+----
+$ curl -v http://localhost:8080/openapi?format=application/json
+< HTTP/1.1 200 OK
+...
+{"openapi": "3.0.1" ... }
+
+
+$ curl -v -H'Accept: application/json' http://localhost:8080/openapi
+< HTTP/1.1 200 OK
+...
+{"openapi": "3.0.1" ... }
+
+----
+
+== Component Reference
+
+The Eclipse MicroProfile OpenAPI implementation is provided by the SmallRye OpenAPI project.
+
+****
+
+* https://microprofile.io/project/eclipse/microprofile-open-api[Eclipse MicroProfile OpenAPI]
+* http://github.com/smallrye/smallrye-open-api/[SmallRye OpenAPI]
+
+****
