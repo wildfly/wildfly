@@ -27,6 +27,7 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NO
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceBuilder;
@@ -60,6 +61,9 @@ public class NodeServiceActivator implements ServiceActivator {
             install(target, factory, QUORUM_SERVICE_NAME, 2);
         };
         builder.setInstance(new ChildTargetService(installer)).install();
+
+        new ServiceValueCaptorServiceConfigurator<>(NodeServiceExecutorRegistry.INSTANCE.add(DEFAULT_SERVICE_NAME)).build(context.getServiceTarget()).install();
+        new ServiceValueCaptorServiceConfigurator<>(NodeServiceExecutorRegistry.INSTANCE.add(QUORUM_SERVICE_NAME)).build(context.getServiceTarget()).install();
     }
 
     private static void install(ServiceTarget target, SingletonServiceConfiguratorFactory factory, ServiceName name, int quorum) {

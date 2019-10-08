@@ -51,7 +51,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -108,7 +107,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 .addClasses(SimpleServlet.class, Mutable.class)
                 .setWebXML(SimpleServlet.class.getPackage(), "web.xml");
         ClusterTestUtil.addTopologyListenerDependencies(war);
-        war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new ServerPermission("getCurrentServiceContainer")), "permissions.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml");
         return war;
     }
 
