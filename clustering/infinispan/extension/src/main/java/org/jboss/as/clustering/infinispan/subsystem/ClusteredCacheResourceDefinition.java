@@ -26,8 +26,10 @@ import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
+import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
 import org.jboss.as.clustering.controller.Registration;
@@ -197,8 +199,8 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         }
     }
 
-    ClusteredCacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ClusteredCacheServiceHandler handler) {
-        super(path, new ResourceDescriptorConfigurator(configurator), handler);
+    ClusteredCacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ClusteredCacheServiceHandler handler, FunctionExecutorRegistry<Cache<?, ?>> executors) {
+        super(path, new ResourceDescriptorConfigurator(configurator), handler, executors);
     }
 
     @Override

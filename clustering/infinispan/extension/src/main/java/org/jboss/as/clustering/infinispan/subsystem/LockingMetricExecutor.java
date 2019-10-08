@@ -21,6 +21,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.Cache;
 import org.infinispan.util.concurrent.locks.impl.DefaultLockManager;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 
 /**
  * A handler for cache locking metrics.
@@ -29,8 +30,8 @@ import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
  */
 public class LockingMetricExecutor extends CacheMetricExecutor<DefaultLockManager> {
 
-    public LockingMetricExecutor() {
-        super(BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
+    public LockingMetricExecutor(FunctionExecutorRegistry<Cache<?, ?>> executors) {
+        super(executors, BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
     }
 
     @Override

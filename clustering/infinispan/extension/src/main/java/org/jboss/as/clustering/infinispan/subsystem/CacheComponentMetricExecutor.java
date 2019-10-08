@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 
 /**
  * Executor for metrics based on cache components.
@@ -32,7 +33,8 @@ public class CacheComponentMetricExecutor<C> extends CacheMetricExecutor<C> {
 
     private final Class<C> componentClass;
 
-    public CacheComponentMetricExecutor(Class<C> componentClass) {
+    public CacheComponentMetricExecutor(FunctionExecutorRegistry<Cache<?, ?>> executors, Class<C> componentClass) {
+        super(executors);
         this.componentClass = componentClass;
     }
 

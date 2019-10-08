@@ -26,6 +26,8 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
+import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -35,6 +37,7 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -312,7 +315,9 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)
                 .setResourceTransformation(CacheContainerResource::new)
                 ;
-        ResourceServiceHandler handler = new CacheContainerServiceHandler();
+        ServiceValueExecutorRegistry<EmbeddedCacheManager> managerExecutors = new ServiceValueExecutorRegistry<>();
+        ServiceValueExecutorRegistry<Cache<?, ?>> cacheExecutors = new ServiceValueExecutorRegistry<>();
+        ResourceServiceHandler handler = new CacheContainerServiceHandler(managerExecutors, cacheExecutors);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         // Translate legacy add-alias operation to list-add operation
@@ -338,8 +343,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         registration.registerOperationHandler(ALIAS_REMOVE, removeAliasHandler);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new CacheContainerMetricExecutor(), CacheContainerMetric.class).register(registration);
-            new CacheRuntimeResourceDefinition().register(registration);
+            new MetricHandler<>(new CacheContainerMetricExecutor(managerExecutors), CacheContainerMetric.class).register(registration);
+            new CacheRuntimeResourceDefinition(cacheExecutors).register(registration);
         }
 
         new JGroupsTransportResourceDefinition().register(registration);
@@ -352,11 +357,11 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             pool.register(registration);
         }
 
-        new LocalCacheResourceDefinition().register(registration);
-        new InvalidationCacheResourceDefinition().register(registration);
-        new ReplicatedCacheResourceDefinition().register(registration);
-        new DistributedCacheResourceDefinition().register(registration);
-        new ScatteredCacheResourceDefinition().register(registration);
+        new LocalCacheResourceDefinition(cacheExecutors).register(registration);
+        new InvalidationCacheResourceDefinition(cacheExecutors).register(registration);
+        new ReplicatedCacheResourceDefinition(cacheExecutors).register(registration);
+        new DistributedCacheResourceDefinition(cacheExecutors).register(registration);
+        new ScatteredCacheResourceDefinition(cacheExecutors).register(registration);
 
         return registration;
     }

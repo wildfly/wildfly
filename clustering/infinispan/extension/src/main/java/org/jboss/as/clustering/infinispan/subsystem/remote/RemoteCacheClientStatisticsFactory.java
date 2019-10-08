@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
+import java.util.function.Function;
+
+import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 /**
- * Executor for partition handling metrics.
  * @author Paul Ferraro
  */
-public class PartitionHandlingMetricExecutor extends CacheMetricExecutor<AdvancedCache<?, ?>> {
+public class RemoteCacheClientStatisticsFactory implements Function<RemoteCacheContainer, RemoteCacheClientStatisticsMXBean> {
 
-    public PartitionHandlingMetricExecutor(FunctionExecutorRegistry<Cache<?, ?>> executors) {
-        super(executors, BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
+    private final String cacheName;
+
+    public RemoteCacheClientStatisticsFactory(String cacheName) {
+        this.cacheName = cacheName;
     }
 
     @Override
-    public AdvancedCache<?, ?> apply(Cache<?, ?> cache) {
-        return cache.getAdvancedCache();
+    public RemoteCacheClientStatisticsMXBean apply(RemoteCacheContainer container) {
+        return container.getCacheNames().contains(this.cacheName) ? container.getCache(this.cacheName).clientStatistics() : null;
     }
 }
