@@ -39,15 +39,10 @@ import org.jboss.as.clustering.controller.Definable;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * These are legacy operations suffering from multiple issues such as WFLY-10442, WFLY-10445, WFLY-10444, WFLY-10441, etc.
@@ -59,7 +54,7 @@ import org.wildfly.clustering.service.PassiveServiceSupplier;
  * @author Radoslav Husar
  */
 @Deprecated
-public enum LegacyProxyOperation implements Definable<OperationDefinition>, OperationStepHandler {
+public enum LegacyProxyOperation implements Definable<OperationDefinition> {
     ADD_PROXY {
         @Override
         public OperationDefinition getDefinition() {
@@ -425,22 +420,6 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
     ;
 
     static final String SESSION_DRAINING_COMPLETE = "session-draining-complete";
-
-    @Override
-    public final void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        PathAddress proxyAddress = LegacyMetricOperationsRegistration.translateProxyPath(context, context.getCurrentAddress());
-        ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getServiceName(proxyAddress);
-        if (context.isNormalServer() && new PassiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(false), serviceName).get() != null) {
-            boolean readOnly = this.getDefinition().getFlags().contains(OperationEntry.Flag.READ_ONLY);
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ModClusterServiceMBean service = new PassiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(!readOnly), serviceName).get();
-                    LegacyProxyOperation.this.execute(context, operation, service);
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
-    }
 
     abstract void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException;
 }
