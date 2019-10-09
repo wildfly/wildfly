@@ -23,6 +23,7 @@
 package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -88,6 +89,15 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
 
     @Override
     public Map<String, UUID> findValue(String id) {
+        return this.getValue(id, true);
+    }
+
+    @Override
+    public Map<String, UUID> tryValue(String id) {
+        return this.getValue(id, false);
+    }
+
+    private Map<String, UUID> getValue(String id, boolean purgeIfInvalid) {
         Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (names != null) {
             for (Map.Entry<String, UUID> nameEntry : names.entrySet()) {
@@ -102,7 +112,9 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
                 } else {
                     InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, nameEntry.getKey());
                 }
-                this.remove(id);
+                if (purgeIfInvalid) {
+                    this.purge(id);
+                }
                 return null;
             }
             return names;
@@ -112,10 +124,19 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
 
     @Override
     public boolean remove(String id) {
-        Map<String, UUID> names = this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(new SessionAttributeNamesKey(id));
+        return this.delete(id);
+    }
+
+    @Override
+    public boolean purge(String id) {
+        return this.delete(id, Flag.SKIP_LISTENER_NOTIFICATION);
+    }
+
+    private boolean delete(String id, Flag... flags) {
+        Map<String, UUID> names = this.namesCache.getAdvancedCache().withFlags(EnumSet.of(Flag.FORCE_SYNCHRONOUS, flags)).remove(new SessionAttributeNamesKey(id));
         if (names != null) {
             for (UUID attributeId : names.values()) {
-                this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId));
+                this.attributeCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionAttributeKey(id, attributeId));
             }
         }
         return true;
