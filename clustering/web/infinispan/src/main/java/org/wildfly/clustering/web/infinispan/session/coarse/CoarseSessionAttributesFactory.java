@@ -23,6 +23,7 @@
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,6 +87,15 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
 
     @Override
     public Map.Entry<Map<String, Object>, V> findValue(String id) {
+        return this.getValue(id, true);
+    }
+
+    @Override
+    public Map.Entry<Map<String, Object>, V> tryValue(String id) {
+        return this.getValue(id, false);
+    }
+
+    private Map.Entry<Map<String, Object>, V> getValue(String id, boolean purgeIfInvalid) {
         V value = this.cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
@@ -93,7 +103,9 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
                 return new SimpleImmutableEntry<>(attributes, value);
             } catch (InvalidSerializedFormException e) {
                 InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
-                this.remove(id);
+                if (purgeIfInvalid) {
+                    this.purge(id);
+                }
             }
         }
         return null;
@@ -101,7 +113,16 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
 
     @Override
     public boolean remove(String id) {
-        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributesKey(id));
+        return this.delete(id);
+    }
+
+    @Override
+    public boolean purge(String id) {
+        return this.delete(id, Flag.SKIP_LISTENER_NOTIFICATION);
+    }
+
+    private boolean delete(String id, Flag... flags) {
+        this.cache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionAttributesKey(id));
         return true;
     }
 
