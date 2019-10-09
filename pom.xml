@@ -5481,7 +5481,20 @@
                 <artifactId>microprofile-jwt-auth-api</artifactId>
                 <version>${version.org.eclipse.microprofile.jwt.api}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.eclipse.microprofile.jwt</groupId>
+                <artifactId>microprofile-jwt-auth-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.jwt.api}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.jwt</groupId>
+                <artifactId>microprofile-jwt-auth-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.jwt.api}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            
             <dependency>
                 <groupId>org.eclipse.microprofile.metrics</groupId>
                 <artifactId>microprofile-metrics-api</artifactId>
