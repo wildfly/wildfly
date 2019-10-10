@@ -3797,6 +3797,18 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-microprofile-metrics-smallrye</artifactId>
             <exclusions>
                 <exclusion>
