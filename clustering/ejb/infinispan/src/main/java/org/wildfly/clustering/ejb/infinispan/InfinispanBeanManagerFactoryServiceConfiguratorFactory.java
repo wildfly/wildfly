@@ -36,6 +36,7 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceConfiguratorAdapter;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.threads.JBossThreadFactory;
@@ -117,8 +118,8 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
         };
 
         List<CapabilityServiceConfigurator> builders = new ArrayList<>(3);
-        builders.add(new TemplateConfigurationServiceConfigurator(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName, configurator));
-        builders.add(new CacheServiceConfigurator<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName).require(new ServiceDependency(name.append("marshalling"))));
+        builders.add(new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, templateCacheName, configurator));
+        builders.add(new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName).require(new ServiceDependency(name.append("marshalling"))));
         builders.add(new ServiceConfiguratorAdapter(new RemoveOnCancelScheduledExecutorServiceConfigurator(name.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY)));
         return builders;
     }
