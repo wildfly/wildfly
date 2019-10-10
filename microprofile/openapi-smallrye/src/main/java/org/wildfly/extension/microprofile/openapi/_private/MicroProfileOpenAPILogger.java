@@ -71,7 +71,11 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     void staticFileLoadException(@Cause IOException e);
 
     @LogMessage(level = INFO)
-    @Message(id = 6, value = "Eclipse MicroProfile OpenAPI hosted at %s")
-    void documentPathRegistered(String path);
+    @Message(id = 6, value = "OpenAPI context registered: '%s' for host '%s'")
+    void documentPathRegistered(String path, String hostName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 7, value = "OpenAPI context unregistered: '%s' for host '%s'")
+    void documentPathUnregistered(String path, String hostName);
 
 }

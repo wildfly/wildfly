@@ -25,7 +25,7 @@ The MicroProfile OpenAPI specification defines an HTTP endpoint at path `/openap
 the OpenAPI 3.0 document in YAML (the default) and JSON formats. The OpenAPI HTTP endpoint
 is accessible by default at http://localhost:8080/openapi[http://localhost:8080/openapi]. If the
 default YAML format is not desired, JSON may be used by providing either an HTTP `Accept` header
-or a query parameter `format` with value `application/json`.
+value `application/json` or a query parameter `format` with value `JSON`.
 
 [source,shell]
 ----

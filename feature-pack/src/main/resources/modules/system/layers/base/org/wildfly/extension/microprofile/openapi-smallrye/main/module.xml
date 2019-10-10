@@ -34,6 +34,7 @@
         <module name="io.smallrye.openapi" export="true"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="io.undertow.core"/>
+        <module name="io.undertow.servlet"/>
         <module name="javax.api"/>
         <module name="javax.servlet.api"/>
         <module name="org.eclipse.microprofile.config.api"/>
@@ -53,7 +54,5 @@
         <module name="org.wildfly.extension.microprofile.config-smallrye" />
         <module name="javax.enterprise.api" />
         <module name="javax.annotation.api" />
-        <module name="com.fasterxml.jackson.core.jackson-core"/>
-        <module name="com.fasterxml.jackson.core.jackson-databind"/>
     </dependencies>
 </module>

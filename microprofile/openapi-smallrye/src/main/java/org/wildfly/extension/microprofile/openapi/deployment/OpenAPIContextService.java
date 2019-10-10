@@ -19,32 +19,28 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.wildfly.extension.microprofile.openapi;
+package org.wildfly.extension.microprofile.openapi.deployment;
 
 import java.io.IOException;
 import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.UndertowService;
 
-import io.smallrye.openapi.api.OpenApiConfig;
-import io.smallrye.openapi.api.OpenApiConfigImpl;
 import io.smallrye.openapi.api.OpenApiDocument;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
@@ -60,48 +56,42 @@ public class OpenAPIContextService implements Service {
     private static final String ALLOWED_METHODS = "GET, HEAD, OPTIONS";
     private static final String QUERY_PARAM_FORMAT = "format";
 
-    private final Supplier<Host> hostService;
-    private final Map<Format, String> cachedModels;
+    private final Supplier<UndertowService> undertowService;
+    private final Supplier<DeploymentInfo> deploymentInfoService;
+    private final Map<Format, String> cachedModels = new ConcurrentHashMap<>();
 
-    static OpenAPIContextService install(OperationContext context, String server, String virtualHost) {
-        ServiceName openApiContextName = MicroProfileOpenAPISubsystemDefinition.HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(openApiContextName);
-
-        final ServiceName hostServiceName = context.getCapabilityServiceName(MicroProfileOpenAPISubsystemDefinition.CAPABILITY_UNDERTOW_SERVER, Host.class, server, virtualHost);
-        Supplier<Host> hostService = serviceBuilder.requires(hostServiceName);
-        serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileOpenAPISubsystemDefinition.CAPABILITY_NAME_MP_CONFIG, null));
-        OpenAPIContextService instance = new OpenAPIContextService(hostService);
-        serviceBuilder.setInstance(instance).install();
-        return instance;
-    }
-
-    OpenAPIContextService(Supplier<Host> hostService) {
-        this.hostService = hostService;
-        this.cachedModels = new ConcurrentHashMap<>();
+    OpenAPIContextService(Supplier<UndertowService> undertowService, Supplier<DeploymentInfo> deploymentInfoService) {
+        this.undertowService = undertowService;
+        this.deploymentInfoService = deploymentInfoService;
     }
 
     @Override
     public void start(StartContext context) {
-        // Serve an empty document until a module is deployed
-        OpenApiDocument.INSTANCE.reset();
-        Config mpConfig = ConfigProvider.getConfig(getClass().getClassLoader());
-        OpenApiConfig config = new OpenApiConfigImpl(mpConfig);
-        OpenApiDocument.INSTANCE.config(config);
-        OpenApiDocument.INSTANCE.initialize();
-
-        // access to the /openapi endpoint is unsecured
-        hostService.get().registerHandler(OAI, new OpenAPIHandler());
-        MicroProfileOpenAPILogger.LOGGER.documentPathRegistered(OAI);
+        runWithHost(host -> {
+            host.registerHandler(OAI, new OpenAPIHandler());
+            MicroProfileOpenAPILogger.LOGGER.documentPathRegistered(OAI, host.getName());
+        });
     }
 
     @Override
     public void stop(StopContext context) {
-        hostService.get().unregisterHandler(OAI);
+        runWithHost(host -> {
+            host.unregisterHandler(OAI);
+            MicroProfileOpenAPILogger.LOGGER.documentPathUnregistered(OAI, host.getName());
+        });
     }
 
-    public void reset() {
-        cachedModels.clear();
-        OpenApiDocument.INSTANCE.reset();
+    private void runWithHost(Consumer<Host> function) {
+        final DeploymentInfo info = deploymentInfoService.get();
+        final String hostName = info.getHostName();
+
+        undertowService.get()
+                       .getServers()
+                       .stream()
+                       .flatMap(server -> server.getHosts().stream())
+                       .filter(host -> hostName.equals(host.getName()))
+                       .findFirst()
+                       .ifPresent(function);
     }
 
     private class OpenAPIHandler implements HttpHandler {

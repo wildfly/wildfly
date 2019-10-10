@@ -39,19 +39,11 @@ class MicroProfileOpenAPISubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final MicroProfileOpenAPISubsystemAdd INSTANCE = new MicroProfileOpenAPISubsystemAdd();
 
-    private MicroProfileOpenAPISubsystemAdd() {
-        super(MicroProfileOpenAPISubsystemDefinition.ATTRIBUTES);
-    }
-
     @Override
     protected void performBoottime(OperationContext context,
                                    ModelNode operation,
                                    ModelNode model) throws OperationFailedException {
         super.performBoottime(context, operation, model);
-
-        String server = MicroProfileOpenAPISubsystemDefinition.SERVER.resolveModelAttribute(context, model).asString();
-        String virtualHost = MicroProfileOpenAPISubsystemDefinition.VIRTUAL_HOST.resolveModelAttribute(context, model).asString();
-        OpenAPIContextService service = OpenAPIContextService.install(context, server, virtualHost);
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
@@ -59,10 +51,11 @@ class MicroProfileOpenAPISubsystemAdd extends AbstractBoottimeAddStepHandler {
                                                        Phase.DEPENDENCIES,
                                                        Phase.DEPENDENCIES_MICROPROFILE_OPENAPI,
                                                        new DependencyProcessor());
+
                 processorTarget.addDeploymentProcessor(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME,
                                                        Phase.POST_MODULE,
                                                        Phase.POST_MODULE_MICROPROFILE_OPENAPI,
-                                                       new DeploymentProcessor(service));
+                                                       new DeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 

@@ -28,12 +28,14 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -46,8 +48,11 @@ import org.jboss.jandex.IndexView;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.modules.Module;
-import org.wildfly.extension.microprofile.openapi.OpenAPIContextService;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger;
+import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService;
 
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
@@ -56,6 +61,7 @@ import io.smallrye.openapi.runtime.OpenApiProcessor;
 import io.smallrye.openapi.runtime.OpenApiStaticFile;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
 import io.smallrye.openapi.runtime.scanner.FilteredIndexView;
+import io.undertow.servlet.api.DeploymentInfo;
 
 /**
  *
@@ -76,12 +82,6 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
         STATIC_FILES.put("/WEB-INF/classes/META-INF/openapi.json", Format.JSON);
     }
 
-    private final OpenAPIContextService service;
-
-    public DeploymentProcessor(OpenAPIContextService service) {
-        this.service = service;
-    }
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -90,14 +90,27 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        service.reset();
+        final ServiceName deploymentServiceName = deploymentUnit.getServiceName();
+        final ServiceName deploymentOpenAPIName = deploymentServiceName.append("openapi", "http-context");
+        final ServiceName undertowServiceName = ServiceName.of("org","wildfly","undertow");
+        final ServiceName deploymentInfoServiceName = UndertowService
+                .deploymentServiceName(deploymentServiceName)
+                .append(UndertowDeploymentInfoService.SERVICE_NAME);
+
+        ServiceBuilder<?> builder = phaseContext.getServiceTarget().addService(deploymentOpenAPIName);
+        Supplier<DeploymentInfo> deploymentInfoSupplier = builder.requires(deploymentInfoServiceName);
+        Supplier<UndertowService> undertowSupplier = builder.requires(undertowServiceName);
+
+        OpenAPIContextService service = new OpenAPIContextService(undertowSupplier, deploymentInfoSupplier);
+        builder.setInstance(service).install();
+
         addListeners(deploymentUnit);
         loadOpenAPIModels(deploymentUnit);
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
-        service.reset();
+        OpenApiDocument.INSTANCE.reset();
     }
 
     private void addListeners(DeploymentUnit deploymentUnit) {
@@ -130,6 +143,7 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
 
     private void loadOpenAPIModels(DeploymentUnit deploymentUnit) {
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        deploymentUnit.hasAttachment(AttachmentKey.create(Config.class));
         Config mpConfig = ConfigProvider.getConfig(module.getClassLoader());
 
         OpenApiConfig config = new OpenApiConfigImpl(mpConfig);

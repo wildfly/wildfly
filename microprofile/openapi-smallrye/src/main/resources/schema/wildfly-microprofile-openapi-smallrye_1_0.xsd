@@ -31,9 +31,6 @@
 
     <!-- The subsystem root element -->
     <xs:element name="subsystem">
-        <xs:complexType>
-            <xs:attribute name="server" type="xs:string" default="default-server" />
-            <xs:attribute name="virtual-host" type="xs:string" default="default-host" />
-        </xs:complexType>
+        <xs:complexType />
     </xs:element>
 </xs:schema>
