@@ -71,11 +71,15 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     void staticFileLoadException(@Cause IOException e);
 
     @LogMessage(level = INFO)
-    @Message(id = 6, value = "OpenAPI context registered: '%s' for host '%s'")
+    @Message(id = 6, value = "MicroProfile: OpenAPI context registered: '%s' for host '%s'")
     void documentPathRegistered(String path, String hostName);
 
     @LogMessage(level = INFO)
-    @Message(id = 7, value = "OpenAPI context unregistered: '%s' for host '%s'")
+    @Message(id = 7, value = "MicroProfile: OpenAPI context unregistered: '%s' for host '%s'")
     void documentPathUnregistered(String path, String hostName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 8, value = "Unable to serialize OpenAPI in %s format")
+    void serializationException(String format, @Cause IOException e);
 
 }

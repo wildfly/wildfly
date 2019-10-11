@@ -28,14 +28,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.extension.microprofile.openapi.MicroProfileOpenAPIExtension;
 import org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowService;
 
-import io.smallrye.openapi.api.OpenApiDocument;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
 import io.undertow.server.HttpHandler;
@@ -52,6 +53,9 @@ import io.undertow.util.StatusCodes;
  */
 public class OpenAPIContextService implements Service {
 
+    static final String OPENAPI_CONTEXT_SERVICE_SC_ATTR =  MicroProfileOpenAPIExtension.EXTENSION_NAME +
+            "." + OpenAPIContextService.class.getSimpleName();
+
     private static final String OAI = "/openapi";
     private static final String ALLOWED_METHODS = "GET, HEAD, OPTIONS";
     private static final String QUERY_PARAM_FORMAT = "format";
@@ -59,6 +63,8 @@ public class OpenAPIContextService implements Service {
     private final Supplier<UndertowService> undertowService;
     private final Supplier<DeploymentInfo> deploymentInfoService;
     private final Map<Format, String> cachedModels = new ConcurrentHashMap<>();
+    private final OpenAPIDocumentBuilder documentBuilder = OpenAPIDocumentBuilder.create();
+    private OpenAPI document = null;
 
     OpenAPIContextService(Supplier<UndertowService> undertowService, Supplier<DeploymentInfo> deploymentInfoService) {
         this.undertowService = undertowService;
@@ -81,6 +87,14 @@ public class OpenAPIContextService implements Service {
         });
     }
 
+    OpenAPIDocumentBuilder getDocumentBuilder() {
+        return documentBuilder;
+    }
+
+    void setDocument(OpenAPI document) {
+        this.document = document;
+    }
+
     private void runWithHost(Consumer<Host> function) {
         final DeploymentInfo info = deploymentInfoService.get();
         final String hostName = info.getHostName();
@@ -97,13 +111,15 @@ public class OpenAPIContextService implements Service {
     private class OpenAPIHandler implements HttpHandler {
         @Override
         public void handleRequest(HttpServerExchange exchange) {
-            if (OAI.equalsIgnoreCase(exchange.getRequestPath()) && OpenApiDocument.INSTANCE.isSet()) {
-                if (exchange.getRequestMethod().equals(Methods.GET)) {
+            if (OAI.equalsIgnoreCase(exchange.getRequestPath()) && document != null) {
+                HttpString requestMethod = exchange.getRequestMethod();
+
+                if (requestMethod.equals(Methods.GET) || requestMethod.equals(Methods.HEAD)) {
                     sendOai(exchange);
-                } else if (exchange.getRequestMethod().equals(Methods.OPTIONS))  {
+                } else if (requestMethod.equals(Methods.OPTIONS))  {
                     sendPreflight(exchange);
                 } else {
-                    exchange.setStatusCode(StatusCodes.NOT_FOUND);
+                    exchange.setStatusCode(StatusCodes.METHOD_NOT_ALLOWED);
                 }
             } else {
                 exchange.setStatusCode(StatusCodes.NOT_FOUND);
@@ -112,9 +128,7 @@ public class OpenAPIContextService implements Service {
 
         private void sendPreflight(HttpServerExchange exchange) {
             addCorsResponseHeaders(exchange);
-            exchange.getResponseSender().send(ALLOWED_METHODS);
         }
-
 
         private void sendOai(HttpServerExchange exchange) {
             String accept = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
@@ -138,7 +152,11 @@ public class OpenAPIContextService implements Service {
 
             addCorsResponseHeaders(exchange);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, format.getMimeType());
-            exchange.getResponseSender().send(oai);
+            exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, oai.length());
+
+            if (exchange.getRequestMethod().equals(Methods.GET)) {
+                exchange.getResponseSender().send(oai);
+            }
         }
 
         private String getCachedOaiString(Format format) {
@@ -147,9 +165,10 @@ public class OpenAPIContextService implements Service {
 
         private String getModel(Format format) {
             try {
-                return OpenApiSerializer.serialize(OpenApiDocument.INSTANCE.get(), format);
+                return OpenApiSerializer.serialize(document, format);
             } catch (IOException e) {
-                throw new RuntimeException("Unable to serialize OpenAPI in " + format, e);
+                MicroProfileOpenAPILogger.LOGGER.serializationException(String.valueOf(format), e);
+                return null;
             }
         }
 

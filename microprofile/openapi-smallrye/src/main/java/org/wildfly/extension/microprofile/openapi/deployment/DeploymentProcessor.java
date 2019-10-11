@@ -41,6 +41,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.CompositeIndex;
 import org.jboss.jandex.Index;
@@ -56,7 +57,6 @@ import org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService;
 
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
-import io.smallrye.openapi.api.OpenApiDocument;
 import io.smallrye.openapi.runtime.OpenApiProcessor;
 import io.smallrye.openapi.runtime.OpenApiStaticFile;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
@@ -104,13 +104,16 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
         OpenAPIContextService service = new OpenAPIContextService(undertowSupplier, deploymentInfoSupplier);
         builder.setInstance(service).install();
 
+        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY,
+                                           new ServletContextAttribute(OpenAPIContextService.OPENAPI_CONTEXT_SERVICE_SC_ATTR, service));
+
         addListeners(deploymentUnit);
-        loadOpenAPIModels(deploymentUnit);
+        loadOpenAPIModels(deploymentUnit, service.getDocumentBuilder());
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
-        OpenApiDocument.INSTANCE.reset();
+        // Nothing to do
     }
 
     private void addListeners(DeploymentUnit deploymentUnit) {
@@ -141,7 +144,7 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
         return warMetaData.getMergedJBossWebMetaData();
     }
 
-    private void loadOpenAPIModels(DeploymentUnit deploymentUnit) {
+    private void loadOpenAPIModels(DeploymentUnit deploymentUnit, OpenAPIDocumentBuilder documentBuilder) {
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         deploymentUnit.hasAttachment(AttachmentKey.create(Config.class));
         Config mpConfig = ConfigProvider.getConfig(module.getClassLoader());
@@ -150,10 +153,9 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
         IndexView index = getIndex(deploymentUnit, config);
 
         // Set models from annotations and static file
-        OpenApiDocument openApiDocument = OpenApiDocument.INSTANCE;
-        openApiDocument.config(config);
-        moduleToStaticFile(module, openApiDocument);
-        openApiDocument.modelFromAnnotations(OpenApiProcessor.modelFromAnnotations(config, index));
+        documentBuilder.config(config);
+        moduleToStaticFile(module, documentBuilder);
+        documentBuilder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, index));
     }
 
     private IndexView getIndex(DeploymentUnit deploymentUnit, OpenApiConfig config) {
@@ -168,9 +170,9 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
      * provided OpenApiDocument.
      *
      * @param module Module containing the application
-     * @param openApiDocument OpenApiDocument instance with which the static file will be merged
+     * @param documentBuilder OpenApiDocument instance with which the static file will be merged
      */
-    private void moduleToStaticFile(Module module, OpenApiDocument openApiDocument) {
+    private void moduleToStaticFile(Module module, OpenAPIDocumentBuilder documentBuilder) {
         for (Map.Entry<String, Format> file : STATIC_FILES.entrySet()) {
             URL filePath = module.getExportedResource(file.getKey());
 
@@ -178,7 +180,7 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
                 Format format = file.getValue();
 
                 try (OpenApiStaticFile staticFile = new OpenApiStaticFile(filePath.openStream(), format)) {
-                    openApiDocument.modelFromStaticFile(OpenApiProcessor.modelFromStaticFile(staticFile));
+                    documentBuilder.staticFileModel(OpenApiProcessor.modelFromStaticFile(staticFile));
                     break;
                 } catch (IOException e) {
                     MicroProfileOpenAPILogger.LOGGER.staticFileLoadException(e);

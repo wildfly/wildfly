@@ -40,7 +40,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class MicroProfileOpenAPIExtension implements Extension {
 
-    static final String EXTENSION_NAME = "org.wildfly.extension.microprofile.openapi.smallrye";
+    public static final String EXTENSION_NAME = "org.wildfly.extension.microprofile.openapi.smallrye";
 
     /**
      * The name of our subsystem within the model.
@@ -58,11 +58,6 @@ public class MicroProfileOpenAPIExtension implements Extension {
     private static final MicroProfileOpenAPIParser_1_0 CURRENT_PARSER = new MicroProfileOpenAPIParser_1_0();
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        return getResourceDescriptionResolver(true, keyPrefix);
-    }
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final boolean useUnprefixedChildTypes,
-                                                                      final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder();
         for (String kp : keyPrefix) {
             if (prefix.length() > 0) {
@@ -74,7 +69,7 @@ public class MicroProfileOpenAPIExtension implements Extension {
                                                        RESOURCE_NAME,
                                                        MicroProfileOpenAPIExtension.class.getClassLoader(),
                                                        true,
-                                                       useUnprefixedChildTypes);
+                                                       true);
     }
 
     @Override

@@ -37,7 +37,6 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
-import io.smallrye.openapi.api.OpenApiDocument;
 import io.smallrye.openapi.api.models.OpenAPIImpl;
 import io.smallrye.openapi.runtime.OpenApiProcessor;
 
@@ -57,14 +56,15 @@ public class OpenAPIServletContextListener implements ServletContextListener {
         OpenApiConfig config = new OpenApiConfigImpl(ConfigProvider.getConfig(getContextClassLoader()));
 
         // Instantiate OASModelReader and OASFilter
-        OpenApiDocument openApiDocument = OpenApiDocument.INSTANCE;
+        OpenAPIContextService service = (OpenAPIContextService) sce.getServletContext().getAttribute(OpenAPIContextService.OPENAPI_CONTEXT_SERVICE_SC_ATTR);
+        OpenAPIDocumentBuilder documentBuilder = service.getDocumentBuilder();
         OpenAPI model = modelFromReader(config);
 
         if (model != null && LOGGER.isDebugEnabled()) {
             LOGGER.modelReaderSuccessful(model.getClass().getName());
         }
 
-        openApiDocument.modelFromReader(model);
+        documentBuilder.readerModel(model);
 
         OASFilter filter = getFilter(config);
 
@@ -72,10 +72,10 @@ public class OpenAPIServletContextListener implements ServletContextListener {
             LOGGER.filterImplementationLoaded(filter.getClass().getName());
         }
 
-        openApiDocument.filter(filter);
+        documentBuilder.filter(filter);
 
-        // Now we're ready to initialize the final model
-        openApiDocument.initialize();
+        // Now we're ready to build the final model
+        service.setDocument(documentBuilder.build());
     }
 
     @Override
