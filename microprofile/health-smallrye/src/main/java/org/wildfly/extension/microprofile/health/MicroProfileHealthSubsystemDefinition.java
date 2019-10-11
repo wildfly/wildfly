@@ -42,7 +42,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDefinition {
 
-    static final String HEALTH_REPORTER_CAPABILITY = "org.wildlfy.microprofile.health.reporter";
+    static final String HEALTH_REPORTER_CAPABILITY = "org.wildfly.microprofile.health.reporter";
 
     static final RuntimeCapability<Void> HEALTH_REPORTER_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, HealthReporter.class)
