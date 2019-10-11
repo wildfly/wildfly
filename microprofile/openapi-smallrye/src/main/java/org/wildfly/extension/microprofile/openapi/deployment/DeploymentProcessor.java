@@ -121,7 +121,7 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         ListenerMetaData listenerMetaData = new ListenerMetaData();
-        listenerMetaData.setListenerClass(OpenApiServletContextListener.class.getName());
+        listenerMetaData.setListenerClass(OpenAPIServletContextListener.class.getName());
 
         List<ListenerMetaData> listeners = jbossWebMetaData.getListeners();
         if (null == listeners) {

@@ -50,7 +50,7 @@ import io.smallrye.openapi.runtime.OpenApiProcessor;
  * @author Michael Edgar
  */
 @WebListener
-public class OpenApiServletContextListener implements ServletContextListener {
+public class OpenAPIServletContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -93,7 +93,7 @@ public class OpenApiServletContextListener implements ServletContextListener {
         ClassLoader cl = getContextClassLoader();
 
         if (cl == null) {
-            cl = OpenApiServletContextListener.class.getClassLoader();
+            cl = OpenAPIServletContextListener.class.getClassLoader();
         }
 
         return OpenApiProcessor.modelFromReader(config, cl);
@@ -107,7 +107,7 @@ public class OpenApiServletContextListener implements ServletContextListener {
         ClassLoader cl = getContextClassLoader();
 
         if (cl == null) {
-            cl = OpenApiServletContextListener.class.getClassLoader();
+            cl = OpenAPIServletContextListener.class.getClassLoader();
         }
 
         return OpenApiProcessor.getFilter(config, cl);
