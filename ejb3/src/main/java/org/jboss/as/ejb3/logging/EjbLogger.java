@@ -2250,16 +2250,16 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return an {@link NoSuchObjectLocalException} for the error.
      */
-    @Message(id = 330, value = "Timer has expired")
-    NoSuchObjectLocalException timerHasExpired();
+    @Message(id = 330, value = "Timer %s has expired")
+    NoSuchObjectLocalException timerHasExpired(String id);
 
     /**
      * Creates an exception indicating the timer was canceled
      *
      * @return an {@link NoSuchObjectLocalException} for the error.
      */
-    @Message(id = 331, value = "Timer was canceled")
-    NoSuchObjectLocalException timerWasCanceled();
+    @Message(id = 331, value = "Timer %s was canceled")
+    NoSuchObjectLocalException timerWasCanceled(String id);
 
 //    /**
 //     * Creates an exception indicating the timer is not persistent
