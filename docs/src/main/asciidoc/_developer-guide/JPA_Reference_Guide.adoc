@@ -858,6 +858,12 @@ persistence context is closed (e.g. business method ends). Defaults to
 false (entities are cleared after EntityManager invocation) and if set
 to true, the detach is deferred until the context is closed.
 
+|wildfly.jpa.skipquerydetach |Controls whether transaction scoped
+persistence context used in non-JTA transaction thread, will detach
+Query results immediately. Defaults to
+false (Query results are detached immediately) and if set
+to true, the detach is deferred until the persistence context is closed.
+
 |wildfly.jpa.hibernate.search.module |Controls which version of
 Hibernate Search to include on classpath. Only makes sense when using
 Hibernate as JPA implementation. The default is auto; other valid values

@@ -84,6 +84,9 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     protected abstract boolean deferEntityDetachUntilClose();
 
+    protected abstract boolean skipQueryDetach();
+
+
     public <T> T unwrap(Class<T> cls) {
         return getEntityManager().unwrap(cls);
     }
@@ -847,7 +850,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     // for JPA 2.0 section 3.8.6
     // used by TransactionScopedEntityManager to detach entities loaded by a query in a non-jta invocation.
     protected Query detachQueryNonTxInvocation(EntityManager underlyingEntityManager, Query underLyingQuery) {
-        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx() && !skipQueryDetach()) {
             return new QueryNonTxInvocationDetacher(underlyingEntityManager, underLyingQuery);
         }
         return underLyingQuery;
@@ -856,14 +859,14 @@ public abstract class AbstractEntityManager implements EntityManager {
     // for JPA 2.0 section 3.8.6
     // used by TransactionScopedEntityManager to detach entities loaded by a query in a non-jta invocation.
     protected <T> TypedQuery<T> detachTypedQueryNonTxInvocation(EntityManager underlyingEntityManager, TypedQuery<T> underLyingQuery) {
-        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx() && !skipQueryDetach()) {
             return new TypedQueryNonTxInvocationDetacher<>(underlyingEntityManager, underLyingQuery);
         }
         return underLyingQuery;
     }
 
     private StoredProcedureQuery detachStoredProcedureQueryNonTxInvocation(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingStoredProcedureQuery) {
-        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx() && !skipQueryDetach()) {
             return new StoredProcedureQueryNonTxInvocationDetacher(underlyingEntityManager, underlyingStoredProcedureQuery);
         }
         return underlyingStoredProcedureQuery;

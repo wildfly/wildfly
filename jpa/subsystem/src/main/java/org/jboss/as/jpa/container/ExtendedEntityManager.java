@@ -270,6 +270,13 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
         return false;
     }
 
+    @Override
+    protected boolean skipQueryDetach() {
+        return false;
+    }
+
+
+
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         if(WildFlySecurityManager.isChecking()) {
