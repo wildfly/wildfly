@@ -73,9 +73,18 @@ public class LoggingUtil {
 
     public static boolean hasLogMessage(String logFileName, String logMessage) throws Exception {
 
-        boolean found = false;
         Path logPath = LoggingUtil.getInServerLogPath(logFileName);
+        return isMessageInLogFile(logPath, logMessage);
+    }
 
+    public static boolean hasLogMessage(ManagementClient managementClient, String handlerName, String logMessage) throws Exception {
+
+        Path logPath = LoggingUtil.getLogPath(managementClient, "file-handler", handlerName);
+        return isMessageInLogFile(logPath, logMessage);
+    }
+
+    private static boolean isMessageInLogFile(Path logPath, String logMessage) throws Exception{
+        boolean found = false;
         try (BufferedReader fileReader = Files.newBufferedReader(logPath)) {
             String line = "";
             while ((line = fileReader.readLine()) != null) {
@@ -87,5 +96,4 @@ public class LoggingUtil {
         }
         return found;
     }
-
 }
