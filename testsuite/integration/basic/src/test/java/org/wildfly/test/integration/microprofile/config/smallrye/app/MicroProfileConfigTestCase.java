@@ -22,14 +22,13 @@
 
 package org.wildfly.test.integration.microprofile.config.smallrye.app;
 
+import static org.junit.Assert.assertTrue;
 import static org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils.assertTextContainsProperty;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Optional;
-import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -296,13 +295,9 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
             petsList.add("cat");
             petsList.add("lama,yokohama");
 
-            Set<String> petsSet = new HashSet<>();
-            petsSet.add("dog");
-            petsSet.add("mouse,house");
-
             assertTextContainsProperty(text, "myPets as String array", Arrays.toString(new String[]{"horse","monkey,donkey"}));
             assertTextContainsProperty(text, "myPets as String list", petsList);
-            assertTextContainsProperty(text, "myPets as String set", petsSet); // TODO - not sure whether this is safe as Set doesn't assure order?
+            assertTrue("set is different", text.contains("myPets as String set = [dog, mouse,house]") || text.contains("myPets as String set = [mouse,house, dog]"));
         }
     }
 
@@ -322,14 +317,9 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
             petsList.add("donkey");
             petsList.add("shrek,fiona");
 
-            Set<String> petsSet = new HashSet<>();
-            petsSet.add("donkey");
-            petsSet.add("shrek,fiona");
-
             assertTextContainsProperty(text, "myPetsOverridden as String array", Arrays.toString(new String[] {"donkey", "shrek,fiona"}));
             assertTextContainsProperty(text, "myPetsOverridden as String list", petsList);
-            assertTextContainsProperty(text, "myPetsOverridden as String set", petsSet); // TODO - not sure whether this is safe as Set doesn't assure order?
-//            Assert.assertTrue(text.contains("myPetsOverridden as String set = [donkey,shrek]") || text.contains("myPetsOverridden as String set = [shrek,donkey]"));
+            assertTrue("set is different", text.contains("myPetsOverridden as String set = [donkey, shrek,fiona]") || text.contains("myPets as String set = [shrek,fiona, donkey]"));
         }
     }
 

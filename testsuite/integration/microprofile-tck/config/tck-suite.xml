@@ -26,6 +26,19 @@
                     <exclude name=".*" />
                 </methods>
             </class>
+            <!-- These test are also exclueded in the SmallRye TCK -->
+            <class name="org.eclipse.microprofile.config.tck.ConfigProviderTest">
+                <methods>
+                    <exclude name="testEnvironmentConfigSource"/>
+                </methods>
+            </class>
+            <class name="org.eclipse.microprofile.config.tck.EmptyValuesTest">
+                <methods>
+                    <exclude name="testEmptyStringPropertyFromConfigFile"/>
+                    <exclude name="testEmptyStringProgrammaticLookup"/>
+                    <exclude name="testEmptyStringValues"/>
+                </methods>
+            </class>
         </classes>
     </test>
 
