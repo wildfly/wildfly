@@ -50,6 +50,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.elytron.util.WelcomeContent;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -69,7 +70,7 @@ import org.wildfly.test.security.common.elytron.UndertowSslContext;
  * @author Ondrej Kotek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ UndertowTwoWaySslTestCase.ElytronSslContextInUndertowSetupTask.class })
+@ServerSetup({ UndertowTwoWaySslTestCase.ElytronSslContextInUndertowSetupTask.class, WelcomeContent.SetupTask.class })
 @RunAsClient
 public class UndertowTwoWaySslTestCase {
 

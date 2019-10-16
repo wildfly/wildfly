@@ -1,23 +1,5 @@
 embed-server --admin-only=true --server-config=standalone-full.xml
 
-/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
-/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
-/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
-/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
-/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
-
-/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
-/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
-
-/core-service=management/access=identity:add(security-domain=ManagementDomain)
-/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
-/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
-/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
-/core-service=management/security-realm=ManagementRealm:remove
-/core-service=management/security-realm=ApplicationRealm/authentication=local:remove
-/core-service=management/security-realm=ApplicationRealm/authentication=properties:remove
-/core-service=management/security-realm=ApplicationRealm/authorization=properties:remove
-
 /subsystem=datasources/data-source=ExampleDS:undefine-attribute(name=password)
 /subsystem=datasources/data-source=ExampleDS:write-attribute(name=credential-reference,value={clear-text=sa})
 
@@ -54,16 +36,5 @@ embed-server --admin-only=true --server-config=standalone-full.xml
 /subsystem=elytron/credential-store=cred-store-default:add-alias(alias=alias-password, secret-value=password)
 /subsystem=elytron/credential-store=cred-store-default:add-alias(alias=alias-secret, secret-value=secret)
 /subsystem=elytron/credential-store=cred-store-default:remove()
-
-
-# datasources and ejb3 still has dependency on legacy security subsystem, so we can't remove it completely now
-
-# /subsystem=security:remove
-# /extension=org.jboss.as.security:remove
-
-/subsystem=security/security-domain=other:remove
-/subsystem=security/security-domain=jaspitest:remove
-/subsystem=security/security-domain=jboss-ejb-policy:remove
-/subsystem=security/security-domain=jboss-web-policy:remove
 
 stop-embedded-server
