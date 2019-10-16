@@ -208,7 +208,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         if (!event.isPre() && !this.properties.isPersistent()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
-            Map.Entry<MV, AV> value = this.factory.findValue(id);
+            Map.Entry<MV, AV> value = this.factory.tryValue(id);
             if (value != null) {
                 ImmutableSession session = this.factory.createImmutableSession(id, value);
                 new ImmutableSessionActivationNotifier(session, this.context).postActivate();
@@ -221,7 +221,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         if (event.isPre() && !this.properties.isPersistent()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-            Map.Entry<MV, AV> value = this.factory.findValue(id);
+            Map.Entry<MV, AV> value = this.factory.tryValue(id);
             if (value != null) {
                 ImmutableSession session = this.factory.createImmutableSession(id, value);
                 new ImmutableSessionActivationNotifier(session, this.context).prePassivate();
