@@ -23,12 +23,14 @@
 package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.singleton.Singleton;
 
 /**
  * @author Paul Ferraro
@@ -51,14 +53,17 @@ public class SingletonServiceResourceDefinition extends ChildResourceDefinition<
         }
     }
 
-    public SingletonServiceResourceDefinition() {
+    private final FunctionExecutorRegistry<Singleton> executors;
+
+    public SingletonServiceResourceDefinition(FunctionExecutorRegistry<Singleton> executors) {
         super(new Parameters(WILDCARD_PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH)).setRuntime());
+        this.executors = executors;
     }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        new MetricHandler<>(new SingletonServiceMetricExecutor(), SingletonMetric.class).register(registration);
+        new MetricHandler<>(new SingletonServiceMetricExecutor(this.executors), SingletonMetric.class).register(registration);
         return registration;
     }
 }

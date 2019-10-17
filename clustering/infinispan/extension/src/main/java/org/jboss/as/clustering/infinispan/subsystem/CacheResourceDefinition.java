@@ -28,12 +28,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.UnaryOperator;
 
+import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
@@ -316,7 +318,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
 
-    public CacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, CacheServiceHandler handler) {
+    public CacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, CacheServiceHandler handler, FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, PathElement.pathElement("cache")));
         this.configurator = configurator;
         this.handler = handler;

@@ -20,6 +20,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.rpc.RpcManagerImpl;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 
 /**
  * Handler for clustered cache metrics.
@@ -27,6 +28,10 @@ import org.infinispan.remoting.rpc.RpcManagerImpl;
  * @author Paul Ferraro
  */
 public class ClusteredCacheMetricExecutor extends CacheMetricExecutor<RpcManagerImpl> {
+
+    public ClusteredCacheMetricExecutor(FunctionExecutorRegistry<Cache<?, ?>> executors) {
+        super(executors);
+    }
 
     @Override
     public RpcManagerImpl apply(Cache<?, ?> cache) {

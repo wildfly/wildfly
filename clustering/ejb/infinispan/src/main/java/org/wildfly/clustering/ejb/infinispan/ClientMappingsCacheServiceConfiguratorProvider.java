@@ -37,7 +37,7 @@ import org.infinispan.configuration.cache.StateTransferConfiguration;
 import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
@@ -64,9 +64,9 @@ public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServ
         List<CapabilityServiceConfigurator> configurators = new LinkedList<>();
         if (aliasCacheName == null) {
             String cacheName = BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME;
-            configurators.add(new TemplateConfigurationServiceConfigurator(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, this));
-            configurators.add(new CacheServiceConfigurator<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
-            ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceName.parse(requirement.resolve(containerName, cacheName));
+            configurators.add(new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, aliasCacheName, this));
+            configurators.add(new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName));
+            ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, cacheName);
             for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
                 configurators.addAll(provider.getServiceConfigurators(routingRegistry, containerName, cacheName));
             }

@@ -22,18 +22,17 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.clustering.service.ChildTargetService;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 
@@ -47,23 +46,9 @@ public class ValueServiceActivator implements ServiceActivator {
 
     @Override
     public void activate(ServiceActivatorContext context) {
-        ServiceRegistry registry = context.getServiceRegistry();
-        ServiceName name = ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName());
-        PrivilegedAction<ServiceController<?>> action = new PrivilegedAction<ServiceController<?>>() {
-            @Override
-            public ServiceController<?> run() {
-                return registry.getRequiredService(name);
-            }
-        };
-        ServiceController<?> controller = AccessController.doPrivileged(action);
-        try {
-            SingletonPolicy policy = (SingletonPolicy) controller.awaitValue(30, TimeUnit.SECONDS);
-            policy.createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(Boolean.TRUE)), new ValueService<>(new ImmediateValue<>(Boolean.FALSE))).build(context.getServiceTarget()).install();
-        } catch (TimeoutException e) {
-            controller.getServiceContainer().dumpServices();
-            throw new IllegalStateException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        ServiceBuilder<?> builder = context.getServiceTarget().addService(ServiceName.JBOSS.append("test", "service", "installer"));
+        Supplier<SingletonPolicy> policy = builder.requires(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName()));
+        Consumer<ServiceTarget> installer = target -> policy.get().createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(Boolean.TRUE)), new ValueService<>(new ImmediateValue<>(Boolean.FALSE))).build(context.getServiceTarget()).install();
+        builder.setInstance(new ChildTargetService(installer)).install();
     }
 }

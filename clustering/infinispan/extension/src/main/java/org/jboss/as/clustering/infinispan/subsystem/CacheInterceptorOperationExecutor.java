@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
 import org.infinispan.interceptors.AsyncInterceptor;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 
 /**
  * Executor for metrics based on a cache interceptor.
@@ -33,7 +34,8 @@ public class CacheInterceptorOperationExecutor<I extends AsyncInterceptor> exten
 
     private final Class<I> interceptorClass;
 
-    public CacheInterceptorOperationExecutor(Class<I> interceptorClass) {
+    public CacheInterceptorOperationExecutor(FunctionExecutorRegistry<Cache<?, ?>> executors, Class<I> interceptorClass) {
+        super(executors);
         this.interceptorClass = interceptorClass;
     }
 

@@ -85,7 +85,7 @@ public class CapabilityReference extends AbstractCapabilityReference {
     }
 
     @Override
-    public void addCapabilityRequirements(OperationContext context, Resource resource,  String attributeName, String... values) {
+    public void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
         String dependentName = this.getDependentName(context);
         for (String value : values) {
             if (value != null) {

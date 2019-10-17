@@ -42,11 +42,11 @@ public class BinaryRequirementServiceNameFactory implements BinaryServiceNameFac
 
     @Override
     public ServiceName getServiceName(OperationContext context, String parent, String child) {
-        return context.getCapabilityServiceName(this.requirement.resolve(parent, child), this.requirement.getType());
+        return context.getCapabilityServiceName(this.requirement.getName(), this.requirement.getType(), parent, child);
     }
 
     @Override
     public ServiceName getServiceName(CapabilityServiceSupport support, String parent, String child) {
-        return support.getCapabilityServiceName(this.requirement.resolve(parent, child));
+        return support.getCapabilityServiceName(this.requirement.getName(), parent, child);
     }
 }

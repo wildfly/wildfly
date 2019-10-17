@@ -31,6 +31,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -46,12 +47,7 @@ public class FunctionalService<T, V> implements Service {
     private volatile T value;
 
     public FunctionalService(Consumer<V> consumer, Function<T, V> mapper, Supplier<T> factory) {
-        this(consumer, mapper, factory, new Consumer<T>() {
-            @Override
-            public void accept(T value) {
-                // Do nothing
-            }
-        });
+        this(consumer, mapper, factory, Functions.discardingConsumer());
     }
 
     public FunctionalService(Consumer<V> consumer, Function<T, V> mapper, Supplier<T> factory, Consumer<T> destroyer) {

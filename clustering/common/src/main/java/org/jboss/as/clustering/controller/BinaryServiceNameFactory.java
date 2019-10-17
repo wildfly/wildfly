@@ -58,6 +58,6 @@ public interface BinaryServiceNameFactory {
      */
     default ServiceName getServiceName(OperationContext context, BinaryCapabilityNameResolver resolver) {
         String[] parts = resolver.apply(context.getCurrentAddress());
-        return this.getServiceName(context, parts[0], parts[1]);
+        return this.getServiceName(context.getCapabilityServiceSupport(), parts[0], parts[1]);
     }
 }

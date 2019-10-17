@@ -24,6 +24,7 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
@@ -34,6 +35,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.modcluster.ModClusterServiceMBean;
 
 /**
  * Resource definition for mod_cluster subsystem resource, children of which are respective proxy configurations.
@@ -58,16 +60,15 @@ class ModClusterSubsystemResourceDefinition extends SubsystemResourceDefinition<
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
 
-        ResourceServiceHandler handler = new ModClusterSubsystemServiceHandler();
+        ServiceValueExecutorRegistry<ModClusterServiceMBean> registry = new ServiceValueExecutorRegistry<>();
+        ResourceServiceHandler handler = new ModClusterSubsystemServiceHandler(registry);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new ProxyConfigurationResourceDefinition().register(registration);
+        new ProxyConfigurationResourceDefinition(registry).register(registration);
 
         // Deprecated legacy operations which are exposed at the wrong location
         if (parent.isRuntimeOnlyRegistrationValid()) {
-            for (LegacyProxyOperation legacyProxyOperation : LegacyProxyOperation.values()) {
-                registration.registerOperationHandler(legacyProxyOperation.getDefinition(), legacyProxyOperation);
-            }
+            new LegacyProxyHandler(registry).register(registration);
         }
     }
 

@@ -34,16 +34,17 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.Services;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.common.beans.property.BeanUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
@@ -52,7 +53,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ActiveServiceSupplier;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
  * Resource service handler implementation that handles installation of mod_cluster services. Since mod_cluster requires certain
@@ -62,6 +63,12 @@ import org.wildfly.clustering.service.ActiveServiceSupplier;
  * @author Radoslav Husar
  */
 class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
+
+    private final ServiceValueRegistry<ModClusterServiceMBean> registry;
+
+    ModClusterSubsystemServiceHandler(ServiceValueRegistry<ModClusterServiceMBean> registry) {
+        this.registry = registry;
+    }
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
@@ -91,7 +98,9 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 String listenerName = LISTENER.resolveModelAttribute(context, proxyModel).asString();
                 int statusInterval = STATUS_INTERVAL.resolveModelAttribute(context, proxyModel).asInt();
 
-                new ContainerEventHandlerServiceConfigurator(proxyAddress, loadProvider).build(target).install();
+                ServiceConfigurator configurator = new ContainerEventHandlerServiceConfigurator(proxyAddress, loadProvider);
+                configurator.build(target).install();
+                new ServiceValueCaptorServiceConfigurator<>(this.registry.add(configurator.getServiceName())).build(target).install();
 
                 // Install services for web container integration
                 for (ContainerEventHandlerAdapterServiceConfiguratorProvider provider : ServiceLoader.load(ContainerEventHandlerAdapterServiceConfiguratorProvider.class, ContainerEventHandlerAdapterServiceConfiguratorProvider.class.getClassLoader())) {
@@ -164,10 +173,8 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 String className = CustomLoadMetricResourceDefinition.Attribute.CLASS.resolveModelAttribute(context, node).asString();
                 String moduleName = CustomLoadMetricResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, node).asString();
 
-                ServiceModuleLoader serviceModuleLoader = new ActiveServiceSupplier<ServiceModuleLoader>(context.getServiceRegistry(true), Services.JBOSS_SERVICE_MODULE_LOADER).get();
-
                 try {
-                    Module module = serviceModuleLoader.loadModule(moduleName);
+                    Module module = Module.getContextModuleLoader().loadModule(moduleName);
                     loadMetricClass = module.getClassLoader().loadClass(className).asSubclass(LoadMetric.class);
                 } catch (ModuleLoadException e) {
                     ROOT_LOGGER.errorLoadingModuleForCustomMetric(moduleName, e);

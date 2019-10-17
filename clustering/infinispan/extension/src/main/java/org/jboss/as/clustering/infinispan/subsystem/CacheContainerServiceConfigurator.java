@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -46,6 +47,7 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
@@ -73,22 +75,33 @@ import org.wildfly.clustering.service.SupplierDependency;
 @Listener
 public class CacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<EmbeddedCacheManager, CacheContainer>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
 
+    private final ServiceValueRegistry<Cache<?, ?>> registry;
     private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
+    private final PathAddress address;
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
 
     private volatile Registrar<String> registrar;
     private volatile ServiceName[] names;
 
-    public CacheContainerServiceConfigurator(PathAddress address) {
+    public CacheContainerServiceConfigurator(PathAddress address, ServiceValueRegistry<Cache<?, ?>> registry) {
         super(CONTAINER, address);
+        this.address = address;
         this.name = address.getLastElement().getValue();
         this.configuration = new ServiceSupplierDependency<>(CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(address));
+        this.registry = registry;
     }
 
     @Override
     public CacheContainer apply(EmbeddedCacheManager manager) {
-        return new DefaultCacheContainer(manager);
+        PathAddress containerAddress = this.address;
+        Function<String, ServiceName> serviceNameFactory = new Function<String, ServiceName>() {
+            @Override
+            public ServiceName apply(String cacheName) {
+                return CacheResourceDefinition.Capability.CACHE.getServiceName(containerAddress.append(CacheRuntimeResourceDefinition.pathElement(cacheName)));
+            }
+        };
+        return new DefaultCacheContainer(manager, this.registry, serviceNameFactory);
     }
 
     @Override

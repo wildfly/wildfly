@@ -32,6 +32,7 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -56,6 +57,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -275,22 +277,23 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
+        ServiceValueExecutorRegistry<JChannel> executors = new ServiceValueExecutorRegistry<>();
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 .addAlias(DeprecatedAttribute.STATS_ENABLED, Attribute.STATISTICS_ENABLED)
                 .setAddOperationTransformation(new AddOperationTransformation())
-                .addRuntimeResourceRegistration(new ChannelRuntimeResourceRegistration())
+                .addRuntimeResourceRegistration(new ChannelRuntimeResourceRegistration(executors))
                 ;
-        ResourceServiceHandler handler = new ChannelServiceHandler();
+        ResourceServiceHandler handler = new ChannelServiceHandler(executors);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new ChannelMetricExecutor(), ChannelMetric.class).register(registration);
+            new MetricHandler<>(new ChannelMetricExecutor(executors), ChannelMetric.class).register(registration);
         }
 
-        new ForkResourceDefinition().register(registration);
+        new ForkResourceDefinition(executors).register(registration);
 
         return registration;
     }

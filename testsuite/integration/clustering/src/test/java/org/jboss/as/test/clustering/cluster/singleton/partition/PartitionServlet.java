@@ -29,14 +29,13 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.msc.service.ServiceName;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
@@ -45,7 +44,6 @@ import org.jgroups.protocols.DISCARD;
 import org.jgroups.protocols.TP;
 import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.stack.ProtocolStack;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * Servlet used to simulate network partitions. Responds to {@code /partition?partition=true} by inserting DISCARD protocol to the stack
@@ -72,19 +70,21 @@ public class PartitionServlet extends HttpServlet {
         return baseURL.toURI().resolve(PARTITION + '?' + PARTITION + '=' + partition);
     }
 
+    @Resource(lookup = "java:jboss/jgroups/channel/default")
+    private JChannel channel;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         boolean partition = Boolean.valueOf(request.getParameter(PARTITION));
 
         this.log("Simulating network partitions? " + partition);
 
-        JChannel channel = new PassiveServiceSupplier<JChannel>(CurrentServiceContainer.getServiceContainer(), ServiceName.parse("org.wildfly.clustering.jgroups.default-channel")).get();
         try {
             if (partition) {
                 // Store views for future merge event
-                GMS gms = channel.getProtocolStack().findProtocol(GMS.class);
+                GMS gms = this.channel.getProtocolStack().findProtocol(GMS.class);
                 mergeViews = new HashMap<>();
-                channel.getView().getMembers().forEach(
+                this.channel.getView().getMembers().forEach(
                         address -> mergeViews.put(address, View.create(address, gms.getViewId().getId() + 1, address))
                 );
                 // Wait a few seconds to ensure everyone stored a full view
@@ -93,13 +93,13 @@ public class PartitionServlet extends HttpServlet {
                 // Simulate partitions by injecting DISCARD protocol
                 DISCARD discard = new DISCARD();
                 discard.setDiscardAll(true);
-                channel.getProtocolStack().insertProtocol(discard, ProtocolStack.Position.ABOVE, TP.class);
+                this.channel.getProtocolStack().insertProtocol(discard, ProtocolStack.Position.ABOVE, TP.class);
 
                 // Speed up partitioning
-                View view = View.create(channel.getAddress(), gms.getViewId().getId() + 1, channel.getAddress());
+                View view = View.create(this.channel.getAddress(), gms.getViewId().getId() + 1, this.channel.getAddress());
                 gms.installView(view);
             } else {
-                channel.getProtocolStack().removeProtocol(DISCARD.class);
+                this.channel.getProtocolStack().removeProtocol(DISCARD.class);
                 // Wait a few seconds for the other node to remove DISCARD so it does not discard our MERGE request
                 Thread.sleep(VIEWS_TIMEOUT);
 
@@ -107,7 +107,7 @@ public class PartitionServlet extends HttpServlet {
                 // let just all nodes send the merge..
                 this.log("Passing event up the stack: " + new Event(Event.MERGE, mergeViews));
 
-                GMS gms = channel.getProtocolStack().findProtocol(GMS.class);
+                GMS gms = this.channel.getProtocolStack().findProtocol(GMS.class);
                 gms.up(new Event(Event.MERGE, mergeViews));
                 mergeViews = null;
             }

@@ -24,6 +24,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.UnaryOperator;
 
+import org.infinispan.Cache;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
@@ -107,7 +109,7 @@ public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDe
         }
     }
 
-    SegmentedCacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ClusteredCacheServiceHandler handler) {
-        super(path, new ResourceDescriptorConfigurator(configurator), handler);
+    SegmentedCacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ClusteredCacheServiceHandler handler, FunctionExecutorRegistry<Cache<?, ?>> executors) {
+        super(path, new ResourceDescriptorConfigurator(configurator), handler, executors);
     }
 }

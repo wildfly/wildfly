@@ -28,7 +28,6 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
@@ -290,7 +289,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         registration.registerOperationHandler(legacyRemoveProtocolOperation, legacyRemoveProtocolHandler);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new OperationHandler<>(new StackOperationExecutor(), StackOperation.class).register(registration);
+            new StackOperationHandler().register(registration);
         }
 
         new TransportRegistration(this.serviceConfiguratorFactory).register(registration);

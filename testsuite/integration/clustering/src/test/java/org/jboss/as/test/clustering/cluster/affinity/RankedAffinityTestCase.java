@@ -51,7 +51,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -108,7 +107,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 .addClasses(SimpleServlet.class, Mutable.class)
                 .setWebXML(SimpleServlet.class.getPackage(), "web.xml");
         ClusterTestUtil.addTopologyListenerDependencies(war);
-        war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new ServerPermission("getCurrentServiceContainer")), "permissions.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml");
         return war;
     }
 
@@ -149,39 +148,39 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
 
             // 2
             ModelControllerClient lbModelControllerClient = TestSuiteEnvironment.getModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + 500);
-            ManagementClient lbManagementClient = new ManagementClient(lbModelControllerClient, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + 500, "remote+http");
+            try (ManagementClient lbManagementClient = new ManagementClient(lbModelControllerClient, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + 500, "remote+http")) {
+                String node = previousAffinities[0];
+                ModelNode operation = new ModelNode();
+                operation.get(OP).set(ModelDescriptionConstants.STOP);
+                PathAddress address = PathAddress.parseCLIStyleAddress(String.format("/subsystem=undertow/configuration=filter/mod-cluster=load-balancer/balancer=%s/node=%s", BALANCER_NAME, node));
+                operation.get(OP_ADDR).set(address.toModelNode());
+                ModelNode result = lbManagementClient.getControllerClient().execute(operation);
+                log.info("Running operation: " + operation.toJSONString(false));
+                Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+                log.info("Operation result: " + result.toJSONString(false));
 
-            String node = previousAffinities[0];
-            ModelNode operation = new ModelNode();
-            operation.get(OP).set(ModelDescriptionConstants.STOP);
-            PathAddress address = PathAddress.parseCLIStyleAddress(String.format("/subsystem=undertow/configuration=filter/mod-cluster=load-balancer/balancer=%s/node=%s", BALANCER_NAME, node));
-            operation.get(OP_ADDR).set(address.toModelNode());
-            ModelNode result = lbManagementClient.getControllerClient().execute(operation);
-            log.info("Running operation: " + operation.toJSONString(false));
-            Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-            log.info("Operation result: " + result.toJSONString(false));
+                operation = new ModelNode();
+                operation.get(OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+                address = PathAddress.parseCLIStyleAddress("/subsystem=undertow/configuration=filter/mod-cluster=load-balancer");
+                operation.get(OP_ADDR).set(address.toModelNode());
+                operation.get(ModelDescriptionConstants.RECURSIVE).set(ModelNode.TRUE);
+                operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(ModelNode.TRUE);
+                result = lbManagementClient.getControllerClient().execute(operation);
+                log.info("Running operation: " + operation.toJSONString(false));
+                Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+                log.info("Operation result: " + result.toJSONString(false));
 
-            operation = new ModelNode();
-            operation.get(OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
-            address = PathAddress.parseCLIStyleAddress("/subsystem=undertow/configuration=filter/mod-cluster=load-balancer");
-            operation.get(OP_ADDR).set(address.toModelNode());
-            operation.get(ModelDescriptionConstants.RECURSIVE).set(ModelNode.TRUE);
-            operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(ModelNode.TRUE);
-            result = lbManagementClient.getControllerClient().execute(operation);
-            log.info("Running operation: " + operation.toJSONString(false));
-            Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-            log.info("Operation result: " + result.toJSONString(false));
+                Thread.sleep(GRACE_TIME_TOPOLOGY_CHANGE);
 
-            Thread.sleep(GRACE_TIME_TOPOLOGY_CHANGE);
-
-            // 3
-            response = client.execute(new HttpGet(lbURI));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                Assert.assertEquals("The subsequent request should have been served by the 2nd node in the affinity list", previousAffinities[1], response.getFirstHeader(SimpleServlet.HEADER_NODE_NAME).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+                // 3
+                response = client.execute(new HttpGet(lbURI));
+                try {
+                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                    Assert.assertEquals("The subsequent request should have been served by the 2nd node in the affinity list", previousAffinities[1], response.getFirstHeader(SimpleServlet.HEADER_NODE_NAME).getValue());
+                } finally {
+                    HttpClientUtils.closeQuietly(response);
+                }
             }
         }
     }

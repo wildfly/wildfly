@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 
 /**
  * Executor for partition handling metrics.
@@ -32,8 +33,8 @@ import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
  */
 public class PartitionHandlingMetricExecutor extends CacheMetricExecutor<AdvancedCache<?, ?>> {
 
-    public PartitionHandlingMetricExecutor() {
-        super(BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
+    public PartitionHandlingMetricExecutor(FunctionExecutorRegistry<Cache<?, ?>> executors) {
+        super(executors, BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
     }
 
     @Override

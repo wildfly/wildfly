@@ -33,6 +33,7 @@ import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -55,6 +56,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
@@ -184,11 +186,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)
                 .setResourceTransformation(RemoteCacheContainerResource::new)
                 ;
-        ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(this);
+        ServiceValueExecutorRegistry<RemoteCacheContainer> executors = new ServiceValueExecutorRegistry<>();
+        ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(this, executors);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new ConnectionPoolResourceDefinition().register(registration);
-        new RemoteClusterResourceDefinition(this).register(registration);
+        new RemoteClusterResourceDefinition(this, executors).register(registration);
         new SecurityResourceDefinition().register(registration);
         new RemoteTransactionResourceDefinition().register(registration);
 
@@ -198,9 +201,9 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         ThreadPoolResourceDefinition.CLIENT.register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new RemoteCacheContainerMetricExecutor(), RemoteCacheContainerMetric.class).register(registration);
+            new MetricHandler<>(new RemoteCacheContainerMetricExecutor(executors), RemoteCacheContainerMetric.class).register(registration);
 
-            new RemoteCacheResourceDefinition().register(registration);
+            new RemoteCacheResourceDefinition(executors).register(registration);
         }
 
         return registration;

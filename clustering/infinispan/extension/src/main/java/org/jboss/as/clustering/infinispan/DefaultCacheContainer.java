@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -33,6 +34,8 @@ import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
+import org.jboss.as.clustering.controller.ServiceValueRegistry;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 
 /**
@@ -41,8 +44,13 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  */
 public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer, EmbeddedCacheManagerAdmin {
 
-    public DefaultCacheContainer(EmbeddedCacheManager container) {
+    private final ServiceValueRegistry<Cache<?, ?>> registry;
+    private final Function<String, ServiceName> serviceNameFactory;
+
+    public DefaultCacheContainer(EmbeddedCacheManager container, ServiceValueRegistry<Cache<?, ?>> registry, Function<String, ServiceName> serviceNameFactory) {
         super(container);
+        this.registry = registry;
+        this.serviceNameFactory = serviceNameFactory;
     }
 
     @Override
@@ -103,7 +111,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     private <K, V> Cache<K, V> wrap(Cache<K, V> cache) {
-        return new DefaultCache<>(this, cache.getAdvancedCache());
+        return new DefaultCache<>(this, cache.getAdvancedCache(), this.registry.add(this.serviceNameFactory.apply(cache.getName())));
     }
 
     @Override
@@ -146,6 +154,12 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public synchronized <K, V> Cache<K, V> getOrCreateCache(String name, Configuration configuration) {
         return (this.getCacheConfiguration(name) != null) ? this.createCache(name, configuration) : this.getCache(name);
+    }
+
+    @Override
+    public void undefineConfiguration(String configurationName) {
+        this.registry.remove(this.serviceNameFactory.apply(configurationName));
+        super.undefineConfiguration(configurationName);
     }
 
     @Override
