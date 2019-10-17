@@ -23,6 +23,7 @@
 package org.jboss.as.security.deployment;
 
 import org.jboss.as.security.ModuleName;
+import org.jboss.as.security.plugins.ModuleClassLoaderLocator;
 import org.jboss.as.security.remoting.RemotingLoginModule;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -35,6 +36,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.security.plugins.ClassLoaderLocator;
+import org.jboss.security.plugins.ClassLoaderLocatorFactory;
 
 /**
  * Adds a security subsystem dependency to deployments
@@ -70,6 +73,10 @@ public class SecurityDependencyProcessor implements DeploymentUnitProcessor {
 
     /** {@inheritDoc} */
     public void undeploy(DeploymentUnit context) {
+        ClassLoaderLocator locator = ClassLoaderLocatorFactory.get();
+        if (locator instanceof ModuleClassLoaderLocator) {
+            ((ModuleClassLoaderLocator)locator).clearCache();
+        }
     }
 
 }
