@@ -83,11 +83,7 @@
         <module>legacy/web</module>
         <module>mail</module>
         <module>messaging-activemq</module>
-        <module>microprofile/config-smallrye</module>
-        <module>microprofile/health-smallrye</module>
-        <module>microprofile/metrics-smallrye</module>
-        <module>microprofile/opentracing-extension</module>
-        <module>microprofile/opentracing-smallrye</module>
+        <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
         <module>picketlink</module>
