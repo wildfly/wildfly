@@ -41,7 +41,7 @@
 
     <name>WildFly: Common EE implementations for caches</name>
     <description>
-        This module contains code that is common to the wildlfy-clustering-ee-hotrod and wildlfy-clustering-ee-infinispan modules.
+        This module contains code that is common to the wildfly-clustering-ee-hotrod and wildfly-clustering-ee-infinispan modules.
     </description>
 
     <dependencies>

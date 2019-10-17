@@ -41,7 +41,7 @@
 
     <name>WildFly: EE clustering SPI</name>
     <description>
-        This module contains code that is common to the wildlfy-clustering-ejb-spi and wildlfy-clustering-web-spi modules.
+        This module contains code that is common to the wildfly-clustering-ejb-spi and wildfly-clustering-web-spi modules.
     </description>
 
     <dependencies>
