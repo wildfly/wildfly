@@ -49,12 +49,12 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     @Message(id = 1, value = "Activating Eclipse MicroProfile OpenAPI Subsystem")
     void activatingSubsystem();
 
-    @Message(id = 2, value = "Failed to load OpenAPI static file from deployment")
-    DeploymentUnitProcessingException staticFileLoadException(@Cause IOException e);
+    @Message(id = 2, value = "Failed to load OpenAPI '%s' from deployment '%s'")
+    DeploymentUnitProcessingException failedToLoadStaticFile(@Cause IOException e, String fileName, String deploymentName);
 
     @LogMessage(level = WARN)
     @Message(id = 3, value = "Unable to serialize OpenAPI in %s format")
-    void serializationException(Format format, @Cause IOException e);
+    void failedToSerializeDocument(@Cause IOException e, Format format);
 
     @LogMessage(level = WARN)
     @Message(id = 4, value = "MicroProfile OpenAPI endpoint already registered for host '%s'.  Skipping OpenAPI documentation of '%s'.")

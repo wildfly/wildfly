@@ -30,8 +30,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.microprofile.openapi.deployment.DependencyProcessor;
-import org.wildfly.extension.microprofile.openapi.deployment.DeploymentProcessor;
+import org.wildfly.extension.microprofile.openapi.deployment.OpenAPIDependencyProcessor;
+import org.wildfly.extension.microprofile.openapi.deployment.OpenAPIDocumentProcessor;
 import org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger;
 
 /**
@@ -50,7 +50,7 @@ public class MicroProfileOpenAPIServiceHandler implements ResourceServiceHandler
 
     @Override
     public void accept(DeploymentProcessorTarget target) {
-        target.addDeploymentProcessor(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MICROPROFILE_OPENAPI, new DependencyProcessor());
-        target.addDeploymentProcessor(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.POST_MODULE_MICROPROFILE_OPENAPI, new DeploymentProcessor());
+        target.addDeploymentProcessor(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MICROPROFILE_OPENAPI, new OpenAPIDependencyProcessor());
+        target.addDeploymentProcessor(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.POST_MODULE_MICROPROFILE_OPENAPI, new OpenAPIDocumentProcessor());
     }
 }
