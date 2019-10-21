@@ -24,12 +24,15 @@ package org.wildfly.extension.microprofile.openapi.deployment;
 
 import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger.LOGGER;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.UndertowListener;
 
 import io.undertow.server.HttpHandler;
 
@@ -41,6 +44,7 @@ import io.undertow.server.HttpHandler;
 public class OpenAPIHttpHandlerService implements Service {
 
     private static final String OPENAPI_ENDPOINT = "/openapi";
+    private static final Set<String> REQUISITE_SCHEMES = Collections.singleton("http");
 
     private final Supplier<Host> host;
     private final HttpHandler handler;
@@ -55,6 +59,10 @@ public class OpenAPIHttpHandlerService implements Service {
         Host host = this.host.get();
         host.registerHandler(OPENAPI_ENDPOINT, this.handler);
         LOGGER.endpointRegistered(host.getName());
+
+        if (host.getServer().getListeners().stream().map(UndertowListener::getProtocol).noneMatch(REQUISITE_SCHEMES::contains)) {
+            LOGGER.requiredListenersNotFound(host.getServer().getName(), REQUISITE_SCHEMES);
+        }
     }
 
     @Override

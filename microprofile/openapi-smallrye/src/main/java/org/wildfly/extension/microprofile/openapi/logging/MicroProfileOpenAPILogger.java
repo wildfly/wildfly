@@ -25,6 +25,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
@@ -67,4 +68,8 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 6, value = "Unregistered MicroProfile OpenAPI endpoint for host '%s'")
     void endpointUnregistered(String hostName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 7, value = "\u00A75.1 of MicroProfile OpenAPI specification requires that the endpoint be accessible via %2$s, but no such listeners exists for server '%1$s'.")
+    void requiredListenersNotFound(String serverName, Set<String> requisiteSchemes);
 }
