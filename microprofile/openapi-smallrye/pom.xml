@@ -40,7 +40,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-undertow</artifactId>
+            <artifactId>wildfly-jaxrs</artifactId>
         </dependency>
         <dependency>
             <groupId>io.smallrye</groupId>

@@ -36,8 +36,6 @@ import java.util.stream.Collectors;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -92,7 +90,7 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = context.getDeploymentUnit();
 
-        if (DeploymentTypeMarker.isType(DeploymentType.WAR, unit)) {
+        if (unit.getAttachment(OpenAPIDependencyProcessor.ATTACHMENT_KEY).booleanValue()) {
             // Fetch server/host as determined by Undertow DUP
             ModelNode model = unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT).getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
             String serverName = model.get(DeploymentDefinition.SERVER.getName()).asString();

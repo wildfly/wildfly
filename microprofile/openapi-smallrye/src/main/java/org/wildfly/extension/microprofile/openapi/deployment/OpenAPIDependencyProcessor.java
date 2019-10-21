@@ -21,12 +21,17 @@
  */
 package org.wildfly.extension.microprofile.openapi.deployment;
 
+import java.util.EnumSet;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jaxrs.JaxrsAnnotations;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
@@ -40,11 +45,17 @@ import org.jboss.modules.ModuleLoader;
  */
 public class OpenAPIDependencyProcessor implements DeploymentUnitProcessor {
 
+    static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
+
     @Override
     public void deploy(DeploymentPhaseContext context) {
         DeploymentUnit unit = context.getDeploymentUnit();
 
-        if (DeploymentTypeMarker.isType(DeploymentType.WAR, unit)) {
+        // If this is a sub-deployment, we can afford to be more discerning of the type of web application while still passing the TCK.
+        boolean enabled = DeploymentTypeMarker.isType(DeploymentType.WAR, unit) && ((unit.getParent() == null) || isJaxrsDeployment(unit));
+        unit.putAttachment(ATTACHMENT_KEY, enabled);
+
+        if (enabled) {
             ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
             ModuleLoader loader = Module.getBootModuleLoader();
 
@@ -53,7 +64,17 @@ public class OpenAPIDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
-        // No action
+    public void undeploy(DeploymentUnit unit) {
+        unit.removeAttachment(ATTACHMENT_KEY);
+    }
+
+    private static boolean isJaxrsDeployment(DeploymentUnit unit) {
+        CompositeIndex index = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        for (JaxrsAnnotations annotation : EnumSet.allOf(JaxrsAnnotations.class)) {
+            if (!index.getAnnotations(annotation.getDotName()).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
