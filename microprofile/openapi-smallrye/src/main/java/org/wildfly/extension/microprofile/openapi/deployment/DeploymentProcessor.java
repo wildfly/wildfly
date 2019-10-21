@@ -51,7 +51,7 @@ import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger;
+import org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService;
 

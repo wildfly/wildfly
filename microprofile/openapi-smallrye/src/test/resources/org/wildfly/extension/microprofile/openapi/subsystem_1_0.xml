@@ -1,1 +1,0 @@
-<subsystem xmlns="urn:wildfly:microprofile-openapi-smallrye:1.0" virtual-host="${virtual-host:default-host}"/>

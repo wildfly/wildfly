@@ -21,7 +21,7 @@
  */
 package org.wildfly.extension.microprofile.openapi.deployment;
 
-import static org.wildfly.extension.microprofile.openapi._private.MicroProfileOpenAPILogger.LOGGER;
+import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger.LOGGER;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -61,7 +61,7 @@ public class OpenAPIServletContextListener implements ServletContextListener {
         OpenAPI model = modelFromReader(config);
 
         if (model != null && LOGGER.isDebugEnabled()) {
-            LOGGER.modelReaderSuccessful(model.getClass().getName());
+            LOGGER.debugf("OpenAPI model initialized using OASModelReader: %s", model.getClass().getName());
         }
 
         documentBuilder.readerModel(model);
@@ -69,7 +69,7 @@ public class OpenAPIServletContextListener implements ServletContextListener {
         OASFilter filter = getFilter(config);
 
         if (filter != null && LOGGER.isDebugEnabled()) {
-            LOGGER.filterImplementationLoaded(filter.getClass().getName());
+            LOGGER.debugf("OpenAPI OASFilter implementation found: %s", filter.getClass().getName());
         }
 
         documentBuilder.filter(filter);

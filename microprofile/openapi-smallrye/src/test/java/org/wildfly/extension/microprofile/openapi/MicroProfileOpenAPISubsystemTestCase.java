@@ -19,45 +19,57 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.microprofile.openapi;
 
 import java.io.IOException;
-import java.util.Properties;
+import java.util.EnumSet;
+import java.util.Locale;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
- * @author
+ * Unit test for MicroProfile OpenAPI subsystem.
+ * @author Paul Ferraro
  */
-public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+@RunWith(value = Parameterized.class)
+public class MicroProfileOpenAPISubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    public Subsystem_1_0_ParsingTestCase() {
-        super(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, new MicroProfileOpenAPIExtension());
+    private final MicroProfileOpenAPISchema schema;
+
+    @Parameters
+    public static Iterable<MicroProfileOpenAPISchema> parameters() {
+        return EnumSet.allOf(MicroProfileOpenAPISchema.class);
     }
 
+    public MicroProfileOpenAPISubsystemTestCase(MicroProfileOpenAPISchema schema) {
+        super(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, new MicroProfileOpenAPIExtension());
+        this.schema = schema;
+    }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_0.xml");
+        return this.readResource(String.format(Locale.ROOT, "%s_%d_%d.xml", this.getMainSubsystemName(), this.schema.major(), this.schema.minor()));
     }
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/microprofile-openapi-smallrye.xml"
-        };
+        return new String[] { String.format(Locale.ROOT, "/subsystem-templates/%s.xml", this.getMainSubsystemName()) };
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-microprofile-openapi-smallrye_1_0.xsd";
+        return String.format(Locale.ROOT, "schema/wildfly-%s_%d_%d.xsd", this.getMainSubsystemName(), this.schema.major(), this.schema.minor());
     }
 
-    protected Properties getResolvedProperties() {
-        return System.getProperties();
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        if (this.schema == MicroProfileOpenAPISchema.CURRENT) {
+            super.testSchemaOfSubsystemTemplates();
+        }
     }
-
-
-
 }
