@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -73,6 +74,9 @@ import io.undertow.server.HttpHandler;
  */
 public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
 
+    private static final String PATH = "mp.openapi.extensions.path";
+    private static final String DEFAULT_PATH = "/openapi";
+
     private static final Map<Format, List<String>> STATIC_FILES = new EnumMap<>(Format.class);
     static {
         // Order resource names by search order
@@ -91,6 +95,13 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
         DeploymentUnit unit = context.getDeploymentUnit();
 
         if (unit.getAttachment(OpenAPIDependencyProcessor.ATTACHMENT_KEY).booleanValue()) {
+            Config config = ConfigProvider.getConfig(unit.getAttachment(Attachments.MODULE).getClassLoader());
+
+            String path = config.getOptionalValue(PATH, String.class).orElse(DEFAULT_PATH);
+            if (!path.equals(DEFAULT_PATH)) {
+                MicroProfileOpenAPILogger.LOGGER.nonStandardEndpoint(unit.getName(), path, DEFAULT_PATH);
+            }
+
             // Fetch server/host as determined by Undertow DUP
             ModelNode model = unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT).getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
             String serverName = model.get(DeploymentDefinition.SERVER.getName()).asString();
@@ -98,20 +109,20 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
 
             CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             ServiceName hostServiceName = support.getCapabilityServiceName(Capabilities.CAPABILITY_HOST, serverName, hostName);
-            ServiceName serviceName = hostServiceName.append("openapi");
+            ServiceName serviceName = hostServiceName.append(path);
 
             try {
-                // Only one deployment can register the OpenAPI endpoint with a given host
+                // Only one deployment can register the same OpenAPI endpoint with a given host
                 // Let the first one to register win
                 if (context.getServiceRegistry().getService(serviceName) != null) {
                     throw new DuplicateServiceException(serviceName.getCanonicalName());
                 }
 
+                OpenAPI result = createOpenAPIModel(unit, new OpenApiConfigImpl(config));
+                HttpHandler handler = new OpenAPIHttpHandler(result);
                 ServiceBuilder<?> builder = context.getServiceTarget().addService(serviceName);
                 Supplier<Host> host = builder.requires(hostServiceName);
-
-                HttpHandler handler = new OpenAPIHttpHandler(createOpenAPIModel(unit));
-                Service service = new OpenAPIHttpHandlerService(host, handler);
+                Service service = new OpenAPIHttpHandlerService(host, path, handler);
 
                 builder.setInstance(service).install();
             } catch (DuplicateServiceException e) {
@@ -124,17 +135,13 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
     public void undeploy(DeploymentUnit unit) {
     }
 
-    private static OpenAPI createOpenAPIModel(DeploymentUnit unit) throws DeploymentUnitProcessingException {
-        Module module = unit.getAttachment(Attachments.MODULE);
-        ClassLoader loader = module.getClassLoader();
-
-        OpenApiConfig config = new OpenApiConfigImpl(ConfigProvider.getConfig(loader));
-
+    private static OpenAPI createOpenAPIModel(DeploymentUnit unit, OpenApiConfig config) throws DeploymentUnitProcessingException {
         VirtualFile root = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         // Convert org.jboss.as.server.deployment.annotation.CompositeIndex to org.jboss.jandex.CompositeIndex
         Collection<Index> indexes = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX).getIndexes();
         CompositeIndex index = CompositeIndex.create(indexes.stream().map(IndexView.class::cast).collect(Collectors.toList()));
         IndexView indexView = new FilteredIndexView(index, config);
+        Module module = unit.getAttachment(Attachments.MODULE);
 
         OpenAPIDocumentBuilder builder = new OpenAPIDocumentBuilder();
         builder.archiveName(unit.getName());
@@ -152,8 +159,8 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
         }
 
         builder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, indexView));
-        builder.readerModel(OpenApiProcessor.modelFromReader(config, loader));
-        builder.filter(OpenApiProcessor.getFilter(config, loader));
+        builder.readerModel(OpenApiProcessor.modelFromReader(config, module.getClassLoader()));
+        builder.filter(OpenApiProcessor.getFilter(config, module.getClassLoader()));
 
         // OASFactoryResolver service loading requires TCCL
         ClassLoader existingLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();

@@ -43,22 +43,24 @@ import io.undertow.server.HttpHandler;
  */
 public class OpenAPIHttpHandlerService implements Service {
 
-    private static final String OPENAPI_ENDPOINT = "/openapi";
     private static final Set<String> REQUISITE_SCHEMES = Collections.singleton("http");
 
     private final Supplier<Host> host;
+    private final String path;
     private final HttpHandler handler;
 
-    public OpenAPIHttpHandlerService(Supplier<Host> host, HttpHandler handler) {
+    public OpenAPIHttpHandlerService(Supplier<Host> host, String path, HttpHandler handler) {
         this.host = host;
+        this.path = path;
         this.handler = handler;
     }
 
     @Override
     public void start(StartContext context) {
         Host host = this.host.get();
-        host.registerHandler(OPENAPI_ENDPOINT, this.handler);
-        LOGGER.endpointRegistered(host.getName());
+        host.registerHandler(this.path, this.handler);
+
+        LOGGER.endpointRegistered(this.path, host.getName());
 
         if (host.getServer().getListeners().stream().map(UndertowListener::getProtocol).noneMatch(REQUISITE_SCHEMES::contains)) {
             LOGGER.requiredListenersNotFound(host.getServer().getName(), REQUISITE_SCHEMES);
@@ -68,7 +70,8 @@ public class OpenAPIHttpHandlerService implements Service {
     @Override
     public void stop(StopContext context) {
         Host host = this.host.get();
-        host.unregisterHandler(OPENAPI_ENDPOINT);
-        LOGGER.endpointUnregistered(host.getName());
+        host.unregisterHandler(this.path);
+
+        LOGGER.endpointUnregistered(this.path, host.getName());
     }
 }

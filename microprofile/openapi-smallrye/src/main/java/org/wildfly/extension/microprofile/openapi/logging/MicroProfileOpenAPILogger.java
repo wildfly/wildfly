@@ -62,14 +62,18 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     void endpointAlreadyRegistered(String hostName, String deployment);
 
     @LogMessage(level = INFO)
-    @Message(id = 5, value = "Registered MicroProfile OpenAPI endpoint for host '%s'")
-    void endpointRegistered(String hostName);
+    @Message(id = 5, value = "Registered MicroProfile OpenAPI endpoint '%s' for host '%s'")
+    void endpointRegistered(String path, String hostName);
 
     @LogMessage(level = INFO)
-    @Message(id = 6, value = "Unregistered MicroProfile OpenAPI endpoint for host '%s'")
-    void endpointUnregistered(String hostName);
+    @Message(id = 6, value = "Unregistered MicroProfile OpenAPI endpoint '%s' for host '%s'")
+    void endpointUnregistered(String path, String hostName);
 
     @LogMessage(level = WARN)
     @Message(id = 7, value = "\u00A75.1 of MicroProfile OpenAPI specification requires that the endpoint be accessible via %2$s, but no such listeners exists for server '%1$s'.")
     void requiredListenersNotFound(String serverName, Set<String> requisiteSchemes);
+
+    @LogMessage(level = WARN)
+    @Message(id = 8, value = "\u00A75.1 of MicroProfile OpenAPI specification requires documentation to be available at '%3$s', but '%1$s' is configured to use '%2$s'")
+    void nonStandardEndpoint(String deploymentName, String deploymentEndpoint, String standardEndpoint);
 }
