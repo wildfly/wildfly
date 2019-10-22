@@ -74,6 +74,7 @@ import io.undertow.server.HttpHandler;
  */
 public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
 
+    private static final String ENABLED = "mp.openapi.extensions.enabled";
     private static final String PATH = "mp.openapi.extensions.path";
     private static final String DEFAULT_PATH = "/openapi";
 
@@ -96,6 +97,11 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
 
         if (unit.getAttachment(OpenAPIDependencyProcessor.ATTACHMENT_KEY).booleanValue()) {
             Config config = ConfigProvider.getConfig(unit.getAttachment(Attachments.MODULE).getClassLoader());
+
+            if (!config.getOptionalValue(ENABLED, Boolean.class).orElse(Boolean.TRUE).booleanValue()) {
+                MicroProfileOpenAPILogger.LOGGER.disabled(unit.getName());
+                return;
+            }
 
             String path = config.getOptionalValue(PATH, String.class).orElse(DEFAULT_PATH);
             if (!path.equals(DEFAULT_PATH)) {

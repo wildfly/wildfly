@@ -76,4 +76,8 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 8, value = "\u00A75.1 of MicroProfile OpenAPI specification requires documentation to be available at '%3$s', but '%1$s' is configured to use '%2$s'")
     void nonStandardEndpoint(String deploymentName, String deploymentEndpoint, String standardEndpoint);
+
+    @LogMessage(level = INFO)
+    @Message(id = 9, value = "OpenAPI documentation disabled for '%s'")
+    void disabled(String deploymentName);
 }
