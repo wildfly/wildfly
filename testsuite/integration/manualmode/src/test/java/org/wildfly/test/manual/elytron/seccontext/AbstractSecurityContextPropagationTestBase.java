@@ -89,9 +89,9 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -756,8 +756,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
         }
 
         private void reload() {
-            ModelNode operation = Util.createOperation("reload", null);
-            ServerReload.executeReloadAndWaitForCompletion(client, operation, (int) SECONDS.toMillis(90), host,
+            ServerReload.executeReloadAndWaitForCompletion(client, (int) SECONDS.toMillis(90), false, host,
                     getManagementPort());
         }
 

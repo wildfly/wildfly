@@ -36,7 +36,7 @@ import org.jboss.as.test.integration.ejb.security.authorization.SaslLegacyMechan
 import org.jboss.as.test.integration.ejb.security.authorization.SaslLegacyMechanismBeanRemote;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -304,7 +304,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
          ModelNode response = execute(compositeOperation, mcc);
          Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
 
-         ServerReload.reloadIfRequired(managementClient.getControllerClient());
+         ServerReload.reloadIfRequired(managementClient);
       }
 
       private ModelNode addSaslMechanisms() throws IOException {

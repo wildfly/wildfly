@@ -31,7 +31,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,14 +49,14 @@ public class WebConsoleRedirectionTestCase {
 
     @Test
     public void testRedirectionInAdminMode() throws Exception {
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), true);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient, true);
         try {
             final HttpURLConnection connection = getConnection();
             assertEquals(HttpURLConnection.HTTP_MOVED_TEMP, connection.getResponseCode());
             String location = connection.getHeaderFields().get(Headers.LOCATION_STRING).get(0);
             assertEquals("/consoleerror/noConsoleForAdminModeError.html", location);
         } finally {
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), false);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient, false);
         }
     }
 

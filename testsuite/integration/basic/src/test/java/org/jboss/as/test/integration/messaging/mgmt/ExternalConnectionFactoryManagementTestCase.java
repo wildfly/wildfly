@@ -50,7 +50,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.util.StackType;
 import org.jgroups.util.Util;
@@ -110,7 +110,7 @@ public class ExternalConnectionFactoryManagementTestCase extends ContainerResour
             jmsOperations.removeJmsExternalConnectionFactory(CF_NAME);
             jmsOperations.removeExternalHttpConnector(CONNECTOR_NAME);
         }
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class ExternalConnectionFactoryManagementTestCase extends ContainerResour
 
         op = Operations.createRemoveOperation(invmConnectorAddress);
         execute(managementClient.getControllerClient(), op);
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {

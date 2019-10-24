@@ -2,8 +2,8 @@ package org.jboss.as.test.integration.web.headers.authentication;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -78,7 +78,7 @@ public class ResponseHeaderAuthenticationServerSetupTask extends SnapshotRestore
 
         this.createKeyStore();
 
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     /**
