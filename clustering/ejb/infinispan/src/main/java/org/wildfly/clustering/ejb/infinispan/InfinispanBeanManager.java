@@ -171,7 +171,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
                             this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration));
                 } else {
                     schedulers.add(new EagerEvictionScheduler<>(
-                            this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
+                            this.batcher, this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
                 }
             }
         }
@@ -240,7 +240,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
                 return;
             }
             try {
-                this.executeOnPrimaryOwner(id, new PrepareReschedulingSchedulerCommand<>(id));
+                this.executeOnPrimaryOwner(id, new PrepareReschedulingSchedulerCommand<>(id)).toCompletableFuture().join();
             } catch (Exception e) {
                 InfinispanEjbLogger.ROOT_LOGGER.failedToCancelBean(e, id);
             }
@@ -254,7 +254,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
                 return;
             }
             try {
-                this.executeOnPrimaryOwner(id, new CancelSchedulerCommand<>(id));
+                this.executeOnPrimaryOwner(id, new CancelSchedulerCommand<>(id)).toCompletableFuture().join();
             } catch (Exception e) {
                 InfinispanEjbLogger.ROOT_LOGGER.failedToCancelBean(e, id);
             }
@@ -275,7 +275,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         }
     }
 
-    private void executeOnPrimaryOwner(I id, final Command<Void, Scheduler<I>> command) throws CommandDispatcherException {
+    private CompletionStage<Void> executeOnPrimaryOwner(I id, final Command<Void, Scheduler<I>> command) throws CommandDispatcherException {
         CommandDispatcher<Scheduler<I>> dispatcher = this.dispatcher;
         ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException> action = new ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException>() {
             @Override
@@ -285,7 +285,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
                 return dispatcher.executeOnMember(command, node);
             }
         };
-        INVOKER.invoke(action).toCompletableFuture().join();
+        return INVOKER.invoke(action);
     }
 
     Node locatePrimaryOwner(I id) {

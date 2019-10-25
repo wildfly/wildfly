@@ -66,13 +66,13 @@ public class PrimaryOwnerScheduler implements org.wildfly.clustering.web.cache.s
     @Override
     public void cancel(String sessionId) {
         try {
-            this.executeOnPrimaryOwner(sessionId, new CancelSchedulerCommand(sessionId));
+            this.executeOnPrimaryOwner(sessionId, new CancelSchedulerCommand(sessionId)).toCompletableFuture().join();
         } catch (Exception e) {
             InfinispanWebLogger.ROOT_LOGGER.failedToCancelSession(e, sessionId);
         }
     }
 
-    private void executeOnPrimaryOwner(String sessionId, Command<Void, Scheduler> command) throws CommandDispatcherException {
+    private CompletionStage<Void> executeOnPrimaryOwner(String sessionId, Command<Void, Scheduler> command) throws CommandDispatcherException {
         Function<Key<String>, Node> primaryOwnerLocator = this.primaryOwnerLocator;
         CommandDispatcher<Scheduler> dispatcher = this.dispatcher;
         ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException> action = new ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException>() {
@@ -83,7 +83,7 @@ public class PrimaryOwnerScheduler implements org.wildfly.clustering.web.cache.s
                 return dispatcher.executeOnMember(command, node);
             }
         };
-        INVOKER.invoke(action).toCompletableFuture().join();
+        return INVOKER.invoke(action);
     }
 
     @Override

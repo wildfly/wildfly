@@ -98,10 +98,12 @@ public class SessionExpirationScheduler<MV> implements Scheduler {
 
     @Override
     public void schedule(String sessionId) {
-        MV value = this.metaDataFactory.findValue(sessionId);
-        if (value != null) {
-            ImmutableSessionMetaData metaData = this.metaDataFactory.createImmutableSessionMetaData(sessionId, value);
-            this.schedule(sessionId, metaData);
+        try (Batch batch = this.batcher.createBatch()) {
+            MV value = this.metaDataFactory.findValue(sessionId);
+            if (value != null) {
+                ImmutableSessionMetaData metaData = this.metaDataFactory.createImmutableSessionMetaData(sessionId, value);
+                this.schedule(sessionId, metaData);
+            }
         }
     }
 
