@@ -35,8 +35,6 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
-import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
-
 /**
  * Log messages for WildFly microprofile-openapi-smallrye subsystem.
  *
@@ -54,30 +52,26 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     DeploymentUnitProcessingException failedToLoadStaticFile(@Cause IOException e, String fileName, String deploymentName);
 
     @LogMessage(level = WARN)
-    @Message(id = 3, value = "Unable to serialize OpenAPI in %s format")
-    void failedToSerializeDocument(@Cause IOException e, Format format);
-
-    @LogMessage(level = WARN)
-    @Message(id = 4, value = "MicroProfile OpenAPI endpoint already registered for host '%s'.  Skipping OpenAPI documentation of '%s'.")
+    @Message(id = 3, value = "MicroProfile OpenAPI endpoint already registered for host '%s'.  Skipping OpenAPI documentation of '%s'.")
     void endpointAlreadyRegistered(String hostName, String deployment);
 
     @LogMessage(level = INFO)
-    @Message(id = 5, value = "Registered MicroProfile OpenAPI endpoint '%s' for host '%s'")
+    @Message(id = 4, value = "Registered MicroProfile OpenAPI endpoint '%s' for host '%s'")
     void endpointRegistered(String path, String hostName);
 
     @LogMessage(level = INFO)
-    @Message(id = 6, value = "Unregistered MicroProfile OpenAPI endpoint '%s' for host '%s'")
+    @Message(id = 5, value = "Unregistered MicroProfile OpenAPI endpoint '%s' for host '%s'")
     void endpointUnregistered(String path, String hostName);
 
     @LogMessage(level = WARN)
-    @Message(id = 7, value = "\u00A75.1 of MicroProfile OpenAPI specification requires that the endpoint be accessible via %2$s, but no such listeners exists for server '%1$s'.")
+    @Message(id = 6, value = "\u00A75.1 of MicroProfile OpenAPI specification requires that the endpoint be accessible via %2$s, but no such listeners exists for server '%1$s'.")
     void requiredListenersNotFound(String serverName, Set<String> requisiteSchemes);
 
     @LogMessage(level = WARN)
-    @Message(id = 8, value = "\u00A75.1 of MicroProfile OpenAPI specification requires documentation to be available at '%3$s', but '%1$s' is configured to use '%2$s'")
+    @Message(id = 7, value = "\u00A75.1 of MicroProfile OpenAPI specification requires documentation to be available at '%3$s', but '%1$s' is configured to use '%2$s'")
     void nonStandardEndpoint(String deploymentName, String deploymentEndpoint, String standardEndpoint);
 
     @LogMessage(level = INFO)
-    @Message(id = 9, value = "OpenAPI documentation disabled for '%s'")
+    @Message(id = 8, value = "OpenAPI documentation disabled for '%s'")
     void disabled(String deploymentName);
 }

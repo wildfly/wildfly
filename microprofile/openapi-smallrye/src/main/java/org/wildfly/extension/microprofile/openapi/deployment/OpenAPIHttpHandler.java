@@ -26,14 +26,10 @@ import java.io.IOException;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Deque;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger;
 
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
@@ -50,7 +46,7 @@ import io.undertow.util.StatusCodes;
  * @author Michael Edgar
  * @author Paul Ferraro
  */
-public class OpenAPIHttpHandler implements HttpHandler, Function<Format, String> {
+public class OpenAPIHttpHandler implements HttpHandler {
 
     private static final String ALLOW_METHODS = String.join(",", Methods.GET_STRING, Methods.HEAD_STRING, Methods.OPTIONS_STRING);
     private static final String DEFAULT_ALLOW_HEADERS = String.join(",", Headers.CONTENT_TYPE_STRING, Headers.AUTHORIZATION_STRING);
@@ -58,7 +54,6 @@ public class OpenAPIHttpHandler implements HttpHandler, Function<Format, String>
     private static final String FORMAT = "format";
     private static final Set<String> ACCEPT_ANY = new TreeSet<>(Arrays.asList("*/*", "application/*"));
 
-    private final Map<Format, String> documents = new ConcurrentHashMap<>();
     private final OpenAPI model;
 
     public OpenAPIHttpHandler(OpenAPI model) {
@@ -66,7 +61,7 @@ public class OpenAPIHttpHandler implements HttpHandler, Function<Format, String>
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) throws IOException {
         HttpString requestMethod = exchange.getRequestMethod();
         HeaderMap responseHeaders = exchange.getResponseHeaders();
 
@@ -97,7 +92,7 @@ public class OpenAPIHttpHandler implements HttpHandler, Function<Format, String>
                 }
             }
 
-            String result = this.documents.computeIfAbsent(format, this);
+            String result = OpenApiSerializer.serialize(this.model, format);
 
             responseHeaders.put(Headers.CONTENT_TYPE, format.getMimeType());
             responseHeaders.put(Headers.CONTENT_LENGTH, result.length());
@@ -109,16 +104,6 @@ public class OpenAPIHttpHandler implements HttpHandler, Function<Format, String>
             responseHeaders.put(Headers.ALLOW, ALLOW_METHODS);
         } else {
             exchange.setStatusCode(StatusCodes.METHOD_NOT_ALLOWED);
-        }
-    }
-
-    @Override
-    public String apply(Format format) {
-        try {
-            return OpenApiSerializer.serialize(this.model, format);
-        } catch (IOException e) {
-            MicroProfileOpenAPILogger.LOGGER.failedToSerializeDocument(e, format);
-            return null;
         }
     }
 }
