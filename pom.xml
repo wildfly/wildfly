@@ -5702,6 +5702,10 @@
                         <groupId>org.hibernate.javax.persistence</groupId>
                         <artifactId>hibernate-jpa-2.1-api</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
