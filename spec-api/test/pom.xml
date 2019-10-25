@@ -38,8 +38,16 @@
   <artifactId>wildfly-spec-api-test</artifactId>
   <name>WildFly: Validation Tests for Exported Jakarta EE Specification APIs</name>
   <description>Validation Tests for Jakarta EE Specification APIs exported by the Application Server</description>
-  <properties>
-    <!-- we want unused imports in tish case, so lets skip checkstyle-->
-    <checkstyle.skip>true</checkstyle.skip>
-  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <!-- we want unused and wildcard imports in this case, so lets skip checkstyle -->
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

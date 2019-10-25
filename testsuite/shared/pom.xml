@@ -20,12 +20,6 @@
 
     <name>WildFly Test Suite: Shared</name>
 
-
-    <properties>
-        <!-- Arquillian dependency versions -->
-        <enforcer.skip>true</enforcer.skip>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <!-- Not defined in the parent pom as this should only be used here -->
@@ -112,6 +106,16 @@
 
     <build>
         <plugins>
+            <plugin>
+                <!-- This enforcer.skip property was set to true in the properties. However this doesn't work if the
+                     property is passed on the command line. Therefore we need to explicitly skip it.
+                -->
+                <!-- Arquillian dependency versions -->
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
