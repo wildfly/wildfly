@@ -22,6 +22,13 @@
 
 package org.wildfly.test.integration.elytron.http;
 
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.jboss.as.test.integration.security.common.servlets.SimpleServlet.RESPONSE_BODY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +45,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
-
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.jboss.as.test.integration.security.common.servlets.SimpleServlet.RESPONSE_BODY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Test of FORM HTTP mechanism.
