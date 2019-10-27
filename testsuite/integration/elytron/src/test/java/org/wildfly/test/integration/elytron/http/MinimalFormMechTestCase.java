@@ -44,17 +44,17 @@ import org.wildfly.test.security.common.elytron.MechanismConfiguration;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ MinimalFormMechTestCase.ServerSetup.class })
-public class MinimalFormMechTestCase extends FormMechTestCase {
+public class MinimalFormMechTestCase extends FormMechTestBase {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, NAME + ".war")
-                .addClasses(SimpleServlet.class)
-                .addClasses(LogoutServlet.class)
-                .addAsWebInfResource(Utils.getJBossWebXmlAsset(APP_DOMAIN), "jboss-web.xml")
-                .addAsWebResource(new StringAsset(LOGIN_PAGE_CONTENT), "login.html")
-                .addAsWebResource(new StringAsset(ERROR_PAGE_CONTENT), "error.html")
-                .addAsWebInfResource(FormMechTestCase.class.getPackage(), NAME + "-web.xml", "web.xml");
+            .addClasses(SimpleServlet.class)
+            .addClasses(LogoutServlet.class)
+            .addAsWebInfResource(Utils.getJBossWebXmlAsset(APP_DOMAIN), "jboss-web.xml")
+            .addAsWebResource(new StringAsset(LOGIN_PAGE_CONTENT), "login.html")
+            .addAsWebResource(new StringAsset(ERROR_PAGE_CONTENT), "error.html")
+            .addAsWebInfResource(FormMechTestCase.class.getPackage(), NAME + "-web.xml", "web.xml");
     }
 
     static class ServerSetup extends AbstractMechTestBase.ServerSetup {
