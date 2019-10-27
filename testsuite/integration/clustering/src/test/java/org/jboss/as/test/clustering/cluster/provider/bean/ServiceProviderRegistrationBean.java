@@ -8,6 +8,9 @@ import javax.annotation.Resource;
 import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.group.Node;
@@ -20,7 +23,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
 public class ServiceProviderRegistrationBean implements ServiceProviderRegistration<String>, ServiceProviderRegistration.Listener {
     static final Logger log = Logger.getLogger(ServiceProviderRegistrationBean.class);
 
-    @Resource(lookup = "java:jboss/clustering/providers/server/default")
+    @Resource(name = "clustering/providers")
     private ServiceProviderRegistry<String> factory;
     private ServiceProviderRegistration<String> registration;
 
@@ -51,6 +54,21 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
 
     @Override
     public void providersChanged(Set<Node> nodes) {
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+            // Ensure the correct naming context is set
+            Context context = new InitialContext();
+            try {
+                context.lookup("java:comp/env/clustering/providers");
+            } finally {
+                context.close();
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        } catch (NamingException e) {
+            throw new IllegalStateException(e);
+        }
         log.info(String.format("ProviderRegistration.Listener.providersChanged(%s)", nodes));
     }
 }

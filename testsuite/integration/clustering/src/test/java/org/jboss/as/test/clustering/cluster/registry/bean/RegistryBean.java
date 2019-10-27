@@ -11,6 +11,9 @@ import javax.annotation.Resource;
 import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
@@ -24,7 +27,7 @@ import org.wildfly.clustering.registry.RegistryListener;
 @Local(Registry.class)
 public class RegistryBean implements Registry<String, String>, RegistryListener<String, String> {
 
-    @Resource(lookup = "java:jboss/clustering/registry/server/default")
+    @Resource(name = "clustering/registry")
     private RegistryFactory<String, String> factory;
     private Registry<String, String> registry;
     private Registration registration;
@@ -56,17 +59,62 @@ public class RegistryBean implements Registry<String, String>, RegistryListener<
 
     @Override
     public void addedEntries(Map<String, String> added) {
-        //System.out.println("New registry entry:" + added);
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+            // Ensure the correct naming context is set
+            Context context = new InitialContext();
+            try {
+                context.lookup("java:comp/env/clustering/registry");
+            } finally {
+                context.close();
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        } catch (NamingException e) {
+            throw new IllegalStateException(e);
+        }
+        System.out.println("New registry entry:" + added);
     }
 
     @Override
     public void updatedEntries(Map<String, String> updated) {
-        //System.out.println("Updated registry entry:" + updated);
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+            // Ensure the correct naming context is set
+            Context context = new InitialContext();
+            try {
+                context.lookup("java:comp/env/clustering/registry");
+            } finally {
+                context.close();
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        } catch (NamingException e) {
+            throw new IllegalStateException(e);
+        }
+        System.out.println("Updated registry entry:" + updated);
     }
 
     @Override
     public void removedEntries(Map<String, String> removed) {
-        //System.out.println("Removed registry entry:" + removed);
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+            // Ensure the correct naming context is set
+            Context context = new InitialContext();
+            try {
+                context.lookup("java:comp/env/clustering/registry");
+            } finally {
+                context.close();
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        } catch (NamingException e) {
+            throw new IllegalStateException(e);
+        }
+        System.out.println("Removed registry entry:" + removed);
     }
 
     @Override

@@ -21,18 +21,15 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.security.PrivilegedAction;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -48,13 +45,13 @@ import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
-import org.jboss.threads.JBossThreadFactory;
+import org.jboss.as.clustering.context.DefaultExecutorService;
+import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -63,12 +60,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener
-public class CacheGroup implements Group<Address>, AutoCloseable {
-
-    private static ThreadFactory createThreadFactory(Class<?> targetClass) {
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
-    }
+public class CacheGroup implements Group<Address>, AutoCloseable, Function<GroupListener, ExecutorService> {
 
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<?, ?> cache;
@@ -88,10 +80,18 @@ public class CacheGroup implements Group<Address>, AutoCloseable {
         this.cache.getCacheManager().removeListener(this);
         // Cleanup any unregistered listeners
         for (ExecutorService executor : this.listeners.values()) {
-            PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
-            WildFlySecurityManager.doUnchecked(action);
+            this.shutdown(executor);
         }
         this.listeners.clear();
+    }
+
+    private void shutdown(ExecutorService executor) {
+        WildFlySecurityManager.doUnchecked(executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
+        try {
+            executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
@@ -152,14 +152,18 @@ public class CacheGroup implements Group<Address>, AutoCloseable {
             for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
                 GroupListener listener = entry.getKey();
                 ExecutorService executor = entry.getValue();
-                try {
-                    executor.submit(() -> {
+                Runnable listenerTask = new Runnable() {
+                    @Override
+                    public void run() {
                         try {
                             listener.membershipChanged(previousMembership, membership, event.isMergeView());
                         } catch (Throwable e) {
                             ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                         }
-                    });
+                    }
+                };
+                try {
+                    executor.submit(listenerTask);
                 } catch (RejectedExecutionException e) {
                     // Listener was unregistered
                 }
@@ -181,14 +185,18 @@ public class CacheGroup implements Group<Address>, AutoCloseable {
             for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
                 GroupListener listener = entry.getKey();
                 ExecutorService executor = entry.getValue();
-                try {
-                    executor.submit(() -> {
+                Runnable listenerTask = new Runnable() {
+                    @Override
+                    public void run() {
                         try {
                             listener.membershipChanged(previousMembership, membership, merged);
                         } catch (Throwable e) {
                             ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                         }
-                    });
+                    }
+                };
+                try {
+                    executor.submit(listenerTask);
                 } catch (RejectedExecutionException e) {
                     // Listener was unregistered
                 }
@@ -200,20 +208,19 @@ public class CacheGroup implements Group<Address>, AutoCloseable {
 
     @Override
     public Registration register(GroupListener listener) {
-        this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
+        this.listeners.computeIfAbsent(listener, this);
         return () -> this.unregister(listener);
+    }
+
+    @Override
+    public ExecutorService apply(GroupListener listener) {
+        return new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD);
     }
 
     private void unregister(GroupListener listener) {
         ExecutorService executor = this.listeners.remove(listener);
         if (executor != null) {
-            PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
-            WildFlySecurityManager.doUnchecked(action);
-            try {
-                executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            this.shutdown(executor);
         }
     }
 

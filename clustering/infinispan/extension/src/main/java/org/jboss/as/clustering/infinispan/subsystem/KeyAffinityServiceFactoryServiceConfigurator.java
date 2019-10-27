@@ -22,14 +22,11 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.KEY_AFFINITY_FACTORY;
 
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -40,13 +37,13 @@ import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.FunctionalService;
@@ -72,10 +69,7 @@ public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServ
 
     @Override
     public ExecutorService get() {
-        ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
-        String namePattern = "KeyAffinityService Thread Pool -- %t";
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
-        return Executors.newCachedThreadPool(doPrivileged(action));
+        return Executors.newCachedThreadPool(new DefaultThreadFactory(KeyAffinityService.class));
     }
 
     @Override
