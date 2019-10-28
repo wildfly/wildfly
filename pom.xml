@@ -250,7 +250,7 @@
         <version.com.sun.faces>2.3.9.SP04</version.com.sun.faces>
         <version.com.sun.istack>3.0.7</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
-        <version.commons-beanutils>1.9.3</version.commons-beanutils>
+        <version.commons-beanutils>1.9.4</version.commons-beanutils>
         <version.commons-cli>1.3.1</version.commons-cli>
         <version.commons-codec>1.13</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
