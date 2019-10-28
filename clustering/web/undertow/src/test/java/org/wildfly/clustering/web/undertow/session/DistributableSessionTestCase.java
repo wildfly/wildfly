@@ -48,7 +48,9 @@ import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
@@ -69,6 +71,9 @@ public class DistributableSessionTestCase {
     private final Session<LocalSessionContext> session = mock(Session.class);
     private final Batch batch = mock(Batch.class);
     private final Consumer<HttpServerExchange> closeTask = mock(Consumer.class);
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     private final io.undertow.server.session.Session adapter = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
@@ -104,12 +109,25 @@ public class DistributableSessionTestCase {
         reset(this.batch, this.session, context, this.closeTask);
 
         when(this.session.isValid()).thenReturn(false);
+        when(this.batch.getState()).thenReturn(Batch.State.CLOSED);
 
         this.adapter.requestDone(exchange);
 
         verify(this.session, never()).close();
         verify(this.batch, never()).close();
         verify(context, never()).close();
+        verify(this.closeTask).accept(exchange);
+
+        reset(this.batch, this.session, context, this.closeTask);
+
+        when(this.session.isValid()).thenReturn(false);
+        when(this.batch.getState()).thenReturn(Batch.State.ACTIVE);
+
+        this.adapter.requestDone(exchange);
+
+        verify(this.session, never()).close();
+        verify(this.batch).close();
+        verify(context).close();
         verify(this.closeTask).accept(exchange);
     }
 
@@ -558,6 +576,7 @@ public class DistributableSessionTestCase {
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
+        when(this.batch.getState()).thenReturn(Batch.State.ACTIVE);
 
         this.adapter.invalidate(exchange);
 
@@ -567,6 +586,32 @@ public class DistributableSessionTestCase {
         verify(this.batch).close();
         verify(context).close();
         verify(this.closeTask).accept(exchange);
+    }
+
+    @Test
+    public void invalidateWhenResponseDone() {
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        this.validate(exchange, session -> session.invalidate(exchange));
+
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
+        SessionListener listener = mock(SessionListener.class);
+        SessionListeners listeners = new SessionListeners();
+        listeners.addSessionListener(listener);
+        String sessionId = "session";
+
+        when(this.manager.getSessionListeners()).thenReturn(listeners);
+        when(this.session.getId()).thenReturn(sessionId);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
+        when(this.batch.getState()).thenReturn(Batch.State.CLOSED);
+
+        // ISA expected
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("WFLYCLWEBUT0009");
+        this.adapter.invalidate(exchange);
     }
 
     @Test

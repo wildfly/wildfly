@@ -89,6 +89,12 @@ public class DistributableSession implements io.undertow.server.session.Session 
                     // Don't propagate exceptions at the stage, since response was already committed
                     UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                 }
+            } else if (this.batch.getState() != Batch.State.CLOSED) {
+                Batcher<Batch> batcher = this.manager.getSessionManager().getBatcher();
+                try (BatchContext context = batcher.resumeBatch(this.batch)) {
+                    // Ensure batch is closed.
+                    this.batch.close();
+                }
             }
         } finally {
             this.closeTask.accept(exchange);
@@ -202,6 +208,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         Map.Entry<Session<LocalSessionContext>, SessionConfig> entry = this.entry;
         Session<LocalSessionContext> session = entry.getKey();
         this.validate(exchange, session);
+        this.validateBatch(session);
         // Invoke listeners outside of the context of the batch associated with this session
         this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         try (BatchContext context = this.resumeBatch()) {
@@ -256,6 +263,12 @@ public class DistributableSession implements io.undertow.server.session.Session 
             // Ensure close task is run before throwing exception
             this.closeTask.accept(exchange);
             throw UndertowClusteringLogger.ROOT_LOGGER.sessionIsInvalid(session.getId());
+        }
+    }
+
+    private void validateBatch(Session<LocalSessionContext> session) {
+        if (this.batch.getState() == Batch.State.CLOSED) {
+            throw UndertowClusteringLogger.ROOT_LOGGER.batchIsAlreadyClosed(session.getId());
         }
     }
 

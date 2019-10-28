@@ -58,4 +58,7 @@ public interface UndertowClusteringLogger extends BasicLogger {
     @Message(id = 8, value = "No distributable single sign-on management provider found for %s; using legacy provider based on static configuration")
     @LogMessage(level = Level.WARN)
     void legacySingleSignOnProviderInUse(String name);
+
+    @Message(id = 9, value = "Invalidation attempted for session %s after the response was committed (e.g. after HttpServletResponse.sendRedirect or sendError)")
+    IllegalStateException batchIsAlreadyClosed(String sessionId);
 }
