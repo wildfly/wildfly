@@ -31,14 +31,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
-import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.integration.ws.authentication.policy.resources.EchoService;
 import org.jboss.as.test.integration.ws.authentication.policy.resources.EchoServiceRemote;
 import org.jboss.as.test.integration.ws.authentication.policy.resources.PicketLinkSTSService;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -293,8 +292,7 @@ public class AuthenticationPolicyContextTestCase {
     }
 
     private void reload() {
-        ModelNode operation = Util.createOperation("reload", null);
-        ServerReload.executeReloadAndWaitForCompletion(modelControllerClient, operation, (int) SECONDS.toMillis(90), HOST,
+        ServerReload.executeReloadAndWaitForCompletion(modelControllerClient, (int) SECONDS.toMillis(90), false, HOST,
                 getManagementPort());
     }
 

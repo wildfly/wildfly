@@ -64,7 +64,7 @@ public abstract class AbstractCustomPermissionServerSetup implements ServerSetup
             operation.get("value").set(Arrays.asList(customPermission));
 
             ManagementOperations.executeOperation(managementClient.getControllerClient(), operation);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 
@@ -110,7 +110,7 @@ public abstract class AbstractCustomPermissionServerSetup implements ServerSetup
             operation.get("value").set(backupList);
 
             ManagementOperations.executeOperation(managementClient.getControllerClient(), operation);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 

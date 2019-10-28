@@ -122,7 +122,7 @@ public abstract class AbstractServerInterceptorsSetupTask {
             }
             modifyServerInterceptors(interceptorModules, managementClient);
             // reload in order to apply server-interceptors changes
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override
@@ -132,7 +132,7 @@ public abstract class AbstractServerInterceptorsSetupTask {
             }
             revertServerInterceptors(managementClient);
             // reload in order to apply server-interceptors changes
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 }

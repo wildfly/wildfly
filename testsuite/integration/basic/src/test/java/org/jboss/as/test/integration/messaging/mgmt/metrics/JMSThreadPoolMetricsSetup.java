@@ -27,7 +27,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
@@ -62,7 +62,7 @@ class JMSThreadPoolMetricsSetup implements ServerSetupTask {
         op.get("value").set(connectors);
         client.getControllerClient().execute(op);
 
-        ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(client);
     }
 
     @Override

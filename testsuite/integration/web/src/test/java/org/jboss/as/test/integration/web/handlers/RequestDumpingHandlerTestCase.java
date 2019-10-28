@@ -145,7 +145,7 @@ public class RequestDumpingHandlerTestCase {
             operation.get("socket-binding").set(HTTPS);
             operation.get("security-realm").set(HTTPS_REALM);
             Utils.applyUpdate(operation, managementClient.getControllerClient());
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override

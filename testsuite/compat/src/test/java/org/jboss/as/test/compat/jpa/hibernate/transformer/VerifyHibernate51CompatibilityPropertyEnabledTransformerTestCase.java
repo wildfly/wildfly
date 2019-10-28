@@ -80,14 +80,14 @@ public class VerifyHibernate51CompatibilityPropertyEnabledTransformerTestCase
             ModelNode op = Operations.createAddOperation(PROP_ADDR);
             op.get("value").set("true");
             managementClient.getControllerClient().execute(op);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String s) throws Exception {
             ModelNode op = Operations.createRemoveOperation(PROP_ADDR);
             managementClient.getControllerClient().execute(op);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 }

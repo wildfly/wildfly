@@ -47,51 +47,120 @@ import org.junit.Assert;
 import org.xnio.IoUtils;
 
 /**
+ * Utilities for correctly reloading a server process.
  * @author Stuart Douglas
  */
 public class ServerReload {
 
     private static final Logger log = Logger.getLogger(ServerReload.class);
 
+    /** Default time in ms to wait for a server process to return to started state following a reload */
     public static final int TIMEOUT = 100000;
 
+    /**
+     * @deprecated Use {@link #executeReloadAndWaitForCompletion(ManagementClient)} which will allow completion
+     *             waiting to check on the correct address for reload completion if the server is not using the
+     *             default management address or port
+     */
+    @Deprecated
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client) {
-        executeReloadAndWaitForCompletion(client, TIMEOUT);
+        executeReloadAndWaitForCompletion(client, TIMEOUT, false, null, -1, null);
     }
 
+    /**
+     * @deprecated Use {@link #executeReloadAndWaitForCompletion(ManagementClient String)} which will allow completion
+     *             waiting to check on the correct address for reload completion if the server is not using the
+     *             default management address or port
+     */
+    @Deprecated
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client, String serverConfig) {
         executeReloadAndWaitForCompletion(client, TIMEOUT, false, null, -1, serverConfig);
     }
+
+    /**
+     * @deprecated Use {@link #executeReloadAndWaitForCompletion(ManagementClient boolean)} which will allow completion
+     *             waiting to check on the correct address for reload completion if the server is not using the
+     *             default management address or port
+     */
+    @Deprecated
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client, boolean adminOnly) {
-        executeReloadAndWaitForCompletion(client, TIMEOUT, adminOnly, null, -1);
+        executeReloadAndWaitForCompletion(client, TIMEOUT, adminOnly, null, -1, null);
     }
 
+    /**
+     * @deprecated Use {@link #executeReloadAndWaitForCompletion(ManagementClient int)} which will allow completion
+     *             waiting to check on the correct address for reload completion if the server is not using the
+     *             default management address or port
+     */
+    @Deprecated
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout) {
-        executeReloadAndWaitForCompletion(client, timeout, false, null, -1);
+        executeReloadAndWaitForCompletion(client, timeout, false, null, -1, null);
     }
 
+    /**
+     * Reload the server and wait for it to reach running state. Reloaded server will not be in admin-only mode.
+     *
+     * @param managementClient client to use to execute the reload and to provide host and port information for
+     *                         reconnecting to wait for completion of the reload
+     */
     public static void executeReloadAndWaitForCompletion(ManagementClient managementClient) {
-        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), TIMEOUT, false, managementClient.getMgmtAddress(), managementClient.getMgmtPort());
+        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), TIMEOUT, false,
+                managementClient.getMgmtAddress(), managementClient.getMgmtPort(), null);
+    }
+
+    /**
+     * Reload the server and wait for it to reach running state, instructing the server to use the configuration file
+     * with the given name once it reloads. Reloaded server will not be in admin-only mode.
+     *
+     * @param managementClient client to use to execute the reload and to provide host and port information for
+     *      *                         reconnecting to wait for completion of the reload
+     * @param serverConfig the configuration file the server should use following reload. May be {@code null} in which
+     *                     case the server will use the same configuration file it used before the reload.
+     */
+    public static void executeReloadAndWaitForCompletion(ManagementClient managementClient, String serverConfig) {
+        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), TIMEOUT, false,
+                managementClient.getMgmtAddress(), managementClient.getMgmtPort(), serverConfig);
+    }
+
+    /**
+     * Reload the server and wait for it to reach running state, optionally reloading into admin-only mode.
+     * @param managementClient client to use to execute the reload and to provide host and port information for
+     *                         reconnecting to wait for completion of the reload
+     * @param adminOnly {@code} true if the server should be in admin-only mode following the reload
+     */
+    public static void executeReloadAndWaitForCompletion(ManagementClient managementClient, boolean adminOnly) {
+        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), TIMEOUT, adminOnly,
+                managementClient.getMgmtAddress(), managementClient.getMgmtPort(), null);
+    }
+
+    /**
+     * Reload the server and wait for it to reach running state. Reloaded server will not be in admin-only mode.
+     *
+     * @param managementClient client to use to execute the reload and to provide host and port information for
+     *      *                         reconnecting to wait for completion of the reload
+     * @param timeout time in ms to wait for a server process to return to running state following the reload
+     */
+    public static void executeReloadAndWaitForCompletion(ManagementClient managementClient, int timeout) {
+        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), timeout, false,
+                managementClient.getMgmtAddress(), managementClient.getMgmtPort(), null);
     }
 
     /**
      *
-     * @param client
-     * @param timeout
+     * @param client client to use to instruct the server to reload
+     * @param timeout time in ms to wait for a server process to return to running state following the reload
      * @param adminOnly if {@code true}, the server will be reloaded in admin-only mode
      * @param serverAddress if {@code null}, use {@code TestSuiteEnvironment.getServerAddress()} to create the ModelControllerClient
      * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
      */
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout, boolean adminOnly, String serverAddress, int serverPort) {
-        executeReload(client, adminOnly, null);
-        waitForLiveServerToReload(timeout,
-                serverAddress != null ? serverAddress : TestSuiteEnvironment.getServerAddress(),
-                serverPort != -1 ? serverPort : TestSuiteEnvironment.getServerPort());
+        executeReloadAndWaitForCompletion(client, timeout, adminOnly, serverAddress, serverPort, null);
     }
+
     /**
      *
-     * @param client
-     * @param timeout
+     * @param client client to use to instruct the server to reload
+     * @param timeout time in ms to wait for a server process to return to running state following the reload
      * @param adminOnly if {@code true}, the server will be reloaded in admin-only mode
      * @param serverAddress if {@code null}, use {@code TestSuiteEnvironment.getServerAddress()} to create the ModelControllerClient
      * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
@@ -146,6 +215,7 @@ public class ServerReload {
                         return;
                     }
                 } catch (IOException e) {
+                    // ignore
                 } finally {
                     IoUtils.safeClose(liveClient);
                 }
@@ -156,10 +226,22 @@ public class ServerReload {
         fail("Live Server did not reload in the imparted time.");
     }
 
+    /**
+     * Gets the current value of the server root resource's {@code server-state} attribute.
+     * @param managementClient client to use to read the state
+     * @return the server state. Will not be {@code null}.
+     * @throws IOException if there is an IO problem reading the state
+     */
     public static String getContainerRunningState(ManagementClient managementClient) throws IOException {
         return getContainerRunningState(managementClient.getControllerClient());
     }
 
+    /**
+     * Gets the current value of the server root resource's {@code server-state} attribute.
+     * @param modelControllerClient client to use to read the state
+     * @return the server state. Will not be {@code null}.
+     * @throws IOException if there is an IO problem reading the state
+     */
     public static String getContainerRunningState(ModelControllerClient modelControllerClient) throws IOException {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
@@ -190,6 +272,13 @@ public class ServerReload {
         }
     }
 
+    /**
+     * Check if the server is in reload-required state and if it is, execute {@link #executeReloadAndWaitForCompletion(ManagementClient)}.
+     *
+     * @param managementClient client to use to execute the reload and to provide host and port information for
+     *      *                         reconnecting to wait for completion of the reload
+     * @throws Exception if a failure occurs when checking if reload is required.
+     */
     public static void reloadIfRequired(final ManagementClient managementClient) throws Exception {
         String runningState = getContainerRunningState(managementClient);
         if ("reload-required".equalsIgnoreCase(runningState)) {
@@ -202,63 +291,50 @@ public class ServerReload {
     }
 
     /**
-     * {@link ServerSetupTask} that if necessary calls
-     * {@link #executeReloadAndWaitForCompletion(ModelControllerClient)} in the {@code setup} method
+     * {@link ServerSetupTask} that calls {@link #reloadIfRequired(ManagementClient)} in the {@code setup} method
      */
-    public static class BeforeSetupTask extends SetupTask {
+    public static class BeforeSetupTask implements ServerSetupTask {
 
         public static final BeforeSetupTask INSTANCE = new BeforeSetupTask();
 
-        public BeforeSetupTask() {
-            super(true, false);
+        /**
+         * Calls {@link #reloadIfRequired(ManagementClient)}.
+         *
+         * {@inheritDoc}
+         */
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            reloadIfRequired(managementClient);
+        }
+
+        /** A no-op */
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+
         }
     }
 
     /**
-     * {@link ServerSetupTask} that if necessary calls
-     * {@link #executeReloadAndWaitForCompletion(ModelControllerClient)} in the {@code tearDown} method
+     * {@link ServerSetupTask} that calls {@link #reloadIfRequired(ManagementClient)} in the {@code tearDown} method
      */
-    public static class AfterSetupTask extends SetupTask {
+    public static class AfterSetupTask implements ServerSetupTask {
 
         public static final AfterSetupTask INSTANCE = new AfterSetupTask();
 
-        public AfterSetupTask() {
-            super(false, true);
-        }
-    }
+        /** A no-op */
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
 
-    private static class SetupTask implements ServerSetupTask {
-
-        private final boolean before;
-        private final boolean after;
-
-        private SetupTask(boolean before, boolean after) {
-            this.before = before;
-            this.after = after;
         }
 
         /**
-         * If required, calls {@link #executeReloadAndWaitForCompletion(ModelControllerClient)}.
+         * Calls {@link #reloadIfRequired(ManagementClient)}.
          *
          * {@inheritDoc}
          */
         @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            if (before) {
-                reloadIfRequired(managementClient);
-            }
-        }
-
-        /**
-         * If required, calls {@link #executeReloadAndWaitForCompletion(ModelControllerClient)}.
-         *
-         * {@inheritDoc}
-         */
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            if (after) {
-                reloadIfRequired(managementClient);
-            }
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            reloadIfRequired(managementClient);
         }
     }
 }

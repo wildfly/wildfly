@@ -106,7 +106,7 @@ public class NonDistributableSharedSessionTestCase {
             }
 
             // A distributable web application preserves its web sessions across server restarts, a non-distributable web application does not.
-            ServerReload.executeReloadAndWaitForCompletion(this.managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(this.managementClient);
 
             expected = 1;
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {

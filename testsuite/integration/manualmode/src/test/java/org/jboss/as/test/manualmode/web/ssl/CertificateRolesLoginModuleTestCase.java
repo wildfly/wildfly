@@ -116,7 +116,7 @@ public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLogi
         SecurityDomainsSetup.INSTANCE.setup(managementClient, CONTAINER);
 
         LOGGER.trace("*** reloading server");
-        executeReloadAndWaitForCompletion(client, 100000);
+        executeReloadAndWaitForCompletion(managementClient, 100000);
         deployer.deploy(APP_NAME);
     }
 

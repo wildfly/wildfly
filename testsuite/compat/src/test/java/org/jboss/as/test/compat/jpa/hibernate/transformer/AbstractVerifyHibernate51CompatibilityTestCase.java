@@ -490,7 +490,7 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
         public void tearDown(ManagementClient managementClient, String s) throws Exception {
             ModelNode op = Operations.createRemoveOperation(PROP_ADDR_ENABLETRANSFORMER);
             managementClient.getControllerClient().execute(op);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 }
