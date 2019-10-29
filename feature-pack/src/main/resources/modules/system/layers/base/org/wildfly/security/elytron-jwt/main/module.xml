@@ -26,5 +26,6 @@
     <dependencies>
         <module name="io.smallrye.jwt"/>
         <module name="org.eclipse.microprofile.jwt.auth.api"/>
+        <module name="javax.json.api" />
     </dependencies>
 </module>

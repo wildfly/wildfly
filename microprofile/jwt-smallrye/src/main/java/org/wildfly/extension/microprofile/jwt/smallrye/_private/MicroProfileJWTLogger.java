@@ -19,6 +19,7 @@
 package org.wildfly.extension.microprofile.jwt.smallrye._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -43,5 +44,9 @@ public interface MicroProfileJWTLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating WildFly MicroProfile JWT Subsystem")
     void activatingSubsystem();
+
+    @LogMessage(level = WARN)
+    @Message(id = 2, value = "@LoginConfig annotation detected on invalid target \"%s\".")
+    void loginConfigInvalidTarget(String target);
 
 }

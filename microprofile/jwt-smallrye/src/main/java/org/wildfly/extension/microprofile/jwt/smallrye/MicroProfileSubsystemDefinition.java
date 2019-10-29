@@ -33,10 +33,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
-    static final String CONFIG_CAPABILITY_NAME = "org.wildlfly.microprofile.jwt";
+    static final String JWT_CAPABILITY_NAME = "org.wildlfly.microprofile.jwt";
 
     static final RuntimeCapability<Void> CONFIG_CAPABILITY =
-            RuntimeCapability.Builder.of(CONFIG_CAPABILITY_NAME)
+            RuntimeCapability.Builder.of(JWT_CAPABILITY_NAME)
                     .setServiceType(Void.class)
                     .build();
     // TODO - Identify the required capabilities.

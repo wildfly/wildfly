@@ -33,10 +33,13 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.wildfly.security.elytron-jwt" />
         <module name="javax.enterprise.api" />
+        <module name="org.jboss.jandex"/>
     </dependencies>
 </module>

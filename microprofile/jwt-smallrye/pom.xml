@@ -51,6 +51,10 @@
             <artifactId>microprofile-jwt-auth-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-web</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-jwt</artifactId>
         </dependency>
@@ -62,6 +66,10 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-web-common</artifactId>
         </dependency>
 
         <dependency>

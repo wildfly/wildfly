@@ -20,6 +20,10 @@ package org.wildfly.extension.microprofile.jwt.smallrye;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Stage;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.microprofile.jwt.smallrye._private.MicroProfileJWTLogger;
 
@@ -37,15 +41,17 @@ class MicroProfileJWTSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
         MicroProfileJWTLogger.ROOT_LOGGER.activatingSubsystem();
 
-        // context.addStep(new AbstractDeploymentChainStep() {
-        // public void execute(DeploymentProcessorTarget processorTarget) {
-        // processorTarget.addDeploymentProcessor(MicroProfileJWTExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES,
-        // Phase.DEPENDENCIES_MICROPROFILE_CONFIG, new DependencyProcessor());
-        // processorTarget.addDeploymentProcessor(MicroProfileJWTExtension.SUBSYSTEM_NAME, Phase.POST_MODULE,
-        // Phase.POST_MODULE_MICROPROFILE_CONFIG, new SubsystemDeploymentProcessor());
-        //
-        // }
-        // }, OperationContext.Stage.RUNTIME);
+        if (context.isNormalServer()) {
+            context.addStep(new AbstractDeploymentChainStep() {
+
+                @Override
+                protected void execute(DeploymentProcessorTarget processorTarget) {
+                    processorTarget.addDeploymentProcessor(MicroProfileJWTExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_MICROPROFILE_JWT_DETECTION, new JwtActivationProcessor());
+                    processorTarget.addDeploymentProcessor(MicroProfileJWTExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MICROPROFILE_JWT, new JwtDependencyProcessor());
+                }
+
+            }, Stage.RUNTIME);
+        }
 
     }
 }
