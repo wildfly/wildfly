@@ -24,7 +24,6 @@ import java.security.PrivilegedAction;
 import java.security.PublicKey;
 import java.security.acl.Group;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -179,43 +178,5 @@ public final class SubjectUtil {
         identity = identity.withPrivateCredentials(privateCredentials);
 
         return identity;
-    }
-
-
-    private static class SimpleGroup implements Group {
-
-        private final String name;
-
-        private final Set<Principal> principals;
-
-        SimpleGroup(final String name) {
-            this.name = name;
-            this.principals = new HashSet<>();
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
-        public boolean addMember(Principal principal) {
-            return this.principals.add(principal);
-        }
-
-        @Override
-        public boolean removeMember(Principal principal) {
-            return this.principals.remove(principal);
-        }
-
-        @Override
-        public Enumeration<? extends Principal> members() {
-            return Collections.enumeration(this.principals);
-        }
-
-        @Override
-        public boolean isMember(Principal principal) {
-            return this.principals.contains(principal);
-        }
     }
 }
