@@ -71,6 +71,7 @@ public class OpenAPIDocumentBuilder {
     }
 
     public OpenAPI build() {
+        OpenAPI result = null;
         OpenApiDocument instance = OpenApiDocument.INSTANCE;
 
         synchronized (instance) {
@@ -81,10 +82,14 @@ public class OpenAPIDocumentBuilder {
             instance.modelFromAnnotations(this.annotationsModel);
             instance.filter(this.filter);
             instance.archiveName(this.archiveName);
-
             instance.initialize();
 
-            return instance.get();
+            result = instance.get();
+
+            // Release statically referenced intermediate objects
+            instance.reset();
         }
+
+        return result;
     }
 }
