@@ -61,6 +61,7 @@ import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
+import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
@@ -942,6 +943,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         synchronized (this.scheduledTimerFutures) {
             return this.scheduledTimerFutures.containsKey(tid);
         }
+    }
+
+    /**
+     * Force refresh timer when it is working with Database persistence.
+     */
+    public boolean refreshTimers(){
+        TimerPersistence timerPersistence = this.timerPersistence.getValue();
+        if(DatabaseTimerPersistence.class.isInstance(timerPersistence)){
+            return ((DatabaseTimerPersistence)timerPersistence).refreshTimers();
+        }
+
+        return false;
     }
 
     /**

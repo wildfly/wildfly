@@ -87,6 +87,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.transaction.client.ContextTransactionManager;
+import java.util.concurrent.ExecutorService;
 
 /**
  * <p>
@@ -101,6 +102,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     private final InjectedValue<ManagedReferenceFactory> dataSourceInjectedValue = new InjectedValue<ManagedReferenceFactory>();
     private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
+    private final InjectedValue<ExecutorService> executorServiceInjectedValue = new InjectedValue<ExecutorService>();
     private final Map<String, TimerChangeListener> changeListeners = Collections.synchronizedMap(new HashMap<String, TimerChangeListener>());
 
     private final InjectedValue<java.util.Timer> timerInjectedValue = new InjectedValue<java.util.Timer>();
@@ -889,6 +891,23 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             }
 
         }
+    }
+
+    /**
+     * Force refresh timer when it is working with Database persistence.
+     */
+    public boolean refreshTimers(){
+        if(this.refreshTask == null){
+            return false;
+        }
+        ExecutorService executorService = this.executorServiceInjectedValue.getOptionalValue();
+        if(executorService != null){
+            executorService.submit(this.refreshTask);
+        }
+        else{
+            this.refreshTask.run();
+        }
+        return true;
     }
 
 
