@@ -61,6 +61,7 @@ import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
+import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
@@ -936,6 +937,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
     }
 
+
+
     /**
      * Returns an unmodifiable view of timers in the current transaction that are waiting for the transaction
      * to finish
@@ -959,6 +962,20 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private boolean isSingletonBeanInvocation() {
         return ejbComponentInjectedValue.getValue() instanceof SingletonComponent;
     }
+
+    /**
+     * Force refresh timer when it is working with Database persistence.
+     */
+    public boolean refreshTimers(){
+        TimerPersistence timerPersistence = this.timerPersistence.getValue();
+        if(DatabaseTimerPersistence.class.isInstance(timerPersistence)){
+            return ((DatabaseTimerPersistence)timerPersistence).refreshTimers();
+        }
+
+        return false;
+    }
+
+
 
     private List<TimerImpl> getActivePersistentTimers() {
         // we need only those timers which correspond to the
