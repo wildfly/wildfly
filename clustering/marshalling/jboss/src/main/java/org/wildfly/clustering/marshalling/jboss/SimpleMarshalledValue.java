@@ -23,11 +23,10 @@
 package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
+import java.nio.ByteBuffer;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
@@ -48,15 +47,15 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
 
     private transient volatile MarshallingContext context;
     private transient volatile T object;
-    private transient volatile byte[] bytes;
+    private transient volatile ByteBuffer buffer;
 
     public SimpleMarshalledValue(T object, MarshallingContext context) {
         this.context = context;
         this.object = object;
     }
 
-    SimpleMarshalledValue(byte[] bytes) {
-        this.bytes = bytes;
+    SimpleMarshalledValue(ByteBuffer buffer) {
+        this.buffer = buffer;
     }
 
     // Used for testing purposes only
@@ -64,20 +63,20 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         return this.object;
     }
 
-    synchronized byte[] getBytes() throws IOException {
-        byte[] bytes = this.bytes;
-        if (bytes != null) return bytes;
+    synchronized ByteBuffer getBuffer() throws IOException {
+        ByteBuffer buffer = this.buffer;
+        if (buffer != null) return buffer;
         if (this.object == null) return null;
         int version = this.context.getCurrentVersion();
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ByteBufferOutputStream output = new ByteBufferOutputStream();
         ClassLoader loader = setThreadContextClassLoader(this.context.getClassLoader());
         try (SimpleDataOutput data = new SimpleDataOutput(Marshalling.createByteOutput(output))) {
-            IndexSerializer.VARIABLE.writeInt(data, version);
+            IndexSerializer.UNSIGNED_BYTE.writeInt(data, version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(data);
                 marshaller.writeObject(this.object);
                 marshaller.finish();
-                return output.toByteArray();
+                return output.getBuffer();
             }
         } finally {
             setThreadContextClassLoader(loader);
@@ -93,16 +92,16 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
     public synchronized T get(MarshallingContext context) throws IOException, ClassNotFoundException {
         if (this.object == null) {
             this.context = context;
-            if (this.bytes != null) {
-                ByteArrayInputStream input = new ByteArrayInputStream(this.bytes);
+            if (this.buffer != null) {
+                ByteArrayInputStream input = new ByteArrayInputStream(this.buffer.array(), this.buffer.arrayOffset(), this.buffer.limit() - this.buffer.arrayOffset());
                 ClassLoader loader = setThreadContextClassLoader(this.context.getClassLoader());
                 try (SimpleDataInput data = new SimpleDataInput(Marshalling.createByteInput(input))) {
-                    int version = IndexSerializer.VARIABLE.readInt(data);
+                    int version = IndexSerializer.UNSIGNED_BYTE.readInt(data);
                     try (Unmarshaller unmarshaller = context.createUnmarshaller(version)) {
                         unmarshaller.start(data);
                         this.object = (T) unmarshaller.readObject();
                         unmarshaller.finish();
-                        this.bytes = null; // Free up memory
+                        this.buffer = null; // Free up memory
                     }
                 } finally {
                     setThreadContextClassLoader(loader);
@@ -135,9 +134,9 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
             return ourObject.equals(theirObject);
         }
         try {
-            byte[] us = this.getBytes();
-            byte[] them = value.getBytes();
-            return ((us != null) && (them != null)) ? Arrays.equals(us, them) : (us == them);
+            ByteBuffer us = this.getBuffer();
+            ByteBuffer them = value.getBuffer();
+            return ((us != null) && (them != null)) ? us.equals(them) : (us == them);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -147,30 +146,18 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
     public String toString() {
         Object object = this.object;
         if (object != null) return object.toString();
-        byte[] bytes = this.bytes;
-        return (bytes != null) ? bytes.toString() : null;
+        ByteBuffer buffer = this.buffer;
+        return (buffer != null) ? buffer.toString() : null;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
-        byte[] bytes = this.getBytes();
-        if (bytes != null) {
-            out.writeInt(bytes.length);
-            out.write(bytes);
-        } else {
-            out.writeInt(0);
-        }
+        SimpleMarshalledValueExternalizer.writeBuffer(out, this.getBuffer());
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        int size = in.readInt();
-        byte[] bytes = null;
-        if (size > 0) {
-            bytes = new byte[size];
-            in.readFully(bytes);
-        }
-        this.bytes = bytes;
+        this.buffer = SimpleMarshalledValueExternalizer.readBuffer(in);
     }
 
     private static ClassLoader setThreadContextClassLoader(ClassLoader loader) {
