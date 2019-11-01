@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static org.jboss.as.server.security.VirtualDomainMarkerUtility.isVirtualDomainRequired;
+import static org.jboss.as.server.security.VirtualDomainMarkerUtility.virtualDomainName;
+
 import java.net.MalformedURLException;
 import java.time.Duration;
 import java.util.Collection;
@@ -118,6 +121,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
 import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
 import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
@@ -354,7 +358,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         for (final ServiceName additionalDependency : additionalDependencies) {
             infoBuilder.requires(additionalDependency);
         }
-        if(securityDomain != null) {
+
+        if (isVirtualDomainRequired(deploymentUnit)) {
+            infoBuilder.addDependency(virtualDomainName(deploymentUnit), SecurityDomain.class, undertowDeploymentInfoService.getRawSecurityDomainInjector());
+        } else if(securityDomain != null) {
             if (known) {
                 infoBuilder.addDependency(
                         deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)

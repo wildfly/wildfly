@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.security.VirtualDomainMarkerUtility;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -88,8 +89,9 @@ class JwtActivationProcessor implements DeploymentUnitProcessor {
         }
 
         if (loginConfig != null && JWT_AUTH_METHOD.equals(loginConfig.getAuthMethod())) {
-            ROOT_LOGGER.info("Activating JWT for deployment."); // TODO To TRACE
+            ROOT_LOGGER.tracef("Activating JWT for deployment %s.", deploymentUnit.getName());
             JwtDeploymentMarker.mark(deploymentUnit);
+            VirtualDomainMarkerUtility.virtualDomainRequired(deploymentUnit);
         }
 
     }
