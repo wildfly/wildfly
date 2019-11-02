@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.jboss;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Like {@link SimpleMarshalledValue}, but also serializes the underlying object's hash code,
@@ -41,8 +42,8 @@ public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
         this.hashCode = (object != null ) ? object.hashCode() : 0;
     }
 
-    HashableMarshalledValue(byte[] bytes, int hashCode) {
-        super(bytes);
+    HashableMarshalledValue(ByteBuffer buffer, int hashCode) {
+        super(buffer);
         this.hashCode = hashCode;
     }
 
