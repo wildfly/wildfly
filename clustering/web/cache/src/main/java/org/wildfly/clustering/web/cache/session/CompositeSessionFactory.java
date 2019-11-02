@@ -79,8 +79,6 @@ public class CompositeSessionFactory<V, L> extends CompositeImmutableSessionFact
             if (attributesValue != null) {
                 return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
             }
-            // Purge obsolete meta data
-            this.metaDataFactory.purge(id);
         }
         return null;
     }
@@ -89,6 +87,15 @@ public class CompositeSessionFactory<V, L> extends CompositeImmutableSessionFact
     public boolean remove(String id) {
         if (this.metaDataFactory.remove(id)) {
             this.attributesFactory.remove(id);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean purge(String id) {
+        if (this.metaDataFactory.purge(id)) {
+            this.attributesFactory.purge(id);
             return true;
         }
         return false;
