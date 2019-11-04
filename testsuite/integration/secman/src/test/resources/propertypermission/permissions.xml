@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<permissions xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+             http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd"
+             version="7">
+    <permission>
+        <class-name>${CLASS_NAME}</class-name>
+        <name>${NAME_A}</name>
+        <actions>${ACTION_READ}</actions>
+    </permission>
+    <permission>
+        <class-name>${CLASS_NAME}</class-name>
+        <name>${NAME_B}</name>
+        <actions>${NONEXIST:${ACTION_READ:write}}</actions>
+    </permission>
+    <permission>
+        <class-name>${CLASS_NAME}</class-name>
+        <name>${NAME_C}</name>
+        <actions>${NONEXIST:${NONEXIST:write}}</actions>
+    </permission>
+</permissions>
