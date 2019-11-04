@@ -23,7 +23,6 @@
     <feature-group name="access-control"/>
     <feature-group name="health"/>
     <feature-group name="metrics" />
-    <feature-group name="openapi" />
 
     <origin name="org.wildfly:wildfly-servlet-galleon-pack">
         <feature-group name="standalone-profile"/>

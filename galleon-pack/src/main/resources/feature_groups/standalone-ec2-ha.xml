@@ -122,7 +122,6 @@
     </feature-group>
     <feature-group name="health"/>
     <feature-group name="metrics" />
-    <feature-group name="openapi" />
 
     <!-- <feature-group name="elytron-permissions-workaround"/> -->
 </feature-group-spec>

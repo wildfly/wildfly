@@ -122,5 +122,4 @@
     </feature-group>
     <feature-group name="health"/>
     <feature-group name="metrics" />
-    <feature-group name="openapi" />
 </feature-group-spec>
