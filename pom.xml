@@ -778,11 +778,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
