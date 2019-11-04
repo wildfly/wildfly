@@ -20,36 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.jpa2lc;
+package org.jboss.as.test.clustering.cluster.jpa;
 
-import java.io.Serializable;
-import javax.persistence.Cacheable;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.ws.rs.ApplicationPath;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-@Entity
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-public class DummyEntity implements Serializable {
-
-    @Id
-    private Long id;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+/**
+ * @author Jan Martiska
+ */
+@ApplicationPath("/")
+public class DummyEntityControllingApplication extends javax.ws.rs.core.Application {
 
     @Override
-    public String toString() {
-        return "DummyEntity{" +
-                "id=" + id +
-                '}';
+    public Set<Class<?>> getClasses() {
+        Set<Class<?>> s = new HashSet<Class<?>>();
+        s.add(DummyEntityRESTResource.class);
+        return s;
     }
+
 }

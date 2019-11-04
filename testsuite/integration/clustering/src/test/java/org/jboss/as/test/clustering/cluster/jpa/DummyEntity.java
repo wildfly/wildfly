@@ -20,22 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.jpa2lcCustomRegion;
+package org.jboss.as.test.clustering.cluster.jpa;
+
+import java.io.Serializable;
+import javax.persistence.Cacheable;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.Cacheable;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import java.io.Serializable;
-
 @Entity
 @Cacheable
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = DummyEntityCustomRegion.DUMMY_ENTITY_REGION_NAME)
-public class DummyEntityCustomRegion implements Serializable {
-
-    public static final String DUMMY_ENTITY_REGION_NAME = "DUMMY_ENTITY_REGION_NAME";
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
+public class DummyEntity implements Serializable {
 
     @Id
     private Long id;
@@ -50,7 +48,7 @@ public class DummyEntityCustomRegion implements Serializable {
 
     @Override
     public String toString() {
-        return "DummyEntityCustomRegion{" +
+        return "DummyEntity{" +
                 "id=" + id +
                 '}';
     }

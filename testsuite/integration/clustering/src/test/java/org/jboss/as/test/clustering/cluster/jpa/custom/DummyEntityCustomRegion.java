@@ -20,23 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.jpa2lc;
+package org.jboss.as.test.clustering.cluster.jpa.custom;
 
-import javax.ws.rs.ApplicationPath;
-import java.util.HashSet;
-import java.util.Set;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-/**
- * @author Jan Martiska
- */
-@ApplicationPath("/")
-public class DummyEntityControllingApplication extends javax.ws.rs.core.Application {
+import javax.persistence.Cacheable;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.io.Serializable;
 
-    @Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> s = new HashSet<Class<?>>();
-        s.add(DummyEntityRESTResource.class);
-        return s;
+@Entity
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = DummyEntityCustomRegion.DUMMY_ENTITY_REGION_NAME)
+public class DummyEntityCustomRegion implements Serializable {
+
+    public static final String DUMMY_ENTITY_REGION_NAME = "DUMMY_ENTITY_REGION_NAME";
+
+    @Id
+    private Long id;
+
+    public Long getId() {
+        return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "DummyEntityCustomRegion{" +
+                "id=" + id +
+                '}';
+    }
 }
