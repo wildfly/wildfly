@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.jpa2lcCustomRegion;
+package org.jboss.as.test.clustering.cluster.jpa.custom;
 
 import org.hibernate.Session;
 import org.hibernate.stat.Statistics;
@@ -132,7 +132,7 @@ public class DummyEntityCustomRegionRESTResource {
     @Path("/eviction-max-entries/{cache-name}")
     @Produces("text/plain")
     public Response getEvictionMaxEntries(@PathParam(value = "cache-name") String cacheName) {
-        Object res = container.getCache(cacheName).getCacheConfiguration().memory().attributes().attribute("size").get();
+        Object res = container.getCache(cacheName).getCacheConfiguration().memory().size();
         return Response.ok().entity(res).build();
     }
 
@@ -140,7 +140,7 @@ public class DummyEntityCustomRegionRESTResource {
     @Path("/expiration-lifespan/{cache-name}")
     @Produces("text/plain")
     public Response getExpirationLifespan(@PathParam(value = "cache-name") String cacheName) {
-        Object res = container.getCache(cacheName).getCacheConfiguration().expiration().attributes().attribute("lifespan").get();
+        Object res = container.getCache(cacheName).getCacheConfiguration().expiration().lifespan();
         return Response.ok().entity(res).build();
     }
 
@@ -148,7 +148,7 @@ public class DummyEntityCustomRegionRESTResource {
     @Path("/expiration-max-idle/{cache-name}")
     @Produces("text/plain")
     public Response getExpirationMaxIdle(@PathParam(value = "cache-name") String cacheName) {
-        Object res = container.getCache(cacheName).getCacheConfiguration().expiration().attributes().attribute("maxIdle").get();
+        Object res = container.getCache(cacheName).getCacheConfiguration().expiration().maxIdle();
         return Response.ok().entity(res).build();
     }
 
@@ -156,7 +156,7 @@ public class DummyEntityCustomRegionRESTResource {
     @Path("/expiration-wake-up-interval/{cache-name}")
     @Produces("text/plain")
     public Response getExpirationWakeUpInterval(@PathParam(value = "cache-name") String cacheName) {
-        Object res = container.getCache(cacheName).getCacheConfiguration().expiration().attributes().attribute("wakeUpInterval").get();
+        Object res = container.getCache(cacheName).getCacheConfiguration().expiration().wakeUpInterval();
         return Response.ok().entity(res).build();
     }
 }
