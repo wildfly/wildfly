@@ -32,7 +32,7 @@
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-metrics</artifactId>
-    <name>WildFly Test Suite: Integration - MicroProfile - Metrics</name>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK - Metrics</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>

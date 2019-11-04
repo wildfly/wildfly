@@ -32,7 +32,7 @@
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-opentracing</artifactId>
-    <name>WildFly Test Suite: Integration - MicroProfile - OpenTracing</name>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK - OpenTracing</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
