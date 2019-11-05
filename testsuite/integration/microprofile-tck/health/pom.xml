@@ -32,7 +32,7 @@
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-health</artifactId>
-    <name>WildFly Test Suite: Integration - MicroProfile - Health</name>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK - Health</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>

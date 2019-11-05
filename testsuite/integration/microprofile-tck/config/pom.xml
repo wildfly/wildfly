@@ -32,7 +32,7 @@
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-config</artifactId>
-    <name>WildFly Test Suite: Integration - MicroProfile - Config</name>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK - Config</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>

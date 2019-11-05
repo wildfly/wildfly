@@ -32,7 +32,7 @@
     </parent>
 
     <artifactId>wildfly-ts-integ-mp</artifactId>
-    <name>WildFly Test Suite: Integration - MicroProfile</name>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK</name>
 
     <packaging>pom</packaging>
 
