@@ -38,6 +38,7 @@
         <module name="javax.api"/>
         <module name="javax.annotation.api" />
         <module name="javax.enterprise.api" />
+        <module name="javax.ws.rs.api"/>
         <module name="io.smallrye.openapi"/>
         <module name="io.undertow.core"/>
         <module name="org.eclipse.microprofile.config.api"/>

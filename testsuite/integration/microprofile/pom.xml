@@ -129,9 +129,8 @@
                 <groupId>org.jboss.galleon</groupId>
                 <artifactId>galleon-maven-plugin</artifactId>
                 <executions>
-                    <!-- Provision a cloud-server with fault tolerance decorator added -->
                     <execution>
-                        <id>fault-tolerance-provisioning</id>
+                        <id>microprofile-provisioning</id>
                         <goals>
                             <goal>provision</goal>
                         </goals>
@@ -162,8 +161,7 @@
                                     <layers>
                                         <layer>cloud-server</layer>
                                         <layer>microprofile-fault-tolerance</layer>
-                                        <!--<layer>microprofile-jwt</layer>-->
-                                        <!--<layer>microprofile-openapi</layer>-->
+                                        <layer>microprofile-openapi</layer>
                                     </layers>
                                 </config>
                             </configurations>

@@ -24,10 +24,9 @@ package org.wildfly.extension.microprofile.openapi.deployment;
 
 import java.io.IOException;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Deque;
-import java.util.Set;
-import java.util.TreeSet;
+
+import javax.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 
@@ -52,7 +51,6 @@ public class OpenAPIHttpHandler implements HttpHandler {
     private static final String DEFAULT_ALLOW_HEADERS = String.join(",", Headers.CONTENT_TYPE_STRING, Headers.AUTHORIZATION_STRING);
     private static final long DEFAULT_MAX_AGE = ChronoUnit.DAYS.getDuration().getSeconds();
     private static final String FORMAT = "format";
-    private static final Set<String> ACCEPT_ANY = new TreeSet<>(Arrays.asList("*/*", "application/*"));
 
     private final OpenAPI model;
 
@@ -78,7 +76,7 @@ public class OpenAPIHttpHandler implements HttpHandler {
 
             // Check Accept, then query parameter "format" for JSON; else use YAML.
             String accept = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
-            if ((accept != null) && !ACCEPT_ANY.contains(accept)) {
+            if ((accept != null) && !accept.equals(MediaType.WILDCARD)) {
                 if (accept.contains(Format.JSON.getMimeType())) {
                     format = Format.JSON;
                 }
