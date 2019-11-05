@@ -286,6 +286,7 @@
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                 <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server"/>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
             <subsystem xmlns="urn:jboss:domain:undertow:6.0">
                 <buffer-cache name="default" />
                 <server name="default-server">
