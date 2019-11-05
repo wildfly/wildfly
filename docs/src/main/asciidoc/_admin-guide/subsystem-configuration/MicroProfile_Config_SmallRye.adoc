@@ -16,7 +16,7 @@ element to the xml or by using the following CLI operation:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.config-smallrye:add
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.config-smallrye:add
 ----
 
 == Supported ConfigSources

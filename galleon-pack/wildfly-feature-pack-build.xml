@@ -42,8 +42,7 @@
         <package name="modules.all"/>
         <package name="docs"/>
         <package name="docs.licenses.merge"/>
-        <!-- appclient is not referenced from standalone nor 
-        domain configuration models.-->
+        <!-- appclient is not referenced from standalone nor domain configuration models.-->
         <package name="appclient"/>
         <package name="bin"/>
     </default-packages>
@@ -92,6 +91,7 @@
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
@@ -124,6 +124,7 @@
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>

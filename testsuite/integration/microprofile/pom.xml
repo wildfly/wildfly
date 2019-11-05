@@ -77,7 +77,6 @@
         </dependency>
 
         <!-- MicroProfile Fault Tolerance test dependencies -->
-        <!--
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
             <artifactId>microprofile-fault-tolerance-api</artifactId>
@@ -108,7 +107,6 @@
             <artifactId>weld-core-impl</artifactId>
             <scope>test</scope>
         </dependency>
-        -->
     </dependencies>
 
     <build>
@@ -179,9 +177,9 @@
                                     <name>standalone.xml</name>
                                     <layers>
                                         <layer>cloud-server</layer>
-                                        <!--<layer>fault-tolerance</layer>-->
-                                        <!--<layer>jwt</layer>-->
-                                        <!--<layer>openapi</layer>-->
+                                        <layer>microprofile-fault-tolerance</layer>
+                                        <!--<layer>microprofile-jwt</layer>-->
+                                        <!--<layer>microprofile-openapi</layer>-->
                                     </layers>
                                 </config>
                             </configurations>
@@ -206,6 +204,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <environmentVariables>
+                        <!-- Required by org.wildfly.test.integration.microprofile.faulttolerance.sync.SyncCircuitBreakerDisabledTest -->
+                        <hystrix.command.default.metrics.healthSnapshot.intervalInMilliseconds>10</hystrix.command.default.metrics.healthSnapshot.intervalInMilliseconds>
+                    </environmentVariables>
                     <systemPropertyVariables>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->

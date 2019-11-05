@@ -123,6 +123,7 @@ Basic layers:
 * _jpa_: Support for jpa (latest WildFly supported hibernate release).
 * _microprofile-config_: Support for MicroProfile Config.
 * _microprofile-metrics_: Support for MicroProfile Metrics.
+* _microprofile-fault-tolerance_: Support for MicroProfile Fault Tolerance.
 * _observability_: Support for microprofile monitoring and configuration features (config, health, metrics, open-tracing).
 * _open-tracing_: Support for microprofile open-tracing. This layer is an optional dependency of _observability_ layer.
 * _resource-adapters_: Support for deployment of JCA adapters.
