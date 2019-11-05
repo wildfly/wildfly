@@ -132,6 +132,24 @@ Aggregation layers:
 
 * _cloud-profile_, an aggregation of the basic layers (except _h2-*_ layers) and a _web-server_ .
 
+Use-cases tailored server layers:
+
+[NOTE]
+====
+The following layers depend on _core-server_ and _core-tools_ (layers defined in WildFly core feature-pack). The security is handled by elytron.
+Undertow subsystem is configured with _other_ _application-security-domain_ that references Elytron _ApplicationDomain_ security domain.
+====
+
+* _datasources-web-server_: A servlet container (_web-server_ layer) with an optional dependency on _datasources_ layer.
+* _jaxrs-server_: An extension of _datasources-web-server_ layer with _jaxrs_ and optional dependencies on _cdi_ and _jpa_ layers.
+* _cloud-server_: A _cloud-profile_ with core features and tools.
+
+Decorator layers:
+
+Docorators are designed to extend the feature set of server layers.
+
+* _web-clustering_: Infinispan based web session clustering.
+
 ==== WildFly servlet layers
 
 Basic layers:
