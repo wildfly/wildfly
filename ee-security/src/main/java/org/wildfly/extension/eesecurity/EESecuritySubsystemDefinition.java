@@ -26,17 +26,28 @@ import java.util.Collections;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.capability.RuntimeCapability;
 
 /**
  * @author Stuart Douglas
  */
 public class EESecuritySubsystemDefinition extends PersistentResourceDefinition {
 
+    static final String EE_SECURITY_CAPABILITY_NAME = "org.wildfly.ee.security";
+    static final String WELD_CAPABILITY_NAME = "org.wildfly.weld";
+
+    static final RuntimeCapability<Void> EE_SECURITY_CAPABILITY =
+            RuntimeCapability.Builder.of(EE_SECURITY_CAPABILITY_NAME)
+                    .setServiceType(Void.class)
+                    .addRequirements(WELD_CAPABILITY_NAME)
+                    .build();
+
     public static final EESecuritySubsystemDefinition INSTANCE = new EESecuritySubsystemDefinition();
 
     private EESecuritySubsystemDefinition() {
         super(new Parameters(EESecurityExtension.SUBSYSTEM_PATH, EESecurityExtension.getResolver())
                 .setAddHandler(EESecuritySubsystemAdd.INSTANCE)
+                .addCapabilities(EE_SECURITY_CAPABILITY)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
     }
 
