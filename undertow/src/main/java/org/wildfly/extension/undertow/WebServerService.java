@@ -50,11 +50,11 @@ class WebServerService implements CommonWebServer, Service<WebServerService> {
         Map<String, UndertowListener> listeners = getListenerMap();
         UndertowListener listener = null;
         for (String p : listeners.keySet()) {
-            if (protocol.toLowerCase().contains(p)) {
+            if (protocol.toLowerCase().contains(p) || listeners.size() == 1) {
                 listener = listeners.get(p);
             }
         }
-        if (listener != null && listener.getProtocol() == HttpListenerService.PROTOCOL && secure) {
+        if (listener != null && listener.getProtocol().equals(HttpListenerService.PROTOCOL) && secure) {
             if (listeners.containsKey(HttpsListenerService.PROTOCOL)) {
                 listener = listeners.get(HttpsListenerService.PROTOCOL);
             } else {
