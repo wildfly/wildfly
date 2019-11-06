@@ -3,6 +3,7 @@
     <dependencies>
         <layer name="datasources-web-server"/>
         <layer name="jaxrs" />
+        <layer name="bean-validation" optional="true"/>
         <layer name="cdi" optional="true"/>
         <layer name="jpa" optional="true"/>
     </dependencies>
