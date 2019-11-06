@@ -3,7 +3,7 @@
 
 [abstract]
 
-Wildfly now supports clustered database backed timers. The clustering
+WildFly now supports clustered database backed timers. The clustering
 support is provided through the database, and as a result it is not
 intended to be a super high performance solution that supports thousands
 of timers going off a second, however properly tuned it should provide

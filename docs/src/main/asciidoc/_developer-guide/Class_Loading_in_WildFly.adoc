@@ -454,7 +454,7 @@ deployment.
 [[how-to-list-the-module-dependencies-of-a-deployed-application]]
 == How to list the module dependencies of a deployed application
 
-In Wildfly it is possible to list the module dependencies added by the container to your deployed application. This task can be achieved via the command line interface, where specific operations are available to list the module dependencies for deployments and ear-subdeployments.
+In WildFly it is possible to list the module dependencies added by the container to your deployed application. This task can be achieved via the command line interface, where specific operations are available to list the module dependencies for deployments and ear-subdeployments.
 
 You can list the module dependencies of a deployment using the _list-modules_ operation as below:
 
@@ -470,7 +470,7 @@ In case of ear-subdeployments, the _list-modules_ operation is also available un
 [standalone@localhost:9990 /] /deployment=test-application.ear/subdeployment=test-application.war:list-modules
 ----
 
-If you are running Wildfly in domain mode, this operation is available via the server resource at the host level:
+If you are running WildFly in domain mode, this operation is available via the server resource at the host level:
 
 [source,options="nowrap"]
 ----

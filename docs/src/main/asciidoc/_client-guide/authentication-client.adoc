@@ -14,7 +14,7 @@ The _<authentication-client/>_ element can be added to the wildfly-config.xml co
 </configuration>
 ----
 
-_Note: A single wildfly-config.xml could be used by multiple projects using multiple versions of Wildfly Elytron, newer versions of WildFly Elytron will introduce new configuration using later namespace versions however they will still continue to support the previously released schemas until advertised otherwise.  For the configuration to be compatible with this either use a schema and namespace compatible with all the versions in use, or multiple authentication-client elements can be added, these should be added ordered by namespace youngest to oldest.  If a configuration with a later namespace is discovered by a newer WildFly Elytron client it will be used and parsing will not look for an older version as well._
+_Note: A single wildfly-config.xml could be used by multiple projects using multiple versions of WildFly Elytron, newer versions of WildFly Elytron will introduce new configuration using later namespace versions however they will still continue to support the previously released schemas until advertised otherwise.  For the configuration to be compatible with this either use a schema and namespace compatible with all the versions in use, or multiple authentication-client elements can be added, these should be added ordered by namespace youngest to oldest.  If a configuration with a later namespace is discovered by a newer WildFly Elytron client it will be used and parsing will not look for an older version as well._
 
 The _<authentication-client />_ configuration can contain the following sections: -
 
