@@ -30,7 +30,7 @@ Users who already have EJBs deployed on the server side can just skip to
 the next section.
 
 As a first step, you'll have to deploy your application containing the
-EJBs on the Wildfly server. If you want those EJBs to be remotely
+EJBs on the WildFly server. If you want those EJBs to be remotely
 invocable, then you'll have to expose at least one remote view for that
 bean. In this example, let's consider a simple Calculator stateless bean
 which exposes a RemoteCalculator remote business interface. We'll also
@@ -165,7 +165,7 @@ import org.jboss.as.quickstarts.ejb.remote.stateless.RemoteCalculator;
 import org.jboss.sasl.JBossSaslProvider;
  
 /**
- * A sample program which acts a remote client for a EJB deployed on Wildfly 10 server.
+ * A sample program which acts a remote client for a EJB deployed on WildFly 10 server.
  * This program shows how to lookup stateful and stateless beans via JNDI and then invoke on them
  *
  * @author Jaikiran Pai

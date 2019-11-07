@@ -3,7 +3,7 @@
 :wildflyVersion: 10.1
 
 WildFly 10 added support for using the Undertow subsystem as a load
-balancer. Wildfly supports two different approaches, you can either
+balancer. WildFly supports two different approaches, you can either
 define a static load balancer, and specify the back end hosts in your
 configuration, or use it as a mod_cluster frontend, and use mod_cluster
 to dynamically update the hosts.

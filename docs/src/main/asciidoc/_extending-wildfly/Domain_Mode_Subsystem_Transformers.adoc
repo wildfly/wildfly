@@ -2177,7 +2177,7 @@ current subsystem version, and the jars in the WildFly checkout.
 
 Next we configure a 'legacy' controller. This will run the version of
 the core libraries (e.g the `controller` module) as found in the
-targeted legacy version of JBoss AS/Wildfly), and the subsystem. We need
+targeted legacy version of JBoss AS/WildFly), and the subsystem. We need
 to pass in that it is using the core AS version 7.1.2.Final (i.e. the
 `ModelTestControllerVersion.V7_1_2_FINAL` part) and that that version is
 ModelVersion 1.0.0. Next we have some `addMavenResourceURL()` calls
