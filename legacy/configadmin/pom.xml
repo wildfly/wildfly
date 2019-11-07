@@ -40,7 +40,7 @@
 
     <artifactId>wildfly-configadmin</artifactId>
 
-    <name>Wildfly: Config Admin</name>
+    <name>WildFly: Config Admin</name>
 
     <dependencies>
         <dependency>
