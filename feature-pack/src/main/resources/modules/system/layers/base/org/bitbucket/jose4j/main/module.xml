@@ -18,26 +18,12 @@
   ~ limitations under the License.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.jwt">
+<module xmlns="urn:jboss:module:1.8" name="org.bitbucket.jose4j">
     <resources>
-        <artifact name="${io.smallrye:smallrye-jwt}"/>
+        <artifact name="${org.bitbucket.b_c:jose4j}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.security.enterprise.api" />
-        <module name="javax.servlet.api"/>
-        <module name="org.bitbucket.jose4j"/>
-        <module name="org.eclipse.microprofile.config.api"/>
-        <module name="org.eclipse.microprofile.jwt.auth.api"/>
-        <module name="org.jboss.logging" />
-        <module name="javax.enterprise.api" />
-        <module name="javax.annotation.api" />
-        <module name="javax.json.api" />
-        <module name="javax.ws.rs.api" />
-        <module name="io.smallrye.config" services="import"/>
-        <module name="org.jboss.weld.core"/>
-        <module name="org.jboss.weld.spi"/>
-        <module name="org.jboss.weld.api"/>
+        <module name="org.slf4j"/>
     </dependencies>
 </module>
