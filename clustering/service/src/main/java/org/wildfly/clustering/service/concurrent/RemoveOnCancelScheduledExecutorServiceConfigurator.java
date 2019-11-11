@@ -43,6 +43,7 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class RemoveOnCancelScheduledExecutorServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, Function<ScheduledExecutorService, ScheduledExecutorService>, Supplier<ScheduledExecutorService>, Consumer<ScheduledExecutorService> {
 
     private final ThreadFactory factory;

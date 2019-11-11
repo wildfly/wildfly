@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
+
+package org.wildfly.clustering.ee.infinispan.scheduler;
 
 import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Command that cancels the scheduling of a session.
+ * Command that cancels a previously scheduled item.
  * @author Paul Ferraro
  */
-public class CancelSchedulerCommand<I> implements Command<Void, Scheduler<I>> {
-    private static final long serialVersionUID = -3526890046903297231L;
+public class CancelCommand<I, M> implements Command<Void, Scheduler<I, M>> {
+    private static final long serialVersionUID = 7990530622481705411L;
 
-    private final I beanId;
+    private final I id;
 
-    public CancelSchedulerCommand(I beanId) {
-        this.beanId = beanId;
+    public CancelCommand(I id) {
+        this.id = id;
     }
 
     @Override
-    public Void execute(Scheduler<I> scheduler) {
-        scheduler.cancel(this.beanId);
+    public Void execute(Scheduler<I, M> scheduler) {
+        scheduler.cancel(this.id);
         return null;
     }
 }

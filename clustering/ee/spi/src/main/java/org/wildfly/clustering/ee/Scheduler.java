@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.dispatcher.Command;
+package org.wildfly.clustering.ee;
 
 /**
- * Command that cancels the scheduling of a session.
+ * A task scheduler.
  * @author Paul Ferraro
  */
-public class CancelSchedulerCommand implements Command<Void, Scheduler> {
-    private static final long serialVersionUID = -6060731427497057763L;
+public interface Scheduler<I, M> extends AutoCloseable {
+    /**
+     * Schedules a task for the object with the specified identifier, using the specified metaData
+     * @param id an object identifier
+     * @param metaData the object meta-data
+     */
+    void schedule(I id, M metaData);
 
-    private final String id;
+    /**
+     * Cancels a previously scheduled task for the object with the specified identifier.
+     * @param id an object identifier
+     */
+    void cancel(I id);
 
-    public CancelSchedulerCommand(String sessionId) {
-        this.id = sessionId;
-    }
-
+    /**
+     * Closes any resources used by this scheduler.
+     */
     @Override
-    public Void execute(Scheduler scheduler) {
-        scheduler.cancel(this.id);
-        return null;
-    }
+    void close();
 }

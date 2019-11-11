@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.ee.cache.scheduler;
 
-package org.wildfly.clustering.web.cache.session;
-
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
- * A scheduler for some task.
+ * A collection of scheduled entries with a predictable iteration order.
  * @author Paul Ferraro
  */
-public interface Scheduler extends AutoCloseable {
-    /**
-     * Schedules a task for the specified session.
-     * @param session a web session.
-     */
-    void schedule(String sessionId, ImmutableSessionMetaData metaData);
+public interface ScheduledEntries<K, V> extends Iterable<Map.Entry<K, V>> {
 
     /**
-     * Cancels a previously scheduled task for the specified session
-     * @param sessionId the web session identifier
+     * Indicates whether the entries are sorted, or if iteration order recapitulates insertion order.
+     * @return true, if these entries are sorted, false otherwise.
      */
-    void cancel(String sessionId);
+    boolean isSorted();
 
     /**
-     * Closes any resources used by this scheduler.
+     * Adds an entry using the specified key and value.
+     * @param key an entry key
+     * @param value an entry value
      */
-    @Override
-    void close();
+    void add(K key, V value);
+
+    /**
+     * Removes the entry with the specified key.
+     * @param key an entry key
+     */
+    void remove(K key);
+
+    /**
+     * Returns, but does not remove, the first entry.
+     */
+    default Map.Entry<K, V> peek() {
+        Iterator<Map.Entry<K, V>> entries = this.iterator();
+        return entries.hasNext() ? entries.next() : null;
+    }
 }

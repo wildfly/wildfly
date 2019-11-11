@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.wildfly.clustering.ee.infinispan.scheduler;
 
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 
 /**
+ * A task scheduler.
  * @author Paul Ferraro
  */
-public class ServiceConfiguratorAdapter implements CapabilityServiceConfigurator, ResourceServiceConfigurator {
+public interface Scheduler<I, M> extends org.wildfly.clustering.ee.Scheduler<I, M> {
+    /**
+     * Schedules an object with the specified identifier.
+     * @param id the identifier of the object to be scheduled
+     */
+    void schedule(I id);
 
-    private final ServiceConfigurator configurator;
-
-    public ServiceConfiguratorAdapter(ServiceConfigurator configurator) {
-        this.configurator = configurator;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.configurator.getServiceName();
-    }
-
-    @Override
-    public ServiceBuilder<?> build(ServiceTarget target) {
-        return this.configurator.build(target);
-    }
+    /**
+     * Cancels any previous scheduled tasks for session which are no longer local to the current node
+     * @param location the cache locality
+     */
+    void cancel(Locality locality);
 }

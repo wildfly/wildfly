@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+
+package org.wildfly.clustering.ee.infinispan.scheduler;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
- * Command that schedules a session.
+ * Command that scheduled an item.
  * @author Paul Ferraro
  */
-public class ScheduleSchedulerCommand implements Command<Void, Scheduler> {
-    private static final long serialVersionUID = -2606847692331278614L;
+public class ScheduleCommand<I, M> implements Command<Void, Scheduler<I, M>> {
+    private static final long serialVersionUID = 6254782388444864112L;
 
-    private transient ImmutableSessionMetaData metaData;
-    private final String sessionId;
+    private final I id;
+    private final transient M metaData;
 
-    public ScheduleSchedulerCommand(String sessionId, ImmutableSessionMetaData metaData) {
-        this.sessionId = sessionId;
+    public ScheduleCommand(I id, M metaData) {
+        this.id = id;
         this.metaData = metaData;
     }
 
     @Override
-    public Void execute(Scheduler scheduler) {
+    public Void execute(Scheduler<I, M> scheduler) {
         if (this.metaData != null) {
-            scheduler.schedule(this.sessionId, this.metaData);
+            scheduler.schedule(this.id, this.metaData);
         } else {
-            scheduler.schedule(this.sessionId);
+            scheduler.schedule(this.id);
         }
         return null;
     }

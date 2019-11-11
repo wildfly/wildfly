@@ -40,7 +40,7 @@ public class PrimaryOwnerLocator<K> implements Function<K, Node> {
     private final NodeFactory<Address> memberFactory;
     private final Group group;
 
-    public PrimaryOwnerLocator(Cache<K, ?> cache, NodeFactory<Address> memberFactory, Group group) {
+    public PrimaryOwnerLocator(Cache<? extends K, ?> cache, NodeFactory<Address> memberFactory, Group group) {
         this.distribution = cache.getAdvancedCache().getDistributionManager();
         this.memberFactory = memberFactory;
         this.group = group;

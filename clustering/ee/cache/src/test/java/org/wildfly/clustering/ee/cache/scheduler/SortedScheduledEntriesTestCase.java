@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.dispatcher.Command;
+package org.wildfly.clustering.ee.cache.scheduler;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
- * Command that schedules a session.
+ * Unit test for {@link SortedScheduledEntries}
  * @author Paul Ferraro
  */
-public class ScheduleSchedulerCommand<I> implements Command<Void, Scheduler<I>> {
-    private static final long serialVersionUID = -2606847692331278614L;
+public class SortedScheduledEntriesTestCase extends AbstractScheduledEntriesTestCase {
 
-    private final I beanId;
-    private transient ImmutableBeanEntry<I> entry = null;
-
-    public ScheduleSchedulerCommand(I beanId, ImmutableBeanEntry<I> entry) {
-        this.beanId = beanId;
-        this.entry = entry;
-    }
-
-    @Override
-    public Void execute(Scheduler<I> scheduler) {
-        if (this.entry != null) {
-            scheduler.schedule(this.beanId, this.entry);
-        } else {
-            scheduler.schedule(this.beanId);
-        }
-        return null;
+    public SortedScheduledEntriesTestCase() {
+        super(new SortedScheduledEntries<>(), list -> {
+            List<Map.Entry<UUID, Instant>> result = new LinkedList<>(list);
+            Collections.sort(result, Map.Entry.comparingByValue());
+            return result;
+        });
     }
 }

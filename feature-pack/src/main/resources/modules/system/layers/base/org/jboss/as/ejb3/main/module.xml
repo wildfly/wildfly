@@ -47,6 +47,7 @@
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.wildfly.client.config"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
         <module name="org.wildfly.clustering.marshalling.api"/>

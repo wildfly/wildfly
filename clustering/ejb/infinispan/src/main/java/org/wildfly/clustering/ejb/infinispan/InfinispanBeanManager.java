@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -52,16 +51,13 @@ import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.cache.retry.RetryingInvoker;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
+import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
+import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
@@ -78,7 +74,6 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -94,8 +89,6 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     private static final String GLOBAL_IDLE_TIMEOUT = WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.stateful.idle-timeout", null);
     private static final String IDLE_TIMEOUT_PROPERTY = "jboss.ejb.stateful.%s.idle-timeout";
-
-    private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(10), Duration.ofMillis(100));
 
     private final String name;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
@@ -113,9 +106,9 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
     private final Function<BeanKey<I>, Node> primaryOwnerLocator;
 
-    private volatile Scheduler<I> scheduler;
+    private volatile Scheduler<I, ImmutableBeanEntry<I>> scheduler;
     private volatile ExecutorService executor;
-    private volatile CommandDispatcher<Scheduler<I>> dispatcher;
+    private volatile org.wildfly.clustering.ee.Scheduler<I, ImmutableBeanEntry<I>> primaryOwnerScheduler;
 
     public InfinispanBeanManager(InfinispanBeanManagerConfiguration<I, T> configuration, IdentifierFactory<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration) {
         this.name = configuration.getName();
@@ -142,16 +135,10 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         this.executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(InfinispanBeanManager.class));
         this.affinity.start();
 
-        List<Scheduler<I>> schedulers = new ArrayList<>(2);
+        List<Scheduler<I, ImmutableBeanEntry<I>>> schedulers = new ArrayList<>(2);
         Duration timeout = this.expiration.getTimeout();
         if ((timeout != null) && !timeout.isNegative()) {
-            if (dispatcherFactory.getGroup().isSingleton()) {
-                schedulers.add(new NonClusteredBeanExpirationScheduler<>(
-                        this.batcher, this.beanFactory, this.expiration));
-            } else {
-                schedulers.add(new BeanExpirationScheduler<>(
-                        this.batcher, this.beanFactory, this.expiration));
-            }
+            schedulers.add(new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, new ExpiredBeanRemover<>(this.beanFactory, this.expiration)));
         }
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
@@ -160,18 +147,12 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         if (idleTimeout != null) {
             Duration idleDuration = Duration.parse(idleTimeout);
             if (!idleDuration.isNegative()) {
-                if (dispatcherFactory.getGroup().isSingleton()) {
-                    schedulers.add(new NonClusteredEagerEvictionScheduler<>(
-                            this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration));
-                } else {
-                    schedulers.add(new EagerEvictionScheduler<>(
-                            this.batcher, this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
-                }
+                schedulers.add(new EagerEvictionScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.groupFactory, idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
             }
         }
 
-        this.scheduler = new CompositeScheduler<>(schedulers);
-        this.dispatcher = !schedulers.isEmpty() ? this.dispatcherFactory.createCommandDispatcher(dispatcherName, this.scheduler) : null;
+        this.scheduler = !schedulers.isEmpty() ? new CompositeScheduler<>(schedulers) : null;
+        this.primaryOwnerScheduler = (this.scheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? this.scheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, this.scheduler, this.primaryOwnerLocator, InfinispanBeanKey::new)) : null;
 
         this.cache.addListener(this, new PredicateCacheEventFilter<>(this.filter), null);
         this.schedule(new SimpleLocality(false), new CacheLocality(this.cache));
@@ -188,10 +169,9 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
-            if (this.dispatcher != null) {
-                this.dispatcher.close();
+            if (this.primaryOwnerScheduler != null) {
+                this.primaryOwnerScheduler.close();
             }
-            this.scheduler.close();
             this.affinity.stop();
         }
     }
@@ -227,61 +207,6 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         return Affinity.NONE;
     }
 
-    private void prepareRescheduling(I id) {
-        if (this.dispatcher != null) {
-            if (dispatcherFactory.getGroup().isSingleton()) {
-                scheduler.prepareRescheduling(id);
-                return;
-            }
-            try {
-                this.executeOnPrimaryOwner(id, new PrepareReschedulingSchedulerCommand<>(id)).toCompletableFuture().join();
-            } catch (Exception e) {
-                InfinispanEjbLogger.ROOT_LOGGER.failedToCancelBean(e, id);
-            }
-        }
-    }
-
-    private void cancel(I id) {
-        if (this.dispatcher != null) {
-            if (dispatcherFactory.getGroup().isSingleton()) {
-                scheduler.cancel(id);
-                return;
-            }
-            try {
-                this.executeOnPrimaryOwner(id, new CancelSchedulerCommand<>(id)).toCompletableFuture().join();
-            } catch (Exception e) {
-                InfinispanEjbLogger.ROOT_LOGGER.failedToCancelBean(e, id);
-            }
-        }
-    }
-
-    void schedule(I id, ImmutableBeanEntry<I> entry) {
-        if (this.dispatcher != null) {
-            if (dispatcherFactory.getGroup().isSingleton()) {
-                scheduler.schedule(id);
-                return;
-            }
-            try {
-                this.executeOnPrimaryOwner(id, new ScheduleSchedulerCommand<>(id, entry));
-            } catch (Exception e) {
-                InfinispanEjbLogger.ROOT_LOGGER.failedToScheduleBean(e, id);
-            }
-        }
-    }
-
-    private CompletionStage<Void> executeOnPrimaryOwner(I id, final Command<Void, Scheduler<I>> command) throws CommandDispatcherException {
-        CommandDispatcher<Scheduler<I>> dispatcher = this.dispatcher;
-        ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException> action = new ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException>() {
-            @Override
-            public CompletionStage<Void> get() throws CommandDispatcherException {
-                // This should only go remote following a failover
-                Node node = InfinispanBeanManager.this.locatePrimaryOwner(id);
-                return dispatcher.executeOnMember(command, node);
-            }
-        };
-        return INVOKER.invoke(action);
-    }
-
     Node locatePrimaryOwner(I id) {
         return this.primaryOwnerLocator.apply(new InfinispanBeanKey<>(id));
     }
@@ -294,7 +219,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         group.addBean(id, bean);
         group.releaseBean(id, this.properties.isPersistent() ? this.passivation.getPassivationListener() : null);
         BeanEntry<I> entry = this.beanFactory.createValue(id, groupId);
-        return new SchedulableBean(this.beanFactory.createBean(id, entry), entry);
+        return new SchedulableBean<>(this.beanFactory.createBean(id, entry), entry, this.primaryOwnerScheduler);
     }
 
     @Override
@@ -306,8 +231,10 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
             InfinispanEjbLogger.ROOT_LOGGER.debugf("Could not find bean %s", id);
             return null;
         }
-        this.prepareRescheduling(id);
-        return new SchedulableBean(bean, entry);
+        if (this.primaryOwnerScheduler != null) {
+            this.primaryOwnerScheduler.cancel(id);
+        }
+        return new SchedulableBean<>(bean, entry, this.primaryOwnerScheduler);
     }
 
     @Override
@@ -373,13 +300,13 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     }
 
     void cancel(Locality locality) {
-        if (this.dispatcher != null) {
+        if (this.scheduler != null) {
             this.scheduler.cancel(locality);
         }
     }
 
     void schedule(Locality oldLocality, Locality newLocality) {
-        if (this.dispatcher != null) {
+        if (this.scheduler != null) {
             // Iterate over beans in memory
             try (Stream<Map.Entry<BeanKey<I>, BeanEntry<I>>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).entrySet().stream().filter(this.filter)) {
                 Iterator<Map.Entry<BeanKey<I>, BeanEntry<I>>> entries = stream.iterator();
@@ -396,14 +323,16 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         }
     }
 
-    private class SchedulableBean implements Bean<I, T> {
+    private static class SchedulableBean<I, T> implements Bean<I, T> {
 
         private final Bean<I, T> bean;
         private final ImmutableBeanEntry<I> entry;
+        private org.wildfly.clustering.ee.Scheduler<I, ImmutableBeanEntry<I>> scheduler;
 
-        SchedulableBean(Bean<I, T> bean, ImmutableBeanEntry<I> entry) {
+        SchedulableBean(Bean<I, T> bean, ImmutableBeanEntry<I> entry, org.wildfly.clustering.ee.Scheduler<I, ImmutableBeanEntry<I>> scheduler) {
             this.bean = bean;
             this.entry = entry;
+            this.scheduler = scheduler;
         }
 
         @Override
@@ -444,11 +373,10 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         @Override
         public void close() {
             this.bean.close();
-            if (!this.bean.isValid()) {
-                InfinispanBeanManager.this.cancel(this.getId());
-            }
-            else {
-                InfinispanBeanManager.this.schedule(this.getId(), this.entry);
+            if (this.scheduler != null) {
+                if (this.bean.isValid()) {
+                    this.scheduler.schedule(this.bean.getId(), this.entry);
+                }
             }
         }
     }

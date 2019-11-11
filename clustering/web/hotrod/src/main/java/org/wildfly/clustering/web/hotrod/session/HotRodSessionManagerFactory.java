@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.hotrod.tx.HotRodBatcher;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
@@ -36,12 +37,12 @@ import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
-import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.hotrod.session.coarse.CoarseSessionAttributesFactory;
 import org.wildfly.clustering.web.hotrod.session.fine.FineSessionAttributesFactory;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
@@ -54,7 +55,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
 public class HotRodSessionManagerFactory<L, C extends Marshallability> implements SessionManagerFactory<L, TransactionBatch> {
 
     final Registrar<SessionExpirationListener> expirationRegistrar;
-    final Scheduler expirationScheduler;
+    final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
     final Batcher<TransactionBatch> batcher;
     final Duration transactionTimeout;
     private final SessionFactory<CompositeSessionMetaDataEntry<L>, ?, L> sessionFactory;
@@ -64,8 +65,8 @@ public class HotRodSessionManagerFactory<L, C extends Marshallability> implement
         this.sessionFactory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         ExpiredSessionRemover<CompositeSessionMetaDataEntry<L>, ?, L> remover = new ExpiredSessionRemover<>(this.sessionFactory);
         this.expirationRegistrar = remover;
-        this.expirationScheduler = new SessionExpirationScheduler(remover);
         this.batcher = new HotRodBatcher(config.getCache());
+        this.expirationScheduler = new SessionExpirationScheduler(this.batcher, remover);
         this.transactionTimeout = Duration.ofMillis(config.getCache().getRemoteCacheManager().getConfiguration().transaction().timeout());
     }
 
@@ -83,7 +84,7 @@ public class HotRodSessionManagerFactory<L, C extends Marshallability> implement
             }
 
             @Override
-            public Scheduler getExpirationScheduler() {
+            public Scheduler<String, ImmutableSessionMetaData> getExpirationScheduler() {
                 return HotRodSessionManagerFactory.this.expirationScheduler;
             }
 

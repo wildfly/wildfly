@@ -19,29 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.dispatcher.Command;
+package org.wildfly.clustering.ee.cache.scheduler;
+
+import java.util.function.UnaryOperator;
 
 /**
- * Command that temporarily holds off the sheduling of a session, preventing
- * the cost of a cancellation. The scheduling must be canceled or rescheduled at
- * the near future.
- * @author Flavia Rainone
+ * Unit test for {@link LinkedScheduledEntries}
+ * @author Paul Ferraro
  */
-public class PrepareReschedulingSchedulerCommand<I> implements Command<Void, Scheduler<I>> {
-    private static final long serialVersionUID = 788517670339502640L;
+public class LinkedScheduledEntriesTestCase extends AbstractScheduledEntriesTestCase {
 
-    private final I beanId;
-
-    public PrepareReschedulingSchedulerCommand(I beanId) {
-        this.beanId = beanId;
-    }
-
-    @Override
-    public Void execute(Scheduler<I> scheduler) {
-        scheduler.prepareRescheduling(beanId);
-        return null;
-
+    public LinkedScheduledEntriesTestCase() {
+        super(new LinkedScheduledEntries<>(), UnaryOperator.identity());
     }
 }
