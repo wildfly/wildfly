@@ -63,7 +63,14 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, P
     public SimpleCache(StatefulObjectFactory<V> factory, IdentifierFactory<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
         this.factory = factory;
         this.identifierFactory = identifierFactory;
-        this.timeout = (timeout != null) ? Duration.ofMillis(TimeUnit.MILLISECONDS.convert(timeout.getValue(), timeout.getTimeUnit())) : null;
+
+        // A value of -1 means the bean will never be removed due to timeout
+        if (timeout == null || timeout.getValue() == -1) {
+            this.timeout = null;
+        } else {
+            this.timeout = Duration.ofMillis(TimeUnit.MILLISECONDS.convert(timeout.getValue(), timeout.getTimeUnit()));
+        }
+
         this.environment = environment;
     }
 
