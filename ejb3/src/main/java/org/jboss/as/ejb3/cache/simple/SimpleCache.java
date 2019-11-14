@@ -65,7 +65,7 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, P
         this.identifierFactory = identifierFactory;
 
         // A value of -1 means the bean will never be removed due to timeout
-        if (timeout == null || timeout.getValue() == -1) {
+        if (timeout == null || timeout.getValue() < 0) {
             this.timeout = null;
         } else {
             this.timeout = Duration.ofMillis(TimeUnit.MILLISECONDS.convert(timeout.getValue(), timeout.getTimeUnit()));
