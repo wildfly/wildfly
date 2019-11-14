@@ -89,5 +89,39 @@ Example configuration:
 </configuration>
 ----
 
+== Configure RESTEasy client
+
+RESTEasy client will automatically load credentials, bearer token and SSL context from `wildfly-config.xml`. Credentials will be used for HTTP Basic authentication and bearer token for Bearer token authentication.
+
+Example configuration:
+
+*wildfly-config.xml*
+[source,xml,options="nowrap"]
+----
+<configuration>
+    <authentication-client xmlns="urn:elytron:client:1.4">
+    ...
+        <set-user-name name="administrator" />
+        <credentials>
+            <bearer-token value="bearerTokenValue"/>
+        </credentials>
+        <key-stores>
+            <key-store name="truststore" type="JKS">
+                <file name="src/test/resources/org/jboss/resteasy/test/security/client-different-cert.truststore"/>
+            </key-store>
+        </key-stores>
+        <ssl-contexts>
+            <ssl-context name="client-context">
+                <trust-store key-store-name="truststore"/>
+            </ssl-context>
+        </ssl-contexts>
+        <ssl-context-rules>
+            <rule use-ssl-context="client-context"/>
+        </ssl-context-rules>
+    ...
+    </authentication-client>
+</configuration>
+----
+
 [NOTE]
 Note that WildFly client libraries do have reasonable default configuration. Thus, adding configuration for these clients to `wildfly-config.xml` isn’t mandatory.
