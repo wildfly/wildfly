@@ -47,7 +47,7 @@ public class ImmutableSessionActivationNotifier implements SessionActivationNoti
         Map<String, HttpSessionActivationListener> listeners = this.session.getAttributes(HttpSessionActivationListener.class);
         if (!listeners.isEmpty()) {
             HttpSessionEvent event = new HttpSessionEvent(this.session);
-            for (HttpSessionActivationListener listener : this.session.getAttributes(HttpSessionActivationListener.class).values()) {
+            for (HttpSessionActivationListener listener : listeners.values()) {
                 listener.sessionWillPassivate(event);
             }
         }
@@ -58,7 +58,7 @@ public class ImmutableSessionActivationNotifier implements SessionActivationNoti
         Map<String, HttpSessionActivationListener> listeners = this.session.getAttributes(HttpSessionActivationListener.class);
         if (!listeners.isEmpty()) {
             HttpSessionEvent event = new HttpSessionEvent(this.session);
-            for (HttpSessionActivationListener listener : this.session.getAttributes(HttpSessionActivationListener.class).values()) {
+            for (HttpSessionActivationListener listener : listeners.values()) {
                 listener.sessionDidActivate(event);
             }
         }
