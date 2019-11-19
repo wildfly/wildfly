@@ -77,9 +77,8 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
             throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
         Object old = this.attributes.put(name, value);
-        if (old != value) {
-            this.mutations.add(name);
-        }
+        // Always trigger mutation, even if this is an immutable object that was previously retrieved via getAttribute(...)
+        this.mutations.add(name);
         return old;
     }
 
