@@ -368,7 +368,11 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     private void propagateSubject(final SecurityContext target, final SecurityContext source) {
         final SecurityContextUtil previousUtil = source.getUtil();
         final SecurityContextUtil currentUtil = target.getUtil();
-        currentUtil.createSubjectInfo(previousUtil.getUserPrincipal(), previousUtil.getCredential(), previousUtil.getSubject());
+        if(target.getSecurityDomain() != null && source.getSecurityDomain() != null && target.getSecurityDomain().equals(source.getSecurityDomain())){
+            target.setSubjectInfo(source.getSubjectInfo());
+        } else {
+            currentUtil.createSubjectInfo(previousUtil.getUserPrincipal(), previousUtil.getCredential(), previousUtil.getSubject());
+        }
         if (previousUtil.getRoles() != null) {
             try {
                 currentUtil.setRoles((RoleGroup) previousUtil.getRoles().clone());
