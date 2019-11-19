@@ -152,9 +152,9 @@ created.
 * For any other valid value for `queue-length`, a bounded queue wil be
 created.
 
-The optional `hung-task-threshold` defines a threshold value, in
-milliseconds, to hung a possibly blocked task. A value of `0` will never
-hung a task, and is the default.
+The optional `hung-task-threshold` defines a runtime threshold value, in
+milliseconds, for tasks to be considered hung by the executor.
+A value of `0` will never consider tasks to be hung.
 
 The optional `long-running-tasks` is a hint to optimize the execution of
 long running tasks, and defaults to `false`.
@@ -225,9 +225,9 @@ The mandatory `core-threads` provides the number of threads to keep in
 the executor's pool, even if they are idle. A value of `0` means there
 is no limit.
 
-The optional `hung-task-threshold` defines a threshold value, in
-milliseconds, to hung a possibly blocked task. A value of `0` will never
-hung a task, and is the default.
+The optional `hung-task-threshold` defines a runtime threshold value, in
+milliseconds, for tasks to be considered hung by the executor.
+A value of `0` will never consider tasks to be hung.
 
 The optional `long-running-tasks` is a hint to optimize the execution of
 long running tasks, and defaults to `false`.
