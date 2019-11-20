@@ -82,7 +82,7 @@ public class JaxrsJacksonProviderTestCase {
     @Test
     public void testDurationJsr310() throws Exception {
         String result = performCall("myjaxrs/jackson/duration");
-        Assert.assertEquals("\"PT1S\"", result);
+        Assert.assertTrue(result.equals("\"PT1S\"") || result.equals("1.000000000"));
     }
 
     @Test
