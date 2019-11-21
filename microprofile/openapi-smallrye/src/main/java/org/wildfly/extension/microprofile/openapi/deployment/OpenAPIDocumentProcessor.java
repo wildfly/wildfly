@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.spi.OASFactoryResolver;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -57,7 +58,6 @@ import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
@@ -65,6 +65,7 @@ import io.smallrye.openapi.runtime.OpenApiProcessor;
 import io.smallrye.openapi.runtime.OpenApiStaticFile;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
 import io.smallrye.openapi.runtime.scanner.FilteredIndexView;
+import io.smallrye.openapi.spi.OASFactoryResolverImpl;
 import io.undertow.server.HttpHandler;
 
 /**
@@ -89,6 +90,9 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
         STATIC_FILES.put(Format.JSON, Arrays.asList(
                 "/META-INF/openapi.json",
                 "/WEB-INF/classes/META-INF/openapi.json"));
+
+        // Set the static OASFactoryResolver eagerly avoiding the need perform TCCL service loading later
+        OASFactoryResolver.setInstance(new OASFactoryResolverImpl());
     }
 
     @Override
@@ -167,15 +171,7 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
         builder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, indexView));
         builder.readerModel(OpenApiProcessor.modelFromReader(config, module.getClassLoader()));
         builder.filter(OpenApiProcessor.getFilter(config, module.getClassLoader()));
-
-        // OASFactoryResolver service loading requires TCCL
-        ClassLoader existingLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(OpenApiConfig.class.getClassLoader());
-        try {
-            return builder.build();
-        } finally {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(existingLoader);
-        }
+        return builder.build();
     }
 
     private static Map.Entry<VirtualFile, Format> findStaticFile(VirtualFile root) {

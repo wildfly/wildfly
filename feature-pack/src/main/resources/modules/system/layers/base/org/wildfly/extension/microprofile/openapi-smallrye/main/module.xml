@@ -38,7 +38,7 @@
         <module name="javax.api"/>
         <module name="javax.annotation.api" />
         <module name="javax.enterprise.api" />
-        <module name="io.smallrye.openapi" export="true"/>
+        <module name="io.smallrye.openapi"/>
         <module name="io.undertow.core"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.openapi.api"/>
@@ -54,6 +54,5 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.extension.undertow"/>
-        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>
