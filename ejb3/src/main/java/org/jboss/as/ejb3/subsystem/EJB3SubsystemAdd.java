@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -50,6 +51,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.clustering.SingletonBarrierService;
+import org.jboss.as.ejb3.component.stateful.DefaultStatefulSessionTimeoutService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescriptionDeploymentUnitProcessor;
@@ -118,8 +120,8 @@ import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
 import org.jboss.as.ejb3.interceptor.server.ClientInterceptorCache;
-import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
 import org.jboss.as.ejb3.interceptor.server.ServerInterceptorCache;
+import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.ClientMappingsRegistryServiceConfigurator;
@@ -152,8 +154,6 @@ import org.wildfly.clustering.singleton.service.SingletonPolicy;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.transaction.client.LocalTransactionContext;
-
-import io.undertow.server.handlers.PathHandler;
 
 /**
  * Add operation handler for the EJB3 subsystem.
@@ -260,6 +260,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode defaultMissingMethod = EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS.resolveModelAttribute(context, model);
         final boolean defaultMissingMethodValue = defaultMissingMethod.asBoolean();
         this.missingMethodPermissionsDenyAccessMergingProcessor.setDenyAccessByDefault(defaultMissingMethodValue);
+
+        final ModelNode defaultStatefulSessionTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT.resolveModelAttribute(context, model);
+        final DefaultStatefulSessionTimeoutService defaultStatefulSessionTimeoutService = new DefaultStatefulSessionTimeoutService(defaultStatefulSessionTimeout.asLongOrNull());
+        context.getServiceTarget().addService(DefaultStatefulSessionTimeoutService.SERVICE_NAME, defaultStatefulSessionTimeoutService).install();
 
         final boolean defaultMdbPoolAvailable = model.hasDefined(DEFAULT_MDB_INSTANCE_POOL);
         final boolean defaultSlsbPoolAvailable = model.hasDefined(DEFAULT_SLSB_INSTANCE_POOL);
