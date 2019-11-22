@@ -106,7 +106,8 @@ Additionally as they have special handling within the management interface overr
  * `Connection`
  * `Content-Length`
  * `Content-Type`
- * `Date` 
+ * `Date`
+ * `Transfer-Encoding`
 
 The configured headers are set at the very end of processing the request immediately before the response is returned to the client, this will mean any of the configured headers will override the same headers set by the corresponding endpoint.
 
