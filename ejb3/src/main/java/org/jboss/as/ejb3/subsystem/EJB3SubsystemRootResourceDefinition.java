@@ -95,6 +95,14 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
 
+    static final SimpleAttributeDefinition DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT, ModelType.LONG, true)
+                    .setXmlName(EJB3SubsystemXMLAttribute.DEFAULT_SESSION_TIMEOUT.getLocalName())
+                    .setAllowExpression(true) // we allow expression for setting a timeout value
+                    .setValidator(new LongRangeValidator(-1, Integer.MAX_VALUE, true, true))
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
+
     static final SimpleAttributeDefinition DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName())
@@ -263,6 +271,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT,
             DEFAULT_SLSB_INSTANCE_POOL,
             DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT,
+            DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT,
             STATISTICS_ENABLED,
             ENABLE_STATISTICS,
             PASS_BY_VALUE,
@@ -290,6 +299,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         resourceRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, DefaultResourceAdapterWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, null, DefaultSingletonBeanAccessTimeoutWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT, null, DefaultStatefulBeanAccessTimeoutWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT, null, DefaultStatefulBeanSessionTimeoutWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, (context, operation) -> {
             ModelNode aliasOp = operation.clone();
             aliasOp.get("name").set(EJB3SubsystemModel.STATISTICS_ENABLED);

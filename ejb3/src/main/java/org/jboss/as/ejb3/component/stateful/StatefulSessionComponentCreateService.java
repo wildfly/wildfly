@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import java.lang.reflect.Method;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.CacheFactory;
@@ -38,10 +43,6 @@ import org.jboss.invocation.Interceptors;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
-import java.lang.reflect.Method;
-import java.util.Set;
-import java.util.function.Supplier;
-
 /**
  * @author Stuart Douglas
  */
@@ -56,9 +57,11 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InterceptorFactory prePassivate;
     private final InterceptorFactory postActivate;
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
+    private final InjectedValue<DefaultStatefulSessionTimeoutService> defaultStatefulSessionTimeoutService = new InjectedValue<DefaultStatefulSessionTimeoutService>();
     private final InterceptorFactory ejb2XRemoveMethod;
     private final Supplier<CacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
     private final Set<Object> serializableInterceptorContextKeys;
+    private final StatefulComponentDescription componentDescription;
     final boolean passivationCapable;
 
     /**
@@ -87,6 +90,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
         this.passivationCapable = componentDescription.isPassivationApplicable();
         this.cacheFactory = cacheFactory;
+        this.componentDescription = componentDescription;
     }
 
     private static InterceptorFactory invokeMethodOnTarget(final Method method) {
@@ -137,6 +141,22 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
 
     Injector<DefaultAccessTimeoutService> getDefaultAccessTimeoutInjector() {
         return this.defaultAccessTimeoutService;
+    }
+
+    Injector<DefaultStatefulSessionTimeoutService> getDefaultStatefulSessionTimeoutInjector() {
+        return this.defaultStatefulSessionTimeoutService;
+    }
+
+    void setDefaultStatefulSessionTimeout() {
+        final StatefulTimeoutInfo existingTimeout = componentDescription.getStatefulTimeout();
+        if (existingTimeout == null) {
+            final DefaultStatefulSessionTimeoutService defaultStatefulSessionTimeoutServiceValue = defaultStatefulSessionTimeoutService.getValue();
+
+            final Long timeoutVal = defaultStatefulSessionTimeoutServiceValue.getDefaultStatefulSessionTimeout();
+            if (timeoutVal != null && timeoutVal >= 0) {
+                componentDescription.setStatefulTimeout(new StatefulTimeoutInfo(timeoutVal, TimeUnit.MILLISECONDS));
+            }
+        }
     }
 
     public InterceptorFactory getEjb2XRemoveMethod() {
