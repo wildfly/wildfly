@@ -39,6 +39,7 @@
         <module name="org.jboss.as.weld.common" />
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.naming"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="javax.transaction.api"/>
