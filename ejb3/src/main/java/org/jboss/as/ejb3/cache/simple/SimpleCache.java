@@ -147,13 +147,8 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, P
         Entry<V> entry = this.entries.get(id);
         if ((entry != null) && entry.done()) {
             if (this.timeout != null) {
-                if (!this.timeout.isZero()) {
-                    this.scheduler.schedule(id, Instant.now().plus(this.timeout));
-                } else {
-                    // The EJB specification allows a 0 timeout, which means the bean is immediately eligible for removal.
-                    // However, removing it directly is faster than scheduling it for immediate removal.
-                    remove(id);
-                }
+                // The EJB specification allows a 0 timeout, which means the bean is immediately eligible for removal.
+                this.scheduler.schedule(id, this.timeout.isZero() ? Instant.now() : Instant.now().plus(this.timeout));
             }
         }
     }

@@ -162,4 +162,21 @@ public class StatefulTimeoutTestCase {
             userTransaction.commit();
         }
     }
+
+    /**
+     * Verifies that a stateful bean with timeout value 0 is eligible fore removal immediately, and its
+     * preDestroy method is invoked.
+     */
+    @Test
+    public void testStatefulTimeout0() throws Exception {
+        Annotated0TimeoutBean timeout0 = lookup(Annotated0TimeoutBean.class);
+        timeout0.doStuff();
+        Thread.sleep(2000);
+        try {
+            timeout0.doStuff();
+            throw new RuntimeException("Expecting NoSuchEJBException");
+        } catch (NoSuchEJBException expected) {
+        }
+        Assert.assertTrue(Annotated0TimeoutBean.preDestroy);
+    }
 }
