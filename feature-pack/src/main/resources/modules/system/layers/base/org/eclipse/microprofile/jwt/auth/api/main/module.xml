@@ -24,6 +24,8 @@
     </resources>
 
     <dependencies>
+        <module name="javax.enterprise.api" />
+        <module name="javax.inject.api" />
         <module name="javax.json.api" />
     </dependencies>
 </module>
