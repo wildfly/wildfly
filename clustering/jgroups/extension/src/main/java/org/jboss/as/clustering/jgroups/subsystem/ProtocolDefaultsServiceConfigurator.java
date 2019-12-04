@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jgroups.Global;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.conf.XmlConfigurator;
 import org.jgroups.stack.Protocol;
@@ -105,7 +106,7 @@ public class ProtocolDefaultsServiceConfigurator extends SimpleServiceNameProvid
         ProtocolStackConfigurator configurator = load(ProtocolDefaultsServiceConfigurator.this.resource);
         try {
             for (org.jgroups.conf.ProtocolConfiguration config: configurator.getProtocolStack()) {
-                String protocolClassName = String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, config.getProtocolName());
+                String protocolClassName = Global.PREFIX + config.getProtocolName();
                 Class<? extends Protocol> protocolClass = Protocol.class.getClassLoader().loadClass(protocolClassName).asSubclass(Protocol.class);
                 this.map.put(protocolClass, Collections.unmodifiableMap(config.getProperties()));
             }
