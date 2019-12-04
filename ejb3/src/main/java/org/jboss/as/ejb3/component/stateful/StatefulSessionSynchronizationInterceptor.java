@@ -205,12 +205,14 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
      */
     static void releaseInstance(final StatefulSessionComponentInstance instance, boolean toDiscard) {
         try {
+            // calling setSynchronizationRegistered(false) before releasing the instance from cache,
+            // so that the instance can be destroyed in StatefulSessionComponent.destroyInstance(...)
+            instance.setSynchronizationRegistered(false);
             if (!instance.isDiscarded() && !toDiscard) {
                 // mark the SFSB instance as no longer in use
                 instance.getComponent().getCache().release(instance);
             }
         } finally {
-            instance.setSynchronizationRegistered(false);
             // release the lock on the SFSB instance
             releaseLock(instance);
         }
