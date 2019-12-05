@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
@@ -30,6 +32,7 @@ import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.subsystem.DefaultStatefulBeanSessionTimeoutWriteHandler;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.service.ServiceBuilder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -50,7 +53,7 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
             @Override
             public void configureDependency(ServiceBuilder<?> serviceBuilder, StatefulSessionComponentCreateService componentCreateService) {
                 serviceBuilder.addDependency(DefaultAccessTimeoutService.STATEFUL_SERVICE_NAME, DefaultAccessTimeoutService.class, componentCreateService.getDefaultAccessTimeoutInjector());
-                serviceBuilder.addDependency(DefaultStatefulSessionTimeoutService.SERVICE_NAME, DefaultStatefulSessionTimeoutService.class, componentCreateService.getDefaultStatefulSessionTimeoutInjector());
+                serviceBuilder.addDependency(DefaultStatefulBeanSessionTimeoutWriteHandler.SERVICE_NAME, AtomicLong.class, componentCreateService.getDefaultStatefulSessionTimeoutInjector());
             }
         });
         StatefulComponentDescription description = (StatefulComponentDescription) configuration.getComponentDescription();

@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component.stateful;
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 import org.jboss.as.ee.component.BasicComponent;
@@ -57,7 +58,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InterceptorFactory prePassivate;
     private final InterceptorFactory postActivate;
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
-    private final InjectedValue<DefaultStatefulSessionTimeoutService> defaultStatefulSessionTimeoutService = new InjectedValue<DefaultStatefulSessionTimeoutService>();
+    private final InjectedValue<AtomicLong> defaultStatefulSessionTimeoutValue = new InjectedValue<>();
     private final InterceptorFactory ejb2XRemoveMethod;
     private final Supplier<CacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
     private final Set<Object> serializableInterceptorContextKeys;
@@ -143,17 +144,14 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return this.defaultAccessTimeoutService;
     }
 
-    Injector<DefaultStatefulSessionTimeoutService> getDefaultStatefulSessionTimeoutInjector() {
-        return this.defaultStatefulSessionTimeoutService;
+    Injector<AtomicLong> getDefaultStatefulSessionTimeoutInjector() {
+        return this.defaultStatefulSessionTimeoutValue;
     }
 
     void setDefaultStatefulSessionTimeout() {
-        final StatefulTimeoutInfo existingTimeout = componentDescription.getStatefulTimeout();
-        if (existingTimeout == null) {
-            final DefaultStatefulSessionTimeoutService defaultStatefulSessionTimeoutServiceValue = defaultStatefulSessionTimeoutService.getValue();
-
-            final Long timeoutVal = defaultStatefulSessionTimeoutServiceValue.getDefaultStatefulSessionTimeout();
-            if (timeoutVal != null && timeoutVal >= 0) {
+        if (componentDescription.getStatefulTimeout() == null) {
+            final long timeoutVal = defaultStatefulSessionTimeoutValue.getValue().get();
+            if (timeoutVal >= 0) {
                 componentDescription.setStatefulTimeout(new StatefulTimeoutInfo(timeoutVal, TimeUnit.MILLISECONDS));
             }
         }

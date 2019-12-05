@@ -22,19 +22,22 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.component.stateful.DefaultStatefulSessionTimeoutService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 
-class DefaultStatefulBeanSessionTimeoutWriteHandler extends AbstractWriteAttributeHandler<Void> {
-
+public class DefaultStatefulBeanSessionTimeoutWriteHandler extends AbstractWriteAttributeHandler<Void> {
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "defaultStatefulSessionTimeout");
     static final DefaultStatefulBeanSessionTimeoutWriteHandler INSTANCE = new DefaultStatefulBeanSessionTimeoutWriteHandler();
+    static final AtomicLong INITIAL_TIMEOUT_VALUE = new AtomicLong(-1);
 
     private DefaultStatefulBeanSessionTimeoutWriteHandler() {
         super(EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT);
@@ -57,15 +60,13 @@ class DefaultStatefulBeanSessionTimeoutWriteHandler extends AbstractWriteAttribu
 
     void updateOrCreateDefaultStatefulBeanSessionTimeoutService(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final long defaultSessionTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT.resolveModelAttribute(context, model).asLong();
-        final ServiceName serviceName = DefaultStatefulSessionTimeoutService.SERVICE_NAME;
-        final ServiceRegistry registry = context.getServiceRegistry(true);
-        final ServiceController<?> sc = registry.getService(serviceName);
+        final ServiceController<?> sc = context.getServiceRegistry(true).getService(SERVICE_NAME);
         if (sc != null) {
-            final DefaultStatefulSessionTimeoutService defaultSessionTimeoutService = (DefaultStatefulSessionTimeoutService) sc.getValue();
-            defaultSessionTimeoutService.setDefaultStatefulSessionTimeout(defaultSessionTimeout);
+            final AtomicLong existingValue = (AtomicLong) sc.getValue();
+            existingValue.set(defaultSessionTimeout);
         } else {
             // create and install the service
-            context.getServiceTarget().addService(serviceName, new DefaultStatefulSessionTimeoutService(defaultSessionTimeout)).install();
+            context.getServiceTarget().addService(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(new AtomicLong(defaultSessionTimeout)))).install();
         }
     }
 }
