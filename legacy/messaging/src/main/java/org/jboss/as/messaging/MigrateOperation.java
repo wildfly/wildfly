@@ -72,6 +72,7 @@ import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE;
+import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.EXPRESSION;
@@ -441,8 +442,9 @@ public class MigrateOperation implements OperationStepHandler {
                     }
                 }
             }
-
-            newAddOperations.put(address, newAddOp);
+            if(newAddOp.isDefined()) {
+                newAddOperations.put(address, newAddOp);
+            }
         }
     }
 
@@ -501,6 +503,14 @@ public class MigrateOperation implements OperationStepHandler {
         }
         // These attributes no longer accept expressions in the messaging-activemq subsystem.
         removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
+        if (!newAddOp.hasDefined(SOCKET_BINDING.getName())) {
+            if(!newAddOp.hasDefined(JGROUPS_CHANNEL.getName())) {
+                warnings.add(ROOT_LOGGER.couldNotMigrateDiscoveryGroup(pathAddress(newAddOp.get(OP_ADDR))));
+                newAddOp.clear();
+            } else {
+                newAddOp.get("jgroups-cluster").set(newAddOp.get(JGROUPS_CHANNEL.getName()));
+            }
+        }
     }
 
     private void migrateBroadcastGroup(ModelNode newAddOp, List<String> warnings) {
@@ -517,6 +527,14 @@ public class MigrateOperation implements OperationStepHandler {
         }
         // These attributes no longer accept expressions in the messaging-activemq subsystem.
         removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
+        if (!newAddOp.hasDefined(SOCKET_BINDING.getName())) {
+            if(!newAddOp.hasDefined(JGROUPS_CHANNEL.getName())) {
+                warnings.add(ROOT_LOGGER.couldNotMigrateBroadcastGroup(pathAddress(newAddOp.get(OP_ADDR))));
+                newAddOp.clear();
+            } else {
+                newAddOp.get("jgroups-cluster").set(newAddOp.get(JGROUPS_CHANNEL.getName()));
+            }
+        }
     }
 
 

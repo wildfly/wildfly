@@ -86,7 +86,8 @@
 
         <broadcast-group name="groupT"
                          jgroups-channel="ee"
-                         jgroups-cluster="activemq-cluster"/>
+                         jgroups-cluster="activemq-cluster"
+                         connectors="http"/>
 
         <discovery-group name="groupU"
                          jgroups-channel="ee"

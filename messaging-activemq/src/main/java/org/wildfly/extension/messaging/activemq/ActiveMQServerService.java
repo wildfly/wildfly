@@ -211,7 +211,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     if (commandDispatcherFactories.containsKey(key)) {
                         CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                         String clusterName = clusterNames.get(key);
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, commandDispatcherFactory, clusterName));
+                        newConfigs.add(JGroupsBroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, commandDispatcherFactory, clusterName));
                     } else {
                         final Supplier<SocketBinding> bindingSupplier = groupBindings.get(key);
                         if (bindingSupplier == null) {
@@ -219,7 +219,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                         }
                         final SocketBinding binding = bindingSupplier.get();
                         binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
+                        newConfigs.add(SocketBroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
                     }
                 }
                 configuration.getBroadcastGroupConfigurations().clear();
@@ -234,13 +234,13 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     if (commandDispatcherFactories.containsKey(key)) {
                         CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                         String clusterName = clusterNames.get(key);
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), commandDispatcherFactory, clusterName);
+                        config = JGroupsDiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), commandDispatcherFactory, clusterName);
                     } else {
                         final Supplier<SocketBinding> binding = groupBindings.get(key);
                         if (binding == null) {
                             throw MessagingLogger.ROOT_LOGGER.failedToFindDiscoverySocketBinding(name);
                         }
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding.get());
+                        config = SocketDiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding.get());
                         binding.get().getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding.get()));
                     }
                     configuration.getDiscoveryGroupConfigurations().put(name, config);

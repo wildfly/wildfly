@@ -328,7 +328,8 @@
                          broadcast-period="${broadcast.group.period:1234}"
                          connectors="http netty"/>
         <broadcast-group name="groupS"
-                         socket-binding="group-s-binding"/>
+                         socket-binding="group-s-binding"
+                         connectors="in-vm"/>
 
         <discovery-group name="groupT"
                          socket-binding="group-t-binding"/>

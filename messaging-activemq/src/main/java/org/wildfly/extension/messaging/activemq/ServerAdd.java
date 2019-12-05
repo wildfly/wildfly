@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -31,11 +30,11 @@ import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILI
 import static org.wildfly.extension.messaging.activemq.Capabilities.PATH_MANAGER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAST_GROUP;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.INCOMING_INTERCEPTORS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_BROADCAST_GROUP;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.MODULE;
@@ -167,7 +166,6 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.source.CredentialSource;
 
-
 /**
  * Add handler for a ActiveMQ server instance.
  *
@@ -177,6 +175,7 @@ import org.wildfly.security.credential.source.CredentialSource;
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 class ServerAdd extends AbstractAddStepHandler {
+
     public static final ServerAdd INSTANCE = new ServerAdd();
 
 // Artemis-specific system properties
@@ -242,7 +241,7 @@ class ServerAdd extends AbstractAddStepHandler {
      */
     private void checkNoAttributesIsDefined(String definedAttributeName, PathAddress address, ModelNode model, AttributeDefinition... attrs) throws OperationFailedException {
         List<String> definedAttributes = new ArrayList<>();
-        for(AttributeDefinition attr : attrs) {
+        for (AttributeDefinition attr : attrs) {
             if (model.get(attr.getName()).isDefined()) {
                 definedAttributes.add(attr.getName());
             }
@@ -384,9 +383,8 @@ class ServerAdd extends AbstractAddStepHandler {
                 for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
-                    ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
-
-                    if (broadcastGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                    if (model.hasDefined(JGROUPS_BROADCAST_GROUP, name)) {
+                        ModelNode broadcastGroupModel = model.get(JGROUPS_BROADCAST_GROUP, name);
                         ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
                         ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
@@ -410,8 +408,8 @@ class ServerAdd extends AbstractAddStepHandler {
                 for (final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                     final String name = config.getName();
                     final String key = "discovery" + name;
-                    ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
-                    if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                    if (model.hasDefined(JGROUPS_DISCOVERY_GROUP, name)) {
+                        ModelNode discoveryGroupModel = model.get(JGROUPS_DISCOVERY_GROUP, name);
                         ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
                         ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
