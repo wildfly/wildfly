@@ -37,12 +37,16 @@ import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.spi.OASFactoryResolver;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.CompositeIndex;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexView;
+import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -72,6 +76,7 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
 
     private static final String PATH = "mp.openapi.extensions.path";
     private static final String DEFAULT_PATH = "/openapi";
+    private static final String DEFAULT_TITLE = "Generated API";
 
     private static final Map<Format, List<String>> STATIC_FILES = new EnumMap<>(Format.class);
     static {
@@ -94,6 +99,7 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
     private final VirtualFile root;
     private final CompositeIndex index;
     private final Module module;
+    private final JBossWebMetaData metaData;
 
     public OpenAPIModelServiceConfigurator(DeploymentUnit unit, String serverName, String hostName, Config config) {
         super(unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT).getCapabilityServiceName(Capabilities.CAPABILITY_HOST, serverName, hostName).append(config.getOptionalValue(PATH, String.class).orElse(DEFAULT_PATH)));
@@ -103,6 +109,7 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
         Collection<Index> indexes = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX).getIndexes();
         this.index = CompositeIndex.create(indexes.stream().map(IndexView.class::cast).collect(Collectors.toList()));
         this.module = unit.getAttachment(Attachments.MODULE);
+        this.metaData = unit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
         this.config = config;
 
         if (!this.getPath().equals(DEFAULT_PATH)) {
@@ -141,7 +148,24 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
         builder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, indexView));
         builder.readerModel(OpenApiProcessor.modelFromReader(config, this.module.getClassLoader()));
         builder.filter(OpenApiProcessor.getFilter(config, this.module.getClassLoader()));
-        return builder.build();
+        OpenAPI model = builder.build();
+
+        // Generate default title and description based on web metadata
+        DescriptionGroupMetaData descriptionMetaData = this.metaData.getDescriptionGroup();
+        String displayName = (descriptionMetaData != null) ? descriptionMetaData.getDisplayName() : null;
+        String title = (displayName != null) ? displayName : this.deploymentName;
+        String description = (descriptionMetaData != null) ? descriptionMetaData.getDescription() : null;
+
+        Info info = model.getInfo();
+        // Override SmallRye's default title
+        if (info.getTitle().equals(DEFAULT_TITLE)) {
+            info.setTitle(title);
+        }
+        if (info.getDescription() == null) {
+            info.setDescription(description);
+        }
+
+        return model;
     }
 
     private static Map.Entry<VirtualFile, Format> findStaticFile(VirtualFile root) {

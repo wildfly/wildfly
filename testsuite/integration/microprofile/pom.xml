@@ -76,6 +76,15 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+
         <!-- MicroProfile Fault Tolerance test dependencies -->
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>

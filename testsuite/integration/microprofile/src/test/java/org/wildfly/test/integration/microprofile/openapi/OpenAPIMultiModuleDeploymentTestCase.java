@@ -28,6 +28,7 @@ import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -46,6 +47,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.openapi.service.TestApplication;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 /**
  * Validates OpenAPI endpoint for a multi-module deployment.
  * @author Paul Ferraro
@@ -53,17 +58,19 @@ import org.wildfly.test.integration.microprofile.openapi.service.TestApplication
 @RunWith(Arquillian.class)
 @RunAsClient
 public class OpenAPIMultiModuleDeploymentTestCase {
+    private static final String DEPLOYMENT_NAME = OpenAPIMultiModuleDeploymentTestCase.class.getSimpleName() + ".war";
+    private static final String PARENT_DEPLOYMENT_NAME = OpenAPIMultiModuleDeploymentTestCase.class.getSimpleName() + ".ear";
 
     @Deployment
     public static Archive<?> deploy() {
-        WebArchive jaxrs = ShrinkWrap.create(WebArchive.class, "jaxrs.war")
+        WebArchive jaxrs = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
                 .addPackage(TestApplication.class.getPackage())
                 ;
         WebArchive web = ShrinkWrap.create(WebArchive.class, "web.war")
                 .setWebXML(TestApplication.class.getPackage(), "web.xml")
                 ;
-        return ShrinkWrap.create(EnterpriseArchive.class, "openapi.ear").addAsModules(jaxrs, web);
+        return ShrinkWrap.create(EnterpriseArchive.class, PARENT_DEPLOYMENT_NAME).addAsModules(jaxrs, web);
     }
 
     @Test
@@ -71,8 +78,18 @@ public class OpenAPIMultiModuleDeploymentTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             try (CloseableHttpResponse response = client.execute(new HttpGet(baseURL.toURI().resolve("/openapi")))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
+                validateContent(response);
             }
         }
+    }
+
+    private static void validateContent(HttpResponse response) throws IOException {
+        Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
+
+        JsonNode node = new ObjectMapper(new YAMLFactory()).reader().readTree(response.getEntity().getContent());
+        JsonNode info = node.get("info");
+        Assert.assertNotNull(info);
+        Assert.assertEquals(DEPLOYMENT_NAME, info.get("title").asText());
+        Assert.assertNull(info.findValue("description"));
     }
 }

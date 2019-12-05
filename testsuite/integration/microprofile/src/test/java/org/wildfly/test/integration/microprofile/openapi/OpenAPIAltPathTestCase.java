@@ -28,6 +28,7 @@ import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -46,6 +47,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.openapi.service.TestApplication;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 /**
  * Validates usage of "mp.openapi.extensions.path" configuration property.
  * @author Paul Ferraro
@@ -53,10 +58,11 @@ import org.wildfly.test.integration.microprofile.openapi.service.TestApplication
 @RunWith(Arquillian.class)
 @RunAsClient
 public class OpenAPIAltPathTestCase {
+    private static final String DEPLOYMENT_NAME = OpenAPIAltPathTestCase.class.getSimpleName() + ".war";
 
     @Deployment
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, "openapi-alt-path.war")
+        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
                 .addPackage(TestApplication.class.getPackage())
                 .addAsManifestResource(new StringAsset("mp.openapi.extensions.path=/swagger"), "microprofile-config.properties")
@@ -71,8 +77,18 @@ public class OpenAPIAltPathTestCase {
             }
             try (CloseableHttpResponse response = client.execute(new HttpGet(baseURL.toURI().resolve("/swagger")))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
+                validateContent(response);
             }
         }
+    }
+
+    private static void validateContent(HttpResponse response) throws IOException {
+        Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
+
+        JsonNode node = new ObjectMapper(new YAMLFactory()).reader().readTree(response.getEntity().getContent());
+        JsonNode info = node.findValue("info");
+        Assert.assertNotNull(info);
+        Assert.assertEquals(DEPLOYMENT_NAME, info.get("title").asText());
+        Assert.assertNull(info.findValue("description"));
     }
 }
