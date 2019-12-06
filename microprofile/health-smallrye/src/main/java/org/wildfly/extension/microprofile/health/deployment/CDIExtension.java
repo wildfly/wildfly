@@ -24,6 +24,7 @@ package org.wildfly.extension.microprofile.health.deployment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.enterprise.event.Observes;
@@ -40,6 +41,7 @@ import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
+import org.jboss.modules.ModuleClassLoader;
 import org.wildfly.extension.microprofile.health.HealthReporter;
 
 /**
@@ -48,6 +50,7 @@ import org.wildfly.extension.microprofile.health.HealthReporter;
 public class CDIExtension implements Extension {
 
     private final HealthReporter reporter;
+    private ModuleClassLoader moduleClassLoader;
 
     static final class HealthLiteral extends AnnotationLiteral<Health> implements Health {
 
@@ -78,8 +81,9 @@ public class CDIExtension implements Extension {
     private final List<HealthCheck> readinessChecks = new ArrayList<>();
 
 
-    public CDIExtension(HealthReporter healthReporter) {
+    public CDIExtension(HealthReporter healthReporter, ModuleClassLoader moduleClassLoader) {
         this.reporter = healthReporter;
+        this.moduleClassLoader = moduleClassLoader;
     }
 
     /**
@@ -95,9 +99,9 @@ public class CDIExtension implements Extension {
     }
 
     private void addHealthChecks(AnnotationLiteral qualifier,
-                                 Consumer<HealthCheck> healthFunction, List<HealthCheck> healthChecks) {
+                                 BiConsumer<HealthCheck, ClassLoader> healthFunction, List<HealthCheck> healthChecks) {
         for (HealthCheck healthCheck : instance.select(HealthCheck.class, qualifier)) {
-            healthFunction.accept(healthCheck);
+            healthFunction.accept(healthCheck, moduleClassLoader);
             healthChecks.add(healthCheck);
         }
     }
