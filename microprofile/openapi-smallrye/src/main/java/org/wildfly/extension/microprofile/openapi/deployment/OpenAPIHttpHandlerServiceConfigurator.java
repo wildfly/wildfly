@@ -26,39 +26,54 @@ import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpe
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.Supplier;
 
+import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.service.CompositeDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowListener;
-
-import io.undertow.server.HttpHandler;
 
 /**
  * Service that registers the OpenAPI HttpHandler.
  * @author Paul Ferraro
  * @author Michael Edgar
  */
-public class OpenAPIHttpHandlerService implements Service {
+public class OpenAPIHttpHandlerServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, Service {
 
     private static final Set<String> REQUISITE_SCHEMES = Collections.singleton("http");
 
-    private final Supplier<Host> host;
+    private final SupplierDependency<OpenAPI> model;
+    private final SupplierDependency<Host> host;
     private final String path;
-    private final HttpHandler handler;
 
-    public OpenAPIHttpHandlerService(Supplier<Host> host, String path, HttpHandler handler) {
-        this.host = host;
-        this.path = path;
-        this.handler = handler;
+    public OpenAPIHttpHandlerServiceConfigurator(OpenAPIServiceNameProvider provider) {
+        super(provider.getServiceName().append("handler"));
+        this.model = new ServiceSupplierDependency<>(provider.getServiceName());
+        this.host = new ServiceSupplierDependency<>(provider.getHostServiceName());
+        this.path = provider.getPath();
+    }
+
+    @Override
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceName name = this.getServiceName();
+        ServiceBuilder<?> builder = target.addService(name);
+        new CompositeDependency(this.model, this.host).register(builder);
+        return builder.setInstance(this);
     }
 
     @Override
     public void start(StartContext context) {
         Host host = this.host.get();
-        host.registerHandler(this.path, this.handler);
+        host.registerHandler(this.path, new OpenAPIHttpHandler(this.model.get()));
 
         LOGGER.endpointRegistered(this.path, host.getName());
 

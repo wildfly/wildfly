@@ -41,6 +41,7 @@
         <module name="javax.ws.rs.api"/>
         <module name="io.smallrye.openapi"/>
         <module name="io.undertow.core"/>
+        <module name="io.undertow.servlet"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.openapi.api"/>
         <module name="org.jboss.as.clustering.common"/>
@@ -55,5 +56,6 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.extension.undertow"/>
+        <module name="org.wildfly.clustering.service"/>
     </dependencies>
 </module>

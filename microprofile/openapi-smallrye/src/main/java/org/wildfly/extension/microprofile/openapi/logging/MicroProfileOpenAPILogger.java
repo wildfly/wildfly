@@ -27,7 +27,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.IOException;
 import java.util.Set;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -49,7 +48,7 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     void activatingSubsystem();
 
     @Message(id = 2, value = "Failed to load OpenAPI '%s' from deployment '%s'")
-    DeploymentUnitProcessingException failedToLoadStaticFile(@Cause IOException e, String fileName, String deploymentName);
+    IllegalArgumentException failedToLoadStaticFile(@Cause IOException e, String fileName, String deploymentName);
 
     @LogMessage(level = WARN)
     @Message(id = 3, value = "MicroProfile OpenAPI endpoint already registered for host '%s'.  Skipping OpenAPI documentation of '%s'.")
