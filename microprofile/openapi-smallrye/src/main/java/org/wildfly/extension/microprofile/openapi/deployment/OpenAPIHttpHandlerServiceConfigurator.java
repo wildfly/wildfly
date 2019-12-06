@@ -24,9 +24,6 @@ package org.wildfly.extension.microprofile.openapi.deployment;
 
 import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger.LOGGER;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -40,7 +37,6 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.extension.undertow.Host;
-import org.wildfly.extension.undertow.UndertowListener;
 
 /**
  * Service that registers the OpenAPI HttpHandler.
@@ -48,8 +44,6 @@ import org.wildfly.extension.undertow.UndertowListener;
  * @author Michael Edgar
  */
 public class OpenAPIHttpHandlerServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, Service {
-
-    private static final Set<String> REQUISITE_SCHEMES = Collections.singleton("http");
 
     private final SupplierDependency<OpenAPI> model;
     private final SupplierDependency<Host> host;
@@ -76,10 +70,6 @@ public class OpenAPIHttpHandlerServiceConfigurator extends SimpleServiceNameProv
         host.registerHandler(this.path, new OpenAPIHttpHandler(this.model.get()));
 
         LOGGER.endpointRegistered(this.path, host.getName());
-
-        if (host.getServer().getListeners().stream().map(UndertowListener::getProtocol).noneMatch(REQUISITE_SCHEMES::contains)) {
-            LOGGER.requiredListenersNotFound(host.getServer().getName(), REQUISITE_SCHEMES);
-        }
     }
 
     @Override

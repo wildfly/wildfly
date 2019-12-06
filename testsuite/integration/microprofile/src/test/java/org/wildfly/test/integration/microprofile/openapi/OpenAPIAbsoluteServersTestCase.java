@@ -55,20 +55,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
- * Validates usage of "mp.openapi.extensions.path" configuration property.
+ * Validates usage of "mp.openapi.extensions.servers.relative" configuration property.
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class OpenAPIAltPathTestCase {
-    private static final String DEPLOYMENT_NAME = OpenAPIAltPathTestCase.class.getSimpleName() + ".war";
+public class OpenAPIAbsoluteServersTestCase {
+    private static final String DEPLOYMENT_NAME = OpenAPIAbsoluteServersTestCase.class.getSimpleName() + ".war";
 
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
                 .addPackage(TestApplication.class.getPackage())
-                .addAsManifestResource(new StringAsset("mp.openapi.extensions.path=/swagger"), "microprofile-config.properties")
+                .addAsManifestResource(new StringAsset("mp.openapi.extensions.servers.relative=false"), "microprofile-config.properties")
                 ;
     }
 
@@ -76,14 +76,11 @@ public class OpenAPIAltPathTestCase {
     public void test(@ArquillianResource URL baseURL) throws IOException, URISyntaxException {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             try (CloseableHttpResponse response = client.execute(new HttpGet(baseURL.toURI().resolve("/openapi")))) {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
-            }
-            try (CloseableHttpResponse response = client.execute(new HttpGet(baseURL.toURI().resolve("/swagger")))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 List<String> urls = validateContent(response);
-                // Ensure relative urls are valid
+                // Ensure absolute urls are valid
                 for (String url : urls) {
-                    try (CloseableHttpResponse r = client.execute(new HttpGet(baseURL.toURI().resolve(url + "/test/echo/foo")))) {
+                    try (CloseableHttpResponse r = client.execute(new HttpGet(url + "/test/echo/foo"))) {
                         Assert.assertEquals(HttpServletResponse.SC_OK, r.getStatusLine().getStatusCode());
                         Assert.assertEquals("foo", EntityUtils.toString(r.getEntity()));
                     }
@@ -96,10 +93,10 @@ public class OpenAPIAltPathTestCase {
         Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
 
         JsonNode node = new ObjectMapper(new YAMLFactory()).reader().readTree(response.getEntity().getContent());
-        JsonNode info = node.findValue("info");
+        JsonNode info = node.required("info");
         Assert.assertNotNull(info);
-        Assert.assertEquals(DEPLOYMENT_NAME, info.get("title").asText());
-        Assert.assertNull(info.findValue("description"));
+        Assert.assertEquals(DEPLOYMENT_NAME, info.required("title").asText());
+        Assert.assertNull(info.get("description"));
 
         JsonNode servers = node.required("servers");
         List<String> result = new LinkedList<>();

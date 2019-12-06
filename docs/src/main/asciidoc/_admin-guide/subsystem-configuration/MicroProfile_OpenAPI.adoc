@@ -20,6 +20,8 @@ You can also add the subsystem manually to any profile via the CLI:
 
 == Configuration
 
+The microprofile-openapi-smallrye subsytem obtains all of its configuration via MicroProfile Config.  Thus the subsystem itself defines no attributes.
+
 In addition to the https://download.eclipse.org/microprofile/microprofile-open-api-1.1.2/microprofile-openapi-spec.html#_core_configurations[standard Open API configuration] properties, WildFly supports the following additional MicroProfile Config properties:
 
 [cols="2,1,5"]
@@ -34,6 +36,10 @@ In addition to the https://download.eclipse.org/microprofile/microprofile-open-a
 |/openapi
 |Used to customize the path of the OpenAPI endpoint.
 
+|mp.openapi.extensions.servers.relative
+|true
+|Indicates whether auto-generated Server records are absolute or relative to the location of the OpenAPI endpoint.  If absolute, WildFly will generate Server records including the protocols, hosts, and ports at which the given deployment is accessible.
+
 |===
 
 e.g. `/META-INF/microprofile-config.properties`:
@@ -41,6 +47,7 @@ e.g. `/META-INF/microprofile-config.properties`:
 ---- 
 mp.openapi.extensions.enabled=${microprofile.openapi.enabled}
 mp.openapi.extensions.path=/swagger
+mp.openapi.extensions.servers.relative=false
 ----
 
 == HTTP/S Endpoint
