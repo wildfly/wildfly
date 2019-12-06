@@ -16,6 +16,7 @@
 
 package org.wildfly.test.integration.microprofile.metrics.metadata.resources;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -31,6 +32,18 @@ public class MicroProfileMetricsCounterResource {
    @Inject
    MetricRegistry registry;
 
+   @Inject
+   CustomCounterMetric customCounter;
+
+   @PostConstruct
+   public void init() {
+      registry.register(Metadata.builder()
+                      .withName("customCounter")
+                      .withType(MetricType.COUNTER)
+                      .build(),
+              customCounter);
+   }
+
    @GET
    @Path("/hello")
    public Response hello() {
@@ -40,6 +53,7 @@ public class MicroProfileMetricsCounterResource {
               .build();
 
       registry.counter(counterMetadata).inc();
+      registry.counter("customCounter").inc();
       return Response.ok("Hello World!").build();
    }
 }
