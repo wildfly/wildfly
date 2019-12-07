@@ -65,11 +65,9 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I, ImmutableBean
 
     @Override
     public void schedule(I id) {
-        try (Batch batch = this.batcher.createBatch()) {
-            BeanEntry<I> entry = this.factory.findValue(id);
-            if (entry != null) {
-                this.schedule(id, entry);
-            }
+        BeanEntry<I> entry = this.factory.findValue(id);
+        if (entry != null) {
+            this.schedule(id, entry);
         }
     }
 
