@@ -26,6 +26,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -114,12 +116,16 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
 
     @Override
     public synchronized void close() {
+        WildFlySecurityManager.doPrivilegedWithParameter(this.executor, DefaultExecutorService.SHUTDOWN_ACTION);
         if (this.future != null) {
-            if (!this.future.isDone()) {
-                this.future.cancel(true);
+            try {
+                this.future.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (CancellationException | ExecutionException e) {
+                // Ignore
             }
         }
-        WildFlySecurityManager.doPrivilegedWithParameter(this.executor, DefaultExecutorService.SHUTDOWN_ACTION);
     }
 
     @Override
