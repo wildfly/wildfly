@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.security.PrivilegedAction;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -39,6 +37,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
+import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -184,8 +183,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     @Override
     public void close() {
         this.cache.removeListener(this);
-        PrivilegedAction<List<Runnable>> action = () -> this.executor.shutdownNow();
-        WildFlySecurityManager.doUnchecked(action);
+        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
         try {
             this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
