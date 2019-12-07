@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,6 +46,7 @@ import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
@@ -162,8 +162,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     public void stop() {
         this.groupFactory.close();
         this.cache.removeListener(this);
-        PrivilegedAction<List<Runnable>> action = () -> this.executor.shutdownNow();
-        WildFlySecurityManager.doUnchecked(action);
+        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
         try {
             this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
