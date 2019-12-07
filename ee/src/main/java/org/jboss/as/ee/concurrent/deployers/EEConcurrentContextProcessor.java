@@ -115,7 +115,9 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        deploymentUnit.removeAttachment(Attachments.CONCURRENT_CONTEXT_SETUP_ACTION);
-        deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof ConcurrentContextSetupAction);
+        ConcurrentContextSetupAction action = deploymentUnit.removeAttachment(Attachments.CONCURRENT_CONTEXT_SETUP_ACTION);
+        if (action != null) {
+            deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).remove(action);
+        }
     }
 }
