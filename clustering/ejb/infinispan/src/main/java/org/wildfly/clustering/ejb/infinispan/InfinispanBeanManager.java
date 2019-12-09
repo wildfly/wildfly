@@ -221,6 +221,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         return new SchedulableBean<>(this.beanFactory.createBean(id, entry), entry, this.primaryOwnerScheduler);
     }
 
+    @SuppressWarnings("resource")
     @Override
     public Bean<I, T> findBean(I id) {
         InfinispanEjbLogger.ROOT_LOGGER.tracef("Locating bean %s", id);
@@ -228,6 +229,11 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         Bean<I, T> bean = (entry != null) ? this.beanFactory.createBean(id, entry) : null;
         if (bean == null) {
             InfinispanEjbLogger.ROOT_LOGGER.debugf("Could not find bean %s", id);
+            return null;
+        }
+        if (bean.isExpired()) {
+            InfinispanEjbLogger.ROOT_LOGGER.tracef("Bean %s was found, but has expired", id);
+            this.beanFactory.remove(id, this.expiration.getRemoveListener());
             return null;
         }
         if (this.primaryOwnerScheduler != null) {
