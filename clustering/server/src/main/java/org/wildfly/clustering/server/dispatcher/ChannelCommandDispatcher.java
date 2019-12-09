@@ -22,6 +22,7 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -139,7 +140,8 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private <R> Buffer createBuffer(Command<R, ? super C> command) {
         try {
-            return new Buffer(this.marshaller.marshal(command));
+            ByteBuffer buffer = this.marshaller.marshal(command);
+            return new Buffer(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset());
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
