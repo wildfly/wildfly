@@ -75,7 +75,7 @@ public class InfinispanBean<I, T> implements Bean<I, T> {
 
     @Override
     public boolean isExpired() {
-        return this.entry.isExpired(this.timeout);
+        return this.entry.isExpired(this.timeout) && this.group.isCloseable();
     }
 
     @Override

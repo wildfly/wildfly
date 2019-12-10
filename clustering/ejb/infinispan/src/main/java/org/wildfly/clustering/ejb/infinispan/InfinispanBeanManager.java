@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,6 +46,7 @@ import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
@@ -162,8 +162,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     public void stop() {
         this.groupFactory.close();
         this.cache.removeListener(this);
-        PrivilegedAction<List<Runnable>> action = () -> this.executor.shutdownNow();
-        WildFlySecurityManager.doUnchecked(action);
+        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
         try {
             this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -222,6 +221,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         return new SchedulableBean<>(this.beanFactory.createBean(id, entry), entry, this.primaryOwnerScheduler);
     }
 
+    @SuppressWarnings("resource")
     @Override
     public Bean<I, T> findBean(I id) {
         InfinispanEjbLogger.ROOT_LOGGER.tracef("Locating bean %s", id);
@@ -229,6 +229,11 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         Bean<I, T> bean = (entry != null) ? this.beanFactory.createBean(id, entry) : null;
         if (bean == null) {
             InfinispanEjbLogger.ROOT_LOGGER.debugf("Could not find bean %s", id);
+            return null;
+        }
+        if (bean.isExpired()) {
+            InfinispanEjbLogger.ROOT_LOGGER.tracef("Bean %s was found, but has expired", id);
+            this.beanFactory.remove(id, this.expiration.getRemoveListener());
             return null;
         }
         if (this.primaryOwnerScheduler != null) {

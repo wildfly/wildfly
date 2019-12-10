@@ -33,8 +33,8 @@
 
     <dependencies>
         <module name="javax.transaction.api"/>
+        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.threads"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.service"/>

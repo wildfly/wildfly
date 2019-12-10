@@ -26,20 +26,19 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.jboss.threads.JBossThreadFactory;
+import org.jboss.as.clustering.context.DefaultExecutorService;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Scheduler;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
-import org.wildfly.security.ParametricPrivilegedAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -48,26 +47,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Runnable {
 
-    private enum ThreadFactoryAction implements ParametricPrivilegedAction<ThreadFactory, Class<?>> {
-        INSTANCE;
-
-        @Override
-        public ThreadFactory run(Class<?> targetClass) {
-            ThreadFactory factory = new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-            return new ClassLoaderThreadFactory(factory, targetClass.getClassLoader());
-        }
-    }
-
-    private enum ExecutorServiceAction implements ParametricPrivilegedAction<Void, ExecutorService> {
-        SHUTDOWN;
-
-        @Override
-        public Void run(ExecutorService executor) {
-            executor.shutdown();
-            return null;
-        }
-    }
-
     private final ScheduledExecutorService executor;
     private final ScheduledEntries<T, Instant> entries;
     private final Predicate<T> task;
@@ -75,7 +54,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
     private volatile Future<?> future = null;
 
     public LocalScheduler(ScheduledEntries<T, Instant> entries, Predicate<T> task) {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, WildFlySecurityManager.doPrivilegedWithParameter(this.getClass(), ThreadFactoryAction.INSTANCE));
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory(this.getClass()));
         executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         executor.setRemoveOnCancelPolicy(entries.isSorted());
         this.executor = executor;
@@ -137,12 +116,16 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
 
     @Override
     public synchronized void close() {
+        WildFlySecurityManager.doPrivilegedWithParameter(this.executor, DefaultExecutorService.SHUTDOWN_ACTION);
         if (this.future != null) {
-            if (!this.future.isDone()) {
-                this.future.cancel(true);
+            try {
+                this.future.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (CancellationException | ExecutionException e) {
+                // Ignore
             }
         }
-        WildFlySecurityManager.doPrivilegedWithParameter(this.executor, ExecutorServiceAction.SHUTDOWN);
     }
 
     @Override
