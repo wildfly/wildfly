@@ -22,7 +22,6 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -34,6 +33,7 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.marshalling.jboss.ByteBufferOutputStream;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.IntSerializer;
@@ -58,8 +58,8 @@ public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller 
     @Override
     public void objectToStream(Object object, DataOutput stream) throws IOException {
         int version = this.context.getCurrentVersion();
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        try (DataOutputStream output = new DataOutputStream(bytes)) {
+        ByteBufferOutputStream bufferOutput = new ByteBufferOutputStream();
+        try (DataOutputStream output = new DataOutputStream(bufferOutput)) {
             this.versionSerializer.writeInt(output, version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(Marshalling.createByteOutput(output));
@@ -67,9 +67,10 @@ public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller 
                 marshaller.flush();
             }
         }
-        byte[] buffer = bytes.toByteArray();
-        IndexSerializer.VARIABLE.writeInt(stream, buffer.length);
-        stream.write(buffer);
+        ByteBuffer buffer = bufferOutput.getBuffer();
+        int length = buffer.limit() - buffer.arrayOffset();
+        IndexSerializer.VARIABLE.writeInt(stream, length);
+        stream.write(buffer.array(), buffer.arrayOffset(), length);
     }
 
     @Override
