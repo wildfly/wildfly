@@ -22,14 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <module xmlns="urn:jboss:module:1.5" name="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
      <resources>
         <artifact name="${com.fasterxml.jackson.dataformat:jackson-dataformat-yaml}"/>
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
         <module name="com.fasterxml.jackson.core.jackson-databind"/>
         <module name="org.yaml.snakeyaml"/>
-        <module name="javax.api"/>
     </dependencies>
 </module>
