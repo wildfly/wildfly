@@ -106,6 +106,14 @@ shipped with WildFly.
   <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
 ----
 
+When enabled, properties can be replaced in the following deployment descriptors:
+
+* ejb-jar.xml
+* persistence.xml
+* application.xml
+* web.xml
+* permissions.xml
+
 [[jboss-descriptor-property-replacement]]
 === JBoss Descriptor Property Replacement
 
@@ -117,6 +125,15 @@ defaults to `true`.
 ----
   <jboss-descriptor-property-replacement>false</jboss-descriptor-property-replacement>
 ----
+
+When enabled, properties can be replaced in the following deployment descriptors:
+
+* jboss-ejb3.xml
+* jboss-app.xml
+* jboss-web.xml
+* jboss-permissions.xml
+* *-jms.xml
+* *-ds.xml
 
 [[annotation-property-replacement]]
 === Annotation Property Replacement
