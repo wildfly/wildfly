@@ -1934,7 +1934,6 @@
                 <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
                 <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
                 <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
-                <extension module="org.wildfly.extension.picketlink"/>
                 <extension module="org.wildfly.extension.request-controller"/>
                 <extension module="org.wildfly.extension.rts"/>
                 <extension module="org.wildfly.extension.security.manager"/>

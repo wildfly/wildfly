@@ -125,11 +125,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void testStandalonePicketLinkXml() throws Exception {
-        standaloneXmlTest(getDocsExampleConfigFile("standalone-picketlink.xml"));
-    }
-
-    @Test
     public void testStandaloneXtsXml() throws Exception {
         standaloneXmlTest(getDocsExampleConfigFile("standalone-xts.xml"));
     }
@@ -274,20 +269,6 @@ public class ParseAndMarshalModelsTestCase {
     public void testEAPStandaloneMinimalisticXml() throws Exception {
         for (Version version : EAP_VERSIONS) {
             standaloneXmlTest(getLegacyConfigFile("standalone", version, "minimalistic"));
-        }
-    }
-
-    @Test
-    public void testEAPStandalonePicketLinkXml() throws Exception {
-
-        Assume.assumeFalse(altDistTest);
-
-        for (Version version : EAP_VERSIONS) {
-            if (version.is6x()) {
-                // Did not exist until 6.3, where the tech preview was abandoned and redone
-            } else {
-                standaloneXmlTest(getLegacyConfigFile("standalone", version, "picketlink"));
-            }
         }
     }
 

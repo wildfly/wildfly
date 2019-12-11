@@ -17,7 +17,5 @@
         <package name="javax.xml.bind.api"  optional="true"/>
         <!-- added by infinispan -->
         <!-- <package name="org.infinispan"  optional="true"/> -->
-        <!-- only required with picketlink -->
-        <!--<package name="org.jboss.security.xacml"  optional="true"/>-->
     </packages>
 </layer-spec>

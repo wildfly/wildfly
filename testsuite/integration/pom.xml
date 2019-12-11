@@ -71,7 +71,6 @@
                 <module>clustering</module>
                 <module>multinode</module>
                 <module>manualmode</module>
-                <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
                 <module>legacy-ejb-client</module>
@@ -97,7 +96,6 @@
                 <module>rbac</module>
                 <module>multinode</module>
                 <module>manualmode</module>
-                <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
                 <module>legacy-ejb-client</module>
@@ -194,15 +192,6 @@
             <activation><property><name>ts.rbac</name></property></activation>
             <modules>
                 <module>rbac</module>
-            </modules>
-        </profile>
-
-        <!-- -Dts.picketlink -->
-        <profile>
-            <id>ts.integ.group.picketlink</id>
-            <activation><property><name>ts.picketlink</name></property></activation>
-            <modules>
-                <module>picketlink</module>
             </modules>
         </profile>
 

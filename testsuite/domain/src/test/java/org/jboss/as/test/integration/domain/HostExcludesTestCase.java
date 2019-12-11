@@ -135,7 +135,6 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.io",
                 "org.wildfly.extension.messaging-activemq",
                 "org.wildfly.extension.mod_cluster",
-                "org.wildfly.extension.picketlink",
                 "org.wildfly.extension.request-controller",
                 "org.wildfly.extension.rts",
                 "org.wildfly.extension.security.manager",

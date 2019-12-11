@@ -445,11 +445,6 @@
             <modules><module>integration</module></modules>
         </profile>
         <profile>
-            <id>integ-picketlink.module.profile</id>
-            <activation><property><name>ts.picketlink</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
             <id>integ-xts.module.profile</id>
             <activation><property><name>ts.xts</name></property></activation>
             <modules><module>integration</module></modules>
@@ -534,38 +529,6 @@
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>xml-maven-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.saml-debug</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>transform</goal></goals>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <transformationSets>
-                                        <transformationSet>
-                                            <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                            <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                            <stylesheet>${xslt.scripts.dir}/addSAMLTokenTimeout.xsl</stylesheet>
-                                            <includes>
-                                                <include>standalone*.xml</include>
-                                            </includes>
-                                            <parameters>
-                                                <parameter><name>samlTokenTomeout</name><value>3600000</value></parameter>
-                                                <parameter><name>samlClockSkew</name><value>1000</value></parameter>
-                                            </parameters>
-                                        </transformationSet>
-                                    </transformationSets>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
 
