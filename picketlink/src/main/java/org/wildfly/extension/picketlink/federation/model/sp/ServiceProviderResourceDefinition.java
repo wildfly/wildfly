@@ -21,26 +21,16 @@
  */
 package org.wildfly.extension.picketlink.federation.model.sp;
 
-import java.util.List;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentWriteAttributeHandler;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
-import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -86,42 +76,12 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
         ERROR_PAGE,
         LOGOUT_PAGE};
 
-    private final ExtensionContext extensionContext;
-
-    public ServiceProviderResourceDefinition(ExtensionContext extensionContext) {
-        super(ModelElement.SERVICE_PROVIDER, ServiceProviderAddHandler.INSTANCE, ServiceProviderRemoveHandler.INSTANCE, ATTRIBUTE_DEFINITIONS);
-        this.extensionContext = extensionContext;
+    public ServiceProviderResourceDefinition() {
+        super(ModelElement.SERVICE_PROVIDER, new ModelOnlyAddStepHandler(ATTRIBUTE_DEFINITIONS), ATTRIBUTE_DEFINITIONS);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         addChildResourceDefinition(HandlerResourceDefinition.INSTANCE, resourceRegistration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
-        if (this.extensionContext.isRuntimeOnlyRegistrationValid()) {
-            for (final SimpleAttributeDefinition def : ServiceProviderMetricsOperationHandler.ATTRIBUTES) {
-                resourceRegistration.registerMetric(def, ServiceProviderMetricsOperationHandler.INSTANCE);
-            }
-        }
-    }
-
-    @Override
-    protected OperationStepHandler createAttributeWriterHandler() {
-        List<SimpleAttributeDefinition> attributes = getAttributes();
-        return new RestartParentWriteAttributeHandler(ModelElement.SERVICE_PROVIDER.getName(), attributes.toArray(new AttributeDefinition[attributes.size()])) {
-            @Override
-            protected ServiceName getParentServiceName(PathAddress parentAddress) {
-                return ServiceProviderService.createServiceName(parentAddress.getLastElement().getValue());
-            }
-
-            @Override
-            protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-                ServiceProviderAddHandler.launchService(context, parentAddress, parentModel);
-            }
-        };
     }
 }

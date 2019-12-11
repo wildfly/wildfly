@@ -22,15 +22,8 @@
 
 package org.wildfly.extension.picketlink.federation.model;
 
-import java.util.List;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.picketlink.common.model.AbstractResourceDefinition;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
@@ -41,30 +34,10 @@ import org.wildfly.extension.picketlink.federation.FederationExtension;
  */
 public abstract class AbstractFederationResourceDefinition extends AbstractResourceDefinition {
 
-    protected AbstractFederationResourceDefinition(ModelElement modelElement, OperationStepHandler addHandler, OperationStepHandler removeHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, addHandler, removeHandler, FederationExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
+    protected AbstractFederationResourceDefinition(ModelElement modelElement, ModelOnlyAddStepHandler addHandler, SimpleAttributeDefinition... attributes) {
+        super(modelElement, addHandler, FederationExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
     }
-
-    protected AbstractFederationResourceDefinition(ModelElement modelElement, String name, OperationStepHandler addHandler, OperationStepHandler removeHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, name, addHandler, removeHandler, FederationExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
-    }
-
-    @Override
-    protected OperationStepHandler createAttributeWriterHandler() {
-        List<SimpleAttributeDefinition> attributes = getAttributes();
-
-        return new ReloadRequiredWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-                doRegisterModelWriteAttributeHandler(context, operation);
-
-                super.execute(context, operation);
-            }
-        };
-    }
-
-    protected void doRegisterModelWriteAttributeHandler(OperationContext context, ModelNode operation) {
-
+    protected AbstractFederationResourceDefinition(ModelElement modelElement, String name, ModelOnlyAddStepHandler addHandler, SimpleAttributeDefinition... attributes) {
+        super(modelElement, name, addHandler, FederationExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
     }
 }

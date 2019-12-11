@@ -21,34 +21,6 @@
  */
 package org.wildfly.extension.picketlink.federation.model.parser;
 
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.common.model.XMLElement;
-import org.wildfly.extension.picketlink.federation.FederationExtension;
-import org.wildfly.extension.picketlink.federation.Namespace;
-import org.wildfly.extension.picketlink.federation.model.FederationResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.handlers.HandlerParameterResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.idp.AttributeManagerResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.idp.IdentityProviderResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.idp.RoleGeneratorResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.idp.TrustDomainResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.keystore.KeyStoreProviderResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.saml.SAMLResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.sp.ServiceProviderResourceDefinition;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
@@ -66,6 +38,34 @@ import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTIT
 import static org.wildfly.extension.picketlink.common.model.ModelElement.KEY_STORE;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.SAML;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.SERVICE_PROVIDER;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.XMLElement;
+import org.wildfly.extension.picketlink.federation.FederationExtension;
+import org.wildfly.extension.picketlink.federation.Namespace;
+import org.wildfly.extension.picketlink.federation.model.handlers.HandlerParameterResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.idp.AttributeManagerResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.idp.IdentityProviderResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.idp.RoleGeneratorResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.idp.TrustDomainResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.keystore.KeyStoreProviderResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.saml.SAMLResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.sp.ServiceProviderResourceDefinition;
 
 /**
  * @author Pedro Igor
@@ -88,6 +88,7 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
                 break;
             case PICKETLINK_FEDERATION_1_1:
             case PICKETLINK_FEDERATION_2_0:
+            case PICKETLINK_FEDERATION_3_0:
                 this.readElement(reader, subsystemNode, addOperations);
                 break;
             default:
@@ -126,7 +127,7 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
     private void parseFederation(final XMLExtendedStreamReader reader, final ModelNode subsystemNode,
         final List<ModelNode> addOperations) throws XMLStreamException {
         ModelNode federationNode = parseConfig(reader, FEDERATION, COMMON_NAME.getName(), subsystemNode,
-            Arrays.asList(FederationResourceDefinition.ATTRIBUTE_DEFINITIONS), addOperations);
+                Collections.emptyList(), addOperations);
 
         parseElement(new ElementParser() {
             @Override

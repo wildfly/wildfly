@@ -51,6 +51,6 @@ public class LDAPStoreAttributeResourceDefinition extends AbstractIDMResourceDef
     public static final LDAPStoreAttributeResourceDefinition INSTANCE = new LDAPStoreAttributeResourceDefinition(NAME, LDAP_NAME, IS_IDENTIFIER, READ_ONLY);
 
     private LDAPStoreAttributeResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.LDAP_STORE_ATTRIBUTE, new IDMConfigAddStepHandler(attributes), attributes);
+        super(ModelElement.LDAP_STORE_ATTRIBUTE, address->address.getParent().getParent().getParent().getParent(), attributes);
     }
 }

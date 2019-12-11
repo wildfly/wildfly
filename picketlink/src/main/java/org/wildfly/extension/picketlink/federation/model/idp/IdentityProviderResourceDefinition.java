@@ -22,26 +22,15 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
-import java.util.List;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
-import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -88,11 +77,8 @@ public class IdentityProviderResourceDefinition extends AbstractFederationResour
         SSL_AUTHENTICATION,
         SUPPORT_METADATA};
 
-    private final ExtensionContext extensionContext;
-
-    public IdentityProviderResourceDefinition(ExtensionContext extensionContext) {
-        super(ModelElement.IDENTITY_PROVIDER, IdentityProviderAddHandler.INSTANCE, IdentityProviderRemoveHandler.INSTANCE, ATTRIBUTE_DEFINITIONS);
-        this.extensionContext = extensionContext;
+    public IdentityProviderResourceDefinition() {
+        super(ModelElement.IDENTITY_PROVIDER, IdentityProviderAddHandler.INSTANCE, ATTRIBUTE_DEFINITIONS);
     }
 
     @Override
@@ -101,38 +87,5 @@ public class IdentityProviderResourceDefinition extends AbstractFederationResour
         addChildResourceDefinition(HandlerResourceDefinition.INSTANCE, resourceRegistration);
         addChildResourceDefinition(RoleGeneratorResourceDefinition.INSTANCE, resourceRegistration);
         addChildResourceDefinition(AttributeManagerResourceDefinition.INSTANCE, resourceRegistration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
-        if (this.extensionContext.isRuntimeOnlyRegistrationValid()) {
-            for (final SimpleAttributeDefinition def : IdentityProviderMetricsOperationHandler.ATTRIBUTES) {
-                resourceRegistration.registerMetric(def, IdentityProviderMetricsOperationHandler.INSTANCE);
-            }
-        }
-    }
-
-    @Override
-    protected OperationStepHandler createAttributeWriterHandler() {
-        List<SimpleAttributeDefinition> attributes = getAttributes();
-        return new RestartParentWriteAttributeHandler(ModelElement.IDENTITY_PROVIDER.getName(), attributes.toArray(new AttributeDefinition[attributes.size()])) {
-            @Override
-            protected ServiceName getParentServiceName(PathAddress parentAddress) {
-                return IdentityProviderService.createServiceName(parentAddress.getLastElement().getValue());
-            }
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                context.addStep(new IdentityProviderValidationStepHandler(), OperationContext.Stage.MODEL);
-                super.execute(context, operation);
-            }
-
-            @Override
-            protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-                IdentityProviderAddHandler.launchServices(context, parentModel, parentAddress, true);
-            }
-        };
     }
 }

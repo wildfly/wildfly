@@ -445,11 +445,6 @@
             <modules><module>integration</module></modules>
         </profile>
         <profile>
-            <id>integ-picketlink.module.profile</id>
-            <activation><property><name>ts.picketlink</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
             <id>integ-xts.module.profile</id>
             <activation><property><name>ts.xts</name></property></activation>
             <modules><module>integration</module></modules>

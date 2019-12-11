@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.picketlink.federation.model.handlers;
 
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
@@ -41,6 +42,6 @@ public class HandlerParameterResourceDefinition extends AbstractFederationResour
     public static final HandlerParameterResourceDefinition INSTANCE = new HandlerParameterResourceDefinition();
 
     private HandlerParameterResourceDefinition() {
-        super(ModelElement.COMMON_HANDLER_PARAMETER, HandlerParameterAddHandler.INSTANCE, HandlerParameterRemoveHandler.INSTANCE, VALUE);
+        super(ModelElement.COMMON_HANDLER_PARAMETER, new ModelOnlyAddStepHandler(VALUE), VALUE);
     }
 }

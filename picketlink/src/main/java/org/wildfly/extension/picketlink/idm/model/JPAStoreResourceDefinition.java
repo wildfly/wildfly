@@ -64,7 +64,7 @@ public class JPAStoreResourceDefinition extends AbstractIdentityStoreResourceDef
     public static final JPAStoreResourceDefinition INSTANCE = new JPAStoreResourceDefinition(DATA_SOURCE, ENTITY_MODULE, ENTITY_MODULE_UNIT_NAME, ENTITY_MANAGER_FACTORY, SUPPORT_CREDENTIAL, SUPPORT_ATTRIBUTE);
 
     private JPAStoreResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.JPA_STORE, new IDMConfigAddStepHandler(getModelValidators(attributes), attributes), attributes);
+        super(ModelElement.JPA_STORE, getModelValidators(), attributes);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class JPAStoreResourceDefinition extends AbstractIdentityStoreResourceDef
         addChildResourceDefinition(CredentialHandlerResourceDefinition.INSTANCE, resourceRegistration);
     }
 
-    private static ModelValidationStepHandler[] getModelValidators(SimpleAttributeDefinition[] attributes) {
+    private static ModelValidationStepHandler[] getModelValidators() {
         return new ModelValidationStepHandler[] {
             NotEmptyResourceValidationStepHandler.INSTANCE,
             new RequiredChildValidationStepHandler(ModelElement.SUPPORTED_TYPES)

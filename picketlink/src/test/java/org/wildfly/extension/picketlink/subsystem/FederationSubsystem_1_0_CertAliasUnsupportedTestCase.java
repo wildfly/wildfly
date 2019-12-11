@@ -28,7 +28,6 @@ import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.junit.Test;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
 
@@ -41,7 +40,8 @@ public class FederationSubsystem_1_0_CertAliasUnsupportedTestCase extends Abstra
         super(FederationExtension.SUBSYSTEM_NAME, new FederationExtension());
     }
 
-    @Test
+//    @Ignore("This tests Stage.MODEL validation on a *server* and the current subsystem code does not support servers")
+//    @Test
     public void failAddTrustDomainWithCertAlias() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("federation-subsystem-1.0.xml");
@@ -62,7 +62,8 @@ public class FederationSubsystem_1_0_CertAliasUnsupportedTestCase extends Abstra
         servicesA.executeForFailure(operation);
     }
 
-    @Test
+//    @Ignore("This tests Stage.MODEL validation on a *server* and the current subsystem code does not support servers")
+//    @Test
     public void failWriteTrustDomainWithCertAlias() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("federation-subsystem-1.0.xml");

@@ -22,13 +22,13 @@
 
 package org.wildfly.extension.picketlink.federation;
 
-import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.wildfly.extension.picketlink.federation.model.FederationResourceDefinition;
 
 /**
@@ -36,24 +36,18 @@ import org.wildfly.extension.picketlink.federation.model.FederationResourceDefin
  */
 public class FederationSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    private final ExtensionContext extensionContext;
-
-    FederationSubsystemRootResourceDefinition(ExtensionContext extensionContext) {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, FederationExtension.SUBSYSTEM_NAME),
-                 FederationExtension.getResourceDescriptionResolver(FederationExtension.SUBSYSTEM_NAME),
-                 FederationSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
-        setDeprecated(FederationExtension.DEPRECATED_SINCE);
-        this.extensionContext = extensionContext;
+    FederationSubsystemRootResourceDefinition() {
+        super(new Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, FederationExtension.SUBSYSTEM_NAME),
+                 FederationExtension.getResourceDescriptionResolver(FederationExtension.SUBSYSTEM_NAME))
+                .setAddHandler(new ModelOnlyAddStepHandler())
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveHandler(ModelOnlyRemoveStepHandler.INSTANCE)
+                .setDeprecatedSince(FederationExtension.DEPRECATED_SINCE)
+        );
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new FederationResourceDefinition(this.extensionContext));
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        resourceRegistration.registerSubModel(new FederationResourceDefinition());
     }
 }

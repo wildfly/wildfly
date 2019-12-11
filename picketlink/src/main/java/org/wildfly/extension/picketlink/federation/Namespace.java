@@ -40,11 +40,12 @@ import java.util.Map;
  */
 public enum Namespace {
 
-    PICKETLINK_FEDERATION_1_0(1, 0, 0, new FederationSubsystemReader_1_0(), FederationSubsystemWriter.INSTANCE),
-    PICKETLINK_FEDERATION_1_1(1, 1, 0, new FederationSubsystemReader_2_0(), FederationSubsystemWriter.INSTANCE),
-    PICKETLINK_FEDERATION_2_0(2, 0, 0, new FederationSubsystemReader_2_0(), FederationSubsystemWriter.INSTANCE);
+    PICKETLINK_FEDERATION_1_0(1, 0, 0, "1.0", new FederationSubsystemReader_1_0(), FederationSubsystemWriter.INSTANCE),
+    PICKETLINK_FEDERATION_1_1(1, 1, 0, "1.1", new FederationSubsystemReader_2_0(), FederationSubsystemWriter.INSTANCE),
+    PICKETLINK_FEDERATION_2_0(2, 0, 0, "2.0", new FederationSubsystemReader_2_0(), FederationSubsystemWriter.INSTANCE),
+    PICKETLINK_FEDERATION_3_0(3, 0, 0, "2.0", new FederationSubsystemReader_2_0(), FederationSubsystemWriter.INSTANCE);
 
-    public static final Namespace CURRENT = PICKETLINK_FEDERATION_2_0;
+    public static final Namespace CURRENT = PICKETLINK_FEDERATION_3_0;
     public static final String BASE_URN = "urn:jboss:domain:picketlink-federation:";
 
     private static final Map<String, Namespace> namespaces;
@@ -65,14 +66,16 @@ public enum Namespace {
     private final int major;
     private final int minor;
     private final int patch;
+    private final String urnSuffix;
     private final XMLElementReader<List<ModelNode>> reader;
     private final XMLElementWriter<SubsystemMarshallingContext> writer;
 
-    Namespace(int major, int minor, int patch, XMLElementReader<List<ModelNode>> reader,
+    Namespace(int major, int minor, int patch, String urnSuffix, XMLElementReader<List<ModelNode>> reader,
                      XMLElementWriter<SubsystemMarshallingContext> writer) {
         this.major = major;
         this.minor = minor;
         this.patch = patch;
+        this.urnSuffix = urnSuffix;
         this.reader = reader;
         this.writer = writer;
     }
@@ -116,13 +119,7 @@ public enum Namespace {
      * @return the URI
      */
     public String getUri() {
-        String patchVersion = "";
-
-        if (this.patch > 0) {
-            patchVersion = "." + this.patch;
-        }
-
-        return BASE_URN + this.major + "." + this.minor + patchVersion;
+        return BASE_URN + this.urnSuffix;
     }
 
     /**

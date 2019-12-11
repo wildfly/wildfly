@@ -196,15 +196,6 @@
             </modules>
         </profile>
 
-        <!-- -Dts.picketlink -->
-        <profile>
-            <id>ts.integ.group.picketlink</id>
-            <activation><property><name>ts.picketlink</name></property></activation>
-            <modules>
-                <module>picketlink</module>
-            </modules>
-        </profile>
-
         <!-- -Dts.secman -->
         <profile>
             <id>ts.integ.group.secman</id>

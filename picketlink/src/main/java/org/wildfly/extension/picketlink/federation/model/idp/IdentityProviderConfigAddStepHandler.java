@@ -23,26 +23,20 @@
 package org.wildfly.extension.picketlink.federation.model.idp;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.ElementMaxOccurrenceValidationStepHandler;
-import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 
 /**
  * @author Pedro Silva
  */
-public class IdentityProviderConfigAddStepHandler extends RestartParentResourceAddHandler {
-
-    private final AttributeDefinition[] attributes;
+public class IdentityProviderConfigAddStepHandler extends ModelOnlyAddStepHandler {
 
     IdentityProviderConfigAddStepHandler(final AttributeDefinition... attributes) {
-        super(ModelElement.IDENTITY_PROVIDER.getName());
-        this.attributes = attributes != null ? attributes : new AttributeDefinition[0];
+        super(attributes);
     }
 
     @Override
@@ -54,22 +48,5 @@ public class IdentityProviderConfigAddStepHandler extends RestartParentResourceA
             new ElementMaxOccurrenceValidationStepHandler(ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR, ModelElement.IDENTITY_PROVIDER,
                 1), OperationContext.Stage.MODEL);
         super.execute(context, operation);
-    }
-
-    @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, parentModel, parentAddress, true);
-    }
-
-    @Override
-    protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return IdentityProviderService.createServiceName(parentAddress.getLastElement().getValue());
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr : this.attributes) {
-            attr.validateAndSet(operation, model);
-        }
     }
 }

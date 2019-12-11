@@ -65,7 +65,7 @@ public class FileStoreResourceDefinition extends AbstractIdentityStoreResourceDe
     public static final FileStoreResourceDefinition INSTANCE = new FileStoreResourceDefinition(WORKING_DIR, RELATIVE_TO, ALWAYS_CREATE_FILE, ASYNC_WRITE, ASYNC_WRITE_THREAD_POOL, SUPPORT_ATTRIBUTE, SUPPORT_CREDENTIAL);
 
     private FileStoreResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.FILE_STORE, new IDMConfigAddStepHandler(getModelValidators(), attributes), attributes);
+        super(ModelElement.FILE_STORE, getModelValidators(), attributes);
     }
 
     @Override
