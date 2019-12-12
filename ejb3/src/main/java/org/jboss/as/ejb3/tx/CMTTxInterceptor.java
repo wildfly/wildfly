@@ -115,6 +115,7 @@ public class CMTTxInterceptor implements Interceptor {
         } catch (HeuristicMixedException | SystemException | HeuristicRollbackException e) {
             throw new EJBException(e);
         }
+
     }
 
     private void endTransaction(final Transaction tx, final Throwable outerEx) {
@@ -127,6 +128,7 @@ public class CMTTxInterceptor implements Interceptor {
 
     public Object processInvocation(InterceptorContext invocation) throws Exception {
         final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
+
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
         final int oldTimeout = tm.getTransactionTimeout();
         try {
@@ -232,7 +234,8 @@ public class CMTTxInterceptor implements Interceptor {
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
         tm.begin();
         final AbstractTransaction tx = tm.getTransaction();
-        final Object result;
+        Object result = null;
+        Exception except = null;
         try {
             result = invocation.proceed();
         } catch (Throwable t) {
@@ -243,7 +246,13 @@ public class CMTTxInterceptor implements Interceptor {
                 } catch (EJBException | RemoteException e) {
                     throw e;
                 } catch (RuntimeException e) {
-                    throw ae != null ? e : new EJBException(e);
+                    if (ae != null && !ae.isRollback()) {
+                        except = e;
+                    } else if(ae != null && ae.isRollback()) {
+                        throw e;
+                    } else {
+                        throw new EJBException(e);
+                    }
                 } catch (Exception e) {
                     throw e;
                 } catch (Error e) {
@@ -259,6 +268,11 @@ public class CMTTxInterceptor implements Interceptor {
         }
         boolean rolledBack = safeGetStatus(tx) == Status.STATUS_MARKED_ROLLBACK;
         endTransaction(tx);
+
+        if (except!=null) {
+            throw except;
+        }
+
         if (rolledBack) ourTxRolledBack();
         return result;
     }
