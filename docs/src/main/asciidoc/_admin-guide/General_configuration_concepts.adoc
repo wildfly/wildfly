@@ -173,6 +173,9 @@ address:
 An `<interface/>` element in a `standalone.xml` must include the
 criteria for determining the IP address.
 
+See link:#interface-declarations[Interface declarations]
+for full details.
+
 [[socket-bindings-and-socket-binding-groups]]
 == Socket Bindings and Socket Binding Groups
 
@@ -182,8 +185,9 @@ The `domain.xml` and `standalone.xml` configurations both include a
 section where named socket configurations can be declared. Other
 sections of the configuration can then reference those sockets by their
 logical name, rather than having to include the full details of the
-socket configuration (which may vary on different machines). See
-<<Interfaces_and_ports,Interfaces and ports>> for full details.
+socket configuration (which may vary on different machines).
+See link:#socket-binding-groups[Socket Binding Groups]
+for full details.
 
 == System Properties
 
