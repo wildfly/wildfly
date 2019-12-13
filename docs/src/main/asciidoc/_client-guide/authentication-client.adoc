@@ -431,7 +431,8 @@ This structure is identical to the structure use in [<key-store-credential />|#k
  The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and excludes any cipher suites that have no authentication.
 
  names:: _(Optional)_ Used to configure the enabled cipher suites for TLSv1.3. The format of the `names` attribute is a simple colon (":")
- separated list of TLSv1.3 cipher suite names. The default value is `TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`.
+ separated list of TLSv1.3 cipher suite names (e.g., `TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`).
+ This attribute must be specified in order for TLSv1.3 to be enabled.
 
 The following example configuration specifies that the default filtering should be used for TLSv1.2 and below and specifies that the
 `TLS_AES_128_CCM_8_SHA256` and `TLS_AES_256_GCM_SHA384` cipher suites should be used for TLSv1.3.

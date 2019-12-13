@@ -2232,8 +2232,8 @@ http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ss
 The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
 excludes any cipher suites that have no authentication.
 cipher-suite-names:: _(Optional)_ The enabled cipher suites for TLSv1.3. The format of this attribute is a simple colon
-(":") separated list of TLSv1.3 cipher suite names. The default value is
-`TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`.
+(":") separated list of TLSv1.3 cipher suite names (e.g., `TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`).
+This attribute must be specified in order for TLSv1.3 to be enabled.
 protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`. The default value
 is `TLSv1 TLSv1.1 TLSv1.2 TLSv1.3`. Note that the TLSv1.3 protocol will only be usable when running against JDK 11 or
 higher.
@@ -2284,20 +2284,28 @@ http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ss
 The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
 excludes any cipher suites that have no authentication.
 cipher-suite-names:: _(Optional)_ The enabled cipher suites for TLSv1.3. The format of this attribute is a simple colon
-(":") separated list of TLSv1.3 cipher suite names. The default value is
-`TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`.
+(":") separated list of TLSv1.3 cipher suite names (e.g., `TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`).
+This attribute must be specified in order for TLSv1.3 to be enabled.
 protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`. The default value
 is `TLSv1 TLSv1.1 TLSv1.2 TLSv1.3`. Note that the TLSv1.3 protocol will only be usable when running against JDK 11 or higher.
 provider-name:: _(Optional)_ The name of the provider to use. If not specified, all providers from `providers` will be
 passed to the `SSLContext`.
 providers:: _(Optional)_ The name of the providers to obtain the `Provider[]` to use to load the `SSLContext`.
 
-*Note:* As described in the previous two sections, the TLSv1.3 protocol can be used when running against JDK 11 or
-higher. One thing that is important to note about TLSv1.3 is that session IDs have become essentially obsolete. This
-means that the session ID can no longer reliably be used to test if a session was resumed. Instead, creation time can be
-used to test if a session was resumed. Currently, clients need to read from the server after the first handshake in
-order to receive the `NewSessionTicket` that can be used for resumption. However, this may change once
-https://bugs.openjdk.java.net/browse/JDK-8209953[JDK-8209953] is resolved.
+*WARNING* It is possible to use TLSv1.3 with WildFly when running against JDK 11 or higher. However, if JDK 11
+is in use and if there is a very large number of TLSv1.3 requests being made, it is possible that a drop in
+performance (throughput and response time) will occur compared to TLSv1.2. Upgrading to newer JDK versions
+should improve performance. For this reason, the use of TLSv1.3 is currently disabled by default. TLSv1.3 can
+be enabled by configuring the new `cipher-suite-names` attribute in the SSL Context resource definition in the
+Elytron subsystem as described in the previous two sections. It is recommended to test for performance
+degradation prior to enabling TLSv1.3 in a production environment. See https://issues.redhat.com/browse/WFWIP-160[WFWIP-160]
+for more details.
+
+*Note:* When using TLSv1.3, it is important to keep in mind that session IDs have become essentially obsolete.
+This means that the session ID can no longer reliably be used to test if a session was resumed. Instead,
+creation time can be used to test if a session was resumed. Currently, clients need to read from the server after
+the first handshake in order to receive the `NewSessionTicket` that can be used for resumption. However, this may
+change once https://bugs.openjdk.java.net/browse/JDK-8209953[JDK-8209953] is resolved.
 
 
 === Default SSLContext
