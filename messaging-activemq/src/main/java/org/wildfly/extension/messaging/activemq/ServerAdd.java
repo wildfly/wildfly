@@ -185,7 +185,7 @@ class ServerAdd extends AbstractAddStepHandler {
     private static final String ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS = "brokerconfig.storeConfiguration.jdbcLockAcquisitionTimeoutMillis";
 
     private ServerAdd() {
-        super(ACTIVEMQ_SERVER_CAPABILITY, ServerDefinition.ATTRIBUTES);
+        super(ServerDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -643,13 +643,13 @@ class ServerAdd extends AbstractAddStepHandler {
             processSecuritySettings(context, configuration, model);
 
             // Add in items from child resources
-            GroupingHandlerAdd.addGroupingHandlerConfig(context, configuration, model);
-            configuration.setDiscoveryGroupConfigurations(DiscoveryGroupAdd.addDiscoveryGroupConfigs(context, model));
-            DivertAdd.addDivertConfigs(context, configuration, model);
+            ConfigurationHelper.addGroupingHandlerConfiguration(context, configuration, model);
+            configuration.setDiscoveryGroupConfigurations(ConfigurationHelper.addDiscoveryGroupConfigurations(context, model));
+            ConfigurationHelper.addDivertConfigurations(context, configuration, model);
             ConfigurationHelper.addQueueConfigurations(context, configuration, model);
-            BridgeAdd.addBridgeConfigs(context, configuration, model);
-            ClusterConnectionAdd.addClusterConnectionConfigs(context, configuration, model);
-            ConnectorServiceDefinition.addConnectorServiceConfigs(context, configuration, model);
+            ConfigurationHelper.addBridgeConfigurations(context, configuration, model);
+            ConfigurationHelper.addClusterConnectionConfigurations(context, configuration, model);
+            ConfigurationHelper.addConnectorServiceConfigurations(context, configuration, model);
 
             return configuration;
         }
