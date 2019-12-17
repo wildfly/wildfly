@@ -43,6 +43,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
@@ -416,4 +417,7 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 103, value = "The time zone id %s is invalid.")
     OperationFailedException invalidTimeZoneId(String zoneId);
+
+    @Message(id=104, value = "Host and context path are occupied, %s can't be registered. Message was: %s")
+    DuplicateServiceException duplicateHostContextDeployments(ServiceName deploymentInfoServiceName, String errorMessage);
 }
