@@ -177,7 +177,7 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
         // check if any security metadata was defined for the method.
         if (ejbMethodSecurityMetaData != null) {
             final MethodInterfaceType interfaceType = this.getMethodInterfaceType(ejbViewConfiguration.getMethodIntf());
-            final EJBMethodPermission permission = new EJBMethodPermission(description.getEJBName(), methodIdentifier.getName(), interfaceType.name(), methodIdentifier.getParameterTypes());
+            final EJBMethodPermission permission = new EJBMethodPermission(description.getEJBName(), interfaceType.name(), viewMethod);
 
             if (ejbMethodSecurityMetaData.isPermitAll()) {
                 ejbJaccConfig.addPermit(permission);
