@@ -81,7 +81,15 @@ The <protection-paramter-credentials /> element can contain one more more child 
     <credential-store-reference store="..." alias="..." clear-text="..." />
     <clear-password password="..." />
     <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
-    <key-pair public-key-pem="..." private-key-pem="..." />
+    <key-pair>
+        <public-key-pem>...</public-key-pem>
+        <private-key-pem>...</public-key-pem>
+        <openssh-private-key pem="...">
+            <credential-store-reference store="..." alias="..." clear-text="..." />
+            <clear-password password="..." />
+            <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+        </openssh-private-key>
+    </key-pair>
     <certificate private-key-pem="..." pem="..." />
     <public-key-pem>...</public-key-pem>
     <bearer-token value="..." />
@@ -350,7 +358,20 @@ The content of this element is the same as documented for [<protection-parameter
     <credential-store-reference store="..." alias="..." clear-text="..." />
     <clear-password password="..." />
     <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
-    <key-pair public-key-pem="..." private-key-pem="..." />
+    <key-pair>
+        <public-key-pem>...</public-key-pem>
+        <private-key-pem>...</public-key-pem>
+        <openssh-private-key pem="...">
+            <credential-store-reference store="..." alias="..." clear-text="..." />
+            <clear-password password="..." />
+            <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+        </openssh-private-key>
+    </key-pair>
+    <ssh-credential ssh-directory="..." private-key-file="..." known-hosts-file="...">
+        <credential-store-reference store="..." alias="..." clear-text="..." />
+        <clear-password password="..." />
+        <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+    </ssh-credential>
     <certificate private-key-pem="..." pem="..." />
     <public-key-pem>...</public-key-pem>
     <bearer-token value="..." />
