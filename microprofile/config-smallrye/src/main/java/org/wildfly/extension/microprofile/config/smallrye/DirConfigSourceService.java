@@ -25,7 +25,7 @@ package org.wildfly.extension.microprofile.config.smallrye;
 import java.io.File;
 import java.util.function.Supplier;
 
-import io.smallrye.config.DirConfigSource;
+import io.smallrye.config.FileSystemConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.services.path.AbsolutePathService;
@@ -78,7 +78,7 @@ class DirConfigSourceService implements Service<ConfigSource> {
         String dirPath = pathManager.get().resolveRelativePathEntry(path, relativeToPath);
         File dir = new File(dirPath);
         MicroProfileConfigLogger.ROOT_LOGGER.loadConfigSourceFromDir(dir.getAbsolutePath());
-        configSource = new DirConfigSource(dir, ordinal);
+        configSource = new FileSystemConfigSource(dir, ordinal);
     }
 
     @Override
