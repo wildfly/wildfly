@@ -29,7 +29,10 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+
+import org.jboss.logging.annotations.Cause;
 
 @MessageLogger(projectCode = "WFLYTRACEXT", length = 4)
 public interface TracingExtensionLogger extends BasicLogger {
@@ -57,4 +60,12 @@ public interface TracingExtensionLogger extends BasicLogger {
 
     @Message(id = 6, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     String deploymentRequiresCapability(String deploymentName, String capabilityName);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 7, value = "No module found for deployment %s for resolving the tracer.")
+    void tracerResolverDeployementModuleNotFound(String deployment);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 8, value = "Error using tracer resolver to resolve the tracer.")
+    void errorResolvingTracer(@Cause Exception ex);
 }

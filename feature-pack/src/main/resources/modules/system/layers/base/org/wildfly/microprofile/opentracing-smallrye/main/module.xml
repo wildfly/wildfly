@@ -35,13 +35,9 @@
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>
 
-        <module name="io.jaegertracing.jaeger"/>
         <module name="io.opentracing.opentracing-api"/>
-        <module name="io.opentracing.opentracing-noop"/>
-        <module name="io.opentracing.opentracing-util"/>
         <module name="io.opentracing.contrib.opentracing-concurrent"/>
         <module name="io.opentracing.contrib.opentracing-jaxrs2"/>
-        <module name="io.opentracing.contrib.opentracing-tracerresolver"/>
         <module name="io.opentracing.contrib.opentracing-web-servlet-filter"/>
         <module name="io.opentracing.contrib.opentracing-interceptors" services="import"/>
         <module name="io.smallrye.opentracing"/>

@@ -49,7 +49,7 @@ public class TracerDynamicFeature implements DynamicFeature {
         Optional<String> operationNameProvider = config.getOptionalValue("mp.opentracing.server.operation-name-provider", String.class);
         Tracer tracer;
 
-        Object tracerObject = servletContext.getAttribute(TracerInitializer.SMALLRYE_OPENTRACING_TRACER);
+        Object tracerObject = servletContext.getAttribute(TracerConstants.SMALLRYE_OPENTRACING_TRACER);
         if (tracerObject instanceof Tracer) {
             tracer = (Tracer) tracerObject;
         } else {
