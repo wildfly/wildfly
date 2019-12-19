@@ -186,7 +186,7 @@ public class CLIServerSetupTask implements ServerSetupTask {
         }
 
         /**
-         * Configure whether the commands should be run in a batch. Defaults configuration is to batch.
+         * Configure whether the commands should be run in a batch. Default configuration is to batch.
          */
         public NodeBuilder batch(boolean batch) {
             this.batch = batch;

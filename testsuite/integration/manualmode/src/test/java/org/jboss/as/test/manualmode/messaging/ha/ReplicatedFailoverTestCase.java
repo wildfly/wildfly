@@ -86,8 +86,6 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
 
     private void configureCluster(ModelControllerClient client) throws Exception {
         // /subsystem=messaging-activemq/server=default:write-attribute(name=cluster-user, value=clusteruser)
-        // /subsystem=messaging-activemq/server=default:write-attribute(name=cluster-password, value=clusterpwd)
-
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).add(SUBSYSTEM, "messaging-activemq");
         operation.get(OP_ADDR).add("server", "default");
@@ -96,6 +94,7 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
         operation.get(VALUE).set("clusterpassword");
         execute(client, operation);
 
+        // /subsystem=messaging-activemq/server=default:write-attribute(name=cluster-password, value=clusterpwd)
         operation = new ModelNode();
         operation.get(OP_ADDR).add(SUBSYSTEM, "messaging-activemq");
         operation.get(OP_ADDR).add("server", "default");
@@ -103,27 +102,6 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
         operation.get(NAME).set("cluster-user");
         operation.get(VALUE).set("clusteruser");
         execute(client, operation);
-
-        // /subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
-        operation = new ModelNode();
-        operation.get(OP_ADDR).add(SUBSYSTEM, "jgroups");
-        operation.get(OP_ADDR).add("channel", "ee");
-        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set("stack");
-        operation.get(VALUE).set("tcp");
-        execute(client, operation);
-
-        // /subsystem=jgroups/stack=tcp/protocol=MPING:map-put(name=properties,key=ip_ttl,value=0)
-        operation = new ModelNode();
-        operation.get(OP_ADDR).add(SUBSYSTEM, "jgroups");
-        operation.get(OP_ADDR).add("stack", "tcp");
-        operation.get(OP_ADDR).add("protocol", "MPING");
-        operation.get(OP).set("map-put");
-        operation.get(NAME).set("properties");
-        operation.get("key").set("ip_ttl");
-        operation.get(VALUE).set(0);
-        execute(client, operation);
-
     }
 
     @Override

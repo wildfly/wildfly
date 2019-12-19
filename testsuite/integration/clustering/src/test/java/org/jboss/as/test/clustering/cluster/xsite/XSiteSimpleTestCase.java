@@ -124,6 +124,20 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
         });
     }
 
+    @Override
+    public void beforeTestMethod() throws Exception {
+        // Orchestrate startup of clusters to purge previously discovered views.
+        stop(nodes);
+        start(NODE_1);
+        deploy(DEPLOYMENT_1);
+        start(NODE_3);
+        deploy(DEPLOYMENT_3);
+        start(NODE_4);
+        deploy(DEPLOYMENT_4);
+        start(NODE_2);
+        deploy(DEPLOYMENT_2);
+    }
+
     @Test
     public void test(@ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
                      @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
@@ -206,47 +220,37 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
                     .node(NODE_1, NODE_2)
                     .setup("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=NYC:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
                     .setup("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=SFO:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp)")
-                    .setup("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=udp)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY:add(site=LON)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY/remote-site=NYC:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY/remote-site=SFO:add(channel=bridge)")
-                    .setup("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST3)
-                    .teardown("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"")
+                    .setup("/subsystem=jgroups/channel=bridge:add(stack=udp)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY:add(site=LON)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=NYC:add(channel=bridge)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=SFO:add(channel=bridge)")
+                    .setup("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2])")
+                    .teardown("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
                     .teardown("/subsystem=jgroups/stack=udp/relay=RELAY:remove")
-                    .teardown("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)")
                     .teardown("/subsystem=jgroups/channel=bridge:remove")
                     .teardown("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=SFO:remove")
                     .teardown("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=NYC:remove")
                     .parent()
                     // NYC
                     .node(NODE_3)
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp)")
-                    .setup("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=udp)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY:add(site=NYC)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY/remote-site=LON:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY/remote-site=SFO:add(channel=bridge)")
-                    .setup("/socket-binding-group=standard-sockets/socket-binding=jgroups-udp:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST1)
-                    .setup("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST3)
-                    .teardown("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"")
-                    .teardown("/socket-binding-group=standard-sockets/socket-binding=jgroups-udp:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"")
-                    .teardown("/subsystem=jgroups/stack=udp/relay=RELAY:remove")
-                    .teardown("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)")
+                    .setup("/subsystem=jgroups/channel=bridge:add(stack=udp)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY:add(site=NYC)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=LON:add(channel=bridge)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=SFO:add(channel=bridge)")
+                    .setup("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-3])")
+                    .teardown("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
+                    .teardown("/subsystem=jgroups/stack=tcp/relay=RELAY:remove")
                     .teardown("/subsystem=jgroups/channel=bridge:remove")
                     .parent()
                     // SFO
                     .node(NODE_4)
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp)")
-                    .setup("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=udp)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY:add(site=SFO)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY/remote-site=LON:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=udp/relay=RELAY/remote-site=NYC:add(channel=bridge)")
-                    .setup("/socket-binding-group=standard-sockets/socket-binding=jgroups-udp:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST2)
-                    .setup("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST3)
-                    .teardown("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"")
-                    .teardown("/socket-binding-group=standard-sockets/socket-binding=jgroups-udp:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"")
-                    .teardown("/subsystem=jgroups/stack=udp/relay=RELAY:remove")
-                    .teardown("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)")
+                    .setup("/subsystem=jgroups/channel=bridge:add(stack=udp)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY:add(site=SFO)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=LON:add(channel=bridge)")
+                    .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=NYC:add(channel=bridge)")
+                    .setup("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-4])")
+                    .teardown("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
+                    .teardown("/subsystem=jgroups/stack=tcp/relay=RELAY:remove")
                     .teardown("/subsystem=jgroups/channel=bridge:remove")
             ;
         }

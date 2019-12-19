@@ -84,7 +84,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
     private static final String TOPIC_NAME = "myTopic";
     private static final String DISCOVERY_GROUP_NAME = "dg1";
     private static final String MULTICAST_SOCKET_BINDING = "messaging-group";
-   private static final String TESTSUITE_MCAST = System.getProperty("mcast", "230.0.0.4");
+    private static final String TESTSUITE_MCAST = System.getProperty("mcast", "230.0.0.4");
 
     @ArquillianResource
     private URL url;
