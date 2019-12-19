@@ -39,7 +39,6 @@ import java.util.List;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.config.BridgeConfiguration;
-import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.TransformerConfiguration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -49,7 +48,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -99,16 +97,6 @@ public class BridgeAdd extends AbstractAddStepHandler {
         }
         // else the initial subsystem install is not complete; MessagingSubsystemAdd will add a
         // handler that calls addBridgeConfigs
-    }
-
-    static void addBridgeConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.BRIDGE)) {
-            final List<BridgeConfiguration> configs = configuration.getBridgeConfigurations();
-            for (Property prop : model.get(CommonAttributes.BRIDGE).asPropertyList()) {
-                configs.add(createBridgeConfiguration(context, prop.getName(), prop.getValue()));
-
-            }
-        }
     }
 
     static BridgeConfiguration createBridgeConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {

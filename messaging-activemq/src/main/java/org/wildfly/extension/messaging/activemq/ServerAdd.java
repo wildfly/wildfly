@@ -185,7 +185,7 @@ class ServerAdd extends AbstractAddStepHandler {
     private static final String ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS = "brokerconfig.storeConfiguration.jdbcLockAcquisitionTimeoutMillis";
 
     private ServerAdd() {
-        super(ACTIVEMQ_SERVER_CAPABILITY, ServerDefinition.ATTRIBUTES);
+        super(ServerDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -456,15 +456,20 @@ class ServerAdd extends AbstractAddStepHandler {
             ServiceController activeMQServerServiceController = serviceBuilder.setInstance(serverService)
                     .install();
             //Add the queue services for the core queues  created throught the internal broker configuration (those queues are not added as service via the QueueAdd OSH)
-            for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
-                final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
-                final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
-                sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
-                Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
-                final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
-                sb.setInitialMode(Mode.PASSIVE);
-                sb.setInstance(queueService);
-                sb.install();
+            if (model.hasDefined(CommonAttributes.QUEUE)) {
+                ModelNode coreQueues = model.get(CommonAttributes.QUEUE);
+                for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
+                    if (coreQueues.has(queueConfiguration.getName())) {
+                        final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
+                        final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
+                        sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
+                        Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
+                        final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
+                        sb.setInitialMode(Mode.PASSIVE);
+                        sb.setInstance(queueService);
+                        sb.install();
+                    }
+                }
             }
             // Provide our custom Resource impl a ref to the ActiveMQ server so it can create child runtime resources
             ((ActiveMQServerResource) resource).setActiveMQServerServiceController(activeMQServerServiceController);
@@ -638,13 +643,13 @@ class ServerAdd extends AbstractAddStepHandler {
             processSecuritySettings(context, configuration, model);
 
             // Add in items from child resources
-            GroupingHandlerAdd.addGroupingHandlerConfig(context, configuration, model);
-            configuration.setDiscoveryGroupConfigurations(DiscoveryGroupAdd.addDiscoveryGroupConfigs(context, model));
-            DivertAdd.addDivertConfigs(context, configuration, model);
-            QueueAdd.addQueueConfigs(context, configuration, model);
-            BridgeAdd.addBridgeConfigs(context, configuration, model);
-            ClusterConnectionAdd.addClusterConnectionConfigs(context, configuration, model);
-            ConnectorServiceDefinition.addConnectorServiceConfigs(context, configuration, model);
+            ConfigurationHelper.addGroupingHandlerConfiguration(context, configuration, model);
+            configuration.setDiscoveryGroupConfigurations(ConfigurationHelper.addDiscoveryGroupConfigurations(context, model));
+            ConfigurationHelper.addDivertConfigurations(context, configuration, model);
+            ConfigurationHelper.addQueueConfigurations(context, configuration, model);
+            ConfigurationHelper.addBridgeConfigurations(context, configuration, model);
+            ConfigurationHelper.addClusterConnectionConfigurations(context, configuration, model);
+            ConfigurationHelper.addConnectorServiceConfigurations(context, configuration, model);
 
             return configuration;
         }

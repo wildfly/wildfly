@@ -146,6 +146,13 @@ Undertow subsystem is configured with _other_ _application-security-domain_ that
 * _jaxrs-server_: An extension of _datasources-web-server_ layer with _jaxrs_ and optional dependencies on _cdi_ and _jpa_ layers.
 * _cloud-server_: A _cloud-profile_ with core features and tools.
 
+
+Decorator layers:
+
+Layers that you combine with "use-case tailored" layers to extend the capabilities of the provisioned server.
+
+* _web-clustering_: Infinispan-based web session clustering.
+
 ==== WildFly servlet layers
 
 Basic layers:

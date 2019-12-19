@@ -187,7 +187,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final List<BroadcastGroupConfiguration> broadcastGroupConfigurations =new ArrayList<>();
                 //this requires connectors
                 BroadcastGroupAdd.addBroadcastGroupConfigs(context, broadcastGroupConfigurations, connectors.keySet(), model);
-                final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = DiscoveryGroupAdd.addDiscoveryGroupConfigs(context, model);
+                final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = ConfigurationHelper.addDiscoveryGroupConfigurations(context, model);
                 final Map<String, String> clusterNames = new HashMap<>();
                 final Map<String, ServiceName> commandDispatcherFactories = new HashMap<>();
                 final Set<ServiceName> commandDispatcherFactoryServices = new HashSet<>();

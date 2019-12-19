@@ -24,16 +24,11 @@ package org.wildfly.extension.messaging.activemq;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.wildfly.extension.messaging.activemq.shallow.ShallowResourceAdd;
 
 /**
@@ -73,30 +68,5 @@ public class DiscoveryGroupAdd extends ShallowResourceAdd {
             context.addStep(op, addHandler, OperationContext.Stage.MODEL, true);
         }
         super.execute(context, operation);
-    }
-
-    static Map<String, DiscoveryGroupConfiguration> addDiscoveryGroupConfigs(final OperationContext context, final ModelNode model) throws OperationFailedException {
-        Map<String, DiscoveryGroupConfiguration> configs = new HashMap<>();
-        if (model.hasDefined(CommonAttributes.JGROUPS_DISCOVERY_GROUP)) {
-            for (Property prop : model.get(CommonAttributes.JGROUPS_DISCOVERY_GROUP).asPropertyList()) {
-                configs.put(prop.getName(), createDiscoveryGroupConfiguration(context, prop.getName(), prop.getValue()));
-            }
-        }
-        if (model.hasDefined(CommonAttributes.SOCKET_DISCOVERY_GROUP)) {
-            for (Property prop : model.get(CommonAttributes.SOCKET_DISCOVERY_GROUP).asPropertyList()) {
-                configs.put(prop.getName(), createDiscoveryGroupConfiguration(context, prop.getName(), prop.getValue()));
-            }
-        }
-        return configs;
-    }
-
-    private static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
-        final long refreshTimeout = DiscoveryGroupDefinition.REFRESH_TIMEOUT.resolveModelAttribute(context, model).asLong();
-        final long initialWaitTimeout = DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT.resolveModelAttribute(context, model).asLong();
-
-        return new DiscoveryGroupConfiguration()
-                .setName(name)
-                .setRefreshTimeout(refreshTimeout)
-                .setDiscoveryInitialWaitTimeout(initialWaitTimeout);
     }
 }

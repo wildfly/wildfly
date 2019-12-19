@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,15 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
-import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Stateful;
-import javax.ejb.StatefulTimeout;
-
-import org.jboss.ejb3.annotation.Cache;
 
 /**
- * stateful session bean
+ * stateful session bean that does not configure stateful timeout via annotation or deployment descriptor.
  */
 @Stateful
-@Cache("passivating")
-@StatefulTimeout(value = 1000, unit = TimeUnit.MILLISECONDS)
-public class PassivatingBean {
-
+public class TimeoutNotConfiguredBean {
     static volatile boolean preDestroy;
 
     @PostConstruct

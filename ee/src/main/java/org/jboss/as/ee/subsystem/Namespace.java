@@ -37,11 +37,12 @@ enum Namespace {
     EE_2_0("urn:jboss:domain:ee:2.0", true),
     EE_3_0("urn:jboss:domain:ee:3.0", false),
     EE_4_0("urn:jboss:domain:ee:4.0", false),
+    EE_5_0("urn:jboss:domain:ee:5.0", false),
     ;
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = EE_4_0;
+    public static final Namespace CURRENT = EE_5_0;
 
     private final String name;
     private final boolean beanValidationIncluded;

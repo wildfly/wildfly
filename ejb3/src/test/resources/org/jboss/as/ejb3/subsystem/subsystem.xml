@@ -1,9 +1,9 @@
-<subsystem xmlns="urn:jboss:domain:ejb3:6.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:7.0">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
         </stateless>
-        <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
+        <stateful default-session-timeout="600000" default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
         <singleton default-access-timeout="${prop.default-access-timeout:5000}"/>
     </session-bean>
     <mdb>

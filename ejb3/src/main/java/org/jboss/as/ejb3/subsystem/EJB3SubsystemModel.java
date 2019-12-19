@@ -84,6 +84,7 @@ public interface EJB3SubsystemModel {
 
     String DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT = "default-singleton-bean-access-timeout";
     String DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT = "default-stateful-bean-access-timeout";
+    String DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT = "default-stateful-bean-session-timeout";
     String DEFAULT_DATA_STORE = "default-data-store";
 
     String REMOTE = "remote";
