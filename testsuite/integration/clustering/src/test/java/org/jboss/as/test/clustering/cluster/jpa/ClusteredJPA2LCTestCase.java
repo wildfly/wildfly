@@ -22,55 +22,41 @@
 
 package org.jboss.as.test.clustering.cluster.jpa;
 
-import static org.jboss.as.controller.client.helpers.ClientConstants.*;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
-
-import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.IntermittentFailure;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.api.Authentication;
 
 /**
  * Smoke test of clustered JPA 2nd level cache implemented by Infinispan.
  * @author Jan Martiska
  */
 @RunWith(Arquillian.class)
-public class ClusteredJPA2LCTestCase {
+@ServerSetup(ClusteredJPA2LCTestCase.ServerSetupTask.class)
+public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = ClusteredJPA2LCTestCase.class.getSimpleName();
-
-    @ArquillianResource
-    protected ContainerController controller;
-
-    @ArquillianResource
-    protected Deployer deployer;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -92,50 +78,22 @@ public class ClusteredJPA2LCTestCase {
         return war;
     }
 
-    // management connection to node0
-    private ModelControllerClient client0;
-
-    // management connection to node1
-    private ModelControllerClient client1;
-
     // REST client to control entity creation, caching, eviction,... on the servers
-    private Client restClient = ClientBuilder.newClient();
+    private Client restClient;
 
-    // /subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated
-    static ModelNode CACHE_ADDRESS;
+    @Before
+    public void init() {
+        this.restClient = ClientBuilder.newClient();
+    }
 
-    static {
-        CACHE_ADDRESS = new ModelNode();
-        CACHE_ADDRESS.get("subsystem").set("infinispan");
-        CACHE_ADDRESS.get("cache-container").set("hibernate");
-        CACHE_ADDRESS.get("replicated-cache").set("entity-replicated");
+    @After
+    public void destroy() {
+        this.restClient.close();
     }
 
     @BeforeClass
     public static void ignore() {
         IntermittentFailure.thisTestIsFailingIntermittently("WFLY-10099");
-    }
-
-    @Test
-    @InSequence(-1)
-    public void setupCacheContainer() throws IOException {
-        NodeUtil.start(controller, TWO_NODES);
-
-        final ModelNode createEntityReplicatedCacheOp = new ModelNode();
-        createEntityReplicatedCacheOp.get(ADDRESS).set(CACHE_ADDRESS);
-        createEntityReplicatedCacheOp.get(OP).set(ADD);
-        createEntityReplicatedCacheOp.get("mode").set("sync");
-
-        client0 = createClient0();
-        client1 = createClient1();
-
-        final ModelNode result0 = client0.execute(createEntityReplicatedCacheOp);
-        Assert.assertTrue(result0.toJSONString(false), result0.get(OUTCOME).asString().equals(SUCCESS));
-
-        final ModelNode result1 = client1.execute(createEntityReplicatedCacheOp);
-        Assert.assertTrue(result1.toJSONString(false), result1.get(OUTCOME).asString().equals(SUCCESS));
-
-        NodeUtil.deploy(this.deployer, TWO_DEPLOYMENTS);
     }
 
     /**
@@ -146,7 +104,6 @@ public class ClusteredJPA2LCTestCase {
      * The two nodes don't actually have a shared database instance, but that doesn't matter for this test.
      */
     @Test
-    @InSequence
     public void testEntityCacheReplication(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
                                            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
             throws Exception {
@@ -185,38 +142,16 @@ public class ClusteredJPA2LCTestCase {
         Assert.assertEquals(204, status);
     }
 
-    @Test
-    @InSequence(Integer.MAX_VALUE)
-    public void tearDown() throws IOException {
-        final ModelNode removeOp = new ModelNode();
-        removeOp.get(ADDRESS).set(CACHE_ADDRESS);
-        removeOp.get(OP).set(REMOVE_OPERATION);
-        if (client0 != null) {
-            client0.execute(removeOp);
-            client0.close();
-        }
-        if (client1 != null) {
-            client1.execute(removeOp);
-            client1.close();
-        }
-        if (restClient != null) {
-            restClient.close();
-        }
-    }
-
-
     protected WebTarget getWebTarget(URL url) throws URISyntaxException {
         return restClient.target(url.toURI());
     }
 
-    protected static ModelControllerClient createClient0() {
-        return TestSuiteEnvironment.getModelControllerClient();
-    }
-
-    protected static ModelControllerClient createClient1() throws UnknownHostException {
-        return ModelControllerClient.Factory
-                .create(InetAddress.getByName(TestSuiteEnvironment.getServerAddressNode1()),
-                        TestSuiteEnvironment.getServerPort() + 100,
-                        Authentication.getCallbackHandler());
+    public static class ServerSetupTask extends CLIServerSetupTask {
+        public ServerSetupTask() {
+            this.builder.node(TWO_NODES)
+                    .setup("/subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated:add()")
+                    .teardown("/subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated:remove()")
+                    ;
+        }
     }
 }

@@ -615,8 +615,8 @@
                                         <exclude>org/jboss/as/test/clustering/cluster/web/authentication/*TestCase.java</exclude>
                                         <!-- TODO Needs layer exclude support to replace jpa with jpa-distributed;
                                              then we could provision a set of servers with that and run -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/jpa2lc/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/jpa2lcCustomRegion/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/jpa/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/jpa/custom/*TestCase.java</exclude>
                                         <!-- Runs against a non-HA standalone.xml, which isn't what this profile provisions.
                                              TODO provisioning and testing this may be something to do. -->
                                         <exclude>org/jboss/as/test/clustering/cluster/web/NonHaWebSessionPersistenceTestCase.java</exclude>
