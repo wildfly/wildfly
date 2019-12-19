@@ -22,51 +22,33 @@
 
 package org.jboss.as.test.clustering.cluster.jpa.custom;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.clustering.NodeUtil;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.api.Authentication;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.UnknownHostException;
-
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADDRESS;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
-import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_2;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.TWO_DEPLOYMENTS;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.TWO_NODES;
 
 /**
  * Test of clustered JPA 2nd level cache implemented by Infinispan using entity custom region.
@@ -106,15 +88,10 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.TW
  * </p>
  */
 @RunWith(Arquillian.class)
-public class ClusteredJPA2LCCustomRegionTestCase {
+@ServerSetup(ClusteredJPA2LCCustomRegionTestCase.ServerSetupTask.class)
+public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = ClusteredJPA2LCCustomRegionTestCase.class.getSimpleName();
-
-    @ArquillianResource
-    private ContainerController controller;
-
-    @ArquillianResource
-    private Deployer deployer;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -136,7 +113,7 @@ public class ClusteredJPA2LCCustomRegionTestCase {
         war.addAsWebInfResource(getWebXml(), "web.xml");
         war.setManifest(new StringAsset(
                 Descriptors.create(ManifestDescriptor.class)
-                        .attribute("Dependencies", "org.infinispan export,org.infinispan.commons export")
+                        .attribute("Dependencies", "org.infinispan, org.infinispan.commons")
                         .exportAsString()));
         return war;
     }
@@ -157,45 +134,17 @@ public class ClusteredJPA2LCCustomRegionTestCase {
                 + "</web-app>");
     }
 
-    // management connection to node0
-    private ModelControllerClient client0;
-
-    // management connection to node1
-    private ModelControllerClient client1;
-
     // REST client to control entity creation, caching, eviction,... on the servers
-    private Client restClient = ClientBuilder.newClient();
+    private Client restClient;
 
-    // /subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated
-    private static ModelNode CACHE_ADDRESS;
-
-    static {
-        CACHE_ADDRESS = new ModelNode();
-        CACHE_ADDRESS.get("subsystem").set("infinispan");
-        CACHE_ADDRESS.get("cache-container").set("hibernate");
-        CACHE_ADDRESS.get("replicated-cache").set("entity-replicated-template");
+    @Before
+    public void init() {
+        this.restClient = ClientBuilder.newClient();
     }
 
-    @Test
-    @InSequence(-1)
-    public void setupCacheContainer() throws IOException {
-        NodeUtil.start(controller, TWO_NODES);
-
-        final ModelNode createEntityReplicatedCacheOp = new ModelNode();
-        createEntityReplicatedCacheOp.get(ADDRESS).set(CACHE_ADDRESS);
-        createEntityReplicatedCacheOp.get(OP).set(ADD);
-        createEntityReplicatedCacheOp.get("mode").set("sync");
-
-        client0 = createClient0();
-        client1 = createClient1();
-
-        final ModelNode result0 = client0.execute(createEntityReplicatedCacheOp);
-        Assert.assertEquals(result0.toJSONString(false), result0.get(OUTCOME).asString(), SUCCESS);
-
-        final ModelNode result1 = client1.execute(createEntityReplicatedCacheOp);
-        Assert.assertEquals(result1.toJSONString(false), result1.get(OUTCOME).asString(), SUCCESS);
-
-        NodeUtil.deploy(this.deployer, TWO_DEPLOYMENTS);
+    @After
+    public void destroy() {
+        this.restClient.close();
     }
 
     /**
@@ -207,7 +156,6 @@ public class ClusteredJPA2LCCustomRegionTestCase {
      * The two nodes don't actually have a shared database instance, but that doesn't matter for this test.
      */
     @Test
-    @InSequence(1)
     public void testEntityInCustomCache(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
                                         @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
             throws Exception {
@@ -249,7 +197,6 @@ public class ClusteredJPA2LCCustomRegionTestCase {
      * The two nodes don't actually have a shared database instance, but that doesn't matter for this test.
      */
     @Test
-    @InSequence(1)
     public void testPropsInCustomCache(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
                                        @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
             throws Exception {
@@ -287,17 +234,17 @@ public class ClusteredJPA2LCCustomRegionTestCase {
         Assert.assertEquals(String.format("Cache '%s' should have attribute expiration.wakeUpInterval=9994", regionName), expirationWakeUpInterval.longValue(), 9994);
     }
 
-    private void createEntity(WebTarget node, String entityId) {
+    private static void createEntity(WebTarget node, String entityId) {
         int status = node.path("custom-region").path("create").path(entityId).request().get().getStatus();
         Assert.assertEquals(204, status);
     }
 
-    private void addEntityToCache(WebTarget node, String entityId) {
+    private static void addEntityToCache(WebTarget node, String entityId) {
         int status = node.path("custom-region").path("cache").path(entityId).request().get().getStatus();
         Assert.assertEquals(204, status);
     }
 
-    private String getRegionNameForEntity(WebTarget node, String entityId) {
+    private static String getRegionNameForEntity(WebTarget node, String entityId) {
         Response response = node.path("custom-region").path("region-name")
                 .queryParam("name", DummyEntityCustomRegion.DUMMY_ENTITY_REGION_NAME)
                 .queryParam("id", entityId)
@@ -307,80 +254,58 @@ public class ClusteredJPA2LCCustomRegionTestCase {
         return response.readEntity(String.class);
     }
 
-    private Boolean getCustomRegionCacheIsReplicated(WebTarget node, String regionName) {
+    private static Boolean getCustomRegionCacheIsReplicated(WebTarget node, String regionName) {
         Response response = node.path("custom-region").path("is-replicated").path(regionName).request().get();
         int status = response.getStatus();
         Assert.assertEquals(200, status);
         return (response.readEntity(Boolean.class));
     }
 
-    private Boolean getCustomRegionCacheIsInvalidation(WebTarget node, String regionName) {
+    private static Boolean getCustomRegionCacheIsInvalidation(WebTarget node, String regionName) {
         Response response = node.path("custom-region").path("is-invalidation").path(regionName).request().get();
         int status = response.getStatus();
         Assert.assertEquals(200, status);
         return (response.readEntity(Boolean.class));
     }
 
-    private Long getEvictionMaxEntries(WebTarget node, String cacheName) {
+    private static Long getEvictionMaxEntries(WebTarget node, String cacheName) {
         Response response = node.path("custom-region").path("eviction-max-entries").path(cacheName).request().get();
         int status = response.getStatus();
         Assert.assertEquals(200, status);
         return (response.readEntity(Long.class));
     }
 
-    private Long getExpirationLifespan(WebTarget node, String cacheName) {
+    private static Long getExpirationLifespan(WebTarget node, String cacheName) {
         Response response = node.path("custom-region").path("expiration-lifespan").path(cacheName).request().get();
         int status = response.getStatus();
         Assert.assertEquals(200, status);
         return (response.readEntity(Long.class));
     }
 
-    private Long getExpirationMaxIdle(WebTarget node, String cacheName) {
+    private static Long getExpirationMaxIdle(WebTarget node, String cacheName) {
         Response response = node.path("custom-region").path("expiration-max-idle").path(cacheName).request().get();
         int status = response.getStatus();
         Assert.assertEquals(200, status);
         return (response.readEntity(Long.class));
     }
 
-    private Long getExpirationWakeUpInterval(WebTarget node, String cacheName) {
+    private static Long getExpirationWakeUpInterval(WebTarget node, String cacheName) {
         Response response = node.path("custom-region").path("expiration-wake-up-interval").path(cacheName).request().get();
         int status = response.getStatus();
         Assert.assertEquals(200, status);
         return (response.readEntity(Long.class));
     }
 
-    @Test
-    @InSequence(Integer.MAX_VALUE)
-    public void tearDown() throws IOException {
-        final ModelNode removeOp = new ModelNode();
-        removeOp.get(ADDRESS).set(CACHE_ADDRESS);
-        removeOp.get(OP).set(REMOVE_OPERATION);
-        if (client0 != null) {
-            client0.execute(removeOp);
-            client0.close();
-        }
-        if (client1 != null) {
-            client1.execute(removeOp);
-            client1.close();
-        }
-        if (restClient != null) {
-            restClient.close();
-        }
-    }
-
-
     protected WebTarget getWebTarget(URL url) throws URISyntaxException {
         return restClient.target(url.toURI());
     }
 
-    protected static ModelControllerClient createClient0() {
-        return TestSuiteEnvironment.getModelControllerClient();
-    }
-
-    protected static ModelControllerClient createClient1() throws UnknownHostException {
-        return ModelControllerClient.Factory
-                .create(InetAddress.getByName(TestSuiteEnvironment.getServerAddressNode1()),
-                        TestSuiteEnvironment.getServerPort() + 100,
-                        Authentication.getCallbackHandler());
+    public static class ServerSetupTask extends CLIServerSetupTask {
+        public ServerSetupTask() {
+            this.builder.node(TWO_NODES)
+                    .setup("/subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated-template:add()")
+                    .teardown("/subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated-template:remove()")
+                    ;
+        }
     }
 }
