@@ -44,6 +44,7 @@ enum Attribute {
     CONTEXT_SERVICE(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE),
     PRIORITY(ManagedThreadFactoryResourceDefinition.PRIORITY),
     THREAD_FACTORY(ManagedExecutorServiceResourceDefinition.THREAD_FACTORY),
+    THREAD_PRIORITY(ManagedExecutorServiceResourceDefinition.THREAD_PRIORITY),
     HUNG_TASK_THRESHOLD(ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD),
     LONG_RUNNING_TASKS(ManagedExecutorServiceResourceDefinition.LONG_RUNNING_TASKS),
     CORE_THREADS(ManagedExecutorServiceResourceDefinition.CORE_THREADS),
