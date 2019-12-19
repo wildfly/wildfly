@@ -69,7 +69,7 @@ As an example it could be desirable to add a HTTP header `X-Help` which points u
 
 [source,options="nowrap"]
 ----
-/] /core-service=management/management-interface=http-interface: \
+[standalone@localhost:9990 /]  /core-service=management/management-interface=http-interface: \
     write-attribute(name=constant-headers, value=[{path="/", \
     headers=[{name="X-Help", value="wildfly.org"}]}])
 ----
