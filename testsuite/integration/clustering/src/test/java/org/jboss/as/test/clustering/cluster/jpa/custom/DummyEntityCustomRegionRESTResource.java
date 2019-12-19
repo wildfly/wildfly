@@ -52,7 +52,7 @@ public class DummyEntityCustomRegionRESTResource {
     @PersistenceContext(unitName = "MainPUCustomRegion")
     private EntityManager em;
 
-    @Resource(lookup = "java:jboss/infinispan/container/hibernate")
+    @Resource(name = "infinispan/hibernate")
     private CacheContainer container;
 
     @Inject
