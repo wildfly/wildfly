@@ -507,7 +507,7 @@
                                 <id>server-provisioning</id>
                                 <phase>none</phase>
                             </execution>
-                            <!-- Provision a cloud-server with web-clustering -->
+                            <!-- Provision a cloud-server with legacy https-->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
