@@ -23,6 +23,7 @@
 package org.wildfly.extension.microprofile.config.smallrye;
 
 import java.io.File;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import io.smallrye.config.FileSystemConfigSource;
@@ -30,7 +31,7 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
@@ -42,7 +43,7 @@ import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileC
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-class DirConfigSourceService implements Service<ConfigSource> {
+class DirConfigSourceService implements Service {
 
     private final String name;
     private final String path;
@@ -53,22 +54,23 @@ class DirConfigSourceService implements Service<ConfigSource> {
     private final int ordinal;
     private final Supplier<PathManager> pathManager;
 
-    private ConfigSource configSource;
+    private final Map<String, ConfigSource> sources;
 
-    DirConfigSourceService(String name, String path, String relativeTo, int ordinal, Supplier<PathManager> pathManager) {
+    DirConfigSourceService(String name, String path, String relativeTo, int ordinal, Supplier<PathManager> pathManager, Map<String, ConfigSource> sources) {
         this.name = name;
         this.path = path;
         this.relativeTo = relativeTo;
         this.ordinal = ordinal;
         this.pathManager = pathManager;
+        this.sources = sources;
     }
 
-    static void install(OperationContext context, String name, String path, String relativeTo, int ordinal) {
+    static void install(OperationContext context, String name, String path, String relativeTo, int ordinal, Map<String, ConfigSource> sources) {
         ServiceBuilder<?> builder = context.getServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE.append(name));
         Supplier<PathManager> pathManager = builder.requires(context.getCapabilityServiceName("org.wildfly.management.path-manager", PathManager.class));
 
-        builder.setInstance(new DirConfigSourceService(name, path, relativeTo, ordinal, pathManager))
+        builder.setInstance(new DirConfigSourceService(name, path, relativeTo, ordinal, pathManager, sources))
                 .install();
     }
 
@@ -78,16 +80,11 @@ class DirConfigSourceService implements Service<ConfigSource> {
         String dirPath = pathManager.get().resolveRelativePathEntry(path, relativeToPath);
         File dir = new File(dirPath);
         MicroProfileConfigLogger.ROOT_LOGGER.loadConfigSourceFromDir(dir.getAbsolutePath());
-        configSource = new FileSystemConfigSource(dir, ordinal);
+        this.sources.put(this.name, new FileSystemConfigSource(dir, ordinal));
     }
 
     @Override
     public void stop(StopContext stopContext) {
-        configSource = null;
-    }
-
-    @Override
-    public ConfigSource getValue() throws IllegalStateException, IllegalArgumentException {
-        return configSource;
+        this.sources.remove(this.name);
     }
 }

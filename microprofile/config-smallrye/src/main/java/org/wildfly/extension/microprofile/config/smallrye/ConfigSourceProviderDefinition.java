@@ -25,11 +25,11 @@ package org.wildfly.extension.microprofile.config.smallrye;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.wildfly.extension.microprofile.config.smallrye.ServiceNames.CONFIG_SOURCE_PROVIDER;
 import static org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger.ROOT_LOGGER;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -44,10 +44,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -69,7 +65,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { CLASS };
 
-    protected ConfigSourceProviderDefinition() {
+    protected ConfigSourceProviderDefinition(Map<String, ConfigSourceProvider> providers) {
         super(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH.getKey()),
                 new AbstractAddStepHandler(ATTRIBUTES) {
@@ -86,10 +82,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                         if (classModel.isDefined()) {
                             Class configSourceProviderClass = unwrapClass(classModel);
                             try {
-                                ConfigSourceProvider configSourceProvider = ConfigSourceProvider.class.cast(configSourceProviderClass.newInstance());
-                                ServiceName serviceName = CONFIG_SOURCE_PROVIDER.append(name);
-                                ServiceBuilder<?> builder = context.getServiceTarget().addService(serviceName);
-                                builder.setInstance(new ValueService<>(new ImmediateValue<>(configSourceProvider))).install();
+                                providers.put(name, ConfigSourceProvider.class.cast(configSourceProviderClass.newInstance()));
                             } catch (Exception e) {
                                 throw new OperationFailedException(e);
                             }
@@ -99,7 +92,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                     @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
                         String name = context.getCurrentAddressValue();
-                        context.removeService(ServiceNames.CONFIG_SOURCE_PROVIDER.append(name));
+                        providers.remove(name);
                     }
                 });
     }

@@ -22,7 +22,11 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
+import java.util.Collection;
+
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -47,6 +51,14 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ConfigProviderResolver.setInstance(new SmallRyeConfigProviderResolver());
     }
 
+    final Collection<ConfigSourceProvider> providers;
+    final Collection<ConfigSource> sources;
+
+    MicroProfileConfigSubsystemAdd(Collection<ConfigSourceProvider> providers, Collection<ConfigSource> sources) {
+        this.providers = providers;
+        this.sources = sources;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -56,10 +68,10 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
         MicroProfileConfigLogger.ROOT_LOGGER.activatingSubsystem();
 
         context.addStep(new AbstractDeploymentChainStep() {
+            @Override
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MICROPROFILE_CONFIG, new DependencyProcessor());
-                processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_MICROPROFILE_CONFIG, new SubsystemDeploymentProcessor());
-
+                processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_MICROPROFILE_CONFIG, new SubsystemDeploymentProcessor(MicroProfileConfigSubsystemAdd.this.providers, MicroProfileConfigSubsystemAdd.this.sources));
             }
         }, OperationContext.Stage.RUNTIME);
 

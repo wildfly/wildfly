@@ -26,7 +26,10 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -45,9 +48,9 @@ class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
                     .addRequirements(WELD_CAPABILITY_NAME)
                     .build();
 
-    protected MicroProfileSubsystemDefinition() {
+    protected MicroProfileSubsystemDefinition(Map<String, ConfigSourceProvider> providers, Map<String, ConfigSource> sources) {
         super(new SimpleResourceDefinition.Parameters(MicroProfileConfigExtension.SUBSYSTEM_PATH, MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.SUBSYSTEM_NAME))
-                .setAddHandler(new MicroProfileConfigSubsystemAdd())
+                .setAddHandler(new MicroProfileConfigSubsystemAdd(providers.values(), sources.values()))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(CONFIG_CAPABILITY)
         );
