@@ -46,6 +46,7 @@
 
     <modules>
         <module>config</module>
+        <module>fault-tolerance</module>
         <module>health</module>
         <module>metrics</module>
         <module>opentracing</module>
