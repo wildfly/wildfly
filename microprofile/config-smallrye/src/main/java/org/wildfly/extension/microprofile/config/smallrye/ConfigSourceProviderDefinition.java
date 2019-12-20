@@ -25,6 +25,7 @@ package org.wildfly.extension.microprofile.config.smallrye;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.wildfly.extension.microprofile.config.smallrye.ServiceNames.CONFIG_SOURCE_PROVIDER;
 import static org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger.ROOT_LOGGER;
 
 import java.util.Arrays;
@@ -43,6 +44,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -82,7 +87,9 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                             Class configSourceProviderClass = unwrapClass(classModel);
                             try {
                                 ConfigSourceProvider configSourceProvider = ConfigSourceProvider.class.cast(configSourceProviderClass.newInstance());
-                                ConfigSourceProviderService.install(context, name, configSourceProvider);
+                                ServiceName serviceName = CONFIG_SOURCE_PROVIDER.append(name);
+                                ServiceBuilder<?> builder = context.getServiceTarget().addService(serviceName);
+                                builder.setInstance(new ValueService<>(new ImmediateValue<>(configSourceProvider))).install();
                             } catch (Exception e) {
                                 throw new OperationFailedException(e);
                             }
