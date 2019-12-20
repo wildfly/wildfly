@@ -22,16 +22,18 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.SubsystemDeploymentProcessor;
+
+import io.smallrye.config.SmallRyeConfigProviderResolver;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -40,7 +42,9 @@ import org.wildfly.extension.microprofile.config.smallrye.deployment.SubsystemDe
  */
 class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    MicroProfileConfigSubsystemAdd() {
+    static {
+        // Set the static resolver reference eagerly
+        ConfigProviderResolver.setInstance(new SmallRyeConfigProviderResolver());
     }
 
     /**
@@ -50,13 +54,6 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
 
         MicroProfileConfigLogger.ROOT_LOGGER.activatingSubsystem();
-
-        ConfigProviderService.install(context);
-
-        // Add a void service other capabilities can use to ensure MP Config is ready
-        ServiceBuilder capSvc = context.getCapabilityServiceTarget().addCapability(MicroProfileSubsystemDefinition.CONFIG_CAPABILITY);
-        capSvc.requires(ServiceNames.CONFIG_PROVIDER);
-        capSvc.install();
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
