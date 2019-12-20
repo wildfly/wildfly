@@ -46,7 +46,6 @@ import org.wildfly.extension.microprofile.config.smallrye.ServiceNames;
 public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final AttachmentKey<Config> CONFIG = AttachmentKey.create(Config.class);
-    public static final AttachmentKey<ConfigProviderResolver> CONFIG_PROVIDER_RESOLVER = AttachmentKey.create(ConfigProviderResolver.class);
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
@@ -62,8 +61,7 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
         Config config = builder.build();
         deploymentUnit.putAttachment(CONFIG, config);
 
-        ConfigProviderResolver configProviderResolver = deploymentUnit.getAttachment(CONFIG_PROVIDER_RESOLVER);
-        configProviderResolver.registerConfig(config, module.getClassLoader());
+        ConfigProviderResolver.instance().registerConfig(config, module.getClassLoader());
     }
 
     private void addConfigSourcesFromServices(ConfigBuilder builder, ServiceRegistry serviceRegistry, ClassLoader classloader) {
@@ -86,8 +84,7 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit context) {
         Config config = context.getAttachment(CONFIG);
-        ConfigProviderResolver configProviderResolver = context.getAttachment(CONFIG_PROVIDER_RESOLVER);
 
-        configProviderResolver.releaseConfig(config);
+        ConfigProviderResolver.instance().releaseConfig(config);
     }
 }
