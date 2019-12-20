@@ -37,14 +37,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.shared.CLIServerSetupTask;
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -89,11 +87,6 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
     @After
     public void destroy() {
         this.restClient.close();
-    }
-
-    @BeforeClass
-    public static void ignore() {
-        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-10099");
     }
 
     /**
