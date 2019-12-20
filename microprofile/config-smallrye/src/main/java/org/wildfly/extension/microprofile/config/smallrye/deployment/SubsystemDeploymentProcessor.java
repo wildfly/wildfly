@@ -83,7 +83,7 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
-        Config config = context.getAttachment(CONFIG);
+        Config config = context.removeAttachment(CONFIG);
 
         ConfigProviderResolver.instance().releaseConfig(config);
     }
