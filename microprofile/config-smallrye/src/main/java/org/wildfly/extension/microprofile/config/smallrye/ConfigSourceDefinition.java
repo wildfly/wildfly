@@ -31,6 +31,7 @@ import static org.wildfly.extension.microprofile.config.smallrye._private.MicroP
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import io.smallrye.config.PropertiesConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -51,6 +52,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger;
 
 /**
@@ -121,13 +126,12 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                         ModelNode props = PROPERTIES.resolveModelAttribute(context, model);
                         ModelNode classModel = CLASS.resolveModelAttribute(context, model);
                         ModelNode dirModel = DIR.resolveModelAttribute(context, model);
-                        final ConfigSource configSource;
+                        ServiceTarget target = context.getServiceTarget();
                         if (classModel.isDefined()) {
                             Class configSourceClass = unwrapClass(classModel);
                             try {
-                                configSource = ConfigSource.class.cast(configSourceClass.newInstance());
                                 MicroProfileConfigLogger.ROOT_LOGGER.loadConfigSourceFromClass(configSourceClass);
-                                ConfigSourceService.install(context, name, configSource);
+                                install(target, name, ConfigSource.class.cast(configSourceClass.newInstance()));
                             } catch (Exception e) {
                                 throw new OperationFailedException(e);
                             }
@@ -137,8 +141,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                             DirConfigSourceService.install(context, name, path, relativeTo, ordinal);
                         } else {
                             Map<String, String> properties = PropertiesAttributeDefinition.unwrapModel(context, props);
-                            configSource = new PropertiesConfigSource(properties, name, ordinal);
-                            ConfigSourceService.install(context, name, configSource);
+                            install(target, name, new PropertiesConfigSource(properties, name, ordinal));
                         }
                     }
                 }, new AbstractRemoveStepHandler() {
@@ -148,6 +151,13 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                         context.removeService(ServiceNames.CONFIG_SOURCE.append(name));
                     }
                 });
+    }
+
+    static void install(ServiceTarget target, String name, ConfigSource source) {
+        ServiceName serviceName = ServiceNames.CONFIG_SOURCE.append(name);
+        ServiceBuilder<?> builder = target.addService(serviceName);
+        Consumer<ConfigSource> injector = builder.provides(serviceName);
+        builder.setInstance(Service.newInstance(injector, source)).install();
     }
 
     @Override
