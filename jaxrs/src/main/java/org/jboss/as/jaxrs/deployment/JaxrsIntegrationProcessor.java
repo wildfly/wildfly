@@ -37,6 +37,7 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -49,6 +50,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -58,6 +60,8 @@ import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -67,7 +71,11 @@ import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
 import org.jboss.as.jaxrs.Jackson2Annotations;
 import org.jboss.as.jaxrs.JacksonAnnotations;
+import org.jboss.as.jaxrs.JaxrsAttribute;
+import org.jboss.as.jaxrs.JaxrsConstants;
 import org.jboss.as.jaxrs.JaxrsExtension;
+import org.jboss.as.jaxrs.JaxrsServerConfig;
+import org.jboss.as.jaxrs.JaxrsServerConfigService;
 
 
 /**
@@ -96,6 +104,8 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final JBossWebMetaData webdata = warMetaData.getMergedJBossWebMetaData();
+
+        setConfigParameters(phaseContext, webdata);
 
         final ResteasyDeploymentData resteasy = deploymentUnit.getAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA);
 
@@ -448,7 +458,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
     public static void setContextParameter(JBossWebMetaData webdata, String name, String value) {
         ParamValueMetaData param = new ParamValueMetaData();
-        param.setParamName(name);
+        param.setParamName(name.replace("-", "."));
         param.setParamValue(value);
         List<ParamValueMetaData> params = webdata.getContextParams();
         if (params == null) {
@@ -458,5 +468,113 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         params.add(param);
     }
 
+    private void setConfigParameters(DeploymentPhaseContext phaseContext, JBossWebMetaData webdata) {
 
+        ServiceRegistry registry = phaseContext.getServiceRegistry();
+        ServiceName name = JaxrsServerConfigService.CONFIG_SERVICE;
+        @SuppressWarnings("deprecation")
+        JaxrsServerConfig config =(JaxrsServerConfig) registry.getRequiredService(name).getValue();
+
+        ModelNode modelNode;
+        if (isTransmittable(JaxrsAttribute.JAXRS_2_0_REQUEST_MATCHING, modelNode = config.isJaxrs20RequestMatching())) {
+            setContextParameter(webdata, JaxrsConstants.JAXRS_2_0_REQUEST_MATCHING, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_ADD_CHARSET, modelNode = config.isResteasyAddCharset())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_ADD_CHARSET, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_BUFFER_EXCEPTION_ENTITY, modelNode = config.isResteasyBufferExceptionEntity())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_BUFFER_EXCEPTION_ENTITY, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_DISABLE_HTML_SANITIZER, modelNode = config.isResteasyDisableHtmlSanitizer())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_DISABLE_HTML_SANITIZER, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_DISABLE_PROVIDERS, modelNode = config.getResteasyDisableProviders())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_DISABLE_PROVIDERS, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES, modelNode = config.isResteasyDocumentExpandEntityReferences())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS, modelNode = config.isResteasySecureDisableDTDs())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE, modelNode = config.isResteasyDocumentSecureProcessingFeature())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_GZIP_MAX_INPUT, modelNode = config.getResteasyGzipMaxInput())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_GZIP_MAX_INPUT, modelNode.asString());
+        }
+        if (isSubstantiveList(modelNode = config.getResteasyJndiResources())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_JNDI_RESOURCES, modelNode.asString());
+        }
+        if (isSubstantiveList(modelNode = config.getResteasyLanguageMappings())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_LANGUAGE_MAPPINGS, modelNode.asString());
+        }
+        if (isSubstantiveList(modelNode = config.getResteasyMediaTypeMappings())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_MEDIA_TYPE_MAPPINGS, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, modelNode = config.getResteasyMediaTypeParamMapping())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_PROVIDERS, modelNode = config.getResteasyProviders())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_PROVIDERS, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_RESOURCES, modelNode = config.getResteasyResources())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_RESOURCES, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS, modelNode = config.isResteasyRFC7232Preconditions())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_RFC7232_PRECONDITIONS, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_ROLE_BASED_SECURITY, modelNode = config.isResteasyRoleBasedSecurity())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_ROLE_BASED_SECURITY, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_SECURE_RANDOM_MAX_USE, modelNode = config.getResteasySecureRandomMaxUse())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_SECURE_RANDOM_MAX_USE, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS, modelNode = config.isResteasyUseBuiltinProviders())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_USE_BUILTIN_PROVIDERS, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_USE_CONTAINER_FORM_PARAMS, modelNode = config.isResteasyUseContainerFormParams())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_USE_CONTAINER_FORM_PARAMS, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING, modelNode = config.isResteasyWiderRequestMatching())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_WIDER_REQUEST_MATCHING, modelNode.asString());
+        }
+    }
+
+    /**
+     * Send value to RESTEasy only if it's not null, empty string, or the default value.
+     */
+    private boolean isTransmittable(SimpleAttributeDefinition attribute, ModelNode modelNode) {
+        System.out.println(this + ": attribute: " + attribute.getName());
+        System.out.println(this + ": modelNode: " + modelNode);
+
+        if (isEmpty(modelNode)) {
+            return false;
+        }
+        if (isEmpty(attribute.getDefaultValue())) {
+            return true;
+        }
+        String defaultValue = attribute.getDefaultValue().asString();
+        String value = modelNode.asString();
+        return !defaultValue.equals(value);
+    }
+
+    /**
+     * Equate null and "\s*"
+     */
+    private boolean isEmpty(ModelNode modelNode) {
+        return modelNode == null || modelNode.asString() == null || modelNode.asString().trim().equals("");
+    }
+
+    /**
+     * List attributes can be reset to white space, but RESTEasy's ConfigurationBootstrap doesn't handle
+     * empty maps appropriately at present.
+     */
+    private boolean isSubstantiveList(ModelNode modelNode) {
+        if (modelNode == null) {
+            return false;
+        }
+        String value = modelNode.asString();
+        return value != null && !"".equals(value.trim());
+    }
 }

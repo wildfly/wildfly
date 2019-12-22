@@ -2,5 +2,20 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.jaxrs</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
+   <subsystem xmlns="urn:jboss:domain:jaxrs:2.0">
+       <jaxrs-2-0-request-matching>false</jaxrs-2-0-request-matching>
+       <resteasy-add-charset>true</resteasy-add-charset>
+       <resteasy-buffer-exception-entity>true</resteasy-buffer-exception-entity>
+       <resteasy-disable-html-sanitizer>false</resteasy-disable-html-sanitizer>
+       <resteasy-document-expand-entity-references>false</resteasy-document-expand-entity-references>
+       <resteasy-document-secure-disableDTDs>true</resteasy-document-secure-disableDTDs>
+       <resteasy-document-secure-processing-feature>true</resteasy-document-secure-processing-feature>
+       <resteasy-gzip-max-input>10000000</resteasy-gzip-max-input>
+       <resteasy-rfc7232preconditions>false</resteasy-rfc7232preconditions>
+       <resteasy-role-based-security>false</resteasy-role-based-security>
+       <resteasy-secure-random-max-use>100</resteasy-secure-random-max-use>
+       <resteasy-use-builtin-providers>true</resteasy-use-builtin-providers>
+       <resteasy-use-container-form-params>false</resteasy-use-container-form-params>              
+       <resteasy-wider-request-matching>false</resteasy-wider-request-matching>
+   </subsystem>
 </config>

@@ -6,7 +6,6 @@ element in the configuration
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
 <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
 <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
 <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
@@ -17,8 +16,6 @@ The presence of each of these turns on a piece of functionality:
 [cols=",",options="header"]
 |=======================================================================
 |Name |Description
-
-|jaxrs |Enables the deployment and functionality of JAX-RS applications
 
 |jdr |Enables the gathering of diagnostic data for use in remote
 analysis of error conditions. Although the data is in a simple format
