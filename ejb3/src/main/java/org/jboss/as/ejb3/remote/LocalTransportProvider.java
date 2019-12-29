@@ -64,6 +64,10 @@ public class LocalTransportProvider implements EJBTransportProvider, Service<Loc
     public void stop(StopContext stopContext) {
     }
 
+    @Override
+    public void close(EJBReceiverContext receiverContext) throws Exception {
+    }
+
     public boolean supportsProtocol(final String uriScheme) {
         switch (uriScheme) {
             case "local": {
