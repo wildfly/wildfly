@@ -53,7 +53,7 @@
 	the schema using the xsi:schemaLocation attribute for the
 	Java EE namespace with the following location:
 
-	http://www.jboss.org/j2ee/schema/jboss-app_7_0.xsd
+	https://www.jboss.org/j2ee/schema/jboss-app_7_0.xsd
 
 	]]>
         </xs:documentation>
