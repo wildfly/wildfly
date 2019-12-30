@@ -169,7 +169,7 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.enterprise.concurrent</artifactId>
+            <artifactId>jakarta.enterprise.concurrent</artifactId>
             <scope>provided</scope>
         </dependency>
 
