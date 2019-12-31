@@ -60,6 +60,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.universe</groupId>
+            <artifactId>community-universe</artifactId>
+            <version>${version.org.jboss.universe.community-universe}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.universe.producer</groupId>
+            <artifactId>wildfly-producers</artifactId>
+            <version>${version.org.jboss.universe.producer.wildfly-producers}</version>
+        </dependency>
     </dependencies>
 
     <build>
