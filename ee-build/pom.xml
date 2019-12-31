@@ -39,7 +39,7 @@
 
     <artifactId>wildfly-build</artifactId>
 
-    <name>WildFly: Build</name>
+    <name>WildFly: EE Full Thin Server Build</name>
     <packaging>pom</packaging>
 
     <dependencies>

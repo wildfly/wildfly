@@ -54,7 +54,6 @@
         <module>appclient</module>
         <module>batch-jberet</module>
         <module>bean-validation</module>
-        <module>build</module>
         <module>build-legacy</module>
         <module>client/properties</module>
         <module>client/shade</module>
@@ -62,13 +61,14 @@
         <module>component-matrix-builder</module>
         <module>connector</module>
         <module>datasources-agroal</module>
-        <module>dist</module>
         <module>dist-legacy</module>
         <module>ee</module>
+        <module>ee-build</module>
+        <module>ee-dist</module>
+        <module>ee-galleon-pack</module>
         <module>ee-security</module>
         <module>ejb3</module>
         <module>feature-pack</module>
-        <module>galleon-pack</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -169,7 +169,7 @@
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
         <server.output.dir.version>${project.version}</server.output.dir.version>
-        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.build.output.dir>ee-build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
         <!-- Protocol to use for communication with remote maven repositories.
