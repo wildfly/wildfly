@@ -86,109 +86,29 @@
                             <bomDescription>This artifact provides a bill of materials (BOM) for remoting based EJB usage. Importing this bom into your project will give you the maven artifacts you need to perform remote EJB calls.</bomDescription>
                             <bomWithDependencies>true</bomWithDependencies>
                             <licenses>true</licenses>
-                            <inheritExclusions>ALL</inheritExclusions>
+                            <inheritExclusions>UNMANAGED</inheritExclusions>
                             <includeDependencies>
+                                <!-- ejb client, the main artifact -->
                                 <dependency>
                                     <groupId>org.jboss</groupId>
                                     <artifactId>jboss-ejb-client</artifactId>
                                 </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.ejb3</groupId>
-                                    <artifactId>jboss-ejb3-ext-api</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.logging</groupId>
-                                    <artifactId>jboss-logging</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.marshalling</groupId>
-                                    <artifactId>jboss-marshalling</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.marshalling</groupId>
-                                    <artifactId>jboss-marshalling-river</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.remoting</groupId>
-                                    <artifactId>jboss-remoting</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.transaction</groupId>
-                                    <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.ejb</groupId>
-                                    <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.threads</groupId>
-                                    <artifactId>jboss-threads</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.xnio</groupId>
-                                    <artifactId>xnio-api</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.xnio</groupId>
-                                    <artifactId>xnio-nio</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.wildfly</groupId>
-                                    <artifactId>wildfly-naming-client</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.wildfly.common</groupId>
-                                    <artifactId>wildfly-common</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.wildfly.security</groupId>
-                                    <artifactId>wildfly-elytron</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.wildfly.discovery</groupId>
-                                    <artifactId>wildfly-discovery-client</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.wildfly.transaction</groupId>
-                                    <artifactId>wildfly-transaction-client</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.wildfly.client</groupId>
-                                    <artifactId>wildfly-client-config</artifactId>
-                                </dependency>
+                                <!-- needed by ejb-client transitive's transaction-client -->
                                 <dependency>
                                     <groupId>org.jboss.spec.javax.resource</groupId>
                                     <artifactId>jboss-connector-api_1.7_spec</artifactId>
                                 </dependency>
+                                <!-- http ejb client, extension of main artifact -->
                                 <dependency>
                                     <groupId>org.wildfly.wildfly-http-client</groupId>
                                     <artifactId>wildfly-http-ejb-client</artifactId>
                                 </dependency>
+                                <!-- TODO review removal, artifact for server side ejb apps and already included by jakartaee8 BOM -->
                                 <dependency>
-                                    <groupId>org.wildfly.wildfly-http-client</groupId>
-                                    <artifactId>wildfly-http-client-common</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.wildfly.wildfly-http-client</groupId>
-                                    <artifactId>wildfly-http-naming-client</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.wildfly.wildfly-http-client</groupId>
-                                    <artifactId>wildfly-http-transaction-client</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>io.undertow</groupId>
-                                    <artifactId>undertow-core</artifactId>
+                                    <groupId>org.jboss.ejb3</groupId>
+                                    <artifactId>jboss-ejb3-ext-api</artifactId>
                                 </dependency>
                             </includeDependencies>
-                            <addExclusions>
-                                <exclusion>
-                                    <dependencyGroupId>org.wildfly.discovery</dependencyGroupId>
-                                    <dependencyArtifactId>wildfly-discovery-client</dependencyArtifactId>
-                                    <exclusionGroupId>*</exclusionGroupId>
-                                    <exclusionArtifactId>*</exclusionArtifactId>
-                                </exclusion>
-                            </addExclusions>
                         </configuration>
                     </execution>
                 </executions>
