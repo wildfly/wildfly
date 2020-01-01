@@ -92,7 +92,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
           return properties;
       }
 
-    public static void testRuntime(KernelServices mainServices, final String virtualHostName, int flag) throws Exception {
+    public static void testRuntime(KernelServices mainServices, final String virtualHostName, int schemaVersion) throws Exception {
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
@@ -110,7 +110,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         HttpHandler headerHandler = headersService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
 
-        if (flag > 0) {
+        if (schemaVersion >= 3) {
             ServiceController modClusterServiceServiceController = mainServices.getContainer()
                     .getService(UndertowService.FILTER.append("mod-cluster"));
             modClusterServiceServiceController.setMode(ServiceController.Mode.ACTIVE);
@@ -122,12 +122,35 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             Assert.assertNotNull("handler should have been created", modClusterHandler);
         }
 
+
+        final ServiceName undertowServiceName = UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName();
+        ServiceController<UndertowService> undertowServiceService = (ServiceController<UndertowService>) mainServices.getContainer().getService(undertowServiceName);
+        Assert.assertNotNull(undertowServiceService);
+        undertowServiceService.setMode(ServiceController.Mode.ACTIVE);
+        final UndertowService undertowService = undertowServiceService.getValue();
+        Assert.assertEquals("some-id", undertowService.getInstanceId());
+        if (schemaVersion > 1)
+            Assert.assertTrue(undertowService.isStatisticsEnabled());
+        else
+            Assert.assertFalse(undertowService.isStatisticsEnabled());
+        if (schemaVersion > 1)
+            Assert.assertEquals("some-server", undertowService.getDefaultServer());
+        Assert.assertEquals("myContainer", undertowService.getDefaultContainer());
+        Assert.assertEquals("default-virtual-host", undertowService.getDefaultVirtualHost());
+        Assert.assertEquals(1, undertowService.getServers().size());
+        final Server server = undertowService.getServers().iterator().next();
+        Assert.assertEquals("other-host", server.getDefaultHost());
+        Assert.assertEquals(2, server.getHosts().size());
+        if (schemaVersion > 1)
+            Assert.assertEquals("some-server", server.getName());
+
+
         final ServiceName hostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(virtualHostName, "other-host");
         ServiceController hostSC = mainServices.getContainer().getService(hostServiceName);
         Assert.assertNotNull(hostSC);
         hostSC.setMode(ServiceController.Mode.ACTIVE);
         Host host = (Host) awaitServiceValue(hostSC);
-        if (flag == 1) {
+        if (schemaVersion >=3) {
             Assert.assertEquals(3, host.getAllAliases().size());
             Assert.assertEquals("default-alias", new ArrayList<>(host.getAllAliases()).get(1));
         }
