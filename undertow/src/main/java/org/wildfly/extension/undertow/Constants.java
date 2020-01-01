@@ -46,6 +46,7 @@ public interface Constants {
     String HTTP_INVOKER = "http-invoker";
     String LISTENER = "listener";
     String INSTANCE_ID = "instance-id";
+    String OBFUSCATE_SESSION_ROUTE = "obfuscate-session-route";
     String NAME = "name";
     String WORKER = "worker";
     String SERVLET_CONTAINER = "servlet-container";

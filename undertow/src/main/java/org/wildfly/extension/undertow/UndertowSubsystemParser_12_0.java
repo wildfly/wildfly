@@ -63,6 +63,7 @@ public class UndertowSubsystemParser_12_0 extends PersistentResourceXMLParser {
                         UndertowRootDefinition.DEFAULT_VIRTUAL_HOST,
                         UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER,
                         UndertowRootDefinition.INSTANCE_ID,
+                        UndertowRootDefinition.OBFUSCATE_SESSION_ROUTE,
                         UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN,
                         UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(

@@ -48,6 +48,10 @@ for most use cases and provides reasonable performance settings.
 |default-virtual-host | the default virtual host to use for deployments
 |default-servlet-container | the default servlet container to use for deployments
 |instance-id | the id of Undertow. Defaults to "${jboss.node.name}" if undefined
+|obfuscate-session-route | set this to true to indicate the instance-id and server
+name should be both obfuscated in routing. This prevents instance-id and server
+name data from being sent across HTTP connections when serving remote requests with
+the HTTP invoker
 |default-security-domain |the default security domain used by web deployments
 |statistics-enabled | set this to true to enable statistics gathering for Undertow subsystem
 |=======================================================================

@@ -49,6 +49,7 @@
         <xs:attribute name="default-virtual-host" type="xs:string" default="default-host"/>
         <xs:attribute name="default-servlet-container" type="xs:string" default="default"/>
         <xs:attribute name="instance-id" type="xs:string" use="optional"/>
+        <xs:attribute name="obfuscate-session-route" type="xs:boolean" use="optional"/>
         <xs:attribute name="default-security-domain" type="xs:string" use="optional" default="other"/>
         <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
           <xs:annotation>

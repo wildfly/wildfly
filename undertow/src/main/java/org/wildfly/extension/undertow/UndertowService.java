@@ -84,14 +84,16 @@ public class UndertowService implements Service<UndertowService> {
     private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
     private final List<UndertowEventListener> listeners = Collections.synchronizedList(new LinkedList<UndertowEventListener>());
     private final String instanceId;
+    private final boolean obfuscateSessionRoute;
     private volatile boolean statisticsEnabled;
     private final Set<Consumer<Boolean>> statisticsChangeListenters = new HashSet<>();
 
-    protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, boolean statisticsEnabled) {
+    protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, boolean obfuscateSessionRoute, boolean statisticsEnabled) {
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
         this.defaultVirtualHost = defaultVirtualHost;
         this.instanceId = instanceId;
+        this.obfuscateSessionRoute = obfuscateSessionRoute;
         this.statisticsEnabled = statisticsEnabled;
     }
 
@@ -246,6 +248,10 @@ public class UndertowService implements Service<UndertowService> {
 
     public String getInstanceId() {
         return instanceId;
+    }
+
+    public boolean isObfuscateSessionRoute() {
+        return obfuscateSessionRoute;
     }
 
     public boolean isStatisticsEnabled() {

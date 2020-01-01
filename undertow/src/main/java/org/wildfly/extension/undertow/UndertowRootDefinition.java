@@ -88,6 +88,12 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode().set(new ValueExpression("${jboss.node.name}")))
                     .build();
+    protected static final SimpleAttributeDefinition OBFUSCATE_SESSION_ROUTE =
+            new SimpleAttributeDefinitionBuilder(Constants.OBFUSCATE_SESSION_ROUTE, ModelType.BOOLEAN, true)
+                    .setRestartAllServices()
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.FALSE)
+                    .build();
     protected static final SimpleAttributeDefinition STATISTICS_ENABLED =
             new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
                     .setRestartAllServices()
@@ -104,7 +110,8 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
 
 
     static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
-    static final AttributeDefinition[] ATTRIBUTES = { DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN };
+    static final AttributeDefinition[] ATTRIBUTES = { DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID,
+            OBFUSCATE_SESSION_ROUTE, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN };
     static final PersistentResourceDefinition[] CHILDREN = {
             ByteBufferPoolDefinition.INSTANCE,
             BufferCacheDefinition.INSTANCE,

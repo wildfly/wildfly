@@ -80,6 +80,7 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
         }
         final ServiceName undertowServiceName = UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName();
         ServiceController<UndertowService> undertowServiceService = (ServiceController<UndertowService>) mainServices.getContainer().getService(undertowServiceName);
+
         assertNotNull(undertowServiceService);
         undertowServiceService.setMode(ServiceController.Mode.ACTIVE);
         final UndertowService undertowService = undertowServiceService.getValue();
@@ -91,6 +92,7 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
     public void testUndefinedAttributes() throws Exception {
         final UndertowService undertowService = load("undertow-service-undefined-attributes.xml");
         assertEquals(NODE_NAME, undertowService.getInstanceId());
+        assertFalse(undertowService.isObfuscateSessionRoute());
         assertFalse(undertowService.isStatisticsEnabled());
         assertEquals(DEFAULT_SERVER, undertowService.getDefaultServer());
         assertEquals(DEFAULT_SERVLET_CONTAINER, undertowService.getDefaultContainer());
@@ -98,9 +100,21 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
     }
 
     @Test
-    public void testDefinedDefaultAttributes() throws Exception {
-        final UndertowService undertowService = load("undertow-service-defined-default-attributes.xml");
+    public void testDefinedDefaultAttributes1() throws Exception {
+        final UndertowService undertowService = load("undertow-service-defined-default-attributes1.xml");
         assertEquals(NODE_NAME, undertowService.getInstanceId());
+        assertFalse(undertowService.isObfuscateSessionRoute());
+        assertFalse(undertowService.isStatisticsEnabled());
+        assertEquals(DEFAULT_SERVER, undertowService.getDefaultServer());
+        assertEquals(DEFAULT_SERVLET_CONTAINER, undertowService.getDefaultContainer());
+        assertEquals(DEFAULT_VIRTUAL_HOST, undertowService.getDefaultVirtualHost());
+    }
+
+    @Test
+    public void testDefinedDefaultAttributes2() throws Exception {
+        final UndertowService undertowService = load("undertow-service-defined-default-attributes2.xml");
+        assertEquals(NODE_NAME, undertowService.getInstanceId());
+        assertFalse(undertowService.isObfuscateSessionRoute());
         assertFalse(undertowService.isStatisticsEnabled());
         assertEquals(DEFAULT_SERVER, undertowService.getDefaultServer());
         assertEquals(DEFAULT_SERVLET_CONTAINER, undertowService.getDefaultContainer());
@@ -111,9 +125,33 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
     public void testDefinedAttributes() throws Exception {
         final UndertowService undertowService = load("undertow-service-defined-attributes.xml");
         assertEquals(NODE_NAME + "-undertow", undertowService.getInstanceId());
+        assertFalse(undertowService.isObfuscateSessionRoute());
         assertTrue(undertowService.isStatisticsEnabled());
         assertEquals("undertow-server", undertowService.getDefaultServer());
         assertEquals("servlet-container", undertowService.getDefaultContainer());
         assertEquals("virtual-host", undertowService.getDefaultVirtualHost());
+    }
+
+    @Test
+    public void testObfuscateInstanceId1() throws Exception {
+        final UndertowService undertowService = load("undertow-service-obfuscate-instance-id-attribute1.xml");
+        //assertEquals(new String(Base64.getUrlEncoder().encode(NODE_NAME.getBytes())), undertowService.getInstanceId());
+        assertEquals(NODE_NAME, undertowService.getInstanceId());
+        assertTrue(undertowService.isObfuscateSessionRoute());
+        assertFalse(undertowService.isStatisticsEnabled());
+        assertEquals("undertow-server", undertowService.getDefaultServer());
+        assertEquals(DEFAULT_SERVLET_CONTAINER, undertowService.getDefaultContainer());
+        assertEquals("virtual-host3", undertowService.getDefaultVirtualHost());
+    }
+
+    @Test
+    public void testObfuscateInstanceId2() throws Exception {
+        final UndertowService undertowService = load("undertow-service-obfuscate-instance-id-attribute2.xml");
+        assertEquals("my-undertow-instance", undertowService.getInstanceId());
+        assertTrue(undertowService.isObfuscateSessionRoute());
+        assertFalse(undertowService.isStatisticsEnabled());
+        assertEquals("undertow-server", undertowService.getDefaultServer());
+        assertEquals(DEFAULT_SERVLET_CONTAINER, undertowService.getDefaultContainer());
+        assertEquals("virtual-host3", undertowService.getDefaultVirtualHost());
     }
 }

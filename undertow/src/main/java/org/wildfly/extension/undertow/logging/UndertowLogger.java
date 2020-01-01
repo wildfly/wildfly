@@ -29,6 +29,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -423,4 +424,12 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id=105, value = "Host and context path are occupied, %s can't be registered. Message was: %s")
     DuplicateServiceException duplicateHostContextDeployments(ServiceName deploymentInfoServiceName, String errorMessage);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 106, value = "Unable to generate obfuscated session route from '%s'")
+    void unableToObfuscateSessionRoute(String route, @Cause NoSuchAlgorithmException e);
+
+    @LogMessage(level = INFO)
+    @Message(id = 107, value = "Generated obfuscated session route '%s' from '%s'")
+    void obfuscatedSessionRoute(String obfuscatedRoute, String route);
 }
