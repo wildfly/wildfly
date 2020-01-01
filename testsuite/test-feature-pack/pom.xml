@@ -78,7 +78,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-galleon-pack</artifactId>
+            <artifactId>wildfly-ee-galleon-pack</artifactId>
             <type>pom</type>
             <exclusions>
                 <exclusion>

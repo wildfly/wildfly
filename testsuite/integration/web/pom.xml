@@ -238,7 +238,7 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
                                             <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -279,7 +279,7 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
                                             <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -321,7 +321,7 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
                                             <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -363,7 +363,7 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
                                             <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -400,7 +400,7 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
                                             <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
