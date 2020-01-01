@@ -24,10 +24,8 @@ for most use cases and provides reasonable performance settings.
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:undertow:1.0">
-        <buffer-caches>
-            <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
-        </buffer-caches>
+<subsystem xmlns="urn:jboss:domain:undertow:11.0">
+        <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
         <server name="default-server">
             <http-listener name="default" socket-binding="http" />
             <host name="default-host" alias="localhost">
