@@ -54,6 +54,7 @@
         <module>appclient</module>
         <module>batch-jberet</module>
         <module>bean-validation</module>
+        <module>build</module>
         <module>build-legacy</module>
         <module>client/properties</module>
         <module>client/shade</module>
@@ -61,6 +62,7 @@
         <module>component-matrix-builder</module>
         <module>connector</module>
         <module>datasources-agroal</module>
+        <module>dist</module>
         <module>dist-legacy</module>
         <module>ee</module>
         <module>ee-build</module>
@@ -69,6 +71,7 @@
         <module>ee-security</module>
         <module>ejb3</module>
         <module>feature-pack</module>
+        <module>galleon-pack</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -833,6 +836,34 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-ee</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-ee-build</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-ee-dist</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-ee-galleon-pack</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-ee-galleon-pack</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
             </dependency>
 
             <dependency>

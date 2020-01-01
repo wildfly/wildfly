@@ -37,9 +37,9 @@
         <version>19.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-galleon-pack</artifactId>
+    <artifactId>wildfly-ee-galleon-pack</artifactId>
 
-    <name>WildFly: Full Galleon Pack</name>
+    <name>WildFly: EE Full Galleon Pack</name>
     <packaging>pom</packaging>
 
     <properties>

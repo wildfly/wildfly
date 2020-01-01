@@ -37,19 +37,19 @@
         <version>19.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ee-dist</artifactId>
-    <name>WildFly: EE Full Distribution</name>
+    <artifactId>wildfly-dist</artifactId>
+    <name>WildFly: Distribution</name>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <artifactId>wildfly-galleon-pack</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <artifactId>wildfly-galleon-pack</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -93,12 +93,18 @@
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
+                                    <transitive>true</transitive>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-ee-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
                                     </included-packages>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
                                 </feature-pack>
                             </feature-packs>
                         </configuration>
@@ -192,7 +198,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <fpGroupId>${project.groupId}</fpGroupId>
-                                    <fpArtifactId>wildfly-ee-galleon-pack</fpArtifactId>
+                                    <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
                                     <fpVersion>${project.version}</fpVersion>
                                 </configuration>
                             </execution>
