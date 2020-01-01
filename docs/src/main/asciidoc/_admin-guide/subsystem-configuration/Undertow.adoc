@@ -41,6 +41,17 @@ for most use cases and provides reasonable performance settings.
         </handlers>
     </subsystem>
 ----
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+|default-server | the default server to use for deployments
+|default-virtual-host | the default virtual host to use for deployments
+|default-servlet-container | the default servlet container to use for deployments
+|instance-id | the id of Undertow. Defaults to "${jboss.node.name}"
+|default-security-domain |the default security domain used by web deployments
+|statistics-enabled | set this to true to enable statistics gathering for Undertow subsystem
+|=======================================================================
+
 
 *Dependencies on other subsystems:*
 
