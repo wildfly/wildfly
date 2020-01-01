@@ -26,25 +26,38 @@ import java.io.IOException;
 
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+
 import org.junit.Test;
 
-public class UndertowSubsystem100TestCase extends AbstractUndertowSubsystemTestCase {
+/**
+ * Test for UndertowSubsystem with subsystem schema version 11.0.
+ *
+ * @author Flavia Rainone
+ */
+public class UndertowSubsystem110TestCase extends AbstractUndertowSubsystemTestCase {
 
     private final String virtualHostName = "some-server";
+    private final int flag = 1;
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-10.0.xml");
+        return readResource("undertow-11.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_10_0.xsd";
+        return "schema/wildfly-undertow_11_0.xsd";
     }
 
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    protected String[] getSubsystemTemplatePaths() {
+        return new String[] { "/subsystem-templates/undertow.xml" };
+    }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     @Test
