@@ -132,6 +132,11 @@
         <copy todir="target/jbossas-messaging-ha-server2">
             <fileset dir="target/wildfly"/>
         </copy>
+
+        <echo message="Copying and configuring instance jbossas-disable-assertions"/>
+        <copy todir="target/jbossas-disable-assertions">
+            <fileset dir="target/wildfly"/>
+        </copy>
     </target>
 
 </project>
