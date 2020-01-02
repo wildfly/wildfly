@@ -29,9 +29,11 @@ import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+
 
 /**
  * Root subsystem definition for the MicroProfile JWT subsystem using SmallRye JWT.
@@ -50,7 +52,7 @@ class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
     protected MicroProfileSubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(MicroProfileJWTExtension.SUBSYSTEM_PATH, MicroProfileJWTExtension.getResourceDescriptionResolver(MicroProfileJWTExtension.SUBSYSTEM_NAME))
                 .setAddHandler(new MicroProfileJWTSubsystemAdd())
-                .setRemoveHandler(new MicroProfileJWTSubsystemRemove())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(CONFIG_CAPABILITY)
         );
     }
