@@ -134,6 +134,8 @@
         <!-- Other release identification information that drives how the built server identifies itself -->
         <full.dist.product.release.name>WildFly Full</full.dist.product.release.name>
         <full.dist.product.slot>wildfly-full</full.dist.product.slot>
+        <ee.dist.product.release.name>WildFly EE</ee.dist.product.release.name>
+        <ee.dist.product.slot>wildfly-ee</ee.dist.product.slot>
         <servlet.dist.product.release.name>WildFly Servlet</servlet.dist.product.release.name>
         <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
         <product.release.version>${project.version}</product.release.version>
