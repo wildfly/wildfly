@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.eviction.ActivationManager;
+import org.infinispan.eviction.impl.ActivationManager;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;

@@ -23,8 +23,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.infinispan.eviction.ActivationManager;
-import org.infinispan.eviction.PassivationManager;
+import org.infinispan.eviction.impl.ActivationManager;
+import org.infinispan.eviction.impl.PassivationManager;
 import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
 import org.infinispan.interceptors.impl.InvalidationInterceptor;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;

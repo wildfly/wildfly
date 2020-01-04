@@ -142,8 +142,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
         builder.globalJmxStatistics()
                 .mBeanServerLookup(new MBeanServerProvider((this.server != null) ? this.server.get() : null))
-                .jmxDomain("org.wildfly.clustering.infinispan")
-                .allowDuplicateDomains(true);
+                .jmxDomain("org.wildfly.clustering.infinispan");
 
         builder.site().read(this.site.get());
 
