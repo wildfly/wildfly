@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
+import org.infinispan.commons.executors.NonBlockingThreadFactory;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
@@ -37,7 +38,9 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
+ * Configures a service providing a {@link ThreadPoolConfiguration}.
  * @author Radoslav Husar
+ * @author Paul Ferraro
  */
 public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigurator<ThreadPoolConfiguration> {
 
@@ -55,11 +58,12 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
                 this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt(),
                 this.definition.getMinThreads().resolveModelAttribute(context, model).asInt(),
                 this.definition.getQueueLength().resolveModelAttribute(context, model).asInt(),
-                this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong()
+                this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong(),
+                this.definition.isNonBlocking()
         ) {
             @Override
             public ExecutorService createExecutor(ThreadFactory factory) {
-                return super.createExecutor(new DefaultThreadFactory(factory));
+                return super.createExecutor(this.createsNonBlockingThreads() ? new DefaultNonBlockingThreadFactory(factory) : new DefaultThreadFactory(factory));
             }
         };
         this.builder.threadPoolFactory(factory);
@@ -70,6 +74,13 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
     @Override
     public ThreadPoolConfiguration get() {
         return this.builder.create();
+    }
+
+    private static class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingThreadFactory {
+
+        DefaultNonBlockingThreadFactory(ThreadFactory factory) {
+            super(factory);
+        }
     }
 }
 

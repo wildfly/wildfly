@@ -27,6 +27,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.security.auth.Subject;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -132,6 +134,11 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public EmbeddedCacheManagerAdmin withFlags(EnumSet<AdminFlag> flags) {
+        return this;
+    }
+
+    @Override
+    public EmbeddedCacheManagerAdmin withSubject(Subject subject) {
         return this;
     }
 

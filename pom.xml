@@ -293,7 +293,7 @@
         <version.io.opentracing.jaxrs2>0.4.1</version.io.opentracing.jaxrs2>
         <version.io.opentracing.tracerresolver>0.1.5</version.io.opentracing.tracerresolver>
         <version.io.opentracing.servlet>0.2.3</version.io.opentracing.servlet>
-        <version.io.reactivex.rxjava>2.2.9</version.io.reactivex.rxjava>
+        <version.io.reactivex.rxjava>2.2.12</version.io.reactivex.rxjava>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <version.io.smallrye.smallrye-config>1.6.2</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>4.2.0</version.io.smallrye.smallrye-fault-tolerance>
@@ -364,8 +364,8 @@
         <version.org.hibernate.search>5.10.7.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.20.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>10.0.1.Final</version.org.infinispan>
-        <version.org.infinispan.protostream>4.3.0.Final</version.org.infinispan.protostream>
+        <version.org.infinispan>10.1.0.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>4.3.1.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
         <version.org.jberet>1.3.6.Final</version.org.jberet>

@@ -32,4 +32,6 @@ public interface ThreadPoolDefinition extends ScheduledThreadPoolDefinition {
     Attribute getMinThreads();
 
     Attribute getQueueLength();
+
+    boolean isNonBlocking();
 }

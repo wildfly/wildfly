@@ -171,6 +171,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                     .enabled(this.statisticsEnabled)
                     .jmxDomain("org.wildfly.clustering.infinispan")
                     .jmxEnabled(server != null)
+                    .jmxName(this.getServiceName().getSimpleName())
                     .mBeanServerLookup(new MBeanServerProvider(server))
                 .tcpNoDelay(this.tcpNoDelay)
                 .tcpKeepAlive(this.tcpKeepAlive)
