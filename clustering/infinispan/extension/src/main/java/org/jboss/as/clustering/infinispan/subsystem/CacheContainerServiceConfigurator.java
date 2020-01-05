@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.ALIASES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONTAINER;
 
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -110,7 +112,23 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         String defaultCacheName = config.defaultCacheName().orElse(null);
         // We need to create a dummy default configuration if cache has a default cache
         Configuration defaultConfiguration = (defaultCacheName != null) ? new ConfigurationBuilder().build() : null;
-        EmbeddedCacheManager manager = new DefaultCacheManager(config, defaultConfiguration, false);
+        EmbeddedCacheManager manager = new DefaultCacheManager(config, defaultConfiguration, false) {
+            @Override
+            public <K, V> Cache<K, V> internalGetCache(String cacheName, String configurationName) {
+                // Workaround for ISPN-11121
+                PrivilegedAction<Cache<K, V>> action = new PrivilegedAction<Cache<K, V>>() {
+                    @Override
+                    public Cache<K, V> run() {
+                        return privilegedGetCache(cacheName, configurationName);
+                    }
+                };
+                return WildFlySecurityManager.doUnchecked(action);
+            }
+
+            <K, V> Cache<K, V> privilegedGetCache(String cacheName, String configurationName) {
+                return super.internalGetCache(cacheName, configurationName);
+            }
+        };
         // Undefine the default cache, if we defined one
         if (defaultCacheName != null) {
             manager.undefineConfiguration(defaultCacheName);
