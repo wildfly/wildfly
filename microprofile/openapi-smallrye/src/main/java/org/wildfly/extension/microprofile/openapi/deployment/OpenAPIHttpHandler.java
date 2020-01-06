@@ -24,11 +24,19 @@ package org.wildfly.extension.microprofile.openapi.deployment;
 
 import java.io.IOException;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.jboss.resteasy.util.AcceptParser;
 
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
@@ -50,7 +58,16 @@ public class OpenAPIHttpHandler implements HttpHandler {
     private static final String ALLOW_METHODS = String.join(",", Methods.GET_STRING, Methods.HEAD_STRING, Methods.OPTIONS_STRING);
     private static final String DEFAULT_ALLOW_HEADERS = String.join(",", Headers.CONTENT_TYPE_STRING, Headers.AUTHORIZATION_STRING);
     private static final long DEFAULT_MAX_AGE = ChronoUnit.DAYS.getDuration().getSeconds();
+    private static final Map<MediaType, Format> ACCEPTED_TYPES = new LinkedHashMap<>();
+    private static final Map<String, Format> FORMATS = new HashMap<>();
     private static final String FORMAT = "format";
+
+    static {
+        for (Format format : EnumSet.allOf(Format.class)) {
+            ACCEPTED_TYPES.put(MediaType.valueOf(format.getMimeType()), format);
+            FORMATS.put(format.name(), format);
+        }
+    }
 
     private final OpenAPI model;
 
@@ -71,24 +88,30 @@ public class OpenAPIHttpHandler implements HttpHandler {
         responseHeaders.put(new HttpString("Access-Control-Max-Age"), DEFAULT_MAX_AGE);
 
         if (requestMethod.equals(Methods.GET) || requestMethod.equals(Methods.HEAD)) {
-            // Default content type is YAML
-            Format format = Format.YAML;
+            // Determine preferred media type
+            List<MediaType> preferredTypes = Collections.emptyList();
+            List<MediaType> types = parseAcceptedTypes(exchange);
 
-            // Check Accept, then query parameter "format" for JSON; else use YAML.
-            String accept = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
-            if ((accept != null) && !accept.equals(MediaType.WILDCARD)) {
-                if (accept.contains(Format.JSON.getMimeType())) {
-                    format = Format.JSON;
-                }
-            } else {
-                Deque<String> formatValues = exchange.getQueryParameters().get(FORMAT);
-                String formatValue = (formatValues != null) ? formatValues.peek() : null;
-                if (formatValue != null) {
-                    if (formatValue.equals(Format.JSON.name())) {
-                        format = Format.JSON;
+            for (MediaType type : types) {
+                List<MediaType> compatibleTypes = new ArrayList<>(ACCEPTED_TYPES.size());
+                for (MediaType acceptedType : ACCEPTED_TYPES.keySet()) {
+                    if (type.isCompatible(acceptedType)) {
+                        compatibleTypes.add(acceptedType);
                     }
                 }
+                if (compatibleTypes.isEmpty()) {
+                    break;
+                }
+                preferredTypes = compatibleTypes;
             }
+
+            if (preferredTypes.isEmpty()) {
+                exchange.setStatusCode(StatusCodes.NOT_ACCEPTABLE);
+                return;
+            }
+
+            // Use format preferred by Accept header, otherwise read query parameter
+            Format format = (preferredTypes.size() == 1) ? ACCEPTED_TYPES.get(preferredTypes.get(0)) : parseFormatParameter(exchange);
 
             String result = OpenApiSerializer.serialize(this.model, format);
 
@@ -103,5 +126,25 @@ public class OpenAPIHttpHandler implements HttpHandler {
         } else {
             exchange.setStatusCode(StatusCodes.METHOD_NOT_ALLOWED);
         }
+    }
+
+    private static List<MediaType> parseAcceptedTypes(HttpServerExchange exchange) {
+        String headerValue = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
+        if (headerValue == null) return Collections.singletonList(MediaType.WILDCARD_TYPE);
+
+        List<String> values = AcceptParser.parseAcceptHeader(headerValue);
+        List<MediaType> types = new ArrayList<>(values.size());
+        for (String value : values) {
+            types.add(MediaType.valueOf(value));
+        }
+        return types;
+    }
+
+    private static Format parseFormatParameter(HttpServerExchange exchange) {
+        Deque<String> formatValues = exchange.getQueryParameters().get(FORMAT);
+        String formatValue = (formatValues != null) ? formatValues.peek() : null;
+        Format format = (formatValue != null) ? FORMATS.get(formatValue) : null;
+        // Default format is YAML
+        return (format != null) ? format : Format.YAML;
     }
 }

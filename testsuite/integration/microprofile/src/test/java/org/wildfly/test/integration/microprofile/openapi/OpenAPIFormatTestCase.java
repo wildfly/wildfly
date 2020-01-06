@@ -87,8 +87,8 @@ public class OpenAPIFormatTestCase {
                     }
                 }
             }
-            // Ensure format parameter is still read when Accept header uses wildcard
-            request.addHeader("Accept", MediaType.WILDCARD);
+            // Ensure format parameter is still read when Accept header is not sufficiently specific
+            request.setHeader("Accept", MediaType.WILDCARD + ", " + new MediaType(MediaType.APPLICATION_JSON_TYPE.getType(), MediaType.MEDIA_TYPE_WILDCARD).toString());
             try (CloseableHttpResponse response = client.execute(request)) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 List<String> urls = validateContent(response);
@@ -99,6 +99,11 @@ public class OpenAPIFormatTestCase {
                         Assert.assertEquals("foo", EntityUtils.toString(r.getEntity()));
                     }
                 }
+            }
+            // Test unacceptable accept header
+            request.setHeader("Accept", MediaType.APPLICATION_JSON_PATCH_JSON);
+            try (CloseableHttpResponse response = client.execute(request)) {
+                Assert.assertEquals(HttpServletResponse.SC_NOT_ACCEPTABLE, response.getStatusLine().getStatusCode());
             }
         }
     }
