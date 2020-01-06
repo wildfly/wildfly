@@ -24,16 +24,13 @@ package org.jboss.as.test.integration.ejb.management.deployments;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
 import javax.jms.JMSDestinationDefinition;
 import javax.jms.Message;
-import javax.jms.MessageListener;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
- * MDB to use in tests of management resources for MDBs.
+ * MDB to use in tests of management resources for MDBs. Other bean metadata is declared in ejb-jar.xml
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -41,16 +38,11 @@ import org.jboss.ejb3.annotation.SecurityDomain;
         name="java:/queue/NoTimerMDB-queue",
         interfaceName = "javax.jms.Queue"
 )
-@MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/queue/NoTimerMDB-queue")
-})
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
-public class NoTimerMDB implements MessageListener {
+public class NoTimerMDB {
 
-    @Override
     public void onMessage(Message message) {
         // no-op
     }

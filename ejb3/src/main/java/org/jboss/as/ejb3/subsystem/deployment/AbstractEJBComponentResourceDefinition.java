@@ -51,8 +51,32 @@ import org.jboss.dmr.ModelType;
  */
 public abstract class AbstractEJBComponentResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition COMPONENT_CLASS_NAME = new SimpleAttributeDefinitionBuilder("component-class-name", ModelType.STRING)
+     static final SimpleAttributeDefinition COMPONENT_CLASS_NAME = new SimpleAttributeDefinitionBuilder("component-class-name", ModelType.STRING)
             .setValidator(new StringLengthValidator(1))
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+     static final SimpleAttributeDefinition JNDI_NAMES = new SimpleAttributeDefinitionBuilder("jndi-names", ModelType.LIST)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+     static final SimpleAttributeDefinition BUSINESS_LOCAL = new SimpleAttributeDefinitionBuilder("business-local", ModelType.LIST)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+     static final SimpleAttributeDefinition BUSINESS_REMOTE = new SimpleAttributeDefinitionBuilder("business-remote", ModelType.LIST)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+     static final SimpleAttributeDefinition TIMEOUT_METHOD = new SimpleAttributeDefinitionBuilder("timeout-method", ModelType.STRING)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+     static final SimpleAttributeDefinition ASYNC_METHODS = new SimpleAttributeDefinitionBuilder("async-methods", ModelType.LIST)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+     static final SimpleAttributeDefinition TRANSACTION_TYPE = new SimpleAttributeDefinitionBuilder("transaction-type", ModelType.STRING)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
@@ -128,7 +152,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
     public static final SimpleAttributeDefinition POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("pool-max-size", ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
-    private final EJBComponentType componentType;
+    final EJBComponentType componentType;
 
     public AbstractEJBComponentResourceDefinition(final EJBComponentType componentType) {
         super(PathElement.pathElement(componentType.getResourceType()),
@@ -143,8 +167,18 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
         resourceRegistration.registerReadOnlyAttribute(SECURITY_DOMAIN, handler);
         resourceRegistration.registerReadOnlyAttribute(RUN_AS_ROLE, handler);
         resourceRegistration.registerReadOnlyAttribute(DECLARED_ROLES, handler);
+        resourceRegistration.registerReadOnlyAttribute(TRANSACTION_TYPE, handler);
+
+        if (!componentType.equals(EJBComponentType.MESSAGE_DRIVEN)) {
+            resourceRegistration.registerReadOnlyAttribute(JNDI_NAMES, handler);
+            resourceRegistration.registerReadOnlyAttribute(BUSINESS_LOCAL, handler);
+            resourceRegistration.registerReadOnlyAttribute(BUSINESS_REMOTE, handler);
+            resourceRegistration.registerReadOnlyAttribute(ASYNC_METHODS, handler);
+        }
+
         if (componentType.hasTimer()) {
             resourceRegistration.registerReadOnlyAttribute(TimerAttributeDefinition.INSTANCE, handler);
+            resourceRegistration.registerReadOnlyAttribute(TIMEOUT_METHOD, handler);
         }
 
         if (componentType.hasPool()) {
@@ -160,19 +194,19 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             resourceRegistration.registerMetric(CACHE_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
                 protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
-                    context.getResult().set(((StatefulSessionComponent)component).getCache().getCacheSize());
+                    context.getResult().set(((StatefulSessionComponent) component).getCache().getCacheSize());
                 }
             });
             resourceRegistration.registerMetric(PASSIVATED_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
                 protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
-                    context.getResult().set(((StatefulSessionComponent)component).getCache().getPassivatedCount());
+                    context.getResult().set(((StatefulSessionComponent) component).getCache().getPassivatedCount());
                 }
             });
             resourceRegistration.registerMetric(TOTAL_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
                 protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
-                    context.getResult().set(((StatefulSessionComponent)component).getCache().getTotalSize());
+                    context.getResult().set(((StatefulSessionComponent) component).getCache().getTotalSize());
                 }
             });
         }
