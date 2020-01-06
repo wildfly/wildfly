@@ -23,6 +23,8 @@
 package org.wildfly.extension.microprofile.openapi.deployment;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,7 +107,10 @@ public class OpenAPIHttpHandler implements HttpHandler {
                 preferredTypes = compatibleTypes;
             }
 
-            if (preferredTypes.isEmpty()) {
+            // Determine preferred charset
+            Charset charset = parseCharset(exchange);
+
+            if (preferredTypes.isEmpty() || (charset == null)) {
                 exchange.setStatusCode(StatusCodes.NOT_ACCEPTABLE);
                 return;
             }
@@ -119,7 +124,7 @@ public class OpenAPIHttpHandler implements HttpHandler {
             responseHeaders.put(Headers.CONTENT_LENGTH, result.length());
 
             if (requestMethod.equals(Methods.GET)) {
-                exchange.getResponseSender().send(result);
+                exchange.getResponseSender().send(result, charset);
             }
         } else if (requestMethod.equals(Methods.OPTIONS)) {
             responseHeaders.put(Headers.ALLOW, ALLOW_METHODS);
@@ -138,6 +143,23 @@ public class OpenAPIHttpHandler implements HttpHandler {
             types.add(MediaType.valueOf(value));
         }
         return types;
+    }
+
+    private static Charset parseCharset(HttpServerExchange exchange) {
+        String headerValue = exchange.getRequestHeaders().getFirst(Headers.ACCEPT_CHARSET);
+        if (headerValue == null) return StandardCharsets.UTF_8;
+
+        List<String> values = AcceptParser.parseAcceptHeader(headerValue);
+        Charset defaultCharset = null;
+        for (String value : values) {
+            if (value.equals(MediaType.MEDIA_TYPE_WILDCARD)) {
+                defaultCharset = StandardCharsets.UTF_8;
+            }
+            if (Charset.isSupported(value)) {
+                return Charset.forName(value);
+            }
+        }
+        return defaultCharset;
     }
 
     private static Format parseFormatParameter(HttpServerExchange exchange) {
