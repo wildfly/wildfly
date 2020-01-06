@@ -235,7 +235,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         if (event.isPre()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-            Map.Entry<MV, AV> value = this.factory.findValue(id);
+            Map.Entry<MV, AV> value = this.factory.tryValue(id);
             if (value != null) {
                 ImmutableSession session = this.factory.createImmutableSession(id, value);
 
