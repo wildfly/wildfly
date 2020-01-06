@@ -30,6 +30,7 @@
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.as.weld.common"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.network"/>
 
         <module name="org.jboss.logging"/>
         <module name="org.jboss.metadata.common"/>
@@ -39,10 +40,11 @@
         <module name="org.wildfly.security.elytron"/>
 
         <module name="javax.enterprise.api" />
-        <module name="org.wildfly.microprofile.opentracing-smallrye"/>
         <module name="io.opentracing.opentracing-api"/>
         <module name="io.opentracing.opentracing-noop"/>
         <module name="io.opentracing.opentracing-util"/>
+        <module name="org.wildfly.microprofile.opentracing-smallrye"/>
+        <!-- Not optinal because it is required by JaegerEnvTracerConfiguration for retro-compatibility but other tracer implementations should be optional-->
         <module name="io.jaegertracing.jaeger"/>
     </dependencies>
 </module>

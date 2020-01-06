@@ -19,37 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.microprofile.opentracing;
+package org.wildfly.test.integration.microprofile.opentracing.application;
 
-import java.io.IOException;
-import java.util.Properties;
+import javax.inject.Inject;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Application;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.KernelServices;
+import io.jaegertracing.internal.JaegerTracer;
+import io.opentracing.Tracer;
 
-public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+/**
+ * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
+ */
+@ApplicationPath("service-endpoint")
+public class TaggedTracerIdentityApplication extends Application {
 
-    public Subsystem_1_0_ParsingTestCase() {
-        super(SubsystemExtension.SUBSYSTEM_NAME, new SubsystemExtension());
-    }
+    @Path("/app")
+    public static class TestResource {
 
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_0.xml");
-    }
+        @Inject
+        private Tracer tracer;
 
-    @Override
-    protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-microprofile-opentracing_1_0.xsd";
-    }
-
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
-    }
-
-    @Override
-    protected Properties getResolvedProperties() {
-        return System.getProperties();
+        @GET
+        @Produces("text/plain")
+        public String get() {
+            JaegerTracer jTracer = (JaegerTracer) tracer;
+            return jTracer.tags().get("tracer-tag").toString();
+        }
     }
 }
