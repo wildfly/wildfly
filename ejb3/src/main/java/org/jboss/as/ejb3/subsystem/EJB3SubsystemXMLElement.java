@@ -79,6 +79,7 @@ public enum EJB3SubsystemXMLElement {
 
     REMOTE("remote"),
     REMOTING_EJB_RECEIVER("remoting-ejb-receiver"),
+    REMOTE_HTTP_CONNECTION("remote-http-connection"),
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
     RESOURCE_ADAPTER_REF("resource-adapter-ref"),
 

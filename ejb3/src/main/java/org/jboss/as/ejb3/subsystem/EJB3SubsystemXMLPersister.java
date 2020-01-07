@@ -42,6 +42,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IN_VM_REMOTE_INTERF
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LOG_SYSTEM_EXCEPTIONS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PROFILE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE_HTTP_CONNECTION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTING_EJB_RECEIVER;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTING_PROFILE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
@@ -640,6 +641,9 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             if(profileNode.hasDefined(REMOTING_EJB_RECEIVER)){
                 writeRemotingEjbReceivers(writer, profileNode);
             }
+            if(profileNode.hasDefined(REMOTE_HTTP_CONNECTION)){
+                writeRemoteHttpConnection(writer, profileNode);
+            }
             StaticEJBDiscoveryDefinition.INSTANCE.marshallAsElement(profileNode, writer);
             writer.writeEndElement();
         }
@@ -657,6 +661,18 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             if (receiverNode.hasDefined(CHANNEL_CREATION_OPTIONS)) {
                 writeChannelCreationOptions(writer, receiverNode.get(CHANNEL_CREATION_OPTIONS));
             }
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeRemoteHttpConnection(final XMLExtendedStreamWriter writer, final ModelNode profileNode)
+            throws XMLStreamException {
+        final List<Property> connections = profileNode.get(REMOTE_HTTP_CONNECTION).asPropertyList();
+        for (final Property property : connections) {
+            writer.writeStartElement(REMOTE_HTTP_CONNECTION);
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+            final ModelNode connectionNode = property.getValue();
+            RemoteHttpConnectionDefinition.URI.marshallAsAttribute(connectionNode, writer);
             writer.writeEndElement();
         }
     }

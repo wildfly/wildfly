@@ -264,7 +264,7 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         }
     }
 
-    private ModelNode parseStaticEjbDiscoveryType(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    protected ModelNode parseStaticEjbDiscoveryType(final XMLExtendedStreamReader reader) throws XMLStreamException {
         ModelNode staticDiscovery = new ModelNode();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
