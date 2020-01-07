@@ -39,6 +39,7 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.discovery.Discovery;
 import org.wildfly.discovery.impl.StaticDiscoveryProvider;
 import org.wildfly.discovery.spi.DiscoveryProvider;
+import org.wildfly.httpclient.ejb.HttpDiscoveryConfigurator;
 
 /**
  * Processor responsible for ensuring that the discovery service for each deployment unit exists.
@@ -76,6 +77,9 @@ public final class DiscoveryRegistrationProcessor implements DeploymentUnitProce
                 providerInjector.uninject();
             }
         });
+
+        providerInjector = discoveryService.getDiscoveryProviderInjector();
+        new HttpDiscoveryConfigurator().configure(providerInjector::inject, registryProvider -> {});
 
         // only add association service dependency if the context is configured to use the local EJB receiver & we are not app client
 

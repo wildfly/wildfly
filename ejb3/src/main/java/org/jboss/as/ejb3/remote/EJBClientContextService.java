@@ -112,11 +112,18 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
         }
 
         final RemotingProfileService profileService = profileServiceInjector.getOptionalValue();
-        if (profileService != null) for (RemotingProfileService.ConnectionSpec spec : profileService.getConnectionSpecs()) {
-            final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
-            connBuilder.setDestination(spec.getInjector().getValue().getDestinationUri());
-            // connBuilder.setConnectionTimeout(timeout);
-            builder.addClientConnection(connBuilder.build());
+        if (profileService != null) {
+            for (RemotingProfileService.RemotingConnectionSpec spec : profileService.getConnectionSpecs()) {
+                final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
+                connBuilder.setDestination(spec.getInjector().getValue().getDestinationUri());
+                // connBuilder.setConnectionTimeout(timeout);
+                builder.addClientConnection(connBuilder.build());
+            }
+            for (RemotingProfileService.HttpConnectionSpec spec : profileService.getHttpConnectionSpecs()) {
+                final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
+                connBuilder.setDestination(spec.getUri());
+                builder.addClientConnection(connBuilder.build());
+            }
         }
         if(appClientUri.getOptionalValue() != null) {
             final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
