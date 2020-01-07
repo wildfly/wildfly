@@ -21,22 +21,27 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
+import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
+import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.Registrar;
@@ -95,6 +100,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     private final SessionCreationMetaDataKeyFilter filter = new SessionCreationMetaDataKeyFilter();
     private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(InfinispanSessionManager.class));
     private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
+    private final AtomicInteger rehashTopology = new AtomicInteger();
 
     public InfinispanSessionManagerFactory(InfinispanSessionManagerFactoryConfiguration<C, L> config) {
         this.affinityFactory = config.getKeyAffinityServiceFactory();
@@ -110,7 +116,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
         Function<Key<String>, Node> primaryOwnerLocator = new PrimaryOwnerLocator<>(this.cache, config.getMemberFactory(), dispatcherFactory.getGroup());
         this.primaryOwnerScheduler = new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), this.expirationScheduler, primaryOwnerLocator, Key::new);
         this.cache.addListener(this);
-        this.schedule(new SimpleLocality(false), new CacheLocality(this.cache));
+        new ScheduleExpirationTask(this.cache, this.filter, this.expirationScheduler, new SimpleLocality(false), new CacheLocality(this.cache)).run();
     }
 
     @Override
@@ -193,39 +199,91 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     }
 
     @DataRehashed
-    public void dataRehashed(DataRehashedEvent<SessionCreationMetaDataKey, ?> event) {
-        Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
+    public void dataRehashed(DataRehashedEvent<Key<String>, ?> event) {
+        Cache<Key<String>, ?> cache = event.getCache();
         Locality newLocality = new ConsistentHashLocality(cache, event.getConsistentHashAtEnd());
-        if (event.isPre()) {
-            Future<?> future = this.rehashFuture.getAndSet(null);
-            if (future != null) {
-                future.cancel(true);
+        try {
+            if (event.isPre()) {
+                this.rehashTopology.set(event.getNewTopologyId());
+                Future<?> future = this.rehashFuture.getAndSet(null);
+                if (future != null) {
+                    future.cancel(true);
+                }
+                this.executor.submit(new CancelExpirationTask(this.expirationScheduler, newLocality));
+            } else {
+                this.rehashTopology.compareAndSet(event.getNewTopologyId(), 0);
+                Locality oldLocality = new ConsistentHashLocality(cache, event.getConsistentHashAtStart());
+                this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask(cache, this.filter, this.expirationScheduler, oldLocality, newLocality)));
             }
-            try {
-                this.executor.submit(() -> this.expirationScheduler.cancel(newLocality));
-            } catch (RejectedExecutionException e) {
-                // Executor was shutdown
-            }
-        } else {
-            Locality oldLocality = new ConsistentHashLocality(cache, event.getConsistentHashAtStart());
-            try {
-                this.rehashFuture.set(this.executor.submit(() -> this.schedule(oldLocality, newLocality)));
-            } catch (RejectedExecutionException e) {
-                // Executor was shutdown
+        } catch (RejectedExecutionException e) {
+            // Executor was shutdown
+        }
+    }
+
+    @TopologyChanged
+    public void topologyChanged(TopologyChangedEvent<Key<String>, ?> event) {
+        if (!event.isPre()) {
+            // If this topology change has no corresponding rehash event, we must reschedule expirations as primary ownership may have changed
+            if (this.rehashTopology.get() != event.getNewTopologyId()) {
+                Future<?> future = this.rehashFuture.getAndSet(null);
+                if (future != null) {
+                    future.cancel(true);
+                }
+                Cache<Key<String>, ?> cache = event.getCache();
+                Locality oldLocality = new ConsistentHashLocality(cache, event.getReadConsistentHashAtStart());
+                Locality newLocality = new ConsistentHashLocality(cache, event.getWriteConsistentHashAtEnd());
+                try {
+                    this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask(cache, this.filter, this.expirationScheduler, oldLocality, newLocality)));
+                } catch (RejectedExecutionException e) {
+                    // Executor was shutdown
+                }
             }
         }
     }
 
-    private void schedule(Locality oldLocality, Locality newLocality) {
-        // Iterate over sessions in memory
-        try (CloseableIterator<Key<String>> keys = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().iterator()) {
-            while (keys.hasNext()) {
-                if (Thread.currentThread().isInterrupted()) break;
-                Key<String> key = keys.next();
-                // If we are the new primary owner of this session then schedule expiration of this session locally
-                if (this.filter.test(key) && !oldLocality.isLocal(key) && newLocality.isLocal(key)) {
-                    String id = key.getValue();
-                    this.expirationScheduler.schedule(id);
+    private static class CancelExpirationTask implements Runnable {
+        private final Scheduler<String, ImmutableSessionMetaData> scheduler;
+        private final Locality locality;
+
+        CancelExpirationTask(Scheduler<String, ImmutableSessionMetaData> scheduler, Locality locality) {
+            this.scheduler = scheduler;
+            this.locality = locality;
+        }
+
+        @Override
+        public void run() {
+            // Cancel local expiration of sessions we no longer own
+            this.scheduler.cancel(this.locality);
+        }
+    }
+
+    private static class ScheduleExpirationTask implements Runnable {
+        private final Cache<Key<String>, ?> cache;
+        private final Predicate<Object> filter;
+        private final Scheduler<String, ImmutableSessionMetaData> scheduler;
+        private final Locality oldLocality;
+        private final Locality newLocality;
+
+        ScheduleExpirationTask(Cache<Key<String>, ?> cache, Predicate<Object> filter, Scheduler<String, ImmutableSessionMetaData> scheduler, Locality oldLocality, Locality newLocality) {
+            this.cache = cache;
+            this.filter = filter;
+            this.scheduler = scheduler;
+            this.oldLocality = oldLocality;
+            this.newLocality = newLocality;
+        }
+
+        @Override
+        public void run() {
+            // Iterate over sessions in memory
+            try (Stream<Key<String>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream().filter(this.filter)) {
+                Iterator<Key<String>> keys = stream.iterator();
+                while (keys.hasNext()) {
+                    if (Thread.currentThread().isInterrupted()) break;
+                    Key<String> key = keys.next();
+                    // If we are the new primary owner of this session then schedule expiration of this session locally
+                    if (!this.oldLocality.isLocal(key) && this.newLocality.isLocal(key)) {
+                        this.scheduler.schedule(key.getValue());
+                    }
                 }
             }
         }
