@@ -31,7 +31,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.wildfly.http-client.ejb" />
+        <module name="org.wildfly.http-client.ejb" services="import"/>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.ejb.api"/>
@@ -109,5 +109,6 @@
 
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.transaction.client"/>
+        <module name="org.wildfly.http-client.ejb"/>
     </dependencies>
 </module>

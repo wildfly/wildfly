@@ -33,6 +33,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.discovery.ServiceURL;
 import org.xnio.OptionMap;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +53,15 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
      * There URLs are used to allow discovery to find these connections.
      */
     private final List<ServiceURL> serviceUrls;
-    private final Map<String, ConnectionSpec> connectionSpecMap;
+    private final Map<String, RemotingConnectionSpec> remotingConnectionSpecMap;
+    private final List<HttpConnectionSpec> httpConnectionSpecs;
     private final InjectedValue<EJBTransportProvider> localTransportProviderInjector = new InjectedValue<>();
 
-    public RemotingProfileService(final List<ServiceURL> serviceUrls, final Map<String, ConnectionSpec> connectionSpecMap) {
+    public RemotingProfileService(final List<ServiceURL> serviceUrls, final Map<String, RemotingConnectionSpec> remotingConnectionSpecMap,
+                                  final List<HttpConnectionSpec> httpConnectionSpecs) {
         this.serviceUrls = serviceUrls;
-        this.connectionSpecMap = connectionSpecMap;
+        this.remotingConnectionSpecMap = remotingConnectionSpecMap;
+        this.httpConnectionSpecs = httpConnectionSpecs;
     }
 
     @Override
@@ -73,8 +77,12 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
     public void stop(StopContext context) {
     }
 
-    public Collection<ConnectionSpec> getConnectionSpecs() {
-        return connectionSpecMap.values();
+    public Collection<RemotingConnectionSpec> getConnectionSpecs() {
+        return remotingConnectionSpecMap.values();
+    }
+
+    public Collection<HttpConnectionSpec> getHttpConnectionSpecs() {
+        return httpConnectionSpecs;
     }
 
     public List<ServiceURL> getServiceUrls() {
@@ -85,13 +93,13 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
         return localTransportProviderInjector;
     }
 
-    public static final class ConnectionSpec {
+    public static final class RemotingConnectionSpec {
         private final String connectionName;
         private final InjectedValue<AbstractOutboundConnectionService> injector;
         private final OptionMap connectOptions;
         private final long connectTimeout;
 
-        public ConnectionSpec(final String connectionName, final InjectedValue<AbstractOutboundConnectionService> injector, final OptionMap connectOptions, final long connectTimeout) {
+        public RemotingConnectionSpec(final String connectionName, final InjectedValue<AbstractOutboundConnectionService> injector, final OptionMap connectOptions, final long connectTimeout) {
             this.connectionName = connectionName;
             this.injector = injector;
             this.connectOptions = connectOptions;
@@ -112,6 +120,22 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
 
         public long getConnectTimeout() {
             return connectTimeout;
+        }
+    }
+
+    public static final class HttpConnectionSpec {
+        private final String uri;
+
+        public HttpConnectionSpec(final String uri) {
+            this.uri = uri;
+        }
+
+        public URI getUri() {
+            try {
+                return new URI(uri);
+            } catch(Exception e) {
+                return null;
+            }
         }
     }
 }
