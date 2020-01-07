@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
-import java.util.Collection;
-
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
@@ -51,10 +49,10 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ConfigProviderResolver.setInstance(new SmallRyeConfigProviderResolver());
     }
 
-    final Collection<ConfigSourceProvider> providers;
-    final Collection<ConfigSource> sources;
+    final Iterable<ConfigSourceProvider> providers;
+    final Iterable<ConfigSource> sources;
 
-    MicroProfileConfigSubsystemAdd(Collection<ConfigSourceProvider> providers, Collection<ConfigSource> sources) {
+    MicroProfileConfigSubsystemAdd(Iterable<ConfigSourceProvider> providers, Iterable<ConfigSource> sources) {
         this.providers = providers;
         this.sources = sources;
     }

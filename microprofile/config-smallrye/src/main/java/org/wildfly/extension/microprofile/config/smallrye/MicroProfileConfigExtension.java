@@ -24,9 +24,6 @@ package org.wildfly.extension.microprofile.config.smallrye;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.Extension;
@@ -82,8 +79,8 @@ public class MicroProfileConfigExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerXMLElementWriter(CURRENT_PARSER);
 
-        Map<String, ConfigSourceProvider> providers = new ConcurrentHashMap<>();
-        Map<String, ConfigSource> sources = new ConcurrentHashMap<>();
+        IterableRegistry<ConfigSourceProvider> providers = new IterableRegistry<>();
+        IterableRegistry<ConfigSource> sources = new IterableRegistry<>();
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicroProfileSubsystemDefinition(providers, sources));
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);

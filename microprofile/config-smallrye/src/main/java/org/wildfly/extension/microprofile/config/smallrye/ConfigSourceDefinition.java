@@ -105,7 +105,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { ORDINAL, PROPERTIES, CLASS, DIR };
 
-    protected ConfigSourceDefinition(Map<String, ConfigSource> sources) {
+    protected ConfigSourceDefinition(Registry<ConfigSource> sources) {
         super(MicroProfileConfigExtension.CONFIG_SOURCE_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PATH.getKey()),
                 new AbstractAddStepHandler(ATTRIBUTES) {
@@ -125,7 +125,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                         if (classModel.isDefined()) {
                             Class configSourceClass = unwrapClass(classModel);
                             try {
-                                sources.put(name, ConfigSource.class.cast(configSourceClass.newInstance()));
+                                sources.register(name, ConfigSource.class.cast(configSourceClass.newInstance()));
                                 MicroProfileConfigLogger.ROOT_LOGGER.loadConfigSourceFromClass(configSourceClass);
                             } catch (Exception e) {
                                 throw new OperationFailedException(e);
@@ -133,17 +133,22 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                         } else if (dirModel.isDefined()) {
                             String path = PATH.resolveModelAttribute(context, dirModel).asString();
                             String relativeTo = RELATIVE_TO.resolveModelAttribute(context, dirModel).asStringOrNull();
-                            DirConfigSourceService.install(context, name, path, relativeTo, ordinal, sources);
+                            DirConfigSourceRegistrationService.install(context, name, path, relativeTo, ordinal, sources);
                         } else {
                             Map<String, String> properties = PropertiesAttributeDefinition.unwrapModel(context, props);
-                            sources.put(name, new PropertiesConfigSource(properties, name, ordinal));
+                            sources.register(name, new PropertiesConfigSource(properties, name, ordinal));
                         }
                     }
                 }, new AbstractRemoveStepHandler() {
                     @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
                         String name = context.getCurrentAddressValue();
-                        context.removeService(ServiceNames.CONFIG_SOURCE.append(name));
+                        ModelNode dirModel = DIR.resolveModelAttribute(context, model);
+                        if (dirModel.isDefined()) {
+                            context.removeService(ServiceNames.CONFIG_SOURCE.append(name));
+                        } else {
+                            sources.unregister(name);
+                        }
                     }
                 });
     }

@@ -29,7 +29,6 @@ import static org.wildfly.extension.microprofile.config.smallrye._private.MicroP
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -65,7 +64,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { CLASS };
 
-    protected ConfigSourceProviderDefinition(Map<String, ConfigSourceProvider> providers) {
+    protected ConfigSourceProviderDefinition(Registry<ConfigSourceProvider> providers) {
         super(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH.getKey()),
                 new AbstractAddStepHandler(ATTRIBUTES) {
@@ -82,7 +81,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                         if (classModel.isDefined()) {
                             Class configSourceProviderClass = unwrapClass(classModel);
                             try {
-                                providers.put(name, ConfigSourceProvider.class.cast(configSourceProviderClass.newInstance()));
+                                providers.register(name, ConfigSourceProvider.class.cast(configSourceProviderClass.newInstance()));
                             } catch (Exception e) {
                                 throw new OperationFailedException(e);
                             }
@@ -92,7 +91,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                     @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
                         String name = context.getCurrentAddressValue();
-                        providers.remove(name);
+                        providers.unregister(name);
                     }
                 });
     }

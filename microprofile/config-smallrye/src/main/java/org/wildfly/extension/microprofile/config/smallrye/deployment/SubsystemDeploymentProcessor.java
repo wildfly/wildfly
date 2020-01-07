@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.microprofile.config.smallrye.deployment;
 
-import java.util.Collection;
-
 import io.smallrye.config.SmallRyeConfigBuilder;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -42,10 +40,10 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final AttachmentKey<Config> CONFIG = AttachmentKey.create(Config.class);
 
-    private final Collection<ConfigSourceProvider> providers;
-    private final Collection<ConfigSource> sources;
+    private final Iterable<ConfigSourceProvider> providers;
+    private final Iterable<ConfigSource> sources;
 
-    public SubsystemDeploymentProcessor(Collection<ConfigSourceProvider> providers, Collection<ConfigSource> sources) {
+    public SubsystemDeploymentProcessor(Iterable<ConfigSourceProvider> providers, Iterable<ConfigSource> sources) {
         this.providers = providers;
         this.sources = sources;
     }
