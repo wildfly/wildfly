@@ -49,7 +49,8 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
             "io.opentracing.opentracing-api",
             "io.opentracing.opentracing-util",
             "org.eclipse.microprofile.opentracing",
-            "org.eclipse.microprofile.restclient"
+            "org.eclipse.microprofile.restclient",
+            "io.opentracing.contrib.opentracing-jaxrs2"
     };
 
     static final String[] EXPORTED_MODULES = {
