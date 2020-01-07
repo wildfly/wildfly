@@ -22,6 +22,8 @@
 
 package org.wildfly.test.integration.microprofile.metrics.base;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
 import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricValueFromJSONOutput;
@@ -31,11 +33,19 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.List;
 
 /**
  * Test required base metrics that are always present.
@@ -76,4 +86,62 @@ public class MicroProfileMetricsBaseTestCase {
         assertTrue((uptime2 - uptime1) >= sleep);
         assertTrue((uptime2 - uptime1) <= interval);
     }
+
+    @Test
+    public void testUnknownExposedSubsystem() throws Exception {
+        final ModelNode address = Operations.createAddress("subsystem", "microprofile-metrics-smallrye");
+        final ModelNode op = Operations.createWriteAttributeOperation(address, "exposed-subsystems", new ModelNode().add("bad").add("unknown"));
+        try {
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+            Assert.fail("update exposed subsystems to unknown ones should fail");
+        } catch (MgmtOperationException e) {
+            ModelNode result = e.getResult();
+            assertTrue(result.get("failure-description").asString().contains("WFLYMETRICS0006"));
+        }
+    }
+
+    @Test
+    public void testExposedSubsystem() throws Exception {
+        final ModelNode address = Operations.createAddress("subsystem", "microprofile-metrics-smallrye");
+        ModelNode op = Operations.createWriteAttributeOperation(address, "exposed-subsystems", new ModelNode().add("jca").add("undertow"));
+        ModelNode result = ManagementOperations.executeOperationRaw(managementClient.getControllerClient(), op);
+        assertEquals("success", result.get("outcome").asString());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
+
+        op = Operations.createReadAttributeOperation(address, "exposed-subsystems");
+        result = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        List<ModelNode> list = result.asList();
+        assertEquals(2, list.size());
+        assertEquals("jca", list.get(0).asString());
+        assertEquals("undertow", list.get(1).asString());
+    }
+
+    @Test
+    public void testExposedSubsystemWildcard() throws Exception {
+        final ModelNode address = Operations.createAddress("subsystem", "microprofile-metrics-smallrye");
+        ModelNode op = Operations.createWriteAttributeOperation(address, "exposed-subsystems", new ModelNode().add("*"));
+        ModelNode result = ManagementOperations.executeOperationRaw(managementClient.getControllerClient(), op);
+        assertEquals("success", result.get("outcome").asString());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
+
+        op = Operations.createReadAttributeOperation(address, "exposed-subsystems");
+        result = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        List<ModelNode> list = result.asList();
+        assertEquals(1, list.size());
+        assertEquals("*", list.get(0).asString());
+    }
+
+    @Test
+    public void testUndefineExposedSubsystem() throws Exception {
+        final ModelNode address = Operations.createAddress("subsystem", "microprofile-metrics-smallrye");
+        ModelNode op = Operations.createUndefineAttributeOperation(address, "exposed-subsystems");
+        ModelNode result = ManagementOperations.executeOperationRaw(managementClient.getControllerClient(), op);
+        assertEquals("success", result.get("outcome").asString());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
+
+        op = Operations.createReadAttributeOperation(address, "exposed-subsystems");
+        result = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        assertFalse(result.isDefined());
+    }
+
 }

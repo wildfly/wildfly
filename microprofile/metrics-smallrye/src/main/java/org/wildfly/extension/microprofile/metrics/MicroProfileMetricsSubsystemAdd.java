@@ -32,6 +32,7 @@ import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROPROFILE_METR
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -81,18 +82,17 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // created during the RUNTIME phase will have been registered in the MRR.
         context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(OperationContext operationContext, ModelNode modelNode) {
+            public void execute(OperationContext operationContext, ModelNode modelNode) throws OperationFailedException {
                 ServiceController<?> serviceController = context.getServiceRegistry(false).getService(WILDFLY_COLLECTOR_SERVICE);
                 MetricCollector metricCollector = MetricCollector.class.cast(serviceController.getValue());
 
                 ImmutableManagementResourceRegistration rootResourceRegistration = context.getRootResourceRegistration();
                 Resource rootResource = context.readResourceFromRoot(EMPTY_ADDRESS);
+                Set<String> subsystems = rootResource.getChildrenNames("subsystem");
+                MicroProfileMetricsSubsystemDefinition.validExposedSubsystems(subsystems, exposedSubsystems);
                 metricCollector.collectResourceMetrics(rootResource, rootResourceRegistration, Function.identity());
             }
         }, VERIFY);
-
-
-
         MicroProfileMetricsLogger.LOGGER.activatingSubsystem();
     }
 }
