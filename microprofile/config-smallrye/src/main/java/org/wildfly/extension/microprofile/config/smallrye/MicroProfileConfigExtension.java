@@ -24,6 +24,8 @@ package org.wildfly.extension.microprofile.config.smallrye;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -71,18 +73,23 @@ public class MicroProfileConfigExtension implements Extension {
         }
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, MicroProfileConfigExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
+
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerXMLElementWriter(CURRENT_PARSER);
 
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicroProfileSubsystemDefinition());
+        IterableRegistry<ConfigSourceProvider> providers = new IterableRegistry<>();
+        IterableRegistry<ConfigSource> sources = new IterableRegistry<>();
+
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicroProfileSubsystemDefinition(providers, sources));
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        registration.registerSubModel(new ConfigSourceDefinition());
-        registration.registerSubModel(new ConfigSourceProviderDefinition());
+        registration.registerSubModel(new ConfigSourceDefinition(sources));
+        registration.registerSubModel(new ConfigSourceProviderDefinition(providers));
     }
 
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileConfigSubsystemParser_1_0.NAMESPACE, CURRENT_PARSER);
     }

@@ -64,7 +64,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { CLASS };
 
-    protected ConfigSourceProviderDefinition() {
+    protected ConfigSourceProviderDefinition(Registry<ConfigSourceProvider> providers) {
         super(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH.getKey()),
                 new AbstractAddStepHandler(ATTRIBUTES) {
@@ -81,8 +81,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                         if (classModel.isDefined()) {
                             Class configSourceProviderClass = unwrapClass(classModel);
                             try {
-                                ConfigSourceProvider configSourceProvider = ConfigSourceProvider.class.cast(configSourceProviderClass.newInstance());
-                                ConfigSourceProviderService.install(context, name, configSourceProvider);
+                                providers.register(name, ConfigSourceProvider.class.cast(configSourceProviderClass.newInstance()));
                             } catch (Exception e) {
                                 throw new OperationFailedException(e);
                             }
@@ -92,7 +91,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                     @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
                         String name = context.getCurrentAddressValue();
-                        context.removeService(ServiceNames.CONFIG_SOURCE_PROVIDER.append(name));
+                        providers.unregister(name);
                     }
                 });
     }

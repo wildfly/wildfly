@@ -22,16 +22,20 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.SubsystemDeploymentProcessor;
+
+import io.smallrye.config.SmallRyeConfigProviderResolver;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -40,7 +44,17 @@ import org.wildfly.extension.microprofile.config.smallrye.deployment.SubsystemDe
  */
 class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    MicroProfileConfigSubsystemAdd() {
+    static {
+        // Set the static resolver reference eagerly
+        ConfigProviderResolver.setInstance(new SmallRyeConfigProviderResolver());
+    }
+
+    final Iterable<ConfigSourceProvider> providers;
+    final Iterable<ConfigSource> sources;
+
+    MicroProfileConfigSubsystemAdd(Iterable<ConfigSourceProvider> providers, Iterable<ConfigSource> sources) {
+        this.providers = providers;
+        this.sources = sources;
     }
 
     /**
@@ -51,18 +65,11 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         MicroProfileConfigLogger.ROOT_LOGGER.activatingSubsystem();
 
-        ConfigProviderService.install(context);
-
-        // Add a void service other capabilities can use to ensure MP Config is ready
-        ServiceBuilder capSvc = context.getCapabilityServiceTarget().addCapability(MicroProfileSubsystemDefinition.CONFIG_CAPABILITY);
-        capSvc.requires(ServiceNames.CONFIG_PROVIDER);
-        capSvc.install();
-
         context.addStep(new AbstractDeploymentChainStep() {
+            @Override
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MICROPROFILE_CONFIG, new DependencyProcessor());
-                processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_MICROPROFILE_CONFIG, new SubsystemDeploymentProcessor());
-
+                processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_MICROPROFILE_CONFIG, new SubsystemDeploymentProcessor(MicroProfileConfigSubsystemAdd.this.providers, MicroProfileConfigSubsystemAdd.this.sources));
             }
         }, OperationContext.Stage.RUNTIME);
 

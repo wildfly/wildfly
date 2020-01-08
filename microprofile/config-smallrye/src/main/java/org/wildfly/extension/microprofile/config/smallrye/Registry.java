@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,25 +22,22 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.dmr.ModelNode;
-
 /**
- * Handler responsible for removing the subsystem resource from the model
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * Encapsulates a generic registry of objects.
+ * @author Paul Ferraro
+ * @param <T> The target object type of this registry
  */
-class MicroProfileConfigSubsystemRemove extends AbstractRemoveStepHandler {
+public interface Registry<T> {
+    /**
+     * Registers the specified object with this registry
+     * @param name the object name
+     * @param object the object to register
+     */
+    void register(String name, T object);
 
-    MicroProfileConfigSubsystemRemove() {
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        context.removeService(MicroProfileSubsystemDefinition.CONFIG_CAPABILITY.getCapabilityServiceName(Void.class));
-        context.removeService(ServiceNames.CONFIG_PROVIDER);
-    }
-
-
+    /**
+     * Unregisters the specified object from this registry
+     * @param name the object name
+     */
+    void unregister(String name);
 }

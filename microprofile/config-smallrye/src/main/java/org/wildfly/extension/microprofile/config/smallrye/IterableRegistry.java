@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,15 +22,30 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
-import org.jboss.msc.service.ServiceName;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Service Names for Eclipse MicroProfile Config objects.
- *
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
+ * A registry whose items can be iterated over.
+ * @author Paul Ferraro
  */
-public interface ServiceNames {
-    ServiceName MICROPROFILE_CONFIG = ServiceName.JBOSS.append("eclipse", "microprofile", "config");
+public class IterableRegistry<T> implements Iterable<T>, Registry<T> {
 
-    ServiceName CONFIG_SOURCE = MICROPROFILE_CONFIG.append("config-source");
+    private final Map<String, T> objects = new ConcurrentHashMap<>();
+
+    @Override
+    public void register(String name, T object) {
+        this.objects.put(name, object);
+    }
+
+    @Override
+    public void unregister(String name) {
+        this.objects.remove(name);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return this.objects.values().iterator();
+    }
 }

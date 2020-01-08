@@ -23,7 +23,6 @@ package org.wildfly.extension.microprofile.metrics;
 
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.CLIENT_FACTORY_CAPABILITY;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.MANAGEMENT_EXECUTOR;
-import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.MP_CONFIG;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE;
 import static org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger.LOGGER;
 
@@ -62,7 +61,6 @@ public class MetricsCollectorService implements Service<MetricCollector> {
         ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(WILDFLY_COLLECTOR_SERVICE);
         Supplier<ModelControllerClientFactory> modelControllerClientFactory = serviceBuilder.requires(context.getCapabilityServiceName(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class));
         Supplier<Executor> managementExecutor = serviceBuilder.requires(context.getCapabilityServiceName(MANAGEMENT_EXECUTOR, Executor.class));
-        serviceBuilder.requires(context.getCapabilityServiceName(MP_CONFIG, null));
         MetricsCollectorService service = new MetricsCollectorService(modelControllerClientFactory, managementExecutor, exposedSubsystems, prefix);
         serviceBuilder.setInstance(service)
                 .install();
