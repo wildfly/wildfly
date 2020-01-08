@@ -45,7 +45,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.microprofile.opentracing.application.TaggedTracerIdentityApplication;
+import org.wildfly.test.integration.microprofile.opentracing.application.TracerIdentityApplication;
 
 /**
  *
@@ -110,7 +110,7 @@ public class MultiTracerTestCase {
     public static Archive<?> deployServiceOne() {
         //Uses the default tracer configuration
         WebArchive serviceOne = ShrinkWrap.create(WebArchive.class, "ServiceOne.war")
-                .addClass(TaggedTracerIdentityApplication.class)
+                .addClass(TracerIdentityApplication.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return serviceOne;
     }
@@ -119,7 +119,7 @@ public class MultiTracerTestCase {
     public static Archive<?> deployServiceTwo() {
         //Uses the specified tracer configuration
         WebArchive serviceTwo = ShrinkWrap.create(WebArchive.class, "ServiceTwo.war")
-                .addClass(TaggedTracerIdentityApplication.class)
+                .addClass(TracerIdentityApplication.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml");
         return serviceTwo;
@@ -139,11 +139,11 @@ public class MultiTracerTestCase {
 
     private void testHttpInvokation() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-            HttpResponse svcOneResponse = client.execute(new HttpGet(serviceOneUrl.toString() + "service-endpoint/app"));
+            HttpResponse svcOneResponse = client.execute(new HttpGet(serviceOneUrl.toString() + "service-endpoint/tags"));
             Assert.assertEquals(200, svcOneResponse.getStatusLine().getStatusCode());
             String serviceOneTracer = EntityUtils.toString(svcOneResponse.getEntity());
             Assert.assertEquals("initial", serviceOneTracer);
-            HttpResponse svcTwoResponse = client.execute(new HttpGet(serviceTwoUrl.toString() + "service-endpoint/app"));
+            HttpResponse svcTwoResponse = client.execute(new HttpGet(serviceTwoUrl.toString() + "service-endpoint/tags"));
             Assert.assertEquals(200, svcTwoResponse.getStatusLine().getStatusCode());
             String serviceTwoTracer = EntityUtils.toString(svcTwoResponse.getEntity());
             Assert.assertNotEquals("Service one and service two tracer instance hash is same - " + serviceTwoTracer,
