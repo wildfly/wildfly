@@ -130,4 +130,9 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     public int getIdleConnectionCount() {
         return this.manager.getIdleConnectionCount();
     }
+
+    @Override
+    public long getRetries() {
+        return this.manager.getRetries();
+    }
 }
