@@ -87,7 +87,6 @@
                                     <excluded-packages>
                                         <name>docs.schema</name>
                                     </excluded-packages>
-                                    <inheritConfigs>false</inheritConfigs>
                                 </feature-pack>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
