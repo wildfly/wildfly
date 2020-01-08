@@ -140,11 +140,9 @@ public class PreservePathTestCase {
 
       if (preservePathOnForward != null && preservePathOnForward) {
          expectedServletPath = "/test";
-         // Note that in the true case, there is an extra slash before test. This might be removed in the future
-         expectedRequestURL = url + "/test";
+         expectedRequestURL = url + "test";
       } else{
          expectedServletPath = "/preserve-path.jsp";
-         // Note that in the true case, there is an extra slash before test. This might be removed in the future
          expectedRequestURL = url + "preserve-path.jsp";
       }
 
