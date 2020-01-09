@@ -46,6 +46,7 @@
         <module>fault-tolerance-smallrye</module>
         <module>health-smallrye</module>
         <module>metrics-smallrye</module>
+        <module>openapi-smallrye</module>
         <module>opentracing-extension</module>
         <module>opentracing-smallrye</module>
     </modules>
