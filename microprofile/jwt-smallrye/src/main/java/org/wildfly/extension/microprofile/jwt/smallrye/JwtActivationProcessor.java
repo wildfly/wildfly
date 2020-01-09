@@ -61,7 +61,7 @@ class JwtActivationProcessor implements DeploymentUnitProcessor {
         }
 
         JBossWebMetaData mergedMetaData = warMetaData.getMergedJBossWebMetaData();
-        LoginConfigMetaData loginConfig = mergedMetaData.getLoginConfig();
+        LoginConfigMetaData loginConfig = mergedMetaData != null ? mergedMetaData.getLoginConfig() : null;
         if (loginConfig != null && !JWT_AUTH_METHOD.equals(loginConfig.getAuthMethod())) {
             // An auth-method has been defined, this is not MP-JWT
             return;
