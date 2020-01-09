@@ -22,12 +22,17 @@
 
 package org.wildfly.clustering.infinispan.client;
 
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
+
+import javax.management.JMException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
@@ -38,6 +43,8 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
 import org.infinispan.client.hotrod.VersionedValue;
+import org.infinispan.client.hotrod.configuration.StatisticsConfiguration;
+import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.impl.RemoteCacheSupport;
 import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
 import org.infinispan.commons.util.CloseableIterator;
@@ -97,6 +104,24 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
         try (Registration registration = this.registration.getAndSet(null)) {
             if (registration != null) {
                 this.cache.stop();
+
+                // ISPN-11140 workaround
+                StatisticsConfiguration configuration = this.manager.getConfiguration().statistics();
+                if (configuration.jmxEnabled()) {
+                    Hashtable<String, String> properties = new Hashtable<>();
+                    properties.put("type", "HotRodClient");
+                    properties.put("name", configuration.jmxName());
+                    properties.put("cache", this.cache.getName());
+                    MBeanServer server = configuration.mbeanServerLookup().getMBeanServer();
+                    try {
+                        ObjectName name = ObjectName.getInstance(configuration.jmxDomain(), properties);
+                        if (server.isRegistered(name)) {
+                            server.unregisterMBean(name);
+                        }
+                    } catch (JMException e) {
+                        throw new HotRodClientException(e);
+                    }
+                }
             }
         }
     }
