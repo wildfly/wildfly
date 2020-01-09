@@ -78,7 +78,7 @@ $ curl -v -H'Accept: application/json' http://localhost:8080/openapi
 {"openapi": "3.0.1" ... }
 ----
 
-If the Undertow server/host of a given application defines an HTTPS listener, then the OpenAPI document will also be available via HTTPS, e.g. https://localhost:8080/openapi
+If the Undertow server/host of a given application defines an HTTPS listener, then the OpenAPI document will also be available via HTTPS, e.g. https://localhost:8443/openapi
 
 == Component Reference
 
