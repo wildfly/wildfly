@@ -173,6 +173,7 @@
                     <systemPropertyVariables>
                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
+                        <mp.health.args>-Dhystrix.command.default.execution.isolation.thread.interruptOnTimeout=false -Dhystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=60000 -Dhystrix.command.default.fallback.isolation.semaphore.maxConcurrentRequests=50 -Dhystrix.threadpool.default.allowMaximumSizeToDivergeFromCoreSize=true -Dhystrix.threadpool.default.maximumSize=40</mp.health.args>
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
