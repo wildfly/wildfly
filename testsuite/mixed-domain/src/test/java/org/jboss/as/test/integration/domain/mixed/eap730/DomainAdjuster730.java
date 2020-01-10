@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap730;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +45,14 @@ public class DomainAdjuster730 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
+        removeMicroProfileJWT(list, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"));
+
         return list;
+    }
+
+    private void removeMicroProfileJWT(final List<ModelNode> list, final PathAddress subsystem) {
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye")));
     }
 
 }
