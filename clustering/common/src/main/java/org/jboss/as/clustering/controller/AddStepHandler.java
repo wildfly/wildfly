@@ -249,7 +249,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             }
         }
 
-        for (CapabilityReferenceRecorder recorder : context.getResourceRegistration().getRequirements()) {
+        for (CapabilityReferenceRecorder recorder : registration.getRequirements()) {
             recorder.addCapabilityRequirements(context, resource, null);
         }
     }
