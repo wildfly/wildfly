@@ -199,18 +199,6 @@
                         </executions>
                         <dependencies>
                             <dependency>
-                                <groupId>org.jboss.universe</groupId>
-                                <artifactId>community-universe</artifactId>
-                                <version>${version.org.jboss.universe.community-universe}</version>
-                                <scope>runtime</scope>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.jboss.universe.producer</groupId>
-                                <artifactId>wildfly-producers</artifactId>
-                                <version>${version.org.jboss.universe.producer.wildfly-producers}</version>
-                                <scope>runtime</scope>
-                            </dependency>
-                            <dependency>
                                 <groupId>org.wildfly.core</groupId>
                                 <artifactId>wildfly-core-galleon-pack</artifactId>
                                 <version>${version.org.wildfly.core}</version>
