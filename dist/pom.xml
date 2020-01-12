@@ -40,6 +40,7 @@
     <artifactId>wildfly-dist</artifactId>
     <name>WildFly: Distribution</name>
     <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -96,7 +97,7 @@
                                     <transitive>true</transitive>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
                                     </included-packages>
@@ -104,7 +105,7 @@
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${full.maven.version}</version>
                                 </feature-pack>
                             </feature-packs>
                         </configuration>
@@ -199,7 +200,7 @@
                                     <offline>true</offline>
                                     <fpGroupId>${project.groupId}</fpGroupId>
                                     <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
-                                    <fpVersion>${project.version}</fpVersion>
+                                    <fpVersion>${full.maven.version}</fpVersion>
                                 </configuration>
                             </execution>
                         </executions>
