@@ -133,21 +133,8 @@ public class CMTTxInterceptor implements Interceptor {
         try {
             final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
             final Method method = invocation.getMethod();
-            TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, method);
+            final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, method);
             final int timeoutInSeconds = component.getTransactionTimeout(methodIntf, method);
-
-            final ComponentView view = invocation.getPrivateData(ComponentView.class);
-            if (view != null && view.isAsynchronous(method)) {
-                // adjust for asynchronous methods. The client’s transaction context does not propagate with
-                // an asynchronous method invocation.
-                switch (attr) {
-                    case REQUIRED:
-                    case MANDATORY:
-                    case SUPPORTS:
-                        attr = TransactionAttributeType.REQUIRES_NEW;
-                        break;
-                }
-            }
 
             switch (attr) {
                 case MANDATORY:
@@ -157,6 +144,15 @@ public class CMTTxInterceptor implements Interceptor {
                 case NOT_SUPPORTED:
                     return notSupported(invocation, component);
                 case REQUIRED:
+                    final ComponentView view = invocation.getPrivateData(ComponentView.class);
+                    if (view != null && view.isAsynchronous(method)) {
+                        // EJB 3.2 4.5.3 Transactions
+                        // The client’s transaction context does not propagate with an asynchronous method invocation. From the
+                        // Bean Provider’s point of view, there is never a transaction context flowing in from the client. This
+                        // means, for example, that the semantics of the REQUIRED transaction attribute on an asynchronous
+                        // method are exactly the same as REQUIRES_NEW.
+                        return requiresNew(invocation, component, timeoutInSeconds);
+                    }
                     return required(invocation, component, timeoutInSeconds);
                 case REQUIRES_NEW:
                     return requiresNew(invocation, component, timeoutInSeconds);
