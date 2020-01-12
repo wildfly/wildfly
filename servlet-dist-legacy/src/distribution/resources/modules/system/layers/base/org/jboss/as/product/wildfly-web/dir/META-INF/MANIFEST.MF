@@ -1,2 +1,2 @@
 JBoss-Product-Release-Name: ${servlet.dist.product.release.name}
-JBoss-Product-Release-Version: ${product.release.version}
+JBoss-Product-Release-Version: ${servlet.dist.product.release.version}

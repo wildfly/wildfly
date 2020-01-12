@@ -245,7 +245,7 @@
                                             <parameters>
                                                 <parameter>
                                                     <name>version</name>
-                                                    <value>${product.release.version}</value>
+                                                    <value>${servlet.dist.product.release.version}</value>
                                                 </parameter>
                                                 <parameter>
                                                     <name>product.release.name</name>
