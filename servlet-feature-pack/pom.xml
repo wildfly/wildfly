@@ -595,11 +595,11 @@
                                             <parameters>
                                                 <parameter>
                                                     <name>version</name>
-                                                    <value>${product.release.version}</value>
+                                                    <value>${ee.dist.product.release.version}</value>
                                                 </parameter>
                                                 <parameter>
                                                     <name>product.release.name</name>
-                                                    <value>${full.dist.product.release.name}</value>
+                                                    <value>${ee.dist.product.release.name}</value>
                                                 </parameter>
                                             </parameters>
                                         </transformationSet>

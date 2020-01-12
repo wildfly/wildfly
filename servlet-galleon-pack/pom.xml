@@ -600,7 +600,7 @@
                             <release-name>${servlet.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <task-properties>
-                                <product.release.version>${product.release.version}</product.release.version>
+                                <product.release.version>${ee.dist.product.release.version}</product.release.version>
                             </task-properties>
                         </configuration>
                     </execution>
