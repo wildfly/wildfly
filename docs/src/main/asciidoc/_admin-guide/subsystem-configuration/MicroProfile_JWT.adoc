@@ -65,6 +65,17 @@ mp.jwt.verify.publickey.location=META-INF/public.pem
 mp.jwt.verify.issuer=quickstart-jwt-issuer
 ----
 
+==== Unavailable Options
+
+There are presently a couple of limitations with support for JWKS which we are looking to address.
+
+ * If a JWKS is inlined using the `mp.jwt.verify.publickey` property then only the first key from the set will be used with the remainder being ignored.
+ * Encoding of JWKS using Base64 is presently unsupported.
+ 
+In both cases a clear text JWKS can be referenced instead using the `mp.jwt.verify.publickey.location` config property.
+
+Support for Base64 encoded JWKS keys and inlined JWKS keys within the `mp.jwt.verify.publickey` property will be further evaluation and either support added or a contibution to the specification to remove these options.
+
 ==== SmallRye JWT Properties
 
 The SmallRye JWT specific properties allow for a lot of customisation not covered by the specification, however as these are not specification defined they could be subject to change.
