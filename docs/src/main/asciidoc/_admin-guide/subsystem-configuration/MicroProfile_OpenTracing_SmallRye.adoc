@@ -30,27 +30,46 @@ element to the xml or by using the following CLI operation:
 
 == Supported instrumentation libraries
 
-WildFly's MicroProfile OpenTracing subsystem implements MicroProfile 1.3, which includes support for tracing JAX-RS and
-CDI.
+WildFly's MicroProfile OpenTracing subsystem implements MicroProfile 1.3, which includes support for tracing JAX-RS and CDI.
+
+Currently the subsystem allows the configuration of https://github.com/jaegertracing/jaeger-client-java[Jaeger Java Client]. You can then specify which tracer to use in your deployment by specifying a `smallrye.opentracing.tracer.configuration` init-parameter in your deployment descriptor. If this value is wrong the deployment will fail.
+You can also set the default tracer to be injected by using the `default-tracer` attribute on the subsystem configuration.
 
 Additionally, applications being deployed are able to provide their own tracers via the
-https://github.com/opentracing-contrib/java-tracerresolver[`TracerResolver`] facility. In that case, the default tracer
-will *not* be used.
+https://github.com/opentracing-contrib/java-tracerresolver[`TracerResolver`] facility. In that case, the default tracer will *not* be used.
 
-The subsystem ships with https://github.com/jaegertracing/jaeger-client-java[Jaeger Java Client] as the default tracer.
-Refer to that project's documentation for instructions on how to configure it. Note that the configuration is only
-possible by setting system properties or environment variables. If a more complex configuration is required, implement a
-`TracerResolver` that returns the `Tracer` with the desired state.
+For compatibility if no tracer is defined in the subsystem and no tracer can be resolved, then a Jaeger Tracer instance will be created from the environment variables.
 
-WARNING: by default, the Jaeger Client Java has a probabilistic sampling strategy, set to 0.001, meaning that only
-approximately one in one thousand traces will be sampled. To sample every request, set the environment variable
-`JAEGER_SAMPLER_TYPE` to `const` and `JAEGER_SAMPLER_PARAM` to `1`.
+== Configuring a Jaeger tracer
 
-WARNING: the supported configuration options for this Tech Preview feature, particularly those related to configuring
-the Jaeger Java Client tracer, may change in incompatible ways in a future release.
+To add a new Jaeger tracer instance you can use the following CLI operation:
 
-By default, the service name used with the Jaeger Client is derived from the deployment's name, which is usually the
-WAR file name.
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=microprofile-opentracing-smallrye/jaeger-tracer=my-tracer:add()
+{"outcome" => "success"}
+----
+
+Those are the configuration attributes:
+
+    ** `propagation`: The supported trace context propagation formats:
+        *** JAEGER: The default Jaeger trace context propagation format.
+        *** B3: The Zipkin B3 trace context propagation format.
+    ** `sampler-type`: The type of sampler to use in the tracer. Optional. Valid values: remote (default),ratelimiting, probabilistic, const.
+    ** `sampler-param`: The floating point value that makes sense for the correct samplerType.
+    ** `sampler-manager-host-port`: the port of the sampling manager that can provide sampling strategy to this service.
+    ** `sender-binding`: The outbound socket binding to connecto the Agent.
+    ** `sender-endpoint`: The endpoint, like https://jaeger-collector:14268/api/traces
+    ** `sender-user`: The Basic Auth username to be added on Authorization headers for requests sent to the endpoint.
+    ** `sender-auth-password`: The Basic Auth password to be added on Authorization headers for requests sent to the endpoint.
+    ** `sender-auth-token`: The Auth Token to be added as "Bearer" on Authorization headers for requests sent to the endpoint.
+    ** `reporter-log-spans`: Boolean to indicates whether the reporter should log the spans.
+    ** `reporter-flush-interval`: The flush interval when reporting spans remotely in milliseconds.
+    ** `reporter-max-queue-size`: The reporter's maximum queue size.
+    ** `tracer_id_128bit`: Opt-in to use 128 bit traceIds. By default, uses 64 bits.
+    ** `tracer-tags`: A comma separated list of name = value tracer level tags, which get added to all reported spans. The value can also refer to an environment variable using the format ${envVarName:default}, where the :default is optional, and identifies a value to be used if the environment variable cannot be found.
+
+By default, the service name used with the Jaeger Client is derived from the deployment's name, which is usually the WAR file name.
 
 As defined by the MicroProfile OpenTracing specification, CDI beans are traced if the annotation
 `org.eclipse.microprofile.opentracing.Traced` is present, either at the type or method level. Tracing can be disabled
