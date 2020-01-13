@@ -46,7 +46,6 @@
                 <!-- appclient is not referenced from standalone nor domain configuration models.-->
                 <include name="appclient"/>
                 <include name="bin"/>
-                <include name="modules.all"/>
             </packages>
             <default-configs inherit="false">
                 <include name="standalone.xml" model="standalone"/>
@@ -54,7 +53,6 @@
                 <include name="standalone-full.xml" model="standalone"/>
                 <include name="standalone-full-ha.xml" model="standalone"/>
                 <include name="standalone-load-balancer.xml" model="standalone"/>
-                <include name="domain.xml" model="domain"/>
                 <include name="host.xml" model="host"/>
                 <include name="host-master.xml" model="host"/>
                 <include name="host-slave.xml" model="host"/>
@@ -63,6 +61,7 @@
         </dependency>
     </dependencies>
     <default-packages>
+        <package name="modules.all"/>
         <package name="docs.licenses.merge"/>
         <package name="product.conf"/>
     </default-packages>
@@ -83,4 +82,17 @@
     <config name="host.xml" model="host"/>
     <config name="host-master.xml" model="host"/>
     <config name="host-slave.xml" model="host"/>
+
+
+    <generate-feature-specs>
+        <extensions>
+            <standalone>
+                <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+            </standalone>
+            <domain>
+                <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+            </domain>
+        </extensions>
+    </generate-feature-specs>
+
 </build>

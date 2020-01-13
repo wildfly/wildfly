@@ -28,11 +28,7 @@ limitations under the License.
        'ee.dist.product.release.name' property
     7) JBoss-Product-Release-Version key in manifest.mf has value starting with the value of the
        'verifier.product.release.version' property
-    8) JBossEULA.txt exists
-    8) version.txt exists
-    9) copyright.txt does not exist
-    10) README.txt does not exist
-    11) docs/contrib does not exist
+    8) Various modules provided by the feature pack that provides the complete MicroProfile feature set are not present
 -->
   <files>
     <file>
@@ -58,6 +54,42 @@ limitations under the License.
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/standalone/configuration/standalone.xml</location>
       <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/com/netflix/archaius/core/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/com/netflix/hystrix/core/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/reactivex/rxjava/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/apache/commons/configuration/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/hdrhistrogram/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
+      <exists>false</exists>
     </file>
   </files>
 </verifications>
