@@ -68,10 +68,11 @@ public class EeExtension implements Extension {
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // register submodels
+        final boolean runtimeOnlyRegistrationValid = context.isRuntimeOnlyRegistrationValid();
         rootResource.registerSubModel(ContextServiceResourceDefinition.INSTANCE);
         rootResource.registerSubModel(ManagedThreadFactoryResourceDefinition.INSTANCE);
-        rootResource.registerSubModel(ManagedExecutorServiceResourceDefinition.INSTANCE);
-        rootResource.registerSubModel(ManagedScheduledExecutorServiceResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(new ManagedExecutorServiceResourceDefinition(runtimeOnlyRegistrationValid));
+        rootResource.registerSubModel(new ManagedScheduledExecutorServiceResourceDefinition(runtimeOnlyRegistrationValid));
         rootResource.registerSubModel(new DefaultBindingsResourceDefinition(new DefaultBindingsConfigurationProcessor()));
 
         subsystem.registerXMLElementWriter(EESubsystemXmlPersister.INSTANCE);

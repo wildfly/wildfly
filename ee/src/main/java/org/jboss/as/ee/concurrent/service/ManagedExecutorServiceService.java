@@ -125,10 +125,14 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
     }
 
     public ManagedExecutorServiceAdapter getValue() throws IllegalStateException {
+        return getExecutorService().getAdapter();
+    }
+
+    public ManagedExecutorServiceImpl getExecutorService() throws IllegalStateException {
         if (executorService == null) {
             throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
-        return executorService.getAdapter();
+        return executorService;
     }
 
     public Injector<ManagedThreadFactoryImpl> getManagedThreadFactoryInjector() {
