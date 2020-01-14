@@ -23,9 +23,9 @@ package org.jboss.as.ejb3.tx;
 
 import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.rmi.RemoteException;
-
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.NoSuchEJBException;
@@ -39,10 +39,11 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.MethodIntfHelper;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -131,8 +132,10 @@ public class CMTTxInterceptor implements Interceptor {
         final int oldTimeout = tm.getTransactionTimeout();
         try {
             final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
-            final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, invocation.getMethod());
-            final int timeoutInSeconds = component.getTransactionTimeout(methodIntf, invocation.getMethod());
+            final Method method = invocation.getMethod();
+            final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, method);
+            final int timeoutInSeconds = component.getTransactionTimeout(methodIntf, method);
+
             switch (attr) {
                 case MANDATORY:
                     return mandatory(invocation, component);
@@ -141,6 +144,15 @@ public class CMTTxInterceptor implements Interceptor {
                 case NOT_SUPPORTED:
                     return notSupported(invocation, component);
                 case REQUIRED:
+                    final ComponentView view = invocation.getPrivateData(ComponentView.class);
+                    if (view != null && view.isAsynchronous(method)) {
+                        // EJB 3.2 4.5.3 Transactions
+                        // The client’s transaction context does not propagate with an asynchronous method invocation. From the
+                        // Bean Provider’s point of view, there is never a transaction context flowing in from the client. This
+                        // means, for example, that the semantics of the REQUIRED transaction attribute on an asynchronous
+                        // method are exactly the same as REQUIRES_NEW.
+                        return requiresNew(invocation, component, timeoutInSeconds);
+                    }
                     return required(invocation, component, timeoutInSeconds);
                 case REQUIRES_NEW:
                     return requiresNew(invocation, component, timeoutInSeconds);
