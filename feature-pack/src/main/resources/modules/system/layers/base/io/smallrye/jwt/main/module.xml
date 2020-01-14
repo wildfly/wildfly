@@ -19,6 +19,10 @@
   -->
 
 <module xmlns="urn:jboss:module:1.8" name="io.smallrye.jwt">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+    
     <resources>
         <artifact name="${io.smallrye:smallrye-jwt}"/>
     </resources>
