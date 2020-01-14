@@ -1,0 +1,113 @@
+[[Undertow]]
+= JAXRS subsystem configuration
+
+****
+
+The jaxrs subsystem presents RESTful facilities as defined by the Jakarta RESTful Web Services
+project (https://projects.eclipse.org/projects/ee4j.jaxrs) and implemented
+by the RESTEasy project (https://resteasy.github.io). 
+
+jaxrs is a key facility and is implemented in the usual out of the box wildfly profiles, such as
+standalone.xml, standalone-full.xml, etc.
+
+*Required extension:*
+
+[source,xml,options="nowrap"]
+----
+<extension module="org.jboss.as.jaxrs"/>
+----
+
+*Basic subsystem configuration example:*
+
+jaxrs ships as an empty xml element:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:jaxrs:2.0"/>
+----
+but it can be expanded to configure parameters described in Section 3.4 "Configuration switches"
+of the RESTEasy User Guide (https://resteasy.github.io/docs.html). For example:
+
+[source,xml,options="nowrap"]
+
+<subsystem xmlns="urn:jboss:domain:jaxrs:2.0">
+    <resteasy-add-charset>true</resteasy-add-charset>
+    <resteasy-gzip-max-input>17</resteasy-gzip-max-input>
+    <resteasy-jndi-resources>
+       <jndi>java:global/jaxrsnoap/EJB_Resource1</jndi>
+       <jndi>java:global/jaxrsnoap/EJB_Resource2</jndi>
+    </resteasy-jndi-resources>
+    <resteasy-language-mapping>
+        <entry key="es">es</entry>
+        <entry key="fr">fr</entry>
+        <entry key="en">en-US<entry>
+    </resteasy-language-mapping>
+    <resteasy-media-type-param-mapping>mt</resteasy-media-type-param-mapping>
+    <resteasy-providers>
+        <class>com.bluemonkey.reader</class>
+        <class>com.bluemonkey.writer</class>
+    </resteasy-providers>
+</subsystem>
+
+*Note.* The use of hyphens is a Wildfly convention. The hyphens are translated into periods before
+the parameters are passed into RESTEasy so that they conform to the RESTEasy parameter names.
+
+*Note.* 
+A parameter value is of one of five types:
+
+1. boolean
+2. integer
+3. string
+4. list
+5. map
+
+Parameters "resteasy.disable.providers" and "resteasy.providers" are lists of classes, using the 
+syntax shown in the example, and "resteasy-jndi-resources" is a list of JNDI names.
+"resteasy-language-mappings" and "resteasy-media-type-mappings" are maps, using the syntax
+shown in the example.
+
+Things look a little different in the Command Line Interface. For example,
+
+[source]
+[standalone@localhost:9990 subsystem=jaxrs] :list-add(name=resteasy-disable-providers, value=org.jboss.resteasy.plugin.providers.DefaultTextPlain)
+{"outcome" => "success"}
+[standalone@localhost:9990 subsystem=jaxrs] :list-add(name=resteasy-disable-providers, value=org.jboss.resteasy.plugin.providers.StringTextStar)
+{"outcome" => "success"}
+[standalone@localhost:9990 subsystem=jaxrs] :read-attribute(name=resteasy-disable-providers)
+{
+    "outcome" => "success",
+    "result" => [
+        "org.jboss.resteasy.plugin.providers.DefaultTextPlain",
+        "org.jboss.resteasy.plugin.providers.StringTextStar"
+    ]
+}
+
+or
+
+[source]
+[standalone@localhost:9990 subsystem=jaxrs] :map-put(name=resteasy-media-type-mappings, key=xml, value=application/xml)
+{"outcome" => "success"}
+[standalone@localhost:9990 subsystem=jaxrs] :map-put(name=resteasy-media-type-mappings, key=unusual, value=application/unusual)
+{"outcome" => "success"}
+[standalone@localhost:9990 subsystem=jaxrs] :read-attribute(name=resteasy-media-type-mappings)
+{
+    "outcome" => "success",
+    "result" => {
+        "xml" => "application/xml",
+        "unusual" => "application/unusual"
+    }
+}
+
+For a discussion of the various parameters, see the RESTEasy User Guide.
+
+*Note.* One important thing to understand is that these parameters are global. That is, they
+apply to all deployments.
+
+*Note.* Another important fact is that once a parameter is set, by way of the CLI interface, for example,
+that parameter and its value will be passed to subsequent deployments as web.xml context parameters. Existing 
+deployments are not affected.
+
+*Note.* Since there parameters are global, the classes referred in "resteasy.providers" and "resteasy.disable.providers"
+must be available to all deployments. In practice, then, they are meant to enable
+or disable RESTEasy providers. Note that they can be used in conjunction with
+"resteasy-use-builtin-providers" to tailor a set of available providers. 
