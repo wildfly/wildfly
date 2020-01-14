@@ -401,6 +401,11 @@
             <artifactId>wildfly-system-jmx</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-jaxrs</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -525,6 +530,7 @@
                                         <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/jaxrs/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
@@ -603,6 +609,7 @@
                                         <exclude>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxrs/cfg/**/ResteasyAttributeTestCase.java</exclude>
                                     </excludes>
 
                                     <environmentVariables>
@@ -1079,6 +1086,7 @@
                                         <exclude>org/jboss/as/test/integration/weld/modules/PortableExtensionInExternalModuleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/deployment/enterprise/EnterpriseBeanDiscoveryTest.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/extensions/ExtensionsInEarDiscoveredTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxrs/cfg/ResteasyAttributeTestCase.java</exclude>
                                         <!-- requires web-services-->
                                         <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
                                     </excludes>

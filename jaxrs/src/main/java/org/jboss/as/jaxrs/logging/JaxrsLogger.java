@@ -28,6 +28,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.util.List;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.jaxrs.deployment.JaxrsSpringProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -197,5 +198,11 @@ public interface JaxrsLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 21, value = "%s %s")
     void classIntrospectionFailure(String clazz, String msg);
+
+    @Message(id = 22, value = "\"Parameter %s is not a list\"")
+    OperationFailedException parameterNotList(String param);
+
+    @Message(id = 23, value = "Illegal value for parameter %s: %s")
+    String illegalArgument(String name, String value);
 
 }

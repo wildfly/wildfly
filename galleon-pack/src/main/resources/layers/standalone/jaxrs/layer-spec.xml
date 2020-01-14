@@ -3,5 +3,5 @@
     <dependencies>
         <layer name="web-server"/>
     </dependencies>
-    <feature spec="subsystem.jaxrs"/>
+    <feature-group name="jaxrs"/>
 </layer-spec>
