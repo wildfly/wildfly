@@ -26,7 +26,6 @@ import java.util.EnumSet;
 import java.util.Locale;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -56,20 +55,7 @@ public class MicroProfileOpenAPISubsystemTestCase extends AbstractSubsystemBaseT
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] { String.format(Locale.ROOT, "/subsystem-templates/%s.xml", this.getMainSubsystemName()) };
-    }
-
-    @Override
     protected String getSubsystemXsdPath() throws IOException {
         return String.format(Locale.ROOT, "schema/wildfly-%s_%d_%d.xsd", this.getMainSubsystemName(), this.schema.major(), this.schema.minor());
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        if (this.schema == MicroProfileOpenAPISchema.CURRENT) {
-            super.testSchemaOfSubsystemTemplates();
-        }
     }
 }
