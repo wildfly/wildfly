@@ -30,6 +30,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
+import org.jboss.as.ejb3.validator.EjbProxy;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.ProxyFactory;
@@ -54,7 +55,7 @@ public class EJBViewDescription extends ViewDescription {
 
     public EJBViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf, final boolean ejb2xView) {
         //only add the default configurator if an ejb 3.x business view
-        super(componentDescription, viewClassName, !ejb2xView && methodIntf != MethodIntf.HOME && methodIntf != MethodIntf.LOCAL_HOME );
+        super(componentDescription, viewClassName, !ejb2xView && methodIntf != MethodIntf.HOME && methodIntf != MethodIntf.LOCAL_HOME, EjbProxy.class.getName());
         this.methodIntf = methodIntf;
         this.ejb2xView = ejb2xView;
         hasJNDIBindings = initHasJNDIBindings(methodIntf);
