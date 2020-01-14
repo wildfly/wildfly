@@ -46,8 +46,8 @@ public class SessionExpirationScheduler implements Scheduler<String, ImmutableSe
     private final Batcher<TransactionBatch> batcher;
     private final Remover<String> remover;
 
-    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, Remover<String> remover) {
-        this.scheduler = new LocalScheduler<>(new SortedScheduledEntries<>(), this);
+    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, Remover<String> remover, Duration closeTimeout) {
+        this.scheduler = new LocalScheduler<>(new SortedScheduledEntries<>(), this, closeTimeout);
         this.batcher = batcher;
         this.remover = remover;
     }

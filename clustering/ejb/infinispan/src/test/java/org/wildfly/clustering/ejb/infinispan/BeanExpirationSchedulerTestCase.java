@@ -56,7 +56,7 @@ public class BeanExpirationSchedulerTestCase {
         when(config.getRemoveListener()).thenReturn(listener);
         when(entry.getLastAccessedTime()).thenReturn(Instant.now());
 
-        try (Scheduler<String, ImmutableBeanEntry<String>> scheduler = new BeanExpirationScheduler<>(group, batcher, factory, config, remover)) {
+        try (Scheduler<String, ImmutableBeanEntry<String>> scheduler = new BeanExpirationScheduler<>(group, batcher, factory, config, remover, Duration.ZERO)) {
             scheduler.schedule(beanId, entry);
 
             Thread.sleep(500);
@@ -87,7 +87,7 @@ public class BeanExpirationSchedulerTestCase {
         when(entry.getLastAccessedTime()).thenReturn(Instant.now());
         when(remover.remove(beanId, listener)).thenReturn(true);
 
-        try (Scheduler<String, ImmutableBeanEntry<String>> scheduler = new BeanExpirationScheduler<>(group, batcher, factory, config, remover)) {
+        try (Scheduler<String, ImmutableBeanEntry<String>> scheduler = new BeanExpirationScheduler<>(group, batcher, factory, config, remover, Duration.ZERO)) {
             scheduler.schedule(beanId, entry);
 
             Thread.sleep(500);
@@ -117,7 +117,7 @@ public class BeanExpirationSchedulerTestCase {
         when(factory.findValue(beanId)).thenReturn(entry);
         when(entry.isExpired(same(timeout))).thenReturn(false);
 
-        try (Scheduler<String, ImmutableBeanEntry<String>> scheduler = new BeanExpirationScheduler<>(group, batcher, factory, config, remover)) {
+        try (Scheduler<String, ImmutableBeanEntry<String>> scheduler = new BeanExpirationScheduler<>(group, batcher, factory, config, remover, Duration.ZERO)) {
             scheduler.schedule(beanId, entry);
 
             Thread.sleep(500);
@@ -143,7 +143,7 @@ public class BeanExpirationSchedulerTestCase {
         when(config.getRemoveListener()).thenReturn(listener);
         when(entry.getLastAccessedTime()).thenReturn(Instant.now());
 
-        try (Scheduler<String, ImmutableBeanEntry<String>> scheduler = new BeanExpirationScheduler<>(group, batcher, factory, config, remover)) {
+        try (Scheduler<String, ImmutableBeanEntry<String>> scheduler = new BeanExpirationScheduler<>(group, batcher, factory, config, remover, Duration.ZERO)) {
             scheduler.schedule(beanId, entry);
 
             Thread.sleep(500);

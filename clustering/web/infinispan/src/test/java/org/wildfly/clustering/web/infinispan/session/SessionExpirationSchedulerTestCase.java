@@ -68,7 +68,7 @@ public class SessionExpirationSchedulerTestCase {
         when(canceledSessionMetaData.getLastAccessedTime()).thenReturn(now);
         when(remover.remove(expiringSessionId)).thenReturn(true);
 
-        try (Scheduler<String, ImmutableSessionMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover)) {
+        try (Scheduler<String, ImmutableSessionMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover, Duration.ZERO)) {
             scheduler.schedule(immortalSessionId, immortalSessionMetaData);
             scheduler.schedule(canceledSessionId, canceledSessionMetaData);
             scheduler.schedule(expiringSessionId, expiringSessionMetaData);

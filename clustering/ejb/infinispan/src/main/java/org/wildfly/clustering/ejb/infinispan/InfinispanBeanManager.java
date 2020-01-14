@@ -139,10 +139,11 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         this.executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(InfinispanBeanManager.class));
         this.affinity.start();
 
+        Duration stopTimeout = Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout());
         List<Scheduler<I, ImmutableBeanEntry<I>>> schedulers = new ArrayList<>(2);
         Duration timeout = this.expiration.getTimeout();
         if ((timeout != null) && !timeout.isNegative()) {
-            schedulers.add(new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, new ExpiredBeanRemover<>(this.beanFactory, this.expiration)));
+            schedulers.add(new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, new ExpiredBeanRemover<>(this.beanFactory, this.expiration), stopTimeout));
         }
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
@@ -151,7 +152,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         if (idleTimeout != null) {
             Duration idleDuration = Duration.parse(idleTimeout);
             if (!idleDuration.isNegative()) {
-                schedulers.add(new EagerEvictionScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.groupFactory, idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
+                schedulers.add(new EagerEvictionScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.groupFactory, idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation", stopTimeout));
             }
         }
 

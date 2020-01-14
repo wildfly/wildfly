@@ -57,8 +57,8 @@ public class EagerEvictionScheduler<I, T> implements Scheduler<I, ImmutableBeanE
 
     private final CommandDispatcher<BeanGroupEvictor<I>> dispatcher;
 
-    public EagerEvictionScheduler(Group group, Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, BeanGroupEvictor<I> evictor, Duration idleTimeout, CommandDispatcherFactory dispatcherFactory, String dispatcherName) {
-        this.scheduler = new LocalScheduler<>(group.isSingleton() ? new LinkedScheduledEntries<>() : new SortedScheduledEntries<>(), this);
+    public EagerEvictionScheduler(Group group, Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, BeanGroupEvictor<I> evictor, Duration idleTimeout, CommandDispatcherFactory dispatcherFactory, String dispatcherName, Duration closeTimeout) {
+        this.scheduler = new LocalScheduler<>(group.isSingleton() ? new LinkedScheduledEntries<>() : new SortedScheduledEntries<>(), this, closeTimeout);
         this.batcher = batcher;
         this.factory = factory;
         this.idleTimeout = idleTimeout;
