@@ -28,6 +28,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +44,10 @@ import static org.junit.Assert.assertTrue;
 public class SimpleSubsystemsTestCase extends ContainerResourceMgmtTestBase {
 
     @Test
+    @Ignore
+    /*
+     * The jaxrs subsystem is no longer empty.
+     */
     public void testJaxrs() throws Exception {
         testSimpleSubsystem("jaxrs");
     }
