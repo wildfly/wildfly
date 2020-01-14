@@ -108,8 +108,8 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                    <version>${ee.maven.version}</version>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${full.maven.version}</version>
                                     <inherit-configs>false</inherit-configs>
                                     <inherit-packages>false</inherit-packages>
                                 </feature-pack>
