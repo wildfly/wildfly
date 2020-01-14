@@ -1066,7 +1066,7 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
