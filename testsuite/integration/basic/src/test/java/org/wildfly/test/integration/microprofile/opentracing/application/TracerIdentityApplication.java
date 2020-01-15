@@ -30,6 +30,8 @@ import javax.ws.rs.core.Application;
 
 import io.jaegertracing.internal.JaegerTracer;
 import io.opentracing.Tracer;
+import javax.ws.rs.PathParam;
+import org.eclipse.microprofile.opentracing.Traced;
 
 /**
  * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2018 Red Hat, Inc.
@@ -49,5 +51,51 @@ public class TracerIdentityApplication extends Application {
             JaegerTracer jTracer = (JaegerTracer) tracer;
             return Integer.toString(System.identityHashCode(jTracer));
         }
+    }
+
+    @Path("/tags")
+    public static class TagsTestResource {
+
+        @Inject
+        private Tracer tracer;
+
+        @GET
+        @Produces("text/plain")
+        public String get() {
+            JaegerTracer jTracer = (JaegerTracer) tracer;
+            return jTracer.tags().get("tracer-tag").toString();
+        }
+    }
+
+    @Path("/traceerror")
+    public static class ErrorTestResource {
+
+        @Inject
+        private Tracer tracer;
+
+        @GET
+        @Produces("text/plain")
+        @Traced
+        public String traceError() {
+            tracer.activeSpan().log("traceError");
+            // simulating an error on server side
+            throw new RuntimeException();
+        }
+    }
+
+    @Path("/test/{id: \\d+}/{txt: \\w+}")
+    public static class WildCardTestResource {
+
+        @Inject
+        private Tracer tracer;
+
+        @GET
+        @Produces("text/plain")
+        @Traced
+        public String twoWildcard(@PathParam("id") long id, @PathParam("txt") String txt) {
+            tracer.activeSpan().log( String.format("twoWildcard: %s, %s", id, txt));
+            return String.format("Hello from twoWildcard: %s, %s", id, txt);
+        }
+
     }
 }

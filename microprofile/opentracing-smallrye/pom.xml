@@ -55,19 +55,6 @@
             <artifactId>smallrye-opentracing</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>opentracing-tracerresolver</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-thrift</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
             <scope>provided</scope>

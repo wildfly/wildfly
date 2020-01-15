@@ -34,7 +34,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerSnapshot;
@@ -68,6 +70,7 @@ public class OnOffOpenTracingTestCase {
     private URL url;
 
     private static final String DEPLOYMENT = "deployment";
+    private static final PathAddress OT_SUBSYSTEM = PathAddress.parseCLIStyleAddress("/subsystem=microprofile-opentracing-smallrye");
 
     private static final String WEB_XML =
               "<web-app version=\"3.1\" xmlns=\"http://xmlns.jcp.org/xml/ns/javaee\"\n"
@@ -101,14 +104,18 @@ public class OnOffOpenTracingTestCase {
         serverSnapshot.close();
     }
 
-    private void opentracingSubsystem(String operationName, ManagementClient client) throws Exception {
-        final String OT_SUBSYSTEM_NAME = "microprofile-opentracing-smallrye";
+    private void removeOpentracingSubsystem() throws Exception {
+        Utils.applyUpdate(Operations.createRemoveOperation(OT_SUBSYSTEM.toModelNode()), managementClient.getControllerClient());
+        executeReloadAndWaitForCompletion(managementClient, 100000);
+    }
 
-        // remove the OpenTracing subsystem
-        ModelNode operation = createOpNode("subsystem=" + OT_SUBSYSTEM_NAME, operationName);
-        Utils.applyUpdate(operation, client.getControllerClient());
-
-        executeReloadAndWaitForCompletion(client, 100000);
+    private void addOpentracingSubsystem() throws Exception {
+        Utils.applyUpdate(Operations.createAddOperation(OT_SUBSYSTEM.toModelNode()), managementClient.getControllerClient());
+        ModelNode addTracer = Operations.createAddOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger").toModelNode());
+        addTracer.get("sampler-type").set("const");
+        addTracer.get("sampler-param").set(1.0D);
+        Utils.applyUpdate(addTracer, managementClient.getControllerClient());
+        executeReloadAndWaitForCompletion(managementClient, 100000);
     }
 
     private void enableServletStackTraceOnError() throws Exception {
@@ -139,7 +146,7 @@ public class OnOffOpenTracingTestCase {
         Assert.assertTrue(response.contains("Tracer instance is: JaegerTracer"));
 
         // Remove OpenTracing subsystem to disable it.
-        opentracingSubsystem(ModelDescriptionConstants.REMOVE, managementClient);
+        removeOpentracingSubsystem();
 
         try {
             // Perform request to the deployment on server where OpenTracing is disabled. Deployment must not have a Tracer instance available.
@@ -150,13 +157,13 @@ public class OnOffOpenTracingTestCase {
                     response.matches("(?s).*java\\.lang\\.NoClassDefFoundError: L*io.opentracing.Tracer.*"));
             // really dots because openjdk uses '/' whereas ibmjdk uses '.'      ---^        ---^
         } finally {
-            opentracingSubsystem(ModelDescriptionConstants.ADD, managementClient);
+            addOpentracingSubsystem();
         }
 
         // And again perform request to the deployment on the server where OpenTracing is enabled.
         response = Utils.makeCall(requestUri, 200);
         Assert.assertNotEquals(SimpleJaxRs.TRACER_NOT_INITIALIZED, response);
-        Assert.assertTrue(response.contains("Tracer instance is: JaegerTracer"));
+        Assert.assertTrue(response, response.contains("Tracer instance is: JaegerTracer"));
     }
 
 }

@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.jboss.as.ee.concurrent.ControlPointUtils.doScheduledWrap;
@@ -44,10 +45,12 @@ import static org.jboss.as.ee.concurrent.ControlPointUtils.doWrap;
 public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl {
 
     private final ControlPoint controlPoint;
+    private final ManagedExecutorRuntimeStats runtimeStats;
 
     public ManagedScheduledExecutorServiceImpl(String name, ManagedThreadFactoryImpl managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, ContextServiceImpl contextService, RejectPolicy rejectPolicy, ControlPoint controlPoint) {
         super(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService, rejectPolicy);
         this.controlPoint = controlPoint;
+        this.runtimeStats = new ManagedExecutorRuntimeStatsImpl(this);
     }
 
     @Override
@@ -102,6 +105,19 @@ public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterpris
     @Override
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
         return super.scheduleWithFixedDelay(doIdentityWrap(doScheduledWrap(command, controlPoint)), initialDelay, delay, unit);
+    }
+
+    @Override
+    protected ThreadPoolExecutor getThreadPoolExecutor() {
+        return (ThreadPoolExecutor) super.getThreadPoolExecutor();
+    }
+
+    /**
+     *
+     * @return the executor's runtime stats
+     */
+    public ManagedExecutorRuntimeStats getRuntimeStats() {
+        return runtimeStats;
     }
 
     /**

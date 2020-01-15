@@ -22,6 +22,8 @@
 
 package org.wildfly.microprofile.opentracing.smallrye;
 
+import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER;
+
 import io.opentracing.Tracer;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -36,7 +38,7 @@ public class TracerProducer {
 
     @Produces
     public Tracer getTracer() {
-        Object tracerObject = servletContext.getAttribute(TracerConstants.SMALLRYE_OPENTRACING_TRACER);
+        Object tracerObject = servletContext.getAttribute(SMALLRYE_OPENTRACING_TRACER);
         TracingLogger.ROOT_LOGGER.producingTracer(tracerObject);
         if (tracerObject instanceof Tracer) {
             return (Tracer) tracerObject;

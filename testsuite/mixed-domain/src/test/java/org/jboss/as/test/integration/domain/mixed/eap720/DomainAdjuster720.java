@@ -34,7 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
+import org.jboss.as.test.integration.domain.mixed.eap730.DomainAdjuster730;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,11 +42,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class DomainAdjuster720 extends DomainAdjuster {
+public class DomainAdjuster720 extends DomainAdjuster730 {
 
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
-        final List<ModelNode> list = new ArrayList<>();
+        final List<ModelNode> list = super.adjustForVersion(client, profileAddress, withMasterServers);
 
         adjustUndertow(profileAddress.append(SUBSYSTEM, "undertow"), list);
         list.addAll(removeDistributableWeb(profileAddress.append(SUBSYSTEM, "distributable-web")));

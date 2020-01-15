@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.1"
+         xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+
+    <context-param>
+        <param-name>resteasy.role.based.security</param-name>
+        <param-value>true</param-value>
+     </context-param>
+
+     <security-constraint>
+         <display-name>All Paths</display-name>
+         <web-resource-collection>
+             <web-resource-name>All</web-resource-name>
+             <url-pattern>/endp/echo</url-pattern>
+             <url-pattern>/endp/echo2</url-pattern>
+             <url-pattern>/endp/echoNeedsToken2Role</url-pattern>
+             <url-pattern>/endp/getPrincipalClass</url-pattern>
+             <url-pattern>/endp/needsGroup1Mapping</url-pattern>
+             <url-pattern>/endp/checkIsUserInRole</url-pattern>
+             <url-pattern>/endp/getInjectedPrincipal</url-pattern>
+
+             <url-pattern>/jwks/endp/verifyKeyAsPEM</url-pattern>
+             <url-pattern>/jwks/endp/verifyKeyLocationAsPEMResource</url-pattern>
+             <url-pattern>/jwks/endp/verifyKeyLocationAsPEMUrl</url-pattern>
+             <url-pattern>/jwks/endp/verifyKeyAsJWK</url-pattern>
+             <url-pattern>/jwks/endp/verifyKeyAsBase64JWK</url-pattern>
+             <url-pattern>/jwks/endp/verifyKeyAsJWKS</url-pattern>
+             <url-pattern>/jwks/endp/verifyKeyLocationAsJWKResource</url-pattern>
+             <url-pattern>/jwks/endp/verifyKeyLocationAsJWKSResource</url-pattern>
+             <url-pattern>/jwks/endp/verifyKeyLocationAsJWKSUrl</url-pattern>
+             <url-pattern>/jwks/endp/verifyMissingIssIsOk</url-pattern>
+             <url-pattern>/jwks/endp/verifyBadIssIsOk</url-pattern>
+             <url-pattern>/jwks/endp/verifyIssIsOk</url-pattern>
+         </web-resource-collection>
+         <auth-constraint>
+             <role-name>**</role-name>
+         </auth-constraint>
+    </security-constraint>
+
+</web-app>

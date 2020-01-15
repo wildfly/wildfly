@@ -19,13 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.microprofile.opentracing;
 
 import java.io.IOException;
 import java.util.Properties;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.KernelServices;
 
 public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
 
@@ -41,6 +41,11 @@ public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXsdPath() throws IOException {
         return "schema/wildfly-microprofile-opentracing_1_0.xsd";
+    }
+
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Override

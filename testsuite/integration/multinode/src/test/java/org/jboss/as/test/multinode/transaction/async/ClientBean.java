@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.multinode.transaction.async;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.util.Hashtable;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -29,10 +33,6 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
-
-import org.junit.Assert;
-
-import java.util.Hashtable;
 
 /**
  * Client bean which lookups for a remote bean on other server and do the call.
@@ -60,7 +60,7 @@ public class ClientBean {
         userTransaction.begin();
         try {
             remote.transactionStatus().get();
-            Assert.fail("Expecting exception being thrown as async call does not provide transaction context");
+            fail("Expecting exception being thrown as async call does not provide transaction context");
         } catch (java.util.concurrent.ExecutionException ee) {
             // ignored - bean with transaction attribute mandatory
             // but async call does not provide transactional context thus the exception is expected
@@ -73,7 +73,7 @@ public class ClientBean {
         final TransactionalRemote remote = getRemote(TransactionalStatusByRegistry.class);
         userTransaction.begin();
         try {
-            Assert.assertEquals("No transaction expected as async call does not pass txn context",
+            assertEquals("No transaction expected as async call does not pass txn context",
                 (Integer) Status.STATUS_NO_TRANSACTION, remote.transactionStatus().get());
         } finally {
             userTransaction.rollback();
@@ -84,10 +84,28 @@ public class ClientBean {
         final TransactionalRemote remote = getRemote(TransactionalStatusByManager.class);
         userTransaction.begin();
         try {
-            Assert.assertEquals("No transaction expected as async call does not pass txn context",
+            assertEquals("No transaction expected as async call does not pass txn context",
                     (Integer) Status.STATUS_NO_TRANSACTION, remote.transactionStatus().get());
         } finally {
             userTransaction.rollback();
         }
+    }
+
+    /**
+     * Verifies async method invocation with REQUIRED transaction attribute.
+     * The client transaction context should not be propagated to the invoked async method.
+     * The invoked async method should execute in a new, separate transaction context.
+     */
+    public void callToRequired() throws Exception {
+        final TransactionalRemote remote = getRemote(TransactionalStatusByManager.class);
+        userTransaction.begin();
+
+        // asyncWithRequired() will throw RuntimeException and cause its transaction to rollback.
+        // But it has no bearing on the transaction here, which should be able to commit okay.
+        remote.asyncWithRequired();
+
+        // wait a bit for the transaction in asyncWithRequired method to rollback
+        Thread.sleep(1000);
+        userTransaction.commit();
     }
 }

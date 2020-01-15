@@ -64,7 +64,7 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
 
     private JaxrsSubsystemDefinition() {
          super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver())
-                 .setAddHandler(JaxrsSubsystemAdd.INSTANCE)
+                 .setAddHandler(new JaxrsSubsystemAdd(JaxrsAttribute.ATTRIBUTES))
                  .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
     }
 

@@ -74,7 +74,7 @@ public class ResourceTracedTestCase {
         Assert.assertEquals(1, mockTracer.finishedSpans().size());
         Assert.assertEquals(
                 (servletContext.getContextPath() + ".war").substring(1),
-                servletContext.getInitParameter("smallrye.opentracing.serviceName")
+                servletContext.getAttribute("smallrye.opentracing.serviceName")
         );
     }
 
