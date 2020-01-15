@@ -24,7 +24,6 @@
         <subsystem>jsf.xml</subsystem>
         <subsystem>mail.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
-        <subsystem>microprofile-jwt-smallrye.xml</subsystem>
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
@@ -63,7 +62,6 @@
         <subsystem>jsf.xml</subsystem>
         <subsystem>mail.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
-        <subsystem>microprofile-jwt-smallrye.xml</subsystem>
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem supplement="${mod_cluster.supplement}">mod_cluster.xml</subsystem>
         <subsystem>naming.xml</subsystem>
@@ -106,7 +104,6 @@
         <subsystem>mail.xml</subsystem>
         <subsystem>messaging-activemq.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
-        <subsystem>microprofile-jwt-smallrye.xml</subsystem>
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
@@ -148,7 +145,6 @@
         <subsystem>mail.xml</subsystem>
         <subsystem supplement="ha">messaging-activemq.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
-        <subsystem>microprofile-jwt-smallrye.xml</subsystem>
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem supplement="${mod_cluster.supplement}">mod_cluster.xml</subsystem>
         <subsystem>naming.xml</subsystem>
