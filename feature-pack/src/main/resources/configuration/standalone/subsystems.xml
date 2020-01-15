@@ -25,7 +25,6 @@
         <subsystem>mail.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem>microprofile-health-smallrye.xml</subsystem>
-        <subsystem>microprofile-jwt-smallrye.xml</subsystem>
         <subsystem>microprofile-metrics-smallrye.xml</subsystem>
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>

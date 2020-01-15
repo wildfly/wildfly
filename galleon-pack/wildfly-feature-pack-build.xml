@@ -48,11 +48,6 @@
                 <include name="bin"/>
             </packages>
             <default-configs inherit="false">
-                <include name="standalone.xml" model="standalone"/>
-                <include name="standalone-ha.xml" model="standalone"/>
-                <include name="standalone-full.xml" model="standalone"/>
-                <include name="standalone-full-ha.xml" model="standalone"/>
-                <include name="standalone-load-balancer.xml" model="standalone"/>
                 <include name="host.xml" model="host"/>
                 <include name="host-master.xml" model="host"/>
                 <include name="host-slave.xml" model="host"/>
@@ -88,10 +83,12 @@
         <extensions>
             <standalone>
                 <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
             </standalone>
             <domain>
                 <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
             </domain>
         </extensions>

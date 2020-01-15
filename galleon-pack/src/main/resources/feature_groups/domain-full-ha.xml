@@ -5,6 +5,10 @@
         <feature-group name="domain-full-ha"/>
     </origin>
 
+    <feature spec="profile">
+        <param name="profile" value="full-ha"/>
+        <feature spec="subsystem.microprofile-jwt-smallrye"/>
+    </feature>
     <feature-group name="domain-host-excludes"/>
 
 </feature-group-spec>
