@@ -153,9 +153,9 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
 
     private Future<?> schedule(Map.Entry<T, Instant> entry) {
         Duration delay = Duration.between(Instant.now(), entry.getValue());
-        long nanos = !delay.isNegative() ? delay.toNanos() : 0;
+        long millis = !delay.isNegative() ? delay.toMillis() + 1 : 0;
         try {
-            return this.executor.schedule(this, nanos, TimeUnit.NANOSECONDS);
+            return this.executor.schedule(this, millis, TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
             return null;
         }

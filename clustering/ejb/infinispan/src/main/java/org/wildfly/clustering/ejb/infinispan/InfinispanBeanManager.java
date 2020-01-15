@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -44,7 +45,9 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
+import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
+import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
@@ -104,6 +107,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     private final Batcher<TransactionBatch> batcher;
     private final Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> filter;
     private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
+    private final AtomicInteger rehashTopology = new AtomicInteger();
     private final Function<BeanKey<I>, Node> primaryOwnerLocator;
 
     private volatile Scheduler<I, ImmutableBeanEntry<I>> scheduler;
@@ -155,7 +159,9 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         this.primaryOwnerScheduler = (this.scheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? this.scheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, this.scheduler, this.primaryOwnerLocator, InfinispanBeanKey::new)) : null;
 
         this.cache.addListener(this, new PredicateCacheEventFilter<>(this.filter), null);
-        this.schedule(new SimpleLocality(false), new CacheLocality(this.cache));
+        if (this.scheduler != null) {
+            new ScheduleExpirationTask<>(this.cache, this.filter, this.scheduler, new SimpleLocality(false), new CacheLocality(this.cache)).run();
+        }
     }
 
     @Override
@@ -271,47 +277,82 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<BeanKey<I>, BeanEntry<I>> event) {
-        Locality newLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtEnd());
-        if (event.isPre()) {
-            Future<?> future = this.rehashFuture.getAndSet(null);
-            if (future != null) {
-                future.cancel(true);
-            }
-            Runnable cancelTask = new Runnable() {
-                @Override
-                public void run() {
-                    InfinispanBeanManager.this.cancel(newLocality);
-                }
-            };
+        if (this.scheduler != null) {
+            Locality newLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtEnd());
             try {
-                this.executor.submit(cancelTask);
-            } catch (RejectedExecutionException e) {
-                // Executor was shutdown
-            }
-        } else {
-            Locality oldLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtStart());
-            Runnable scheduleTask = new Runnable() {
-                @Override
-                public void run() {
-                    InfinispanBeanManager.this.schedule(oldLocality, newLocality);
+                if (event.isPre()) {
+                    this.rehashTopology.set(event.getNewTopologyId());
+                    Future<?> future = this.rehashFuture.getAndSet(null);
+                    if (future != null) {
+                        future.cancel(true);
+                    }
+                    this.executor.submit(new CancelExpirationTask<>(this.scheduler, newLocality));
+                } else {
+                    this.rehashTopology.compareAndSet(event.getNewTopologyId(), 0);
+                    Locality oldLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtStart());
+                    this.rehashFuture.set(this.executor.submit(new ScheduleExpirationTask<>(this.cache, this.filter, this.scheduler, oldLocality, newLocality)));
                 }
-            };
-            try {
-                this.rehashFuture.set(this.executor.submit(scheduleTask));
             } catch (RejectedExecutionException e) {
                 // Executor was shutdown
             }
         }
     }
 
-    void cancel(Locality locality) {
+    @TopologyChanged
+    public void topologyChanged(TopologyChangedEvent<BeanKey<I>, BeanEntry<I>> event) {
         if (this.scheduler != null) {
-            this.scheduler.cancel(locality);
+            if (!event.isPre()) {
+                // If this topology change has no corresponding rehash event, we must reschedule expirations as primary ownership may have changed
+                if (this.rehashTopology.get() != event.getNewTopologyId()) {
+                    Future<?> future = this.rehashFuture.getAndSet(null);
+                    if (future != null) {
+                        future.cancel(true);
+                    }
+                    Cache<BeanKey<I>, BeanEntry<I>> cache = event.getCache();
+                    Locality oldLocality = new ConsistentHashLocality(cache, event.getReadConsistentHashAtStart());
+                    Locality newLocality = new ConsistentHashLocality(cache, event.getWriteConsistentHashAtEnd());
+                    try {
+                        this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask<>(cache, this.filter, this.scheduler, oldLocality, newLocality)));
+                    } catch (RejectedExecutionException e) {
+                        // Executor was shutdown
+                    }
+                }
+            }
         }
     }
 
-    void schedule(Locality oldLocality, Locality newLocality) {
-        if (this.scheduler != null) {
+    private static class CancelExpirationTask<I> implements Runnable {
+        private final Scheduler<I, ImmutableBeanEntry<I>> scheduler;
+        private final Locality locality;
+
+        CancelExpirationTask(Scheduler<I, ImmutableBeanEntry<I>> scheduler, Locality locality) {
+            this.scheduler = scheduler;
+            this.locality = locality;
+        }
+
+        @Override
+        public void run() {
+            this.scheduler.cancel(this.locality);
+        }
+    }
+
+    private static class ScheduleExpirationTask<I> implements Runnable {
+        private final Cache<BeanKey<I>, BeanEntry<I>> cache;
+        private final Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> filter;
+        private final Scheduler<I, ImmutableBeanEntry<I>> scheduler;
+        private final Locality oldLocality;
+        private final Locality newLocality;
+
+        ScheduleExpirationTask(Cache<BeanKey<I>, BeanEntry<I>> cache, Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> filter, Scheduler<I, ImmutableBeanEntry<I>> scheduler, Locality oldLocality,Locality newLocality) {
+            this.cache = cache;
+            this.filter = filter;
+            this.scheduler = scheduler;
+            this.oldLocality = oldLocality;
+            this.newLocality = newLocality;
+        }
+
+        @Override
+        public void run() {
             // Iterate over beans in memory
             try (Stream<Map.Entry<BeanKey<I>, BeanEntry<I>>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).entrySet().stream().filter(this.filter)) {
                 Iterator<Map.Entry<BeanKey<I>, BeanEntry<I>>> entries = stream.iterator();
@@ -320,7 +361,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
                     Map.Entry<BeanKey<I>, BeanEntry<I>> entry = entries.next();
                     BeanKey<I> key = entry.getKey();
                     // If we are the new primary owner of this bean then schedule expiration of this bean locally
-                    if (this.filter.test(entry) && !oldLocality.isLocal(key) && newLocality.isLocal(key)) {
+                    if (!this.oldLocality.isLocal(key) && this.newLocality.isLocal(key)) {
                         this.scheduler.schedule(key.getId(), entry.getValue());
                     }
                 }
