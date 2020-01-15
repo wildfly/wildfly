@@ -80,6 +80,7 @@
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
+            
         </dependencies>
     </dependencyManagement>
 
@@ -475,6 +476,41 @@
                                     <groupId>org.jboss.ejb3</groupId>
                                     <artifactId>jboss-ejb3-ext-api</artifactId>
                                 </dependency>
+
+                                <!-- Import MicroProfile APIs -->
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.config</groupId>
+                                    <artifactId>microprofile-config-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                                    <artifactId>microprofile-fault-tolerance-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.health</groupId>
+                                    <artifactId>microprofile-health-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.metrics</groupId>
+                                    <artifactId>microprofile-metrics-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.jwt</groupId>
+                                    <artifactId>microprofile-jwt-auth-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.openapi</groupId>
+                                    <artifactId>microprofile-openapi-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.rest.client</groupId>
+                                    <artifactId>microprofile-rest-client-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.opentracing</groupId>
+                                    <artifactId>microprofile-opentracing-api</artifactId>
+                                </dependency>
+                                
                             </includeDependencies>
                             <versionRefDependencies>
                                 <dependency>

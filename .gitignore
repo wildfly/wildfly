@@ -34,3 +34,6 @@ bin
 
 #Vi
 *.swp
+
+#vscode
+.vscode
