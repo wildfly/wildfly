@@ -2128,12 +2128,12 @@
       <artifactId>HdrHistogram</artifactId>
       <licenses>
         <license>
-          <name>Public Domain, per Creative Commons CC0</name>
-          <url>http://creativecommons.org/publicdomain/zero/1.0/</url>
+          <name>BSD 2-Clause "Simplified" License</name>
+          <url>https://opensource.org/licenses/BSD-2-Clause</url>
         </license>
         <license>
-          <name>BSD-2-Clause</name>
-          <url>https://opensource.org/licenses/BSD-2-Clause</url>
+          <name>Creative Commons Zero v1.0 Universal</name>
+          <url>http://creativecommons.org/publicdomain/zero/1.0/</url>
         </license>
       </licenses>
     </dependency>
