@@ -195,14 +195,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <environmentVariables>
-                        <!-- Required by org.wildfly.test.integration.microprofile.faulttolerance.sync.SyncCircuitBreakerDisabledTest -->
-                        <hystrix.command.default.metrics.healthSnapshot.intervalInMilliseconds>10</hystrix.command.default.metrics.healthSnapshot.intervalInMilliseconds>
-                    </environmentVariables>
                     <systemPropertyVariables>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
+                        <!-- hystrix.command.default.metrics.healthSnapshot.intervalInMilliseconds:
+                             Required by org.wildfly.test.integration.microprofile.faulttolerance.sync.SyncCircuitBreakerDisabledTest -->
+                        <jboss.args>-Dhystrix.command.default.metrics.healthSnapshot.intervalInMilliseconds=10</jboss.args>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
