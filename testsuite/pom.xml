@@ -724,12 +724,6 @@
                     <version>${ds.jdbc.driver.version}</version>
                 </dependency>
             </dependencies>
-            <repositories>
-                <repository>
-                    <id>JBoss QA repository</id>
-                    <url>http://nexus.qa.jboss.com:8081/nexus/content/repositories/thirdparty</url>
-                </repository>
-            </repositories>
             <build>
                 <plugins>
                     <plugin>
