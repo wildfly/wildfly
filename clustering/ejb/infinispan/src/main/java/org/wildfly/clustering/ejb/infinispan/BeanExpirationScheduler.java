@@ -54,9 +54,9 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I, ImmutableBean
     private final ExpirationConfiguration<T> expiration;
     private final BeanRemover<I, T> remover;
 
-    public BeanExpirationScheduler(Group group, Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, ExpirationConfiguration<T> expiration, BeanRemover<I, T> remover) {
+    public BeanExpirationScheduler(Group group, Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, ExpirationConfiguration<T> expiration, BeanRemover<I, T> remover, Duration closeTimeout) {
         ScheduledEntries<I, Instant> entries = group.isSingleton() ? new LinkedScheduledEntries<>() : new SortedScheduledEntries<>();
-        this.scheduler = new LocalScheduler<>(entries, this);
+        this.scheduler = new LocalScheduler<>(entries, this, closeTimeout);
         this.batcher = batcher;
         this.factory = factory;
         this.expiration = expiration;

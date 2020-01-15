@@ -24,6 +24,7 @@ package org.wildfly.clustering.ee.cache.scheduler;
 
 import static org.mockito.Mockito.*;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class LocalSchedulerTestCase {
         List<Map.Entry<UUID, Instant>> entryList = new ArrayList<>(1);
         entryList.add(entry);
 
-        try (Scheduler<UUID, Instant> scheduler = new LocalScheduler<>(entries, task)) {
+        try (Scheduler<UUID, Instant> scheduler = new LocalScheduler<>(entries, task, Duration.ZERO)) {
             // Verify simple scheduling
             when(entries.peek()).thenReturn(entry, null);
             doAnswer(invocation -> entryList.iterator()).when(entries).iterator();
@@ -76,7 +77,7 @@ public class LocalSchedulerTestCase {
         List<Map.Entry<UUID, Instant>> entryList = new ArrayList<>(1);
         entryList.add(entry);
 
-        try (Scheduler<UUID, Instant> scheduler = new LocalScheduler<>(entries, task)) {
+        try (Scheduler<UUID, Instant> scheduler = new LocalScheduler<>(entries, task, Duration.ZERO)) {
             // Verify that a failing scheduled task does not trigger removal
             when(entries.peek()).thenReturn(entry, null);
             doAnswer(invocation -> entryList.iterator()).when(entries).iterator();
@@ -102,7 +103,7 @@ public class LocalSchedulerTestCase {
         List<Map.Entry<UUID, Instant>> entryList = new ArrayList<>(1);
         entryList.add(entry);
 
-        try (Scheduler<UUID, Instant> scheduler = new LocalScheduler<>(entries, task)) {
+        try (Scheduler<UUID, Instant> scheduler = new LocalScheduler<>(entries, task, Duration.ZERO)) {
             // Verify that a failing scheduled task does not trigger removal
             when(entries.peek()).thenReturn(entry, entry, null);
             doAnswer(invocation -> entryList.iterator()).when(entries).iterator();
@@ -126,7 +127,7 @@ public class LocalSchedulerTestCase {
 
         Map.Entry<UUID, Instant> entry = new SimpleImmutableEntry<>(UUID.randomUUID(), Instant.now());
 
-        try (Scheduler<UUID, Instant> scheduler = new LocalScheduler<>(entries, task)) {
+        try (Scheduler<UUID, Instant> scheduler = new LocalScheduler<>(entries, task, Duration.ZERO)) {
             when(entries.peek()).thenReturn(entry);
 
             scheduler.cancel(entry.getKey());

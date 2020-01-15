@@ -58,7 +58,7 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, P
     private final IdentifierFactory<K> identifierFactory;
     private final Duration timeout;
     private final ServerEnvironment environment;
-    private final Scheduler<K, Instant> scheduler = new LocalScheduler<>(new LinkedScheduledEntries<>(), this);
+    private final Scheduler<K, Instant> scheduler = new LocalScheduler<>(new LinkedScheduledEntries<>(), this, Duration.ZERO);
 
     public SimpleCache(StatefulObjectFactory<V> factory, IdentifierFactory<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
         this.factory = factory;

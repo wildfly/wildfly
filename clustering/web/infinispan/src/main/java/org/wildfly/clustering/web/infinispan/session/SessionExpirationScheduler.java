@@ -49,8 +49,8 @@ public class SessionExpirationScheduler<MV> implements Scheduler<String, Immutab
     private final Remover<String> remover;
     private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
 
-    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Remover<String> remover) {
-        this.scheduler = new LocalScheduler<>(new SortedScheduledEntries<>(), this);
+    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Remover<String> remover, Duration closeTimeout) {
+        this.scheduler = new LocalScheduler<>(new SortedScheduledEntries<>(), this, closeTimeout);
         this.batcher = batcher;
         this.metaDataFactory = metaDataFactory;
         this.remover = remover;
