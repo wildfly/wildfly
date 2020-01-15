@@ -27,7 +27,7 @@ done firstly:
 *Download JBoss AS7*
 
 It could be downloaded from here:
-http://www.jboss.org/jbossas/downloads/
+https://www.jboss.org/jbossas/downloads/
 
 Using the latest release would be fine. When I'm writing this article
 the latest version is 7.1.1.Final.
@@ -52,7 +52,7 @@ OS name: "mac os x", version: "10.8", arch: "x86_64", family: "mac"
 
 In this article I'd like to use IntelliJ Ultimate Edition as the IDE for
 development, it's a commercial software and can be downloaded from:
-http://www.jetbrains.com/idea/
+https://www.jetbrains.com/idea/
 
 The version I'm using is IntelliJ IDEA Ultimate 11.1
 
@@ -138,7 +138,7 @@ We should put AS7's repository into pom.xml:
 <repository>
     <id>jboss-public-repository-group</id>
     <name>JBoss Public Repository Group</name>
-    <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+    <url>https://repository.jboss.org/nexus/content/groups/public/</url>
     <layout>default</layout>
     <releases>
         <enabled>true</enabled>
@@ -158,7 +158,7 @@ And also the plugin repository:
 <pluginRepository>
     <id>jboss-public-repository-group</id>
     <name>JBoss Public Repository Group</name>
-    <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+    <url>https://repository.jboss.org/nexus/content/groups/public/</url>
     <releases>
         <enabled>true</enabled>
     </releases>
@@ -415,17 +415,15 @@ are practical and helpful to you icon:smile-o[role="yellow"]
 [[references]]
 == References
 
-* _https://community.jboss.org/wiki/JBossAS7UsingJPDAToDebugTheASSourceCode[JBoss
+* _https://developer.jboss.org/wiki/JBossAS7UsingJPDAToDebugTheASSourceCode[JBoss
 AS7: Using JPDA to debug the AS source code]_
-* _http://navinpeiris.com/2011/07/19/importing-jboss-7-dependencies-through-maven/[Importing
-JBoss 7 Bundled Dependency Versions Through Maven]_
-* _https://community.jboss.org/wiki/MavenGettingStarted-Developers[Maven
+* _https://developer.jboss.org/wiki/MavenGettingStarted-Developers[Maven
 Getting Started - Developers]_
-* _http://localhost:8090/blog.v-s-f.co.uk/2010/09/jsf-2-1-project-using-eclipse-and-maven-2/[JSF
+* _https://blog.v-s-f.co.uk/2010/09/jsf-2-1-project-using-eclipse-and-maven-2/[JSF
 2.1 project using Eclipse and Maven 2:http]_
-* _http://www.amazon.com/Practical-RichFaces-Max-Katz/dp/1430234490/ref=dp_ob_title_bk[Practical
+* _https://www.amazon.com/Practical-RichFaces-Max-Katz/dp/1430234490/ref=dp_ob_title_bk[Practical
 RichFaces]_
-* _http://javaserverfaces.java.net/download.html[Oracle Mojarra
+* _https://javaserverfaces.java.net/download.html[Oracle Mojarra
 JavaServer Faces]_
 * _https://github.com/jbossas/jboss-as-maven-plugin[JBoss AS7 Maven
 Plugin]_
