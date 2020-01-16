@@ -57,7 +57,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 @ServerSetup(StatefulUnitTestCase.StatefulUnitTestCaseSetup.class)
 public class StatefulUnitTestCase {
     private static final Logger log = Logger.getLogger(StatefulUnitTestCase.class);
-    private static int TIME_TO_WAIT_FOR_PASSIVATION_MS = 1000;
+    private static final int TIME_TO_WAIT_FOR_PASSIVATION_MS = 1000;
 
     @ArquillianResource
     InitialContext ctx;
@@ -115,28 +115,34 @@ public class StatefulUnitTestCase {
 
     @Test
     public void testStateful() throws Exception {
-        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
-        int id = remote.doit();
-        ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
-        Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
-        remote.find(id);
+        try (StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName())) {
+            int id = remote.doit();
+            try (StatefulRemote remote2 = (StatefulRemote) ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName())) {
+                Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
+                remote.find(id);
+            }
+        }
     }
 
     @Test
     public void testTransientStateful() throws Exception {
-        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulTransientBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
-        int id = remote.doit();
-        ctx.lookup("java:module/" + StatefulTransientBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
-        Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
-        remote.find(id);
+        try (StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulTransientBean.class.getSimpleName() + "!" + StatefulRemote.class.getName())) {
+            int id = remote.doit();
+            try (StatefulRemote remote2 = (StatefulRemote) ctx.lookup("java:module/" + StatefulTransientBean.class.getSimpleName() + "!" + StatefulRemote.class.getName())) {
+                Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
+                remote.find(id);
+            }
+        }
     }
 
     @Test
     public void testNonExtended() throws Exception {
-        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + NonExtendedStatefuBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
-        int id = remote.doit();
-        ctx.lookup("java:module/" + NonExtendedStatefuBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
-        Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
-        remote.find(id);
+        try (StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + NonExtendedStatefuBean.class.getSimpleName() + "!" + StatefulRemote.class.getName())) {
+            int id = remote.doit();
+            try (StatefulRemote remote2 = (StatefulRemote) ctx.lookup("java:module/" + NonExtendedStatefuBean.class.getSimpleName() + "!" + StatefulRemote.class.getName())) {
+                Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
+                remote.find(id);
+            }
+        }
     }
 }

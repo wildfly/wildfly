@@ -95,7 +95,7 @@ public class TwoPassivationStoresTestCase {
                     .setup("/subsystem=ejb3/passivation-store=infinispan:write-attribute(name=max-size,value=1)")
                     .teardown("/subsystem=ejb3/passivation-store=infinispanStore2:remove")
                     .teardown("/subsystem=ejb3/cache=infinispanCache2:remove")
-                    .teardown("/subsystem=ejb3/passivation-store=infinispan:write-attribute(name=max-size,value=10000)");
+                    .teardown("/subsystem=ejb3/passivation-store=infinispan:undefine-attribute(name=max-size)");
         }
     }
 }
