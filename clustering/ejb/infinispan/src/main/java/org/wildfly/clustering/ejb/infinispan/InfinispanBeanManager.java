@@ -90,7 +90,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 @Listener(primaryOnly = true)
 public class InfinispanBeanManager<I, T> implements BeanManager<I, T, TransactionBatch> {
 
-    private static final String GLOBAL_IDLE_TIMEOUT = WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.stateful.idle-timeout", null);
     private static final String IDLE_TIMEOUT_PROPERTY = "jboss.ejb.stateful.%s.idle-timeout";
 
     private final String name;
@@ -148,7 +147,8 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
 
-        String idleTimeout = WildFlySecurityManager.getPropertyPrivileged(String.format(IDLE_TIMEOUT_PROPERTY, this.name), GLOBAL_IDLE_TIMEOUT);
+        String globalIdleTimeout = WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.stateful.idle-timeout", null);
+        String idleTimeout = WildFlySecurityManager.getPropertyPrivileged(String.format(IDLE_TIMEOUT_PROPERTY, this.name), globalIdleTimeout);
         if (idleTimeout != null) {
             Duration idleDuration = Duration.parse(idleTimeout);
             if (!idleDuration.isNegative()) {
