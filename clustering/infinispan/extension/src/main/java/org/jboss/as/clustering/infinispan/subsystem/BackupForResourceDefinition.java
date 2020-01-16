@@ -58,7 +58,7 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion())
                     .build();
         }
@@ -85,7 +85,7 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addIgnoredAttributes(Attribute.class);
         new SimpleResourceRegistration(descriptor, null).register(registration);
 
         return registration;

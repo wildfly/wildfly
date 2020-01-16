@@ -71,13 +71,23 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L)),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
@@ -95,13 +105,24 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
                 return builder.setValidator(new EnumValidator<>(Mode.class));
             }
         },
-        QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L), InfinispanModel.VERSION_4_1_0),
+        QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L), InfinispanModel.VERSION_4_1_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        },
         QUEUE_SIZE("queue-size", ModelType.INT, ModelNode.ZERO, InfinispanModel.VERSION_4_1_0),
         ;
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = this.apply(createBuilder(name, type, defaultValue)).setDeprecated(deprecation.getVersion()).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    ).build();
         }
 
         @Override
@@ -153,16 +174,6 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         }
     }
 
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowExpression(true)
-                .setRequired(defaultValue == null)
-                .setDefaultValue(defaultValue)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                ;
-    }
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
@@ -191,7 +202,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return this.configurator.apply(descriptor)
                     .addAttributes(Attribute.class)
-                    .addAttributes(DeprecatedAttribute.class)
+                    .addIgnoredAttributes(DeprecatedAttribute.class)
                     .addCapabilities(Capability.class)
                     .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL, UnaryCapabilityNameResolver.PARENT))
                     ;

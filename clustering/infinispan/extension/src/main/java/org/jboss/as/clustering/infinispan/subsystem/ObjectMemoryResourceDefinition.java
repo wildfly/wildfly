@@ -59,7 +59,12 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
                 return builder.setValidator(new EnumValidator<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL))));
             }
         },
-        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
+        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES);
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
@@ -68,7 +73,6 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion())
                     ).build();
         }
@@ -76,11 +80,6 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-
-        @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder;
         }
     }
 
@@ -114,7 +113,7 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return descriptor.addAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MAX_ENTRIES)))
+            return descriptor.addIgnoredAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MAX_ENTRIES)))
                     .addAlias(DeprecatedAttribute.MAX_ENTRIES, Attribute.SIZE)
                     ;
         }

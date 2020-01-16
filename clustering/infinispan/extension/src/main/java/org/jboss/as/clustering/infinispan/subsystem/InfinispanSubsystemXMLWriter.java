@@ -285,7 +285,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.OFF_HEAP_MEMORY.getLocalName());
             writeAttributes(writer, memory, MemoryResourceDefinition.Attribute.class);
             writeAttributes(writer, memory, BinaryMemoryResourceDefinition.Attribute.class);
-            writeAttributes(writer, memory, OffHeapMemoryResourceDefinition.Attribute.class);
+            writeAttributes(writer, memory, OffHeapMemoryResourceDefinition.DeprecatedAttribute.class);
             writer.writeEndElement();
         }
 
@@ -307,6 +307,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writeAttributes(writer, store, CustomStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
+            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }
@@ -316,6 +317,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.FILE_STORE.getLocalName());
             writeAttributes(writer, store, FileStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
+            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }
@@ -325,6 +327,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.BINARY_KEYED_JDBC_STORE.getLocalName());
             writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
+            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writeJDBCStoreTable(writer, XMLElement.BINARY_KEYED_TABLE, store, BinaryTableResourceDefinition.PATH, BinaryTableResourceDefinition.Attribute.PREFIX);
             writer.writeEndElement();
@@ -335,6 +338,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.JDBC_STORE.getLocalName());
             writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
+            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writeJDBCStoreTable(writer, XMLElement.TABLE, store, StringTableResourceDefinition.PATH, StringTableResourceDefinition.Attribute.PREFIX);
             writer.writeEndElement();
@@ -345,6 +349,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.MIXED_KEYED_JDBC_STORE.getLocalName());
             writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
+            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writeJDBCStoreTable(writer, XMLElement.BINARY_KEYED_TABLE, store, BinaryTableResourceDefinition.PATH, BinaryTableResourceDefinition.Attribute.PREFIX);
             writeJDBCStoreTable(writer, XMLElement.STRING_KEYED_TABLE, store, StringTableResourceDefinition.PATH, StringTableResourceDefinition.Attribute.PREFIX);
@@ -356,16 +361,18 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.REMOTE_STORE.getLocalName());
             writeAttributes(writer, store, RemoteStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
+            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }
 
         if (cache.hasDefined(HotRodStoreResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode hotRodStore = cache.get(HotRodStoreResourceDefinition.PATH.getKeyValuePair());
+            ModelNode store = cache.get(HotRodStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(XMLElement.HOTROD_STORE.getLocalName());
-            writeAttributes(writer, hotRodStore, HotRodStoreResourceDefinition.Attribute.class);
-            writeAttributes(writer, hotRodStore, storeAttributes);
-            writeStoreElements(writer, hotRodStore);
+            writeAttributes(writer, store, HotRodStoreResourceDefinition.Attribute.class);
+            writeAttributes(writer, store, storeAttributes);
+            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
+            writeStoreElements(writer, store);
             writer.writeEndElement();
         }
 

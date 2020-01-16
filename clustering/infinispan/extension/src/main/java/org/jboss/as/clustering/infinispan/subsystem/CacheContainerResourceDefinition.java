@@ -158,7 +158,11 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this.definition = this.apply(createBuilder(name, type)).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
         }
 
         Attribute(String name) {
@@ -188,7 +192,12 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         private final AttributeDefinition definition;
 
         ExecutorAttribute(String name) {
-            this.definition = createBuilder(name, ModelType.STRING).setAllowExpression(false).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+                    .setAllowExpression(false)
+                    .setRequired(false)
+                    .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
         }
 
         @Override
@@ -212,7 +221,12 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
-            this.definition = this.apply(createBuilder(name, type)).setDeprecated(deprecation.getVersion()).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    ).build();
         }
 
         @Override
@@ -224,14 +238,6 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
             return builder;
         }
-    }
-
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowExpression(true)
-                .setRequired(false)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -309,8 +315,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addAttributes(ExecutorAttribute.class)
-                .addAttributes(DeprecatedAttribute.class)
+                .addIgnoredAttributes(ExecutorAttribute.class)
+                .addIgnoredAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CAPABILITIES.values())
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CLUSTERING_CAPABILITIES.values())

@@ -117,7 +117,7 @@ public enum XMLAttribute {
     SEGMENTS(SegmentedCacheResourceDefinition.Attribute.SEGMENTS),
     SHARED(StoreResourceDefinition.Attribute.SHARED),
     @Deprecated SHUTDOWN_TIMEOUT(StoreWriteBehindResourceDefinition.DeprecatedAttribute.SHUTDOWN_TIMEOUT),
-    SINGLETON(StoreResourceDefinition.Attribute.SINGLETON),
+    @Deprecated SINGLETON(StoreResourceDefinition.DeprecatedAttribute.SINGLETON),
     SITE("site"),
     SIZE(ObjectMemoryResourceDefinition.Attribute.SIZE),
     @Deprecated STACK(JGroupsTransportResourceDefinition.DeprecatedAttribute.STACK),

@@ -1132,7 +1132,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CAPACITY: {
-                    readAttribute(reader, i, operation, OffHeapMemoryResourceDefinition.Attribute.CAPACITY);
+                    readAttribute(reader, i, operation, OffHeapMemoryResourceDefinition.DeprecatedAttribute.CAPACITY);
                     break;
                 }
                 default: {
@@ -1682,7 +1682,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case SINGLETON: {
-                readAttribute(reader, index, operation, StoreResourceDefinition.Attribute.SINGLETON);
+                readAttribute(reader, index, operation, StoreResourceDefinition.DeprecatedAttribute.SINGLETON);
                 break;
             }
             case MAX_BATCH_SIZE: {
