@@ -266,6 +266,9 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         for (AttributeDefinition attribute : this.descriptor.getCustomAttributes().keySet()) {
             builder.addParameter(attribute);
         }
+        for (AttributeDefinition attribute : this.descriptor.getIgnoredAttributes()) {
+            builder.addParameter(attribute);
+        }
         for (AttributeDefinition parameter : this.descriptor.getExtraParameters()) {
             builder.addParameter(parameter);
         }

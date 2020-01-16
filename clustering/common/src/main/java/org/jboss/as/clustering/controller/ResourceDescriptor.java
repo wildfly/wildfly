@@ -66,6 +66,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final Map<Capability, Predicate<ModelNode>> capabilities = new HashMap<>();
     private final List<AttributeDefinition> attributes = new LinkedList<>();
     private final Map<AttributeDefinition, OperationStepHandler> customAttributes = new HashMap<>();
+    private final List<AttributeDefinition> ignoredAttributes = new LinkedList<>();
     private final List<AttributeDefinition> parameters = new LinkedList<>();
     private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
@@ -93,6 +94,11 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return this.attributes;
+    }
+
+    @Override
+    public Collection<AttributeDefinition> getIgnoredAttributes() {
+        return this.ignoredAttributes;
     }
 
     @Override
@@ -142,6 +148,26 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     public ResourceDescriptor addAttributes(Collection<AttributeDefinition> attributes) {
         this.attributes.addAll(attributes);
+        return this;
+    }
+
+    public <E extends Enum<E> & Attribute> ResourceDescriptor addIgnoredAttributes(Class<E> enumClass) {
+        return this.addIgnoredAttributes(EnumSet.allOf(enumClass));
+    }
+
+    public ResourceDescriptor addIgnoredAttributes(Attribute... attributes) {
+        return this.addIgnoredAttributes(Arrays.asList(attributes));
+    }
+
+    public ResourceDescriptor addIgnoredAttributes(Iterable<? extends Attribute> attributes) {
+        for (Attribute attribute : attributes) {
+            this.ignoredAttributes.add(attribute.getDefinition());
+        }
+        return this;
+    }
+
+    public ResourceDescriptor addIgnoredAttributes(Collection<AttributeDefinition> attributes) {
+        this.ignoredAttributes.addAll(attributes);
         return this;
     }
 
