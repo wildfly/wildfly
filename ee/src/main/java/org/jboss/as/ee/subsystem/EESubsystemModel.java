@@ -45,6 +45,7 @@ public interface EESubsystemModel {
     String SERVICE = "service";
 
     PathElement DEFAULT_BINDINGS_PATH = PathElement.pathElement(SERVICE,DEFAULT_BINDINGS);
+    String GLOBAL_DIRECTORY = "global-directory";
 
     /**
      * Versions of the EE subsystem model

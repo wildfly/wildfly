@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProc
 import org.jboss.as.ee.structure.AnnotationPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ee.structure.DescriptorPropertyReplacementProcessor;
+import org.jboss.as.ee.structure.GlobalDirectoryDependencyProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -80,6 +81,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     // Our different operation handlers manipulate the state of the subsystem's DUPs, so they need to share a ref
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor = new DefaultEarSubDeploymentsIsolationProcessor();
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor = new GlobalModuleDependencyProcessor();
+    private final GlobalDirectoryDependencyProcessor directoryDependencyProcessor = new GlobalDirectoryDependencyProcessor();
     private final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT);
     private final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
     private final AnnotationPropertyReplacementProcessor annotationPropertyReplacementProcessor = new AnnotationPropertyReplacementProcessor(Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
@@ -95,7 +97,12 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     @Override
     public void registerOperations(final ManagementResourceRegistration rootResourceRegistration) {
         super.registerOperations(rootResourceRegistration);
-        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor, specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor, annotationPropertyReplacementProcessor);
+        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor,
+                specDescriptorPropertyReplacementProcessor,
+                jbossDescriptorPropertyReplacementProcessor,
+                annotationPropertyReplacementProcessor,
+                directoryDependencyProcessor
+        );
         registerAddOperation(rootResourceRegistration, subsystemAdd);
     }
 

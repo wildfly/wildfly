@@ -29,6 +29,7 @@
     <xs:complexType name="subsystem">
         <xs:sequence>
             <xs:element name="global-modules" type="modulesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="global-directories" type="directoriesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="ear-subdeployments-isolated" default="false" type="ear-subdeployments-isolatedType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="spec-descriptor-property-replacement" type="descriptor-property-replacementType" minOccurs="0" maxOccurs="1" />
             <xs:element name="jboss-descriptor-property-replacement" type="descriptor-property-replacementType" minOccurs="0" maxOccurs="1" />
@@ -50,6 +51,39 @@
         <xs:attribute name="annotations" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="meta-inf" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="services" type="xs:boolean" use="optional" default="true"/>
+    </xs:complexType>
+
+    <xs:complexType name="directoriesType">
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="directory" type="directoryType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="directoryType">
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the global directory.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="path" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The path of the global directory.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="relative-to" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of another previously named path, or of one of the
+                    standard paths provided by the system. If 'relative-to' is
+                    provided, the value of the 'path' attribute is treated as
+                    relative to the path specified by this attribute.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:simpleType name="ear-subdeployments-isolatedType">
