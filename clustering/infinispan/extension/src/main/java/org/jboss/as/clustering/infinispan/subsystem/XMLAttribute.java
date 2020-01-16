@@ -44,7 +44,7 @@ public enum XMLAttribute {
     // must be first
     UNKNOWN(""),
     ACQUIRE_TIMEOUT(LockingResourceDefinition.Attribute.ACQUIRE_TIMEOUT),
-    CAPACITY(OffHeapMemoryResourceDefinition.Attribute.CAPACITY),
+    @Deprecated CAPACITY(OffHeapMemoryResourceDefinition.DeprecatedAttribute.CAPACITY),
     ALIASES(CacheContainerResourceDefinition.Attribute.ALIASES),
     @Deprecated ASYNC_MARSHALLING(ClusteredCacheResourceDefinition.DeprecatedAttribute.ASYNC_MARSHALLING),
     BACKUP_FAILURE_POLICY(BackupResourceDefinition.Attribute.FAILURE_POLICY),

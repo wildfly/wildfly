@@ -89,7 +89,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
         this.transport = new ServiceSupplierDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address));
         this.site = new ServiceSupplierDependency<>(CacheContainerComponent.SITE.getServiceName(address));
-        for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
+        for (ThreadPoolResourceDefinition pool : EnumSet.of(ThreadPoolResourceDefinition.ASYNC_OPERATIONS, ThreadPoolResourceDefinition.LISTENER, ThreadPoolResourceDefinition.PERSISTENCE, ThreadPoolResourceDefinition.REMOTE_COMMAND, ThreadPoolResourceDefinition.TRANSPORT)) {
             this.pools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
         }
         for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
@@ -128,7 +128,6 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.asyncThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.ASYNC_OPERATIONS).get());
         builder.expirationThreadPool().read(this.schedulers.get(ScheduledThreadPoolResourceDefinition.EXPIRATION).get());
         builder.listenerThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.LISTENER).get());
-        builder.stateTransferThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.STATE_TRANSFER).get());
         builder.persistenceThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.PERSISTENCE).get());
 
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
