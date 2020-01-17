@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
@@ -72,7 +73,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L)) {
+        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(10))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);

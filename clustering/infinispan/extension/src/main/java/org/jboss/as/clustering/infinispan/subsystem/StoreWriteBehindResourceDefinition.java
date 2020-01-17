@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -74,8 +76,8 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(5000L), InfinispanModel.VERSION_4_0_0),
-        SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(25000L), InfinispanModel.VERSION_4_0_0),
+        FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(5)), InfinispanModel.VERSION_4_0_0),
+        SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(25)), InfinispanModel.VERSION_4_0_0),
         ;
         private final AttributeDefinition definition;
 

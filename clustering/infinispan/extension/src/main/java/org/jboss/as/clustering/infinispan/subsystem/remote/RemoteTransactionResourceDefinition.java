@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Capability;
@@ -71,7 +72,7 @@ public class RemoteTransactionResourceDefinition extends ComponentResourceDefini
                 return builder.setValidator(new EnumValidator<>(TransactionMode.class, EnumSet.complementOf(EnumSet.of(TransactionMode.FULL_XA))));
             }
         },
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(60000L)) {
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(1))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
