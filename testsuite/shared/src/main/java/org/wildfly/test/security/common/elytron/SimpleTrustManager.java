@@ -21,11 +21,12 @@
  */
 package org.wildfly.test.security.common.elytron;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 
 /**
  * Elytron trust-managers configuration implementation.
@@ -71,12 +72,13 @@ public class SimpleTrustManager extends AbstractConfigurableElement implements T
             cliLine.append("key-store=\"").append(keyStore).append("\"");
         }
 
+        String alg;
         if (StringUtils.isNotBlank(algorithm)) {
-            cliLine.append(",algorithm=\"").append(algorithm).append("\"");
+            alg = algorithm;
         } else {
-            // Use previous default so behaviour is not changed
-            cliLine.append(",algorithm=\"").append("SunX509").append("\"");
+            alg = SystemUtils.JAVA_VENDOR.toUpperCase(Locale.ENGLISH).contains("IBM") ? "IBMX509" : "SunX509";
         }
+        cliLine.append(",algorithm=\"").append(alg).append("\"");
 
         if (softFail != null) {
             cliLine.append(",soft-fail=\"").append(softFail).append("\"");
