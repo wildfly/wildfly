@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -50,9 +52,9 @@ public class ExpirationResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "EXPIRATION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        INTERVAL("interval", new ModelNode(60000L)),
-        LIFESPAN("lifespan", new ModelNode(-1L)),
-        MAX_IDLE("max-idle", new ModelNode(-1L)),
+        INTERVAL("interval", new ModelNode(TimeUnit.MINUTES.toMillis(1))),
+        LIFESPAN("lifespan", null),
+        MAX_IDLE("max-idle", null),
         ;
         private final AttributeDefinition definition;
 

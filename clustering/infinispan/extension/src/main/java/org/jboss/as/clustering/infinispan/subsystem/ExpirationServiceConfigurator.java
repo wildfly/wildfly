@@ -52,8 +52,8 @@ public class ExpirationServiceConfigurator extends ComponentServiceConfigurator<
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.interval = INTERVAL.resolveModelAttribute(context, model).asLong();
-        this.lifespan = LIFESPAN.resolveModelAttribute(context, model).asLong();
-        this.maxIdle = MAX_IDLE.resolveModelAttribute(context, model).asLong();
+        this.lifespan = LIFESPAN.resolveModelAttribute(context, model).asLong(-1L);
+        this.maxIdle = MAX_IDLE.resolveModelAttribute(context, model).asLong(-1L);
         return this;
     }
 
