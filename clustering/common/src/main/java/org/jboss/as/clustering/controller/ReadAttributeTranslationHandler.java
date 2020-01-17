@@ -94,7 +94,10 @@ public class ReadAttributeTranslationHandler implements OperationStepHandler {
                     if (model.hasDefined(this.targetAttribute.getName())) {
                         result.set(model.get(this.targetAttribute.getName()));
                     } else if (Operations.isIncludeDefaults(operation)) {
-                        result.set(this.targetAttribute.getDefinition().getDefaultValue());
+                        ModelNode defaultValue = this.targetAttribute.getDefinition().getDefaultValue();
+                        if (defaultValue != null) {
+                            result.set(defaultValue);
+                        }
                     }
                 } catch (Resource.NoSuchResourceException ignore) {
                     // If the target resource does not exist return UNDEFINED
