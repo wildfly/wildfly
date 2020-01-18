@@ -273,7 +273,7 @@
         <version.io.reactivex.rxjava1>1.2.0</version.io.reactivex.rxjava1>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <version.io.smallrye.smallrye-config>1.4.1</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.fault-tolerance>2.1.4</version.io.smallrye.fault-tolerance>
+        <version.io.smallrye.fault-tolerance>2.1.5</version.io.smallrye.fault-tolerance>
         <version.io.smallrye.smallrye-health>2.1.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>2.0.12</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>2.3.2</version.io.smallrye.smallrye-metrics>
@@ -1810,18 +1810,6 @@
                 <artifactId>smallrye-fault-tolerance</artifactId>
                 <version>${version.io.smallrye.fault-tolerance}</version>
                 <exclusions>
-                    <!-- TODO remove this exclusion once this depends on Jakarta CDI -->
-                    <!-- superseded by jakarta.enterprise:jakarta.enterprise.cdi-api -->
-                    <exclusion>
-                        <groupId>javax.enterprise</groupId>
-                        <artifactId>cdi-api</artifactId>
-                    </exclusion>
-                    <!-- TODO remove this exclusion once this depends on Jakarta Inject -->
-                    <!-- superseded by jakarta.inject:jakarta.inject-api -->
-                    <exclusion>
-                        <groupId>javax.inject</groupId>
-                        <artifactId>javax.inject</artifactId>
-                    </exclusion>
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
