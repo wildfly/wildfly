@@ -50,7 +50,7 @@ public class MemoryServiceConfigurator extends ComponentServiceConfigurator<Memo
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.size = MemoryResourceDefinition.Attribute.SIZE.resolveModelAttribute(context, model).asLong();
+        this.size = MemoryResourceDefinition.Attribute.SIZE.resolveModelAttribute(context, model).asLong(-1L);
         this.evictionType = ModelNodes.asEnum(BinaryMemoryResourceDefinition.Attribute.EVICTION_TYPE.resolveModelAttribute(context, model), EvictionType.class);
         return this;
     }
