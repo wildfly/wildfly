@@ -22,13 +22,13 @@
 
 package org.wildfly.clustering.infinispan.spi;
 
-import org.infinispan.lifecycle.ModuleLifecycle;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfiguration;
-import org.infinispan.eviction.PassivationManager;
+import org.infinispan.eviction.impl.PassivationManager;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.annotations.InfinispanModule;
+import org.infinispan.lifecycle.ModuleLifecycle;
 
 /**
  * @author Paul Ferraro

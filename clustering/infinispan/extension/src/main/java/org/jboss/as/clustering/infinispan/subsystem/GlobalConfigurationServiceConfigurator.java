@@ -37,7 +37,6 @@ import javax.management.MBeanServer;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
-import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
@@ -73,7 +72,6 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<Module> module;
     private final SupplierDependency<TransportConfiguration> transport;
-    private final SupplierDependency<SiteConfiguration> site;
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
     private final Map<ScheduledThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> schedulers = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
     private final String name;
@@ -88,7 +86,6 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
         this.transport = new ServiceSupplierDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address));
-        this.site = new ServiceSupplierDependency<>(CacheContainerComponent.SITE.getServiceName(address));
         for (ThreadPoolResourceDefinition pool : EnumSet.of(ThreadPoolResourceDefinition.ASYNC_OPERATIONS, ThreadPoolResourceDefinition.LISTENER, ThreadPoolResourceDefinition.PERSISTENCE, ThreadPoolResourceDefinition.REMOTE_COMMAND, ThreadPoolResourceDefinition.TRANSPORT)) {
             this.pools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
         }
@@ -136,8 +133,6 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
                 .jmxDomain("org.wildfly.clustering.infinispan")
                 ;
 
-        builder.site().read(this.site.get());
-
         // Disable triangle algorithm
         // We optimize for originator as primary owner
         builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
@@ -150,7 +145,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.module, this.transport, this.site, this.server).register(builder).provides(this.getServiceName());
+        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.module, this.transport, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency: this.pools.values()) {
             dependency.register(builder);
         }
