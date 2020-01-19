@@ -9,9 +9,6 @@
             <param name="default-cache" value="default"/>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="default"/>
-                <feature spec="subsystem.infinispan.cache-container.local-cache.component.transaction">
-                    <param name="mode" value="BATCH"/>
-                </feature>
             </feature>
         </feature>
     </feature>

@@ -257,6 +257,11 @@ following XML:
 
 Note that the `slot` field is optional and defaults to `main`.
 
+[[global-directory]]
+== Global Directory
+
+The EE subsystem allows the configuration of a global directory, which represents a directory tree scanned automatically to include .jar files and resources as a single additional dependency. This dependency is added as a system dependency to all deployed application. See link:Admin_Guide{outfilesuffix}#global-directory[Subsystem EE Global Directory] to get more information about how to set up a global directory.
+
 [[jboss-deployment-structure-file]]
 == JBoss Deployment Structure File
 

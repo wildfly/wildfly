@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <version>19.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-opentracing</artifactId>
@@ -44,7 +44,25 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <ts.elytron.cli>${jbossas.ts.dir}/shared/enable-elytron.cli</ts.elytron.cli>
         <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+
+        <version.org.jboss.shrinkwrap.resolver>3.1.4</version.org.jboss.shrinkwrap.resolver>
     </properties>
+
+    <!--
+        This is used as a workaround for https://issues.redhat.com/browse/WFLY-12984. Once a real resolution is found
+        this can be reverted.
+     -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-bom</artifactId>
+                <version>${version.org.jboss.shrinkwrap.resolver}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
