@@ -169,7 +169,8 @@ public class SecurityDomainContextRealm implements SecurityRealm {
                 final Subject jaasSubject = new Subject();
                 Object jaasCredential = evidence;
                 if (evidence instanceof PasswordGuessEvidence) {
-                    jaasCredential = ((PasswordGuessEvidence) evidence).getGuess();
+                    // the original array may be cleared, some auth managers cache the password, so clone it
+                    jaasCredential = ((PasswordGuessEvidence) evidence).getGuess().clone();
                 }
                 final boolean isValid = domainContext.getAuthenticationManager().isValid(principal, jaasCredential, jaasSubject);
                 if (isValid) {
