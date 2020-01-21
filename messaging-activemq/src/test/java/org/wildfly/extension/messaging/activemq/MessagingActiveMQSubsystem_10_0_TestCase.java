@@ -27,6 +27,7 @@ import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_1_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEFAULT;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_BRIDGE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
@@ -73,20 +74,20 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingActiveMQSubsystem_9_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_10_0_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_9_0_TestCase() {
+    public MessagingActiveMQSubsystem_10_0_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_9_0.xml");
+        return readResource("subsystem_10_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_9_0.xsd";
+        return "schema/wildfly-messaging-activemq_10_0.xsd";
     }
 
     @Override
@@ -105,9 +106,10 @@ public class MessagingActiveMQSubsystem_9_0_TestCase extends AbstractSubsystemBa
         return properties;
     }
 
+    @Test
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     @Test
@@ -130,7 +132,7 @@ public class MessagingActiveMQSubsystem_9_0_TestCase extends AbstractSubsystemBa
 
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_9_0_ha-policy.xml");
+        standardSubsystemTest("subsystem_10_0_ha-policy.xml");
     }
 
     ///////////////////////
@@ -184,7 +186,7 @@ public class MessagingActiveMQSubsystem_9_0_TestCase extends AbstractSubsystemBa
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_9_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_10_0_transform.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                 .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
                 .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
@@ -224,11 +226,21 @@ public class MessagingActiveMQSubsystem_9_0_TestCase extends AbstractSubsystemBa
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_9_0_reject_transform.xml");
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_10_0_reject_transform.xml");
         System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
+        if (messagingVersion.compareTo(MessagingExtension.VERSION_9_0_0) > 0) {
+            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server1")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server2")).append(BRIDGE_PATH),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server3")).append(POOLED_CONNECTION_FACTORY_PATH),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(pathElement(JMS_BRIDGE, "bridge-with-credential-reference")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
         if (messagingVersion.equals(MessagingExtension.VERSION_1_0_0)) {
             config.addFailedAttribute(subsystemAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
