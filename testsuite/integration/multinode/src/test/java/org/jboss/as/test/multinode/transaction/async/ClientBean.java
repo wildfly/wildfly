@@ -25,6 +25,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.Hashtable;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -46,13 +48,33 @@ public class ClientBean {
     @Resource
     private UserTransaction userTransaction;
 
-    private TransactionalRemote getRemote(Class<?> beanClass) throws NamingException {
-        final Hashtable<String,String> props = new Hashtable<String, String>();
+    private Context namingContext;
+
+    @PostConstruct
+    private void postConstruct() {
+        final Hashtable<String,String> props = new Hashtable<>();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        final Context context = new javax.naming.InitialContext(props);
-        final TransactionalRemote remote = (TransactionalRemote) context.lookup(String.format("ejb:/%s//%s!%s",
+        try {
+            namingContext = new javax.naming.InitialContext(props);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PreDestroy
+    private void preDestroy() {
+        if (namingContext != null) {
+            try {
+                namingContext.close();
+            } catch (NamingException e) {
+                //ignore
+            }
+        }
+    }
+
+    private TransactionalRemote getRemote(Class<?> beanClass) throws NamingException {
+        return (TransactionalRemote) namingContext.lookup(String.format("ejb:/%s//%s!%s",
           TransactionPropagationTestCase.SERVER_DEPLOYMENT, beanClass.getSimpleName(), TransactionalRemote.class.getName()));
-        return remote;
     }
 
     public void callToMandatory() throws Exception {
@@ -102,10 +124,11 @@ public class ClientBean {
 
         // asyncWithRequired() will throw RuntimeException and cause its transaction to rollback.
         // But it has no bearing on the transaction here, which should be able to commit okay.
-        remote.asyncWithRequired();
-
-        // wait a bit for the transaction in asyncWithRequired method to rollback
-        Thread.sleep(1000);
+        try {
+            remote.asyncWithRequired().get();
+        } catch (java.util.concurrent.ExecutionException e) {
+            // This is expected since the invoked async method throws a RuntimeException
+        }
         userTransaction.commit();
     }
 }

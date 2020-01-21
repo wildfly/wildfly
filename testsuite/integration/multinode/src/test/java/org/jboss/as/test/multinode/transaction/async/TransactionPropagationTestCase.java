@@ -113,6 +113,8 @@ public class TransactionPropagationTestCase {
 
     private ClientBean getClient() throws Exception {
         final InitialContext context = new InitialContext();
-        return (ClientBean) context.lookup("java:module/" + ClientBean.class.getSimpleName());
+        final ClientBean lookupResult = (ClientBean) context.lookup("java:module/" + ClientBean.class.getSimpleName());
+        context.close();
+        return lookupResult;
     }
 }
