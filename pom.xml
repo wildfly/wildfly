@@ -194,6 +194,13 @@
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=512m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
 
+        <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
+             that *could* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
+             Test jobs can override this using -D to test using different feature pack.
+        -->
+        <testsuite.ee.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.ee.galleon.pack.artifactId>
+        <testsuite.ee.galleon.pack.version>${full.maven.version}</testsuite.ee.galleon.pack.version>
+
         <!--
             *Plugin* Dependency versions. Please keep alphabetical.
 

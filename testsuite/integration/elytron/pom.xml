@@ -357,8 +357,8 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
                                             <excluded-packages>
                                                 <name>product.conf</name>
                                                 <name>docs</name>
@@ -451,6 +451,7 @@
                                 <public.ip>${node0}</public.ip>
                                 <management.ip>${node0}</management.ip>
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${wildfly.dir}/modules</module.path>
                             </system-properties>
                         </configuration>
                     </plugin>
@@ -515,8 +516,8 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
