@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
@@ -37,7 +38,6 @@ import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResource
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteTransactionResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -82,11 +82,11 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     if (container.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
                         writeThreadPoolElements(XMLElement.ASYNC_OPERATIONS_THREAD_POOL, ThreadPoolResourceDefinition.ASYNC_OPERATIONS, writer, container);
                         writeThreadPoolElements(XMLElement.LISTENER_THREAD_POOL, ThreadPoolResourceDefinition.LISTENER, writer, container);
+                        writeThreadPoolElements(XMLElement.PERSISTENCE_THREAD_POOL, ThreadPoolResourceDefinition.PERSISTENCE, writer, container);
                         writeThreadPoolElements(XMLElement.REMOTE_COMMAND_THREAD_POOL, ThreadPoolResourceDefinition.REMOTE_COMMAND, writer, container);
                         writeThreadPoolElements(XMLElement.STATE_TRANSFER_THREAD_POOL, ThreadPoolResourceDefinition.STATE_TRANSFER, writer, container);
                         writeThreadPoolElements(XMLElement.TRANSPORT_THREAD_POOL, ThreadPoolResourceDefinition.TRANSPORT, writer, container);
                         writeScheduledThreadPoolElements(XMLElement.EXPIRATION_THREAD_POOL, ScheduledThreadPoolResourceDefinition.EXPIRATION, writer, container);
-                        writeScheduledThreadPoolElements(XMLElement.PERSISTENCE_THREAD_POOL, ThreadPoolResourceDefinition.PERSISTENCE, writer, container);
                     }
 
                     // write any existent cache types
@@ -475,7 +475,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         attribute.getDefinition().getMarshaller().marshallAsElement(attribute.getDefinition(), model, true, writer);
     }
 
-    private static <P extends ThreadPoolDefinition & ResourceDefinition> void writeThreadPoolElements(XMLElement element, P pool, XMLExtendedStreamWriter writer, ModelNode container) throws XMLStreamException {
+    private static <P extends ThreadPoolDefinition & ResourceDefinitionProvider> void writeThreadPoolElements(XMLElement element, P pool, XMLExtendedStreamWriter writer, ModelNode container) throws XMLStreamException {
         if (container.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
             ModelNode threadPool = container.get(pool.getPathElement().getKeyValuePair());
             Iterable<Attribute> attributes = Arrays.asList(pool.getMinThreads(), pool.getMaxThreads(), pool.getQueueLength(), pool.getKeepAliveTime());
@@ -487,10 +487,10 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         }
     }
 
-    private static <P extends ScheduledThreadPoolDefinition & ResourceDefinition> void writeScheduledThreadPoolElements(XMLElement element, P pool, XMLExtendedStreamWriter writer, ModelNode container) throws XMLStreamException {
+    private static <P extends ScheduledThreadPoolDefinition & ResourceDefinitionProvider> void writeScheduledThreadPoolElements(XMLElement element, P pool, XMLExtendedStreamWriter writer, ModelNode container) throws XMLStreamException {
         if (container.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
             ModelNode threadPool = container.get(pool.getPathElement().getKeyValuePair());
-            Iterable<Attribute> attributes = Arrays.asList(pool.getMaxThreads(), pool.getKeepAliveTime());
+            Iterable<Attribute> attributes = Arrays.asList(pool.getMinThreads(), pool.getKeepAliveTime());
             if (hasDefined(threadPool, attributes)) {
                 writer.writeStartElement(element.getLocalName());
                 writeAttributes(writer, threadPool, attributes);

@@ -218,13 +218,13 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this;
     }
 
-    public <E extends Enum<E> & ResourceDefinition> ResourceDescriptor addRequiredChildren(Class<E> enumClass) {
+    public <E extends Enum<E> & ResourceDefinitionProvider> ResourceDescriptor addRequiredChildren(Class<E> enumClass) {
         return this.addRequiredChildren(EnumSet.allOf(enumClass));
     }
 
-    public ResourceDescriptor addRequiredChildren(Set<? extends ResourceDefinition> set) {
-        for (ResourceDefinition definition : set) {
-            this.requiredChildren.add(definition.getPathElement());
+    public ResourceDescriptor addRequiredChildren(Iterable<? extends ResourceDefinitionProvider> providers) {
+        for (ResourceDefinitionProvider provider : providers) {
+            this.requiredChildren.add(provider.getPathElement());
         }
         return this;
     }

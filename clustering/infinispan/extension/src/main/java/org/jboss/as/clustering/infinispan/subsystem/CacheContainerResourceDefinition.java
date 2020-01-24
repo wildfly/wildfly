@@ -243,20 +243,11 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
-                builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
-            }
-            for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
-                builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
-            }
-        } else {
-            for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
-                pool.buildTransformation(version, parent);
-            }
-            for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
-                pool.buildTransformation(version, parent);
-            }
+        for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
+            pool.buildTransformation(builder, version);
+        }
+        for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+            pool.buildTransformation(builder, version);
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {

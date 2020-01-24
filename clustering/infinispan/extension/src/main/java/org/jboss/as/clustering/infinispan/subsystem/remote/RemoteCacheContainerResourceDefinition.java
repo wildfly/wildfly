@@ -165,7 +165,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
             InvalidationNearCacheResourceDefinition.buildTransformation(version, builder);
             RemoteClusterResourceDefinition.buildTransformation(version, builder);
 
-            ThreadPoolResourceDefinition.CLIENT.buildTransformation(version, builder);
+            ThreadPoolResourceDefinition.CLIENT.buildTransformation(builder, version);
 
             RemoteCacheResourceDefinition.buildTransformation(version, builder);
         }

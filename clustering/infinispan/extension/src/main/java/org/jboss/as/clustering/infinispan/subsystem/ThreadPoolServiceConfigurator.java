@@ -26,11 +26,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
-import org.infinispan.commons.executors.NonBlockingThreadFactory;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
+import org.jboss.as.clustering.infinispan.DefaultNonBlockingThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -74,13 +74,6 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
     @Override
     public ThreadPoolConfiguration get() {
         return this.builder.create();
-    }
-
-    private static class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingThreadFactory {
-
-        DefaultNonBlockingThreadFactory(ThreadFactory factory) {
-            super(factory);
-        }
     }
 }
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.infinispan;
 
-import org.jboss.as.clustering.controller.Attribute;
+import java.util.concurrent.ThreadFactory;
+
+import org.infinispan.commons.executors.NonBlockingThreadFactory;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 
 /**
+ * Thread factory for non-blocking threads.
  * @author Paul Ferraro
  */
-public interface ThreadPoolDefinition extends ScheduledThreadPoolDefinition {
+public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingThreadFactory {
 
-    Attribute getMaxThreads();
-
-    Attribute getQueueLength();
-
-    boolean isNonBlocking();
+    public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
+        super(factory);
+    }
 }

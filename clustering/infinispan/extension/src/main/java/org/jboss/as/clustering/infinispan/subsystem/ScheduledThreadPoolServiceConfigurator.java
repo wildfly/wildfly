@@ -39,7 +39,6 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
  * @author Radoslav Husar
- * @version August 2015
  */
 public class ScheduledThreadPoolServiceConfigurator extends GlobalComponentServiceConfigurator<ThreadPoolConfiguration> {
 
@@ -54,14 +53,14 @@ public class ScheduledThreadPoolServiceConfigurator extends GlobalComponentServi
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
-        int maxThreads = this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt();
+        int minThreads = this.definition.getMinThreads().resolveModelAttribute(context, model).asInt();
         long keepAliveTime = this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong();
 
         ThreadPoolExecutorFactory<?> factory = new ThreadPoolExecutorFactory<ScheduledExecutorService>() {
             @Override
             public ScheduledExecutorService createExecutor(ThreadFactory factory) {
                 // Use fixed size, based on maxThreads
-                ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(maxThreads, new DefaultThreadFactory(factory));
+                ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(minThreads, new DefaultThreadFactory(factory));
                 executor.setKeepAliveTime(keepAliveTime, TimeUnit.MILLISECONDS);
                 executor.setRemoveOnCancelPolicy(true);
                 executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);

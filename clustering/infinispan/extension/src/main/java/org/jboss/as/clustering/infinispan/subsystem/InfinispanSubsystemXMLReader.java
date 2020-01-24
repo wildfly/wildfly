@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
@@ -48,7 +49,6 @@ import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinit
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -239,7 +239,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case PERSISTENCE_THREAD_POOL: {
                     if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
-                        if (this.schema.since(InfinispanSchema.VERSION_7_0)) {
+                        if (this.schema.since(InfinispanSchema.VERSION_7_0) && !this.schema.since(InfinispanSchema.VERSION_10_0)) {
                             this.parseScheduledThreadPool(ThreadPoolResourceDefinition.PERSISTENCE, reader, address, operations);
                         } else {
                             this.parseThreadPool(ThreadPoolResourceDefinition.PERSISTENCE, reader, address, operations);
@@ -1758,7 +1758,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         ParseUtils.requireNoContent(reader);
     }
 
-    private <P extends ThreadPoolDefinition & ResourceDefinition> void parseThreadPool(P pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private <P extends ThreadPoolDefinition & ResourceDefinitionProvider> void parseThreadPool(P pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
@@ -1795,7 +1795,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         ParseUtils.requireNoContent(reader);
     }
 
-    private <P extends ScheduledThreadPoolDefinition & ResourceDefinition> void parseScheduledThreadPool(P pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private <P extends ScheduledThreadPoolDefinition & ResourceDefinitionProvider> void parseScheduledThreadPool(P pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
@@ -1804,12 +1804,21 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case MAX_THREADS: {
-                    readAttribute(reader, i, operation, pool.getMaxThreads());
+                    if (this.schema.since(InfinispanSchema.VERSION_10_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    readAttribute(reader, i, operation, pool.getMinThreads());
                     break;
                 }
                 case KEEPALIVE_TIME: {
                     readAttribute(reader, i, operation, pool.getKeepAliveTime());
                     break;
+                }
+                case MIN_THREADS: {
+                    if (this.schema.since(InfinispanSchema.VERSION_10_0)) {
+                        readAttribute(reader, i, operation, pool.getMinThreads());
+                        break;
+                    }
                 }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
