@@ -33,6 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
+import org.jgroups.Global;
 
 /**
  * @author Paul Ferraro
@@ -40,7 +41,7 @@ import org.jboss.dmr.ModelType;
 public class GenericProtocolResourceDefinition extends ProtocolResourceDefinition {
 
     public static PathElement pathElement(String name) {
-        return ProtocolResourceDefinition.pathElement(String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, name));
+        return ProtocolResourceDefinition.pathElement(Global.PREFIX + name);
     }
 
     @Deprecated

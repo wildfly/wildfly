@@ -51,6 +51,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jgroups.Global;
 import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.StackType;
@@ -115,8 +116,8 @@ public abstract class AbstractProtocolConfigurationServiceConfigurator<P extends
         String protocolName = this.name;
         String moduleName = this.moduleName;
         // A "native" protocol is one that is not specified as a class name
-        boolean nativeProtocol = moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix);
-        String className = nativeProtocol ? String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, protocolName) : protocolName;
+        boolean nativeProtocol = moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(Global.PREFIX);
+        String className = nativeProtocol ? (Global.PREFIX + protocolName) : protocolName;
         try {
             Module module = this.loader.get().loadModule(moduleName);
             Class<? extends Protocol> protocolClass = module.getClassLoader().loadClass(className).asSubclass(Protocol.class);
