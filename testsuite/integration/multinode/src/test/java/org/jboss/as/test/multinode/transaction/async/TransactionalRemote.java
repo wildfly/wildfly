@@ -33,5 +33,5 @@ import javax.ejb.Remote;
 public interface TransactionalRemote {
     Future<Integer> transactionStatus();
 
-    void asyncWithRequired();
+    Future<Integer> asyncWithRequired();
 }

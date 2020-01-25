@@ -56,7 +56,7 @@ public class TransactionalStatusByManager implements TransactionalRemote {
     @Override
     @Asynchronous
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void asyncWithRequired() {
+    public Future<Integer> asyncWithRequired() {
         throw new RuntimeException("Throw RuntimeException on purpose to cause the transaction rollback");
     }
 }
