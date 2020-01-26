@@ -176,7 +176,14 @@
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
         <server.output.dir.version>${project.version}</server.output.dir.version>
-        <wildfly.build.output.dir>ee-build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+
+        <!-- Properties related to the directory from which testsuite modules that don't create their own dists
+             should obtain the dist to test -->
+        <!-- First, prefix to add to the standard maven child project whose output should be used.
+             An empty value means no prefix.
+             Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
+        <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+        <wildfly.build.output.dir>${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
         <!-- Protocol to use for communication with remote maven repositories.
