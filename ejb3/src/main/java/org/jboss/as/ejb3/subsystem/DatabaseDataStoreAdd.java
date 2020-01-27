@@ -48,13 +48,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
 
-    public static final DatabaseDataStoreAdd INSTANCE = new DatabaseDataStoreAdd();
-
-    protected void populateModel(ModelNode operation, ModelNode timerServiceModel) throws OperationFailedException {
-
-        for (AttributeDefinition attr : DatabaseDataStoreResourceDefinition.ATTRIBUTES.values()) {
-            attr.validateAndSet(operation, timerServiceModel);
-        }
+    DatabaseDataStoreAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override

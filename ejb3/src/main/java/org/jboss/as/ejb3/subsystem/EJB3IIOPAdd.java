@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ejb3.deployment.processors.EjbIIOPDeploymentUnitProcessor;
@@ -40,9 +41,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class EJB3IIOPAdd extends AbstractBoottimeAddStepHandler {
 
-    static final EJB3IIOPAdd INSTANCE = new EJB3IIOPAdd();
-
-    private EJB3IIOPAdd() {
+    EJB3IIOPAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override
@@ -58,12 +58,5 @@ public class EJB3IIOPAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         context.getServiceTarget().addService(IIOPSettingsService.SERVICE_NAME, settingsService).install();
-    }
-
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        EJB3IIOPResourceDefinition.ENABLE_BY_DEFAULT.validateAndSet(operation, model);
-        EJB3IIOPResourceDefinition.USE_QUALIFIED_NAME.validateAndSet(operation, model);
     }
 }

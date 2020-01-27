@@ -47,17 +47,8 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  */
 public class CacheFactoryAdd extends AbstractAddStepHandler {
 
-    private final AttributeDefinition[] attributes;
-
     CacheFactoryAdd(AttributeDefinition... attributes) {
-        this.attributes = attributes;
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr: this.attributes) {
-            attr.validateAndSet(operation, model);
-        }
+        super(attributes);
     }
 
     @Override

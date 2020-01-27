@@ -27,7 +27,6 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 import java.util.Timer;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
@@ -54,24 +53,10 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
     public static final TimerServiceAdd INSTANCE = new TimerServiceAdd();
 
     private TimerServiceAdd() {
-
+        super(TimerServiceResourceDefinition.ATTRIBUTES);
     }
 
-    /**
-     * Populate the <code>timerService</code> from the <code>operation</code>
-     *
-     * @param operation         the operation
-     * @param timerServiceModel strict-max-pool ModelNode
-     * @throws org.jboss.as.controller.OperationFailedException
-     *
-     */
-
-    protected void populateModel(ModelNode operation, ModelNode timerServiceModel) throws OperationFailedException {
-        for (AttributeDefinition attr : TimerServiceResourceDefinition.ATTRIBUTES.values()) {
-            attr.validateAndSet(operation, timerServiceModel);
-        }
-    }
-
+    @Override
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final String defaultDataStore = TimerServiceResourceDefinition.DEFAULT_DATA_STORE.resolveModelAttribute(context, model).asString();
