@@ -49,7 +49,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -153,7 +153,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                         .end();
             }
             if (InfinispanModel.VERSION_9_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.PROTOCOL_VERSION.getDefinition()), Attribute.PROTOCOL_VERSION.getDefinition());
+                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName());
             }
 
             RemoteCacheContainerMetric.buildTransformation(version, builder);

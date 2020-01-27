@@ -70,7 +70,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
 
         ResourceTransformationDescriptionBuilder builderEap70 = chainedBuilder.createBuilder(MODEL_VERSION_EAP71, MODEL_VERSION_EAP70);
         builderEap70.getAttributeBuilder()
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(OBJECT_STORE_RELATIVE_TO), OBJECT_STORE_RELATIVE_TO)
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, OBJECT_STORE_RELATIVE_TO)
                 .end();
 
         builderEap70.addChildResource(TransactionExtension.LOG_STORE_PATH)

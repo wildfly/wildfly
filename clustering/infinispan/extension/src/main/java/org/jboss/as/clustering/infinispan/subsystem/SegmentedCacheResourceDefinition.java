@@ -81,8 +81,7 @@ public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDe
 
         if (InfinispanModel.VERSION_4_1_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CONSISTENT_HASH_STRATEGY.getDefinition()), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.SEGMENTS.getDefinition()), Attribute.SEGMENTS.getDefinition())
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.CONSISTENT_HASH_STRATEGY.getName(), Attribute.SEGMENTS.getName())
                     .end();
         }
 

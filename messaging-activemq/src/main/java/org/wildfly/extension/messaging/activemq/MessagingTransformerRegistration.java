@@ -41,7 +41,7 @@ import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -120,17 +120,13 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         rejectDefinedAttributeWithDefaultValue(queue, QueueDefinition.ROUTING_TYPE);
 
         ResourceTransformationDescriptionBuilder jmsBridge = subsystem.addChildResource(MessagingExtension.JMS_BRIDGE_PATH);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.QUALITY_OF_SERVICE);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.FAILURE_RETRY_INTERVAL);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_RETRIES);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_BATCH_SIZE);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_BATCH_TIME);
+        jmsBridge.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, JMSBridgeDefinition.QUALITY_OF_SERVICE, JMSBridgeDefinition.FAILURE_RETRY_INTERVAL, JMSBridgeDefinition.MAX_RETRIES, JMSBridgeDefinition.MAX_BATCH_SIZE, JMSBridgeDefinition.MAX_BATCH_TIME);
     }
 
     private static void registerTransformers_WF_15(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10976 - journal-pool-files default value is 10.
-        defaultValueAttributeConverter(server, ServerDefinition.JOURNAL_POOL_FILES);
+        server.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, ServerDefinition.JOURNAL_POOL_FILES);
         rejectDefinedAttributeWithDefaultValue(server,
                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                 ServerDefinition.DISK_SCAN_PERIOD,
@@ -150,7 +146,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
 
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10165 - journal-jdbc-network-timeout default value is 20 seconds.
-        defaultValueAttributeConverter(server, ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT);
+        server.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT);
 
         rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
                 ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
@@ -255,17 +251,15 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
         rejectDefinedAttributeWithDefaultValue(connectionFactory, ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                 ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST);
-        defaultValueAttributeConverter(connectionFactory, CommonAttributes.CALL_FAILOVER_TIMEOUT);
+        connectionFactory.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, CommonAttributes.CALL_FAILOVER_TIMEOUT);
         ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
         // reject rebalance-connections introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS);
         // reject statistics-enabled introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED);
         // reject max-pool-size whose default value has been changed in  management version 2.0.0
-        defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE);
-        defaultValueAttributeConverter(pooledConnectionFactory, CommonAttributes.CALL_FAILOVER_TIMEOUT);
         // reject min-pool-size whose default value has been changed in  management version 2.0.0
-        defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
+        pooledConnectionFactory.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE, CommonAttributes.CALL_FAILOVER_TIMEOUT, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
                 ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                 ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
@@ -279,9 +273,5 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         builder.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, attrs)
                 .addRejectCheck(DEFINED, attrs);
-    }
-
-    private static void defaultValueAttributeConverter(ResourceTransformationDescriptionBuilder builder, AttributeDefinition attr) {
-        builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attr), attr).end();
     }
 }

@@ -57,7 +57,7 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
 
         ResourceTransformationDescriptionBuilder builder_2_0 = chained.createBuilder(CURRENT_MODEL_VERSION, VERSION_2);
         builder_2_0.getAttributeBuilder()
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(IIOPRootDefinition.SOCKET_BINDING), IIOPRootDefinition.SOCKET_BINDING);
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, IIOPRootDefinition.SOCKET_BINDING);
 
         /*
         --- Problems for relative address to root []:
