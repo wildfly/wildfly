@@ -145,8 +145,8 @@ Undertow subsystem is configured with _other_ _application-security-domain_ that
 ====
 
 * _datasources-web-server_: A servlet container (_web-server_ layer) with an optional dependency on _datasources_ layer.
-* _jaxrs-server_: An extension of _datasources-web-server_ layer with _jaxrs_ and optional dependencies on _cdi_ and _jpa_ layers.
-* _cloud-server_: A _cloud-profile_ with core features and tools.
+* _jaxrs-server_: An extension of _datasources-web-server_ layer with optional dependencies on _jaxrs_, _cdi_, _bean-validation_ and _jpa_ layers.
+* _cloud-server_: An extension of _jaxrs-server_ with optional dependencies on _ee-security_, _jms-activemq_, _observability_ and _resource-adapters_.
 
 
 Decorator layers:

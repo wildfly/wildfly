@@ -1,13 +1,10 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="cloud-server">
     <dependencies>
-        <layer name="cloud-profile"/>
-        <layer name="core-server"/>
-        <layer name="core-tools"/>
+        <layer name="jaxrs-server"/>
+        <layer name="ee-security" optional="true"/>
+        <layer name="jms-activemq" optional="true"/>
+        <layer name="observability" optional="true"/>
+        <layer name="resource-adapters" optional="true"/>
     </dependencies>
-    <feature-group name="undertow-elytron-security"/>
-    <packages>
-        <!-- Support for installing legacy one-off patches -->
-        <package name="org.jboss.as.patching.cli" optional="true"/>
-    </packages>
 </layer-spec>
