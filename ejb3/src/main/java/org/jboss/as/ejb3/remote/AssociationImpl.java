@@ -389,11 +389,12 @@ final class AssociationImpl implements Association, AutoCloseable {
 
             @Override
             public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
-                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
             @Override
             public void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+                // only send out moduleAvailability until module has started (WFLY-13009)
+                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
             @Override
