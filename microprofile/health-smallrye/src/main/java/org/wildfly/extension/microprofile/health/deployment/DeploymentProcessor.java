@@ -59,7 +59,7 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
         if (weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
             final HealthReporter healthReporter = (HealthReporter) phaseContext.getServiceRegistry().getService(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_SERVICE).getValue();
 
-            weldCapability.registerExtensionInstance(new CDIExtension(healthReporter, module.getClassLoader()), deploymentUnit);
+            weldCapability.registerExtensionInstance(new CDIExtension(healthReporter, module), deploymentUnit);
         }
 
     }

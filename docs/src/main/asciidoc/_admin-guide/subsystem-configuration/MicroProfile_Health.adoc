@@ -97,6 +97,11 @@ on the `subsystem` resource to `DOWN`.
 This allows application to ensure that the HTTP liveness and readiness endpoints will return `DOWN` until their probes are deployed and used to determine the actual
 liveness and readiness state of the application.
 
+[NOTE]
+There is a specific behaviour for deployments that provides no _readiness_ probes. In that the case, WildFly automatically adds a readiness probe for the deployment that always return
+`UP`. This allows existing deployments that do not provide readiness probes to configure WildFly so it will not be ready until this deployment is actually deployed.
+
+
 == Component Reference
 
 The Eclipse MicroProfile Health is implemented by the SmallRye Health project.
