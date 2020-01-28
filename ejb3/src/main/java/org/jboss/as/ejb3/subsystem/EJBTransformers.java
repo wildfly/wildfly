@@ -65,7 +65,6 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 
 /**
  * @author Tomaz Cerar (c) 2017 Red Hat Inc.
@@ -118,7 +117,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .end();
 
         //This used to behave as 'true' and it is now defaulting as 'true'
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
 
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
@@ -127,12 +126,8 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
         //builder.getAttributeBuilder().setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME);
 
-
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS);
 
@@ -162,10 +157,9 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder().setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME)
                 .end();
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS);
         registerMdbDeliveryGroupTransformers(builder);
@@ -190,11 +184,8 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, StaticEJBDiscoveryDefinition.INSTANCE)
                 .end();
 
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
 
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS);
@@ -220,7 +211,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
     private static void registerRemoteTransformers(ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder remoteService = parent.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH);
         remoteService.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME)), CLIENT_MAPPINGS_CLUSTER_NAME)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, CLIENT_MAPPINGS_CLUSTER_NAME)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_MAPPINGS_CLUSTER_NAME)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, EXECUTE_IN_WORKER) //as this does not affect functionality we just discard
                 .end();
@@ -279,8 +270,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         ResourceTransformationDescriptionBuilder timerService = parent.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH);
         ResourceTransformationDescriptionBuilder db = timerService.addChildResource(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
                 db.getAttributeBuilder()
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(-1)), REFRESH_INTERVAL)
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), ALLOW_EXECUTION)
+                        .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, REFRESH_INTERVAL, ALLOW_EXECUTION)
                         .addRejectCheck(RejectAttributeChecker.DEFINED, REFRESH_INTERVAL, ALLOW_EXECUTION);
     }
 
