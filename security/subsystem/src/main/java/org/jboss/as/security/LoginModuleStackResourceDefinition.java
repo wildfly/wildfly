@@ -42,9 +42,10 @@ public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition
     private LoginModuleStackResourceDefinition() {
         super(SecurityExtension.PATH_LOGIN_MODULE_STACK,
                 SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK),
-                LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                new LoginModuleStackResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(LOGIN_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.LOGIN_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.LOGIN_MODULE));
     }
@@ -56,12 +57,6 @@ public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition
     }
 
     static class LoginModuleStackResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
-        static final LoginModuleStackResourceDefinitionAdd INSTANCE = new LoginModuleStackResourceDefinitionAdd();
-
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        }
 
         @Override
         protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
