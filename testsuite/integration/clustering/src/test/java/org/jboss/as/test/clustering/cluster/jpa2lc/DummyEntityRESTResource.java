@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.clustering.cluster.jpa2lc;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.persistence.CacheRetrieveMode;
 import javax.persistence.CacheStoreMode;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.UserTransaction;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -36,20 +37,24 @@ import javax.ws.rs.Produces;
 /**
  * @author Jan Martiska
  */
-@Stateless
-@LocalBean
+@RequestScoped
 @Path("/")
 public class DummyEntityRESTResource {
 
     @PersistenceContext(unitName = "MainPU")
     private EntityManager em;
 
+    @Inject
+    private UserTransaction tx;
+
     @GET
     @Path("/create/{id}")
-    public void createNew(@PathParam(value = "id") Long id) {
+    public void createNew(@PathParam(value = "id") Long id) throws Exception {
         final DummyEntity entity = new DummyEntity();
         entity.setId(id);
+        tx.begin();
         em.persist(entity);
+        tx.commit();
     }
 
     @GET
