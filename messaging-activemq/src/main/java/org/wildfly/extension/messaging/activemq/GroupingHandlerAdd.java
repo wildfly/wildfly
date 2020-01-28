@@ -51,13 +51,6 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (final AttributeDefinition attr : GroupingHandlerDefinition.ATTRIBUTES) {
-            attr.validateAndSet(operation, model);
-        }
-    }
-
-    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);

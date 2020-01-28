@@ -23,7 +23,6 @@
 package org.wildfly.extension.messaging.activemq;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -43,16 +42,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
     public static final ClusterConnectionAdd INSTANCE = new ClusterConnectionAdd();
 
     private ClusterConnectionAdd() {
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        model.setEmptyObject();
-
-        for (final AttributeDefinition attributeDefinition : ClusterConnectionDefinition.ATTRIBUTES) {
-            attributeDefinition.validateAndSet(operation, model);
-        }
+        super(ClusterConnectionDefinition.ATTRIBUTES);
     }
 
     @Override

@@ -42,7 +42,6 @@ import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.TransformerConfiguration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -62,16 +61,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
 
     public static final BridgeAdd INSTANCE = new BridgeAdd();
 
-    private BridgeAdd() {}
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        model.setEmptyObject();
-
-        for (final AttributeDefinition attributeDefinition : ATTRIBUTES) {
-            attributeDefinition.validateAndSet(operation, model);
-        }
+    private BridgeAdd() {
+        super(ATTRIBUTES);
     }
 
     @Override
