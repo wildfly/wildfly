@@ -152,6 +152,12 @@
                 <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
             </excluded-extensions>
         </host-exclude>
+        <host-exclude name="WildFly15.0">
+            <host-release id="WildFly15.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.clustering.web"/>
+            </excluded-extensions>
+        </host-exclude>
     </host-excludes>
 
 </domain>
