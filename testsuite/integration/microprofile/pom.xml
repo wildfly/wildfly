@@ -206,8 +206,7 @@
                                             <name>standalone-microprofile.xml</name>
                                             <layers>
                                                 <layer>cloud-server</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-openapi</layer>
+                                                <layer>microprofile</layer>
                                             </layers>
                                         </config>
                                     </configurations>
