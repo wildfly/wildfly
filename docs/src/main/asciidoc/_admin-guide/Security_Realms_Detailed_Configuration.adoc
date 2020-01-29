@@ -207,7 +207,7 @@ authentication mechanisms selected for the protocol to cause the
 password to be sent from the client in plain text, the following Jira
 issue is to investigating proxying a Digest authentication with the LDAP
 server so no plain text password is needed
-https://issues.jboss.org/browse/AS7-4195[AS7-4195].
+https://issues.redhat.com/browse/AS7-4195[AS7-4195].
 
 * *connection* (mandatory) - The name of the connection to use to
 connect to LDAP.
