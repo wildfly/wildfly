@@ -115,6 +115,14 @@ WildFly defined layers to assemble a custom configuration. <<galleon-cli-recipes
 
 Basic layers:
 
+* _microprofile-fault-tolerance_: Support for MicroProfile Fault Tolerance.
+* _microprofile-jwt_: Support for MicroProfile JWT.
+* _microprofile-openapi_: Support for MicroProfile OpenAPI.
+
+==== WildFly EE layers
+
+Basic layers:
+
 * _bean-validation_: Support for Jakarta Bean Validation. Optionally depends on _cdi_.
 * _cdi_: Support for CDI.
 * _datasources_: Support for datasources.
@@ -123,8 +131,6 @@ Basic layers:
 * _jms-activemq_: Support for connections to a remote JMS broker.
 * _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
 * _microprofile-config_: Support for MicroProfile Config.
-* _microprofile-fault-tolerance_: Support for MicroProfile Fault Tolerance.
-* _microprofile-jwt_: Support for MicroProfile JWT.
 * _microprofile-metrics_: Support for MicroProfile Metrics.
 * _observability_: Support for MicroProfile monitoring and configuration features (Config, Health, Metrics, OpenTracing).
 * _open-tracing_: Support for MicroProfile OpenTracing. This layer is an optional dependency of the _observability_ layer.
