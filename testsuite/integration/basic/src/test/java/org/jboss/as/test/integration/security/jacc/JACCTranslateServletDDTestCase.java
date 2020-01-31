@@ -45,7 +45,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -60,7 +59,6 @@ import org.junit.runner.RunWith;
 @ServerSetup({JACCTranslateServletDDTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 @Category(CommonCriteria.class)
-@Ignore("WFLY-4991")
 public class JACCTranslateServletDDTestCase {
     private static final String SECURITY_DOMAIN_NAME = "jacc-test";
     private static final String WEBAPP_NAME = "jacc-test.war";
