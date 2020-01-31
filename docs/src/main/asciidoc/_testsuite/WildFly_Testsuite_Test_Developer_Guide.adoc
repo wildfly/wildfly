@@ -165,7 +165,7 @@ Time ratios will soon be provided by
 To test invalid deployment handling: @ShouldThrowException
 
 Currently doesn't work due to
-https://issues.jboss.org/browse/WFLY-673[WFLY-673].
+https://issues.redhat.com/browse/WFLY-673[WFLY-673].
 
 optionally you might be able to catch it using the manual deployer
 

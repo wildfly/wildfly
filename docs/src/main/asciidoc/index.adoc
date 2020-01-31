@@ -87,7 +87,7 @@ of the documentation details the available quickstarts
 
 * link:Glossary.html[Glossary]
 * http://www.wildfly.org[WildFly project page]
-* https://issues.jboss.org/browse/WFLY[WildFly issue tracker]
+* https://issues.redhat.com/browse/WFLY[WildFly issue tracker]
 * https://community.jboss.org/en/wildfly[WildFly user forum]
 * https://community.jboss.org/en/wildfly/dev[WildFly wiki]
 * https://github.com/wildfly/wildfly/[WildFly source]

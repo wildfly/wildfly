@@ -189,7 +189,7 @@ Review
 
 [IMPORTANT]
 
-https://issues.jboss.org/browse/AS7-1674[AS7-1674] Remove or explain why
+https://issues.redhat.com/browse/AS7-1674[AS7-1674] Remove or explain why
 web.xml is needed for RESTful endpoints
 
 [source,java,options="nowrap"]
