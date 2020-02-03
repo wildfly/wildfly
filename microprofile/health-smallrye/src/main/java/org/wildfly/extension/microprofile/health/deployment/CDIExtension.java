@@ -62,20 +62,6 @@ public class CDIExtension implements Extension {
         private static final long serialVersionUID = 1L;
 
     }
-    static final class LivenessLiteral extends AnnotationLiteral<Liveness> implements Liveness {
-
-        static final LivenessLiteral INSTANCE = new LivenessLiteral();
-
-        private static final long serialVersionUID = 1L;
-
-    }
-    static final class ReadinessLiteral extends AnnotationLiteral<Readiness> implements Readiness {
-
-        static final ReadinessLiteral INSTANCE = new ReadinessLiteral();
-
-        private static final long serialVersionUID = 1L;
-
-    }
 
     // Use a single CDI instance to select and destroy all HealthCheck probes instances
     private Instance<Object> instance;
@@ -99,8 +85,8 @@ public class CDIExtension implements Extension {
         instance = bm.createInstance();
 
         addHealthChecks(HealthLiteral.INSTANCE, reporter::addHealthCheck, healthChecks);
-        addHealthChecks(LivenessLiteral.INSTANCE, reporter::addLivenessCheck, livenessChecks);
-        addHealthChecks(ReadinessLiteral.INSTANCE, reporter::addReadinessCheck, readinessChecks);
+        addHealthChecks(Liveness.Literal.INSTANCE, reporter::addLivenessCheck, livenessChecks);
+        addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, readinessChecks);
         if (readinessChecks.isEmpty()) {
             Config config = ConfigProvider.getConfig(module.getClassLoader());
             boolean disableDefaultprocedure = config.getOptionalValue("mp.health.disable-default-procedures", Boolean.class).orElse(false);
