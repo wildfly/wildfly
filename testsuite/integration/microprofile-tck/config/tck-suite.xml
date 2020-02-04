@@ -8,25 +8,6 @@
             </package>
         </packages>
         <classes>
-            <!-- Exclude these 3 classes as they rely on a @ShouldThrowException(DeploymentException.class)
-                 that is not working with Arquillian WildFly container (https://issues.jboss.org/browse/WFARQ-59)
-            -->
-            <class name="org.eclipse.microprofile.config.tck.broken.MissingConverterOnInstanceInjectionTest">
-                <methods>
-                    <exclude name=".*" />
-                </methods>
-            </class>
-            <class name="org.eclipse.microprofile.config.tck.broken.MissingValueOnInstanceInjectionTest">
-                <methods>
-                    <exclude name=".*" />
-                </methods>
-            </class>
-            <class name="org.eclipse.microprofile.config.tck.broken.WrongConverterOnInstanceInjectionTest">
-                <methods>
-                    <exclude name=".*" />
-                </methods>
-            </class>
-
             <!-- TCK and spec dispute: https://github.com/eclipse/microprofile-config/pull/407 -->
             <class name="org.eclipse.microprofile.config.tck.ConfigProviderTest">
                 <methods>
