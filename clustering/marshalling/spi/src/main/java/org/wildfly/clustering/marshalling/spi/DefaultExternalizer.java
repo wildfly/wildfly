@@ -75,6 +75,7 @@ import org.wildfly.clustering.marshalling.spi.time.LocalDateTimeExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.MonthDayExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.PeriodExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.YearMonthExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.BitSetExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CalendarExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CopyOnWriteCollectionExternalizer;
@@ -82,6 +83,9 @@ import org.wildfly.clustering.marshalling.spi.util.DateExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.HashMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.MapEntryExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.OptionalDoubleExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.OptionalIntExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.OptionalLongExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SingletonCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SingletonMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SortedMapExternalizer;
@@ -121,6 +125,7 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     ATOMIC_INTEGER(new IntExternalizer<>(AtomicInteger.class, AtomicInteger::new, AtomicInteger::get)),
     ATOMIC_LONG(new LongExternalizer<>(AtomicLong.class, AtomicLong::new, AtomicLong::get)),
     ATOMIC_REFERENCE(new ObjectExternalizer<>(AtomicReference.class, AtomicReference::new, AtomicReference::get)),
+    BIT_SET(new BitSetExternalizer()),
     CALENDAR(new CalendarExternalizer()),
     CONCURRENT_HASH_MAP(new HashMapExternalizer<>(ConcurrentHashMap.class, ConcurrentHashMap::new)),
     CONCURRENT_HASH_SET(new CollectionExternalizer<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
@@ -151,6 +156,9 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     NATURAL_ORDER_COMPARATOR(new ValueExternalizer<>(Comparator.naturalOrder())),
     @SuppressWarnings("unchecked")
     OPTIONAL(new ObjectExternalizer<>(Optional.class, Optional::ofNullable, optional -> optional.orElse(null))),
+    OPTIONAL_DOUBLE(new OptionalDoubleExternalizer()),
+    OPTIONAL_INT(new OptionalIntExternalizer()),
+    OPTIONAL_LONG(new OptionalLongExternalizer()),
     REVERSE_ORDER_COMPARATOR(new ValueExternalizer<>(Collections.reverseOrder())),
     SIMPLE_ENTRY(new MapEntryExternalizer<>(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry::new)),
     SIMPLE_IMMUTABLE_ENTRY(new MapEntryExternalizer<>(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry::new)),
