@@ -18,7 +18,7 @@ package org.wildfly.test.integration.microprofile.metrics.metadata;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getJSONMetrics;
 
 import java.net.URL;
 

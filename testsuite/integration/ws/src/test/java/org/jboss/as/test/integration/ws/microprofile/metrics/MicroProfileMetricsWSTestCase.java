@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.metrics.application;
+package org.jboss.as.test.integration.ws.microprofile.metrics;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.shared.ServerReload.reloadIfRequired;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.wildfly.test.microprofile.util.MetricsHelper.getJSONMetrics;
 import static org.wildfly.test.microprofile.util.MetricsHelper.getMetricValueFromJSONOutput;
-import static org.wildfly.test.microprofile.util.MetricsHelper.getMetricValueFromPrometheusOutput;
 import static org.wildfly.test.microprofile.util.MetricsHelper.getPrometheusMetrics;
+import static org.jboss.as.test.shared.ServerReload.reloadIfRequired;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -50,28 +50,29 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.ws.basic.EndpointIface;
+import org.jboss.as.test.integration.ws.basic.HelloObject;
+import org.jboss.as.test.integration.ws.basic.PojoEndpoint;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.microprofile.metrics.application.resource.ResourceSimple;
-import org.wildfly.test.integration.microprofile.metrics.TestApplication;
 
 /**
- * Test application metrics that are provided by a deployment.
+ * Test WS with MP metrics
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({MicroProfileMetricsApplicationTestCase.EnablesUndertowStatistics.class})
-public class MicroProfileMetricsApplicationTestCase {
+@ServerSetup({ MicroProfileMetricsWSTestCase.EnablesUndertowStatistics.class })
+public class MicroProfileMetricsWSTestCase {
 
     static class EnablesUndertowStatistics implements ServerSetupTask {
 
@@ -93,13 +94,12 @@ public class MicroProfileMetricsApplicationTestCase {
         }
     }
 
-    @Deployment(name = "MicroProfileMetricsApplicationTestCase", managed = false)
-    public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileMetricsApplicationTestCase.war")
-                .addClasses(TestApplication.class)
-                .addClass(ResourceSimple.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        return war;
+    @Deployment(name = "jaxws-basic-pojo", managed = false)
+    public static Archive<?> deployment() {
+        WebArchive pojoWar = ShrinkWrap.create(WebArchive.class, "jaxws-basic-pojo.war").addClasses(EndpointIface.class,
+                PojoEndpoint.class, HelloObject.class);
+        pojoWar.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        return pojoWar;
     }
 
     @BeforeClass
@@ -113,7 +113,6 @@ public class MicroProfileMetricsApplicationTestCase {
     @ArquillianResource
     private Deployer deployer;
 
-    private static int requestCalled = 0;
 
     @Test
     @InSequence(1)
@@ -122,83 +121,30 @@ public class MicroProfileMetricsApplicationTestCase {
         getJSONMetrics(managementClient, "application", false);
 
         // deploy the archive
-        deployer.deploy("MicroProfileMetricsApplicationTestCase");
+        deployer.deploy("jaxws-basic-pojo");
     }
 
     @Test
     @InSequence(2)
-    @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
-    public void testApplicationMetricWithPrometheusAfterDeployment(@ArquillianResource URL url) throws Exception {
-        getPrometheusMetrics(managementClient, "application", true);
+    @OperateOnDeployment("jaxws-basic-pojo")
+    public void testDeploymenTest(@ArquillianResource URL url) throws Exception {
+        QName serviceName = new QName("http://jbossws.org/basic", "POJOService");
+        URL wsdlURL = new URL(url, "POJOService?wsdl");
+        Service service = Service.create(wsdlURL, serviceName);
+        EndpointIface proxy = service.getPort(EndpointIface.class);
+        checkRequestCount(2, true);
 
-        String text = performCall(url);
-        assertNotNull(text);
-        assertTrue(text.contains("Hello From WildFly!"));
-
-        String metrics = getPrometheusMetrics(managementClient, "application", true);
-        double counter = getMetricValueFromPrometheusOutput(metrics, "application", "hello");
+        Assert.assertEquals("Hello World!", proxy.helloString("World"));
+        String metrics = getJSONMetrics(managementClient, "application", true);
+        double counter = getMetricValueFromJSONOutput(metrics, "helloString");
         assertEquals(1.0, counter, 0.0);
 
-        performCall(url);
-        assertNotNull(text);
-        assertTrue(text.contains("Hello From WildFly!"));
-
-        metrics = getPrometheusMetrics(managementClient, "application", true);
-        counter = getMetricValueFromPrometheusOutput(metrics, "application", "hello");
-        assertEquals(2.0, counter, 0.0);
-    }
-
-    @Test
-    @InSequence(3)
-    @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
-    public void testApplicationMetricWithJSONAfterDeployment(@ArquillianResource URL url) throws Exception {
-        // hello counter is at 2.0 from previous testApplicationMetricWithPrometheusAfterDeployment invocations
-        String metrics = getJSONMetrics(managementClient, "application", true);
-        double counter = getMetricValueFromJSONOutput(metrics, "hello");
-        assertEquals(2.0, counter, 0.0);
-
-        String text = performCall(url);
-        assertNotNull(text);
-        assertTrue(text.contains("Hello From WildFly!"));
-
+        HelloObject helloObject = new HelloObject("Kermit");
+        Assert.assertEquals("Hello Kermit!", proxy.helloBean(helloObject).getMessage());
         metrics = getJSONMetrics(managementClient, "application", true);
-        counter = getMetricValueFromJSONOutput(metrics, "hello");
-        assertEquals(3.0, counter, 0.0);
-
-        performCall(url);
-        assertNotNull(text);
-        assertTrue(text.contains("Hello From WildFly!"));
-
-        metrics = getJSONMetrics(managementClient, "application", true);
-        counter = getMetricValueFromJSONOutput(metrics, "hello");
-        assertEquals(4.0, counter, 0.0);
-    }
-
-
-    @Test
-    @InSequence(4)
-    @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
-    public void testDeploymentWildFlyMetrics(@ArquillianResource URL url) throws Exception {
-        // test the request-count metric on the deployment's undertow resources
-        checkRequestCount(requestCalled, true);
-        performCall(url);
-        checkRequestCount(requestCalled, true);
-    }
-
-    @Test
-    @InSequence(5)
-    public void tesApplicationMetricAfterUndeployment() throws Exception {
-        deployer.undeploy("MicroProfileMetricsApplicationTestCase");
-
-        checkRequestCount(requestCalled, false);
-        getPrometheusMetrics(managementClient, "application", false);
-        getJSONMetrics(managementClient, "application", false);
-    }
-
-    private static String performCall(URL url) throws Exception {
-        requestCalled++;
-        URL appURL = new URL(url.toExternalForm() + "microprofile-metrics-app/hello");
-        return HttpRequest.get(appURL.toExternalForm(), 10, TimeUnit.SECONDS);
+        counter = getMetricValueFromJSONOutput(metrics, "helloBean");
+        assertEquals(1.0, counter, 0.0);
+        checkRequestCount(4, true);
     }
 
     private void checkRequestCount(int expectedCount, boolean deploymentMetricMustExist) throws IOException {
@@ -210,13 +156,11 @@ public class MicroProfileMetricsApplicationTestCase {
                 String labels = split[0].substring((prometheusMetricName).length());
 
                 // we are only interested by the metric for this deployment
-                if (labels.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\"")) {
+                if (labels.contains("deployment=\"jaxws-basic-pojo.war\"")) {
                     if (deploymentMetricMustExist) {
                         Double value = Double.valueOf(split[1]);
-
-                        assertTrue(labels.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\""));
-                        assertTrue(labels.contains("subdeployment=\"MicroProfileMetricsApplicationTestCase.war\""));
-                        assertTrue(labels.contains("servlet=\"org.wildfly.test.integration.microprofile.metrics.TestApplication\""));
+                        assertTrue(labels.contains("deployment=\"jaxws-basic-pojo.war\""));
+                        assertTrue(labels.contains("subdeployment=\"jaxws-basic-pojo.war\""));
                         assertEquals(Integer.valueOf(expectedCount).doubleValue(), value, 0);
 
                         return;

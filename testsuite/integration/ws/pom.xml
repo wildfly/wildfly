@@ -158,6 +158,11 @@
             <artifactId>picketlink-wildfly8</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.metrics</groupId>
+            <artifactId>microprofile-metrics-api</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

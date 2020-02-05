@@ -29,7 +29,7 @@ import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPFault;
 import javax.xml.ws.BindingType;
 import javax.xml.ws.soap.SOAPFaultException;
-
+import org.eclipse.microprofile.metrics.annotation.Counted;
 /**
  * Simple POJO endpoint
  *
@@ -42,15 +42,17 @@ import javax.xml.ws.soap.SOAPFaultException;
 )
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class PojoEndpoint implements EndpointIface {
-
+    @Counted(description = "counter of the HelloString", absolute = true)
     public String helloString(String input) {
         return "Hello " + input + "!";
     }
 
+    @Counted(description = "counter of the HelloBean", absolute = true)
     public HelloObject helloBean(HelloObject input) {
         return new HelloObject(helloString(input.getMessage()));
     }
 
+    @Counted(description = "counter of the HelloArray", absolute = true)
     public HelloObject[] helloArray(HelloObject[] input) {
         HelloObject[] reply = new HelloObject[input.length];
         for (int n = 0; n < input.length; n++) {
@@ -58,7 +60,7 @@ public class PojoEndpoint implements EndpointIface {
         }
         return reply;
     }
-
+    @Counted(description = "counter of the HelloError", absolute = true)
     public String helloError(String input) {
         try {
             SOAPFault fault = SOAPFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL).createFault(input,
