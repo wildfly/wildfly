@@ -42,6 +42,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.health.api"/>
         <module name="org.wildfly.extension.microprofile.config-smallrye" />
         <module name="org.jboss.as.weld.common" />

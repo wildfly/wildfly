@@ -37,11 +37,14 @@ import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.util.AnnotationLiteral;
 
 import io.smallrye.health.SmallRyeHealthReporter;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
-import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.Module;
 import org.wildfly.extension.microprofile.health.HealthReporter;
 
 /**
@@ -50,7 +53,7 @@ import org.wildfly.extension.microprofile.health.HealthReporter;
 public class CDIExtension implements Extension {
 
     private final HealthReporter reporter;
-    private ModuleClassLoader moduleClassLoader;
+    private final Module module;
 
     static final class HealthLiteral extends AnnotationLiteral<Health> implements Health {
 
@@ -79,11 +82,13 @@ public class CDIExtension implements Extension {
     private final List<HealthCheck> healthChecks = new ArrayList<>();
     private final List<HealthCheck> livenessChecks = new ArrayList<>();
     private final List<HealthCheck> readinessChecks = new ArrayList<>();
+    private HealthCheck defaultReadinessCheck;
 
 
-    public CDIExtension(HealthReporter healthReporter, ModuleClassLoader moduleClassLoader) {
+    public CDIExtension(HealthReporter healthReporter, Module module) {
         this.reporter = healthReporter;
-        this.moduleClassLoader = moduleClassLoader;
+        this.module = module;
+
     }
 
     /**
@@ -96,12 +101,21 @@ public class CDIExtension implements Extension {
         addHealthChecks(HealthLiteral.INSTANCE, reporter::addHealthCheck, healthChecks);
         addHealthChecks(LivenessLiteral.INSTANCE, reporter::addLivenessCheck, livenessChecks);
         addHealthChecks(ReadinessLiteral.INSTANCE, reporter::addReadinessCheck, readinessChecks);
+        if (readinessChecks.isEmpty()) {
+            Config config = ConfigProvider.getConfig(module.getClassLoader());
+            boolean disableDefaultprocedure = config.getOptionalValue("mp.health.disable-default-procedures", Boolean.class).orElse(false);
+            if (!disableDefaultprocedure) {
+                // no readiness probe are present in the deployment. register a readiness check so that the deployment is considered ready
+                defaultReadinessCheck = new DefaultReadinessHealthCheck(module.getName());
+                reporter.addReadinessCheck(defaultReadinessCheck, module.getClassLoader());
+            }
+        }
     }
 
     private void addHealthChecks(AnnotationLiteral qualifier,
                                  BiConsumer<HealthCheck, ClassLoader> healthFunction, List<HealthCheck> healthChecks) {
         for (HealthCheck healthCheck : instance.select(HealthCheck.class, qualifier)) {
-            healthFunction.accept(healthCheck, moduleClassLoader);
+            healthFunction.accept(healthCheck, module.getClassLoader());
             healthChecks.add(healthCheck);
         }
     }
@@ -115,6 +129,11 @@ public class CDIExtension implements Extension {
         removeHealthCheck(healthChecks, reporter::removeHealthCheck);
         removeHealthCheck(livenessChecks, reporter::removeLivenessCheck);
         removeHealthCheck(readinessChecks, reporter::removeReadinessCheck);
+
+        if (defaultReadinessCheck != null) {
+            reporter.removeReadinessCheck(defaultReadinessCheck);
+            defaultReadinessCheck = null;
+        }
 
         instance = null;
     }
@@ -130,5 +149,21 @@ public class CDIExtension implements Extension {
 
     public void vetoSmallryeHealthReporter(@Observes ProcessAnnotatedType<SmallRyeHealthReporter> pat) {
         pat.veto();
+    }
+
+    private static final class DefaultReadinessHealthCheck implements HealthCheck {
+
+        private final String deploymentName;
+
+        DefaultReadinessHealthCheck(String deploymentName) {
+            this.deploymentName = deploymentName;
+        }
+
+        @Override
+        public HealthCheckResponse call() {
+            return HealthCheckResponse.named("ready-" + deploymentName)
+                    .up()
+                    .build();
+        }
     }
 }
