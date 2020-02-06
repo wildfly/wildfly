@@ -251,10 +251,9 @@
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                             </layers>
-                                            <!-- TODO exclude datasources layer when plugin with GAL-287 is in -->
-                                            <!--<excluded-layers>
+                                            <excluded-layers>
                                                 <layer>datasources</layer>
-                                            </excluded-layers>-->
+                                            </excluded-layers>
                                         </config>
                                     </configurations>
                                 </configuration>
@@ -293,10 +292,9 @@
                                                 <layer>datasources-web-server</layer>
                                                 <layer>legacy-security</layer>
                                             </layers>
-                                            <!-- TODO exclude datasources layer when plugin with GAL-287 is in -->
-                                            <!--<excluded-layers>
+                                            <excluded-layers>
                                                 <layer>datasources</layer>
-                                            </excluded-layers>-->
+                                            </excluded-layers>
                                         </config>
                                     </configurations>
                                 </configuration>
@@ -335,10 +333,9 @@
                                                 <layer>datasources-web-server</layer>
                                                 <layer>undertow-legacy-https</layer>
                                             </layers>
-                                            <!-- TODO exclude datasources layer when plugin with GAL-287 is in -->
-                                            <!--<excluded-layers>
+                                            <excluded-layers>
                                                 <layer>datasources</layer>
-                                            </excluded-layers>-->
+                                            </excluded-layers>
                                         </config>
                                     </configurations>
                                 </configuration>

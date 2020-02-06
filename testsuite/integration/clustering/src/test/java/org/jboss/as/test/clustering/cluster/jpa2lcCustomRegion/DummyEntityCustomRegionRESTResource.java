@@ -28,12 +28,13 @@ import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 
 import javax.annotation.Resource;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.persistence.CacheRetrieveMode;
 import javax.persistence.CacheStoreMode;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.UserTransaction;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -44,8 +45,7 @@ import javax.ws.rs.core.Response;
 /**
  * @author Tommaso Borgato
  */
-@Stateless
-@LocalBean
+@RequestScoped
 @Path("/custom-region")
 public class DummyEntityCustomRegionRESTResource {
 
@@ -55,12 +55,17 @@ public class DummyEntityCustomRegionRESTResource {
     @Resource(lookup = "java:jboss/infinispan/container/hibernate")
     private CacheContainer container;
 
+    @Inject
+    private UserTransaction tx;
+
     @GET
     @Path("/create/{id}")
-    public void createNew(@PathParam(value = "id") Long id) {
+    public void createNew(@PathParam(value = "id") Long id) throws Exception {
         final DummyEntityCustomRegion entity = new DummyEntityCustomRegion();
         entity.setId(id);
+        tx.begin();
         em.persist(entity);
+        tx.commit();
     }
 
     @GET
