@@ -21,17 +21,23 @@
  */
 package org.wildfly.extension.microprofile.config.test;
 
+import javax.enterprise.inject.spi.DeploymentException;
+
 import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTransformer;
-import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
-import org.jboss.arquillian.core.spi.LoadableExtension;
 
 /**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2019 Red Hat inc.
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2020 Red Hat inc.
  */
-public class WildFlyArquillianExtension implements LoadableExtension {
-    @Override
-    public void register(ExtensionBuilder extensionBuilder) {
-        extensionBuilder.service(ApplicationArchiveProcessor.class, DeploymentProcessor.class);
-        extensionBuilder.service(DeploymentExceptionTransformer.class, WildFlyDeploymentExceptionTransformer.class);
+public class WildFlyDeploymentExceptionTransformer implements DeploymentExceptionTransformer {
+
+    public Throwable transform(Throwable throwable) {
+        // Due to https://issues.redhat.com/browse/WFARQ-59 if the deployment fails, WildFly Arquillian
+        // returns a DeploymentException without a cause. In that case (throwable == null), we create a new DeploymentException
+        // so that the test will properly get a DeploymentException (the actual cause of the deployment failure is lost though).
+        if (throwable == null) {
+            return new DeploymentException("Deployment on WildFly was unsuccessful. Look at the WildFly server logs to have more information on the actual cause of the deployment failure");
+        }
+        return throwable;
     }
+
 }
