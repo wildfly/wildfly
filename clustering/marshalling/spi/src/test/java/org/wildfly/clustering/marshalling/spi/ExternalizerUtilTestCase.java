@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.coarse;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.io.IOException;
-
-import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKeyResolver.SessionAttributesKeyExternalizer;
-import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKeyResolver.SessionAttributesKeyFormat;
+import org.wildfly.clustering.marshalling.AbstractUtilTestCase;
+import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
 
 /**
- * Unit test for {@link SessionAttributesKeyResolver}.
+ * Externalizer tests for java.util.* classes.
  * @author Paul Ferraro
  */
-public class SessionAttributesKeyResolverTestCase {
+public class ExternalizerUtilTestCase extends AbstractUtilTestCase {
 
-    @Test
-    public void test() throws IOException {
-        SessionAttributesKey key = new SessionAttributesKey("ABC123");
-        new ExternalizerTester<>(new SessionAttributesKeyExternalizer()).test(key);
-        new KeyFormatTester<>(new SessionAttributesKeyFormat()).test(key);
+    public ExternalizerUtilTestCase() {
+        super(new ExternalizerTesterFactory(DefaultExternalizer.class));
     }
 }

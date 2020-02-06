@@ -21,7 +21,13 @@
  */
 package org.wildfly.clustering.marshalling.jboss;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,7 +36,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.UUID;
 
-import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.junit.Test;
 
@@ -39,25 +44,26 @@ import org.junit.Test;
  *
  * @author Brian Stansberry
  */
-public class SimpleMarshalledValueFactoryTestCase {
+public class SimpleMarshalledValueFactoryTestCase implements MarshallingConfigurationRepository {
+
+    private final MarshallingConfiguration configuration = new MarshallingConfiguration();
     private final MarshallingContext context;
     private final SimpleMarshalledValueFactory factory;
 
     public SimpleMarshalledValueFactoryTestCase() {
-        MarshallingConfigurationRepository repository = new MarshallingConfigurationRepository() {
-            @Override
-            public int getCurrentMarshallingVersion() {
-                return 0;
-            }
-
-            @Override
-            public MarshallingConfiguration getMarshallingConfiguration(int version) {
-                assertEquals(0, version);
-                return new MarshallingConfiguration();
-            }
-        };
-        this.context = new SimpleMarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), repository, Thread.currentThread().getContextClassLoader());
+        this.context = new SimpleMarshallingContextFactory().createMarshallingContext(this, this.getClass().getClassLoader());
         this.factory = this.createFactory(this.context);
+    }
+
+    @Override
+    public int getCurrentMarshallingVersion() {
+        return 0;
+    }
+
+    @Override
+    public MarshallingConfiguration getMarshallingConfiguration(int version) {
+        assertEquals(0, version);
+        return this.configuration;
     }
 
     SimpleMarshalledValueFactory createFactory(MarshallingContext context) {
@@ -133,14 +139,10 @@ public class SimpleMarshalledValueFactoryTestCase {
         assertEquals(uuid.hashCode(), mv.hashCode());
 
         SimpleMarshalledValue<UUID> copy = replicate(mv);
-        this.validateHashCode(uuid, copy);
+        assertEquals(0, copy.hashCode());
 
         mv = this.factory.createMarshalledValue(null);
         assertEquals(0, mv.hashCode());
-    }
-
-    <T> void validateHashCode(T original, SimpleMarshalledValue<T> copy) {
-        assertEquals(0, copy.hashCode());
     }
 
     @SuppressWarnings("unchecked")

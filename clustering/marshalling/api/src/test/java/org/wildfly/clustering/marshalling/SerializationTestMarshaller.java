@@ -22,13 +22,37 @@
 
 package org.wildfly.clustering.marshalling;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+
 /**
- * A marshalling tester for a single externalizer.
+ * Marshaller that uses Java serialization.
  * @author Paul Ferraro
  */
-public class ExternalizerTester<T> extends MarshallingTester<T> {
+public class SerializationTestMarshaller<T> implements TestMarshaller<T> {
 
-    public ExternalizerTester(Externalizer<T> externalizer) {
-        super(new ExternalizerMarshaller<>(externalizer));
+    @SuppressWarnings("unchecked")
+    @Override
+    public T read(ByteBuffer buffer) throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset());
+        try (ObjectInputStream input = new ObjectInputStream(in)) {
+            return (T) input.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public ByteBuffer write(T object) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (ObjectOutputStream output = new ObjectOutputStream(out)) {
+            output.writeObject(object);
+        }
+
+        return ByteBuffer.wrap(out.toByteArray());
     }
 }

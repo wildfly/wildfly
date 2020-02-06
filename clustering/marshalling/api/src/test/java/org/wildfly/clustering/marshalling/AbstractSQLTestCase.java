@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,26 +23,42 @@
 package org.wildfly.clustering.marshalling;
 
 import java.io.IOException;
-import java.util.EnumSet;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
-import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Tester for an {@link Externalizer} of an enum.
+ * Generic tests for java.sql.* classes.
  * @author Paul Ferraro
  */
-public class EnumExternalizerTester<E extends Enum<E>> extends ExternalizerTester<E> {
+public abstract class AbstractSQLTestCase {
 
-    private final Class<E> targetClass;
+    private final MarshallingTesterFactory factory;
 
-    public EnumExternalizerTester(Externalizer<E> externalizer) {
-        super(externalizer, Assert::assertSame);
-        this.targetClass = externalizer.getTargetClass();
+    public AbstractSQLTestCase(MarshallingTesterFactory factory) {
+        this.factory = factory;
     }
 
-    public void test() throws ClassNotFoundException, IOException {
-        for (E value : EnumSet.allOf(this.targetClass)) {
-            this.test(value);
-        }
+    @Test
+    public void testSQLDate() throws IOException {
+        MarshallingTester<Date> tester = this.factory.createTester();
+        tester.test(Date.valueOf(LocalDate.now()));
+    }
+
+    @Test
+    public void testSQLTime() throws IOException {
+        MarshallingTester<Time> tester = this.factory.createTester();
+        tester.test(Time.valueOf(LocalTime.now()));
+    }
+
+    @Test
+    public void testSQLTimestamp() throws IOException {
+        MarshallingTester<Timestamp> tester = this.factory.createTester();
+        tester.test(Timestamp.valueOf(LocalDateTime.now()));
     }
 }

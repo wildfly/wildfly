@@ -38,7 +38,7 @@ import org.wildfly.clustering.server.singleton.ServiceNameResolver.ServiceNameKe
 public class ServiceNameResolverTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         ServiceName name = ServiceName.JBOSS.append("service");
 
         new ExternalizerTester<>(new ServiceNameExternalizer()).test(name);

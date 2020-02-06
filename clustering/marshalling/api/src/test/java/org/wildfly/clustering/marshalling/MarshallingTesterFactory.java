@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.coarse;
-
-import java.io.IOException;
-
-import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKeyResolver.SessionAttributesKeyExternalizer;
-import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKeyResolver.SessionAttributesKeyFormat;
+package org.wildfly.clustering.marshalling;
 
 /**
- * Unit test for {@link SessionAttributesKeyResolver}.
+ * Factory for creating marshalling testers.
  * @author Paul Ferraro
  */
-public class SessionAttributesKeyResolverTestCase {
+public interface MarshallingTesterFactory {
+    <T> MarshallingTester<T> createTester();
 
-    @Test
-    public void test() throws IOException {
-        SessionAttributesKey key = new SessionAttributesKey("ABC123");
-        new ExternalizerTester<>(new SessionAttributesKeyExternalizer()).test(key);
-        new KeyFormatTester<>(new SessionAttributesKeyFormat()).test(key);
+    default <E extends Enum<E>> EnumMarshallingTester<E> createTester(Class<E> enumClass) {
+        return new EnumMarshallingTester<>(enumClass, this.createTester());
     }
 }

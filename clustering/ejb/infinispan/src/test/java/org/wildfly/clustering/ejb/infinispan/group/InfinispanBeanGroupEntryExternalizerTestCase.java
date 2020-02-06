@@ -52,11 +52,11 @@ public class InfinispanBeanGroupEntryExternalizerTestCase {
     private static final MarshallingContext context = new SimpleMarshallingContext(factory, repository, InfinispanBeanGroupEntryExternalizerTestCase.class.getClassLoader());
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         SessionID id = new UUIDSessionID(UUID.randomUUID());
         Map<SessionID, String> beans = Collections.singletonMap(id, "bean");
         InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry = new InfinispanBeanGroupEntry<>(new SimpleMarshalledValue<>(beans, context));
-        new ExternalizerTester<>(new InfinispanBeanGroupEntryExternalizer<>(), InfinispanBeanGroupEntryExternalizerTestCase::assertEquals).test(entry);
+        new ExternalizerTester<>(new InfinispanBeanGroupEntryExternalizer<SessionID, String>()).test(entry, InfinispanBeanGroupEntryExternalizerTestCase::assertEquals);
     }
 
     static void assertEquals(InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry1, InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry2) {
