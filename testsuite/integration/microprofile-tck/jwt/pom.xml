@@ -39,6 +39,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <ts.elytron.cli>${jbossas.ts.dir}/shared/enable-elytron.cli</ts.elytron.cli>
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <dependencies>
@@ -145,7 +146,7 @@
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
                                             <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -178,5 +179,33 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Profile to turn off execution of this module's tests if the testsuite is being run
+             against an external dist (i.e. by using the jboss.dist property to point to one)
+             and that dist does not include the full set of MP functionality. -->
+        <profile>
+            <id>disable.microprofile.profile</id>
+            <activation>
+                <property>
+                    <name>disable.microprofile.tests</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Disable the surefire tests -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 </project>

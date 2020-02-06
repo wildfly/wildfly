@@ -56,6 +56,8 @@
 
         <ts.elytron.cli>../shared/enable-elytron-domain.cli</ts.elytron.cli>
         <ts.skipTests>${skipTests}</ts.skipTests>
+        <!-- Use the complete build, not just the ee one, for this testsuite -->
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <!--

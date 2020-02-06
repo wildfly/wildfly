@@ -40,7 +40,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <jbossas.server.locale>-Duser.language=en -Duser.country=US</jbossas.server.locale>
-        <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.build.output.dir>${testsuite.default.build.project.prefix}dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <dependencies>
