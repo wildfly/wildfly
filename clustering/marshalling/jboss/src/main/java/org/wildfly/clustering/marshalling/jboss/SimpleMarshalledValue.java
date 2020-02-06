@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 import org.jboss.marshalling.Marshaller;
@@ -42,7 +43,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * This implementation does not preserve the hash code of its object in serialized form.
  * @author Paul Ferraro
  */
-public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingContext> {
+public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingContext>, Serializable {
     private static final long serialVersionUID = -8852566958387608376L;
 
     private transient volatile MarshallingContext context;
