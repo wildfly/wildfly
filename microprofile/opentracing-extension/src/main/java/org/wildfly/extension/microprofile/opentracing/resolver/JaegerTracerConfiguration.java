@@ -54,6 +54,7 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
     private final CodecConfiguration codecConfig;
     private final SamplerConfiguration samplerConfig;
     private final ReporterConfiguration reporterConfig;
+    private final Supplier<OutboundSocketBinding> outboundSocketBindingSupplier;
     private final boolean traceId128Bit;
     private final Map<String, String> tracerTags;
     private final ModelNode model;
@@ -61,6 +62,7 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
 
     public JaegerTracerConfiguration(OperationContext context, ModelNode configuration, Supplier<OutboundSocketBinding> outboundSocketBindingSupplier) throws OperationFailedException {
         this.name= TRACER_CAPABILITY.getCapabilityServiceName(context.getCurrentAddressValue()).getCanonicalName();
+        this.outboundSocketBindingSupplier = outboundSocketBindingSupplier;
         model = new ModelNode();
         for(AttributeDefinition att : ATTRIBUTES) {
             ModelNode value = att.resolveModelAttribute(context, configuration);
@@ -82,10 +84,6 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
                 .withAuthUsername(SENDER_AUTH_USER.resolveModelAttribute(context, configuration).asStringOrNull())
                 .withAuthToken(SENDER_AUTH_TOKEN.resolveModelAttribute(context, configuration).asStringOrNull())
                 .withEndpoint(SENDER_ENDPOINT.resolveModelAttribute(context, configuration).asStringOrNull());
-        if(outboundSocketBindingSupplier.get() != null) {
-            senderConfiguration.withAgentHost(outboundSocketBindingSupplier.get().getUnresolvedDestinationAddress())
-                    .withAgentPort(outboundSocketBindingSupplier.get().getDestinationPort());
-        }
         reporterConfig = new ReporterConfiguration()
                 .withSender(senderConfiguration)
                 .withFlushInterval(REPORTER_FLUSH_INTERVAL.resolveModelAttribute(context, configuration).asIntOrNull())
@@ -102,6 +100,12 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
 
     @Override
     public Tracer createTracer(String serviceName) {
+        Configuration.SenderConfiguration senderConfiguration = reporterConfig.getSenderConfiguration();
+        OutboundSocketBinding outboundSocketBinding = outboundSocketBindingSupplier.get();
+        if(outboundSocketBinding != null) {
+            senderConfiguration.withAgentHost(outboundSocketBinding.getUnresolvedDestinationAddress())
+                    .withAgentPort(outboundSocketBinding.getDestinationPort());
+        }
         return new Configuration(serviceName)
                 .withCodec(codecConfig)
                 .withReporter(reporterConfig)

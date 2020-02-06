@@ -15,9 +15,15 @@
  */
 package org.wildfly.test.integration.microprofile.opentracing;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import io.opentracing.noop.NoopTracer;
+import java.lang.reflect.ReflectPermission;
 import java.net.URL;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -34,7 +40,9 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -49,7 +57,8 @@ import org.wildfly.test.integration.microprofile.opentracing.application.TracerC
 
 /**
  * Tracers in user applications should be able to use Jaeger tracer configuration defined by WildFly Management Model.
- *  If no tracer is defined for deployment (no default tracer and 'smallrye.opentracing.serviceName' is set to an empty string
+ * If no tracer is defined for deployment (no default tracer and 'smallrye.opentracing.serviceName' is set to an empty
+ * string
  * then a NoopTracer should be used.
  *
  * @author Sultan Zhantemirov (c) 2019 Red Hat, Inc.
@@ -58,6 +67,14 @@ import org.wildfly.test.integration.microprofile.opentracing.application.TracerC
 @RunAsClient
 @ServerSetup(SubsystemConfigurationTestCase.SetupTask.class)
 public class SubsystemConfigurationTestCase {
+
+    private static final String OUTBOUND_BINDING = "jaeger-sender";
+    private static final ModelNode OUTBOUND_BINDING_ADDRESS = PathAddress
+            .pathAddress(SOCKET_BINDING_GROUP, "standard-sockets")
+            .append(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, OUTBOUND_BINDING)
+            .toModelNode();
+    private static final int SENDER_PORT = 6832;
+    private static final String SENDER_HOST = TestSuiteEnvironment.getServerAddress();
 
     private static final String WEB_XML
             = "<web-app version=\"3.1\" xmlns=\"http://xmlns.jcp.org/xml/ns/javaee\"\n"
@@ -82,8 +99,6 @@ public class SubsystemConfigurationTestCase {
             + "    </context-param>\n"
             + "</web-app>";
 
-
-
     @ArquillianResource
     @OperateOnDeployment("ServiceCheck.war")
     private URL serviceCheckUrl;
@@ -96,14 +111,20 @@ public class SubsystemConfigurationTestCase {
     public static Archive<?> deployCheck() {
         return ShrinkWrap.create(WebArchive.class, "tracerConfigurationCheck.war")
                 .addClass(TracerConfigurationApplication.class)
+                .addClass(NetworkUtils.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml");
+                .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new RuntimePermission("accessDeclaredMembers"),
+                        new ReflectPermission("suppressAccessChecks")
+                ), "permissions.xml");
     }
 
     @Deployment(name = "ServiceNoop.war")
     public static Archive<?> deployNoop() {
         return ShrinkWrap.create(WebArchive.class, "noopTracerConfigurationCheck.war")
                 .addClass(TracerConfigurationApplication.class)
+                .addClass(NetworkUtils.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsWebInfResource(new StringAsset(WEB_XML_NOOP), "web.xml");
     }
@@ -116,9 +137,14 @@ public class SubsystemConfigurationTestCase {
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
             String tracerConfiguration = EntityUtils.toString(response.getEntity());
 
-            Assert.assertTrue(tracerConfiguration.contains("sampler.type=probabilistic"));
-            Assert.assertTrue(tracerConfiguration.contains("sampler.param=0.5"));
-            Assert.assertTrue(tracerConfiguration.contains("useTraceId128Bit=true"));
+            Assert.assertTrue(tracerConfiguration + " doesn't contain sampler.type=probabilistic",
+                    tracerConfiguration.contains("sampler.type=probabilistic"));
+            Assert.assertTrue(tracerConfiguration + " doesn't contain sampler.param=0.5",
+                    tracerConfiguration.contains("sampler.param=0.5"));
+            Assert.assertTrue(tracerConfiguration + " doesn't contain useTraceId128Bit=true",
+                    tracerConfiguration.contains("useTraceId128Bit=true"));
+            Assert.assertTrue(tracerConfiguration + " doesn't contain sender-binding=" + SENDER_HOST + ":" + SENDER_PORT,
+                    tracerConfiguration.contains("sender-binding=" + SENDER_HOST + ":" + SENDER_PORT));
         }
     }
 
@@ -140,10 +166,17 @@ public class SubsystemConfigurationTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            //Add outbound-socket-binding
+            final ModelNode addOutboundSocket = Operations.createAddOperation(OUTBOUND_BINDING_ADDRESS);
+            addOutboundSocket.get(HOST).set(SENDER_HOST);
+            addOutboundSocket.get(PORT).set(SENDER_PORT);
+            Utils.applyUpdate(addOutboundSocket, managementClient.getControllerClient());
+            // execute the add operation
             ModelNode addTracer = Operations.createAddOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger-test").toModelNode());
             addTracer.get("sampler-type").set("probabilistic");
             addTracer.get("sampler-param").set(0.5D);
             addTracer.get("tracer_id_128bit").set(true);
+            addTracer.get("sender-binding").set(OUTBOUND_BINDING);
             Utils.applyUpdate(addTracer, managementClient.getControllerClient());
             // undefine default tracer configuration in order to get NoopTracer configuration
             Utils.applyUpdate(Operations.createUndefineAttributeOperation(OT_SUBSYSTEM.toModelNode(), ("default-tracer")), managementClient.getControllerClient());
@@ -155,6 +188,7 @@ public class SubsystemConfigurationTestCase {
             // recover default tracer configuration
             Utils.applyUpdate(Operations.createWriteAttributeOperation(OT_SUBSYSTEM.toModelNode(), "default-tracer", "jaeger"), managementClient.getControllerClient());
             Utils.applyUpdate(Operations.createRemoveOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger-test").toModelNode()), managementClient.getControllerClient());
+            Utils.applyUpdate(Operations.createRemoveOperation(OUTBOUND_BINDING_ADDRESS), managementClient.getControllerClient());
             executeReloadAndWaitForCompletion(managementClient, TimeoutUtil.adjust(100000));
         }
     }
