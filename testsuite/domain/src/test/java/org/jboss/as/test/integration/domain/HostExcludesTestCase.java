@@ -77,9 +77,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private static WildFlyManagedConfiguration masterConfig;
 
     /**
-     * Maintains the list of expected extensions for each host-exclude name
-     * for previous releases. This must be corrected on each new host-exclude id added
-     * on the current release.
+     * Maintains the list of expected extensions for each host-exclude name for previous releases.
+     * Each enum entry represents the list of extensions that are available on the excluded host.
+     * It assumes that the hosts builds are always full builds, including the MP extensions if they exist.
+     * This must be corrected on each new host-exclude id added on the current release.
      */
     private enum ExtensionConf {
         WILDFLY_10_0("WildFly10.0", Arrays.asList(
@@ -145,8 +146,18 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.opentracing-smallrye"
         )),
         WILDFLY_15_0("WildFly15.0", WILDFLY_14_0, Arrays.asList(
+                "org.wildfly.extension.microprofile.metrics-smallrye"
+        )),
+        WILDFLY_16_0("WildFly16.0", WILDFLY_15_0, Arrays.asList(
+                // This extension was added in WF17, however we add it here because WF16/WF17/WF18 use the same management
+                // kernel API, which is 10.0.0. Adding a host-exclusion for this extension on WF16 could affect to WF17/WF18
+                // We decided to add the host-exclusion only for WF15 and below. It means potentially a DC running on WF17
+                // with an WF16 as slave will not exclude this extension. It is not a problem at all since mixed domains in
+                // WildFly is not supported.
                 "org.wildfly.extension.clustering.web"
         )),
+        WILDFLY_17_0("WildFly17.0", WILDFLY_16_0),
+        WILDFLY_18_0("WildFly18.0", WILDFLY_17_0),
 
         EAP62("EAP62", Arrays.asList(
                 "org.jboss.as.appclient",
@@ -213,6 +224,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.health-smallrye",
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.ee-security"
+        )),
+        EAP73("EAP73", EAP72, Arrays.asList(
+                "org.wildfly.extension.microprofile.metrics-smallrye",
+                "org.wildfly.extension.clustering.web"
         ));
 
         private final String name;
@@ -237,7 +252,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
          * @param name Host exclude name to define
          * @param parent A parent extension definition
          * @param addedExtensions Extensions added on the server release referred by this host exclude name
-         * @param removedExtensions Extensions added on the server release referred by this host exclude name
+         * @param removedExtensions Extensions removed on the server release referred by this host exclude name
          */
         ExtensionConf(String name, ExtensionConf parent, List<String> addedExtensions, List<String> removedExtensions) {
             this.name = name;
@@ -309,8 +324,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         //Check we are able to retrieve all current extensions defined for the server
         if (!availableExtensions.containsAll(currentExtensions)){
             currentExtensions.removeAll(availableExtensions);
-            fail(String.format ("The following extensions defined in domain.xml cannot be retrieve by this test %s . " +
-                    "It could lead in a false negative test result, check HostExcludesTestCase.retrieveAvailableExtensions method",currentExtensions));
+            fail(String.format ("The following extensions defined in domain.xml cannot be retrieved by this test %s . " +
+                    "It could lead in a false negative test result, check HostExcludesTestCase.retrieveAvailableExtensions method", currentExtensions));
         }
 
         op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, null);
@@ -321,7 +336,6 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         for (Property prop : result.asPropertyList()) {
             String name = prop.getName();
 
-            ModelNode value = prop.getValue();
             List<String> excludedExtensions = prop.getValue().get(EXCLUDED_EXTENSIONS)
                     .asListOrEmpty()
                     .stream()
