@@ -28,9 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,7 +50,6 @@ import org.jboss.dmr.Property;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.Resource;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -306,10 +303,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
     @Test
     public void testHostExcludes() throws IOException, MgmtOperationException, ModuleLoadException {
-        final Path moduleDir = Paths.get(masterConfig.getModulePath()).resolve("system").resolve("layers").resolve("base");
-        LocalModuleLoader ml = new LocalModuleLoader(new File[]{moduleDir.normalize().toFile()});
-
-        Set<String> availableExtensions = retrieveAvailableExtensions(ml);
+        Set<String> availableExtensions = retrieveAvailableExtensions();
 
         ModelNode op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, null);
         op.get(CHILD_TYPE).set(EXTENSION);
@@ -379,21 +373,30 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
      * It is assumed that the module which is added as an extension has the org.jboss.as.controller.Extension service as
      * a local resource.
      *
-     * @param ml
      * @throws ModuleLoadException
      */
-    private Set<String> retrieveAvailableExtensions(ModuleLoader ml) throws ModuleLoadException {
-        Set<String> result = new HashSet<>();
-        Iterator<String> moduleNames = ml.iterateModules((String) null, true);
-        while (moduleNames.hasNext()) {
-            String moduleName = moduleNames.next();
-            Module module = ml.loadModule(moduleName);
-            List<Resource> resources = module.getClassLoader().loadResourceLocal("META-INF/services/org.jboss.as.controller.Extension");
-            if (!resources.isEmpty()) {
-                result.add(moduleName);
+    private Set<String> retrieveAvailableExtensions() throws ModuleLoadException, IOException {
+        final Set<String> result = new HashSet<>();
+        String existingModulePath = System.getProperty("module.path");
+        try {
+            System.setProperty("module.path", Paths.get(masterConfig.getModulePath()).toAbsolutePath().toString());
+            LocalModuleLoader ml = new LocalModuleLoader();
+            Iterator<String> moduleNames = ml.iterateModules((String) null, true);
+            while (moduleNames.hasNext()) {
+                String moduleName = moduleNames.next();
+                Module module = ml.loadModule(moduleName);
+                List<Resource> resources = module.getClassLoader().loadResourceLocal("META-INF/services/org.jboss.as.controller.Extension");
+                if (!resources.isEmpty()) {
+                    result.add(moduleName);
+                }
+            }
+            return result;
+        } finally {
+            if (existingModulePath == null) {
+                System.clearProperty("module.path");
+            } else {
+                System.setProperty("module.path", existingModulePath);
             }
         }
-
-        return result;
     }
 }
