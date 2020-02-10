@@ -46,9 +46,6 @@
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
         <feature-pack.resources.directory>${basedir}/src/main/resources</feature-pack.resources.directory>
         <feature-pack.license.directory>${basedir}/src/license</feature-pack.license.directory>
-        <!-- Override observability versions -->
-        <version.io.smallrye.smallrye-health.override>2.1.0</version.io.smallrye.smallrye-health.override>
-        <version.org.eclipse.microprofile.health.api.override>2.1</version.org.eclipse.microprofile.health.api.override>
     </properties>
 
     <build>
