@@ -1627,6 +1627,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     this.parseJDBCStoreColumn(reader, ColumnAttribute.TIMESTAMP, operation.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getName()).setEmptyObject());
                     break;
                 }
+                case SEGMENT_COLUMN: {
+                    if (this.schema.since(InfinispanSchema.VERSION_10_0)) {
+                        this.parseJDBCStoreColumn(reader, ColumnAttribute.SEGMENT, operation.get(TableResourceDefinition.ColumnAttribute.SEGMENT.getName()).setEmptyObject());
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }

@@ -86,7 +86,7 @@ public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcS
             builder.key2StringMapper(mapper.getClass());
             break;
         }
-        builder.segmented(false)
+        builder.segmented(true)
                 .transactional(false)
                 .dialect(this.dialect)
                 .connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class)

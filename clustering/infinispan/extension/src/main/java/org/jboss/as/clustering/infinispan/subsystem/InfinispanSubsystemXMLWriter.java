@@ -424,7 +424,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(element.getLocalName());
             writeAttributes(writer, table, TableResourceDefinition.Attribute.class);
             writeAttribute(writer, table, prefixAttribute);
-            for (TableResourceDefinition.ColumnAttribute attribute : TableResourceDefinition.ColumnAttribute.values()) {
+            for (TableResourceDefinition.ColumnAttribute attribute : EnumSet.allOf(TableResourceDefinition.ColumnAttribute.class)) {
                 if (table.hasDefined(attribute.getName())) {
                     ModelNode column = table.get(attribute.getName());
                     writer.writeStartElement(attribute.getDefinition().getXmlName());

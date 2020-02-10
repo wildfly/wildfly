@@ -114,7 +114,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals(stringKeyedTable.asPropertyList().size(), result.get(RESULT).asPropertyList().size());
         for (Property property : stringKeyedTable.asPropertyList()) {
-            Assert.assertTrue(result.get(RESULT).hasDefined(property.getName()));
+            Assert.assertTrue(property.getName(), result.get(RESULT).hasDefined(property.getName()));
             Assert.assertEquals(property.getValue(), result.get(RESULT).get(property.getName()));
         }
     }
@@ -137,6 +137,10 @@ public class OperationsTestCase extends OperationTestCaseBase {
         ModelNode dataColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.DATA.getName()).setEmptyObject();
         dataColumn.get(TableResourceDefinition.ColumnAttribute.DATA.getColumnName().getName()).set("datum");
         dataColumn.get(TableResourceDefinition.ColumnAttribute.DATA.getColumnType().getName()).set("BINARY");
+
+        ModelNode segmentColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.SEGMENT.getName()).setEmptyObject();
+        segmentColumn.get(TableResourceDefinition.ColumnAttribute.SEGMENT.getColumnName().getName()).set("segment");
+        segmentColumn.get(TableResourceDefinition.ColumnAttribute.SEGMENT.getColumnType().getName()).set("INTEGER");
 
         ModelNode timestampColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getName()).setEmptyObject();
         timestampColumn.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getColumnName().getName()).set("version");

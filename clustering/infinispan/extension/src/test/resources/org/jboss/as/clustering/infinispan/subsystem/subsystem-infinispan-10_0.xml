@@ -91,6 +91,7 @@
                 <table prefix="ispn_bucket" fetch-size="100" create-on-start="false" drop-on-stop="true">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
+                    <segment-column name="segment" type="INTEGER"/>
                     <timestamp-column name="version" type="BIGINT"/>
                 </table>
             </jdbc-store>

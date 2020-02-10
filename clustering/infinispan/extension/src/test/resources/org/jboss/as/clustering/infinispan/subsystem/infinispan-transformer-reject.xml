@@ -98,6 +98,16 @@
             <partition-handling enabled="true"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
         </scattered-cache>
+        <local-cache name="database-persistence">
+            <jdbc-store data-source="ExampleDS">
+                <table prefix="foo">
+                    <id-column name="id" type="VARCHAR"/>
+                    <data-column name="datum" type="BINARY"/>
+                    <segment-column name="segment" type="INTEGER"/>
+                    <timestamp-column name="version" type="BIGINT"/>
+                </table>
+            </jdbc-store>
+        </local-cache>
     </cache-container>
     <remote-cache-container connection-timeout="1000"
                             default-remote-cluster="primary-site"

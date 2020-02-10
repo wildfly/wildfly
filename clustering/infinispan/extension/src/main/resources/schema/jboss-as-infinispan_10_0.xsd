@@ -769,6 +769,11 @@
                     <xs:documentation>Defines the column in which to store the cache entry or bucket.</xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="segment-column" type="tns:segment-column" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Defines the column in which to store the entry segment.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="timestamp-column" type="tns:timestamp-column" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>Defines the column in which to store the timestamp of the cache entry or bucket.</xs:documentation>
@@ -795,12 +800,12 @@
     <xs:complexType name="id-column">
         <xs:attribute name="name" type="xs:string" default="id">
             <xs:annotation>
-                <xs:documentation>The name of the column used to store the cache key or bucket id.</xs:documentation>
+                <xs:documentation>The name of the column used to store the cache key.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="type" type="xs:string" default="VARCHAR">
             <xs:annotation>
-                <xs:documentation>The type of the column used to store the cache key or bucket id.</xs:documentation>
+                <xs:documentation>The type of the column used to store the cache key.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -808,12 +813,25 @@
     <xs:complexType name="data-column">
         <xs:attribute name="name" type="xs:string" default="datum">
             <xs:annotation>
-                <xs:documentation>The name of the column used to store the cache entry or bucket.</xs:documentation>
+                <xs:documentation>The name of the column used to store the cache entry.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="type" type="xs:string" default="BINARY">
             <xs:annotation>
-                <xs:documentation>The type of the column used to store the cache entry or bucket.</xs:documentation>
+                <xs:documentation>The type of the column used to store the cache entry.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="segment-column">
+        <xs:attribute name="name" type="xs:string" default="segment">
+            <xs:annotation>
+                <xs:documentation>The name of the column used to store the cache entry segment.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="xs:string" default="INTEGER">
+            <xs:annotation>
+                <xs:documentation>The type of the column used to store the cache entry segment.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -821,12 +839,12 @@
     <xs:complexType name="timestamp-column">
         <xs:attribute name="name" type="xs:string" default="version">
             <xs:annotation>
-                <xs:documentation>The name of the column used to store the cache entry or bucket timestamp.</xs:documentation>
+                <xs:documentation>The name of the column used to store the cache entry timestamp.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="type" type="xs:string" default="BIGINT">
             <xs:annotation>
-                <xs:documentation>The type of the column used to store the cache entry or bucket timestamp.</xs:documentation>
+                <xs:documentation>The type of the column used to store the cache entry timestamp.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
