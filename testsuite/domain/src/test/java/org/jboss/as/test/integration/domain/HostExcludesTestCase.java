@@ -28,8 +28,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +52,7 @@ import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfig
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
@@ -302,7 +308,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     }
 
     @Test
-    public void testHostExcludes() throws IOException, MgmtOperationException, ModuleLoadException {
+    public void testHostExcludes() throws IOException, MgmtOperationException {
         Set<String> availableExtensions = retrieveAvailableExtensions();
 
         ModelNode op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, null);
@@ -372,31 +378,38 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
      *
      * It is assumed that the module which is added as an extension has the org.jboss.as.controller.Extension service as
      * a local resource.
-     *
-     * @throws ModuleLoadException
      */
-    private Set<String> retrieveAvailableExtensions() throws ModuleLoadException, IOException {
+    private Set<String> retrieveAvailableExtensions() throws IOException {
         final Set<String> result = new HashSet<>();
-        String existingModulePath = System.getProperty("module.path");
-        try {
-            System.setProperty("module.path", Paths.get(masterConfig.getModulePath()).toAbsolutePath().toString());
-            LocalModuleLoader ml = new LocalModuleLoader();
-            Iterator<String> moduleNames = ml.iterateModules((String) null, true);
-            while (moduleNames.hasNext()) {
-                String moduleName = moduleNames.next();
-                Module module = ml.loadModule(moduleName);
+        LocalModuleLoader ml = new LocalModuleLoader(getModuleRoots());
+        Iterator<String> moduleNames = ml.iterateModules((String) null, true);
+        while (moduleNames.hasNext()) {
+            String moduleName = moduleNames.next();
+            Module module = null;
+            try {
+                module = ml.loadModule(moduleName);
                 List<Resource> resources = module.getClassLoader().loadResourceLocal("META-INF/services/org.jboss.as.controller.Extension");
                 if (!resources.isEmpty()) {
                     result.add(moduleName);
                 }
-            }
-            return result;
-        } finally {
-            if (existingModulePath == null) {
-                System.clearProperty("module.path");
-            } else {
-                System.setProperty("module.path", existingModulePath);
+            } catch (ModuleLoadException e) {
+                Logger.getLogger(HostExcludesTestCase.class).warn("Failed to load module " + moduleName +
+                        " to check if it is an extension", e);
             }
         }
+        return result;
+    }
+
+    private static File[] getModuleRoots() throws IOException {
+        Path layersRoot = Paths.get(masterConfig.getModulePath()) .resolve("system").resolve("layers");
+        DirectoryStream.Filter<Path> filter = entry -> {
+            File f = entry.toFile();
+            return f.isDirectory() && !f.isHidden();
+        };
+        List<File> result = new ArrayList<>();
+        for (Path path : Files.newDirectoryStream(layersRoot, filter)) {
+            result.add(path.toFile());
+        }
+        return result.toArray(new File[0]);
     }
 }
