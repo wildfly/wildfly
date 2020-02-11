@@ -100,12 +100,20 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
 
     @Override
     public Tracer createTracer(String serviceName) {
-        Configuration.SenderConfiguration senderConfiguration = reporterConfig.getSenderConfiguration();
+        Configuration.SenderConfiguration initialConfiguration = reporterConfig.getSenderConfiguration();
+        Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration();
+        senderConfiguration.withAgentHost(initialConfiguration.getAgentHost())
+                .withAgentPort(initialConfiguration.getAgentPort())
+                .withAuthPassword(initialConfiguration.getAuthPassword())
+                .withAuthToken(initialConfiguration.getAuthToken())
+                .withAuthUsername(initialConfiguration.getAuthUsername())
+                .withEndpoint(initialConfiguration.getEndpoint());
         OutboundSocketBinding outboundSocketBinding = outboundSocketBindingSupplier.get();
         if(outboundSocketBinding != null) {
             senderConfiguration.withAgentHost(outboundSocketBinding.getUnresolvedDestinationAddress())
                     .withAgentPort(outboundSocketBinding.getDestinationPort());
         }
+        reporterConfig.withSender(senderConfiguration);
         return new Configuration(serviceName)
                 .withCodec(codecConfig)
                 .withReporter(reporterConfig)
