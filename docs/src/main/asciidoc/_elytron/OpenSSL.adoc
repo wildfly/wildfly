@@ -1,4 +1,41 @@
 [[OpenSSL]]
 = OpenSSL
 
+There are a couple ways you can configure WildFly to use the OpenSSL TLS provider.
 
+=== Configure the Elytron subsystem to use the OpenSSL TLS provider by default
+
+The following commands can be used to configure the Elytron subsystem so that the OpenSSL TLS
+provider is used by default:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron:write-attribute(name=initial-providers, value=combined-providers)
+/subsystem=elytron:undefine-attribute(name=final-providers)
+reload
+----
+
+=== Configure the OpenSSL TLS provider on an SSL context
+
+Instead of configuring the Elytron subsystem to use the OpenSSL TLS provider by default,
+it is also possible to specify that the OpenSSL TLS provider should be used for a specific
+SSL context. For example, the following command can be used to create a `server-ssl-context`
+that will use the OpenSSL TLS provider:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/server-ssl-context=httpsSSC:add(providers=openssl, ...)
+reload
+----
+
+== OpenSSL Library Location
+
+WildFly will search for the OpenSSL library using the standard system library search path. If you'd like to specify a
+custom location for the OpenSSL library, the `org.wildfly.openssl.path` property can be specified during WildFly startup.
+
+If OpenSSL was loaded successfully, a message similar to the one below will occur in the `server.log` file on startup:
+
+[source,options="nowrap"]
+----
+15:37:59,814 INFO [org.wildfly.openssl.SSL] (MSC service thread 1-7) WFOPENSSL0002 OpenSSL Version OpenSSL 1.1.1d FIPS  10 Sep 2019
+----
