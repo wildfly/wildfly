@@ -1128,6 +1128,46 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- Provision a server with sar support. Base it on
+                                 'datasources-web-server as 'sar' is a decorator layer
+                                 and 'datasources-web-server is the slimmest 'base' layer.-->
+                            <execution>
+                                <id>legacy-sar-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-legacy-sar</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>sar</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -1216,6 +1256,37 @@
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <!-- Tests against the install with legacy sar support -->
+                            <execution>
+                                <id>legacy-sar-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-sar</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-sar</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-sar</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-sar</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-sar</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-sar/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-sar</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/sar/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/deployment/sar/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Uses mail and transactions -->
+                                        <exclude>org/jboss/as/test/integration/sar/injection/resource/SarResourceInjectionTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

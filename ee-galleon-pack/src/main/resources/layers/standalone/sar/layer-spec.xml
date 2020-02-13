@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="sar">
+    <dependencies>
+        <layer name="base-server"/>
+        <layer name="jmx"/>
+    </dependencies>
+    <feature spec="subsystem.sar"/>
+    <packages>
+        <!-- The org.jboss.as.system-jmx module provides a small set of
+             optional utility classes that service archive authors might use. -->
+        <package name="org.jboss.as.system-jmx" optional="true"/>
+    </packages>
+</layer-spec>
