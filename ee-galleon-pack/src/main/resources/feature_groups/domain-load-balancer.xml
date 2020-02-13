@@ -13,7 +13,7 @@
         <param name="profile" value="load-balancer"/>
             <feature-group name="logging">
                 <include feature-id="subsystem.logging.root-logger.ROOT:subsystem=logging,root-logger=ROOT">
-                    <param name="handlers" value="[&quot;FILE&quot;]"/>
+                    <param name="handlers" value="[FILE]"/>
                 </include>
                 <exclude spec="subsystem.logging.console-handler"/>
             </feature-group>

@@ -4,7 +4,7 @@
     <origin name="org.wildfly.core:wildfly-core-galleon-pack">
         <feature-group name="domain-profile">
             <include feature-id="subsystem.logging.root-logger.ROOT:subsystem=logging,root-logger=ROOT">
-                <param name="handlers" value="[&quot;FILE&quot;]"/>
+                <param name="handlers" value="[FILE]"/>
             </include>
             <exclude spec="subsystem.logging.console-handler"/>
             <exclude spec="subsystem.discovery"/>
