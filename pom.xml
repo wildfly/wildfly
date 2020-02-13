@@ -430,7 +430,7 @@
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP12-redhat-00009</version.org.picketlink>
         <version.org.picketlink.bindings>2.5.5.SP12-redhat-00012</version.org.picketlink.bindings>
-        <version.org.reactivestreams>1.0.2</version.org.reactivestreams>
+        <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
