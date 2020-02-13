@@ -126,10 +126,15 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         // now create the bindings for each view under the java:global, java:app and java:module namespaces
         EJBViewDescription ejbViewDescription = null;
         for (ViewDescription viewDescription : views) {
+            boolean isEjbNamespaceBindingBaseName = false;
             ejbViewDescription = (EJBViewDescription) viewDescription;
             if (appclient && ejbViewDescription.getMethodIntf() != MethodIntf.REMOTE && ejbViewDescription.getMethodIntf() != MethodIntf.HOME) {
                 continue;
             }
+            if (ejbViewDescription.getMethodIntf() != MethodIntf.REMOTE) {
+                isEjbNamespaceBindingBaseName = true;
+            }
+
             if (!ejbViewDescription.hasJNDIBindings()) continue;
 
             final String viewClassName = ejbViewDescription.getViewClassName();
@@ -161,8 +166,12 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             }
 
             // log EJB's ejb:/ namespace binding
-            final String ejbNamespaceBindingName = sessionBean.isStateful() ? ejbNamespaceBindingBaseName + "!" + viewClassName + "?stateful" : ejbNamespaceBindingBaseName + "!" + viewClassName;
-            logBinding(jndiBindingsLogMessage, ejbNamespaceBindingName);
+            final String ejbNamespaceBindingName =  sessionBean.isStateful() ? ejbNamespaceBindingBaseName + "!" + viewClassName + "?stateful" : ejbNamespaceBindingBaseName + "!" + viewClassName;
+
+            if(!isEjbNamespaceBindingBaseName){
+                logBinding(jndiBindingsLogMessage, ejbNamespaceBindingName);
+            }
+
 
         }
 
