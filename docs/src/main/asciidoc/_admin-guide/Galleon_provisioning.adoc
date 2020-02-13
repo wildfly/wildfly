@@ -143,6 +143,7 @@ Basic layers:
 * _microprofile-health_: Support for MicroProfile Health.
 * _open-tracing_: Support for MicroProfile OpenTracing.
 * _resource-adapters_: Support for deployment of JCA adapters.
+* _sar_: Support for SAR archives to deploy MBeans.
 * _h2-driver_: Support for the H2 JDBC driver.
 * _h2-datasource_: Support for an H2 datasource. Depends on _h2-driver_.
 * _h2-default-datasource_: Support for h2 datasource set as the ee subsystem default datasource. Depends on _h2-datasource_.
