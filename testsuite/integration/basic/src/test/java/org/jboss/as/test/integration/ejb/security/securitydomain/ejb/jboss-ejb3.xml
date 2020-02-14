@@ -1,0 +1,26 @@
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:s="urn:security"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+               version="3.1" impl-version="2.0">
+
+    <assembly-descriptor>
+        <s:security>
+            <ejb-name>Hello</ejb-name>
+            <s:security-domain>MySecurityDomain</s:security-domain>
+        </s:security>
+
+    </assembly-descriptor>
+
+    <assembly-descriptor>
+        <s:security>
+            <ejb-name>HelloOneBean</ejb-name>
+            <s:security-domain>MySecurityDomain</s:security-domain>
+        </s:security>
+        <s:security>
+            <ejb-name>HelloTwoBean</ejb-name>
+            <s:security-domain>MyNonValidatingDomain</s:security-domain>
+        </s:security>
+    </assembly-descriptor>
+
+</jboss:ejb-jar>

@@ -1,0 +1,7 @@
+/core-service=management/security-realm=MyRealm:remove
+
+
+/subsystem=security/security-domain=MySecurityDomain:remove
+/subsystem=security/security-domain=MyNonValidatingDomain:remove
+
+module remove --name=loginmodule.custom 
