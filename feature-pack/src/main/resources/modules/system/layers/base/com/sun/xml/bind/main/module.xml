@@ -28,18 +28,20 @@
     </properties>
 
     <resources>
+        <artifact name="${com.sun.istack:istack-commons-runtime}"/>
+        <artifact name="${com.sun.istack:istack-commons-tools}"/>
+        <artifact name="${com.sun.xml.bind.external:rngom}"/>
+        <artifact name="${com.sun.xml.bind.external:relaxng-datatype}"/>
+        <artifact name="${org.glassfish.jaxb:codemodel}"/>
+        <artifact name="${org.glassfish.jaxb:jaxb-jxc}"/>
         <artifact name="${org.glassfish.jaxb:jaxb-runtime}"/>
         <artifact name="${org.glassfish.jaxb:jaxb-xjc}"/>
-        <artifact name="${org.glassfish.jaxb:jaxb-jxc}"/>
-        <artifact name="${org.glassfish.jaxb:codemodel}"/>
-        <artifact name="${com.sun.xml.bind.external:rngom}"/>
+        <artifact name="${org.glassfish.jaxb:xsom}"/>
+        <artifact name="${org.glassfish.jaxb:txw2}"/>
     </resources>
 
     <dependencies>
-        <module name="com.github.relaxng" export="true" />
-        <module name="com.sun.istack" export="true" />
-        <module name="com.sun.xml.txw2" export="true" />
-        <module name="com.sun.xsom" export="true" />
+        <module name="javax.activation.api" />
         <module name="javax.api" />
         <module name="javax.xml.bind.api" />
         <module name="javax.xml.stream.api" />
