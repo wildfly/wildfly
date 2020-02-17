@@ -376,7 +376,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
             try {
                 result = bean.increment();
                 Assert.fail("Expected a NoSuchEJBException as transaction affinity needs to be maintained");
-            } catch (NoSuchEJBException expected) {
+            } catch (NoSuchEJBException | AssertionError expected) {
                 // expected as the deployment was removed from the node
             }
         } finally {
