@@ -38,6 +38,7 @@ import org.jboss.dmr.ModelNode;
  * Does adjustments to the domain model for 7.3.0 legacy slaves.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Radoslav Husar
  */
 public class DomainAdjuster730 extends DomainAdjuster {
 
@@ -45,9 +46,15 @@ public class DomainAdjuster730 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
+        removeMicroProfileFaultTolerance(list, profileAddress.append(SUBSYSTEM, "microprofile-fault-tolerance-smallrye"));
         removeMicroProfileJWT(list, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"));
 
         return list;
+    }
+
+    private void removeMicroProfileFaultTolerance(final List<ModelNode> list, final PathAddress subsystem) {
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.fault-tolerance-smallrye")));
     }
 
     private void removeMicroProfileJWT(final List<ModelNode> list, final PathAddress subsystem) {

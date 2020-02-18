@@ -7,6 +7,7 @@
 
     <feature spec="profile">
         <param name="profile" value="full-ha"/>
+        <feature spec="subsystem.microprofile-fault-tolerance-smallrye"/>
         <feature spec="subsystem.microprofile-jwt-smallrye"/>
     </feature>
     <feature-group name="domain-host-excludes"/>
