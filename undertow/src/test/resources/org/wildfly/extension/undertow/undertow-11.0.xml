@@ -88,7 +88,7 @@
    </servlet-container>
    <handlers>
       <file case-sensitive="false" directory-listing="true" follow-symlink="true" name="welcome-content" path="${jboss.home.dir}" safe-symlink-paths="/path/to/folder /second/path"/>
-      <reverse-proxy connection-idle-timeout="60" connections-per-thread="30" max-retries="10" name="reverse-proxy">
+      <reverse-proxy connection-idle-timeout="60000" max-request-time="60000" connections-per-thread="30" max-retries="10" name="reverse-proxy">
          <host instance-id="myRoute" name="server1" outbound-socket-binding="ajp-remote" path="/test" scheme="ajp" ssl-context="TestContext"/>
          <host instance-id="myRoute" name="server2" outbound-socket-binding="ajp-remote" path="/test" scheme="ajp" ssl-context="TestContext"/>
       </reverse-proxy>
