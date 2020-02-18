@@ -5,6 +5,7 @@
         <feature-group name="standalone-ha"/>
     </origin>
 
+    <feature spec="subsystem.microprofile-fault-tolerance-smallrye"/>
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
 
 </feature-group-spec>
