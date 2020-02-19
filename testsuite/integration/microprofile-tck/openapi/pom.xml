@@ -117,7 +117,9 @@
                             <configurations>
                                 <config>
                                     <model>standalone</model>
-                                    <name>standalone.xml</name>
+                                    <!-- Call the file standalone-microprofile.xml as that is what
+                                         arquillian.xml says to use for testing in the default maven profile-->
+                                    <name>standalone-microprofile.xml</name>
                                     <layers>
                                         <layer>cloud-server</layer>
                                         <layer>microprofile-openapi</layer>
