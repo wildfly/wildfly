@@ -100,13 +100,24 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
         String jgroupsChannelName = null;
         final PathAddress serverAddress = MessagingServices.getActiveMQServerPathAddress(address);
         if (discoveryGroupName != null) {
-            PathAddress dgAddress;
+            Resource dgResource;
             if(isSubsystemResource(context)) {
-                dgAddress = address.getParent().append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName);
+                PathAddress dgAddress = address.getParent().append(CommonAttributes.SOCKET_DISCOVERY_GROUP, discoveryGroupName);
+                try {
+                    dgResource = context.readResourceFromRoot(dgAddress, false);
+                } catch(Resource.NoSuchResourceException ex) {
+                    dgAddress = address.getParent().append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, discoveryGroupName);
+                    dgResource = context.readResourceFromRoot(dgAddress, false);
+                }
             } else {
-                dgAddress = serverAddress.append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName);
+                PathAddress dgAddress = serverAddress.append(CommonAttributes.SOCKET_DISCOVERY_GROUP, discoveryGroupName);
+                try {
+                    dgResource = context.readResourceFromRoot(dgAddress, false);
+                } catch(Resource.NoSuchResourceException ex) {
+                    dgAddress = address.getParent().append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, discoveryGroupName);
+                    dgResource = context.readResourceFromRoot(dgAddress, false);
+                }
             }
-            Resource dgResource = context.readResourceFromRoot(dgAddress, false);
             ModelNode dgModel = dgResource.getModel();
             ModelNode jgroupCluster = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel);
             if(jgroupCluster.isDefined()) {
