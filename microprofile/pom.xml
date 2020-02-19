@@ -52,4 +52,7 @@
         <module>opentracing-smallrye</module>
     </modules>
 
+    <!-- DO NOT PLACE CONFIGURATION IN THIS POM EXPECTING IT TO BE INHERITED BY SUB MODULES.
+         SUB MODULES MAY NOT USE THIS ARTIFACT AS THEIR PARENT -->
+
 </project>

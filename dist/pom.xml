@@ -35,6 +35,7 @@
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>20.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-dist</artifactId>
@@ -103,7 +104,7 @@
                                     </included-packages>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>${full.maven.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${full.maven.version}</version>
                                 </feature-pack>
@@ -198,7 +199,7 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <offline>true</offline>
-                                    <fpGroupId>${project.groupId}</fpGroupId>
+                                    <fpGroupId>${full.maven.groupId}</fpGroupId>
                                     <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
                                     <fpVersion>${full.maven.version}</fpVersion>
                                 </configuration>
