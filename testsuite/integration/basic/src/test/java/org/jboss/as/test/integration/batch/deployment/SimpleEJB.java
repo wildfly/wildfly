@@ -20,32 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.batch.common;
+package org.jboss.as.test.integration.batch.deployment;
 
-import java.util.Properties;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.JobExecution;
-import javax.inject.Singleton;
+import javax.ejb.Singleton;
 
 /**
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * Pointless EJB that exists only to convert a jar to an EJB archive.
  */
 @Singleton
-public class BatchExecutionService {
+public class SimpleEJB {
 
-    private final JobOperator jobOperator;
-
-    public BatchExecutionService() {
-        jobOperator = BatchRuntime.getJobOperator();
-    }
-
-    public JobOperator getJobOperator() {
-        return jobOperator;
-    }
-
-    public JobExecution start(final String jobXml, final Properties params) {
-        final long id = jobOperator.start(jobXml, params);
-        return jobOperator.getJobExecution(id);
+    public void noop() {
+        // do nothing
     }
 }

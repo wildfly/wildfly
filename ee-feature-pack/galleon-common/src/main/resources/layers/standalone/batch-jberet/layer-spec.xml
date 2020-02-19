@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="batch-jberet">
+    <dependencies>
+        <!-- CDI should be optional but to be conservative in the first cut at this, require it
+        <layer name="cdi" optional="true"/>
+        -->
+        <layer name="cdi"/>
+        <layer name="ee"/>
+        <layer name="elytron"/>
+        <layer name="transactions"/>
+    </dependencies>
+    <feature-group name="batch-jberet-elytron"/>
+</layer-spec>
