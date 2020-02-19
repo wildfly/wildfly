@@ -252,11 +252,27 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         try {
             lock.lock();
             locks.remove(timedObjectId);
+            deleteTimerFiles(timedObjectId);
             directories.remove(timedObjectId);
         } finally {
             lock.unlock();
         }
 
+    }
+
+    private void deleteTimerFiles(String timedObjectId) {
+        doPrivileged(new PrivilegedAction<Void>() {
+            public Void run() {
+                String dirName = directories.get(timedObjectId);
+                File timersDirectory = new File(dirName);
+
+                for (File timerFile : timersDirectory.listFiles()) {
+                    timerFile.delete();
+                }
+                timersDirectory.delete();
+                return null;
+            }
+        });
     }
 
     private boolean isBeforeCompletion() {
