@@ -61,13 +61,15 @@ public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends Abs
 
     @Override
     public void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) {
-        // TODO rework to use external database process since H2's AUTO_SERVER doesn't handle server restarts reliably
+        // TODO WFLY-13131 Re-enable AbstractDatabasePersistenceWebFailoverTestCase#testGracefulSimpleFailover
+        // TODO e.g. rework to use external database process since H2's AUTO_SERVER doesn't handle server restarts reliably
     }
 
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
             this.builder.node(THREE_NODES)
-                    .setup("/subsystem=datasources/data-source=web-sessions-ds:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\",enabled=true,use-java-context=true,connection-url=\"jdbc:h2:file:./target/h2/web-sessions;AUTO_SERVER=true;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;\",driver-name=h2")
+                    // See http://www.h2database.com/html/features.html#auto_mixed_mode for the H2 database AUTO_SERVER mode reference
+                    .setup("/subsystem=datasources/data-source=web-sessions-ds:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\",enabled=true,use-java-context=true,connection-url=\"jdbc:h2:file:./target/h2/web-sessions;AUTO_SERVER=TRUE\",driver-name=h2")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:add")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions-ds,fetch-state=false,purge=false,passivation=false,shared=true)")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=transaction:add(mode=BATCH)")
