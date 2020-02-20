@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.wildfly.extension.messaging.activemq.jms;
-
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
@@ -137,7 +135,12 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
     }
 
     static DiscoveryGroupConfiguration getDiscoveryGroup(final OperationContext context, final String name) throws OperationFailedException {
-        Resource discoveryGroup = context.readResourceFromRoot(context.getCurrentAddress().getParent().append(PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP, name)), true);
+        Resource discoveryGroup;
+        try {
+            discoveryGroup = context.readResourceFromRoot(context.getCurrentAddress().getParent().append(PathElement.pathElement(CommonAttributes.JGROUPS_DISCOVERY_GROUP, name)), true);
+        } catch (Resource.NoSuchResourceException ex) {
+            discoveryGroup = context.readResourceFromRoot(context.getCurrentAddress().getParent().append(PathElement.pathElement(CommonAttributes.SOCKET_DISCOVERY_GROUP, name)), true);
+        }
         if (discoveryGroup != null) {
             final long refreshTimeout = DiscoveryGroupDefinition.REFRESH_TIMEOUT.resolveModelAttribute(context, discoveryGroup.getModel()).asLong();
             final long initialWaitTimeout = DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT.resolveModelAttribute(context, discoveryGroup.getModel()).asLong();
