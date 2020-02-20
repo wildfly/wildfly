@@ -194,15 +194,6 @@ public class TestApplication extends Application {
         @ConfigProperty(name = SubsystemConfigSourceTask.INTEGER_OVERRIDDEN_PROP_NAME, defaultValue = "123")
         private Integer integerOverridden;
 
-
-        @Inject
-        @ConfigProperty(name = "intBadValue", defaultValue = "1.23")
-        private int intBadValue;
-
-        @Inject
-        @ConfigProperty(name = "integerBadValue", defaultValue = "illegalText1.23")
-        private Integer integerBadValue;
-
         @GET
         @Produces("text/plain")
         public Response doGet() {
@@ -213,9 +204,6 @@ public class TestApplication extends Application {
 
             text.append("integerDefault = " + integerDefault + "\n");
             text.append(SubsystemConfigSourceTask.INTEGER_OVERRIDDEN_PROP_NAME + " = " + integerOverridden + "\n");
-
-            text.append("intBadValue = " + intBadValue + "\n");
-            text.append("integerBadValue = " + integerBadValue + "\n");
 
             return Response.ok(text).build();
         }
@@ -244,14 +232,6 @@ public class TestApplication extends Application {
         private Long longClassOverridden;
 
 
-        @Inject
-        @ConfigProperty(name = "longBadValue", defaultValue = "1.23")
-        private long longBadValue;
-
-        @Inject
-        @ConfigProperty(name = "longClassBadValue", defaultValue = "illegalText1.23")
-        private Long longClassBadValue;
-
         @GET
         @Produces("text/plain")
         public Response doGet() {
@@ -262,9 +242,6 @@ public class TestApplication extends Application {
 
             text.append("longClassDefault = " + longClassDefault + "\n");
             text.append(SubsystemConfigSourceTask.LONG_CLASS_OVERRIDDEN_PROP_NAME + " = " + longClassOverridden + "\n");
-
-            text.append("longBadValue = " + longBadValue + "\n");
-            text.append("longClassBadValue = " + longClassBadValue + "\n");
 
             return Response.ok(text).build();
         }
@@ -292,15 +269,6 @@ public class TestApplication extends Application {
         @ConfigProperty(name = SubsystemConfigSourceTask.FLOAT_CLASS_OVERRIDDEN_PROP_NAME, defaultValue = "1.618")
         private Float floatClassOverridden;
 
-
-        @Inject
-        @ConfigProperty(name = "floatBadValue", defaultValue = "text1.23")
-        private float floatBadValue;
-
-        @Inject
-        @ConfigProperty(name = "floatClassBadValue", defaultValue = "illegalText1.23")
-        private Float floatClassBadValue;
-
         @GET
         @Produces("text/plain")
         public Response doGet() {
@@ -311,9 +279,6 @@ public class TestApplication extends Application {
 
             text.append("floatClassDefault = " + floatClassDefault + "\n");
             text.append(SubsystemConfigSourceTask.FLOAT_CLASS_OVERRIDDEN_PROP_NAME + " = " + floatClassOverridden + "\n");
-
-            text.append("floatBadValue = " + floatBadValue + "\n");
-            text.append("floatClassBadValue = " + floatClassBadValue + "\n");
 
             return Response.ok(text).build();
         }
@@ -341,15 +306,6 @@ public class TestApplication extends Application {
         @ConfigProperty(name = SubsystemConfigSourceTask.DOUBLE_CLASS_OVERRIDDEN_PROP_NAME, defaultValue = "1.618")
         private Double doubleClassOverridden;
 
-
-        @Inject
-        @ConfigProperty(name = "doubleBadValue", defaultValue = "text1.23")
-        private double doubleBadValue;
-
-        @Inject
-        @ConfigProperty(name = "doubleClassBadValue", defaultValue = "illegalText1.23")
-        private Double doubleClassBadValue;
-
         @GET
         @Produces("text/plain")
         public Response doGet() {
@@ -360,9 +316,6 @@ public class TestApplication extends Application {
 
             text.append("doubleClassDefault = " + doubleClassDefault + "\n");
             text.append(SubsystemConfigSourceTask.DOUBLE_CLASS_OVERRIDDEN_PROP_NAME + " = " + doubleClassOverridden + "\n");
-
-            text.append("doubleBadValue = " + doubleBadValue + "\n");
-            text.append("doubleClassBadValue = " + doubleClassBadValue + "\n");
 
             return Response.ok(text).build();
         }
