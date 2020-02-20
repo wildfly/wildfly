@@ -114,6 +114,9 @@ public abstract class AbstractClusteringTestCase {
     // Undertow-based WildFly load-balancer
     public static final String LOAD_BALANCER_1 = "load-balancer-1";
 
+    // H2 database
+    public static final String DB_PORT = System.getProperty("dbport", "9092");
+
     // Timeouts
     public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);
     public static final int GRACE_TIME_TOPOLOGY_CHANGE = TimeoutUtil.adjust(3000);
