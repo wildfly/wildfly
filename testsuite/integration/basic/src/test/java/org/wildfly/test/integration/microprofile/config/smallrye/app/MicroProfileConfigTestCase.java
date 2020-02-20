@@ -200,9 +200,6 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
             assertTextContainsProperty(text, "integerDefault", -42);
             assertTextContainsProperty(text, SubsystemConfigSourceTask.INTEGER_OVERRIDDEN_PROP_NAME,
                     SubsystemConfigSourceTask.INTEGER_OVERRIDDEN_PROP_VALUE);
-
-            assertTextContainsProperty(text, "intBadValue", 0);
-            assertTextContainsProperty(text, "integerBadValue", "null");
         }
     }
 
@@ -224,9 +221,6 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
 
             assertTextContainsProperty(text, "longClassDefault", -42);
             assertTextContainsProperty(text, SubsystemConfigSourceTask.LONG_CLASS_OVERRIDDEN_PROP_NAME, SubsystemConfigSourceTask.LONG_OVERRIDDEN_PROP_VALUE);
-
-            assertTextContainsProperty(text, "longBadValue", 0);
-            assertTextContainsProperty(text, "longClassBadValue", "null");
         }
     }
 
@@ -248,9 +242,6 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
 
             assertTextContainsProperty(text, "floatClassDefault", Float.valueOf("-3.14e10"));
             assertTextContainsProperty(text, SubsystemConfigSourceTask.FLOAT_CLASS_OVERRIDDEN_PROP_NAME, SubsystemConfigSourceTask.FLOAT_OVERRIDDEN_PROP_VALUE);
-
-            assertTextContainsProperty(text, "floatBadValue", 0.0f);
-            assertTextContainsProperty(text, "floatClassBadValue", "null");
         }
     }
 
@@ -272,9 +263,6 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
 
             assertTextContainsProperty(text, "doubleClassDefault", Double.valueOf("-3.14e10"));
             assertTextContainsProperty(text, SubsystemConfigSourceTask.DOUBLE_CLASS_OVERRIDDEN_PROP_NAME, SubsystemConfigSourceTask.DOUBLE_OVERRIDDEN_PROP_VALUE);
-
-            assertTextContainsProperty(text, "doubleBadValue", 0.0d);
-            assertTextContainsProperty(text, "doubleClassBadValue", "null");
         }
     }
 

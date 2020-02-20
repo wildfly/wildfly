@@ -2,7 +2,7 @@
 
 <suite name="microprofile-config-TCK" verbose="2" configfailurepolicy="continue" >
 
-    <test name="microprofile-config 1.2 TCK">
+    <test name="microprofile-config TCK">
         <packages>
             <package name="org.eclipse.microprofile.config.tck.*">
             </package>
