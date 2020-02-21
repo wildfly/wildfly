@@ -8,7 +8,7 @@
             </package>
         </packages>
         <classes>
-            <!-- TCK and spec dispute: https://github.com/eclipse/microprofile-config/pull/407 -->
+            <!-- TCK and spec challenge: https://github.com/eclipse/microprofile-config/issues/446 --> 
             <class name="org.eclipse.microprofile.config.tck.ConfigProviderTest">
                 <methods>
                     <exclude name="testEnvironmentConfigSource"/>
