@@ -228,6 +228,18 @@
             </modules>
         </profile>
 
+        <!-- -Dts.standalone.microprofile -->
+        <profile>
+            <id>ts.integ.group.standalone.microprofile</id>
+            <activation><property><name>ts.standalone.microprofile</name></property></activation>
+            <modules>
+                <module>basic</module>
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+                <!--<module>clustering</module>-->
+            </modules>
+        </profile>
+
         <!-- -Dts.legacy -->
         <profile>
             <id>ts.integ.group.legacy</id>
