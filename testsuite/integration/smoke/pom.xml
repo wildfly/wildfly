@@ -155,6 +155,57 @@
                             <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                         </systemPropertyVariables>
                     </configuration>
+                    <executions>
+                        <!-- Tests that can run against the standalone-microprofile.xml config -->
+                        <execution>
+                            <id>microprofile.surefire</id>
+                            <!-- Turn off this execution by default. It gets turned on in profiles -->
+                            <phase>none</phase>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <configuration>
+                                <systemPropertyVariables>
+                                    <!-- Override the standard module path that points at the shared module set from dist -->
+                                    <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
+                                    <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
+                                </systemPropertyVariables>
+                                <excludes>
+                                    <!-- Requires legacy security -->
+                                    <exclude>org/jboss/as/test/smoke/mgmt/resourceadapter/ResourceAdapterOperationsUnitTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/raconnection/RaTestConnectionTestCase.java</exclude>
+                                    <!-- Requires EJB -->
+                                    <exclude>org/jboss/as/test/smoke/ejb3/**/*TestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/property/EjbDDWithPropertyTestCase.java</exclude>
+                                    <!-- Requires iiop -->
+                                    <exclude>org/jboss/as/test/smoke/socketbindings/SocketBindingBoundPortsTestCase.java</exclude>
+                                    <!-- Requires messaging -->
+                                    <exclude>org/jboss/as/test/smoke/jms/**/*TestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/jms/**/*Test.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/messaging/**/*TestCase.java</exclude>
+                                    <!-- Requires sar -->
+                                    <exclude>org/jboss/as/test/smoke/sar/**/*TestCase.java</exclude>
+                                    <!-- Requires webservices -->
+                                    <exclude>org/jboss/as/test/smoke/webservices/**/*TestCase.java</exclude>
+                                    <!-- Requires org.jboss.as.cli for a test fixture that ends up in the server vm (see WFCORE-4614 / WFLY-12402 -->
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectpartialactivation/MultipleObjectPartialActivationTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/configproperty/ConfigPropertyTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/earpackage/EarPackagedDeploymentTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/activation/IronJacamarActivationTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiactivation/MultipleActivationTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/earmultirar/EarPackagedMultiRarDeploymentTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/eardeployment/EarDeploymentTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/inflow/InflowTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/pure/PureTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectactivation/MultipleObjectActivationTestCase.java</exclude>
+                                    <!-- FIXME Why do these fail? Particularly ManagedBeanTestCase -->
+                                    <exclude>org/jboss/as/test/smoke/managedbean/ManagedBeanTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/afterresourcecreation/AfterResourceCreationDeploymentTestCase.java</exclude>
+                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/redeployment/ReDeploymentTestCase.java</exclude>
+                                </excludes>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -204,6 +255,10 @@
                                             <model>standalone</model>
                                             <name>standalone-full.xml</name>
                                         </config>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-microprofile.xml</name>
+                                        </config>
                                     </included-configs>
                                 </feature-pack>
                             </feature-packs>
@@ -221,10 +276,10 @@
     <profiles>
 
         <profile>
-            <id>standalone.microprofile.profile</id>
+            <id>not.standalone.microprofile.profile</id>
             <activation>
                 <property>
-                    <name>ts.standalone.microprofile</name>
+                    <name>!ts.standalone.microprofile</name>
                 </property>
             </activation>
             <build>
@@ -237,6 +292,34 @@
                             <execution>
                                 <id>default-test</id>
                                 <phase>test</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>standalone.microprofile.profile</id>
+            <activation>
+                <property>
+                    <name>ts.standalone.microprofile</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Tests against the standalone-microprofile.xml config -->
+                            <execution>
+                                <id>microprofile.surefire</id>
+                                <!-- Turn on the execution that is configured outside this profile -->
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -359,53 +442,27 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <!-- Tests against the install without legacy security -->
+                            <!-- Disable default-test -->
                             <execution>
-                                <id>cloud-profile-layers.surefire</id>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                            </execution>
+                            <!-- Tests against the install without legacy security -->
+                            <!-- Reuse the microprofile.surefire execution as the valid tests are the same.
+                                 Just point to standalone.xml. -->
+                            <execution>
+                                <id>microprofile.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from dist -->
-                                        <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
-                                    <excludes>
-                                        <!-- Requires legacy security -->
-                                        <exclude>org/jboss/as/test/smoke/mgmt/resourceadapter/ResourceAdapterOperationsUnitTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/raconnection/RaTestConnectionTestCase.java</exclude>
-                                        <!-- Requires EJB -->
-                                        <exclude>org/jboss/as/test/smoke/ejb3/**/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/property/EjbDDWithPropertyTestCase.java</exclude>
-                                        <!-- Requires iiop -->
-                                        <exclude>org/jboss/as/test/smoke/socketbindings/SocketBindingBoundPortsTestCase.java</exclude>
-                                        <!-- Requires messaging -->
-                                        <exclude>org/jboss/as/test/smoke/jms/**/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/jms/**/*Test.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/messaging/**/*TestCase.java</exclude>
-                                        <!-- Requires sar -->
-                                        <exclude>org/jboss/as/test/smoke/sar/**/*TestCase.java</exclude>
-                                        <!-- Requires webservices -->
-                                        <exclude>org/jboss/as/test/smoke/webservices/**/*TestCase.java</exclude>
-                                        <!-- Requires org.jboss.as.cli for a test fixture that ends up in the server vm (see WFCORE-4614 / WFLY-12402 -->
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectpartialactivation/MultipleObjectPartialActivationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/configproperty/ConfigPropertyTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/earpackage/EarPackagedDeploymentTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/activation/IronJacamarActivationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiactivation/MultipleActivationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/earmultirar/EarPackagedMultiRarDeploymentTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/eardeployment/EarDeploymentTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/inflow/InflowTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/pure/PureTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectactivation/MultipleObjectActivationTestCase.java</exclude>
-                                        <!-- FIXME Why do these fail? Particularly ManagedBeanTestCase -->
-                                        <exclude>org/jboss/as/test/smoke/managedbean/ManagedBeanTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/afterresourcecreation/AfterResourceCreationDeploymentTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/redeployment/ReDeploymentTestCase.java</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
                             <!-- Tests against the install with legacy security -->
