@@ -28,12 +28,13 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-microprofile</artifactId>
+        <artifactId>wildfly-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>20.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-microprofile-fault-tolerance-smallrye</artifactId>
@@ -48,4 +49,8 @@
         <module>cdi</module>
         <module>extension</module>
     </modules>
+
+    <!-- DO NOT PLACE CONFIGURATION IN THIS POM EXPECTING IT TO BE INHERITED BY SUB MODULES.
+         SUB MODULES MAY NOT USE THIS ARTIFACT AS THEIR PARENT -->
+
 </project>

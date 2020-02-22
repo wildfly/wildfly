@@ -133,10 +133,12 @@
         <full.dist.product.release.name>WildFly Full</full.dist.product.release.name>
         <full.dist.product.slot>wildfly-full</full.dist.product.slot>
         <full.dist.product.release.version>${project.version}</full.dist.product.release.version>
+        <full.maven.groupId>${project.groupId}</full.maven.groupId>
         <full.maven.version>${project.version}</full.maven.version>
         <ee.dist.product.release.name>WildFly EE</ee.dist.product.release.name>
         <ee.dist.product.slot>wildfly-ee</ee.dist.product.slot>
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
+        <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
         <servlet.dist.product.release.name>WildFly Servlet</servlet.dist.product.release.name>
         <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
@@ -205,6 +207,7 @@
              that *could* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
              Test jobs can override this using -D to test using different feature pack.
         -->
+        <testsuite.ee.galleon.pack.groupId>${full.maven.groupId}</testsuite.ee.galleon.pack.groupId>
         <testsuite.ee.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.ee.galleon.pack.artifactId>
         <testsuite.ee.galleon.pack.version>${full.maven.version}</testsuite.ee.galleon.pack.version>
 
@@ -612,7 +615,7 @@
             </dependency>
 
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-build</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
@@ -844,7 +847,7 @@
             </dependency>
 
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-dist</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
@@ -934,14 +937,14 @@
             </dependency>
 
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-galleon-pack</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-galleon-pack</artifactId>
                 <version>${full.maven.version}</version>
                 <type>zip</type>
@@ -1044,17 +1047,17 @@
             </dependency>
 
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-fault-tolerance-smallrye</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-fault-tolerance-smallrye-cdi</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
@@ -1066,7 +1069,7 @@
             </dependency>
 
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
@@ -1078,7 +1081,7 @@
             </dependency>
 
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
@@ -9532,6 +9535,23 @@
                     <layout>default</layout>
                 </pluginRepository>
             </pluginRepositories>
+        </profile>
+
+        <!-- Configures testsuite to use the non-default Galleon pack to provision EE content.
+             This profile is meant to eliminate the need to use -D to see all three parts of the GAV
+             in order to test provisioning using a different feature pack. -->
+        <profile>
+            <id>test.ee.galleon.pack.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-ee-galleon-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
+                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+            </properties>
         </profile>
     </profiles>
 </project>
