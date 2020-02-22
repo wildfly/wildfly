@@ -236,7 +236,7 @@
                 <module>basic</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
-                <!--<module>clustering</module>-->
+                <module>clustering</module>
             </modules>
         </profile>
 
