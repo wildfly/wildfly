@@ -56,3 +56,22 @@ embed-server --server-config=standalone-full-ha.xml
 /subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
 
 stop-embedded-server
+
+
+embed-server --server-config=standalone-microprofile-ha.xml
+
+# TCP stack configuration
+/subsystem=jgroups/stack=tcp/protocol=MPING:remove
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1:add(host=${node0},port=7600)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-2:add(host=${node1},port=7700)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-3:add(host=${node2},port=7800)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4:add(host=${node3},port=7900)
+/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0,socket-bindings=[node-1,node-2,node-3,node-4])
+
+# UDP stack configuration
+/subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
+
+# Default stack configuration
+/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+
+stop-embedded-server
