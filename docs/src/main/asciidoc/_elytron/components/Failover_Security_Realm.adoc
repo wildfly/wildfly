@@ -1,0 +1,22 @@
+[[failover-security-realm]]
+= Failover Security Realm
+
+The failover security realm allows for a realm to fail-over to another realm in case the first is unavailable.
+
+The `failover-realm` resource contains the following attributes: -
+
+ * `delegate-realm` - The realm to use as a default.
+ * `failover-realm` - The realm to use in case `delegate-realm` is not available.
+ * `emit-events` - Whenever to emit SecurityEvent in case the `delegate-realm` is unavailable.
+
+== Defining a Failover
+
+Assuming two realms `properties-realm` and `jdbc-realm` already exist an `failover-realm` combining these two can be created with the following command.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/failover-realm=theRealm:add(delegate-realm=jdbc-realm, failover-realm=properties-realm)
+----
+
+NOTE: The `failover-realm` keeps modifiability of the `delegate-realm` unless failover happens. In that case, the `failover-realm`
+will function as unmodifiable.
