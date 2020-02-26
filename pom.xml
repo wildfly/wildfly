@@ -365,7 +365,7 @@
         <version.org.hibernate.search>5.10.7.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.18.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>9.4.17.Final</version.org.infinispan>
+        <version.org.infinispan>9.4.18.Final</version.org.infinispan>
         <version.org.jasypt>1.9.2</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
         <version.org.jberet>1.3.5.Final</version.org.jberet>
