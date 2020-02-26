@@ -99,8 +99,12 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         String jgroupClusterName = null;
         final PathAddress serverAddress = MessagingServices.getActiveMQServerPathAddress(address);
         if (discoveryGroupName != null) {
-            PathAddress dgAddress = serverAddress.append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName);
-            Resource dgResource = context.readResourceFromRoot(dgAddress, false);
+            Resource dgResource;
+            try {
+                dgResource = context.readResourceFromRoot(serverAddress.append(CommonAttributes.SOCKET_DISCOVERY_GROUP, discoveryGroupName), false);
+            } catch (Resource.NoSuchResourceException ex) {
+                dgResource = context.readResourceFromRoot(serverAddress.append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, discoveryGroupName), false);
+            }
             ModelNode dgModel = dgResource.getModel();
             ModelNode jgroupCluster = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel);
             if(jgroupCluster.isDefined()) {
