@@ -204,7 +204,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     public Affinity getWeakAffinity(I id) {
         CacheMode mode = this.cache.getCacheConfiguration().clustering().cacheMode();
         if (mode.isClustered()) {
-            Node node = mode.needsStateTransfer() && !mode.isScattered() ? this.locatePrimaryOwner(id) : this.registry.getGroup().getLocalMember();
+            Node node = !mode.isScattered() ? this.locatePrimaryOwner(id) : this.registry.getGroup().getLocalMember();
             Map.Entry<String, ?> entry = this.registry.getEntry(node);
             if (entry != null) {
                 return new NodeAffinity(entry.getKey());
