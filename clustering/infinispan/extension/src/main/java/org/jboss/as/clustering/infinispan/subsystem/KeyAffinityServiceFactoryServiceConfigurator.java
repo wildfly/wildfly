@@ -81,7 +81,7 @@ public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServ
             @Override
             public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
                 CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
-                return mode.isDistributed() || mode.isReplicated() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
+                return mode.needsStateTransfer() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
             }
         };
     }
