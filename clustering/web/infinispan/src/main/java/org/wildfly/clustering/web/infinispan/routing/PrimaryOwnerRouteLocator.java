@@ -46,7 +46,7 @@ public class PrimaryOwnerRouteLocator implements RouteLocator {
         this.registry = config.getRegistry();
         this.primaryOwnerLocator = new PrimaryOwnerLocator<>(config.getCache(), config.getMemberFactory(), this.registry.getGroup());
         CacheMode mode = config.getCache().getCacheConfiguration().clustering().cacheMode();
-        this.preferPrimary = mode.needsStateTransfer() && !mode.isScattered();
+        this.preferPrimary = mode.isClustered() && !mode.isScattered();
         this.localRoute = this.registry.getEntry(this.registry.getGroup().getLocalMember()).getKey();
     }
 
