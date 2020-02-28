@@ -1,10 +1,9 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="observability">
     <dependencies>
-        <!-- required by health subsystem -->
-        <layer name="microprofile-config"/>
+        <layer name="microprofile-config" optional="true"/>
         <layer name="microprofile-metrics" optional="true"/>
         <layer name="open-tracing" optional="true"/>
+        <layer name="microprofile-health" optional="true"/>
     </dependencies>
-    <feature-group name="health"/>
 </layer-spec>

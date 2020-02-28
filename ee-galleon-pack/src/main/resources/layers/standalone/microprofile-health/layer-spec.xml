@@ -22,10 +22,10 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-metrics">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-health">
     <dependencies>
         <layer name="secure-management"/>
         <layer name="microprofile-config"/>
     </dependencies>
-    <feature-group name="metrics"/>
+    <feature-group name="health"/>
 </layer-spec>
