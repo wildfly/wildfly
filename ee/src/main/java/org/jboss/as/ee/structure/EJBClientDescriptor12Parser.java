@@ -56,14 +56,14 @@ class EJBClientDescriptor12Parser extends EJBClientDescriptor11Parser {
         for (int i = 0; i < count; i++) {
             final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader
                     .getAttributeLocalName(i));
-            final String val = reader.getAttributeValue(i);
+            final String value = readResolveValue(reader, i);
             switch (attribute) {
                 case INVOCATION_TIMEOUT:
-                    final Long invocationTimeout = Long.parseLong(val.trim());
+                    final long invocationTimeout = Long.parseLong(value);
                     ejbClientDescriptorMetaData.setInvocationTimeout(invocationTimeout);
                     break;
                 case DEPLOYMENT_NODE_SELECTOR:
-                    ejbClientDescriptorMetaData.setDeploymentNodeSelector(val.trim());
+                    ejbClientDescriptorMetaData.setDeploymentNodeSelector(value);
                     break;
                 default:
                     unexpectedContent(reader);
