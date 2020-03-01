@@ -166,8 +166,6 @@
                             </goals>
                             <configuration>
                                 <systemPropertyVariables>
-                                    <!-- Override the standard module path that points at the shared module set from dist -->
-                                    <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                     <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
                                 </systemPropertyVariables>
                                 <excludes>
@@ -306,6 +304,11 @@
                     <name>ts.standalone.microprofile</name>
                 </property>
             </activation>
+            <properties>
+                <!-- We don't want to use the default jboss.dist for this module, which is provisioned locally -->
+                <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
+                <jboss.home>${jboss.dist}</jboss.home>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -461,6 +464,8 @@
                                 </goals>
                                 <configuration>
                                     <systemPropertyVariables>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
