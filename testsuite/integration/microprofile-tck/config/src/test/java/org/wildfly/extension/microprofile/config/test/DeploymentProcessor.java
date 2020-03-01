@@ -43,6 +43,8 @@ public class DeploymentProcessor implements ApplicationArchiveProcessor {
             extensionsJar.addPackage(IsEqual.class.getPackage());
             extensionsJar.addPackage(IsCloseTo.class.getPackage());
             extensionsJar.addPackage(ReflectiveTypeFinder.class.getPackage());
+            extensionsJar.addPackage(junit.framework.Assert.class.getPackage());
+            extensionsJar.addPackage(org.junit.Assert.class.getPackage());
 
             WebArchive war = WebArchive.class.cast(archive);
             war.addAsLibraries(extensionsJar);

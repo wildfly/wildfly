@@ -25,15 +25,17 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-microprofile-fault-tolerance-smallrye</artifactId>
+        <artifactId>wildfly-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>19.0.0.Beta3-SNAPSHOT</version>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
+
     <name>WildFly: MicroProfile Fault Tolerance - Extension</name>
 
     <dependencies>

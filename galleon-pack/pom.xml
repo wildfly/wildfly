@@ -35,6 +35,7 @@
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>19.0.0.Beta3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-galleon-pack</artifactId>
