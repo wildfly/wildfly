@@ -36,7 +36,6 @@
         <!-- use the web build for tests -->
         <jboss.dist>${jbossas.project.dir}/${wildfly.web.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
-        <full.jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</full.jboss.dist>
 
         <ts.elytron.cli>web-enable-elytron.cli</ts.elytron.cli>
     </properties>
@@ -109,7 +108,7 @@
                     </systemPropertyVariables>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                        <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
                     </additionalClasspathElements>
                 </configuration>
                 <executions>
@@ -126,7 +125,7 @@
                             <systemPropertyVariables>
                                 <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
                                 <!-- We need the modules from the complete dist, not just servlet dist used by the default-test execution -->
-                                <module.path>${full.jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
+                                <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                             </systemPropertyVariables>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <excludes>
@@ -201,6 +200,11 @@
                     <name>ts.standalone.microprofile</name>
                 </property>
             </activation>
+            <properties>
+                <!-- We don't want to use the default jboss.dist for this module, which is from the servlet-dist dir -->
+                <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
+                <jboss.home>${jboss.dist}</jboss.home>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -219,7 +223,7 @@
                                     <overwrite>true</overwrite>
                                     <resources>
                                         <resource>
-                                            <directory>${full.jboss.dist}/standalone/configuration</directory>
+                                            <directory>${jboss.dist}/standalone/configuration</directory>
                                             <includes><include>standalone-microprofile.xml</include></includes>
                                         </resource>
                                     </resources>
