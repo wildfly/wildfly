@@ -119,6 +119,7 @@ public class PrimaryOwnerRouteLocatorTestCase {
         RouteLocator locator = new PrimaryOwnerRouteLocator(config);
 
         switch (this.cache.getCacheConfiguration().clustering().cacheMode()) {
+            case INVALIDATION_SYNC:
             case REPL_SYNC:
             case DIST_SYNC: {
                 when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
