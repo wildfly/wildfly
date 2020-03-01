@@ -15,9 +15,9 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +32,6 @@ import org.apache.activemq.artemis.api.jms.JMSFactoryType;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -91,8 +90,12 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
             final String dgname = discoveryGroupName.asString();
             final String key = "discovery" + dgname;
-            PathAddress dgAddress = context.getCurrentAddress().getParent().append(DISCOVERY_GROUP, dgname);
-            ModelNode discoveryGroupModel = context.readResourceFromRoot(dgAddress).getModel();
+            ModelNode discoveryGroupModel;
+            try {
+                discoveryGroupModel = context.readResourceFromRoot(context.getCurrentAddress().getParent().append(JGROUPS_DISCOVERY_GROUP, dgname)).getModel();
+            } catch (Resource.NoSuchResourceException ex) {
+                discoveryGroupModel = new ModelNode();
+            }
             if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
                 ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
                 ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
