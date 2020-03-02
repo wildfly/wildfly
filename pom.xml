@@ -261,7 +261,7 @@
         <version.com.github.fge.jackson-coreutils>1.0</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
         <version.com.github.spullara.mustache>0.9.6</version.com.github.spullara.mustache>
-        <version.com.google.code.gson>2.8.2</version.com.google.code.gson>
+        <version.com.google.code.gson>2.8.6</version.com.google.code.gson>
         <version.com.google.guava>25.0-jre</version.com.google.guava>
         <version.com.h2database>1.4.197</version.com.h2database>
         <version.com.microsoft.azure>6.1.0</version.com.microsoft.azure>
