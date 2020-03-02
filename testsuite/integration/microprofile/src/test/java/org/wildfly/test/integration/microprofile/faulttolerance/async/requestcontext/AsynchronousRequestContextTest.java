@@ -25,6 +25,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FilePermission;
 import java.util.PropertyPermission;
 import java.util.concurrent.ExecutionException;
 
@@ -51,6 +52,7 @@ public class AsynchronousRequestContextTest {
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addPackage(AsynchronousRequestContextTest.class.getPackage())
                 .addAsManifestResource(createPermissionsXmlAsset(
+                        new FilePermission("<<ALL FILES>>", "read"),
                         new PropertyPermission("*", "read,write"),
                         new RuntimePermission("getenv.*"),
                         new RuntimePermission("modifyThread")

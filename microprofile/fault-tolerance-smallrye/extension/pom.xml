@@ -25,13 +25,12 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <artifactId>wildfly-microprofile-fault-tolerance-smallrye</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>20.0.0.Beta1-SNAPSHOT</version>
-        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
@@ -42,7 +41,7 @@
         <!-- MicroProfile Fault Tolerance and SmallRye dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-cdi</artifactId>
+            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
@@ -63,14 +62,6 @@
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.netflix.archaius</groupId>
-            <artifactId>archaius-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
         </dependency>
         <!-- Subsystem dependencies -->
         <dependency>

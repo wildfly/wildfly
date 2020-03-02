@@ -56,6 +56,7 @@ public class MicroProfileFaultToleranceDependenciesProcessor implements Deployme
             ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
             ModuleLoader moduleLoader = Module.getBootModuleLoader();
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.fault-tolerance.api", false, false, false, false));
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.wildfly.microprofile.fault-tolerance-smallrye.executor", false, false, true, false));
         }
     }
 
