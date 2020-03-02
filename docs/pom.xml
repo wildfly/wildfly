@@ -42,9 +42,17 @@
     <name>WildFly: Documentation</name>
 
     <properties>
+        <!-- Because this version is only used here and should not currently be used outside of this module we are
+             going to define it here rather than the root pom. -->
+        <version.org.jboss.wildscribe>2.0.0.Final</version.org.jboss.wildscribe>
+        <server.name>wildfly-${product.release.version}</server.name>
+        <messages.filename>${server.name}.messages</messages.filename>
+        <management-model.filename>${server.name}.dmr</management-model.filename>
+
         <wildfly.github.io.dir>
             ..${file.separator}..${file.separator}wildfly.github.io${file.separator}${product.docs.server.version}
         </wildfly.github.io.dir>
+        <jboss.home>${project.build.directory}/wildfly</jboss.home>
     </properties>
 
     <build>
@@ -55,7 +63,7 @@
                 <configuration>
                     <attributes>
                         <!-- Attributes to use in the asciidoc source files. Please leave in alphabetical order -->
-                        <appservername>WildFly</appservername>
+                        <appservername>${product.docs.server.name}</appservername>
                         <javaee_version>8</javaee_version>
                         <oracle-javadoc>https://docs.oracle.com/javase/8/docs/api</oracle-javadoc>
                         <wildflyversion>${product.docs.server.version}</wildflyversion>
@@ -83,6 +91,71 @@
                         <goals>
                             <goal>process-asciidoc</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>server-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <install-dir>${jboss.home}</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <excluded-packages>
+                                        <name>docs</name>
+                                        <name>docs.licenses.merge</name>
+                                    </excluded-packages>
+                                    <included-configs>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-full-ha.xml</name>
+                                        </config>
+                                    </included-configs>
+                                </feature-pack>
+                            </feature-packs>
+                            <plugin-options>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </plugin-options>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jboss.wildscribe</groupId>
+                <artifactId>wildscribe-maven-plugin</artifactId>
+                <version>${version.org.jboss.wildscribe}</version>
+                <configuration>
+                    <jboss-home>${jboss.home}</jboss-home>
+                    <display-name>${product.docs.server.name}</display-name>
+                    <display-version>${product.docs.server.version}</display-version>
+                    <site-dir>${project.build.directory}/generated-docs/wildscribe</site-dir>
+                    <required-extensions>
+                        <required-extension>org.wildfly.extension.rts</required-extension>
+                        <required-extension>org.jboss.as.xts</required-extension>
+                        <required-extension>org.wildfly.extension.datasources-agroal</required-extension>
+                    </required-extensions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-site</id>
+                        <goals>
+                            <goal>generate-site</goal>
+                        </goals>
+                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>
