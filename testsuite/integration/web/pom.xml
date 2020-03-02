@@ -108,7 +108,6 @@
                     </systemPropertyVariables>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                        <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
                     </additionalClasspathElements>
                 </configuration>
                 <executions>
