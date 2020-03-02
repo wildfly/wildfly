@@ -22,13 +22,8 @@
 
 package org.wildfly.extension.microprofile.faulttolerance.deployment;
 
-import com.netflix.config.ConcurrentMapConfiguration;
-import com.netflix.config.ConfigurationManager;
-import io.smallrye.faulttolerance.HystrixExtension;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import io.smallrye.faulttolerance.FaultToleranceExtension;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,22 +31,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.Capabilities;
 import org.jboss.as.weld.WeldCapability;
-import org.jboss.modules.Module;
-import org.wildfly.extension.microprofile.faulttolerance.MicroProfileFaultToleranceLogger;
 
 /**
  * @author Radoslav Husar
  */
 public class MicroProfileFaultToleranceDeploymentProcessor implements DeploymentUnitProcessor {
-
-    private static final ConcurrentMapConfiguration configInstance = new ConcurrentMapConfiguration();
-    private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
-    private static volatile int remainingHystrixConfiguringDeployments;
-
-    static {
-        // Configuration can be set only once
-        ConfigurationManager.install(configInstance);
-    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -71,43 +55,10 @@ public class MicroProfileFaultToleranceDeploymentProcessor implements Deployment
             throw new IllegalStateException();
         }
 
-        weldCapability.registerExtensionInstance(new MicroProfileFaultToleranceCDIExtension(), deploymentUnit);
-        weldCapability.registerExtensionInstance(new HystrixExtension(), deploymentUnit);
-
-        synchronized (this) {
-            if (remainingHystrixConfiguringDeployments == 0) {
-                Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-                Config mpConfig = ConfigProvider.getConfig(module.getClassLoader());
-
-                // We need to iterate over all keys since the key names are dynamic and not known in advance
-                boolean isHystrixConfiguringDeployment = false;
-                for (String key : mpConfig.getPropertyNames()) {
-                    if (key.startsWith("hystrix.")) {
-                        String value = mpConfig.getValue(key, String.class);
-                        MicroProfileFaultToleranceLogger.ROOT_LOGGER.debugf("Configuring Hystrix: %s=%s", key, value);
-                        configInstance.setProperty(key, value);
-                        isHystrixConfiguringDeployment = true;
-                    }
-                }
-                if (isHystrixConfiguringDeployment) {
-                    deploymentUnit.putAttachment(ATTACHMENT_KEY, Boolean.TRUE);
-                    remainingHystrixConfiguringDeployments++;
-                }
-            } else {
-                MicroProfileFaultToleranceLogger.ROOT_LOGGER.hystrixAlreadyConfigured(deploymentUnit.getName());
-            }
-        }
+        weldCapability.registerExtensionInstance(new FaultToleranceExtension(), deploymentUnit);
     }
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-        synchronized (this) {
-            if (deploymentUnit.removeAttachment(ATTACHMENT_KEY) != null) {
-                remainingHystrixConfiguringDeployments--;
-                if (remainingHystrixConfiguringDeployments == 0) {
-                    configInstance.clear();
-                }
-            }
-        }
     }
 }

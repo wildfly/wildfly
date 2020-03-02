@@ -173,32 +173,20 @@
         </dependency>
 
         <dependency>
-            <groupId>com.netflix.archaius</groupId>
-            <artifactId>archaius-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.netflix.hystrix</groupId>
-            <artifactId>hystrix-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.reactivex</groupId>
-            <artifactId>rxjava</artifactId>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-fault-tolerance</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-fault-tolerance</artifactId>
+            <artifactId>smallrye-fault-tolerance-core</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -281,12 +269,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hdrhistogram</groupId>
-            <artifactId>HdrHistogram</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
             <exclusions>
@@ -300,7 +282,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-cdi</artifactId>
+            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

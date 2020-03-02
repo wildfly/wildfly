@@ -46,7 +46,7 @@
     </description>
 
     <modules>
-        <module>cdi</module>
+        <module>executor</module>
         <module>extension</module>
     </modules>
 
