@@ -44,7 +44,7 @@
             <artifactId>smallrye-fault-tolerance</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
     </dependencies>
