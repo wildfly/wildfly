@@ -33,11 +33,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jgroups.auth.MD5Token;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
- * Builds an AUTH token, functionally equivalent to {@link MD5Token}, but can use any digest algorithm supported by the default security provider.
+ * Builds an AUTH token, functionally equivalent to {@link org.jgroups.auth.MD5Token}, but can use any digest algorithm supported by the default security provider.
  * @author Paul Ferraro
  */
 public class DigestAuthTokenServiceConfigurator extends AuthTokenServiceConfigurator<BinaryAuthToken> {
