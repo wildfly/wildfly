@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,42 +21,87 @@
  */
 package org.wildfly.extension.microprofile.faulttolerance.tck;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
+
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
 import org.jboss.shrinkwrap.api.container.LibraryContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.impl.base.io.IOUtil;
 
 /**
- * Ported from Thorntail TCK suite.
+ * Ported from SR FT.
  *
- * @author Martin Kouba
  * @author Radoslav Husar
  */
 public class FaultToleranceApplicationArchiveProcessor implements ApplicationArchiveProcessor {
 
+    private static final Logger LOGGER = Logger.getLogger(FaultToleranceApplicationArchiveProcessor.class.getName());
+
+    private static final String MAX_THREADS_OVERRIDE = "io.smallrye.faulttolerance.globalThreadPoolSize=1000";
+    private static final String MP_CONFIG_PATH = "/WEB-INF/classes/META-INF/microprofile-config.properties";
+
     @Override
     public void process(Archive<?> applicationArchive, TestClass testClass) {
+        if (!(applicationArchive instanceof ClassContainer)) {
+            LOGGER.warning(
+                    "Unable to add additional classes - not a class/resource container: "
+                            + applicationArchive);
+            return;
+        }
         ClassContainer<?> classContainer = (ClassContainer<?>) applicationArchive;
 
         if (applicationArchive instanceof LibraryContainer) {
             JavaArchive additionalBeanArchive = ShrinkWrap.create(JavaArchive.class);
-            additionalBeanArchive.addClass(HystrixCommandSemaphoreCleanup.class);
-            additionalBeanArchive.addAsManifestResource(new StringAsset("Dependencies: com.netflix.hystrix.core\n"), "MANIFEST.MF");
             additionalBeanArchive.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
             ((LibraryContainer<?>) applicationArchive).addAsLibrary(additionalBeanArchive);
         } else {
-            classContainer.addClass(HystrixCommandSemaphoreCleanup.class);
             classContainer.addAsResource(EmptyAsset.INSTANCE, "META-INF/beans.xml");
         }
 
         if (!applicationArchive.contains("META-INF/beans.xml")) {
             applicationArchive.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
         }
+
+        if (applicationArchive instanceof WebArchive
+                && applicationArchive.contains("META-INF/microprofile-config.properties")
+                && !applicationArchive.contains("WEB-INF/classes/META-INF/microprofile-config.properties")) {
+            // workaround for https://github.com/eclipse/microprofile-fault-tolerance/pull/495
+            // this entire `if` should be removed when that PR is merged and MP FT released
+            applicationArchive.move("META-INF/microprofile-config.properties",
+                    "WEB-INF/classes/META-INF/microprofile-config.properties");
+        }
+
+        String config;
+        if (!applicationArchive.contains(MP_CONFIG_PATH)) {
+            config = MAX_THREADS_OVERRIDE;
+        } else {
+            ByteArrayOutputStream output = readCurrentConfig(applicationArchive);
+            applicationArchive.delete(MP_CONFIG_PATH);
+            config = output.toString() + "\n" + MAX_THREADS_OVERRIDE;
+        }
+        classContainer.addAsResource(new StringAsset(config), MP_CONFIG_PATH);
+
+        LOGGER.info("Added additional resources to " + applicationArchive.toString(true));
     }
 
+    private ByteArrayOutputStream readCurrentConfig(Archive<?> appArchive) {
+        try {
+            Node node = appArchive.get(MP_CONFIG_PATH);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            IOUtil.copy(node.getAsset().openStream(), outputStream);
+            return outputStream;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to prepare microprofile-config.properties");
+        }
+    }
 }

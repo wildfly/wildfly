@@ -29,11 +29,10 @@
 
     <resources>
         <artifact name="${io.smallrye:smallrye-fault-tolerance}"/>
+        <artifact name="${io.smallrye:smallrye-fault-tolerance-core}"/>
     </resources>
 
     <dependencies>
-        <module name="com.netflix.hystrix.core"/>
-        <module name="io.reactivex.rxjava"/>
         <module name="io.smallrye.config"/>
         <module name="io.smallrye.metrics"/>
         <module name="javax.annotation.api"/>
@@ -46,6 +45,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
-        <module name="org.wildfly.microprofile.fault-tolerance-smallrye.cdi"/>
+        <module name="org.wildfly.microprofile.fault-tolerance-smallrye.executor" services="import"/>
     </dependencies>
 </module>
