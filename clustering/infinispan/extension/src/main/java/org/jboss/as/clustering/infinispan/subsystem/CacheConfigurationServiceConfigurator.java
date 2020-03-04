@@ -118,7 +118,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
         builder.locking().read(this.locking.get());
         builder.persistence().read(this.persistence.get());
         builder.transaction().read(tx);
-        builder.jmxStatistics().enabled(this.statisticsEnabled).available(this.statisticsEnabled);
+        builder.statistics().enabled(this.statisticsEnabled);
 
         try {
             // Configure invocation batching based on transaction configuration

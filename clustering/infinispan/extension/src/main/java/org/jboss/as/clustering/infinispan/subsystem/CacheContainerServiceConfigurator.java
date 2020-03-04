@@ -67,7 +67,6 @@ import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -118,19 +117,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
             manager.undefineConfiguration(defaultCacheName);
         }
 
-        if (config.statistics()) {
-            // MicroProfile Metrics relies on TCCL via ConfigProvider.getConfig()
-            ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(this.module.get().getClassLoader());
-            try {
-                manager.start();
-            } finally {
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
-            }
-        } else {
-            manager.start();
-        }
-
+        manager.start();
         manager.addListener(this);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
         return manager;

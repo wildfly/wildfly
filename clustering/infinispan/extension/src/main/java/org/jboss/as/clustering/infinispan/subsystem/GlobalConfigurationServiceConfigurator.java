@@ -128,9 +128,10 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.persistenceThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.PERSISTENCE).get());
 
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
-        builder.globalJmxStatistics()
+        // Disable registration of MicroProfile Metrics
+        builder.metrics().gauges(false).histograms(false);
+        builder.jmx().domain("org.wildfly.clustering.infinispan")
                 .mBeanServerLookup(new MBeanServerProvider((this.server != null) && this.statisticsEnabled ? this.server.get() : null))
-                .jmxDomain("org.wildfly.clustering.infinispan")
                 ;
 
         // Disable triangle algorithm

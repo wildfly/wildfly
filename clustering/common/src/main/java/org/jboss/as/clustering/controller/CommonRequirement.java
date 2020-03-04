@@ -38,7 +38,6 @@ public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider
     ELYTRON("org.wildfly.security.elytron", Void.class),
     LOCAL_TRANSACTION_PROVIDER("org.wildfly.transactions.global-default-local-provider", Void.class),
     MBEAN_SERVER("org.wildfly.management.jmx", MBeanServer.class),
-    MICROPROFILE_CONFIG("org.wildfly.microprofile.config", Void.class),
     NAMING_STORE(NamingService.CAPABILITY_NAME, NamingStore.class),
     PATH_MANAGER("org.wildfly.management.path-manager", PathManager.class),
     SOCKET_BINDING_MANAGER("org.wildfly.management.socket-binding-manager", SocketBindingManager.class),

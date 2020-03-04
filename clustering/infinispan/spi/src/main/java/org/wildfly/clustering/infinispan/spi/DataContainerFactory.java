@@ -22,10 +22,10 @@
 
 package org.wildfly.clustering.infinispan.spi;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.infinispan.commons.marshall.WrappedBytes;
 import org.infinispan.commons.util.EntrySizeCalculator;
 import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.infinispan.configuration.cache.MemoryConfiguration;
@@ -38,6 +38,8 @@ import org.infinispan.container.impl.DefaultDataContainer;
 import org.infinispan.container.impl.DefaultSegmentedDataContainer;
 import org.infinispan.container.impl.InternalDataContainer;
 import org.infinispan.container.impl.L1SegmentedDataContainer;
+import org.infinispan.container.impl.PeekableTouchableContainerMap;
+import org.infinispan.container.impl.PeekableTouchableMap;
 import org.infinispan.container.offheap.BoundedOffHeapDataContainer;
 import org.infinispan.container.offheap.OffHeapConcurrentMap;
 import org.infinispan.container.offheap.OffHeapDataContainer;
@@ -72,7 +74,6 @@ public class DataContainerFactory<K, V> extends AbstractNamedCacheComponentFacto
         return container;
     }
 
-    @SuppressWarnings("unchecked")
     private DataContainer<?, ?> createUnboundedContainer() {
         ClusteringConfiguration clustering = this.configuration.clustering();
         boolean segmented = clustering.cacheMode().needsStateTransfer();
@@ -81,8 +82,7 @@ public class DataContainerFactory<K, V> extends AbstractNamedCacheComponentFacto
         boolean offHeap = this.configuration.memory().storageType() == StorageType.OFF_HEAP;
 
         if (segmented) {
-            @SuppressWarnings("rawtypes")
-            Supplier mapSupplier = offHeap ? this::createAndStartOffHeapConcurrentMap : ConcurrentHashMap::new;
+            Supplier<PeekableTouchableMap<WrappedBytes, WrappedBytes>> mapSupplier = offHeap ? this::createAndStartOffHeapConcurrentMap : PeekableTouchableContainerMap::new;
             int segments = clustering.hash().numSegments();
             return clustering.l1().enabled() ? new L1SegmentedDataContainer<>(mapSupplier, segments) : new DefaultSegmentedDataContainer<>(mapSupplier, segments);
         }

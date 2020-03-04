@@ -34,11 +34,6 @@
         <module name="javax.transaction.api"/>
         <module name="com.github.ben-manes.caffeine"/>
         <module name="io.reactivex.rxjava2.rxjava"/>
-
-        <!-- Only required when statistics are enabled -->
-        <module name="io.smallrye.metrics" optional="true"/>
-        <module name="org.eclipse.microprofile.metrics.api"/>
- 
         <module name="org.infinispan.persistence.jdbc" optional="true"/>
         <module name="org.infinispan.persistence.remote" optional="true"/>
         <module name="org.infinispan.client.hotrod" optional="true"/>
