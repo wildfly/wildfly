@@ -292,7 +292,7 @@
         <version.io.opentracing.servlet>0.2.3</version.io.opentracing.servlet>
         <version.io.reactivex.rxjava>2.2.5</version.io.reactivex.rxjava>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
-        <version.io.smallrye.smallrye-config>1.6.1</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-config>1.6.2</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>4.1.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>2.2.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>2.0.13</version.io.smallrye.smallrye-jwt>
