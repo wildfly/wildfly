@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<module xmlns="urn:jboss:module:1.1" name="com.github.tomakehurst.wiremock">
+
+    <resources>
+        <resource-root path="wiremock.jar"/>
+        <resource-root path="junit.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="org.apache.httpcomponents"/>
+        <module name="org.apache.httpcomponents.core"/>
+        <module name="com.google.guava"/>
+        <module name="org.apache.commons.lang3"/>
+        <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+        <module name="com.fasterxml.jackson.core.jackson-core"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+        <module name="javax.enterprise.api"/>
+        <module name="javax.inject.api"/>
+        <module name="javax.annotation.api"/>
+        <module name="org.jboss.resteasy.resteasy-cdi" services="export" export="true">
+          <imports>
+            <include path="META-INF"/>
+          </imports>
+          <exports>
+            <include path="META-INF"/>
+          </exports>
+        </module>
+    </dependencies>
+</module>
