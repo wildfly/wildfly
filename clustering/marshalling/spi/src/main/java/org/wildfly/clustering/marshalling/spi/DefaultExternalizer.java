@@ -30,6 +30,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
@@ -71,7 +72,6 @@ import org.wildfly.clustering.marshalling.spi.net.InetSocketAddressExternalizer;
 import org.wildfly.clustering.marshalling.spi.net.URLExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.DurationExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.InstantExternalizer;
-import org.wildfly.clustering.marshalling.spi.time.LocalDateTimeExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.MonthDayExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.PeriodExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.YearMonthExternalizer;
@@ -109,8 +109,8 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     DURATION(new DurationExternalizer()),
     INSTANT(new InstantExternalizer()),
     LOCAL_DATE(new LongExternalizer<>(LocalDate.class, LocalDate::ofEpochDay, LocalDate::toEpochDay)),
-    LOCAL_DATE_TIME(new LocalDateTimeExternalizer()),
     LOCAL_TIME(new LongExternalizer<>(LocalTime.class, LocalTime::ofNanoOfDay, LocalTime::toNanoOfDay)),
+    LOCAL_DATE_TIME(new BinaryExternalizer<>(LocalDateTime.class, LOCAL_DATE.cast(LocalDate.class), LOCAL_TIME.cast(LocalTime.class), LocalDateTime::toLocalDate, LocalDateTime::toLocalTime, LocalDateTime::of)),
     MONTH(new EnumExternalizer<>(Month.class)),
     MONTH_DAY(new MonthDayExternalizer()),
     PERIOD(new PeriodExternalizer()),
