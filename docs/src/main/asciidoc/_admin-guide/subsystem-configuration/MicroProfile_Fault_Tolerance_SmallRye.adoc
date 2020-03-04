@@ -26,16 +26,16 @@ element to the XML or by using the following CLI operation:
         "process-state" => "reload-required"
     }
 }
+[standalone@localhost:9990 /] reload
 ----
 
 The subsystem does not have any configurable elements.
-Configuration of the Hystrix library is done using MicroProfile Config specification.
 
 == Specification
 
-WildFly's MicroProfile Fault Tolerance subsystem implements MicroProfile 2.0.
+WildFly's MicroProfile Fault Tolerance subsystem implements MicroProfile 2.1.
 
-This MicroProfile specification introduces the following interceptor bindings:
+This MicroProfile specification provides the following interceptor bindings:
 
 * `@Timeout`
 * `@Retry`
@@ -44,43 +44,29 @@ This MicroProfile specification introduces the following interceptor bindings:
 * `@Bulkhead`
 * `@Asynchronous`
 
-For usage please refer to MicroProfile Fault Tolerance 2.0 https://download.eclipse.org/microprofile/microprofile-fault-tolerance-2.0/microprofile-fault-tolerance-spec.html[specification].
+For usage please refer to MicroProfile Fault Tolerance 2.1 https://download.eclipse.org/microprofile/microprofile-fault-tolerance-2.1/microprofile-fault-tolerance-spec.html[specification].
 
-== Hystrix Configuration
+== Configuration
 
-MicroProfile Fault Tolerance extension is implemented by the SmallRye Fault Tolerance project which uses https://github.com/Netflix/Hystrix[Hystrix] as an underlying library.
+Apart from configuration properties defined by the specification, the SmallRye implementation provides the following
+configuration properties:
 
-MicroProfile Config is used to configure Hystrix properties.
-The integration module picks up all `hystrix` prefixed properties to configure the library.
-Please refer to https://github.com/Netflix/Hystrix/wiki/Configuration[configuration for configurable properties].
+.SmallRye Fault Tolerance configuration properties
+|===
+|Name |Default |Description
 
-NOTE: Deployments can supply configuration for Hystrix using the defined `META-INF/microprofile-config.properties` file.
-      However, when multiple MicroProfile Fault Tolerance deployments are deployed in a single WildFly instance and since configuration of Hystrix is singleton
-      it is recommended to use globally scoped properties in this case. Please refer to MicroProfile Config subsystem how to configure `ConfigSource`-s.
+|`io.smallrye.faulttolerance.globalThreadPoolSize`
+|100
+|Number of threads used by the fault tolerance mechanisms. This does not include bulkhead thread pools.
 
-WARNING: In future version of the server a different underlying library might be used to implement MicroProfile Fault Tolerance
-capabilities and thus these properties are subject to change.
+|`io.smallrye.faulttolerance.timeoutExecutorThreads`
+|5
+|Size of the thread pool used for scheduling timeouts.
 
-// Following caveats are ported from https://github.com/thorntail/thorntail/tree/master/fractions/microprofile/microprofile-fault-tolerance
+|===
 
-=== Bulkhead fallback rejection
 
-If you use the `@Bulkhead` pattern together with some `@Fallback` logic to limit the number of concurrent requests, an invocation may still result in an exception.
 
-=== Semaphore Isolation
-
-For semaphore-style `@Bulkhead` a `BulkheadException` may be thrown if the maximum concurrent limit is reached.
-To avoid that, configure `hystrix.command.default.fallback.isolation.semaphore.maxConcurrentRequests` property to increase the limit.
-
-=== Thread Isolation
-
-For `@Bulkhead` used together with `@Asynchronous` a `RejectedExecutionException` may be thrown if the maximum concurrent limit is reached.
-To avoid that, set the `hystrix.threadpool.default.maximumSize` property to increase the limit and set `hystrix.threadpool.default.allowMaximumSizeToDivergeFromCoreSize` property to `true`.
-
-== Migration from Thorntail
-
-Thorntail (and WildFly swarm) prefixed all Hystrix properties with `thorntail.hystrix.` (or `swarm.hystrix.`) to configure Hystrix.
-To migrate these properties, remove the `thorntail.` (or `swarm.hystrix.`) prefix from all configured properties.
 
 == Component Reference
 

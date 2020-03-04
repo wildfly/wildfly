@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2019, Red Hat, Inc., and individual contributors
@@ -21,22 +20,31 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-<module xmlns="urn:jboss:module:1.9" name="org.wildfly.microprofile.fault-tolerance-smallrye.cdi">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-microprofile-fault-tolerance-smallrye</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>20.0.0.Beta1-SNAPSHOT</version>
+    </parent>
 
-    <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-fault-tolerance-smallrye-cdi}"/>
-    </resources>
+    <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
+
+    <name>WildFly: MicroProfile Fault Tolerance - Executor</name>
 
     <dependencies>
-        <module name="io.smallrye.fault-tolerance"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="org.jboss.weld.api"/>
-        <module name="org.jboss.weld.core"/>
-        <module name="org.jboss.weld.spi"/>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-fault-tolerance</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ee</artifactId>
+        </dependency>
     </dependencies>
-</module>
+</project>
