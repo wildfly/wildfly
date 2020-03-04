@@ -33,9 +33,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.Year;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -118,6 +121,10 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     YEAR_MONTH(new YearMonthExternalizer()),
     ZONE_ID(new StringExternalizer<>(ZoneId.class, ZoneId::of, ZoneId::getId)),
     ZONE_OFFSET(new StringExternalizer<>(ZoneOffset.class, ZoneOffset::of, ZoneOffset::getId)),
+    // offset java.time
+    OFFSET_DATE_TIME(new BinaryExternalizer<>(OffsetDateTime.class, LOCAL_DATE_TIME.cast(LocalDateTime.class), ZONE_OFFSET.cast(ZoneOffset.class), OffsetDateTime::toLocalDateTime, OffsetDateTime::getOffset, OffsetDateTime::of)),
+    OFFSET_TIME(new BinaryExternalizer<>(OffsetTime.class, LOCAL_TIME.cast(LocalTime.class), ZONE_OFFSET.cast(ZoneOffset.class), OffsetTime::toLocalTime, OffsetTime::getOffset, OffsetTime::of)),
+    ZONED_DATE_TIME(new BinaryExternalizer<>(ZonedDateTime.class, LOCAL_DATE_TIME.cast(LocalDateTime.class), ZONE_ID.cast(ZoneId.class), ZonedDateTime::toLocalDateTime, ZonedDateTime::getZone, ZonedDateTime::of)),
     // java.util
     ARRAY_DEQUE(new CollectionExternalizer<>(ArrayDeque.class, ArrayDeque::new)),
     ARRAY_LIST(new CollectionExternalizer<>(ArrayList.class, ArrayList::new)),
