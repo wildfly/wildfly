@@ -1,6 +1,5 @@
 [[Undertow_using_as_a_Load_Balancer]]
 = Using WildFly as a Load Balancer
-:wildflyVersion: 10.1
 
 WildFly 10 added support for using the Undertow subsystem as a load
 balancer. WildFly supports two different approaches, you can either
@@ -124,4 +123,4 @@ This is all there is to it. If you point your browser to
 content.
 
 The full details of all configuration options available can be found in
-the https://wildscribe.github.io/WildFly/{wildflyVersion}/subsystem/undertow/index.html[subsystem reference].
+the link:wildscribe/subsystem/undertow/index.html[subsystem reference^].
