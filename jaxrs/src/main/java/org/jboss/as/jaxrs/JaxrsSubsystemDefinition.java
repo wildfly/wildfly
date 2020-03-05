@@ -33,6 +33,7 @@ import org.jboss.modules.ModuleIdentifier;
 public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
     public static final ModuleIdentifier RESTEASY_ATOM = ModuleIdentifier.create("org.jboss.resteasy.resteasy-atom-provider");
     public static final ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
+    public static final ModuleIdentifier RESTEASY_CLIENT_MICROPROFILE = ModuleIdentifier.create("org.jboss.resteasy.resteasy-client-microprofile");
     public static final ModuleIdentifier RESTEASY_CRYPTO = ModuleIdentifier.create("org.jboss.resteasy.resteasy-crypto");
     public static final ModuleIdentifier RESTEASY_VALIDATOR_11 = ModuleIdentifier.create("org.jboss.resteasy.resteasy-validator-provider-11");
     public static final ModuleIdentifier RESTEASY_VALIDATOR = ModuleIdentifier.create("org.jboss.resteasy.resteasy-validator-provider");
@@ -78,6 +79,7 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
                     RuntimePackageDependency.required(JSON_API.getName()),
                     RuntimePackageDependency.optional(RESTEASY_ATOM.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JAXRS.getName()),
+                    RuntimePackageDependency.optional(RESTEASY_CLIENT_MICROPROFILE.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JAXB.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JACKSON2.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JSON_P_PROVIDER.getName()),
