@@ -135,7 +135,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-servlet-galleon-pack</artifactId>
             <type>zip</type>
             <exclusions>
@@ -147,7 +147,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-galleon-pack</artifactId>
             <type>zip</type>
             <exclusions>
@@ -269,7 +269,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
             <exclusions>
                 <exclusion>
@@ -281,7 +281,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
             <exclusions>
                 <exclusion>
@@ -293,7 +293,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
             <exclusions>
                 <exclusion>
@@ -305,7 +305,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
             <exclusions>
                 <exclusion>
