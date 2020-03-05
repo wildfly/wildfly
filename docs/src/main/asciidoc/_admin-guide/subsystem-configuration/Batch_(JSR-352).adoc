@@ -14,8 +14,8 @@ is `subsystem=batch-jberet`.
 [[default-subsystem-configuration]]
 == Default Subsystem Configuration
 
-For up to date information about subsystem configuration options see
-http://wildscribe.github.io/.
+For up to date information about subsystem configuration options see the
+link:wildscribe[WildFly model reference^].
 
 [[security]]
 == Security
