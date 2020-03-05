@@ -25,12 +25,13 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-microprofile-fault-tolerance-smallrye</artifactId>
+        <artifactId>wildfly-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>20.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
@@ -52,7 +53,7 @@
             <artifactId>smallrye-fault-tolerance</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-weld-common</artifactId>
         </dependency>
         <dependency>
@@ -65,7 +66,7 @@
         </dependency>
         <!-- Subsystem dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
         <dependency>
