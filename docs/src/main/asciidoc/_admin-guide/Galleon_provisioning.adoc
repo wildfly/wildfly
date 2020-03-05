@@ -132,6 +132,7 @@ Basic layers:
 * _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
 * _microprofile-config_: Support for MicroProfile Config.
 * _microprofile-metrics_: Support for MicroProfile Metrics.
+* _microprofile-health_: Support for MicroProfile Health.
 * _open-tracing_: Support for MicroProfile OpenTracing.
 * _resource-adapters_: Support for deployment of JCA adapters.
 * _h2-driver_: Support for the H2 JDBC driver.
@@ -162,7 +163,7 @@ Layers that you combine with "use-case tailored" layers to extend the capabiliti
 * _web-clustering_: Infinispan-based web session clustering.
 
 * _observability_: Support for MicroProfile monitoring and configuration features. 
-Includes Health support, _microprofile-config_, _microprofile-metrics_ (optional) and _open-tracing_ (optional).
+Includes Health support (optional), _microprofile-config_ (optional), _microprofile-metrics_ (optional) and _open-tracing_ (optional).
 
 ==== WildFly servlet layers
 
