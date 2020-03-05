@@ -73,6 +73,8 @@
     <config name="standalone-full.xml" model="standalone"/>
     <config name="standalone-full-ha.xml" model="standalone"/>
     <config name="standalone-load-balancer.xml" model="standalone"/>
+    <config name="standalone-microprofile.xml" model="standalone"/>
+    <config name="standalone-microprofile-ha.xml" model="standalone"/>
     <config name="domain.xml" model="domain"/>
     <config name="host.xml" model="host"/>
     <config name="host-master.xml" model="host"/>

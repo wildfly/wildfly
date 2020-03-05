@@ -222,6 +222,19 @@
             <modules>
                 <module>basic</module>
                 <module>elytron</module>
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+                <module>clustering</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.standalone.microprofile -->
+        <profile>
+            <id>ts.integ.group.standalone.microprofile</id>
+            <activation><property><name>ts.standalone.microprofile</name></property></activation>
+            <modules>
+                <module>basic</module>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>clustering</module>
             </modules>

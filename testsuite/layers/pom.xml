@@ -636,6 +636,43 @@
                             </configurations>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>distributable-web-provisioning-test</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <install-dir>${layers.install.dir}/distributable-web</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </plugin-options>
+                            <feature-packs>
+                                <!-- TODO WFLY-13150 replace this with a layer from wildfly-ee-galleon-pack -->
+                                <feature-pack>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-test-galleon-pack</artifactId>
+                                    <version>${ee.maven.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
+                                </feature-pack>
+                            </feature-packs>
+                            <configurations>
+                                <config>
+                                    <model>standalone</model>
+                                    <name>standalone.xml</name>
+                                    <layers>
+                                        <layer>distributable-web</layer>
+                                    </layers>
+                                </config>
+                            </configurations>
+                        </configuration>
+                    </execution>
                     <!-- servlet layers -->
                     <execution>
                         <id>test-standalone-reference-provisioning</id>
@@ -1603,9 +1640,9 @@
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>${full.maven.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${full.maven.version}</version>
                                     <inherit-configs>false</inherit-configs>
                                     <inherit-packages>false</inherit-packages>
                                 </feature-pack>
@@ -1617,6 +1654,106 @@
                                     <layers>
                                         <layer>microprofile-jwt</layer>
                                     </layers>
+                                </config>
+                            </configurations>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>microprofile-standalone-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <install-dir>${layers.install.dir}/microprofile-standalone</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </plugin-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${full.maven.groupId}</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${full.maven.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
+                                </feature-pack>
+                                <!-- We want to test slimming with layers to something that looks like
+                                     standalone-microprofile.xml. Until WFLY-13150 is resolved that config
+                                     directly uses some feature groups for distributable-web instead of using
+                                     a layer. But I've added a proposed layer in wildfly-test-galleon-pack,
+                                     so we'll use that for now. -->
+                                <feature-pack>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-test-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
+                                </feature-pack>
+                            </feature-packs>
+                            <configurations>
+                                <config>
+                                    <model>standalone</model>
+                                    <name>standalone.xml</name>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>microprofile-fault-tolerance</layer>
+                                        <layer>microprofile-jwt</layer>
+                                        <layer>microprofile-openapi</layer>
+                                        <layer>undertow-legacy-https</layer>
+                                        <layer>distributable-web</layer>
+                                    </layers>
+                                </config>
+                            </configurations>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <install-dir>${layers.install.dir}/microprofile-standalone-ha</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </plugin-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${full.maven.groupId}</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${full.maven.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
+                                </feature-pack>
+                            </feature-packs>
+                            <configurations>
+                                <config>
+                                    <model>standalone</model>
+                                    <name>standalone.xml</name>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>microprofile-fault-tolerance</layer>
+                                        <layer>microprofile-jwt</layer>
+                                        <layer>microprofile-openapi</layer>
+                                        <layer>undertow-legacy-https</layer>
+                                        <layer>jpa-distributed</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
+                                    <excluded-layers>
+                                        <layer>jpa</layer>
+                                        <layer>management-security-realm</layer>
+                                    </excluded-layers>
                                 </config>
                             </configurations>
                         </configuration>
