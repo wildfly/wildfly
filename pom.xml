@@ -420,7 +420,7 @@
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jgroups>4.2.0.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.2.1.Final</version.org.jgroups.azure>
-        <version.org.jgroups.kubernetes>1.0.14.Final</version.org.jgroups.kubernetes>
+        <version.org.jgroups.kubernetes>1.0.15.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.jvnet.staxex>1.7.8</version.org.jvnet.staxex>
         <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
