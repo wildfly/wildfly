@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ JBoss, Home of Professional Open Source
+  ~ Copyright 2020, Red Hat, Inc., and individual contributors as indicated
+  ~ by the @authors tag.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.bom</groupId>
+        <artifactId>wildfly</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>19.0.0.Beta3-SNAPSHOT</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <artifactId>wildfly-microprofile-builder</artifactId>
+
+    <name>WildFly BOMs: Microprofile Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for Microprofile Dependency Management</description>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- base import of server's dep management -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-parent</artifactId>
+                <version>${version.server}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>            
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-bom-builder-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-bom</id>
+                        <goals>
+                            <goal>build-bom</goal>
+                        </goals>
+                        <configuration>
+                            <parent>
+                                <groupId>org.jboss</groupId>
+                                <artifactId>jboss-parent</artifactId>
+                                <relativePath/>
+                            </parent>
+                            <bomGroupId>${project.groupId}</bomGroupId>
+                            <bomArtifactId>wildfly-microprofile</bomArtifactId>
+                            <bomVersion>${project.version}</bomVersion>
+                            <bomName>WildFly BOMs: Microprofile</bomName>
+                            <bomDescription>Microprofile Dependency Management.</bomDescription>
+                            <licenses>true</licenses>
+                            <inheritExclusions>UNMANAGED</inheritExclusions>
+                            <includeTransitives>true</includeTransitives>
+                            <includeDependencies>
+                                <!-- Import MicroProfile APIs -->
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.config</groupId>
+                                    <artifactId>microprofile-config-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                                    <artifactId>microprofile-fault-tolerance-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.health</groupId>
+                                    <artifactId>microprofile-health-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.metrics</groupId>
+                                    <artifactId>microprofile-metrics-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.jwt</groupId>
+                                    <artifactId>microprofile-jwt-auth-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.openapi</groupId>
+                                    <artifactId>microprofile-openapi-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.rest.client</groupId>
+                                    <artifactId>microprofile-rest-client-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.opentracing</groupId>
+                                    <artifactId>microprofile-opentracing-api</artifactId>
+                                </dependency>                                
+                            </includeDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -161,6 +161,7 @@
     <modules>
         <module>client</module>
         <module>jakartaee8</module>
+        <module>microprofile</module>
     </modules>
 
 </project>
