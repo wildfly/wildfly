@@ -107,6 +107,16 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-full.xml");
     }
 
+    @Test
+    public void testStandaloneMicroProfile() throws Exception {
+        parseXml("standalone/configuration/standalone-microprofile.xml");
+    }
+
+    @Test
+    public void testStandaloneMicroProfileHA() throws Exception {
+        parseXml("standalone/configuration/standalone-microprofile-ha.xml");
+    }
+
     //TODO Leave commented out until domain-jts.xml is definitely removed from the configuration
 //    @Test
 //    public void testDomainJTS() throws Exception {

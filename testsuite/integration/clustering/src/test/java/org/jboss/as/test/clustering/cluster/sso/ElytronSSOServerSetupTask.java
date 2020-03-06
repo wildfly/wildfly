@@ -30,7 +30,7 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
  */
 public class ElytronSSOServerSetupTask extends CLIServerSetupTask {
     public ElytronSSOServerSetupTask() {
-        boolean layersTest = Boolean.getBoolean("ts.layers");
+        boolean layersTest = Boolean.getBoolean("ts.layers") || Boolean.getBoolean("ts.standalone.microprofile");
         NodeBuilder nb = this.builder.node(AbstractClusteringTestCase.TWO_NODES)
                 .setup("/subsystem=elytron/filesystem-realm=sso:add(path=sso-realm, relative-to=jboss.server.data.dir)")
                 .setup("/subsystem=elytron/security-domain=sso:add(default-realm=sso, permission-mapper=default-permission-mapper,realms=[{realm=sso, role-decoder=groups-to-roles}])")

@@ -303,6 +303,17 @@ including all the required technologies
 ** Jakarta Full Platform certified configuration with
 high availability
 
+* standalone-microprofile.xml
+** A configuration oriented toward microservices, providing our
+MicroProfile platform implementations combined with JAX-RS and
+technologies JAX-RS application's commonly use to integrate with
+external services.
+
+* standalone-microprofile-ha.xml
+** A configuration oriented toward microservices, similar to
+_standalone-microprofile.xml_ but with support for high availability
+web sessions and distributed Hibernate second level caching.
+
 [[domain-server-configurations]]
 ===== Domain Server Configurations
 
