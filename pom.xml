@@ -442,7 +442,7 @@
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.20.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.12.Final</version.org.wildfly.naming-client>
-        <version.org.wildfly.transaction.client>1.1.9.Final</version.org.wildfly.transaction.client>
+        <version.org.wildfly.transaction.client>1.1.10.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.24</version.org.yaml.snakeyaml>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.sun.jaxb>2.3.3-b02</version.sun.jaxb>
