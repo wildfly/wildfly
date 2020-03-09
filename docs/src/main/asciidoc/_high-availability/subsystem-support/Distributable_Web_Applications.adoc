@@ -50,6 +50,10 @@ We can introspect its configuration:
 }
 ----
 
+=== Infinispan session management
+
+The `infinispan-session-management` resource configures a distributable session manager that uses an embedded Infinispan cache.
+
 cache-container::
 This references a cache-container defined in the Infinispan subsystem into which session data will be stored.
 cache::
@@ -101,17 +105,9 @@ e.g. Creating a new session management profile, using ATTRIBUTE granularity with
 }
 ----
 
-The subsystem also supports session management where session data is stored in a remote infinispan-server cluster via the HotRod protocol.
+=== HotRod session management
 
-e.g.
-
-[source]
-----
-[standalone@embedded /] /subsystem=distributable-web/hotrod-session-management=foo:add(remote-cache-container=datagrid, cache-configuration=foo, granularity=ATTRIBUTE)
-{
-    "outcome" => "success"
-}
-----
+The `hotrod-session-management` resource configures a distributable session manager where session data is stored in a remote infinispan-server cluster via the HotRod protocol.
 
 remote-cache-container::
 This references a <<remote_cache_container,remote-cache-container>> defined in the Infinispan subsystem into which session data will be stored.
@@ -139,6 +135,16 @@ This option is intended for use cases where web session state is not maintained 
 affinity=local:::
 Web requests will have an affinity to the server that last handled a request for a given session.
 This option corresponds to traditional sticky session behavior.
+
+e.g. Creating a new session management profile "foo" using the cache configuration "bar" defined on a remote infinispan server "datagrid" with ATTRIBUTE granularity:
+
+[source]
+----
+[standalone@embedded /] /subsystem=distributable-web/hotrod-session-management=foo:add(remote-cache-container=datagrid, cache-configuration=bar, granularity=ATTRIBUTE)
+{
+    "outcome" => "success"
+}
+----
 
 == Overriding default behavior
 
