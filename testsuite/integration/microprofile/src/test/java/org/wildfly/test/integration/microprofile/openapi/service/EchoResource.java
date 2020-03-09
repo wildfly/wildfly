@@ -27,11 +27,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import org.infinispan.commons.dataconversion.MediaType;
+
 /**
  * @author Paul Ferraro
  */
 @Path("/echo")
-@Produces("text/plain")
+@Produces(MediaType.TEXT_PLAIN_TYPE)
 public class EchoResource {
 
     @GET
