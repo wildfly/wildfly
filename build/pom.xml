@@ -35,7 +35,6 @@
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>20.0.0.Beta1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-build</artifactId>
