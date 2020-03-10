@@ -131,12 +131,12 @@
 
         <!-- Other release identification information that drives how the built server identifies itself -->
         <full.dist.product.release.name>WildFly Full</full.dist.product.release.name>
-        <full.dist.product.slot>wildfly-full</full.dist.product.slot>
+        <full.dist.product.slot>main</full.dist.product.slot>
         <full.dist.product.release.version>${project.version}</full.dist.product.release.version>
         <full.maven.groupId>${project.groupId}</full.maven.groupId>
         <full.maven.version>${project.version}</full.maven.version>
         <ee.dist.product.release.name>WildFly EE</ee.dist.product.release.name>
-        <ee.dist.product.slot>wildfly-ee</ee.dist.product.slot>
+        <ee.dist.product.slot>${full.dist.product.slot}</ee.dist.product.slot>
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
