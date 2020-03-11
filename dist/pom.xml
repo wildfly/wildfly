@@ -35,7 +35,6 @@
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>19.0.0.Beta4-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-dist</artifactId>
