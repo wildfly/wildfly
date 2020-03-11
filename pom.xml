@@ -334,7 +334,7 @@
         <version.org.apache.ws.security>2.2.4</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.4</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
-        <version.org.bitbucket.jose4j>0.6.5</version.org.bitbucket.jose4j>
+        <version.org.bitbucket.jose4j>0.7.0</version.org.bitbucket.jose4j>
         <version.org.bouncycastle>1.62</version.org.bouncycastle>
         <version.org.bytebuddy>1.9.11</version.org.bytebuddy>
         <version.org.codehaus.jackson>1.9.13.redhat-00006</version.org.codehaus.jackson>
