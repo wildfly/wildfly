@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -101,10 +102,10 @@ public class OpenAPIHttpHandler implements HttpHandler {
                         compatibleTypes.add(acceptedType);
                     }
                 }
-                if (compatibleTypes.isEmpty()) {
+                if (!compatibleTypes.isEmpty()) {
+                    preferredTypes = compatibleTypes;
                     break;
                 }
-                preferredTypes = compatibleTypes;
             }
 
             // Determine preferred charset
@@ -115,7 +116,7 @@ public class OpenAPIHttpHandler implements HttpHandler {
                 return;
             }
 
-            // Use format preferred by Accept header, otherwise read query parameter
+            // Use format preferred by Accept header if unambiguous, otherwise determine format from query parameter
             Format format = (preferredTypes.size() == 1) ? ACCEPTED_TYPES.get(preferredTypes.get(0)) : parseFormatParameter(exchange);
 
             String result = OpenApiSerializer.serialize(this.model, format);
@@ -133,6 +134,15 @@ public class OpenAPIHttpHandler implements HttpHandler {
         }
     }
 
+    private static final Comparator<MediaType> MEDIA_TYPE_SORTER = new Comparator<MediaType>() {
+        @Override
+        public int compare(MediaType type1, MediaType type2) {
+            float quality1 = Float.parseFloat(type1.getParameters().getOrDefault("q", "1"));
+            float quality2 = Float.parseFloat(type2.getParameters().getOrDefault("q", "1"));
+            return Float.compare(quality1, quality2);
+        }
+    };
+
     private static List<MediaType> parseAcceptedTypes(HttpServerExchange exchange) {
         String headerValue = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
         if (headerValue == null) return Collections.singletonList(MediaType.WILDCARD_TYPE);
@@ -142,6 +152,8 @@ public class OpenAPIHttpHandler implements HttpHandler {
         for (String value : values) {
             types.add(MediaType.valueOf(value));
         }
+        // Sort media types by quality
+        Collections.sort(types, MEDIA_TYPE_SORTER);
         return types;
     }
 
