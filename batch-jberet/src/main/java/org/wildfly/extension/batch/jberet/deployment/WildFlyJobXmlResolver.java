@@ -30,13 +30,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 
@@ -64,15 +65,15 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class WildFlyJobXmlResolver implements JobXmlResolver {
 
-    private final Set<JobXmlResolver> jobXmlResolvers;
-    private final Map<String, String> jobXmlNames;
-    private final Map<String, VirtualFile> jobXmlFiles;
-    private final Map<String, Set<String>> jobNames;
+    private final CopyOnWriteArraySet<JobXmlResolver> jobXmlResolvers;
+    private final ConcurrentMap<String, String> jobXmlNames;
+    private final ConcurrentMap<String, VirtualFile> jobXmlFiles;
+    private final ConcurrentMap<String, Set<String>> jobNames;
 
-    private WildFlyJobXmlResolver(final Map<String, VirtualFile> jobXmlFiles) {
-        jobXmlNames = new LinkedHashMap<>();
-        jobXmlResolvers = new LinkedHashSet<>();
-        jobNames = new LinkedHashMap<>();
+    private WildFlyJobXmlResolver(final ConcurrentMap<String, VirtualFile> jobXmlFiles) {
+        jobXmlNames = new ConcurrentHashMap<>();
+        jobXmlResolvers = new CopyOnWriteArraySet<>();
+        jobNames = new ConcurrentHashMap<>();
         this.jobXmlFiles = jobXmlFiles;
     }
 
@@ -219,7 +220,7 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
     }
 
     private static WildFlyJobXmlResolver create(final ClassLoader classLoader, final List<ResourceRoot> resources) throws DeploymentUnitProcessingException {
-        final Map<String, VirtualFile> foundJobXmlFiles = new LinkedHashMap<>();
+        final ConcurrentMap<String, VirtualFile> foundJobXmlFiles = new ConcurrentHashMap<>();
         for (ResourceRoot r : resources) {
             final VirtualFile root = r.getRoot();
             try {
@@ -235,7 +236,7 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
         return jobXmlResolver;
     }
 
-    private static void addJobXmlFiles(final Map<String, VirtualFile> foundJobXmlFiles, final VirtualFile jobsDir) throws IOException {
+    private static void addJobXmlFiles(final ConcurrentMap<String, VirtualFile> foundJobXmlFiles, final VirtualFile jobsDir) throws IOException {
         if (jobsDir != null && jobsDir.exists()) {
             // We may have some job XML files
             final Map<String, VirtualFile> xmlFiles = new HashMap<>();
