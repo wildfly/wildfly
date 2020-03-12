@@ -35,8 +35,8 @@
 
     <artifactId>wildfly-microprofile-builder</artifactId>
 
-    <name>WildFly BOMs: Microprofile Builder</name>
-    <description>This artifact builds a bill of materials (BOM) for Microprofile Dependency Management</description>
+    <name>WildFly BOMs: MicroProfile Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for MicroProfile Dependency Management</description>
 
     <licenses>
         <license>
@@ -55,7 +55,7 @@
                 <version>${version.server}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>            
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -80,8 +80,8 @@
                             <bomGroupId>${project.groupId}</bomGroupId>
                             <bomArtifactId>wildfly-microprofile</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
-                            <bomName>WildFly BOMs: Microprofile</bomName>
-                            <bomDescription>Microprofile Dependency Management.</bomDescription>
+                            <bomName>WildFly BOMs: MicroProfile</bomName>
+                            <bomDescription>MicroProfile Dependency Management.</bomDescription>
                             <licenses>true</licenses>
                             <inheritExclusions>UNMANAGED</inheritExclusions>
                             <includeTransitives>true</includeTransitives>
@@ -118,7 +118,7 @@
                                 <dependency>
                                     <groupId>org.eclipse.microprofile.opentracing</groupId>
                                     <artifactId>microprofile-opentracing-api</artifactId>
-                                </dependency>                                
+                                </dependency>
                             </includeDependencies>
                         </configuration>
                     </execution>
