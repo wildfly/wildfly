@@ -50,7 +50,7 @@
     <properties>
         <version.org.jboss.arquillian.extension.drone>2.3.1</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>2.3.1</version.org.jboss.arquillian.graphene>
-        <version.org.jboss.shrinkwrap.resolver>2.2.6</version.org.jboss.shrinkwrap.resolver>
+        <version.org.jboss.shrinkwrap.resolver>2.2.7</version.org.jboss.shrinkwrap.resolver>
         <version.org.testng>6.11</version.org.testng>
     </properties>
 
