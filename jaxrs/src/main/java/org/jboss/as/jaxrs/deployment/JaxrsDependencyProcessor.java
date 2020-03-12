@@ -42,6 +42,7 @@ import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_DATATYPE_JSR31
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JAXB_API;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JAXRS_API;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JSON_API;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.MP_REST_CLIENT;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_ATOM;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_CDI;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_CRYPTO;
@@ -100,6 +101,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CRYPTO, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JDK8, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JSR310, true, false);
+        addDependency(moduleSpecification, moduleLoader, MP_REST_CLIENT, true, false);
 
         final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
