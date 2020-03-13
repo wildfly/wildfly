@@ -23,22 +23,19 @@ package org.jboss.as.test.clustering.single.web;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Mutable implements Serializable {
     private static final long serialVersionUID = -5129400250276547619L;
     private transient boolean serialized = false;
-    private int value;
+    private final AtomicInteger value;
 
     public Mutable(int value) {
-        this.value = value;
+        this.value = new AtomicInteger(value);
     }
 
-    public int getValue() {
-        return this.value;
-    }
-
-    public void increment() {
-        this.value += 1;
+    public int increment() {
+        return this.value.incrementAndGet();
     }
 
     @Override

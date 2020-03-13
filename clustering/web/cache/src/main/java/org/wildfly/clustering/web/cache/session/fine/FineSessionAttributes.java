@@ -152,7 +152,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
 
             // If the object is mutable, we need to trigger a mutation on close
             if (!this.immutability.test(result)) {
-                this.mutations.putIfAbsent(attributeId, this.mutatorFactory.createMutator(key, value));
+                this.mutations.put(attributeId, this.mutatorFactory.createMutator(key, value));
             }
         }
         return result;
