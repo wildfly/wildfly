@@ -21,14 +21,11 @@
  */
 package org.jboss.as.test.clustering.cluster.xsite;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -39,18 +36,14 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jgroups.util.StackType;
-import org.jgroups.util.Util;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -114,14 +107,6 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
         war.setWebXML(XSiteSimpleTestCase.class.getPackage(), "web.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
         return war;
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            Assume.assumeFalse("Disable on Windows+IPv6 until CI environment is fixed", Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6));
-            return null;
-        });
     }
 
     @Override
@@ -220,20 +205,20 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
                     .node(NODE_1, NODE_2)
                     .setup("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=NYC:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
                     .setup("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=SFO:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=udp)")
+                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY:add(site=LON)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=NYC:add(channel=bridge)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=SFO:add(channel=bridge)")
                     .setup("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2])")
                     .teardown("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
-                    .teardown("/subsystem=jgroups/stack=udp/relay=RELAY:remove")
+                    .teardown("/subsystem=jgroups/stack=tcp/relay=RELAY:remove")
                     .teardown("/subsystem=jgroups/channel=bridge:remove")
                     .teardown("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=SFO:remove")
                     .teardown("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=NYC:remove")
                     .parent()
                     // NYC
                     .node(NODE_3)
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=udp)")
+                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY:add(site=NYC)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=LON:add(channel=bridge)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=SFO:add(channel=bridge)")
@@ -244,7 +229,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
                     .parent()
                     // SFO
                     .node(NODE_4)
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=udp)")
+                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY:add(site=SFO)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=LON:add(channel=bridge)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=NYC:add(channel=bridge)")
