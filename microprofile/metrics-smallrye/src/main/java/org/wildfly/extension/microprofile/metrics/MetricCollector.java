@@ -35,6 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger.LOGGER;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -55,9 +57,11 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -74,9 +78,11 @@ public class MetricCollector {
     private String globalPrefix;
     private final List<String> exposedSubsystems;
     private final LocalModelControllerClient modelControllerClient;
+    private final ProcessStateNotifier processStateNotifier;
 
-    public MetricCollector(LocalModelControllerClient modelControllerClient, List<String> exposedSubsystems, String globalPrefix) {
+    public MetricCollector(LocalModelControllerClient modelControllerClient, ProcessStateNotifier processStateNotifier, List<String> exposedSubsystems, String globalPrefix) {
         this.modelControllerClient = modelControllerClient;
+        this.processStateNotifier = processStateNotifier;
         this.exposedSubsystems = exposedSubsystems;
         this.exposeAnySubsystem = exposedSubsystems.remove("*");
         this.globalPrefix = globalPrefix;
@@ -88,6 +94,26 @@ public class MetricCollector {
                                                      Function<PathAddress, PathAddress> resourceAddressResolver) {
         MetricRegistration registration = new MetricRegistration();
         collectResourceMetrics0(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, registration);
+        // Defer the actual registration until the server is running and they can be collected w/o errors
+        PropertyChangeListener listener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ControlledProcessState.State.RUNNING == evt.getNewValue()) {
+                    registration.register();
+                } else if (ControlledProcessState.State.STOPPING == evt.getNewValue()) {
+                    // Unregister so if this is a reload they won't still be around in a static cache in MetricsRegistry
+                    // and cause problems when the server is starting
+                    registration.unregister();
+                    processStateNotifier.removePropertyChangeListener(this);
+                }
+
+            }
+        };
+        this.processStateNotifier.addPropertyChangeListener(listener);
+        // If server is already running, we won't get a change event so register now
+        if (ControlledProcessState.State.RUNNING == this.processStateNotifier.getCurrentState()) {
+            registration.register();
+        }
         return registration;
     }
 
@@ -127,7 +153,7 @@ public class MetricCollector {
             Tag[] tags = createTags(metricMetadata);
             MetricID metricID = new MetricID(metricMetadata.metricName, tags);
 
-            registerMetric(metricMetadata, resourceAddress, attributeName, unit, attributeDescription, isCounter, tags);
+            registration.addRegistrationTask(() -> registerMetric(metricMetadata, resourceAddress, attributeName, unit, attributeDescription, isCounter, tags));
             registration.addUnregistrationTask(() -> MetricRegistries.get(MetricRegistry.Type.VENDOR).remove(metricID));
         }
 
@@ -352,15 +378,27 @@ public class MetricCollector {
 
     public static final class MetricRegistration {
 
+        private final List<Runnable> registrationTasks = new ArrayList<>();
         private final List<Runnable> unregistrationTasks = new ArrayList<>();
 
         MetricRegistration() {
+        }
+
+        public synchronized void register() { // synchronized to avoid registering same thing twice. Shouldn't really be possible; just being cautious
+            for (Runnable task : registrationTasks) {
+                task.run();
+            }
+            registrationTasks.clear();
         }
 
         public void unregister() {
             for (Runnable task : unregistrationTasks) {
                 task.run();
             }
+        }
+
+        private synchronized void addRegistrationTask(Runnable task) {
+            registrationTasks.add(task);
         }
 
         private void addUnregistrationTask(Runnable task) {
