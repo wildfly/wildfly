@@ -19,6 +19,7 @@
 package org.jboss.as.test.shared.util;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -105,5 +106,37 @@ public class LoggingUtil {
             }
         }
         return found;
+    }
+
+
+    /**
+     * Helper method to dump the contents of a log to stdout.
+     * @param logFileName the name of the log file
+     */
+    public static void dumpTestLog(String logFileName) throws IOException {
+
+        Path logPath = LoggingUtil.getInServerLogPath(logFileName);
+        dumpTestLog(logPath);
+    }
+
+    /**
+     * Helper method to dump the contents of a log to stdout.
+     * @param managementClient client to use the name of the log file used by a handler
+     * @param handlerName name of the handler that writes to the file
+     */
+    public static void dumpTestLog(ManagementClient managementClient, String handlerName) throws Exception {
+
+        Path logPath = LoggingUtil.getLogPath(managementClient, "file-handler", handlerName);
+        dumpTestLog(logPath);
+    }
+
+    private static void dumpTestLog(Path logPath) throws IOException {
+        try (BufferedReader fileReader = Files.newBufferedReader(logPath)) {
+            String line = "";
+            while ((line = fileReader.readLine()) != null) {
+                System.out.println(line);
+            }
+        }
+
     }
 }
