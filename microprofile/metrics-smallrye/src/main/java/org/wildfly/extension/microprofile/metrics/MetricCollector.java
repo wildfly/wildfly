@@ -154,7 +154,7 @@ public class MetricCollector {
             MetricID metricID = new MetricID(metricMetadata.metricName, tags);
 
             registration.addRegistrationTask(() -> registerMetric(metricMetadata, resourceAddress, attributeName, unit, attributeDescription, isCounter, tags));
-            registration.addUnregistrationTask(() -> MetricRegistries.get(MetricRegistry.Type.VENDOR).remove(metricID));
+            registration.addUnregistrationTask(metricID);
         }
 
         for (String type : current.getChildTypes()) {
@@ -379,7 +379,7 @@ public class MetricCollector {
     public static final class MetricRegistration {
 
         private final List<Runnable> registrationTasks = new ArrayList<>();
-        private final List<Runnable> unregistrationTasks = new ArrayList<>();
+        private final List<MetricID> unregistrationTasks = new ArrayList<>();
 
         MetricRegistration() {
         }
@@ -388,12 +388,15 @@ public class MetricCollector {
             for (Runnable task : registrationTasks) {
                 task.run();
             }
+            // This object will last until undeploy or server stop,
+            // so clean up and save memory
             registrationTasks.clear();
         }
 
         public void unregister() {
-            for (Runnable task : unregistrationTasks) {
-                task.run();
+            MetricRegistry registry = MetricRegistries.get(MetricRegistry.Type.VENDOR);
+            for (MetricID id : unregistrationTasks) {
+                registry.remove(id);
             }
         }
 
@@ -401,8 +404,8 @@ public class MetricCollector {
             registrationTasks.add(task);
         }
 
-        private void addUnregistrationTask(Runnable task) {
-            unregistrationTasks.add(task);
+        private void addUnregistrationTask(MetricID metricID) {
+            unregistrationTasks.add(metricID);
         }
     }
 
