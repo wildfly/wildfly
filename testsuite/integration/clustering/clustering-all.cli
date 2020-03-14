@@ -22,6 +22,9 @@
 
 embed-server --server-config=standalone-ha.xml
 
+# Default stack configuration
+/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+
 # TCP stack configuration
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1:add(host=${node0},port=7600)
@@ -30,17 +33,37 @@ embed-server --server-config=standalone-ha.xml
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4:add(host=${node3},port=7900)
 /subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0,socket-bindings=[node-1,node-2,node-3,node-4])
 
-# UDP stack configuration
-/subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
+# TCP bridge stack configuration for XSite
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1-bridge:add(host=${node0},port=7601)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-2-bridge:add(host=${node1},port=7701)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-3-bridge:add(host=${node2},port=7801)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4-bridge:add(host=${node3},port=7901)
+/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-bridge:add(port=7601)
+/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(port=57601)
+/subsystem=jgroups/stack=tcp-bridge:add(transport={type=TCP,socket-binding=jgroups-tcp-bridge})
+/subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
+/subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK:add(socket-binding=jgroups-tcp-fd-bridge)
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=UNICAST3:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.STABLE:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.GMS:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=MFC:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=FRAG3:add
 
-# Default stack configuration
-/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+# UDP stack configuration
+/subsystem=jgroups/stack=udp:remove
 
 stop-embedded-server
 
 
 embed-server --server-config=standalone-full-ha.xml
 
+# Default stack configuration
+/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+
 # TCP stack configuration
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1:add(host=${node0},port=7600)
@@ -49,17 +72,37 @@ embed-server --server-config=standalone-full-ha.xml
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4:add(host=${node3},port=7900)
 /subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0,socket-bindings=[node-1,node-2,node-3,node-4])
 
-# UDP stack configuration
-/subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
+# TCP bridge stack configuration for XSite
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1-bridge:add(host=${node0},port=7601)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-2-bridge:add(host=${node1},port=7701)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-3-bridge:add(host=${node2},port=7801)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4-bridge:add(host=${node3},port=7901)
+/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-bridge:add(port=7601)
+/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(port=57601)
+/subsystem=jgroups/stack=tcp-bridge:add(transport={type=TCP,socket-binding=jgroups-tcp-bridge})
+/subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
+/subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK:add(socket-binding=jgroups-tcp-fd-bridge)
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=UNICAST3:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.STABLE:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.GMS:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=MFC:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=FRAG3:add
 
-# Default stack configuration
-/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+# UDP stack configuration
+/subsystem=jgroups/stack=udp:remove
 
 stop-embedded-server
 
 
 embed-server --server-config=standalone-microprofile-ha.xml
 
+# Default stack configuration
+/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+
 # TCP stack configuration
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1:add(host=${node0},port=7600)
@@ -68,10 +111,27 @@ embed-server --server-config=standalone-microprofile-ha.xml
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4:add(host=${node3},port=7900)
 /subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0,socket-bindings=[node-1,node-2,node-3,node-4])
 
-# UDP stack configuration
-/subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
+# TCP bridge stack configuration for XSite
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1-bridge:add(host=${node0},port=7601)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-2-bridge:add(host=${node1},port=7701)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-3-bridge:add(host=${node2},port=7801)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4-bridge:add(host=${node3},port=7901)
+/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-bridge:add(port=7601)
+/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(port=57601)
+/subsystem=jgroups/stack=tcp-bridge:add(transport={type=TCP,socket-binding=jgroups-tcp-bridge})
+/subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
+/subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK:add(socket-binding=jgroups-tcp-fd-bridge)
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=UNICAST3:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.STABLE:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.GMS:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=MFC:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=FRAG3:add
 
-# Default stack configuration
-/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+# UDP stack configuration
+/subsystem=jgroups/stack=udp:remove
 
 stop-embedded-server
