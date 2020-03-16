@@ -36,7 +36,7 @@ public class InfinispanServerSetupTask extends CLIServerSetupTask {
                 .setup("/subsystem=infinispan/remote-cache-container=web:add(default-remote-cluster=infinispan-server-cluster, module=org.wildfly.clustering.web.hotrod, statistics-enabled=true)")
                 .setup("/subsystem=infinispan/remote-cache-container=web/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
                 .teardown("/subsystem=infinispan/remote-cache-container=web:remove")
-                .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:remove")
+                .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
                 ;
     }
 }
