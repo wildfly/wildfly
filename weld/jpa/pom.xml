@@ -10,7 +10,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-      <version>19.0.0.Beta4-SNAPSHOT</version>
+      <version>19.0.0.Final</version>
    </parent>
 
    <artifactId>wildfly-weld-jpa</artifactId>
