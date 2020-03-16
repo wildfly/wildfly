@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +60,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(sync = false)
-public class CoarseSessionAttributesFactory<V> implements SessionAttributesFactory<Map.Entry<Map<String, Object>, V>> {
+public class CoarseSessionAttributesFactory<V> implements SessionAttributesFactory<Map<String, Object>> {
 
     private final Cache<SessionAttributesKey, V> cache;
     private final Marshaller<Map<String, Object>, V> marshaller;
@@ -78,29 +77,28 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, V> createValue(String id, Void context) {
+    public Map<String, Object> createValue(String id, Void context) {
         Map<String, Object> attributes = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
         V value = this.marshaller.write(attributes);
         this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
-        return new SimpleImmutableEntry<>(attributes, value);
+        return attributes;
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, V> findValue(String id) {
+    public Map<String, Object> findValue(String id) {
         return this.getValue(id, true);
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, V> tryValue(String id) {
+    public Map<String, Object> tryValue(String id) {
         return this.getValue(id, false);
     }
 
-    private Map.Entry<Map<String, Object>, V> getValue(String id, boolean purgeIfInvalid) {
+    private Map<String, Object> getValue(String id, boolean purgeIfInvalid) {
         V value = this.cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
-                Map<String, Object> attributes = this.marshaller.read(value);
-                return new SimpleImmutableEntry<>(attributes, value);
+                return this.marshaller.read(value);
             } catch (InvalidSerializedFormException e) {
                 InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
                 if (purgeIfInvalid) {
@@ -127,16 +125,16 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry, ImmutableSessionMetaData metaData, ServletContext context) {
-        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, entry);
+    public SessionAttributes createSessionAttributes(String id, Map<String, Object> values, ImmutableSessionMetaData metaData, ServletContext context) {
+        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, values);
         SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier(new CompositeImmutableSession(id, metaData, attributes), context);
-        Mutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? Mutator.PASSIVE : this.mutatorFactory.createMutator(new SessionAttributesKey(id), entry.getValue());
-        return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller, this.immutability, this.properties, notifier);
+        Mutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? Mutator.PASSIVE : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(values));
+        return new CoarseSessionAttributes(values, mutator, this.marshaller, this.immutability, this.properties, notifier);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry) {
-        return new CoarseImmutableSessionAttributes(entry.getKey());
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, Object> values) {
+        return new CoarseImmutableSessionAttributes(values);
     }
 
     @CacheEntriesEvicted

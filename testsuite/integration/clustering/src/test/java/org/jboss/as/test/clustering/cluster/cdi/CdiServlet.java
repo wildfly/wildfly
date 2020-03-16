@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.cluster.cdi;
 import java.io.IOException;
 
 import javax.inject.Inject;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -45,16 +46,33 @@ public class CdiServlet extends SimpleServlet {
     private Incrementor incrementor;
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession(true);
-        resp.addHeader(SESSION_ID_HEADER, session.getId());
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        this.increment(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        this.increment(request, response);
+    }
+
+    private void increment(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(true);
+        response.addHeader(SESSION_ID_HEADER, session.getId());
 
         int value = this.incrementor.increment();
 
-        resp.setIntHeader(VALUE_HEADER, value);
+        response.setIntHeader(VALUE_HEADER, value);
 
-        this.getServletContext().log(req.getRequestURI() + ", value = " + value);
+        this.getServletContext().log(request.getRequestURI() + ", value = " + value);
 
-        resp.getWriter().write("Success");
+        response.getWriter().write("Success");
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(true);
+        response.addHeader(SESSION_ID_HEADER, session.getId());
+
+        this.incrementor.reset();
     }
 }

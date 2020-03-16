@@ -69,7 +69,7 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
     }
 
     @Override
-    protected void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
+    public void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
         super.testGracefulSimpleFailover(baseURL1, baseURL2, baseURL3);
 
         String readResource = String.format("/subsystem=infinispan/remote-cache-container=web/remote-cache=%s:read-resource(include-runtime=true, recursive=true)", this.deploymentName);
@@ -78,17 +78,14 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
         ModelNode result = execute(this.client1, readResource);
         Assert.assertNotEquals(0L, result.get("hits").asLong());
         Assert.assertNotEquals(0L, result.get("writes").asLong());
-        Assert.assertNotEquals(0L, result.get("near-cache-size").asLong());
 
         result = execute(this.client2, readResource);
         Assert.assertEquals(0L, result.get("hits").asLong());
         Assert.assertEquals(0L, result.get("writes").asLong());
-        Assert.assertEquals(0L, result.get("near-cache-size").asLong());
 
         result = execute(this.client3, readResource);
         Assert.assertNotEquals(0L, result.get("hits").asLong());
         Assert.assertNotEquals(0L, result.get("writes").asLong());
-        Assert.assertNotEquals(0L, result.get("near-cache-size").asLong());
 
         execute(this.client1, resetStatistics);
         execute(this.client2, resetStatistics);

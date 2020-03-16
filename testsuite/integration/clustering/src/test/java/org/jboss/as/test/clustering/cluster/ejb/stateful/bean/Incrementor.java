@@ -30,4 +30,8 @@ import javax.ejb.Local;
 @Local
 public interface Incrementor {
     int increment();
+
+    default void reset() {
+        // Do nothing
+    }
 }
