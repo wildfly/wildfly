@@ -36,18 +36,14 @@
     </resources>
 
     <dependencies>
-        <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.ejb.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.persistence.api"/>
-        <module name="javax.resource.api"/>
-        <module name="javax.servlet.api" optional="true"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="org.hibernate.validator" services="import"/>
         <module name="org.infinispan"/>
-        <module name="org.jboss.common-beans"/>
         <!-- Only used if capability org.wildfly.bean-validation is available -->
         <module name="org.wildfly.extension.bean-validation" optional="true"/>
         <module name="org.jboss.as.controller"/>
@@ -66,7 +62,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.threads"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.weld.core"/>
