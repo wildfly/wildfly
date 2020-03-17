@@ -73,12 +73,12 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -160,12 +160,12 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -176,12 +176,12 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -291,7 +291,7 @@
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -302,7 +302,7 @@
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -313,7 +313,7 @@
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -323,8 +323,8 @@
       <artifactId>jboss-negotiation-common</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <name>GNU Lesser General Public License v2.1 only</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -334,8 +334,8 @@
       <artifactId>jboss-negotiation-extras</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <name>GNU Lesser General Public License v2.1 only</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -345,8 +345,8 @@
       <artifactId>jboss-negotiation-ntlm</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <name>GNU Lesser General Public License v2.1 only</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -356,8 +356,8 @@
       <artifactId>jboss-negotiation-spnego</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <name>GNU Lesser General Public License v2.1 only</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -368,7 +368,7 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -383,8 +383,13 @@
       <artifactId>jboss-el-api_3.0_spec</artifactId>
       <licenses>
         <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -397,11 +402,6 @@
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
       </licenses>
     </dependency>
     <dependency>
@@ -410,12 +410,12 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -426,12 +426,12 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -442,12 +442,12 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -458,7 +458,7 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -474,12 +474,12 @@
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
           <distribution>repo</distribution>
         </license>
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -490,7 +490,7 @@
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -501,7 +501,7 @@
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -512,7 +512,7 @@
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -569,12 +569,6 @@
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.wildfly.security.elytron-web</groupId>
-      <artifactId>undertow-server-servlet</artifactId>
-      <licenses>
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
@@ -583,14 +577,9 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.core</groupId>
-      <artifactId>wildfly-event-logger</artifactId>
+      <groupId>org.wildfly.security.elytron-web</groupId>
+      <artifactId>undertow-server-servlet</artifactId>
       <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
