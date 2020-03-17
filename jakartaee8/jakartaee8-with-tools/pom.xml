@@ -163,6 +163,10 @@
                                     <type>pom</type>
                                 </dependency>
                                 <!-- Arquillian support for JBoss WildFly container -->
+                                <dependency>
+                                    <groupId>org.wildfly.arquillian</groupId>
+                                    <artifactId>wildfly-arquillian-common</artifactId>
+                                </dependency>
                                 <!-- Note: Managed version of container allows Arquillian to control startup and shutdown of the container -->
                                 <dependency>
                                     <groupId>org.wildfly.arquillian</groupId>
