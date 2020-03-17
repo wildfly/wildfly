@@ -26,12 +26,14 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
+import io.undertow.websockets.core.WebSocketChannel;
 
 import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.function.Consumer;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,6 +53,7 @@ import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 public class DistributableSession implements io.undertow.server.session.Session {
     // These mechanisms can auto-reauthenticate and thus use local context (instead of replicating)
     private static final Set<String> AUTO_REAUTHENTICATING_MECHANISMS = new HashSet<>(Arrays.asList(HttpServletRequest.BASIC_AUTH, HttpServletRequest.DIGEST_AUTH, HttpServletRequest.CLIENT_CERT_AUTH));
+    static final String WEB_SOCKET_CHANNELS_ATTRIBUTE = "io.undertow.websocket.current-connections";
 
     private final UndertowSessionManager manager;
     private final Batch batch;
@@ -160,6 +163,9 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 AuthenticatedSession auth = (AuthenticatedSession) session.getAttributes().getAttribute(name);
                 return (auth != null) ? auth : session.getLocalContext().getAuthenticatedSession();
             }
+            if (WEB_SOCKET_CHANNELS_ATTRIBUTE.equals(name)) {
+                return session.getLocalContext().getWebSocketChannels();
+            }
             return session.getAttributes().getAttribute(name);
         }
     }
@@ -174,7 +180,12 @@ public class DistributableSession implements io.undertow.server.session.Session 
         try (BatchContext context = this.resumeBatch()) {
             if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) value;
-                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, auth);
+                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setAuthenticatedSession(auth) : session.getAttributes().setAttribute(name, auth);
+            }
+            if (WEB_SOCKET_CHANNELS_ATTRIBUTE.equals(name)) {
+                @SuppressWarnings("unchecked")
+                List<WebSocketChannel> channels = (List<WebSocketChannel>) value;
+                return this.setWebSocketChannels(channels);
             }
             Object old = session.getAttributes().setAttribute(name, value);
             if (old == null) {
@@ -193,7 +204,10 @@ public class DistributableSession implements io.undertow.server.session.Session 
         try (BatchContext context = this.resumeBatch()) {
             if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) session.getAttributes().removeAttribute(name);
-                return (auth != null) ? auth : this.setLocalContext(null);
+                return (auth != null) ? auth : this.setAuthenticatedSession(null);
+            }
+            if (WEB_SOCKET_CHANNELS_ATTRIBUTE.equals(name)) {
+                return this.setWebSocketChannels(null);
             }
             Object old = session.getAttributes().removeAttribute(name);
             if (old != null) {
@@ -246,10 +260,17 @@ public class DistributableSession implements io.undertow.server.session.Session 
         return id;
     }
 
-    private AuthenticatedSession setLocalContext(AuthenticatedSession auth) {
+    private AuthenticatedSession setAuthenticatedSession(AuthenticatedSession auth) {
         LocalSessionContext localContext = this.entry.getKey().getLocalContext();
         AuthenticatedSession old = localContext.getAuthenticatedSession();
         localContext.setAuthenticatedSession(auth);
+        return old;
+    }
+
+    private List<WebSocketChannel> setWebSocketChannels(List<WebSocketChannel> channels) {
+        LocalSessionContext localContext = this.entry.getKey().getLocalContext();
+        List<WebSocketChannel> old = localContext.getWebSocketChannels();
+        localContext.setWebSocketChannels(channels);
         return old;
     }
 

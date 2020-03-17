@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +49,8 @@ import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
+import io.undertow.websockets.core.WebSocketChannel;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -311,6 +314,31 @@ public class DistributableSessionTestCase {
     }
 
     @Test
+    public void getWebSocketChannelsSessionAttribute() {
+        String name = DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE;
+        this.validate(session -> session.getAttribute(name));
+
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
+        LocalSessionContext localContext = mock(LocalSessionContext.class);
+        List<WebSocketChannel> expected = Collections.singletonList(mock(WebSocketChannel.class));
+
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
+        when(this.session.getLocalContext()).thenReturn(localContext);
+        when(localContext.getWebSocketChannels()).thenReturn(expected);
+
+        @SuppressWarnings("unchecked")
+        List<WebSocketChannel> result = (List<WebSocketChannel>) this.adapter.getAttribute(name);
+
+        assertSame(expected, result);
+
+        verify(context).close();
+    }
+
+    @Test
     public void setAttribute() {
         String name = "name";
         Integer value = Integer.valueOf(1);
@@ -501,6 +529,33 @@ public class DistributableSessionTestCase {
         verify(context).close();
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void setWebSocketChannelsSessionAttribute() {
+        String name = DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE;
+        List<WebSocketChannel> channels = Collections.singletonList(mock(WebSocketChannel.class));
+        List<WebSocketChannel> oldChannels = Collections.singletonList(mock(WebSocketChannel.class));
+        this.validate(session -> session.setAttribute(name, "bar"));
+
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
+        LocalSessionContext localContext = mock(LocalSessionContext.class);
+
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
+        when(this.session.getLocalContext()).thenReturn(localContext);
+        when(localContext.getWebSocketChannels()).thenReturn(oldChannels);
+
+        List<WebSocketChannel> result = (List<WebSocketChannel>) this.adapter.setAttribute(name, channels);
+
+        assertSame(oldChannels, result);
+
+        verify(localContext).setWebSocketChannels(same(channels));
+        verify(context).close();
+    }
+
     @Test
     public void removeAttribute() {
         String name = "name";
@@ -609,8 +664,8 @@ public class DistributableSessionTestCase {
         when(this.batch.getState()).thenReturn(Batch.State.CLOSED);
 
         // ISA expected
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("WFLYCLWEBUT0009");
+        this.exception.expect(IllegalStateException.class);
+        this.exception.expectMessage("WFLYCLWEBUT0009");
         this.adapter.invalidate(exchange);
     }
 
