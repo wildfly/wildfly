@@ -119,6 +119,24 @@
                                     <groupId>org.eclipse.microprofile.opentracing</groupId>
                                     <artifactId>microprofile-opentracing-api</artifactId>
                                 </dependency>
+                                <!-- include jakarta specs APIs -->
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.json</groupId>
+                                    <artifactId>jakarta.json-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.json.bind</groupId>
+                                    <artifactId>jakarta.json.bind-api</artifactId>
+                                </dependency>
+                                <!-- include JBoss spec APIs -->
+                                <dependency>
+                                    <groupId>org.jboss.spec.javax.ws.rs</groupId>
+                                    <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+                                </dependency>
                             </includeDependencies>
                         </configuration>
                     </execution>
