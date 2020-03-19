@@ -581,6 +581,7 @@
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFile>${feature-pack.license.directory}/servlet-feature-pack-licenses.xml</licensesConfigFile>
                             <licensesOutputFile>${license.directory}/servlet-feature-pack-licenses.xml</licensesOutputFile>
+                            <excludedArtifacts>wildfly-core-galleon-pack</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>

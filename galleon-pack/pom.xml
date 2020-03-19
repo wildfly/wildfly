@@ -87,6 +87,7 @@
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFile>${feature-pack.license.directory}/microprofile-feature-pack-licenses.xml</licensesConfigFile>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
+                            <excludedArtifacts>wildfly-core-galleon-pack|wildfly-servlet-galleon-pack|wildfly-ee-galleon-pack</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>

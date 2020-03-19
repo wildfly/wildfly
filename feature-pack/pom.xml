@@ -3586,6 +3586,7 @@
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                                     <licensesConfigFile>${project.basedir}/src/license/full-feature-pack-licenses.xml</licensesConfigFile>
                                     <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
+                                    <excludedArtifacts>infinispan-hibernate-cache-v51|jboss-ejb-client-legacy</excludedArtifacts>
                                 </configuration>
                             </execution>
                         </executions>
