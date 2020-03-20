@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.dispatcher;
 
-import java.time.Duration;
-
-import org.jboss.modules.ModuleLoader;
-import org.jgroups.JChannel;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.jboss.as.clustering.context.Contextualizer;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 
 /**
- * Configuration for a {@link ChannelCommandDispatcherFactory}.
  * @author Paul Ferraro
  */
-public interface ChannelCommandDispatcherFactoryConfiguration {
-    ChannelFactory getChannelFactory();
-    JChannel getChannel();
-    MarshallingContext getMarshallingContext();
-    Duration getTimeout();
-    ModuleLoader getModuleLoader();
+public interface CommandDispatcherContext {
+    Object getCommandContext();
+    Contextualizer getContextualizer();
+    MarshalledValueFactory<Object> getMarshalledValueFactory();
+    Object getMarshallingContext();
 }

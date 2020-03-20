@@ -62,7 +62,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;

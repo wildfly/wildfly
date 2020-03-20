@@ -23,6 +23,7 @@ package org.wildfly.clustering.server.group;
 
 import org.jgroups.Address;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.spi.group.Group;
 
 /**
  * Non-clustered {@link Group} implementation

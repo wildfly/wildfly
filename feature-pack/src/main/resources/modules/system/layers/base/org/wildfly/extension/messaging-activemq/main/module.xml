@@ -74,13 +74,13 @@
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.wildfly.naming-client" services="import" />
         <module name="org.jboss.threads"/>
-        <module name="org.wildfly.clustering.spi"/>
         <module name="org.jboss.weld.core"/>
         <!-- org.jboss.xnio is required only if http-acceptor are used -->
         <module name="org.jboss.xnio" optional="true" />
         <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
         <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true" />
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.transaction.client"/>

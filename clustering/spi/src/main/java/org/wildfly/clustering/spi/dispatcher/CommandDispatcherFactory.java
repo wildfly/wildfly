@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,14 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.spi.dispatcher;
 
-import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * {@link Group} that can create {@link org.wildfly.clustering.group.Node} instances.
  * @author Paul Ferraro
- * @param <A> address type
  */
-public interface Group<A> extends org.wildfly.clustering.group.Group, NodeFactory<A> {
+public interface CommandDispatcherFactory extends org.wildfly.clustering.dispatcher.CommandDispatcherFactory {
+
+    @Override
+    default <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
+        return this.createCommandDispatcher(id, context, WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+    }
+
+    <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context, ClassLoader loader);
 }

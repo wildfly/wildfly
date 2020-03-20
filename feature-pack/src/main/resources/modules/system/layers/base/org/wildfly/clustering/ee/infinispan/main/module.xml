@@ -43,6 +43,7 @@
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.infinispan.spi"/>
+        <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.common"/>
     </dependencies>

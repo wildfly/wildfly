@@ -32,18 +32,21 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.marshalling.jboss.ByteBufferOutputStream;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class CommandDispatcherMarshaller<C> implements CommandMarshaller<C> {
+public class CommandDispatcherMarshaller<C, MC> implements CommandMarshaller<C> {
 
     private final MarshallingContext context;
     private final Object id;
+    private final MarshalledValueFactory<MC> factory;
 
-    public CommandDispatcherMarshaller(MarshallingContext context, Object id) {
+    public CommandDispatcherMarshaller(MarshallingContext context, Object id, MarshalledValueFactory<MC> factory) {
         this.context = context;
         this.id = id;
+        this.factory = factory;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class CommandDispatcherMarshaller<C> implements CommandMarshaller<C> {
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(Marshalling.createByteOutput(output));
                 marshaller.writeObject(this.id);
-                marshaller.writeObject(command);
+                marshaller.writeObject(this.factory.createMarshalledValue(command));
                 marshaller.flush();
             }
             return buffer.getBuffer();
