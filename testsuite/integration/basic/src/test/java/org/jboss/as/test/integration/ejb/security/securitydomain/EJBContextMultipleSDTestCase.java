@@ -55,7 +55,8 @@ import org.jboss.as.test.integration.ejb.security.securitydomain.ejb.Hello;
 import org.jboss.as.test.integration.ejb.security.securitydomain.ejb.Info;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-
+import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Assert;
@@ -134,6 +135,7 @@ public class EJBContextMultipleSDTestCase {
     }
 
     static class EJBContextMultipleSDTestCaseServerSetup implements ServerSetupTask {
+        private AutoCloseable snapshot;
         protected Logger log = Logger.getLogger(this.getClass().getSimpleName());
         private ModelControllerClient modelControllerClient;
 
@@ -155,6 +157,7 @@ public class EJBContextMultipleSDTestCase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            snapshot = ServerSnapshot.takeSnapshot(managementClient);
             log.info("Installing modules and Security Manager");
             try {
 
@@ -173,7 +176,7 @@ public class EJBContextMultipleSDTestCase {
                 String output = executeCommand(ctx, cliCommand);
 
                 log.info(output);
-
+                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
                 // Gather info in order to write the application-users.properties
                 String strServerProperties = "/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)";
                 cliCommand = ctx.buildRequest(strServerProperties);
@@ -200,19 +203,22 @@ public class EJBContextMultipleSDTestCase {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            log.info("Shutdown in progress");
-            File fileCLI = null;
-            CommandContext ctx = CLITestUtil.getCommandContext();
-            ctx.connectController();
-            ModelNode cliCommand = null;
+            try {
+                log.info("Shutdown in progress");
+                File fileCLI = null;
+                CommandContext ctx = CLITestUtil.getCommandContext();
+                ctx.connectController();
+                ModelNode cliCommand = null;
 
-            URL urlCLI = getClass().getResource("securitydomain/cli/JBEAP-17862.undeploy.cli");
-            fileCLI = new File(urlCLI.toURI());
-            String request1 = "run-batch --file=" + fileCLI.getAbsolutePath();
-            cliCommand = ctx.buildRequest(request1);
-            String output = executeCommand(ctx, cliCommand);
-            log.info(output);
-
+                URL urlCLI = getClass().getResource("securitydomain/cli/JBEAP-17862.undeploy.cli");
+                fileCLI = new File(urlCLI.toURI());
+                String request1 = "run-batch --file=" + fileCLI.getAbsolutePath();
+                cliCommand = ctx.buildRequest(request1);
+                String output = executeCommand(ctx, cliCommand);
+                log.info(output);
+            } finally {
+                snapshot.close();
+            }
         }
 
         private void removeContentItem(final ManagementClient managementClient, final String overlayName, final String content) throws IOException, MgmtOperationException {

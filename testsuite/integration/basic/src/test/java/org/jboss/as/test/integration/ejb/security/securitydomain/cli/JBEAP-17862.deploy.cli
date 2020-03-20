@@ -22,3 +22,4 @@ echo "Created MyNonValidatingDomain"
 echo "Created MyRealm"
 
 reload
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=security-realm, value=MyRealm)
