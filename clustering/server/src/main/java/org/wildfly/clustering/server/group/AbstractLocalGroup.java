@@ -26,6 +26,7 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.spi.group.Group;
 
 /**
  * Abstract non-clustered group implementation.

@@ -67,8 +67,8 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryListener;
-import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.spi.group.Group;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 

@@ -54,7 +54,6 @@ import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
@@ -77,6 +76,7 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

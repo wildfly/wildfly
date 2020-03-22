@@ -27,7 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A {@link BroadcastEndpoint} based on a {@link CommandDispatcher}.
@@ -67,7 +68,7 @@ public class CommandDispatcherBroadcastEndpoint implements BroadcastEndpoint {
     }
 
     private void open() throws Exception {
-        this.dispatcher = this.factory.createCommandDispatcher(this.name, this.manager);
+        this.dispatcher = this.factory.createCommandDispatcher(this.name, this.manager, WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()));
     }
 
     @Override

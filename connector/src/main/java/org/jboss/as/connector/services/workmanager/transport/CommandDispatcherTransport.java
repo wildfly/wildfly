@@ -44,14 +44,15 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link DistributedWorkManager}-specific transport based on a {@link CommandDispatcher}.
@@ -80,7 +81,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
 
     @Override
     public void startup() throws Exception {
-        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.name, this);
+        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.name, this, WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()));
         this.groupListenerRegistration = this.dispatcherFactory.getGroup().register(this);
         this.broadcast(new JoinCommand());
     }

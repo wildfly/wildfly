@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -41,6 +42,7 @@ import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.IntSerializer;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
@@ -59,9 +61,16 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     private static List<Externalizer<Object>> loadExternalizers(ClassLoader loader) {
         List<Externalizer<Object>> loadedExternalizers = new LinkedList<>();
-        for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
-            loadedExternalizers.add(externalizer);
-        }
+        WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
+                    loadedExternalizers.add(externalizer);
+                }
+                return null;
+            }
+        });
+
         Set<DefaultExternalizer> defaultExternalizers = EnumSet.allOf(DefaultExternalizer.class);
         List<Externalizer<Object>> result = new ArrayList<>(defaultExternalizers.size() + loadedExternalizers.size());
         result.addAll(defaultExternalizers);
