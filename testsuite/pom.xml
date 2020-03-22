@@ -398,7 +398,6 @@
                 <module>integration</module>
                 <module>compat</module>
                 <module>domain</module>
-                <module>layers</module>
             </modules>
         </profile>
 

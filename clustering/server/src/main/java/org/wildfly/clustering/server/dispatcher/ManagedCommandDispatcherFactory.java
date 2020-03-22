@@ -58,11 +58,11 @@ public class ManagedCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     @SuppressWarnings("unchecked")
     @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
+    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context, ClassLoader loader) {
         synchronized (this.dispatchers) {
             Map.Entry<CommandDispatcher<?>, Integer> existingEntry = this.dispatchers.get(id);
             if (existingEntry == null) {
-                CommandDispatcher<C> dispatcher = this.factory.createCommandDispatcher(id, context);
+                CommandDispatcher<C> dispatcher = this.factory.createCommandDispatcher(id, context, loader);
                 CommandDispatcher<C> result = new ManagedCommandDispatcher<>(dispatcher, () -> {
                     synchronized (this.dispatchers) {
                         Map.Entry<CommandDispatcher<?>, Integer> entry = this.dispatchers.get(id);

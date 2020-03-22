@@ -30,11 +30,10 @@ import java.util.function.Predicate;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
 import org.wildfly.clustering.ee.cache.scheduler.LinkedScheduledEntries;
+import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
 import org.wildfly.clustering.ee.cache.scheduler.SortedScheduledEntries;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
@@ -42,6 +41,7 @@ import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 
 /**
  * Scheduler for eager eviction of a bean.
@@ -62,7 +62,7 @@ public class EagerEvictionScheduler<I, T> implements Scheduler<I, ImmutableBeanE
         this.batcher = batcher;
         this.factory = factory;
         this.idleTimeout = idleTimeout;
-        this.dispatcher = dispatcherFactory.createCommandDispatcher(dispatcherName + "/eviction", evictor);
+        this.dispatcher = dispatcherFactory.createCommandDispatcher(dispatcherName + "/eviction", evictor, this.getClass().getClassLoader());
     }
 
     @Override

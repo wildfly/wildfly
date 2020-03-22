@@ -40,16 +40,17 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.singleton.SingletonElectionListener;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.service.SingletonService;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Logic common to current and legacy {@link SingletonService} implementations.
@@ -87,7 +88,7 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
 
         this.primaryLifecycle = this.primaryLifecycleFactory.apply(target);
 
-        this.dispatcher = this.dispatcherFactory.get().createCommandDispatcher(this.name, this.get());
+        this.dispatcher = this.dispatcherFactory.get().createCommandDispatcher(this.name, this.get(), WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()));
         this.registration = this.registry.get().register(this.name, this);
     }
 

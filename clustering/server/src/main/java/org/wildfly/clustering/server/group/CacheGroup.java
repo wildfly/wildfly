@@ -53,6 +53,7 @@ import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.spi.group.Group;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

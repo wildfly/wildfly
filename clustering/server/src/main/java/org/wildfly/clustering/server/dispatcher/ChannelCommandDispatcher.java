@@ -45,7 +45,7 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.spi.group.Group;
 
 /**
  * MessageDispatcher-based command dispatcher.

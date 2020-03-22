@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -30,7 +29,7 @@ import org.jboss.modules.ModuleLoader;
  */
 public interface MarshallingConfigurationContext {
 
-    Module getModule();
+    ClassLoader getClassLoader();
 
     ModuleLoader getModuleLoader();
 }

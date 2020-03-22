@@ -22,10 +22,10 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
 public interface InfinispanSessionManagerFactoryConfiguration<C extends Marshallability, L> extends InfinispanSessionManagementConfiguration, SessionManagerFactoryConfiguration<C, L>, InfinispanSessionMetaDataFactoryConfiguration {
