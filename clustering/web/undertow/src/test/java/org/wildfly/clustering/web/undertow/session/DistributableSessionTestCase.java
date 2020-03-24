@@ -609,8 +609,8 @@ public class DistributableSessionTestCase {
         when(this.batch.getState()).thenReturn(Batch.State.CLOSED);
 
         // ISA expected
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("WFLYCLWEBUT0009");
+        this.exception.expect(IllegalStateException.class);
+        this.exception.expectMessage("WFLYCLWEBUT0009");
         this.adapter.invalidate(exchange);
     }
 

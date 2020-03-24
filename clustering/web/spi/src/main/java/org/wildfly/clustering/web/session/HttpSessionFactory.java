@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.cache.session;
-
-import java.util.Map;
-
-import javax.servlet.http.HttpSession;
+package org.wildfly.clustering.web.session;
 
 /**
- * An {@link HttpSession} whose attributes can be filtered.
+ * Factory for creating HttpSession specification implementations
+ * @param <S> the specification type for the HttpSession
+ * @param <C> the specification type for the ServletContext
  * @author Paul Ferraro
  */
-public interface FilteringHttpSession extends HttpSession {
+public interface HttpSessionFactory<S, C> {
     /**
-     * Returns the session attributes that are instances of the specified class.
-     * @return an map of session attribute names and values
+     * Create an HttpSession specification implementation for the specified session and servlet context.
+     * @param session a session
+     * @param context a servlet context
+     * @return a HttpSession specification implementation
      */
-    <T> Map<String, T> getAttributes(Class<T> targetClass);
+    S createHttpSession(ImmutableSession session, C context);
 }

@@ -25,8 +25,6 @@ package org.wildfly.clustering.web.hotrod.session.coarse;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.ServletContext;
-
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
@@ -44,26 +42,29 @@ import org.wildfly.clustering.web.cache.session.coarse.CoarseImmutableSessionAtt
 import org.wildfly.clustering.web.cache.session.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * @author Paul Ferraro
  */
-public class CoarseSessionAttributesFactory<V> implements SessionAttributesFactory<Map<String, Object>> {
+public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 
     private final RemoteCache<SessionAttributesKey, V> cache;
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final Immutability immutability;
     private final CacheProperties properties;
     private final MutatorFactory<SessionAttributesKey, V> mutatorFactory;
+    private final HttpSessionActivationListenerProvider<S, C, L> provider;
 
-    public CoarseSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration) {
+    public CoarseSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration) {
         this.cache = configuration.getCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
         this.mutatorFactory = new RemoteCacheMutatorFactory<>(this.cache);
+        this.provider = configuration.getHttpSessionActivationListenerProvider();
     }
 
     @Override
@@ -89,9 +90,9 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, Object> values, ImmutableSessionMetaData metaData, ServletContext context) {
+    public SessionAttributes createSessionAttributes(String id, Map<String, Object> values, ImmutableSessionMetaData metaData, C context) {
         ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, values);
-        SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier(new CompositeImmutableSession(id, metaData, attributes), context);
+        SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
         Mutator mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(values));
         return new CoarseSessionAttributes(values, mutator, this.marshaller, this.immutability, this.properties, notifier);
     }

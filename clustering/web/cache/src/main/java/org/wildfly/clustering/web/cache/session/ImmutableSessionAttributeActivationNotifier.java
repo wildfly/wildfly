@@ -25,55 +25,58 @@ package org.wildfly.clustering.web.cache.session;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionEvent;
-
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 /**
+ * Triggers activation/passivation events for a single session attribute.
+ * @param <S> the HttpSession specification type
+ * @param <C> the ServletContext specification type
+ * @param <L> the HttpSessionActivationListener specification type
  * @author Paul Ferraro
  */
-public class ImmutableSessionAttributeActivationNotifier implements SessionAttributeActivationNotifier {
-    private static final Function<Supplier<HttpSessionActivationListener>, HttpSessionActivationListener> PRE_PASSIVATE_LISTENER_FACTORY = new HttpSessionActivationListenerFactory(true);
-    private static final Function<Supplier<HttpSessionActivationListener>, HttpSessionActivationListener> POST_ACTIVATE_LISTENER_FACTORY = new HttpSessionActivationListenerFactory(false);
+public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements SessionAttributeActivationNotifier {
 
-    private final HttpSessionEvent event;
-    private final Map<Supplier<HttpSessionActivationListener>, HttpSessionActivationListener> listeners = new ConcurrentHashMap<>();
+    private final Function<Supplier<L>, L> prePassivateListenerFactory;
+    private final Function<Supplier<L>, L> postActivateListenerFactory;
+    private final HttpSessionActivationListenerProvider<S, C, L> provider;
+    private final S session;
+    private final Map<Supplier<L>, L> listeners = new ConcurrentHashMap<>();
 
-    public ImmutableSessionAttributeActivationNotifier(ImmutableSession session, ServletContext context) {
-        this(new ImmutableFilteringHttpSession(session, context));
-    }
-
-    public ImmutableSessionAttributeActivationNotifier(FilteringHttpSession session) {
-        this.event = new HttpSessionEvent(session);
+    public ImmutableSessionAttributeActivationNotifier(HttpSessionActivationListenerProvider<S, C, L> provider, ImmutableSession session, C context) {
+        this.provider = provider;
+        this.prePassivateListenerFactory = new HttpSessionActivationListenerFactory<>(provider, true);
+        this.postActivateListenerFactory = new HttpSessionActivationListenerFactory<>(provider, false);
+        this.session = provider.createHttpSession(session, context);
     }
 
     @Override
     public void prePassivate(Object object) {
-        if (object instanceof HttpSessionActivationListener) {
-            Supplier<HttpSessionActivationListener> reference = new HttpSessionActivationListenerKey((HttpSessionActivationListener) object);
-            HttpSessionActivationListener listener = this.listeners.computeIfAbsent(reference, PRE_PASSIVATE_LISTENER_FACTORY);
-            listener.sessionWillPassivate(this.event);
-        }
+        this.notify(object, this.prePassivateListenerFactory, this.provider::prePassivateNotifier);
     }
 
     @Override
     public void postActivate(Object object) {
-        if (object instanceof HttpSessionActivationListener) {
-            Supplier<HttpSessionActivationListener> reference = new HttpSessionActivationListenerKey((HttpSessionActivationListener) object);
-            HttpSessionActivationListener listener = this.listeners.computeIfAbsent(reference, POST_ACTIVATE_LISTENER_FACTORY);
-            listener.sessionDidActivate(this.event);
+        this.notify(object, this.postActivateListenerFactory, this.provider::postActivateNotifier);
+    }
+
+    private void notify(Object object, Function<Supplier<L>, L> listenerFactory, Function<L, Consumer<S>> notifierFactory) {
+        Class<L> listenerClass = this.provider.getHttpSessionActivationListenerClass();
+        if (listenerClass.isInstance(object)) {
+            Supplier<L> reference = new HttpSessionActivationListenerKey<>(listenerClass.cast(object));
+            L listener = this.listeners.computeIfAbsent(reference, listenerFactory);
+            notifierFactory.apply(listener).accept(this.session);
         }
     }
 
     @Override
     public void close() {
-        for (HttpSessionActivationListener listener : this.listeners.values()) {
-            listener.sessionWillPassivate(this.event);
+        for (L listener : this.listeners.values()) {
+            this.provider.prePassivateNotifier(listener).accept(this.session);
         }
         this.listeners.clear();
     }
@@ -81,15 +84,15 @@ public class ImmutableSessionAttributeActivationNotifier implements SessionAttri
     /**
      * Map key of a {@link HttpSessionActivationListener} that uses identity equality.
      */
-    private static class HttpSessionActivationListenerKey implements Supplier<HttpSessionActivationListener> {
-        private final HttpSessionActivationListener listener;
+    private static class HttpSessionActivationListenerKey<L> implements Supplier<L> {
+        private final L listener;
 
-        HttpSessionActivationListenerKey(HttpSessionActivationListener listener) {
+        HttpSessionActivationListenerKey(L listener) {
             this.listener = listener;
         }
 
         @Override
-        public HttpSessionActivationListener get() {
+        public L get() {
             return this.listener;
         }
 
@@ -101,7 +104,8 @@ public class ImmutableSessionAttributeActivationNotifier implements SessionAttri
         @Override
         public boolean equals(Object object) {
             if (!(object instanceof HttpSessionActivationListenerKey)) return false;
-            HttpSessionActivationListenerKey reference = (HttpSessionActivationListenerKey) object;
+            @SuppressWarnings("unchecked")
+            HttpSessionActivationListenerKey<L> reference = (HttpSessionActivationListenerKey<L>) object;
             return this.listener == reference.listener;
         }
     }
@@ -109,43 +113,38 @@ public class ImmutableSessionAttributeActivationNotifier implements SessionAttri
     /**
      * Factory for creating HttpSessionActivationListener values.
      */
-    private static class HttpSessionActivationListenerFactory implements Function<Supplier<HttpSessionActivationListener>, HttpSessionActivationListener> {
+    private static class HttpSessionActivationListenerFactory<S, C, L> implements Function<Supplier<L>, L> {
+        private final HttpSessionActivationListenerProvider<S, C, L> provider;
         private final boolean active;
 
-        HttpSessionActivationListenerFactory(boolean active) {
+        HttpSessionActivationListenerFactory(HttpSessionActivationListenerProvider<S, C, L> provider, boolean active) {
+            this.provider = provider;
             this.active = active;
         }
 
         @Override
-        public HttpSessionActivationListener apply(Supplier<HttpSessionActivationListener> reference) {
-            return new AtomicHttpSessionActivationListener(reference.get(), this.active);
-        }
-    }
-
-    /**
-     * Prevents redundant session activation events for a given listener.
-     */
-    private static class AtomicHttpSessionActivationListener implements HttpSessionActivationListener {
-        private final HttpSessionActivationListener listener;
-        private final AtomicBoolean active;
-
-        AtomicHttpSessionActivationListener(HttpSessionActivationListener listener, boolean active) {
-            this.listener = listener;
-            this.active = new AtomicBoolean(active);
-        }
-
-        @Override
-        public void sessionWillPassivate(HttpSessionEvent event) {
-            if (this.active.compareAndSet(true, false)) {
-                this.listener.sessionWillPassivate(event);
-            }
-        }
-
-        @Override
-        public void sessionDidActivate(HttpSessionEvent event) {
-            if (this.active.compareAndSet(false, true)) {
-                this.listener.sessionDidActivate(event);
-            }
+        public L apply(Supplier<L> reference) {
+            HttpSessionActivationListenerProvider<S, C, L> provider = this.provider;
+            L listener = reference.get();
+            // Prevents redundant session activation events for a given listener.
+            AtomicBoolean active = new AtomicBoolean(this.active);
+            Consumer<S> prePassivate = new Consumer<S>() {
+                @Override
+                public void accept(S session) {
+                    if (active.compareAndSet(true, false)) {
+                        provider.prePassivateNotifier(listener).accept(session);
+                    }
+                }
+            };
+            Consumer<S> postActivate = new Consumer<S>() {
+                @Override
+                public void accept(S session) {
+                    if (active.compareAndSet(false, true)) {
+                        provider.postActivateNotifier(listener).accept(session);
+                    }
+                }
+            };
+            return provider.createListener(prePassivate, postActivate);
         }
     }
 }

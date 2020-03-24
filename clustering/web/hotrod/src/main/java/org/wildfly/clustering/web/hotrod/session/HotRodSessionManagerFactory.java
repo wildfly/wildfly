@@ -23,8 +23,6 @@ package org.wildfly.clustering.web.hotrod.session;
 
 import java.time.Duration;
 
-import javax.servlet.ServletContext;
-
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.ee.Batcher;
@@ -50,20 +48,26 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
 
 /**
  * Factory for creating session managers.
+ * @param <S> the HttpSession specification type
+ * @param <SC> the ServletContext specification type
+ * @param <AL> the HttpSessionAttributeListener specification type
+ * @param <BL> the HttpSessionBindingListener specification type
+ * @param <LC> the local context type
+ * @param <MC> the marshalling context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactory<L, C extends Marshallability> implements SessionManagerFactory<L, TransactionBatch> {
+public class HotRodSessionManagerFactory<S, SC, AL, BL, LC, MC extends Marshallability> implements SessionManagerFactory<SC, LC, TransactionBatch> {
 
     final Registrar<SessionExpirationListener> expirationRegistrar;
     final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
     final Batcher<TransactionBatch> batcher;
     final Duration transactionTimeout;
-    private final SessionFactory<CompositeSessionMetaDataEntry<L>, ?, L> sessionFactory;
+    private final SessionFactory<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> sessionFactory;
 
-    public HotRodSessionManagerFactory(HotRodSessionManagerFactoryConfiguration<C, L> config) {
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = new HotRodSessionMetaDataFactory<>(config);
+    public HotRodSessionManagerFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> config) {
+        SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(config);
         this.sessionFactory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
-        ExpiredSessionRemover<CompositeSessionMetaDataEntry<L>, ?, L> remover = new ExpiredSessionRemover<>(this.sessionFactory);
+        ExpiredSessionRemover<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> remover = new ExpiredSessionRemover<>(this.sessionFactory);
         this.expirationRegistrar = remover;
         this.batcher = new HotRodBatcher(config.getCache());
         this.expirationScheduler = new SessionExpirationScheduler(this.batcher, remover, Duration.ofMillis(config.getCache().getRemoteCacheManager().getConfiguration().transaction().timeout()));
@@ -71,8 +75,8 @@ public class HotRodSessionManagerFactory<L, C extends Marshallability> implement
     }
 
     @Override
-    public SessionManager<L, TransactionBatch> createSessionManager(SessionManagerConfiguration configuration) {
-        HotRodSessionManagerConfiguration config = new HotRodSessionManagerConfiguration() {
+    public SessionManager<LC, TransactionBatch> createSessionManager(SessionManagerConfiguration<SC> configuration) {
+        HotRodSessionManagerConfiguration<SC> config = new HotRodSessionManagerConfiguration<SC>() {
             @Override
             public SessionExpirationListener getExpirationListener() {
                 return configuration.getExpirationListener();
@@ -94,7 +98,7 @@ public class HotRodSessionManagerFactory<L, C extends Marshallability> implement
             }
 
             @Override
-            public ServletContext getServletContext() {
+            public SC getServletContext() {
                 return configuration.getServletContext();
             }
 
@@ -116,7 +120,7 @@ public class HotRodSessionManagerFactory<L, C extends Marshallability> implement
         this.expirationScheduler.close();
     }
 
-    private SessionAttributesFactory<?> createSessionAttributesFactory(HotRodSessionManagerFactoryConfiguration<C, L> configuration) {
+    private SessionAttributesFactory<SC, ?> createSessionAttributesFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration) {
         switch (configuration.getAttributePersistenceStrategy()) {
             case FINE: {
                 return new FineSessionAttributesFactory<>(new HotRodMarshalledValueSessionAttributesFactoryConfiguration<>(configuration));
@@ -131,10 +135,10 @@ public class HotRodSessionManagerFactory<L, C extends Marshallability> implement
         }
     }
 
-    private static class HotRodMarshalledValueSessionAttributesFactoryConfiguration<V, C extends Marshallability, L> extends MarshalledValueSessionAttributesFactoryConfiguration<V, C, L> implements HotRodSessionAttributesFactoryConfiguration<V, MarshalledValue<V, C>> {
-        private final HotRodSessionManagerFactoryConfiguration<C, L> configuration;
+    private static class HotRodMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, BL, V, C extends Marshallability, LC> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, C, LC> implements HotRodSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, C>> {
+        private final HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, C, LC> configuration;
 
-        HotRodMarshalledValueSessionAttributesFactoryConfiguration(HotRodSessionManagerFactoryConfiguration<C, L> configuration) {
+        HotRodMarshalledValueSessionAttributesFactoryConfiguration(HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, C, LC> configuration) {
             super(configuration);
             this.configuration = configuration;
         }

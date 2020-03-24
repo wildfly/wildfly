@@ -48,11 +48,11 @@ import io.undertow.servlet.api.ThreadSetupHandler;
  */
 public class DistributableSessionManagerFactory implements io.undertow.servlet.api.SessionManagerFactory {
 
-    private final SessionManagerFactory<LocalSessionContext, Batch> factory;
+    private final SessionManagerFactory<ServletContext, LocalSessionContext, Batch> factory;
     private final SessionManagerFactoryConfiguration config;
     private final SessionListeners listeners = new SessionListeners();
 
-    public DistributableSessionManagerFactory(SessionManagerFactory<LocalSessionContext, Batch> factory, SessionManagerFactoryConfiguration config) {
+    public DistributableSessionManagerFactory(SessionManagerFactory<ServletContext, LocalSessionContext, Batch> factory, SessionManagerFactoryConfiguration config) {
         this.factory = factory;
         this.config = config;
     }
@@ -64,7 +64,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
         IdentifierFactory<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
         SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners);
-        SessionManagerConfiguration configuration = new SessionManagerConfiguration() {
+        SessionManagerConfiguration<ServletContext> configuration = new SessionManagerConfiguration<ServletContext>() {
             @Override
             public ServletContext getServletContext() {
                 return deployment.getServletContext();
