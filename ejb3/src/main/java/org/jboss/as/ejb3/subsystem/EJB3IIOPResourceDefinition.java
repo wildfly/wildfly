@@ -98,7 +98,7 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
             @Override
             void applySetting(final IIOPSettingsService service, OperationContext context, final ModelNode model) throws OperationFailedException {
                 final boolean value = ENABLE_BY_DEFAULT.resolveModelAttribute(context, model).asBoolean();
-                service.setUseQualifiedName(value);
+                service.setEnabledByDefault(value);
             }
         });
     }
