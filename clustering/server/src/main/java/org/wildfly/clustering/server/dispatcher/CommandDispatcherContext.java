@@ -28,9 +28,9 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 /**
  * @author Paul Ferraro
  */
-public interface CommandDispatcherContext {
-    Object getCommandContext();
+public interface CommandDispatcherContext<CC, MC> {
+    CC getCommandContext();
     Contextualizer getContextualizer();
-    MarshalledValueFactory<Object> getMarshalledValueFactory();
-    Object getMarshallingContext();
+    MarshalledValueFactory<MC> getMarshalledValueFactory();
+    MC getMarshallingContext();
 }

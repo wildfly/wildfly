@@ -100,9 +100,12 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             @Override
             public MarshallingConfiguration apply(MarshallingConfigurationContext context) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
+                ClassLoader userLoader = context.getClassLoader();
+                ClassLoader loader = WildFlySecurityManager.getClassLoaderPrivileged(ChannelCommandDispatcherFactory.class);
+                ClassLoader[] loaders = userLoader.equals(loader) ? new ClassLoader[] { userLoader } : new ClassLoader[] { userLoader, loader };
                 config.setClassResolver(ModularClassResolver.getInstance(context.getModuleLoader()));
-                config.setClassTable(new DynamicClassTable(context.getClassLoader()));
-                config.setObjectTable(new ExternalizerObjectTable(context.getClassLoader()));
+                config.setClassTable(new DynamicClassTable(loaders));
+                config.setObjectTable(new ExternalizerObjectTable(loaders));
                 return config;
             }
         },
@@ -114,7 +117,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     static final ExceptionSupplier<Object, Exception> NO_SUCH_SERVICE_SUPPLIER = Functions.constantExceptionSupplier(NoSuchService.INSTANCE);
 
     private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
-    private final Map<Object, CommandDispatcherContext> contexts = new ConcurrentHashMap<>();
+    private final Map<Object, CommandDispatcherContext<?, ?>> contexts = new ConcurrentHashMap<>();
     private final ExecutorService executorService = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
@@ -199,25 +202,24 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
-                CommandDispatcherContext context = this.contexts.get(clientId);
+                CommandDispatcherContext<?, ?> context = this.contexts.get(clientId);
                 if (context == null) return NO_SUCH_SERVICE_SUPPLIER;
                 Object commandContext = context.getCommandContext();
                 Contextualizer contextualizer = context.getContextualizer();
                 @SuppressWarnings("unchecked")
                 MarshalledValue<Command<Object, Object>, Object> value = (MarshalledValue<Command<Object, Object>, Object>) unmarshaller.readObject();
                 Command<Object, Object> command = value.get(context.getMarshallingContext());
-                // Wrap execution result in an Optional, since command execution might return null
-                ExceptionSupplier<Optional<Object>, Exception> commandExecutionTask = new ExceptionSupplier<Optional<Object>, Exception>() {
+                ExceptionSupplier<Object, Exception> commandExecutionTask = new ExceptionSupplier<Object, Exception>() {
                     @Override
-                    public Optional<Object> get() throws Exception {
-                        return Optional.ofNullable(command.execute(commandContext));
+                    public Object get() throws Exception {
+                        return context.getMarshalledValueFactory().createMarshalledValue(command.execute(commandContext));
                     }
                 };
                 ServiceExecutor executor = this.executor;
                 return new ExceptionSupplier<Object, Exception>() {
                     @Override
                     public Object get() throws Exception {
-                        return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE).orElse(null);
+                        return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE);
                     }
                 };
             }
@@ -244,11 +246,11 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             }
         };
         MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, marshallingConfigurationContext), loader);
-        MarshalledValueFactory<?> factory = new SimpleMarshalledValueFactory(marshallingContext);
+        MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
         Contextualizer contextualizer = new DefaultContextualizer();
-        CommandDispatcherContext context = new CommandDispatcherContext() {
+        CommandDispatcherContext<C, MarshallingContext> context = new CommandDispatcherContext<C, MarshallingContext>() {
             @Override
-            public Object getCommandContext() {
+            public C getCommandContext() {
                 return commandContext;
             }
 
@@ -257,14 +259,13 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 return contextualizer;
             }
 
-            @SuppressWarnings("unchecked")
             @Override
-            public MarshalledValueFactory<Object> getMarshalledValueFactory() {
-                return (MarshalledValueFactory<Object>) factory;
+            public MarshalledValueFactory<MarshallingContext> getMarshalledValueFactory() {
+                return factory;
             }
 
             @Override
-            public Object getMarshallingContext() {
+            public MarshallingContext getMarshallingContext() {
                 return marshallingContext;
             }
         };
@@ -273,7 +274,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         }
         CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id, factory);
         CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), commandContext);
-        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this, this.timeout, localDispatcher, () -> {
+        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, marshallingContext, this, this.timeout, localDispatcher, () -> {
             localDispatcher.close();
             this.contexts.remove(id);
         });
