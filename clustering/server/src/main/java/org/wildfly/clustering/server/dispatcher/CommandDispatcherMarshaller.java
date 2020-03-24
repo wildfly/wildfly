@@ -64,4 +64,9 @@ public class CommandDispatcherMarshaller<C, MC> implements CommandMarshaller<C> 
             return buffer.getBuffer();
         }
     }
+
+    @Override
+    public Object getMarshallingContext() {
+        return this.context;
+    }
 }

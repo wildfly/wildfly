@@ -105,7 +105,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
             return this.localDispatcher.executeOnMember(command, member);
         }
         Buffer buffer = this.createBuffer(command);
-        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options);
+        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options, this.marshaller.getMarshallingContext());
         return request.send(buffer);
     }
 
@@ -121,7 +121,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
                     results.put(member, this.localDispatcher.executeOnMember(command, member));
                 } else {
                     try {
-                        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options);
+                        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options, this.marshaller.getMarshallingContext());
                         CompletionStage<R> future = request.send(buffer);
                         results.put(member, future);
                         future.whenComplete(new PruneCancellationTask<>(results, member));

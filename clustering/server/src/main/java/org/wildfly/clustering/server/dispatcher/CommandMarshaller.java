@@ -40,4 +40,10 @@ public interface CommandMarshaller<C> {
      * @throws IOException if marshalling fails.
      */
     <R> ByteBuffer marshal(Command<R, ? super C> command) throws IOException;
+
+    /**
+     * Returns the marshalling context used to unmarshal the command response.
+     * @return a marshalling context
+     */
+    Object getMarshallingContext();
 }

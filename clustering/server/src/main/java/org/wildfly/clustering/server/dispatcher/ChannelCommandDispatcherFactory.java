@@ -206,18 +206,17 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 @SuppressWarnings("unchecked")
                 MarshalledValue<Command<Object, Object>, Object> value = (MarshalledValue<Command<Object, Object>, Object>) unmarshaller.readObject();
                 Command<Object, Object> command = value.get(context.getMarshallingContext());
-                // Wrap execution result in an Optional, since command execution might return null
-                ExceptionSupplier<Optional<Object>, Exception> commandExecutionTask = new ExceptionSupplier<Optional<Object>, Exception>() {
+                ExceptionSupplier<Object, Exception> commandExecutionTask = new ExceptionSupplier<Object, Exception>() {
                     @Override
-                    public Optional<Object> get() throws Exception {
-                        return Optional.ofNullable(command.execute(commandContext));
+                    public Object get() throws Exception {
+                        return context.getMarshalledValueFactory().createMarshalledValue(command.execute(commandContext));
                     }
                 };
                 ServiceExecutor executor = this.executor;
                 return new ExceptionSupplier<Object, Exception>() {
                     @Override
                     public Object get() throws Exception {
-                        return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE).orElse(null);
+                        return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE);
                     }
                 };
             }
