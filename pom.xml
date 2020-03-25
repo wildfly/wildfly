@@ -256,7 +256,7 @@
          -->
         <version.antlr>2.7.7</version.antlr>
         <version.com.fasterxml.classmate>1.3.4</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.10.1</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.10.3</version.com.fasterxml.jackson>
         <version.com.github.ben-manes.caffeine>2.6.2</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.jackson-coreutils>1.0</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
