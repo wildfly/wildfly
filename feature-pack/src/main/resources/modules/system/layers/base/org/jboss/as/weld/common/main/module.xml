@@ -50,6 +50,7 @@
         -->
         <module name="org.jboss.as.security" optional="true" />
         <module name="org.jboss.invocation"/>
+        <module name="org.jboss.metadata.common"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.annotation.api"/>
         <module name="java.desktop"/>

@@ -31,6 +31,7 @@ import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.as.weld.logging.WeldLogger;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.weld.injection.ParameterInjectionPoint;
 
 public class ResourceInjectionUtilities {
@@ -50,14 +51,21 @@ public class ResourceInjectionUtilities {
         }
     }
 
+    /** @deprecated use {@link #getResourceName(InjectionPoint, PropertyReplacer)}  */
+    @Deprecated
     public static String getResourceName(InjectionPoint injectionPoint) {
+        return getResourceName(injectionPoint, null);
+    }
+
+    public static String getResourceName(InjectionPoint injectionPoint, PropertyReplacer propertyReplacer) {
         Resource resource = getResourceAnnotated(injectionPoint).getAnnotation(Resource.class);
         String mappedName = resource.mappedName();
         if (!mappedName.equals("")) {
-            return mappedName;
+            return propertyReplacer == null ? mappedName : propertyReplacer.replaceProperties(mappedName);
         }
         String name = resource.name();
         if (!name.equals("")) {
+            name = propertyReplacer == null ? name : propertyReplacer.replaceProperties(name);
             //see if this is a prefixed name
             //and if so just return it
             int firstSlash = name.indexOf("/");
