@@ -684,21 +684,6 @@
                                                 <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
-                                        <!-- Also produce a standalone-microprofile-ha.xml file with the same content
-                                             as standalone-full-ha.xml.
-                                             This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
-                                             so to keep it simple create the file so that doesn't fail.
-                                        -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-microprofile-ha.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
                                     </configurations>
                                 </configuration>
                             </execution>
@@ -760,25 +745,6 @@
                                         <config>
                                             <model>standalone</model>
                                             <name>standalone-ha.xml</name>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                            </excluded-layers>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>jpa-distributed</layer>
-                                            </layers>
-                                        </config>
-                                        <!-- Also produce a standalone-micropofile-ha.xml file with the same content
-                                             as standalone-full-ha.xml.
-                                             This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
-                                             so to keep it simple create the file so that doesn't fail.
-                                        -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-microprofile-ha.xml</name>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
                                             </excluded-layers>
@@ -935,6 +901,24 @@
             </activation>
             <build>
                 <plugins>
+                    <!-- Update server profile with shared configuration changes.
+                         Override the default ts.config-as.configure-wildfly execution
+                         to run the clustering-mp.cli script -->
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly</id>
+                                <configuration>
+                                    <scripts>
+                                        <script>clustering-mp.cli</script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- Copy 4 containers based on the shared configuration and one load balancer profile -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
