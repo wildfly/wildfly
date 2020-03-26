@@ -72,8 +72,8 @@
         <module name="org.picketbox"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
-        <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.common"/>
         <module name="org.glassfish.jakarta.el"/>
     </dependencies>

@@ -65,13 +65,7 @@ public class ConfigurationHelper {
         if (model.hasDefined(CommonAttributes.JMS_QUEUE)) {
             final List<CoreQueueConfiguration> configs = configuration.getQueueConfigurations();
             for (Property prop : model.get(CommonAttributes.JMS_QUEUE).asPropertyList()) {
-                configs.add(createJMSDestinationConfiguration(context, prop.getName(), prop.getValue(), true));
-            }
-        }
-        if (model.hasDefined(CommonAttributes.JMS_TOPIC)) {
-            final List<CoreQueueConfiguration> configs = configuration.getQueueConfigurations();
-            for (Property prop : model.get(CommonAttributes.JMS_TOPIC).asPropertyList()) {
-                configs.add(createJMSDestinationConfiguration(context, prop.getName(), prop.getValue(), false));
+                configs.add(createJMSDestinationConfiguration(context, prop.getName(), prop.getValue()));
             }
         }
     }
@@ -95,17 +89,17 @@ public class ConfigurationHelper {
                 .setRoutingType(RoutingType.valueOf(routing));
     }
 
-    static CoreQueueConfiguration createJMSDestinationConfiguration(final OperationContext context, String name, ModelNode model, boolean isQueue) throws OperationFailedException {
+    static CoreQueueConfiguration createJMSDestinationConfiguration(final OperationContext context, String name, ModelNode model) throws OperationFailedException {
         final String selector = SELECTOR.resolveModelAttribute(context, model).asStringOrNull();
         final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
-        final String destinationAddress = isQueue ? "jms.queue." + name : "jms.topic." + name;
+        final String destinationAddress = "jms.queue." + name;
 
         return new CoreQueueConfiguration()
                 .setAddress(destinationAddress)
                 .setName(destinationAddress)
                 .setFilterString(SelectorTranslator.convertToActiveMQFilterString(selector))
                 .setDurable(durable)
-                .setRoutingType(isQueue ? RoutingType.ANYCAST : RoutingType.MULTICAST);
+                .setRoutingType(RoutingType.ANYCAST);
     }
 
     static void addDivertConfigurations(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {

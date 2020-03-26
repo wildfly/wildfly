@@ -32,7 +32,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -40,6 +39,7 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 
 /**
  * Builds a non-clustered {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.

@@ -22,8 +22,8 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 
 /**
  * Non-clustered {@link CommandDispatcherFactory} implementation
@@ -43,7 +43,7 @@ public class LocalCommandDispatcherFactory implements CommandDispatcherFactory {
     }
 
     @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
+    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context, ClassLoader loader) {
         return new LocalCommandDispatcher<>(this.group.getLocalMember(), context);
     }
 }

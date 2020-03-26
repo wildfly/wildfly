@@ -101,5 +101,33 @@
                 </plugins>
             </build>
         </profile>
+
+        <!--
+            By default the arquillian.xml files in the TCK modules use standalone-microprofile.xml for the config.
+            For those modules that support it, switch back to using standalone.xml as the server config
+            if we are testing against a non-MP build
+        -->
+        <profile>
+            <id>alt.dist.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.default.build.project.prefix</name>
+                    <value>ee-</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables combine.children="append">
+                                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

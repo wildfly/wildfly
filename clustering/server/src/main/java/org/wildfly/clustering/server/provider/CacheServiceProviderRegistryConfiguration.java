@@ -25,10 +25,10 @@ import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.group.Group;
 
 /**
  * Configuration for a {@link CacheServiceProviderRegistryServiceConfigurator}.

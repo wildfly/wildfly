@@ -540,6 +540,7 @@
                                 <exclude>org/jboss/as/test/integration/weld/deployment/enterprise/EnterpriseBeanDiscoveryTest.java</exclude>
                                 <exclude>org/jboss/as/test/integration/weld/extensions/ExtensionsInEarDiscoveredTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/jaxrs/cfg/ResteasyAttributeTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/logging/config/*TestCase</exclude>
                                 <!-- requires web-services-->
                                 <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
                             </excludes>

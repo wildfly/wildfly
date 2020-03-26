@@ -25,9 +25,9 @@ package org.wildfly.clustering.server.singleton;
 import java.util.function.Supplier;
 
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 
 /**
  * @author Paul Ferraro
