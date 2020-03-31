@@ -22,8 +22,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +29,6 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.Provider;
-import java.util.Arrays;
 import java.util.Properties;
 
 import javax.ejb.NoSuchEJBException;
@@ -190,12 +187,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         final JavaArchive ejbClientJar = ShrinkWrap.create(JavaArchive.class, OUTBOUND_CONNECTION_MODULE_NAME + ".jar");
         ejbClientJar.addClass(WhoAmI.class)
                 .addClass(IntermediateWhoAmI.class)
-                .addAsManifestResource(IntermediateWhoAmI.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "basedir"
-                         , Arrays.asList("target", OUTBOUND_CONNECTION_SERVER, "standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write", "basedir"
-                                , Arrays.asList("target", OUTBOUND_CONNECTION_SERVER, "standalone", "data", "ejb-xa-recovery", "-"))
-                ), "permissions.xml");
+                .addAsManifestResource(IntermediateWhoAmI.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return ejbClientJar;
     }
 
