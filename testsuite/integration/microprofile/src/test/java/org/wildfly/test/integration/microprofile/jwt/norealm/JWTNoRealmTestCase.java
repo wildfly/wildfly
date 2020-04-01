@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.jwt.smoke;
+package org.wildfly.test.integration.microprofile.jwt.norealm;
 
 import java.io.File;
 
@@ -43,15 +43,15 @@ import org.wildfly.test.integration.microprofile.jwt.SampleEndPoint;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class JWTSmokeTestCase extends BaseCase {
+public class JWTNoRealmTestCase extends BaseCase {
 
-    private static final String DEPLOYMENT_NAME = JWTSmokeTestCase.class.getSimpleName() + ".war";
+    private static final String DEPLOYMENT_NAME = JWTNoRealmTestCase.class.getSimpleName() + ".war";
 
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
-                .addClasses(BaseCase.class, JWTSmokeTestCase.class)
+                .addClasses(BaseCase.class, JWTNoRealmTestCase.class)
                 .addClasses(App.class, SampleEndPoint.class)
                 .addAsWebInfResource(new FileAsset(new File("src/test/resources/jwt/web.xml")), "web.xml")
                 .addAsManifestResource(new FileAsset(new File("src/test/resources/jwt/microprofile-config.properties")), "microprofile-config.properties")
