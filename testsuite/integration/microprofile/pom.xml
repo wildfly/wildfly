@@ -62,6 +62,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.jwt</groupId>
+            <artifactId>microprofile-jwt-auth-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
             <scope>test</scope>
@@ -110,6 +115,13 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- MicroProfile JWT Test Dependencies -->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -207,6 +219,7 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>microprofile-fault-tolerance</layer>
+                                                <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
                                             </layers>
                                         </config>
