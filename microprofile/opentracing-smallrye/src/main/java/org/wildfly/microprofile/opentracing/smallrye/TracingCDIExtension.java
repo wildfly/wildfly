@@ -19,26 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.microprofile.opentracing.smallrye;
 
 import io.opentracing.Tracer;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.BeforeShutdown;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 
 public class TracingCDIExtension implements Extension {
 
-    public void observeBeforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager manager) {
-        String extensionName = TracingCDIExtension.class.getName();
-        bbd.addAnnotatedType(manager.createAnnotatedType(TracerProducer.class), extensionName + "-" + TracerProducer.class.getName());
+    private static final Map<ClassLoader, Tracer> TRACERS = Collections.synchronizedMap(new WeakHashMap<>());
+
+    public static void registerApplicationTracer(ClassLoader classLoader, Tracer tracerInstance) {
+        TRACERS.put(classLoader, tracerInstance);
+    }
+
+    public void registerTracerBean(@Observes AfterBeanDiscovery abd) {
+        abd.addBean().addTransitiveTypeClosure(Tracer.class).produceWith(i -> {
+            return TRACERS.get(Thread.currentThread().getContextClassLoader());
+        });
     }
 
     public void skipTracerBeans(@Observes ProcessAnnotatedType<? extends Tracer> processAnnotatedType) {
         TracingLogger.ROOT_LOGGER.extraTracerBean(processAnnotatedType.getAnnotatedType().getJavaClass().getName());
         processAnnotatedType.veto();
+    }
+
+    /**
+     * Called when the deployment is undeployed.
+     *
+     * @param bs
+     */
+    public void beforeShutdown(@Observes final BeforeShutdown bs) {
+        TRACERS.remove(Thread.currentThread().getContextClassLoader());
     }
 }
