@@ -23,6 +23,7 @@
 package org.wildfly.extension.microprofile.openapi.deployment;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
@@ -119,13 +120,13 @@ public class OpenAPIHttpHandler implements HttpHandler {
             // Use format preferred by Accept header if unambiguous, otherwise determine format from query parameter
             Format format = (preferredTypes.size() == 1) ? ACCEPTED_TYPES.get(preferredTypes.get(0)) : parseFormatParameter(exchange);
 
-            String result = OpenApiSerializer.serialize(this.model, format);
+            byte[] result = OpenApiSerializer.serialize(this.model, format).getBytes(charset);
 
             responseHeaders.put(Headers.CONTENT_TYPE, format.getMimeType());
-            responseHeaders.put(Headers.CONTENT_LENGTH, result.length());
+            responseHeaders.put(Headers.CONTENT_LENGTH, result.length);
 
             if (requestMethod.equals(Methods.GET)) {
-                exchange.getResponseSender().send(result, charset);
+                exchange.getResponseSender().send(ByteBuffer.wrap(result));
             }
         } else if (requestMethod.equals(Methods.OPTIONS)) {
             responseHeaders.put(Headers.ALLOW, ALLOW_METHODS);
