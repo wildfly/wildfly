@@ -268,7 +268,7 @@
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
         <version.com.sun.activation.jakarta.activation>1.2.1</version.com.sun.activation.jakarta.activation>
-        <version.com.sun.faces>2.3.9.SP07</version.com.sun.faces>
+        <version.com.sun.faces>2.3.9.SP08</version.com.sun.faces>
         <version.com.sun.istack>3.0.10</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
