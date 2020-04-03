@@ -372,7 +372,7 @@
         <version.org.jboss.ejb-client>4.0.31.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.genericjms>2.0.2.Final</version.org.jboss.genericjms>
+        <version.org.jboss.genericjms>2.0.4.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.2.8.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.4.21.Final</version.org.jboss.ironjacamar>
