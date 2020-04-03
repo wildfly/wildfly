@@ -21,6 +21,7 @@ package org.wildfly.extension.microprofile.jwt.smallrye._private;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -48,5 +49,8 @@ public interface MicroProfileJWTLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 2, value = "@LoginConfig annotation detected on invalid target \"%s\".")
     void loginConfigInvalidTarget(String target);
+
+    @Message(id = 3, value = "No `authMethod` specified on the @LoginConfig annotation.")
+    DeploymentUnitProcessingException noAuthMethodSpecified();
 
 }
