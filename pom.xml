@@ -240,6 +240,7 @@
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
 
+
         <!--
             *Non-plugin* Dependency versions. Please keep alphabetical.
 
@@ -588,6 +589,12 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-appclient</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>xml-resolver</groupId>
+                <artifactId>xml-resolver</artifactId>
+                <version>${version.xml-resolver}</version>
             </dependency>
 
             <dependency>
