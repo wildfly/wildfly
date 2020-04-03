@@ -25,7 +25,12 @@ package org.jboss.as.test.integration.ejb.jndi.logging;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -35,14 +40,8 @@ import org.junit.runner.RunWith;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.MalformedInputException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 
 /**
@@ -52,11 +51,35 @@ import java.util.Properties;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(JNDIBindingsNoAppNameTestCase.TestLogHandlerSetup.class)
 public class JNDIBindingsNoAppNameTestCase {
 
     private static final String JAR_NAME = "ejb-jndi";
     private static String HOST = TestSuiteEnvironment.getServerAddress();
     private static int PORT = TestSuiteEnvironment.getHttpPort();
+    private static final String TEST_HANDLER_NAME = "test-" + JNDIBindingsNoAppNameTestCase.class.getSimpleName();
+    private static final String TEST_LOG_FILE_NAME = TEST_HANDLER_NAME + ".log";
+
+    public static class TestLogHandlerSetup extends TestLogHandlerSetupTask {
+
+        @Override
+        public Collection<String> getCategories() {
+            return Collections.singletonList("org.jboss");
+        }
+
+        @Override
+        public String getLevel() {
+            return "INFO";
+        }
+        @Override
+        public String getHandlerName() {
+            return TEST_HANDLER_NAME;
+        }
+        @Override
+        public String getLogFileName() {
+            return TEST_LOG_FILE_NAME;
+        }
+    }
 
     @Deployment
     public static JavaArchive createJar() {
@@ -65,22 +88,16 @@ public class JNDIBindingsNoAppNameTestCase {
         return jar;
     }
 
+    @ContainerResource
+    private ManagementClient managementClient;
+
     @Test
     public void testJNDIBindingsNoAppName() throws Exception {
-        boolean passed = false;
         Context ctx = getInitialContext(HOST, PORT);
         Hello ejb = (Hello) ctx.lookup("ejb:/ejb-jndi/Hello!org.jboss.as.test.integration.ejb.jndi.logging.Hello");
         Assert.assertNotNull("Null object returned for local business interface lookup in the ejb namespace", ejb);
-        List<String> lines = this.readServerLogLines();
-        int i = 0;
-        while (i < lines.size() && !passed) {
-            String line = lines.get(i);
-            if (line.contains("ejb:/ejb-jndi/Hello!org.jboss.as.test.integration.ejb.jndi.logging.Hello")) {
-                passed = true;
-            }
-            i++;
-        }
-        Assert.assertTrue(passed);
+        Assert.assertTrue("Expected JNDI binding message not found", LoggingUtil.hasLogMessage(managementClient, TEST_HANDLER_NAME,
+                "ejb:/ejb-jndi/Hello!org.jboss.as.test.integration.ejb.jndi.logging.Hello"));
     }
 
     private static Context getInitialContext(String host, Integer port)  throws NamingException {
@@ -88,25 +105,5 @@ public class JNDIBindingsNoAppNameTestCase {
         props.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
         props.put(Context.PROVIDER_URL, String.format("%s://%s:%d", "remote+http", host, port));
         return new InitialContext(props);
-    }
-
-    private static List<String> readServerLogLines() {
-        String jbossHome = System.getProperty("jboss.home");
-        String logPath = String.format("%s%sstandalone%slog%sserver.log", jbossHome,
-                (jbossHome.endsWith(File.separator) || jbossHome.endsWith("/")) ? "" : File.separator,
-                File.separator, File.separator);
-        logPath = logPath.replace('/', File.separatorChar);
-        try {
-            return Files.readAllLines(Paths.get(logPath));
-        } catch (MalformedInputException e1) {
-            try {
-                return Files.readAllLines(Paths.get(logPath), StandardCharsets.ISO_8859_1);
-            } catch (IOException e4) {
-                throw new RuntimeException("Server logs has not standard Charsets (UTF8 or ISO_8859_1)");
-            }
-        } catch (IOException e) {
-            // server.log file is not created, it is the same as server.log is empty
-        }
-        return new ArrayList<>();
     }
 }
