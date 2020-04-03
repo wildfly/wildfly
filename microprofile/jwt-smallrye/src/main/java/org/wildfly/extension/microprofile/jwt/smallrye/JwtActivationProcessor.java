@@ -31,6 +31,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationTarget.Kind;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -76,8 +77,15 @@ class JwtActivationProcessor implements DeploymentUnitProcessor {
                 if (target.kind() == Kind.CLASS) {
                     if (extendsApplication(target.asClass(), index)) {
                         loginConfig = new LoginConfigMetaData();
-                        loginConfig.setAuthMethod(annotation.value(AUTH_METHOD).asString());
-                        loginConfig.setRealmName(annotation.value(REALM_NAME).asString());
+                        AnnotationValue authMethodValue = annotation.value(AUTH_METHOD);
+                        if (authMethodValue == null) {
+                            throw ROOT_LOGGER.noAuthMethodSpecified();
+                        }
+                        loginConfig.setAuthMethod(authMethodValue.asString());
+                        AnnotationValue realmNameValue = annotation.value(REALM_NAME);
+                        if (realmNameValue != null) {
+                            loginConfig.setRealmName(realmNameValue.asString());
+                        }
 
                         mergedMetaData.setLoginConfig(loginConfig);
 
