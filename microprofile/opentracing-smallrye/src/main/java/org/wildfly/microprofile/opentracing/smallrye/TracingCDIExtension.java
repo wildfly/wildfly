@@ -31,6 +31,7 @@ import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeforeShutdown;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 public class TracingCDIExtension implements Extension {
 
@@ -42,7 +43,7 @@ public class TracingCDIExtension implements Extension {
 
     public void registerTracerBean(@Observes AfterBeanDiscovery abd) {
         abd.addBean().addTransitiveTypeClosure(Tracer.class).produceWith(i -> {
-            return TRACERS.get(Thread.currentThread().getContextClassLoader());
+            return TRACERS.get(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
         });
     }
 
@@ -57,6 +58,6 @@ public class TracingCDIExtension implements Extension {
      * @param bs
      */
     public void beforeShutdown(@Observes final BeforeShutdown bs) {
-        TRACERS.remove(Thread.currentThread().getContextClassLoader());
+        TRACERS.remove(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
     }
 }
