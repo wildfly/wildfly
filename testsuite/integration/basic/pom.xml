@@ -405,6 +405,7 @@
                     <environmentVariables>
                         <!-- dummy env property for MicroProfile Config testing -->
                         <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                        <TEST_PROP>JMXPropertyEditorsTestCase-WFLY-12899</TEST_PROP>
                     </environmentVariables>
                     <systemPropertyVariables combine.children="append">
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
