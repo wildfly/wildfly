@@ -55,19 +55,21 @@ public class ExternalizerObjectTable implements ObjectTable {
     private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
     private final IntSerializer indexSerializer;
 
-    public ExternalizerObjectTable(ClassLoader loader) {
+    public ExternalizerObjectTable(ClassLoader... loader) {
         this(loadExternalizers(loader));
     }
 
-    private static List<Externalizer<Object>> loadExternalizers(ClassLoader loader) {
-        List<Externalizer<Object>> loadedExternalizers = new LinkedList<>();
-        WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+    private static List<Externalizer<Object>> loadExternalizers(ClassLoader... loaders) {
+        List<Externalizer<Object>> loadedExternalizers = WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<Externalizer<Object>>>() {
             @Override
-            public Void run() {
-                for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
-                    loadedExternalizers.add(externalizer);
+            public List<Externalizer<Object>> run() {
+                List<Externalizer<Object>> externalizers = new LinkedList<>();
+                for (ClassLoader loader : loaders) {
+                    for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
+                        externalizers.add(externalizer);
+                    }
                 }
-                return null;
+                return externalizers;
             }
         });
 

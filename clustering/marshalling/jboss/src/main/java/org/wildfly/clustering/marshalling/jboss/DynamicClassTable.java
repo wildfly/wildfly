@@ -41,19 +41,21 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class DynamicClassTable extends SimpleClassTable {
 
-    public DynamicClassTable(ClassLoader loader) {
-        super(findClasses(loader));
+    public DynamicClassTable(ClassLoader... loaders) {
+        super(findClasses(loaders));
     }
 
-    private static List<Class<?>> findClasses(ClassLoader loader) {
-        List<Class<?>> knownClasses = new LinkedList<>();
-        WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+    private static List<Class<?>> findClasses(ClassLoader... loaders) {
+        List<Class<?>> knownClasses = WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<Class<?>>>() {
             @Override
-            public Void run() {
-                for (ClassTableContributor contributor : ServiceLoader.load(ClassTableContributor.class, loader)) {
-                    knownClasses.addAll(contributor.getKnownClasses());
+            public List<Class<?>> run() {
+                List<Class<?>> classes = new LinkedList<>();
+                for (ClassLoader loader : loaders) {
+                    for (ClassTableContributor contributor : ServiceLoader.load(ClassTableContributor.class, loader)) {
+                        classes.addAll(contributor.getKnownClasses());
+                    }
                 }
-                return null;
+                return classes;
             }
         });
 
