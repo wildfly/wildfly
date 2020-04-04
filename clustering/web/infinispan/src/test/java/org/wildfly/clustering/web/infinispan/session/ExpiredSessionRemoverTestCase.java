@@ -47,9 +47,9 @@ import org.wildfly.clustering.web.session.SessionExpirationListener;
 public class ExpiredSessionRemoverTestCase {
     @Test
     public void test() {
-        SessionFactory<UUID, UUID, Object> factory = mock(SessionFactory.class);
+        SessionFactory<Object, UUID, UUID, Object> factory = mock(SessionFactory.class);
         SessionMetaDataFactory<UUID> metaDataFactory = mock(SessionMetaDataFactory.class);
-        SessionAttributesFactory<UUID> attributesFactory = mock(SessionAttributesFactory.class);
+        SessionAttributesFactory<Object, UUID> attributesFactory = mock(SessionAttributesFactory.class);
         SessionExpirationListener listener = mock(SessionExpirationListener.class);
         ImmutableSessionAttributes expiredAttributes = mock(ImmutableSessionAttributes.class);
         ImmutableSessionMetaData validMetaData = mock(ImmutableSessionMetaData.class);
@@ -64,7 +64,7 @@ public class ExpiredSessionRemoverTestCase {
         UUID expiredAttributesValue = UUID.randomUUID();
         UUID validMetaDataValue = UUID.randomUUID();
 
-        ExpiredSessionRemover<UUID, UUID, Object> subject = new ExpiredSessionRemover<>(factory);
+        ExpiredSessionRemover<Object, UUID, UUID, Object> subject = new ExpiredSessionRemover<>(factory);
 
         try (Registration regisration = subject.register(listener)) {
             when(factory.getMetaDataFactory()).thenReturn(metaDataFactory);

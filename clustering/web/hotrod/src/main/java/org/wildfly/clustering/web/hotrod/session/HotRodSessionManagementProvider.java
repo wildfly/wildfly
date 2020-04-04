@@ -41,7 +41,7 @@ public class HotRodSessionManagementProvider implements DistributableSessionMana
     }
 
     @Override
-    public <C extends Marshallability, L> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<C, L> config) {
+    public <S, SC, AL, BL, MC extends Marshallability, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> config) {
         return new HotRodSessionManagerFactoryServiceConfigurator<>(this.configuration, config);
     }
 

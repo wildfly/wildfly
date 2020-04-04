@@ -23,21 +23,23 @@ package org.wildfly.clustering.web.cache.session;
 
 import java.util.Map;
 
-import javax.servlet.ServletContext;
-
 import org.wildfly.clustering.ee.Creator;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.session.Session;
 
 /**
  * Factory for creating sessions. Encapsulates the cache mapping strategy for sessions.
+ * @param <SC> the ServletContext specification type
+ * @param <MV> the meta-data value type
+ * @param <AV> the attributes value type
+ * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface SessionFactory<MV, AV, L> extends ImmutableSessionFactory<MV, AV>, Creator<String, Map.Entry<MV, AV>, Void>, Remover<String> {
+public interface SessionFactory<SC, MV, AV, LC> extends ImmutableSessionFactory<MV, AV>, Creator<String, Map.Entry<MV, AV>, Void>, Remover<String> {
     @Override
     SessionMetaDataFactory<MV> getMetaDataFactory();
     @Override
-    SessionAttributesFactory<AV> getAttributesFactory();
+    SessionAttributesFactory<SC, AV> getAttributesFactory();
 
-    Session<L> createSession(String id, Map.Entry<MV, AV> entry, ServletContext context);
+    Session<LC> createSession(String id, Map.Entry<MV, AV> entry, SC context);
 }

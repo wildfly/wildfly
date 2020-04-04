@@ -23,31 +23,53 @@
 package org.wildfly.clustering.web.cache.session;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-
+import org.wildfly.clustering.web.session.HttpSessionBindingListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 /**
+ * Triggers binding events for all attributes of a session.
+ * @param <S> the HttpSession specification type
+ * @param <C> the ServletContext specification type
+ * @param <L> the HttpSessionBindingListener specification type
  * @author Paul Ferraro
  */
-public class ImmutableSessionBindingNotifier implements SessionBindingNotifier {
+public class ImmutableSessionBindingNotifier<S, C, L> implements SessionBindingNotifier {
+    private final HttpSessionBindingListenerProvider<S, C, L> provider;
+    private final ImmutableSession session;
+    private final C context;
+    private final SessionAttributesFilter filter;
 
-    private final FilteringHttpSession session;
+    public ImmutableSessionBindingNotifier(HttpSessionBindingListenerProvider<S, C, L> provider, ImmutableSession session, C context) {
+        this(provider, session, context, new ImmutableSessionAttributesFilter(session));
+    }
 
-    public ImmutableSessionBindingNotifier(ImmutableSession session, ServletContext context) {
-        this.session = new ImmutableFilteringHttpSession(session, context);
+    ImmutableSessionBindingNotifier(HttpSessionBindingListenerProvider<S, C, L> provider, ImmutableSession session, C context, SessionAttributesFilter filter) {
+        this.provider = provider;
+        this.session = session;
+        this.context = context;
+        this.filter = filter;
+    }
+
+    @Override
+    public void bound() {
+        this.notify(this.provider::valueBoundNotifier);
     }
 
     @Override
     public void unbound() {
-        Map<String, HttpSessionBindingListener> listeners = this.session.getAttributes(HttpSessionBindingListener.class);
+        this.notify(this.provider::valueUnboundNotifier);
+    }
+
+    private void notify(Function<L, BiConsumer<S, String>> notifierFactory) {
+        Map<String, L> listeners = this.filter.getAttributes(this.provider.getHttpSessionBindingListenerClass());
         if (!listeners.isEmpty()) {
-            for (Map.Entry<String, HttpSessionBindingListener> entry : listeners.entrySet()) {
-                HttpSessionBindingListener listener = entry.getValue();
-                listener.valueUnbound(new HttpSessionBindingEvent(this.session, entry.getKey(), listener));
+            for (Map.Entry<String, L> entry : listeners.entrySet()) {
+                L listener = entry.getValue();
+                S session = this.provider.createHttpSession(this.session, this.context);
+                notifierFactory.apply(listener).accept(session, entry.getKey());
             }
         }
     }

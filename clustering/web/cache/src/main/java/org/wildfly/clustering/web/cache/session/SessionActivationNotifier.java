@@ -23,7 +23,7 @@
 package org.wildfly.clustering.web.cache.session;
 
 /**
- * Notifies attributes of a session implementing {@link javax.servlet.http.HttpSessionActivationListener}.
+ * Notifies attributes of a session implementing session activation listener.
  * @author Paul Ferraro
  */
 public interface SessionActivationNotifier {

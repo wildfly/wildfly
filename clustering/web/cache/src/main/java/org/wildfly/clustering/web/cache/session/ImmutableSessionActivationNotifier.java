@@ -23,43 +23,53 @@
 package org.wildfly.clustering.web.cache.session;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionEvent;
-
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 /**
- * Triggers activation events for all attributes of a session.
+ * Triggers activation/passivation events for all attributes of a session.
+ * @param <S> the HttpSession specification type
+ * @param <C> the ServletContext specification type
+ * @param <L> the HttpSessionActivationListener specification type
  * @author Paul Ferraro
  */
-public class ImmutableSessionActivationNotifier implements SessionActivationNotifier {
+public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActivationNotifier {
 
-    private final FilteringHttpSession session;
+    private final HttpSessionActivationListenerProvider<S, C, L> provider;
+    private final ImmutableSession session;
+    private final C context;
+    private final SessionAttributesFilter filter;
 
-    public ImmutableSessionActivationNotifier(ImmutableSession session, ServletContext context) {
-        this.session = new ImmutableFilteringHttpSession(session, context);
+    public ImmutableSessionActivationNotifier(HttpSessionActivationListenerProvider<S, C, L> provider, ImmutableSession session, C context) {
+        this(provider, session, context, new ImmutableSessionAttributesFilter(session));
+    }
+
+    ImmutableSessionActivationNotifier(HttpSessionActivationListenerProvider<S, C, L> provider, ImmutableSession session, C context, SessionAttributesFilter filter) {
+        this.provider = provider;
+        this.session = session;
+        this.context = context;
+        this.filter = filter;
     }
 
     @Override
     public void prePassivate() {
-        Map<String, HttpSessionActivationListener> listeners = this.session.getAttributes(HttpSessionActivationListener.class);
-        if (!listeners.isEmpty()) {
-            HttpSessionEvent event = new HttpSessionEvent(this.session);
-            for (HttpSessionActivationListener listener : listeners.values()) {
-                listener.sessionWillPassivate(event);
-            }
-        }
+        this.notify(this.provider::prePassivateNotifier);
     }
 
     @Override
     public void postActivate() {
-        Map<String, HttpSessionActivationListener> listeners = this.session.getAttributes(HttpSessionActivationListener.class);
+        this.notify(this.provider::postActivateNotifier);
+    }
+
+    private void notify(Function<L, Consumer<S>> notifierFactory) {
+        Map<String, L> listeners = this.filter.getAttributes(this.provider.getHttpSessionActivationListenerClass());
         if (!listeners.isEmpty()) {
-            HttpSessionEvent event = new HttpSessionEvent(this.session);
-            for (HttpSessionActivationListener listener : listeners.values()) {
-                listener.sessionDidActivate(event);
+            S session = this.provider.createHttpSession(this.session, this.context);
+            for (L listener : listeners.values()) {
+                notifierFactory.apply(listener).accept(session);
             }
         }
     }
