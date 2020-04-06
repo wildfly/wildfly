@@ -168,17 +168,15 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         extractDialects();
         investigateDialect();
         checkDatabase();
+        refreshTask = new RefreshTask();
         if (refreshInterval > 0) {
-            refreshTask = new RefreshTask();
             timerInjectedValue.getValue().schedule(refreshTask, refreshInterval, refreshInterval);
         }
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
-        if (refreshTask != null) {
-            refreshTask.cancel();
-        }
+        refreshTask.cancel();
         knownTimerIds.clear();
         managedReference.release();
         managedReference = null;
@@ -531,6 +529,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     @Override
     public DatabaseTimerPersistence getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public void refreshTimers() {
+        refreshTask.run();
     }
 
     private Holder timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService) throws SQLException {
