@@ -2,5 +2,6 @@ embed-server --admin-only=true --server-config=standalone-microprofile.xml
 
 /subsystem=ee:list-add(name=global-modules,value={name=com.github.tomakehurst.wiremock})
 deployment-overlay add --name=tckOverlay --content=/WEB-INF/lib/*.jar/META-INF/beans.xml=${beansxml.path} --deployments=*.war --redeploy-affected
+/system-property=org.eclipse.microprofile.rest.client.tck.timeoutCushion:add(value=30)
 
 stop-embedded-server
