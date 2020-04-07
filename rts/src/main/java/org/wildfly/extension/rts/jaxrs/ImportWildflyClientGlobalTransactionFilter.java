@@ -22,23 +22,44 @@
 package org.wildfly.extension.rts.jaxrs;
 
 import java.io.IOException;
+import javax.annotation.Priority;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 import org.wildfly.extension.rts.logging.RTSLogger;
+import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 
 /**
- * Filter which is expected to be called after {@link InboundBridgeFilter} is processed.<br>
- * Inbound bridge manages transactions on Narayana side and this filter causes the transaction
- * from Narayana being imported by Wildfly transaction client.
+ * <p>
+ *   Request and response filter which is expected to be called
+ *   for the request side after the {@link org.jboss.narayana.rest.bridge.inbound.InboundBridgeFilter} is processed
+ *   while on the response side before the {@link org.jboss.narayana.rest.bridge.inbound.InboundBridgeFilter} is processed.
+ * </p>
+ * <p>
+ *   Purpose of this filter is an integration of WFTC with Narayana REST-AT Inbound Bridge.
+ *   Inbound Bridge uses Narayana transactions while WFLY utilizes WFTC transactions (wrapping the underlaying Narayana) ones.
+ *   For that on request side the Inbound bridge first creates the Narayana transaction and then the request
+ *   filter makes the WFTC to wrap and to know about this transaction.
+ *   On the response side the WFTC needs to suspend its wrapping transction and then Narayana suspend its own
+ *   transaction (which was already suspended by WFTC callback and thus is ignored on the Narayana side).
+ * </p>
+ * <p>
+ *   <i>NOTE:</i> the {@link org.jboss.narayana.rest.bridge.inbound.InboundBridgeFilter} does not define the {@link Priority}
+ *   and so by JAX-RS spec is taken with priority of {@link Priorities#USER}.
+ * </p>
  *
  * @author Ondrej Chaloupka <ochaloup@redhat.com>
  */
 @Provider
-public class ImportWildflyClientGlobalTransactionFilter implements ContainerRequestFilter {
+@Priority(Priorities.USER + 1)
+public class ImportWildflyClientGlobalTransactionFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -50,4 +71,16 @@ public class ImportWildflyClientGlobalTransactionFilter implements ContainerRequ
         }
     }
 
+    @Override
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+        try {
+            // suspending context before returning to the client
+            if (ContextTransactionManager.getInstance() != null &&
+                    ContextTransactionManager.getInstance().getStatus() != Status.STATUS_NO_TRANSACTION) {
+                ContextTransactionManager.getInstance().suspend();
+            }
+        } catch (SystemException se) {
+            RTSLogger.ROOT_LOGGER.cannotGetTransactionStatus(responseContext, se);
+        }
+    }
 }
