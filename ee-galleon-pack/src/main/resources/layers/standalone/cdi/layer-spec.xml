@@ -3,6 +3,5 @@
     <dependencies>
         <layer name="base-server"/>
     </dependencies>
-    <feature spec="subsystem.bean-validation"/>
     <feature spec="subsystem.weld"/>
 </layer-spec>
