@@ -51,12 +51,6 @@ public class ResourceInjectionUtilities {
         }
     }
 
-    /** @deprecated use {@link #getResourceName(InjectionPoint, PropertyReplacer)}  */
-    @Deprecated
-    public static String getResourceName(InjectionPoint injectionPoint) {
-        return getResourceName(injectionPoint, null);
-    }
-
     public static String getResourceName(InjectionPoint injectionPoint, PropertyReplacer propertyReplacer) {
         Resource resource = getResourceAnnotated(injectionPoint).getAnnotation(Resource.class);
         String mappedName = resource.mappedName();
