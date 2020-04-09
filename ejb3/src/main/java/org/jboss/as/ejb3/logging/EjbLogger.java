@@ -3219,4 +3219,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 519, value = "Invalid unmarshalling filter specfication %s; specifications must describe class or package name matching patterns")
     IllegalArgumentException invalidFilterSpec(String spec);
+
+    @LogMessage(level = INFO)
+    @Message(id = 520, value = "SessionBean %s does not expose potential Interface view... : %s")
+    void potentialInterfaceExposure(String SessionBean, String potentialInterface);
 }

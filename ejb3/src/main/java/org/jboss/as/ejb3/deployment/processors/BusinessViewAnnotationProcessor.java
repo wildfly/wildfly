@@ -49,6 +49,7 @@ import org.jboss.metadata.ejb.spec.EjbJarVersion;
 import org.jboss.modules.Module;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.potentialNotExposedViewInterfacesInfo;
 import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
 /**
@@ -150,6 +151,8 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
                 sessionBeanComponentDescription.addLocalBusinessInterfaceViews(toString(potentialBusinessInterfaces));
             }
         }
+
+        potentialNotExposedViewInterfacesInfo(sessionBeanClass);
     }
 
     private Collection<Class<?>> getRemoteBusinessInterfaces(final DeploymentUnit deploymentUnit, final Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {

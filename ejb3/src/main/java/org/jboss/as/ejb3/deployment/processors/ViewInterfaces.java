@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.jboss.as.ejb3.logging.EjbLogger;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -56,6 +57,7 @@ class ViewInterfaces {
             }
             potentialBusinessInterfaces.add(klass);
         }
+
         return potentialBusinessInterfaces;
     }
 
@@ -84,5 +86,44 @@ class ViewInterfaces {
             names.add(dotName);
         }
         return names;
+    }
+
+    static void potentialNotExposedViewInterfacesInfo(Class<?> beanClass) {
+        Class<?>[] interfaces = beanClass.getInterfaces();
+        final Set<Class<?>> potentialBusinessInterfaces = new HashSet<Class<?>>();
+        if (interfaces != null) {
+            for (Class<?> klass : interfaces) {
+                // EJB 3.1 FR 4.9.7 bullet 5.3
+                if (klass.equals(Serializable.class) ||
+                    klass.equals(Externalizable.class) ||
+                    klass.getName().startsWith("javax.ejb.") ||
+                    klass.getName().startsWith("groovy.lang.")) {
+                    continue;
+                }
+                potentialBusinessInterfaces.add(klass);
+            }
+        }
+
+        // Check for other potential interfaces
+        Class superClass = beanClass.getSuperclass();
+
+        while(superClass!=null) {
+            Class<?>[] superClassInterfaces = superClass.getInterfaces();
+
+            if (superClassInterfaces != null) {
+                for (Class<?> klass : superClassInterfaces) {
+                    // EJB 3.1 FR 4.9.7 bullet 5.3
+                    if (klass.equals(Serializable.class) ||
+                            klass.equals(Externalizable.class) ||
+                            klass.getName().startsWith("javax.ejb.") ||
+                            klass.getName().startsWith("groovy.lang.") || potentialBusinessInterfaces.contains(klass)) {
+                        continue;
+                    }
+                    EjbLogger.ROOT_LOGGER.potentialInterfaceExposure(beanClass.getName(), klass.getCanonicalName());
+                }
+            }
+
+            superClass = superClass.getSuperclass();
+        }
     }
 }
