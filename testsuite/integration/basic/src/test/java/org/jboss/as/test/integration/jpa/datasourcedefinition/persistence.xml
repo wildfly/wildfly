@@ -4,10 +4,9 @@
         <jta-data-source>java:app/DataSource</jta-data-source>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
-            <!-- @DataSourceDefinition need to be started from the install phase, set wildfly.jpa.twophasebootstrap=false,
-                 to delay starting the persistence unit service until the install phase.
-             -->
-            <property name="wildfly.jpa.twophasebootstrap" value="false"/>
+            <property name="wildfly.jpa.twophasebootstrap" value="true"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
+            <property name="wildfly.jpa.applicationdatasource" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
