@@ -39,9 +39,13 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -68,6 +72,9 @@ import org.junit.runner.RunWith;
 @ServerSetup(VirtualHostTestCase.VirtualHostSetupTask.class)
 //todo this test could probably be done in manual mode test with wildfly runner
 public class VirtualHostTestCase {
+
+    @ContainerResource
+    private ManagementClient managementClient;
 
     public static class VirtualHostSetupTask extends SnapshotRestoreSetupTask {
         @Override
@@ -125,6 +132,18 @@ public class VirtualHostTestCase {
         return createDeployment("another-server");
     }
 
+    @Deployment(name = "default-common")
+    public static Archive<?> getDefaultHostCommonDeployment() {
+        return createDeployment("default-common");
+    }
+
+    @Deployment(name = "another-common")
+    public static Archive<?> getAnotherHostCommonDeployment() {
+        WebArchive war = createDeployment("another-common");
+        war.addAsWebResource(new StringAsset("<jboss-web><server-instance>myserver</server-instance><virtual-host>another</virtual-host></jboss-web>"), "WEB-INF/jboss-web.xml");
+        return war;
+    }
+
     private void callAndTest(String uri, String expectedResult) throws IOException {
         HttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(uri);
@@ -134,21 +153,50 @@ public class VirtualHostTestCase {
         Assert.assertEquals("Got response from wrong deployment", expectedResult, result);
     }
 
+    private void checkUndertowInfo(String app, String server, String host, String context) throws IOException, MgmtOperationException {
+        ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.DEPLOYMENT, app)
+                .add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+        op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set("true");
+        ModelNode result = managementClient.getControllerClient().execute(op);
+        Assert.assertTrue("Undertow info OK for " + app, Operations.isSuccessfulOutcome(result));
+        Assert.assertEquals("context-root is set to " + context + " for " + app, context, result.get("result").get("context-root").asString());
+        Assert.assertEquals("virtual-host is set to " + host + " for " + app, host, result.get("result").get("virtual-host").asString());
+        Assert.assertEquals("server is set to " + server + " for " + app, server, result.get("result").get("server").asString());
+    }
+
     @Test
-    public void testDefaultHost() throws IOException {
+    public void testDefaultHost() throws IOException, MgmtOperationException {
         Assume.assumeTrue("This needs to be localhost, as it is by host mapping",
                 InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).isLoopbackAddress());
         callAndTest("http://localhost:8080/", "ROOT");
+        checkUndertowInfo("ROOT.war", "default-server", "default-host", "/");
     }
 
     @Test
-    public void testNonDefaultHost() throws IOException {
+    public void testNonDefaultHost() throws IOException, MgmtOperationException {
         callAndTest("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/", "test"); //second host on first server has alias 127.0.0.1 or ::1
+        checkUndertowInfo("test.war", "default-server", "test", "/");
     }
 
     @Test
-    public void testAnotherServerHost() throws IOException {
+    public void testAnotherServerHost() throws IOException, MgmtOperationException {
         callAndTest("http://" + TestSuiteEnvironment.getServerAddress() + ":8181/", "another-server");
+        checkUndertowInfo("another-server.war", "myserver", "another", "/");
     }
 
+    @Test
+    public void testDefaultHostCommonAplication() throws IOException, MgmtOperationException {
+        Assume.assumeTrue("This needs to be localhost, as it is by host mapping",
+                InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).isLoopbackAddress());
+        callAndTest("http://localhost:8080/default-common/", "default-common");
+        checkUndertowInfo("default-common.war", "default-server", "default-host", "/default-common");
+    }
+
+    @Test
+    public void testAnotherHostCommonAplication() throws IOException, MgmtOperationException {
+        callAndTest("http://" + TestSuiteEnvironment.getServerAddress() + ":8181/another-common/", "another-common");
+        checkUndertowInfo("another-common.war", "myserver", "another", "/another-common");
+    }
 }

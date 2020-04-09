@@ -185,12 +185,12 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
         }
 
-        final Map.Entry<String,String> severHost = defaultModuleMappingProvider.getMapping(deploymentName);
+        final Map.Entry<String,String> serverHost = defaultModuleMappingProvider.getMapping(deploymentName);
         String defaultHostForDeployment;
         String defaultServerForDeployment;
-        if (severHost != null) {
-            defaultServerForDeployment = severHost.getKey();
-            defaultHostForDeployment = severHost.getValue();
+        if (serverHost != null) {
+            defaultServerForDeployment = serverHost.getKey();
+            defaultHostForDeployment = serverHost.getValue();
         } else {
             defaultServerForDeployment = this.defaultServer;
             defaultHostForDeployment = this.defaultHost;
@@ -198,8 +198,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
         String serverInstanceName = warMetaData.getMergedJBossWebMetaData().getServerInstanceName() == null ? defaultServerForDeployment : warMetaData.getMergedJBossWebMetaData().getServerInstanceName();
         String hostName = hostNameOfDeployment(warMetaData, defaultHostForDeployment);
+        // flag if the app is the default web module for the server/host
+        boolean isDefaultWebModule = serverHost != null && serverInstanceName.equals(defaultServerForDeployment) && hostName.equals(defaultHostForDeployment);
 
-        processDeployment(warMetaData, deploymentUnit, phaseContext.getServiceTarget(), deploymentName, hostName, serverInstanceName);
+        processDeployment(warMetaData, deploymentUnit, phaseContext.getServiceTarget(), deploymentName, hostName, serverInstanceName, isDefaultWebModule);
     }
 
 
@@ -219,7 +221,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
     }
 
     private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget,
-                                   final String deploymentName, final String hostName, final String serverInstanceName)
+                                   final String deploymentName, final String hostName, final String serverInstanceName, final boolean isDefaultWebModule)
             throws DeploymentUnitProcessingException {
         ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
@@ -269,7 +271,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             jaccContextId = deploymentUnit.getParent().getName() + "!" + jaccContextId;
         }
 
-        final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
+        String pathName = pathNameOfDeployment(deploymentUnit, metaData, isDefaultWebModule);
 
         final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         final boolean securityEnabled = capabilities.hasCapability(LEGACY_SECURITY_CAPABILITY_NAME);
@@ -523,9 +525,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         return this.nonDistributableSessionManagementProvider;
     }
 
-    static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {
+    static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData, final boolean isDefaultWebModule) {
         String pathName;
-        if (metaData.getContextRoot() == null) {
+        if (isDefaultWebModule) {
+            pathName = "/";
+        } else if (metaData.getContextRoot() == null) {
             final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             if (description != null) {
                 // if there is an EEModuleDescription we need to take into account that the module name may have been overridden
