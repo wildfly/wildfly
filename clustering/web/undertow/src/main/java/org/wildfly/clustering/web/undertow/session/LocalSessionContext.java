@@ -21,10 +21,16 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.List;
+
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.websockets.core.WebSocketChannel;
 
 public interface LocalSessionContext {
 
     AuthenticatedSession getAuthenticatedSession();
     void setAuthenticatedSession(AuthenticatedSession authenticatedSession);
+
+    List<WebSocketChannel> getWebSocketChannels();
+    void setWebSocketChannels(List<WebSocketChannel> channels);
 }
