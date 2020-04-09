@@ -32,7 +32,7 @@ import org.jboss.as.clustering.controller.Schema;
  */
 public enum MicroProfileFaultToleranceSchema implements Schema<MicroProfileFaultToleranceSchema> {
 
-    VERSION_1_0(1, 0), // WildFly 19
+    VERSION_1_0(1, 0), // WildFly 19-20
     ;
     public static final MicroProfileFaultToleranceSchema CURRENT = VERSION_1_0;
 

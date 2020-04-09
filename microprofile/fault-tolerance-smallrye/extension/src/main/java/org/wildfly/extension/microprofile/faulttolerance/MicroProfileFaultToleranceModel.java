@@ -32,7 +32,7 @@ import org.jboss.as.controller.ModelVersion;
  */
 public enum MicroProfileFaultToleranceModel implements Model {
 
-    VERSION_1_0_0(1, 0, 0), // WildFly 19
+    VERSION_1_0_0(1, 0, 0), // WildFly 19-20
     ;
     static final MicroProfileFaultToleranceModel CURRENT = VERSION_1_0_0;
 
