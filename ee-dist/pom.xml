@@ -162,6 +162,10 @@
                     <systemPropertyVariables combine.children="append">
                         <jboss.dist>${basedir}/target/xml-validation</jboss.dist>
                         <jboss.actual.dist>${basedir}/target/${project.build.finalName}</jboss.actual.dist>
+                        <!-- FIXME: WFLY-12510, the 2 following properties are required by the StandardConfigsXMLValidationUnitTestCase to -->
+                        <!-- validate that existing schemas that references wildfly-credential-reference_1_0.xsd are valid                 -->
+                        <version.org.wildfly.core>${version.org.wildfly.core}</version.org.wildfly.core>
+                        <jboss.test.xml.validation.future.schemas>${version.org.wildfly.core}/wildfly-credential-reference_1_1.xsd</jboss.test.xml.validation.future.schemas>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
