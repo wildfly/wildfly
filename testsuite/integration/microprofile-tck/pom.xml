@@ -51,6 +51,7 @@
         <module>metrics</module>
         <module>openapi</module>
         <module>opentracing</module>
+        <module>rest-client</module>
     </modules>
 
     <profiles>
