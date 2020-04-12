@@ -34,6 +34,6 @@
     <dependencies>
         <module name="io.smallrye.fault-tolerance"/>
         <module name="javax.api"/>
-        <module name="org.jboss.as.ee"/>
+        <module name="javax.enterprise.concurrent.api"/>
     </dependencies>
 </module>

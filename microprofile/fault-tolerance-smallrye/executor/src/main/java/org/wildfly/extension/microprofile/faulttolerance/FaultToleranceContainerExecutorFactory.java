@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.microprofile.faulttolerance;
 
+import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.naming.InitialContext;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,7 +34,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import io.smallrye.faulttolerance.ExecutorFactory;
-import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 
 /**
  * Implementation of {@link io.smallrye.faulttolerance.ExecutorFactory} specific to this container to provide context
@@ -64,7 +64,7 @@ public class FaultToleranceContainerExecutorFactory implements ExecutorFactory {
     private ThreadFactory getThreadFactory() {
         try {
             InitialContext initialContext = new InitialContext();
-            return (ManagedThreadFactoryImpl) initialContext.lookup("java:jboss/ee/concurrency/factory/default");
+            return (ManagedThreadFactory) initialContext.lookup("java:jboss/ee/concurrency/factory/default");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
