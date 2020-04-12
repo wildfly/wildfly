@@ -172,7 +172,7 @@
                         </goals>
                         <configuration>
                             <commands>
-                                <command>module add --name=com.github.tomakehurst.wiremock --resources=${project.build.directory}/wildfly/wiremock/wiremock.jar:${project.build.directory}/wildfly/wiremock/junit.jar --module-xml=${basedir}/module.xml</command>
+                                <command>module add --name=com.github.tomakehurst.wiremock --resources=${project.build.directory}/wildfly/wiremock/wiremock.jar${:}${project.build.directory}/wildfly/wiremock/junit.jar --module-xml=${basedir}/module.xml</command>
                             </commands>
                             <scripts>
                                 <script>wiremock.cli</script>
