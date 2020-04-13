@@ -1,0 +1,14 @@
+package org.wildfly.clustering.web.hotrod.sso.coarse;
+
+/**
+ * @TypeId(241)
+ */
+message CoarseSessionsKey {
+	required	string	id	= 1;
+}
+
+/**
+ * @TypeId(242)
+ */
+message SessionsFilterKey {
+}
