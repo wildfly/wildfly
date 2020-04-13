@@ -9155,7 +9155,7 @@
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                        <excludes>**/*$logger.java,**/*$bundle.java</excludes>
+                        <excludes>**/*$logger.java,**/*$bundle.java,**/*$___Marshaller_*.java,**/*SerializationContextInitializerImpl.java</excludes>
                         <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
                         <useFile></useFile>
                     </configuration>
