@@ -29,12 +29,14 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 
+import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
@@ -44,6 +46,7 @@ import org.infinispan.globalstate.ConfigurationStorage;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -57,6 +60,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
+import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanProtoStreamMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -113,7 +117,9 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.transport().read(this.transport.get());
 
         Module module = this.module.get();
-        builder.serialization().marshaller(new JBossMarshaller(this.loader.get(), module));
+        Marshaller marshaller = this.createMarshaller(module);
+        InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", this.name, marshaller.getClass().getName());
+        builder.serialization().marshaller(marshaller);
         builder.classLoader(module.getClassLoader());
 
         builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());
@@ -154,5 +160,13 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         }
         Service service = new FunctionalService<>(global, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
+    }
+
+    private Marshaller createMarshaller(Module module) {
+        try {
+            return new InfinispanProtoStreamMarshaller(module);
+        } catch (NoSuchElementException e) {
+            return new JBossMarshaller(this.loader.get(), module);
+        }
     }
 }
