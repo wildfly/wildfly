@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import javax.ejb.EJB;
@@ -45,6 +46,7 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
     @EJB
     private CommandDispatcherFactory factory;
     private final Command<String, Node> command = new TestCommand();
+    private final Command<Void, Node> exceptionCommand = new ExceptionCommand();
 
     @Override
     public ClusterTopology getClusterTopology() {
@@ -69,6 +71,18 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
                     remote.add(response.toCompletableFuture().join());
                 } catch (CancellationException e) {
                     // Ignore
+                }
+            }
+
+            for (CompletionStage<Void> response: this.dispatcher.executeOnGroup(this.exceptionCommand).values()) {
+                try {
+                    response.toCompletableFuture().join();
+                    throw new IllegalStateException("Exception expected");
+                } catch (CancellationException e) {
+                    // Ignore
+                } catch (CompletionException e) {
+                    e.printStackTrace(System.err);
+                    assert Exception.class.equals(e.getCause().getClass()) : e.getCause().getClass().getName();
                 }
             }
 
