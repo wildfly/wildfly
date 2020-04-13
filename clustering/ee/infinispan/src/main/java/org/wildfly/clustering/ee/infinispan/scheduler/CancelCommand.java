@@ -37,6 +37,10 @@ public class CancelCommand<I, M> implements Command<Void, Scheduler<I, M>> {
         this.id = id;
     }
 
+    I getId() {
+        return this.id;
+    }
+
     @Override
     public Void execute(Scheduler<I, M> scheduler) {
         scheduler.cancel(this.id);

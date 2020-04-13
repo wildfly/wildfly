@@ -39,6 +39,14 @@ public class ScheduleCommand<I, M> implements Command<Void, Scheduler<I, M>> {
         this.metaData = metaData;
     }
 
+    ScheduleCommand(I id) {
+        this(id, null);
+    }
+
+    I getId() {
+        return this.id;
+    }
+
     @Override
     public Void execute(Scheduler<I, M> scheduler) {
         if (this.metaData != null) {
