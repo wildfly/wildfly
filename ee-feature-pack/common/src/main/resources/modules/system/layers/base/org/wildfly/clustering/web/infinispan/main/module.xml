@@ -61,8 +61,6 @@
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.clustering.web.cache" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>
-        <!-- Enable dynamic loading of single sign-on class tables -->
-        <module name="org.wildfly.clustering.web.undertow" services="import" optional="true"/>
         <module name="org.wildfly.common"/>
     </dependencies>
 </module>

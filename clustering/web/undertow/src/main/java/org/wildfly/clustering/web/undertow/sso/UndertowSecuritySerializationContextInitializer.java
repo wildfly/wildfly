@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.undertow.sso.elytron;
+package org.wildfly.clustering.web.undertow.sso;
 
-import java.util.Collections;
-import java.util.List;
-
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(ClassTableContributor.class)
-public class DistributableSingleSignOnClassTableContributor implements ClassTableContributor {
+@MetaInfServices(SerializationContextInitializer.class)
+public class UndertowSecuritySerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
-    public List<Class<?>> getKnownClasses() {
-        return Collections.singletonList(ElytronAuthentication.class);
+    public String getProtoFileName() {
+        return "io.undertow.security.api.proto";
+    }
+
+    @Override
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new ExternalizerMarshaller<>(new AuthenticatedSessionExternalizer()));
     }
 }

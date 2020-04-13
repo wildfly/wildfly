@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,34 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.undertow.sso;
+package org.wildfly.clustering.web.undertow.sso.elytron;
 
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.List;
-
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
-import org.wildfly.extension.undertow.security.AccountImpl;
-
-import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
-import io.undertow.security.idm.Account;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(ClassTableContributor.class)
-public class DistributableSingleSignOnClassTableContributor implements ClassTableContributor {
+@MetaInfServices(SerializationContextInitializer.class)
+public class ElytronSSOSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
-    public List<Class<?>> getKnownClasses() {
-        return Arrays.asList(
-                AuthenticatedSession.class,
-                Account.class,
-                AccountImpl.class,
-                Principal.class,
-                // AccountImpl.AccountPrincipal is not visible
-                new AccountImpl("").getPrincipal().getClass()
-        );
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new ExternalizerMarshaller<>(new ElytronAuthenticationExternalizer()));
     }
 }
