@@ -30,7 +30,6 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer;
 import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
@@ -51,7 +50,6 @@ public enum InfinispanBeanKeySerializer implements Serializer<InfinispanBeanKey<
         return new InfinispanBeanKey<>(SessionIDSerializer.INSTANCE.read(input));
     }
 
-    @MetaInfServices(Externalizer.class)
     public static class InfinispanBeanKeyExternalizer extends SerializerExternalizer<InfinispanBeanKey<SessionID>> {
         @SuppressWarnings("unchecked")
         public InfinispanBeanKeyExternalizer() {
