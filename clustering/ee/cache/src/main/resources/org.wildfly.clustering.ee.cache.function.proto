@@ -1,0 +1,61 @@
+package org.wildfly.clustering.ee.cache.function;
+
+// IDs: 160 - 179
+
+/**
+ * @TypeId(160)
+ */
+message ConcurrentMapPutFunction {
+	required	bytes	key	= 1;
+	required	bytes	value	= 2;
+}
+
+/**
+ * @TypeId(161)
+ */
+message ConcurrentMapRemoveFunction {
+	required	bytes	key	= 1;
+}
+
+/**
+ * @TypeId(162)
+ */
+message ConcurrentSetAddFunction {
+	required	bytes	value	= 1;
+}
+
+/**
+ * @TypeId(163)
+ */
+message ConcurrentSetRemoveFunction {
+	required	bytes	value	= 1;
+}
+
+/**
+ * @TypeId(164)
+ */
+message CopyOnWriteMapPutFunction {
+	required	bytes	key	= 1;
+	required	bytes	value	= 2;
+}
+
+/**
+ * @TypeId(165)
+ */
+message CopyOnWriteMapRemoveFunction {
+	required	bytes	key	= 1;
+}
+
+/**
+ * @TypeId(166)
+ */
+message CopyOnWriteSetAddFunction {
+	required	bytes	value	= 1;
+}
+
+/**
+ * @TypeId(167)
+ */
+message CopyOnWriteSetRemoveFunction {
+	required	bytes	value	= 1;
+}
