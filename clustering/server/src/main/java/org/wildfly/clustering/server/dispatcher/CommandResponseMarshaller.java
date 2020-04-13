@@ -33,8 +33,8 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.marshalling.jboss.ByteBufferOutputStream;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.IntSerializer;
 
