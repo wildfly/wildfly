@@ -25,6 +25,7 @@ package org.wildfly.clustering.ejb.infinispan;
 import java.util.ServiceLoader;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.junit.Test;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -52,5 +53,6 @@ public class ServiceLoaderTestCase {
         load(LocalCacheServiceConfiguratorProvider.class);
         load(IdentityCacheServiceConfiguratorProvider.class);
         load(TwoWayKey2StringMapper.class);
+        load(SerializationContextInitializer.class);
     }
 }

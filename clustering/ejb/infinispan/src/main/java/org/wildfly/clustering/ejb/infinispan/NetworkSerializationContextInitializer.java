@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ee.Creator;
-import org.wildfly.clustering.ee.Locator;
-import org.wildfly.clustering.ee.Remover;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 
 /**
- * A factory for creating a {@link BeanGroup}.
- *
  * @author Paul Ferraro
- *
- * @param <I> the bean identifier type
- * @param <T> the bean type
- * @param <C> the marshalling context
  */
-public interface BeanGroupFactory<I, T, C> extends Creator<I, BeanGroupEntry<I, T, C>, Void>, Locator<I, BeanGroupEntry<I, T, C>>, Remover<I>, BeanGroupEvictor<I> {
-    /**
-     * Create a new bean group using the specified identifier and entry.
-     * @param id a group identifier
-     * @param entry the cache entry for the group
-     * @return a bean group
-     */
-    BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T, C> entry);
+@MetaInfServices(SerializationContextInitializer.class)
+public class NetworkSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    BeanGroupKey<I> createKey(I id);
+    @Override
+    public String getProtoFileName() {
+        return "org.jboss.as.network.proto";
+    }
 
-    int getPassiveCount();
-
-    void close();
+    @Override
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new ExternalizerMarshaller<>(new ClientMappingExternalizer()));
+    }
 }

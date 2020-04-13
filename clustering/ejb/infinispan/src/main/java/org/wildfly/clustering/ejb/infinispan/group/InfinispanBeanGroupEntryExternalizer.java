@@ -42,6 +42,7 @@ public class InfinispanBeanGroupEntryExternalizer<I, T, C> implements Externaliz
         DefaultExternalizer.MARSHALLED_VALUE.cast(MarshalledValue.class).writeObject(output, entry.getBeans());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public InfinispanBeanGroupEntry<I, T, C> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         MarshalledValue<Map<I, T>, C> value = DefaultExternalizer.MARSHALLED_VALUE.cast(MarshalledValue.class).readObject(input);

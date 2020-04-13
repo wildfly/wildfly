@@ -1,0 +1,24 @@
+package org.jboss.ejb.client;
+
+// IDs: 300 - 309
+
+/**
+ * @TypeId(300)
+ */
+message BasicSessionID {
+	required bytes	id	= 1;
+}
+
+/**
+ * @TypeId(301)
+ */
+message UUIDSessionID {
+	required bytes	id	= 1;
+}
+
+/**
+ * @TypeId(302)
+ */
+message UnknownSessionID {
+	required bytes	id	= 1;
+}
