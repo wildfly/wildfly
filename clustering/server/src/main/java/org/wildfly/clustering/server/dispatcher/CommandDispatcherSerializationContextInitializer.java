@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
 
-import java.util.Arrays;
-import java.util.List;
+package org.wildfly.clustering.server.dispatcher;
 
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
 
 /**
- * ClassTable contributor for a {@link DistributedSingletonServiceBuilder}.
  * @author Paul Ferraro
  */
-@MetaInfServices(ClassTableContributor.class)
-public class SingletonClassTableContributor implements ClassTableContributor {
+@MetaInfServices(SerializationContextInitializer.class)
+public class CommandDispatcherSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
-    public List<Class<?>> getKnownClasses() {
-        return Arrays.<Class<?>>asList(SingletonValueCommand.class, StartCommand.class, StopCommand.class, PrimaryProviderCommand.class);
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new EnumMarshaller<>(NoSuchService.class));
     }
 }

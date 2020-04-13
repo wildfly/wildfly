@@ -48,18 +48,18 @@ public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller 
     @Override
     public void objectToStream(Object object, DataOutput stream) throws IOException {
         ByteBuffer buffer = this.marshaller.write(object);
+
         int length = buffer.limit() - buffer.arrayOffset();
         IndexSerializer.VARIABLE.writeInt(stream, length);
         stream.write(buffer.array(), buffer.arrayOffset(), length);
     }
 
     @Override
-    public Object objectFromStream(DataInput stream) throws IOException, ClassNotFoundException {
+    public Object objectFromStream(DataInput stream) throws IOException {
         int size = IndexSerializer.VARIABLE.readInt(stream);
         byte[] bytes = new byte[size];
         stream.readFully(bytes);
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        if (this.factory.isUnknownForkResponse(buffer)) return NoSuchService.INSTANCE;
-        return this.marshaller.read(buffer);
+        return this.factory.isUnknownForkResponse(buffer) ? NoSuchService.INSTANCE : this.marshaller.read(buffer);
     }
 }

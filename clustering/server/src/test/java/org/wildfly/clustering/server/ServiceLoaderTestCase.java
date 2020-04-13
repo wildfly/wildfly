@@ -24,6 +24,7 @@ package org.wildfly.clustering.server;
 
 import java.util.ServiceLoader;
 
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.logging.Logger;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -41,6 +42,7 @@ import org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider;
  */
 public class ServiceLoaderTestCase {
     private static final Logger LOGGER = Logger.getLogger(ServiceLoaderTestCase.class);
+
     @Test
     public void load() {
         load(Externalizer.class);
@@ -51,10 +53,11 @@ public class ServiceLoaderTestCase {
         load(DistributedCacheServiceConfiguratorProvider.class);
         load(LocalGroupServiceConfiguratorProvider.class);
         load(LocalCacheServiceConfiguratorProvider.class);
+        load(SerializationContextInitializer.class);
     }
 
     private static <T> void load(Class<T> targetClass) {
         ServiceLoader.load(targetClass, ServiceLoaderTestCase.class.getClassLoader())
-                .forEach(object -> LOGGER.trace("\t" + object.getClass().getName()));
+                .forEach(object -> LOGGER.tracef("\t" + object.getClass().getName()));
     }
 }

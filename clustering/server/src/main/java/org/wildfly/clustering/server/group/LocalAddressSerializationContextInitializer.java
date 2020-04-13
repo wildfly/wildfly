@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.registry;
+package org.wildfly.clustering.server.group;
 
-import java.util.function.Predicate;
-
-import org.infinispan.metadata.Metadata;
-import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
-import org.infinispan.notifications.cachelistener.filter.EventType;
-import org.infinispan.remoting.transport.Address;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
+import org.infinispan.remoting.transport.LocalModeAddress;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public enum CacheRegistryFilter implements CacheEventFilter<Object, Object>, Predicate<Object> {
-    INSTANCE;
+@MetaInfServices(SerializationContextInitializer.class)
+public class LocalAddressSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
-    public boolean accept(Object key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {
-        return this.test(key);
+    public String getProtoFileName() {
+        return "org.infinispan.remoting.transport.proto";
     }
 
     @Override
-    public boolean test(Object key) {
-        return key instanceof Address;
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new ValueMarshaller<>(LocalModeAddress.INSTANCE));
     }
 }

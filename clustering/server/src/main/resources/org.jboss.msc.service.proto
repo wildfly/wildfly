@@ -1,0 +1,26 @@
+package org.jboss.msc.service;
+
+// IDs: 150 - 154
+
+/**
+ * @TypeId(150)
+ */
+message ServiceName {
+	required	string	name	= 1;
+}
+
+/**
+ * @TypeId(151)
+ */
+message StartException {
+    optional	String	message	= 1;
+    optional	bytes	cause	= 2;
+}
+
+/**
+ * @TypeId(152)
+ */
+message ServiceNotFoundException {
+    optional	String	message	= 1;
+    optional	bytes	cause	= 2;
+}

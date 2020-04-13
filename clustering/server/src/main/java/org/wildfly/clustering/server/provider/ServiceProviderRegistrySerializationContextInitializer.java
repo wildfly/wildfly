@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.provider;
 
-import java.util.Collections;
-import java.util.List;
-
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 
 /**
- * ClassTable contributor for the marshaller of a {@link org.wildfly.clustering.provider.ServiceProviderRegistration}.
  * @author Paul Ferraro
  */
-@MetaInfServices(ClassTableContributor.class)
-public class ServiceProviderRegistryClassTableContributor implements ClassTableContributor {
+@MetaInfServices(SerializationContextInitializer.class)
+public class ServiceProviderRegistrySerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
-    public List<Class<?>> getKnownClasses() {
-        return Collections.<Class<?>>singletonList(GetLocalServicesCommand.class);
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new ValueMarshaller<>(new GetLocalServicesCommand<>()));
     }
 }

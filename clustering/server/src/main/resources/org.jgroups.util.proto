@@ -1,0 +1,10 @@
+package org.jgroups.util;
+
+// IDs: 136
+
+/**
+ * @TypeId(136)
+ */
+message UUID {
+	required	bytes	address	= 1;
+}
