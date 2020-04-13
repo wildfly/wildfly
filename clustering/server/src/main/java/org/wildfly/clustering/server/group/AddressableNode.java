@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
+import org.jgroups.stack.IpAddress;
 import org.wildfly.clustering.group.Node;
 
 /**
@@ -39,6 +40,10 @@ public class AddressableNode implements Node, Comparable<AddressableNode>, Seria
     private transient Address address;
     private final String name;
     private final InetSocketAddress socketAddress;
+
+    public AddressableNode(IpAddress address, String name) {
+        this(address, name, new InetSocketAddress(address.getIpAddress(), address.getPort()));
+    }
 
     public AddressableNode(Address address, String name, InetSocketAddress socketAddress) {
         this.address = address;

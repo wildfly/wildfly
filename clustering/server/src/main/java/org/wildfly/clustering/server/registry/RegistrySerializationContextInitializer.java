@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,26 +22,20 @@
 
 package org.wildfly.clustering.server.registry;
 
-import java.util.function.Predicate;
-
-import org.infinispan.metadata.Metadata;
-import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
-import org.infinispan.notifications.cachelistener.filter.EventType;
-import org.infinispan.remoting.transport.Address;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public enum CacheRegistryFilter implements CacheEventFilter<Object, Object>, Predicate<Object> {
-    INSTANCE;
+@MetaInfServices(SerializationContextInitializer.class)
+public class RegistrySerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
-    public boolean accept(Object key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {
-        return this.test(key);
-    }
-
-    @Override
-    public boolean test(Object key) {
-        return key instanceof Address;
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new EnumMarshaller<>(CacheRegistryFilter.class));
     }
 }
