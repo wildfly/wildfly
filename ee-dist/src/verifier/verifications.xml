@@ -29,6 +29,9 @@ limitations under the License.
     7) JBoss-Product-Release-Version key in manifest.mf has value starting with the value of the
        'verifier.product.release.version' property
     8) Various modules provided by the feature pack that provides the complete MicroProfile feature set are not present
+    9) Schemas coming from a module distributed directly by the ee-galleon-pack are copied to docs/schema
+    10) Schemas coming from a module distributed by the transitive servlet-galleon-pack are copied to docs/schema
+    11) Schemas coming from a module distributed by the transitive core-galleon-pack are copied to docs/schema
 -->
   <files>
     <file>
@@ -114,6 +117,18 @@ limitations under the License.
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
       <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-txn_5_0.xsd</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-undertow_10_0.xsd</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-io_3_0.xsd</location>
+      <exists>true</exists>
     </file>
   </files>
 </verifications>

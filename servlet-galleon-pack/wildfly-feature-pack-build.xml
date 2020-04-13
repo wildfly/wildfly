@@ -37,11 +37,7 @@
         <package name="docs.licenses.merge"/>
     </default-packages>
     <package-schemas>
-        <group name="org.jboss.as"/>
         <group name="org.wildfly"/>
-        <group name="org.wildfly.core"/>
-<!--        <group name="org.jboss.metadata"/> -->
-<!--        <group name="org.wildfly.security"/> -->
     </package-schemas>
 
     <config name="standalone.xml" model="standalone"/>
