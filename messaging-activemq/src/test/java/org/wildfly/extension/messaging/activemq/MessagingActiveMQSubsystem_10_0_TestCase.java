@@ -73,20 +73,20 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingActiveMQSubsystem_9_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_10_0_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_9_0_TestCase() {
+    public MessagingActiveMQSubsystem_10_0_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_9_0.xml");
+        return readResource("subsystem_10_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_9_0.xsd";
+        return "schema/wildfly-messaging-activemq_10_0.xsd";
     }
 
     @Override
@@ -105,9 +105,10 @@ public class MessagingActiveMQSubsystem_9_0_TestCase extends AbstractSubsystemBa
         return properties;
     }
 
+    @Test
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     @Test
@@ -130,12 +131,15 @@ public class MessagingActiveMQSubsystem_9_0_TestCase extends AbstractSubsystemBa
 
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_9_0_ha-policy.xml");
+        standardSubsystemTest("subsystem_10_0_ha-policy.xml");
     }
 
     ///////////////////////
     // Transformers test //
-    ///////////////////////
+    ///////////////////////@Test
+    public void testTransformersWildfly19() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_9_0_0);
+    }
     @Test
     public void testTransformersWildfly18() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_8_0_0);
