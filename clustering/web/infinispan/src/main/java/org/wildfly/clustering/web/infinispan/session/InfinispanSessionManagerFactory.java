@@ -59,7 +59,6 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
@@ -92,7 +91,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 @Listener
-public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC extends Marshallability, LC> implements SessionManagerFactory<SC, LC, TransactionBatch> {
+public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC, LC> implements SessionManagerFactory<SC, LC, TransactionBatch> {
 
     final Batcher<TransactionBatch> batcher;
     final Registrar<SessionExpirationListener> expirationRegistrar;
@@ -302,10 +301,10 @@ public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC extends Marshalla
         }
     }
 
-    private static class InfinispanMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, BL, V, C extends Marshallability, L> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, C, L> implements InfinispanSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, C>> {
-        private final InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, C, L> configuration;
+    private static class InfinispanMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, BL, V, MC, LC> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements InfinispanSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
+        private final InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration;
 
-        InfinispanMarshalledValueSessionAttributesFactoryConfiguration(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, C, L> configuration) {
+        InfinispanMarshalledValueSessionAttributesFactoryConfiguration(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration) {
             super(configuration);
             this.configuration = configuration;
         }

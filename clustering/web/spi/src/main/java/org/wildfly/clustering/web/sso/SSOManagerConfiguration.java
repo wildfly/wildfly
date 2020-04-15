@@ -33,5 +33,4 @@ public interface SSOManagerConfiguration<L, C> {
     IdentifierFactory<String> getIdentifierFactory();
     LocalContextFactory<L> getLocalContextFactory();
     MarshalledValueFactory<C> getMarshalledValueFactory();
-    C getMarshallingContext();
 }

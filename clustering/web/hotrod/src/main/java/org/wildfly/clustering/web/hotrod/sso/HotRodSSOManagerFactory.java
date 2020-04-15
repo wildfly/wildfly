@@ -30,7 +30,6 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.hotrod.tx.HotRodBatcher;
 import org.wildfly.clustering.infinispan.client.Key;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
 import org.wildfly.clustering.web.cache.sso.CompositeSSOManager;
 import org.wildfly.clustering.web.cache.sso.SSOFactory;
@@ -52,10 +51,10 @@ public class HotRodSSOManagerFactory<A, D, S> implements SSOManagerFactory<A, D,
     }
 
     @Override
-    public <L, C extends Marshallability> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<L, C> config) {
+    public <L, C> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<L, C> config) {
         RemoteCache<Key<String>, ?> cache = this.configuration.getRemoteCache();
         SessionsFactory<Map<D, S>, D, S> sessionsFactory = new CoarseSessionsFactory<>(this.configuration.getRemoteCache());
-        SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new HotRodSSOFactory<>(this.configuration.getRemoteCache(), new MarshalledValueMarshaller<>(config.getMarshalledValueFactory(), config.getMarshallingContext()), config.getLocalContextFactory(), sessionsFactory);
+        SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new HotRodSSOFactory<>(this.configuration.getRemoteCache(), new MarshalledValueMarshaller<>(config.getMarshalledValueFactory()), config.getLocalContextFactory(), sessionsFactory);
         Batcher<TransactionBatch> batcher = new HotRodBatcher(cache);
         return new CompositeSSOManager<>(factory, config.getIdentifierFactory(), batcher);
     }

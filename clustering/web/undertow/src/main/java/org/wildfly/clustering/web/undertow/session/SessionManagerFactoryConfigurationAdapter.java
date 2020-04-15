@@ -79,11 +79,6 @@ public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConf
     }
 
     @Override
-    public MarshallingContext getMarshallingContext() {
-        return this.context;
-    }
-
-    @Override
     public LocalContextFactory<LocalSessionContext> getLocalContextFactory() {
         return this.localContextFactory;
     }

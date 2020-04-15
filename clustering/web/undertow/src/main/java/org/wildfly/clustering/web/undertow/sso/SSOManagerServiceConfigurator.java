@@ -141,9 +141,4 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     public MarshalledValueFactory<MarshallingContext> getMarshalledValueFactory() {
         return new SimpleMarshalledValueFactory(this.context);
     }
-
-    @Override
-    public MarshallingContext getMarshallingContext() {
-        return this.context;
-    }
 }
