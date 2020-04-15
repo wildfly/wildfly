@@ -31,7 +31,6 @@ import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
 /**
  * A {@link org.wildfly.clustering.ejb.infinispan.BeanGroup} implementation backed by an infinispan cache.
@@ -41,15 +40,15 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBeanGroup<I, T> implements BeanGroup<I, T> {
+public class InfinispanBeanGroup<I, T, C> implements BeanGroup<I, T> {
 
     private final I id;
-    private final BeanGroupEntry<I, T> entry;
-    private final MarshallingContext context;
+    private final BeanGroupEntry<I, T, C> entry;
+    private final C context;
     private final Mutator mutator;
     private final Remover<I> remover;
 
-    public InfinispanBeanGroup(I id, BeanGroupEntry<I, T> entry, MarshallingContext context, Mutator mutator, Remover<I> remover) {
+    public InfinispanBeanGroup(I id, BeanGroupEntry<I, T, C> entry, C context, Mutator mutator, Remover<I> remover) {
         this.id = id;
         this.entry = entry;
         this.context = context;

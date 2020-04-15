@@ -68,7 +68,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
-        Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
+        Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, MarshallingContext>> groupCache = this.configuration.getCache();
         CacheProperties properties = new InfinispanCacheProperties(groupCache.getCacheConfiguration());
         String beanName = this.configuration.getBeanContext().getBeanName();
         BeanPassivationConfiguration passivationConfig = this.configuration.getPassivationConfiguration();
@@ -84,8 +84,8 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             }
         };
         Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter = new BeanFilter<>(beanName);
-        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, context, properties, passivation);
-        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
+        BeanGroupFactory<I, T, MarshallingContext> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, properties, passivation);
+        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, MarshallingContext>, BeanGroupFactory<I, T, MarshallingContext>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanContext().getTimeout(), properties.isPersistent() ? passivationListener : null);
         Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
         NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
