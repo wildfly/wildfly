@@ -60,8 +60,13 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
 
         registration.registerRequirements(this.descriptor.getResourceCapabilityReferences());
 
-        // Register attributes before add operation
+        // Register standard attributes before add operation
         this.writeAttributeRegistration.register(registration);
+
+        // Register attributes with custom write-attribute handlers
+        for (Map.Entry<AttributeDefinition, OperationStepHandler> entry : this.descriptor.getCustomAttributes().entrySet()) {
+            registration.registerReadWriteAttribute(entry.getKey(), null, entry.getValue());
+        }
 
         // Register attribute translations
         for (Map.Entry<AttributeDefinition, AttributeTranslation> entry : this.descriptor.getAttributeTranslations().entrySet()) {
