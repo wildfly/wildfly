@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-
 /**
  * @author Paul Ferraro
  */
@@ -31,9 +29,5 @@ public class ReloadRequiredResourceRegistration extends ResourceRegistration {
 
     public ReloadRequiredResourceRegistration(AddStepHandlerDescriptor descriptor) {
         super(descriptor, new ReloadRequiredAddStepHandler(descriptor), new ReloadRequiredRemoveStepHandler(descriptor), new WriteAttributeStepHandler(descriptor));
-    }
-
-    public ReloadRequiredResourceRegistration(AddStepHandlerDescriptor descriptor, Registration<org.jboss.as.controller.registry.ManagementResourceRegistration> addRegistration, Registration<org.jboss.as.controller.registry.ManagementResourceRegistration> removeRegistration, Registration<ManagementResourceRegistration> writeAttributeRegistration) {
-        super(descriptor, addRegistration, removeRegistration, writeAttributeRegistration);
     }
 }
