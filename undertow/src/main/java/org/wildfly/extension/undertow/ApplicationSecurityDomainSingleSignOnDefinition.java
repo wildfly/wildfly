@@ -22,32 +22,21 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
-import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
-
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.AddStepHandlerDescriptor;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.WriteAttributeStepHandler;
-import org.jboss.as.clustering.controller.WriteAttributeStepHandlerDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -97,68 +86,11 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
+                .addAttributes(EnumSet.complementOf(EnumSet.of(Attribute.CREDENTIAL)))
+                .addAttribute(Attribute.CREDENTIAL, new CredentialReferenceWriteAttributeHandler(Attribute.CREDENTIAL.getDefinition()))
                 .addAttributes(SingleSignOnDefinition.Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        new UndertowResourceRegistration(descriptor).register(registration);
+        new ReloadRequiredResourceRegistration(descriptor).register(registration);
     }
-
-    private static class UndertowResourceRegistration extends ReloadRequiredResourceRegistration {
-
-        public UndertowResourceRegistration(AddStepHandlerDescriptor descriptor) {
-            super(descriptor, new UndertowAddStepHandler(descriptor), new ReloadRequiredRemoveStepHandler(descriptor), new UndertowWriteAttributeStepHandler(descriptor));
-        }
-    }
-
-    private static class UndertowAddStepHandler extends ReloadRequiredAddStepHandler {
-
-        public UndertowAddStepHandler(AddStepHandlerDescriptor descriptor) {
-            super(descriptor);
-        }
-
-        @Override
-        protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
-            super.populateModel(context, operation, resource);
-            handleCredentialReferenceUpdate(context, resource.getModel());
-        }
-
-        @Override
-        protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-            rollbackCredentialStoreUpdate(Attribute.CREDENTIAL.getDefinition(), context, resource);
-            super.rollbackRuntime(context, operation, resource);
-        }
-    }
-
-    private static class UndertowWriteAttributeStepHandler extends WriteAttributeStepHandler {
-
-        private final WriteAttributeStepHandlerDescriptor descriptor;
-
-        public UndertowWriteAttributeStepHandler(WriteAttributeStepHandlerDescriptor descriptor) {
-            super(descriptor, null);
-            this.descriptor = descriptor;
-        }
-
-        @Override
-        public void register(ManagementResourceRegistration registration) {
-            CredentialReferenceWriteAttributeHandler credentialReferenceWriteAttributeHandler = new CredentialReferenceWriteAttributeHandler(Attribute.CREDENTIAL.getDefinition());
-            for (AttributeDefinition attribute : descriptor.getAttributes()) {
-                if (attribute.equals(Attribute.CREDENTIAL)) {
-                    registration.registerReadWriteAttribute(attribute, null, credentialReferenceWriteAttributeHandler);
-                } else {
-                    registration.registerReadWriteAttribute(attribute, null, this);
-                }
-            }
-        }
-
-        @Override
-        protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, Void handback) throws OperationFailedException {
-            if (attributeName.equals(Attribute.CREDENTIAL.getName())) {
-                rollbackCredentialStoreUpdate(Attribute.CREDENTIAL.getDefinition(), context, resolvedValue);
-            }
-            super.revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue, handback);
-        }
-
-    }
-
 }

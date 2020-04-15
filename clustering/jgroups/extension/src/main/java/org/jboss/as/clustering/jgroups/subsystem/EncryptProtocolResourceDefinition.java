@@ -22,37 +22,23 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
-import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
-
 import java.security.KeyStore;
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.AddStepHandlerDescriptor;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
-import org.jboss.as.clustering.controller.WriteAttributeStepHandlerDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -101,6 +87,11 @@ public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry> extends
     }
 
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.KEY_CREDENTIAL.getName())
+                    .end();
+        }
 
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
@@ -115,7 +106,8 @@ public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry> extends
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return this.configurator.apply(descriptor)
-                    .addAttributes(Attribute.class)
+                    .addAttributes(EnumSet.complementOf(EnumSet.of(Attribute.KEY_CREDENTIAL)))
+                    .addAttribute(Attribute.KEY_CREDENTIAL, new CredentialReferenceWriteAttributeHandler(Attribute.KEY_CREDENTIAL.getDefinition()))
                     .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
                     .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
                     ;
@@ -137,72 +129,5 @@ public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry> extends
 
     public EncryptProtocolResourceDefinition(String name, Class<E> entryClass, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         super(pathElement(name), new ResourceDescriptorConfigurator(configurator), new EncryptProtocolConfigurationConfiguratorFactory<>(entryClass), parentServiceConfiguratorFactory);
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
-
-        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
-                .addAttributes(AbstractProtocolResourceDefinition.Attribute.class)
-                .addExtraParameters(DeprecatedAttribute.class)
-                ;
-        new ProtocolResourceRegistration(this.parentServiceConfiguratorFactory, descriptor, this.handler).register(registration);
-
-        if (registration.getPathAddress().getLastElement().isWildcard()) {
-            new PropertyResourceDefinition().register(registration);
-        }
-
-        return registration;
-    }
-
-    private static class ProtocolResourceRegistration extends RestartParentResourceRegistration {
-
-        public ProtocolResourceRegistration(ResourceServiceConfiguratorFactory parentFactory, ResourceDescriptor descriptor, ResourceServiceHandler handler) {
-            super(descriptor, new ProtocolAddStepHandler(parentFactory, descriptor, handler), new RestartParentResourceRemoveStepHandler(parentFactory, descriptor, handler), new ProtocolWriteAttributeHandler(parentFactory, descriptor));
-        }
-    }
-
-    private static class ProtocolAddStepHandler extends RestartParentResourceAddStepHandler {
-
-        public ProtocolAddStepHandler(ResourceServiceConfiguratorFactory parentFactory, AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-            super(parentFactory, descriptor, handler);
-        }
-
-        @Override
-        protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
-            super.populateModel(context, operation, resource);
-            final ModelNode model = resource.getModel();
-            handleCredentialReferenceUpdate(context, model.get(Attribute.KEY_CREDENTIAL.getName()), Attribute.KEY_CREDENTIAL.getName());
-        }
-
-        @Override
-        protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
-            rollbackCredentialStoreUpdate(Attribute.KEY_CREDENTIAL.getDefinition(), context, resource);
-            super.rollbackRuntime(context, operation, resource);
-        }
-    }
-
-    private static class ProtocolWriteAttributeHandler extends RestartParentResourceWriteAttributeHandler {
-
-        private final WriteAttributeStepHandlerDescriptor descriptor;
-
-        public ProtocolWriteAttributeHandler(ResourceServiceConfiguratorFactory parentFactory, WriteAttributeStepHandlerDescriptor descriptor) {
-            super(parentFactory, descriptor);
-            this.descriptor = descriptor;
-        }
-
-        @Override
-        public void register(ManagementResourceRegistration registration) {
-            CredentialReferenceWriteAttributeHandler credentialReferenceWriteAttributeHandler = new CredentialReferenceWriteAttributeHandler(Attribute.KEY_CREDENTIAL.getDefinition());
-            for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
-                if (attribute.equals(Attribute.KEY_CREDENTIAL.getDefinition())) {
-                    registration.registerReadWriteAttribute(attribute, null, credentialReferenceWriteAttributeHandler);
-                } else {
-                    registration.registerReadWriteAttribute(attribute, null, this);
-                }
-            }
-        }
-
     }
 }
