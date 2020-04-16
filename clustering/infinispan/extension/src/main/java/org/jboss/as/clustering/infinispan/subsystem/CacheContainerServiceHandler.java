@@ -165,7 +165,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
             context.removeService(capability.getServiceName(address));
         }
 
-        this.containerRegistry.remove(CacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(address));
+        context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.containerRegistry.remove(CacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(address))).getServiceName());
     }
 
     private static Resource safeGetResource(OperationContext context, PathElement path) {

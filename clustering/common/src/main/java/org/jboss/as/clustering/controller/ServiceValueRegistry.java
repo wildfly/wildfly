@@ -41,5 +41,5 @@ public interface ServiceValueRegistry<T> {
      * Removes a service from this registry
      * @param name a service name
      */
-    void remove(ServiceName name);
+    ServiceValueCaptor<T> remove(ServiceName name);
 }

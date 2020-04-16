@@ -46,8 +46,8 @@ public enum NodeServiceExecutorRegistry implements FunctionExecutorRegistry<Supp
     }
 
     @Override
-    public void remove(ServiceName name) {
-        this.registry.remove(name);
+    public ServiceValueCaptor<Supplier<Node>> remove(ServiceName name) {
+        return this.registry.remove(name);
     }
 
     @Override
