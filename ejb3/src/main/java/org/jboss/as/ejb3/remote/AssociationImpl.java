@@ -186,7 +186,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             Connection remotingConnection = invocationRequest.getProviderInterface(Connection.class);
             if(remotingConnection != null) {
                 SecurityActions.remotingContextSetConnection(remotingConnection);
-            } else {
+            } else if (invocationRequest.getSecurityIdentity() != null) {
                 SecurityActions.remotingContextSetConnection(new RemoteConnection() {
                     @Override
                     public SSLSession getSslSession() {
