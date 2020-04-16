@@ -56,7 +56,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
         // 5.0.0 --> 4.0.0
         ResourceTransformationDescriptionBuilder builderEap71 = chainedBuilder.createBuilder(MODEL_VERSION_EAP72, MODEL_VERSION_EAP71);
         builderEap71.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(MAXIMUM_TIMEOUT.getDefaultValue()), MAXIMUM_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, MAXIMUM_TIMEOUT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MAXIMUM_TIMEOUT)
                 .end();
 

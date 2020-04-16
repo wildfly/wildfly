@@ -106,7 +106,7 @@ public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDe
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.CAPACITY_FACTOR.getDefinition().getDefaultValue()), Attribute.CAPACITY_FACTOR.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.CAPACITY_FACTOR.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CAPACITY_FACTOR.getDefinition())
                     .end();
         }

@@ -45,6 +45,7 @@ public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefin
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(LOGIN_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.LOGIN_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.LOGIN_MODULE));
     }
@@ -56,10 +57,6 @@ public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefin
     }
 
     static class ClassicAuthenticationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        }
 
         @Override
         protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {

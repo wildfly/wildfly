@@ -109,8 +109,8 @@ public class CustomLoadMetricResourceDefinition extends ChildResourceDefinition<
 
         if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.MODULE.getDefinition().getDefaultValue()), Attribute.MODULE.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MODULE.getDefinition().getDefaultValue()), Attribute.MODULE.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MODULE.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.MODULE.getDefinition())
                     .end();
         }
     }

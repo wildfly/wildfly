@@ -48,12 +48,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class FileDataStoreAdd extends AbstractAddStepHandler {
 
-    public static final FileDataStoreAdd INSTANCE = new FileDataStoreAdd();
-
-    protected void populateModel(ModelNode operation, ModelNode timerServiceModel) throws OperationFailedException {
-        for (AttributeDefinition attr : FileDataStoreResourceDefinition.ATTRIBUTES.values()) {
-            attr.validateAndSet(operation, timerServiceModel);
-        }
+    FileDataStoreAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     protected void performRuntime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {

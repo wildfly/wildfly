@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -67,9 +68,9 @@ import org.xnio.Options;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
-    static final EJB3RemoteServiceAdd INSTANCE = new EJB3RemoteServiceAdd();
 
-    private EJB3RemoteServiceAdd() {
+    EJB3RemoteServiceAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override
@@ -128,14 +129,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             builder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
         }
         builder.install();
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.validateAndSet(operation, model);
-        EJB3RemoteResourceDefinition.CONNECTOR_REF.validateAndSet(operation, model);
-        EJB3RemoteResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
-        EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.validateAndSet(operation, model);
     }
 
     private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {

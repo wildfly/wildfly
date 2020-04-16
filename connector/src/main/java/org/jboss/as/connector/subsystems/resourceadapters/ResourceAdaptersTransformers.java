@@ -76,8 +76,8 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WM_ELYTRON_SECURITY_DOMAIN)
                 .end();
         builder.addChildResource(ConnectionDefinitionResourceDefinition.PATH).getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE),
-                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
@@ -101,10 +101,8 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
                 .setDiscard(DiscardAttributeChecker.ALWAYS, Constants.ENLISTMENT, Constants.SHARABLE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), Constants.CONNECTABLE)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Constants.CONNECTABLE, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR, Constants.ENLISTMENT_TRACE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Constants.ENLISTMENT_TRACE.getDefaultValue()), Constants.ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), Constants.MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(ModelNode.FALSE), Constants.ENLISTMENT_TRACE)

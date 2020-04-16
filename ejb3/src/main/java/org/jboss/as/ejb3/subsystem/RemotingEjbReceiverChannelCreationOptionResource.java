@@ -21,10 +21,6 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -57,22 +53,14 @@ class RemotingEjbReceiverChannelCreationOptionResource extends SimpleResourceDef
             EJB3SubsystemModel.TYPE, ModelType.STRING).setRequired(true)
             .setValidator(AllowedChannelOptionTypesValidator.INSTANCE).build();
 
-    public static final Map<String, AttributeDefinition> ATTRIBUTES;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(CHANNEL_CREATION_OPTION_VALUE.getName(), CHANNEL_CREATION_OPTION_VALUE);
-        map.put(CHANNEL_CREATION_OPTION_TYPE.getName(), CHANNEL_CREATION_OPTION_TYPE);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CHANNEL_CREATION_OPTION_VALUE, CHANNEL_CREATION_OPTION_TYPE };
 
     static final RemotingEjbReceiverChannelCreationOptionResource INSTANCE = new RemotingEjbReceiverChannelCreationOptionResource();
 
     RemotingEjbReceiverChannelCreationOptionResource() {
         super(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
-                new RemotingProfileChildResourceAddHandler(ATTRIBUTES.values()),
+                new RemotingProfileChildResourceAddHandler(ATTRIBUTES),
                 new RemotingProfileChildResourceRemoveHandler());
     }
 

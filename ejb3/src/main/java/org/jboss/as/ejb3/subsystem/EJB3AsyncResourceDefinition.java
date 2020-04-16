@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -43,34 +39,24 @@ import org.jboss.dmr.ModelType;
  */
 public class EJB3AsyncResourceDefinition extends SimpleResourceDefinition {
 
-    public static final EJB3AsyncResourceDefinition INSTANCE = new EJB3AsyncResourceDefinition();
-
-
     static final SimpleAttributeDefinition THREAD_POOL_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    private static final Map<String, AttributeDefinition> ATTRIBUTES;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
-
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME };
+    public static final EJB3AsyncResourceDefinition INSTANCE = new EJB3AsyncResourceDefinition();
 
     private EJB3AsyncResourceDefinition() {
         super(EJB3SubsystemModel.ASYNC_SERVICE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.ASYNC),
-                EJB3AsyncServiceAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+                new EJB3AsyncServiceAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTES.values()) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
             // TODO: Make this RESTART_NONE by updating AsynchronousMergingProcessor
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }

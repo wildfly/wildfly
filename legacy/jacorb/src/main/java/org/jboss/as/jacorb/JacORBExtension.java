@@ -109,7 +109,7 @@ public class JacORBExtension extends AbstractLegacyExtension {
         ResourceTransformationDescriptionBuilder builder64 = chained.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP64);
         builder64.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID.getDefaultValue()), JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(JacORBSubsystemDefinitions.INTEROP_CHUNK_RMI_VALUETYPES),JacORBSubsystemDefinitions.INTEROP_CHUNK_RMI_VALUETYPES);
 
 

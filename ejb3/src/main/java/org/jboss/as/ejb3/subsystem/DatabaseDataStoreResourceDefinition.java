@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -45,8 +41,6 @@ import org.jboss.dmr.ModelType;
  *
  */
 public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinition {
-
-    public static final DatabaseDataStoreResourceDefinition INSTANCE = new DatabaseDataStoreResourceDefinition();
 
     public static final SimpleAttributeDefinition DATASOURCE_JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DATASOURCE_JNDI_NAME, ModelType.STRING, false)
@@ -85,29 +79,19 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
                     .setDefaultValue(ModelNode.TRUE)
                     .build();
 
-    public static final Map<String, AttributeDefinition> ATTRIBUTES ;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(DATASOURCE_JNDI_NAME.getName(), DATASOURCE_JNDI_NAME);
-        map.put(DATABASE.getName(), DATABASE);
-        map.put(PARTITION.getName(), PARTITION);
-        map.put(REFRESH_INTERVAL.getName(), REFRESH_INTERVAL);
-        map.put(ALLOW_EXECUTION.getName(), ALLOW_EXECUTION);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DATASOURCE_JNDI_NAME, DATABASE, PARTITION, REFRESH_INTERVAL, ALLOW_EXECUTION };
+    private static final DatabaseDataStoreAdd ADD_HANDLER = new DatabaseDataStoreAdd(ATTRIBUTES);
+    public static final DatabaseDataStoreResourceDefinition INSTANCE = new DatabaseDataStoreResourceDefinition();
 
     private DatabaseDataStoreResourceDefinition() {
         super(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.DATABASE_DATA_STORE),
-                DatabaseDataStoreAdd.INSTANCE,
-                new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, DatabaseDataStoreAdd.INSTANCE));
+                ADD_HANDLER, new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, ADD_HANDLER));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTES.values()) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
     }
