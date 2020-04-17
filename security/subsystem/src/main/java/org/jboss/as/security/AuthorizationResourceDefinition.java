@@ -42,10 +42,11 @@ public class AuthorizationResourceDefinition extends SimpleResourceDefinition {
     private AuthorizationResourceDefinition() {
         super(SecurityExtension.PATH_AUTHORIZATION_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHORIZATION),
-                AuthorizationResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                new AuthorizationResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(POLICY_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.POLICY_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.POLICY_MODULE));
     }
@@ -57,21 +58,14 @@ public class AuthorizationResourceDefinition extends SimpleResourceDefinition {
     }
 
     static class AuthorizationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
-        static final AuthorizationResourceDefinitionAdd INSTANCE = new AuthorizationResourceDefinitionAdd();
 
         @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            super.updateModel(context, operation);
+            if (operation.hasDefined(POLICY_MODULES.getName())) {
+                context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
+            }
         }
-
-        @Override
-               protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-                   super.updateModel(context, operation);
-                   if (operation.hasDefined(POLICY_MODULES.getName())) {
-                       context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
-                   }
-               }
-
     }
 
 }

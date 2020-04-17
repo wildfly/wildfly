@@ -55,8 +55,6 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
     static final String DEVELOPMENT_MODE_ATTRIBUTE_NAME = "development-mode";
     static final String THREAD_POOL_SIZE = "thread-pool-size";
 
-    static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
-
     static final SimpleAttributeDefinition REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
@@ -85,9 +83,13 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE, THREAD_POOL_SIZE_ATTRIBUTE };
+
+    static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
+
     private WeldResourceDefinition() {
         super( new SimpleResourceDefinition.Parameters(WeldExtension.PATH_SUBSYSTEM, WeldExtension.getResourceDescriptionResolver())
-                .setAddHandler(WeldSubsystemAdd.INSTANCE)
+                .setAddHandler(new WeldSubsystemAdd(ATTRIBUTES))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(WELD_CAPABILITY)
         );
@@ -95,7 +97,7 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(new AttributeDefinition[] {REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE, THREAD_POOL_SIZE_ATTRIBUTE});
+        return Arrays.asList(ATTRIBUTES);
     }
 
     @Override

@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ejb3.deployment.processors.merging.AsynchronousMergingProcessor;
@@ -41,10 +42,9 @@ import org.jboss.msc.service.ServiceName;
  * @author Stuart Douglas
  */
 public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
-    static final EJB3AsyncServiceAdd INSTANCE = new EJB3AsyncServiceAdd();
 
-
-    private EJB3AsyncServiceAdd() {
+    EJB3AsyncServiceAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override
@@ -58,10 +58,5 @@ public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_ASYNCHRONOUS_MERGE, new AsynchronousMergingProcessor(threadPoolServiceName));
             }
         }, OperationContext.Stage.RUNTIME);
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        EJB3AsyncResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
     }
 }

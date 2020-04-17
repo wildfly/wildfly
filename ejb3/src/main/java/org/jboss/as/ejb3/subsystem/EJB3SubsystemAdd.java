@@ -168,18 +168,17 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
 
-    EJB3SubsystemAdd(final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor) {
+    EJB3SubsystemAdd(final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor, AttributeDefinition... attributes) {
+        super(attributes);
         this.defaultSecurityDomainDeploymentProcessor = defaultSecurityDomainDeploymentProcessor;
         this.missingMethodPermissionsDenyAccessMergingProcessor = missingMethodPermissionsDenyAccessMergingProcessor;
     }
 
     @Override
     protected void populateModel(final OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        ModelNode model = resource.getModel();
-        for (AttributeDefinition attr : EJB3SubsystemRootResourceDefinition.ATTRIBUTES) {
-            attr.validateAndSet(operation, model);
-        }
+        super.populateModel(context, operation, resource);
 
+        ModelNode model = resource.getModel();
         // WFLY-5520 deal with legacy default-clustered-sfsb-cache
         ModelNode defClustered = DEFAULT_CLUSTERED_SFSB_CACHE.validateOperation(operation);
         if (defClustered.isDefined())  {

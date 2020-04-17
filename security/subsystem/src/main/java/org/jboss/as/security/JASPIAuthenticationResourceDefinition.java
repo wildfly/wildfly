@@ -44,10 +44,11 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
     private JASPIAuthenticationResourceDefinition() {
         super(SecurityExtension.PATH_JASPI_AUTH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHENTICATION + "." + Constants.JASPI),
-                JASPIAuthenticationResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                new JASPIAuthenticationResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(AUTH_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.AUTH_MODULE), new LegacySupport.LegacyModulesAttributeWriter(AUTH_MODULE));
     }
@@ -60,11 +61,6 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
     }
 
     static class JASPIAuthenticationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
-        static final JASPIAuthenticationResourceDefinitionAdd INSTANCE = new JASPIAuthenticationResourceDefinitionAdd();
-
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        }
 
         @Override
         protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {

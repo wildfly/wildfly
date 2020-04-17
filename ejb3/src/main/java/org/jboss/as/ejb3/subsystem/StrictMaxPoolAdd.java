@@ -46,23 +46,10 @@ import org.jboss.msc.service.ServiceName;
  */
 public class StrictMaxPoolAdd extends AbstractAddStepHandler {
 
-    public static final StrictMaxPoolAdd INSTANCE = new StrictMaxPoolAdd();
-
     static final String IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME = "org.wildfly.io.max-threads";
 
-
-    /**
-     * Populate the <code>strictMaxPoolModel</code> from the <code>operation</code>
-     *
-     * @param operation          the operation
-     * @param strictMaxPoolModel strict-max-pool ModelNode
-     * @throws OperationFailedException
-     */
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode strictMaxPoolModel) throws OperationFailedException {
-        for (AttributeDefinition attr : StrictMaxPoolResourceDefinition.ATTRIBUTES.values()) {
-            attr.validateAndSet(operation, strictMaxPoolModel);
-        }
+    StrictMaxPoolAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override

@@ -43,20 +43,16 @@ public class MappingResourceDefinition extends SimpleResourceDefinition {
     private MappingResourceDefinition() {
         super(SecurityExtension.PATH_MAPPING_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.MAPPING),
-                LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                new LoginModuleStackResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(MAPPING_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.MAPPING_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.MAPPING_MODULE));
     }
 
     static class LoginModuleStackResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
-        static final LoginModuleStackResourceDefinitionAdd INSTANCE = new LoginModuleStackResourceDefinitionAdd();
-
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        }
 
         @Override
         protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {

@@ -46,7 +46,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
@@ -150,11 +150,9 @@ public class MessagingTransformers {
      * Reject the attributes if they are defined or discard them if they are undefined or set to their default value.
      */
     private static void rejectDefinedAttributeWithDefaultValue(ResourceTransformationDescriptionBuilder builder, AttributeDefinition... attrs) {
-        for (AttributeDefinition attr : attrs) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeValueChecker(attr.getDefaultValue()), attr)
-                    .addRejectCheck(DEFINED, attr);
-        }
+        builder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, attrs)
+                .addRejectCheck(DEFINED, attrs);
     }
 
     /**

@@ -121,10 +121,8 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     static TransformationDescription get120TransformationDescription(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), CONNECTABLE)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR, CONNECTABLE, ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, ModelNode.TRUE), STATISTICS_ENABLED)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ENLISTMENT_TRACE.getDefaultValue()), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(ModelNode.FALSE), ENLISTMENT_TRACE)
@@ -151,9 +149,8 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                 .end();
         builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), CONNECTABLE)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, CONNECTABLE, ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, ModelNode.TRUE), STATISTICS_ENABLED)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ENLISTMENT_TRACE.getDefaultValue()), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
@@ -184,7 +181,7 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     private static TransformationDescription get400TransformationDescription(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ELYTRON_ENABLED.getDefaultValue()), ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, ELYTRON_ENABLED)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
                 .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
@@ -192,7 +189,7 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                 .end();
         builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ELYTRON_ENABLED.getDefaultValue()), ELYTRON_ENABLED, RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, ELYTRON_ENABLED, RECOVERY_ELYTRON_ENABLED)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED,
                         RECOVERY_CREDENTIAL_REFERENCE,
                         RECOVERY_AUTHENTICATION_CONTEXT,

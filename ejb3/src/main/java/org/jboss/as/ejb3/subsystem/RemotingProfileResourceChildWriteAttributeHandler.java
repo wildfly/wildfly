@@ -46,7 +46,7 @@ public class RemotingProfileResourceChildWriteAttributeHandler extends RestartPa
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel)
             throws OperationFailedException {
-        RemotingProfileAdd.INSTANCE.installServices(context, parentAddress, parentModel);
+        RemotingProfileResourceDefinition.ADD_HANDLER.installServices(context, parentAddress, parentModel);
     }
 
     @Override

@@ -47,13 +47,13 @@ public abstract class RemotingProfileChildResourceHandlerBase extends RestartPar
                 context.addStep(new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        RemotingProfileAdd.INSTANCE.installServices(context, parentAddress, parentModel);
+                        RemotingProfileResourceDefinition.ADD_HANDLER.installServices(context, parentAddress, parentModel);
                     }
                 }, OperationContext.Stage.RUNTIME);
             break;
             case DONE:
                 // executed from RollbackHandler - service is being installed using correct configuration
-                RemotingProfileAdd.INSTANCE.installServices(context, parentAddress, parentModel);
+                RemotingProfileResourceDefinition.ADD_HANDLER.installServices(context, parentAddress, parentModel);
                 break;
         }
     }
