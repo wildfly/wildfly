@@ -38,6 +38,7 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -99,7 +100,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
 
    @BeforeClass
    public static void before() throws Exception {
-      initCLI();
+      initCLI(TimeoutUtil.adjust(20 * 1000));
    }
 
    @Before

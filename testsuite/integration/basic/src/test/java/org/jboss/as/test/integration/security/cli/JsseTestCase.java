@@ -32,6 +32,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class JsseTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void initSecurityDomains() throws Exception {
-        AbstractCliTestBase.initCLI();
+        AbstractCliTestBase.initCLI(TimeoutUtil.adjust(20 * 1000));
         cli.sendLine("/subsystem=security/security-domain=empty-jsse:remove()", true);
         cli.sendLine("/subsystem=security/security-domain=empty-jsse-valid:remove()", true);
         cli.sendLine("/subsystem=security/security-domain=empty-jsse-missing-pwd:remove()", true);

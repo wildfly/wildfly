@@ -44,6 +44,7 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.DataSourceTestServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -111,7 +112,7 @@ public class SecuredDataSourceTestCase extends AbstractCliTestBase {
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(REMOVE_BATCH_CLI_FILENAME1), REMOVE_BATCH_CLI_FILE1);
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(REMOVE_BATCH_CLI_FILENAME2), REMOVE_BATCH_CLI_FILE2);
 
-        initCLI();
+        initCLI(TimeoutUtil.adjust(20 * 1000));
         final boolean batchResult = runBatch(BATCH_CLI_FILE);
         closeCLI();
 
@@ -138,7 +139,7 @@ public class SecuredDataSourceTestCase extends AbstractCliTestBase {
 
         deployer.undeploy(DEPLOYMENT);
 
-        initCLI();
+        initCLI(TimeoutUtil.adjust(20 * 1000));
         boolean batchResult = runBatch(REMOVE_BATCH_CLI_FILE1);
         //server reload
         container.stop(CONTAINER);

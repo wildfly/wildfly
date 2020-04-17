@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -44,7 +45,7 @@ public class JmsTestCase extends AbstractCliTestBase {
     public static void before() throws Exception {
 
         CLITestSuite.createSupport(JmsTestCase.class.getSimpleName());
-        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress, TimeoutUtil.adjust(20 * 1000));
     }
 
     @AfterClass

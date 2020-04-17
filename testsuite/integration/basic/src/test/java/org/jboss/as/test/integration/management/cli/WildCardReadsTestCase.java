@@ -29,6 +29,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.AfterClass;
@@ -70,7 +71,7 @@ public class WildCardReadsTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        initCLI();
+        initCLI(TimeoutUtil.adjust(20 * 1000));
     }
 
     @AfterClass

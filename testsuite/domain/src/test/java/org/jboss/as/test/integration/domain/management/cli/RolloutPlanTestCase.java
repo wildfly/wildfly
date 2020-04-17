@@ -38,6 +38,7 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.shared.RetryTaskExecutor;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
@@ -74,7 +75,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         warFile = new File(tempDir + File.separator + "RolloutPlanTestCase.war");
         new ZipExporterImpl(war).exportTo(warFile, true);
 
-        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress, TimeoutUtil.adjust(20 * 1000));
 
         // add another server group to default profile
         cli.sendLine("/server-group=test-server-group:add(profile=default,socket-binding-group=standard-sockets)");

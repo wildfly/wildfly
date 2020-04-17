@@ -52,6 +52,7 @@ import org.jboss.as.test.manualmode.ee.globaldirectory.libraries.GlobalDirectory
 import org.jboss.as.test.manualmode.ee.globaldirectory.libraries.GlobalDirectoryLibraryImpl2;
 import org.jboss.as.test.manualmode.ee.globaldirectory.libraries.GlobalDirectoryLibraryImpl3;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -74,7 +75,7 @@ public class GlobalDirectoryTestCase extends GlobalDirectoryBase {
 
     @Before
     public void setup() throws Exception {
-        initCLI(true);
+        initCLI(TimeoutUtil.adjust(20 * 1000));
     }
 
     @After
@@ -253,7 +254,7 @@ public class GlobalDirectoryTestCase extends GlobalDirectoryBase {
         verifyProperlyRegistered(GLOBAL_DIRECTORY_NAME, GLOBAL_DIRECTORY_PATH.toString());
         reloadServer();
 
-        initCLI(true);
+        initCLI(TimeoutUtil.adjust(20 * 1000));
         cli.sendLine("/subsystem=logging/logger=org.jboss.as.server.moduleservice:add(level=DEBUG)");
 
         try {

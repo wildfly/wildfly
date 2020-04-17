@@ -36,6 +36,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -119,7 +120,7 @@ public class RunAsWithElytronEJBContextPropagationTestCase extends AbstractCliTe
 
     @BeforeClass
     public static void before() throws Exception {
-        AbstractCliTestBase.initCLI();
+        AbstractCliTestBase.initCLI(TimeoutUtil.adjust(20 * 1000));
         // When CI runs with Elytron property the setup changes
         try {
             cli.sendLine("/core-service=management/security-realm=ApplicationRealm/authentication=properties:read-resource",
