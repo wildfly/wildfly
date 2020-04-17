@@ -27,6 +27,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
+
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -67,7 +69,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        AbstractCliTestBase.initCLI();
+        AbstractCliTestBase.initCLI(TimeoutUtil.adjust(20 * 1000));
     }
 
     @AfterClass

@@ -182,7 +182,8 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         war.addClasses(Collector.class, RemoteTimedBean.class, TimedObjectTimerServiceBean.class, TimerData.class, FileUtils.class, StartupSingleton.class);
         war.addAsWebInfResource(DatabaseTimerServiceMultiNodeTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         if(!client) {
-            war.addClass(CollectionSingleton.class);
+            war.addClass(CollectionSingleton.class)
+               .addClass(TimeoutUtil.class);
         }
         war.addAsResource(new StringAsset(client ? "client" : "server"), "node.txt");
         if (client) {

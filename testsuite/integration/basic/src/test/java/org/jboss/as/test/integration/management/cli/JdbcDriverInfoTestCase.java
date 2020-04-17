@@ -28,6 +28,7 @@ import java.util.Map;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -43,7 +44,7 @@ public class JdbcDriverInfoTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        initCLI();
+        initCLI(TimeoutUtil.adjust(20 * 1000));
     }
 
     @AfterClass

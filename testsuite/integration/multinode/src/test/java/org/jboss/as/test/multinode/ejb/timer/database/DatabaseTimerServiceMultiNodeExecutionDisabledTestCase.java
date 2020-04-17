@@ -49,6 +49,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -175,7 +176,8 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addClasses(Collector.class, RemoteTimedBean.class, TimedObjectTimerServiceBean.class, TimerData.class, FileUtils.class);
         if (!client) {
-            war.addClass(CollectionSingleton.class);
+            war.addClass(CollectionSingleton.class)
+               .addClass(TimeoutUtil.class);
         }
         String nodeName = client ? "client" : "server";
         war.addAsResource(new StringAsset(nodeName), "node.txt");

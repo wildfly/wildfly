@@ -38,6 +38,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -77,7 +78,7 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
             FileUtils.deleteDirectory(deployDir);
         }
         assertTrue("Unable to create deployment scanner directory.", deployDir.mkdir());
-        AbstractCliTestBase.initCLI();
+        AbstractCliTestBase.initCLI(TimeoutUtil.adjust(20 * 1000));
     }
 
     @AfterClass

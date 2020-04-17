@@ -29,6 +29,9 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
+import org.jboss.as.test.shared.TimeoutUtil;
+
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
@@ -64,7 +67,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
 
         new ZipExporterImpl(war).exportTo(warFile, true);
 
-        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress, TimeoutUtil.adjust(20 * 1000));
     }
 
     @AfterClass

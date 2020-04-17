@@ -27,6 +27,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -42,7 +43,7 @@ public class JmsTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        AbstractCliTestBase.initCLI();
+        AbstractCliTestBase.initCLI(TimeoutUtil.adjust(20 * 1000));
     }
 
     @AfterClass

@@ -29,6 +29,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -53,7 +54,7 @@ public abstract class ReloadableCliTestBase extends AbstractCliTestBase {
      */
     protected CLIOpResult doCliOperation(final String operation) throws Exception {
         LOGGER.debugv("Performing CLI operation: {0}", operation);
-        initCLI();
+        initCLI(TimeoutUtil.adjust(20 * 1000));
         cli.sendLine(operation);
         return cli.readAllAsOpResult();
     }
@@ -67,7 +68,7 @@ public abstract class ReloadableCliTestBase extends AbstractCliTestBase {
      */
     protected CLIOpResult doCliOperationWithoutChecks(final String operation) throws Exception {
         LOGGER.debugv("Performing CLI operation without checks: {0}", operation);
-        initCLI();
+        initCLI(TimeoutUtil.adjust(20 * 1000));
         cli.sendLine(operation, true);
         final CLIOpResult result = cli.readAllAsOpResult();
         if (LOGGER.isDebugEnabled()) {

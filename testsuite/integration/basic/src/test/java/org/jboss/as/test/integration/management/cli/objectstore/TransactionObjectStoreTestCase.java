@@ -31,6 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -67,7 +68,7 @@ public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        AbstractCliTestBase.initCLI();
+        AbstractCliTestBase.initCLI(TimeoutUtil.adjust(20 * 1000));
     }
 
     @AfterClass

@@ -29,6 +29,7 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -63,7 +64,7 @@ public class CloneProfileTestCase extends AbstractCliTestBase {
     @BeforeClass
     public static void before() throws Exception {
         DomainTestSupport domainSupport = CLITestSuite.createSupport(CloneProfileTestCase.class.getSimpleName());
-        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress, TimeoutUtil.adjust(20 * 1000));
 
         File primaryDir = new File(domainSupport.getDomainPrimaryConfiguration().getDomainDirectory());
         domainCfg = new File(primaryDir, "configuration"

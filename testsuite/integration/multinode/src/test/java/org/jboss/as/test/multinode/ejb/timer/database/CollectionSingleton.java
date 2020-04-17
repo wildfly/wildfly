@@ -1,5 +1,7 @@
 package org.jboss.as.test.multinode.ejb.timer.database;
 
+import org.jboss.as.test.shared.TimeoutUtil;
+
 import jakarta.ejb.ConcurrencyManagement;
 import jakarta.ejb.ConcurrencyManagementType;
 import jakarta.ejb.Singleton;
@@ -24,7 +26,7 @@ public class CollectionSingleton implements Collector {
 
     @Override
     public List<TimerData> collect(int expectedCount) {
-        long end = System.currentTimeMillis() + 30000; //10 seconds
+        long end = System.currentTimeMillis() + TimeoutUtil.adjust(30000); //10 seconds
         List<TimerData> ret = new ArrayList<>();
         for (; ; ) {
             if (ret.size() == expectedCount) {
