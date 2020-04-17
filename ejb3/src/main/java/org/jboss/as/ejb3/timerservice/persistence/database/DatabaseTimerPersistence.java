@@ -828,31 +828,29 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                             while (resultSet.next()) {
                                 try {
                                     String id = resultSet.getString(1);
-                                    if (!existing.remove(id)) {
+                                    TimerImpl oldTimer = listener.getTimerService().getTimer(id);
+                                    if (!existing.remove(id) && oldTimer == null) {
                                         synchronized (DatabaseTimerPersistence.this) {
                                             knownTimerIds.get(timedObjectId).add(id);
                                         }
                                         final Holder holder = timerFromResult(resultSet, timerService);
-                                        if(holder != null) {
+                                        if (holder != null) {
                                             listener.timerAdded(holder.timer);
                                         }
                                     } else {
                                         final Holder holder = timerFromResult(resultSet, listener.getTimerService());
                                         if (holder != null) {
-                                            TimerImpl oldTimer = listener.getTimerService().getTimer(id);
                                             // if it is already in memory but it is not in sync we have a problem
                                             // remove and add -> the probable cause is db glitch
                                             EnumSet<TimerState> valid = EnumSet.of(TimerState.IN_TIMEOUT, TimerState.RETRY_TIMEOUT, TimerState.CREATED, TimerState.ACTIVE);
                                             boolean validDBTimer = valid.contains(holder.timer.getState());
-                                            boolean validMemoryTimer = !valid.contains(oldTimer.getState());
+                                            boolean validMemoryTimer = oldTimer != null && !valid.contains(oldTimer.getState());
                                             // if timers memory - db are in non intersect subsets of valid/invalid states. we put them in sync
                                             if (validMemoryTimer && validDBTimer) {
                                                 synchronized (DatabaseTimerPersistence.this) {
-                                                    Set<String> timers = knownTimerIds.get(timedObjectId);
-                                                    timers.remove(oldTimer.getId());
+                                                    knownTimerIds.get(timedObjectId).add(oldTimer.getId());
                                                     listener.timerSync(oldTimer, holder.timer);
                                                 }
-
                                             }
                                         }
                                     }
