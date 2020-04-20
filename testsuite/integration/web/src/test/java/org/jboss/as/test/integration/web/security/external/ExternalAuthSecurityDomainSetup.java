@@ -4,9 +4,14 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.integration.web.security.WebSecurityCommon;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
+import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
 
 import java.util.Arrays;
 
@@ -31,33 +36,49 @@ public class ExternalAuthSecurityDomainSetup extends AbstractSecurityDomainSetup
     private static final Logger log = Logger.getLogger(ExternalAuthSecurityDomainSetup.class);
 
     protected static final String WEB_SECURITY_DOMAIN = "web-tests";
+    private CLIWrapper cli;
+
+    protected static final String BAD_USER_NAME = "marcus";
+    protected static final String BAD_USER_PASSWORD = "marcus";
+    private static final String BAD_USER_ROLE = "notallowed";
+
+    private static final String GOOD_USER_NAME = "anil";
+    private static final String GOOD_USER_PASSWORD = "anil";
+    private static final String GOOD_USER_ROLE = "gooduser";
+    private PropertyFileBasedDomain ps;
+    private UndertowDomainMapper domainMapper;
 
     @Override
-    public void setup(final ManagementClient managementClient, final String containerId) {
-        log.debug("start of the domain creation");
+    public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        if (WebSecurityCommon.isElytron()) {
+            cli = new CLIWrapper(true);
+            setupElytronBasedSecurityDomain();
+        } else {
+            log.debug("start of the domain creation");
 
-        final ModelNode compositeOp = new ModelNode();
-        compositeOp.get(OP).set(COMPOSITE);
-        compositeOp.get(OP_ADDR).setEmptyList();
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
 
-        ModelNode steps = compositeOp.get(STEPS);
-        PathAddress address = PathAddress.pathAddress()
-                .append(SUBSYSTEM, "security")
-                .append(SECURITY_DOMAIN, getSecurityDomainName());
+            ModelNode steps = compositeOp.get(STEPS);
+            PathAddress address = PathAddress.pathAddress()
+                    .append(SUBSYSTEM, "security")
+                    .append(SECURITY_DOMAIN, getSecurityDomainName());
 
-        steps.add(Util.createAddOperation(address));
-        address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
-        steps.add(Util.createAddOperation(address));
-        ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "External"));
+            steps.add(Util.createAddOperation(address));
+            address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
+            steps.add(Util.createAddOperation(address));
+            ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "External"));
 
-        loginModule.get(CODE).set("org.jboss.as.test.integration.web.security.external.ExternalLoginModule");
-        loginModule.get(MODULE).set("deployment.web-secure-external.war");
-        loginModule.get(FLAG).set("required");
-        loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        steps.add(loginModule);
+            loginModule.get(CODE).set("org.jboss.as.test.integration.web.security.external.ExternalLoginModule");
+            loginModule.get(MODULE).set("deployment.web-secure-external.war");
+            loginModule.get(FLAG).set("required");
+            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            steps.add(loginModule);
 
-        applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
-        log.debug("end of the domain creation");
+            applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
+            log.debug("end of the domain creation");
+        }
     }
 
     @Override
@@ -65,5 +86,31 @@ public class ExternalAuthSecurityDomainSetup extends AbstractSecurityDomainSetup
         return WEB_SECURITY_DOMAIN;
     }
 
+    @Override
+    public void tearDown(ManagementClient managementClient, String s) {
+        if (WebSecurityCommon.isElytron()) {
+            try {
+                domainMapper.remove(cli);
+                ps.remove(cli);
+                cli.close();
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
+            } catch (Exception e) {
+                log.error("Failed to tear down domain.", e);
+            }
+        }
+        else {
+            super.tearDown(managementClient, s);
+        }
+    }
+
+    private void setupElytronBasedSecurityDomain() throws Exception {
+        ps = PropertyFileBasedDomain.builder()
+                .withUser(BAD_USER_NAME, BAD_USER_PASSWORD, BAD_USER_ROLE)
+                .withUser(GOOD_USER_NAME, GOOD_USER_PASSWORD, GOOD_USER_ROLE)
+                .withName(WEB_SECURITY_DOMAIN).build();
+        ps.create(cli);
+        domainMapper = UndertowDomainMapper.builder().withName(WEB_SECURITY_DOMAIN).build();
+        domainMapper.create(cli);
+    }
 
 }

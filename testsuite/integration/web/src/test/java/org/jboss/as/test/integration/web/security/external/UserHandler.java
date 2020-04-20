@@ -20,6 +20,7 @@ public class UserHandler implements HttpHandler {
         String user = exchange.getRequestHeaders().getFirst("User");
         if(user != null) {
             exchange.putAttachment(ExternalAuthenticationMechanism.EXTERNAL_PRINCIPAL, user);
+            exchange.putAttachment(HttpServerExchange.REMOTE_USER, user);
             exchange.putAttachment(ExternalAuthenticationMechanism.EXTERNAL_AUTHENTICATION_TYPE, "user-header");
         }
         next.handleRequest(exchange);
