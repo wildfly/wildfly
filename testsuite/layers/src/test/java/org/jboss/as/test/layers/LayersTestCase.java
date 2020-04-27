@@ -79,6 +79,8 @@ public class LayersTestCase {
         "org.wildfly.naming",
         // Brought by galleon ServerRootResourceDefinition
         "wildflyee.api",
+        // bootable jar runtime
+        "org.wildfly.bootable-jar"
         };
 
     @Test
