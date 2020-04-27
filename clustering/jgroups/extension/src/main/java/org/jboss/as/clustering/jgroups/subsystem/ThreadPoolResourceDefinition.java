@@ -47,7 +47,7 @@ import org.jboss.as.controller.SimpleResourceDefinition.Parameters;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -65,9 +65,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.getDefinition());
 
             if (JGroupsModel.VERSION_6_0_0.requiresTransformation(version)) {
-                for (Attribute attribute : Arrays.asList(this.getMinThreads(), this.getMaxThreads(), this.getQueueLength())) {
-                    builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute.getDefinition()), attribute.getName());
-                }
+                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.getMinThreads().getName(), this.getMaxThreads().getName(), this.getQueueLength().getName());
             }
         }
     },
@@ -166,13 +164,11 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.definition);
 
         if (JGroupsModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(this.queueLength.getDefinition()), this.queueLength.getName());
+            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.queueLength.getName());
         }
 
         if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-            for (Attribute attribute : Arrays.asList(this.minThreads, this.maxThreads)) {
-                builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute.getDefinition()), attribute.getName());
-            }
+            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.minThreads.getName(), this.maxThreads.getName());
         }
     }
 }

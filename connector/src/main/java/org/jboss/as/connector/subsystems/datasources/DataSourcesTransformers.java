@@ -185,7 +185,7 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
                 .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, ENLISTMENT_TRACE)
                 .end();
         builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
         builder.getAttributeBuilder()
@@ -204,7 +204,7 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                         CREDENTIAL_REFERENCE,
                         AUTHENTICATION_CONTEXT)
 
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, ENLISTMENT_TRACE)
                 .end();
         parentBuilder.addChildResource(PATH_DRIVER).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, MODULE_SLOT, JDBC_COMPLIANT, PROFILE,

@@ -58,7 +58,6 @@ import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -221,7 +220,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, MAX_RETRIES)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, MAX_RETRIES)
-                    .setValueConverter(new DefaultValueAttributeConverter(CONNECTIONS_PER_THREAD), CONNECTIONS_PER_THREAD)
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, CONNECTIONS_PER_THREAD)
                 .end()
                 .addChildResource(PathElement.pathElement(Constants.HOST))
                 .getAttributeBuilder()
@@ -239,7 +238,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                     .addRejectCheck(RejectAttributeChecker.DEFINED,
                             ModClusterDefinition.MAX_RETRIES, FAILOVER_STRATEGY, SSL_CONTEXT)
                     .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
-                    .setValueConverter(new DefaultValueAttributeConverter(MAX_AJP_PACKET_SIZE), MAX_AJP_PACKET_SIZE)
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, MAX_AJP_PACKET_SIZE)
                 .end();
 
         hostBuilder.rejectChildResource(UndertowExtension.PATH_HTTP_INVOKER);
@@ -251,9 +250,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         return builder
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, REQUIRE_HOST_HTTP11, RFC6265_COOKIE_VALIDATION)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, REQUIRE_HOST_HTTP11, RFC6265_COOKIE_VALIDATION)
-                .setValueConverter(new DefaultValueAttributeConverter(HTTP2_HEADER_TABLE_SIZE), HTTP2_HEADER_TABLE_SIZE)
-                .setValueConverter(new DefaultValueAttributeConverter(HTTP2_INITIAL_WINDOW_SIZE), HTTP2_INITIAL_WINDOW_SIZE)
-                .setValueConverter(new DefaultValueAttributeConverter(HTTP2_MAX_FRAME_SIZE), HTTP2_MAX_FRAME_SIZE);
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, HTTP2_HEADER_TABLE_SIZE, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_MAX_FRAME_SIZE);
     }
 
     private static AttributeTransformationDescriptionBuilder convertCommonListenerAttributes(AttributeTransformationDescriptionBuilder builder) {
