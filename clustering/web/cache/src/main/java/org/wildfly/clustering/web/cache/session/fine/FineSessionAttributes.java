@@ -79,7 +79,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         UUID attributeId = this.names.get(name);
         if (attributeId == null) return null;
 
-        this.setNames(this.namesCache.computeIfPresent(this.key, this.properties.isTransactional() ? new CopyOnWriteMapRemoveFunction<>(name) : new ConcurrentMapRemoveFunction<>(name)));
+        this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapRemoveFunction<>(name) : new ConcurrentMapRemoveFunction<>(name)));
 
         K key = this.keyFactory.apply(attributeId);
         Object result = this.read(this.attributeCache.remove(key));
