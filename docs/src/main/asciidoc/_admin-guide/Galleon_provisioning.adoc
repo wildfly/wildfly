@@ -136,6 +136,7 @@ Basic layers:
 * _jms-activemq_: deprecated - use _messaging-activemq_.
 * _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
 * _jsf_: Support for Jakarta Server Faces. Depends on _web-server_ (defined in the WildFly servlet feature-pack) and optionally on _cdi_ and _bean-validation_
+* _mail_: Support for Jakarta Mail.
 * _messaging-activemq_: Support for connections to a remote JMS broker.
 * _microprofile-config_: Support for MicroProfile Config.
 * _microprofile-metrics_: Support for MicroProfile Metrics.
