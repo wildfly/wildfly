@@ -159,6 +159,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         // 6 warnings about broadcast-group attributes that can not be migrated.
         // 2 warnings about broadcast-group attributes not migrated because they have an expression.
         // 3 warnings about broadcast-group not migrated because they don't have a proper network configuration.
+        // 1 warnings about broadcast-group not migrated because they don't have a connector.
         // 5 warnings about discovery-group attributes that can not be migrated.
         // 2 warnings about discovery-group attributes not migrated because they have an expression.
         // 3 warnings about interceptors that can not be migrated (for remoting-interceptors, remoting-incoming-interceptors & remoting-outgoing-interceptors attributes)
@@ -166,7 +167,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         // 1 warning about HA migration (attributes have expressions)
         // 1 warning about cluster-connection forward-when-no-consumers attribute having an expression.
         // 1 warning about use-nio being ignored for netty-throughput remote-connector resource.
-        int expectedNumberOfWarnings = 6 + 2 + 3 + 5 + 2 + 3 + 3 + 1 + 1 + 1;
+        int expectedNumberOfWarnings = 6 + 2 + 3 + 1 + 5 + 2 + 3 + 3 + 1 + 1 + 1;
         // 1 warning if add-legacy-entries is true because an in-vm connector can not be used in a legacy-connection-factory
         if (addLegacyEntries) {
             expectedNumberOfWarnings += 1;

@@ -131,6 +131,9 @@
                 <jgroups-channel>${jgroups.channel:hq-cluster}</jgroups-channel>
                 <connector-ref>in-vm</connector-ref>
             </broadcast-group>
+            <broadcast-group name="groupV">
+                <socket-binding>messaging-group</socket-binding>
+            </broadcast-group>
         </broadcast-groups>
         <discovery-groups>
             <discovery-group name="groupC">
