@@ -122,8 +122,7 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.TIMEOUT.getDefinition()), Attribute.TIMEOUT.getDefinition())
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CHUNK_SIZE.getDefinition()), Attribute.CHUNK_SIZE.getDefinition())
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.TIMEOUT.getName(), Attribute.CHUNK_SIZE.getName())
                     .end();
         }
     }

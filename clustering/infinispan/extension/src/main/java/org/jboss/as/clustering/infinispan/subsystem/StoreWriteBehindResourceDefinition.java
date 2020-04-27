@@ -34,7 +34,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -98,7 +98,7 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(DeprecatedAttribute.FLUSH_LOCK_TIMEOUT.getDefinition()), DeprecatedAttribute.FLUSH_LOCK_TIMEOUT.getDefinition());
+            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, DeprecatedAttribute.FLUSH_LOCK_TIMEOUT.getName());
         }
     }
 
