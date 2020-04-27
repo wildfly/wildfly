@@ -103,6 +103,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTORS;
 import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -525,15 +526,23 @@ public class MigrateOperation implements OperationStepHandler {
                 warnings.add(ROOT_LOGGER.couldNotMigrateBroadcastGroupAttribute(property.getName(), pathAddress(newAddOp.get(OP_ADDR))));
             }
         }
+        boolean clearOp = false;
+        if(! newAddOp.hasDefined(CONNECTORS)) {
+            warnings.add(ROOT_LOGGER.couldNotMigrateBroadcastGroupWithoutConnectors(pathAddress(newAddOp.get(OP_ADDR))));
+            clearOp = true;
+        }
         // These attributes no longer accept expressions in the messaging-activemq subsystem.
         removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
         if (!newAddOp.hasDefined(SOCKET_BINDING.getName())) {
             if(!newAddOp.hasDefined(JGROUPS_CHANNEL.getName())) {
                 warnings.add(ROOT_LOGGER.couldNotMigrateBroadcastGroup(pathAddress(newAddOp.get(OP_ADDR))));
-                newAddOp.clear();
+                clearOp = true;
             } else {
                 newAddOp.get("jgroups-cluster").set(newAddOp.get(JGROUPS_CHANNEL.getName()));
             }
+        }
+        if(clearOp) {
+            newAddOp.clear();
         }
     }
 

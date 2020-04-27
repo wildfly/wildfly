@@ -825,4 +825,8 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 90, value = "Can not migrate broadcast group %s as no network configuration is properly defined.")
     String couldNotMigrateBroadcastGroup(PathAddress address);
+
+    @Message(id = 91, value = "Can not migrate broadcast group %s as no connector is properly defined.")
+    String couldNotMigrateBroadcastGroupWithoutConnectors(PathAddress address);
 }
+
