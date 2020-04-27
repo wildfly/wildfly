@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="mail">
+    <dependencies>
+        <layer name="base-server"/>
+        <layer name="naming"/>
+    </dependencies>
+    <feature-group name="mail-all"/>
+</layer-spec>

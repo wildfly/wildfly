@@ -130,6 +130,7 @@ Basic layers:
 * _jaxrs_: Support for JAXRS. Depends on _web-server_ (defined in the WildFly servlet feature-pack).
 * _jms-activemq_: Support for connections to a remote JMS broker.
 * _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
+* _mail_: Support for Jakarta Mail.
 * _microprofile-config_: Support for MicroProfile Config.
 * _microprofile-metrics_: Support for MicroProfile Metrics.
 * _microprofile-health_: Support for MicroProfile Health.

@@ -1583,6 +1583,42 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>mail-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/mail</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>mail</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>microprofile-config-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2174,6 +2210,7 @@
                                                 <layer>legacy-management</layer>
                                                 <layer>legacy-security</layer>
                                                 <layer>logging</layer>
+                                                <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>management-security-realm</layer>
                                                 <layer>microprofile-config</layer>
@@ -2202,6 +2239,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+
 
                             <!-- This is an all layers variant excluding jpa and adding jpa-distributed -->
                             <execution>
@@ -2264,6 +2302,7 @@
                                                 <layer>legacy-management</layer>
                                                 <layer>legacy-security</layer>
                                                 <layer>logging</layer>
+                                                <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>management-security-realm</layer>
                                                 <layer>microprofile-config</layer>
