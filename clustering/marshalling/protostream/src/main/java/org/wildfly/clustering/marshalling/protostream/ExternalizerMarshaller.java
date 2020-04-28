@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.StreamCorruptedException;
+import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
@@ -66,5 +67,10 @@ public class ExternalizerMarshaller<T> implements ProtoStreamMarshaller<T> {
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T object) throws IOException {
         this.externalizer.writeObject(new ProtoStreamObjectOutput(context, writer), object);
+    }
+
+    @Override
+    public OptionalInt size(ImmutableSerializationContext context, T value) {
+        return this.externalizer.size(value);
     }
 }
