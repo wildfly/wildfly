@@ -21,13 +21,13 @@
  */
 package org.wildfly.clustering.web.cache.session.fine;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
@@ -64,7 +64,7 @@ public class FineImmutableSessionAttributes<K, V> implements ImmutableSessionAtt
     private Object read(V value) {
         try {
             return this.marshaller.read(value);
-        } catch (InvalidSerializedFormException e) {
+        } catch (IOException e) {
             // This should not happen here, since attributes were pre-activated when session was constructed
             throw new IllegalStateException(e);
         }

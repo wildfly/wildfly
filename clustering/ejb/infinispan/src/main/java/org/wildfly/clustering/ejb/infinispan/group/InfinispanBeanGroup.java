@@ -64,7 +64,7 @@ public class InfinispanBeanGroup<I, T, C> implements BeanGroup<I, T> {
     private Map<I, T> beans() {
         try {
             return this.entry.getBeans().get(this.context);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             throw InfinispanEjbLogger.ROOT_LOGGER.deserializationFailure(e, this.id);
         }
     }
