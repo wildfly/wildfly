@@ -28,26 +28,20 @@ import java.io.OutputStream;
 import java.util.AbstractMap;
 
 import org.infinispan.commons.dataconversion.MediaType;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
-import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.marshalling.AbstractMarshaller;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
  * @author Paul Ferraro
  */
 public class JBossMarshaller extends AbstractMarshaller {
 
-    private final MarshallingContext context;
+    private final ByteBufferMarshaller marshaller;
 
     public JBossMarshaller(Module module) {
         this(module.getModuleLoader(), module);
@@ -58,11 +52,7 @@ public class JBossMarshaller extends AbstractMarshaller {
     }
 
     public JBossMarshaller(MarshallingConfigurationRepository repository, ClassLoader loader) {
-        this(new SimpleMarshallingContextFactory().createMarshallingContext(repository, loader));
-    }
-
-    public JBossMarshaller(MarshallingContext context) {
-        this.context = context;
+        this.marshaller = new JBossByteBufferMarshaller(repository, loader);
     }
 
     @Override
@@ -72,32 +62,16 @@ public class JBossMarshaller extends AbstractMarshaller {
 
     @Override
     public boolean isMarshallable(Object object) {
-        return this.context.isMarshallable(object);
+        return this.marshaller.isMarshallable(object);
     }
 
     @Override
     public void writeObject(Object object, OutputStream output) throws IOException {
-        int version = this.context.getCurrentVersion();
-        try (SimpleDataOutput data = new SimpleDataOutput(Marshalling.createByteOutput(output))) {
-            IndexSerializer.UNSIGNED_BYTE.writeInt(data, version);
-            try (Marshaller marshaller = this.context.createMarshaller(version)) {
-                marshaller.start(data);
-                marshaller.writeObject(object);
-                marshaller.finish();
-            }
-        }
+        this.marshaller.writeTo(output, object);
     }
 
     @Override
     public Object readObject(InputStream input) throws ClassNotFoundException, IOException {
-        try (SimpleDataInput data = new SimpleDataInput(Marshalling.createByteInput(input))) {
-            int version = IndexSerializer.UNSIGNED_BYTE.readInt(data);
-            try (Unmarshaller unmarshaller = this.context.createUnmarshaller(version)) {
-                unmarshaller.start(data);
-                Object result = unmarshaller.readObject();
-                unmarshaller.finish();
-                return result;
-            }
-        }
+        return this.marshaller.readFrom(input);
     }
 }
