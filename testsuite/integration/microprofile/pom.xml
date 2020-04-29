@@ -132,9 +132,22 @@
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <offline>true</offline>
+                    <scripts>
+                        <script>${wildfly.dir}/docs/examples/enable-microprofile.cli</script>
+                    </scripts>
+                    <jboss-home>${wildfly.dir}</jboss-home>
+                    <stdout>none</stdout>
+                    <java-opts>${modular.jdk.args}</java-opts>
+                    <system-properties>
+                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                        <module.path>${jboss.dist}/modules</module.path>
+                    </system-properties>
+                </configuration>
                 <executions>
                     <execution>
-                        <phase>none</phase>
+                        <phase>process-test-resources</phase>
                         <goals>
                             <goal>execute-commands</goal>
                         </goals>
@@ -149,6 +162,25 @@
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                     </systemPropertyVariables>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <id>standalone-enabled-microprofile-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -178,6 +210,19 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -237,6 +282,10 @@
                                 <id>default-test</id>
                                 <phase>test</phase>
                             </execution>
+                            <execution>
+                                <id>standalone-enabled-microprofile-test</id>
+                                <phase>none</phase>
+                            </execution>
                         </executions>
                         <configuration>
                             <systemPropertyVariables>
@@ -270,6 +319,23 @@
                                 <id>default-test</id>
                                 <phase>none</phase>
                             </execution>
+                            <execution>
+                                <id>standalone-enabled-microprofile-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -293,6 +359,23 @@
                             <execution>
                                 <id>default-test</id>
                                 <phase>test</phase>
+                            </execution>
+                            <execution>
+                                <id>standalone-enabled-microprofile-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>

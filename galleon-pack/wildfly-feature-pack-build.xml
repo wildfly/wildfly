@@ -58,6 +58,7 @@
     <default-packages>
         <package name="modules.all"/>
         <package name="docs.licenses.merge"/>
+        <package name="docs.examples"/>
     </default-packages>
     <package-schemas>
         <group name="org.wildfly"/>

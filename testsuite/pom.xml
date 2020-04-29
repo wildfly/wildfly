@@ -235,7 +235,9 @@
                                            <exclude>bin/*.sh</exclude>
                                            <exclude>bin/*.bat</exclude>
                                            <exclude>bin/*.ps1</exclude>
-                                           <exclude>docs/</exclude>
+                                           <exclude>docs/licenses/</exclude>
+                                           <exclude>docs/schema/</exclude>
+                                           <exclude>docs/examples/configs/</exclude>
                                            <exclude>modules/</exclude>
                                            <exclude>welcome-content/*.png</exclude>
                                            <exclude>standalone/data</exclude>
