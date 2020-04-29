@@ -88,7 +88,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
         private final RuntimeCapability<Void> definition;
 
         Capability(String name, Class<?> serviceValueType) {
-            this.definition = RuntimeCapability.Builder.of(name, true, serviceValueType).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
+            this.definition = RuntimeCapability.Builder.of(name, true, serviceValueType).setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT).build();
         }
 
         @Override
