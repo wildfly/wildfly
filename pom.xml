@@ -434,7 +434,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.9.10</version.org.testng>
         <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>11.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>11.1.1.Final</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.20.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.12.Final</version.org.wildfly.naming-client>
