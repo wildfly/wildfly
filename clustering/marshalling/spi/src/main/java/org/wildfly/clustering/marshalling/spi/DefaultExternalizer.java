@@ -83,6 +83,8 @@ import org.wildfly.clustering.marshalling.spi.util.CalendarExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CopyOnWriteCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.DateExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.EnumMapExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.EnumSetExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.HashMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.MapEntryExternalizer;
@@ -154,6 +156,8 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     EMPTY_SET(new ValueExternalizer<>(Collections.emptySet())),
     EMPTY_SORTED_MAP(new ValueExternalizer<>(Collections.emptySortedMap())),
     EMPTY_SORTED_SET(new ValueExternalizer<>(Collections.emptySortedSet())),
+    ENUM_MAP(new EnumMapExternalizer<>()),
+    ENUM_SET(new EnumSetExternalizer<>()),
     HASH_MAP(new HashMapExternalizer<>(HashMap.class, HashMap::new)),
     HASH_SET(new CollectionExternalizer<>(HashSet.class, HashSet::new)),
     LINKED_HASH_MAP(new LinkedHashMapExternalizer()),
