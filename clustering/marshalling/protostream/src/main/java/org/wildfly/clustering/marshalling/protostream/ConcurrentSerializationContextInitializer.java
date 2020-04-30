@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.EnumSet;
 
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.concurrent.ConcurrentExternalizerProvider;
 
 /**
  * Initializer that registers protobuf schema for java.util.concurrent.* classes.
@@ -40,15 +40,6 @@ public class ConcurrentSerializationContextInitializer extends AbstractSerializa
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.of(
-                DefaultExternalizer.CONCURRENT_HASH_MAP,
-                DefaultExternalizer.CONCURRENT_HASH_SET,
-                DefaultExternalizer.CONCURRENT_LINKED_DEQUE,
-                DefaultExternalizer.CONCURRENT_LINKED_QUEUE,
-                DefaultExternalizer.CONCURRENT_SKIP_LIST_MAP,
-                DefaultExternalizer.CONCURRENT_SKIP_LIST_SET,
-                DefaultExternalizer.COPY_ON_WRITE_ARRAY_LIST,
-                DefaultExternalizer.COPY_ON_WRITE_ARRAY_SET,
-                DefaultExternalizer.TIME_UNIT)));
+        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.allOf(ConcurrentExternalizerProvider.class)));
     }
 }

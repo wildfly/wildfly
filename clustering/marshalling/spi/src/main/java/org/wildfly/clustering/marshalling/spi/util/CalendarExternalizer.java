@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.IntSerializer;
 
@@ -57,7 +56,7 @@ public class CalendarExternalizer implements Externalizer<Calendar> {
         CALENDAR_TYPE_SERIALIZER.writeInt(output, CALENDAR_TYPE_IDS.get(calendar.getCalendarType()));
         output.writeLong(calendar.getTimeInMillis());
         output.writeBoolean(calendar.isLenient());
-        DefaultExternalizer.TIME_ZONE.cast(TimeZone.class).writeObject(output, calendar.getTimeZone());
+        UtilExternalizerProvider.TIME_ZONE.cast(TimeZone.class).writeObject(output, calendar.getTimeZone());
         IndexSerializer.UNSIGNED_BYTE.writeInt(output, calendar.getFirstDayOfWeek());
         IndexSerializer.UNSIGNED_BYTE.writeInt(output, calendar.getMinimalDaysInFirstWeek());
     }
@@ -68,7 +67,7 @@ public class CalendarExternalizer implements Externalizer<Calendar> {
                 .setCalendarType(CALENDAR_TYPE_NAMES[CALENDAR_TYPE_SERIALIZER.readInt(input)])
                 .setInstant(input.readLong())
                 .setLenient(input.readBoolean())
-                .setTimeZone(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class).readObject(input))
+                .setTimeZone(UtilExternalizerProvider.TIME_ZONE.cast(TimeZone.class).readObject(input))
                 .setWeekDefinition(IndexSerializer.UNSIGNED_BYTE.readInt(input), IndexSerializer.UNSIGNED_BYTE.readInt(input))
                 .build();
     }

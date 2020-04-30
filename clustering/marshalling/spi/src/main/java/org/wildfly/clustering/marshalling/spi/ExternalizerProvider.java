@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,38 +20,47 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.time;
+package org.wildfly.clustering.marshalling.spi;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.time.Month;
-import java.time.MonthDay;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
- * Externalizer for a {@link MonthDay}.
  * @author Paul Ferraro
  */
-public class MonthDayExternalizer implements Externalizer<MonthDay> {
+public interface ExternalizerProvider extends Externalizer<Object> {
+
+    Externalizer<?> getExternalizer();
 
     @Override
-    public void writeObject(ObjectOutput output, MonthDay monthDay) throws IOException {
-        TimeExternalizerProvider.MONTH.cast(Month.class).writeObject(output, monthDay.getMonth());
-        IndexSerializer.UNSIGNED_BYTE.writeInt(output, monthDay.getDayOfMonth());
+    default void writeObject(ObjectOutput output, Object object) throws IOException {
+        this.cast(Object.class).writeObject(output, object);
     }
 
     @Override
-    public MonthDay readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        Month month = TimeExternalizerProvider.MONTH.cast(Month.class).readObject(input);
-        int day = IndexSerializer.UNSIGNED_BYTE.readInt(input);
-        return MonthDay.of(month, day);
+    default Object readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return this.getExternalizer().readObject(input);
     }
 
     @Override
-    public Class<MonthDay> getTargetClass() {
-        return MonthDay.class;
+    default Class<Object> getTargetClass() {
+        return this.cast(Object.class).getTargetClass();
+    }
+
+    @Override
+    default OptionalInt size(Object object) {
+        return this.cast(Object.class).size(object);
+    }
+
+    @SuppressWarnings("unchecked")
+    default <T> Externalizer<T> cast(Class<T> type) {
+        if (!type.isAssignableFrom(this.getExternalizer().getTargetClass())) {
+            throw new IllegalArgumentException(type.getName());
+        }
+        return (Externalizer<T>) this.getExternalizer();
     }
 }

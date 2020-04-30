@@ -22,17 +22,22 @@
 
 package org.wildfly.clustering.marshalling.spi;
 
-import org.wildfly.clustering.marshalling.AbstractUtilTestCase;
-import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
-import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Externalizer tests for java.util.* classes.
  * @author Paul Ferraro
  */
-public class ExternalizerUtilTestCase extends AbstractUtilTestCase {
+public enum MarshallingExternalizerProvider implements ExternalizerProvider {
+    MARSHALLED_VALUE(new ByteBufferMarshalledValueExternalizer()),
+    ;
+    private final Externalizer<?> externalizer;
 
-    public ExternalizerUtilTestCase() {
-        super(new ExternalizerTesterFactory(UtilExternalizerProvider.class));
+    MarshallingExternalizerProvider(Externalizer<?> externalizer) {
+        this.externalizer = externalizer;
+    }
+
+    @Override
+    public Externalizer<?> getExternalizer() {
+        return this.externalizer;
     }
 }

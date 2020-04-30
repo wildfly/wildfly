@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.EnumSet;
 
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.sql.SQLExternalizerProvider;
 
 /**
  * Initializer that registers protobuf schema for java.sql.* classes.
@@ -40,9 +40,6 @@ public class SQLSerializationContextInitializer extends AbstractSerializationCon
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.of(
-                DefaultExternalizer.SQL_DATE,
-                DefaultExternalizer.SQL_TIME,
-                DefaultExternalizer.SQL_TIMESTAMP)));
+        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.allOf(SQLExternalizerProvider.class)));
     }
 }

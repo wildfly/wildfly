@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,37 +22,36 @@
 
 package org.wildfly.clustering.marshalling.spi.net;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.ExternalizerProvider;
+import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
- * Externalizer for a {@link URL}.
+ * Externalizers for the java.net package.
  * @author Paul Ferraro
  */
-public class URLExternalizer implements Externalizer<URL> {
+public enum NetExternalizerProvider implements ExternalizerProvider {
 
-    @Override
-    public void writeObject(ObjectOutput output, URL url) throws IOException {
-        try {
-            NetExternalizerProvider.URI.cast(URI.class).writeObject(output, url.toURI());
-        } catch (URISyntaxException e) {
-            throw new IOException(e);
-        }
+    INET_ADDRESS(new InetAddressExternalizer<>(InetAddress.class, OptionalInt.empty())),
+    INET4_ADDRESS(new InetAddressExternalizer<>(Inet4Address.class, OptionalInt.of(4))),
+    INET6_ADDRESS(new InetAddressExternalizer<>(Inet6Address.class, OptionalInt.of(16))),
+    INET_SOCKET_ADDRESS(new InetSocketAddressExternalizer()),
+    URI(new StringExternalizer<>(java.net.URI.class, java.net.URI::create, java.net.URI::toString)),
+    URL(new URLExternalizer()),
+    ;
+    private final Externalizer<?> externalizer;
+
+    NetExternalizerProvider(Externalizer<?> externalizer) {
+        this.externalizer = externalizer;
     }
 
     @Override
-    public URL readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return NetExternalizerProvider.URI.cast(URI.class).readObject(input).toURL();
-    }
-
-    @Override
-    public Class<URL> getTargetClass() {
-        return URL.class;
+    public Externalizer<?> getExternalizer() {
+        return this.externalizer;
     }
 }

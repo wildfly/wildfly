@@ -28,14 +28,14 @@ import java.net.InetAddress;
 
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.net.NetExternalizerProvider;
 
 /**
  * @author Paul Ferraro
  */
 public class ClientMappingExternalizer implements Externalizer<ClientMapping> {
-    private static final Externalizer<InetAddress> ADDRESS_EXTERNALIZER = DefaultExternalizer.INET_ADDRESS.cast(InetAddress.class);
+    private static final Externalizer<InetAddress> ADDRESS_EXTERNALIZER = NetExternalizerProvider.INET_ADDRESS.cast(InetAddress.class);
 
     @Override
     public void writeObject(ObjectOutput output, ClientMapping mapping) throws IOException {

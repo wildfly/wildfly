@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.EnumSet;
 
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
 /**
  * Initializer that registers protobuf schema for java.util.* classes.
@@ -40,43 +40,6 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.of(
-                DefaultExternalizer.EMPTY_ENUMERATION,
-                DefaultExternalizer.EMPTY_ITERATOR,
-                DefaultExternalizer.EMPTY_LIST,
-                DefaultExternalizer.EMPTY_LIST_ITERATOR,
-                DefaultExternalizer.EMPTY_MAP,
-                DefaultExternalizer.EMPTY_NAVIGABLE_MAP,
-                DefaultExternalizer.EMPTY_NAVIGABLE_SET,
-                DefaultExternalizer.EMPTY_SET,
-                DefaultExternalizer.EMPTY_SORTED_MAP,
-                DefaultExternalizer.EMPTY_SORTED_SET,
-                DefaultExternalizer.SINGLETON_LIST,
-                DefaultExternalizer.SINGLETON_MAP,
-                DefaultExternalizer.SINGLETON_SET,
-                DefaultExternalizer.ARRAY_DEQUE,
-                DefaultExternalizer.ARRAY_LIST,
-                DefaultExternalizer.BIT_SET,
-                DefaultExternalizer.CALENDAR,
-                DefaultExternalizer.CURRENCY,
-                DefaultExternalizer.DATE,
-                DefaultExternalizer.HASH_MAP,
-                DefaultExternalizer.HASH_SET,
-                DefaultExternalizer.LINKED_HASH_MAP,
-                DefaultExternalizer.LINKED_HASH_SET,
-                DefaultExternalizer.LINKED_LIST,
-                DefaultExternalizer.LOCALE,
-                DefaultExternalizer.NATURAL_ORDER_COMPARATOR,
-                DefaultExternalizer.OPTIONAL,
-                DefaultExternalizer.OPTIONAL_DOUBLE,
-                DefaultExternalizer.OPTIONAL_INT,
-                DefaultExternalizer.OPTIONAL_LONG,
-                DefaultExternalizer.REVERSE_ORDER_COMPARATOR,
-                DefaultExternalizer.SIMPLE_ENTRY,
-                DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY,
-                DefaultExternalizer.TIME_ZONE,
-                DefaultExternalizer.TREE_MAP,
-                DefaultExternalizer.TREE_SET,
-                DefaultExternalizer.UUID)));
+        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.allOf(UtilExternalizerProvider.class)));
     }
 }

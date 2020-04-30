@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.EnumSet;
 
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.net.NetExternalizerProvider;
 
 /**
  * Initializer that registers protobuf schema for java.net.* classes.
@@ -40,12 +40,6 @@ public class NetSerializationContextInitializer extends AbstractSerializationCon
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.of(
-                DefaultExternalizer.INET_ADDRESS,
-                DefaultExternalizer.INET_SOCKET_ADDRESS,
-                DefaultExternalizer.INET4_ADDRESS,
-                DefaultExternalizer.INET6_ADDRESS,
-                DefaultExternalizer.URI,
-                DefaultExternalizer.URL)));
+        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.allOf(NetExternalizerProvider.class)));
     }
 }

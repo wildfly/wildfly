@@ -20,19 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.spi.sql;
 
-import org.wildfly.clustering.marshalling.AbstractUtilTestCase;
-import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
-import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
+import java.sql.Date;
+import java.sql.Time;
+
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.ExternalizerProvider;
+import org.wildfly.clustering.marshalling.spi.util.DateExternalizer;
 
 /**
- * Externalizer tests for java.util.* classes.
  * @author Paul Ferraro
  */
-public class ExternalizerUtilTestCase extends AbstractUtilTestCase {
+public enum SQLExternalizerProvider implements ExternalizerProvider {
 
-    public ExternalizerUtilTestCase() {
-        super(new ExternalizerTesterFactory(UtilExternalizerProvider.class));
+    SQL_DATE(new DateExternalizer<>(Date.class, Date::new)),
+    SQL_TIME(new DateExternalizer<>(Time.class, Time::new)),
+    SQL_TIMESTAMP(new DateExternalizer.SqlTimestampExternalizer()),
+    ;
+    private final Externalizer<?> externalizer;
+
+    SQLExternalizerProvider(Externalizer<?> externalizer) {
+        this.externalizer = externalizer;
+    }
+
+    @Override
+    public Externalizer<?> getExternalizer() {
+        return this.externalizer;
     }
 }

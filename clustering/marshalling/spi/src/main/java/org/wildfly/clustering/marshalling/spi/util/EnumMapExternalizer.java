@@ -32,7 +32,6 @@ import java.util.EnumMap;
 import java.util.Iterator;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -51,7 +50,7 @@ public class EnumMapExternalizer<E extends Enum<E>> implements Externalizer<Enum
         for (int i = 0; i < enumValues.length; ++i) {
             keys.set(i, map.containsKey(enumValues[i]));
         }
-        DefaultExternalizer.BIT_SET.writeObject(output, keys);
+        UtilExternalizerProvider.BIT_SET.writeObject(output, keys);
         for (Object value : map.values()) {
             output.writeObject(value);
         }
@@ -61,7 +60,7 @@ public class EnumMapExternalizer<E extends Enum<E>> implements Externalizer<Enum
     @Override
     public EnumMap<E, Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         Class<E> enumClass = (Class<E>) input.readObject();
-        BitSet keys = DefaultExternalizer.BIT_SET.cast(BitSet.class).readObject(input);
+        BitSet keys = UtilExternalizerProvider.BIT_SET.cast(BitSet.class).readObject(input);
         EnumMap<E, Object> map = new EnumMap<>(enumClass);
         Object[] enumValues = enumClass.getEnumConstants();
         for (int i = 0; i < enumValues.length; ++i) {
