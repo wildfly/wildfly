@@ -22,8 +22,10 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.util.EnumSet;
+
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.MarshallingExternalizerProvider;
 
 /**
  * @author Paul Ferraro
@@ -37,6 +39,6 @@ public class MarshallingSerializationContextInitializer extends AbstractSerializ
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(DefaultExternalizer.MARSHALLED_VALUE));
+        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.allOf(MarshallingExternalizerProvider.class)));
     }
 }

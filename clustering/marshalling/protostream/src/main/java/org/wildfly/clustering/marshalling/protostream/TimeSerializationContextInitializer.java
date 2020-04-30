@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.EnumSet;
 
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.time.TimeExternalizerProvider;
 
 /**
  * Initializer that registers protobuf schema for java.time.* classes.
@@ -40,22 +40,6 @@ public class TimeSerializationContextInitializer extends AbstractSerializationCo
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.of(
-                DefaultExternalizer.DAY_OF_WEEK,
-                DefaultExternalizer.DURATION,
-                DefaultExternalizer.INSTANT,
-                DefaultExternalizer.LOCAL_DATE,
-                DefaultExternalizer.LOCAL_DATE_TIME,
-                DefaultExternalizer.LOCAL_TIME,
-                DefaultExternalizer.MONTH,
-                DefaultExternalizer.MONTH_DAY,
-                DefaultExternalizer.OFFSET_DATE_TIME,
-                DefaultExternalizer.OFFSET_TIME,
-                DefaultExternalizer.PERIOD,
-                DefaultExternalizer.YEAR,
-                DefaultExternalizer.YEAR_MONTH,
-                DefaultExternalizer.ZONE_ID,
-                DefaultExternalizer.ZONE_OFFSET,
-                DefaultExternalizer.ZONED_DATE_TIME)));
+        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.allOf(TimeExternalizerProvider.class)));
     }
 }

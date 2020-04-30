@@ -32,7 +32,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -51,14 +50,14 @@ public class EnumSetExternalizer<E extends Enum<E>> implements Externalizer<Enum
         for (int i = 0; i < enumValues.length; ++i) {
             values.set(i, set.contains(enumValues[i]));
         }
-        DefaultExternalizer.BIT_SET.writeObject(output, values);
+        UtilExternalizerProvider.BIT_SET.writeObject(output, values);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public EnumSet<E> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         Class<E> enumClass = (Class<E>) input.readObject();
-        BitSet values = DefaultExternalizer.BIT_SET.cast(BitSet.class).readObject(input);
+        BitSet values = UtilExternalizerProvider.BIT_SET.cast(BitSet.class).readObject(input);
         EnumSet<E> set = EnumSet.noneOf(enumClass);
         Object[] enumValues = enumClass.getEnumConstants();
         for (int i = 0; i < enumValues.length; ++i) {
