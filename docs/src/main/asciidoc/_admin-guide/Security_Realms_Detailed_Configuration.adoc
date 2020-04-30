@@ -27,13 +27,26 @@ for both inbound and outbound SSL connections.
 ----
 <server-identities>
   <ssl protocol="...">
+    <engine enabled-protocols="..."/>
     <keystore path="..." relative-to="..." keystore-password="..." alias="..." key-password="..." />
   </ssl>
 </server-identities>
 ----
 
 * *protocol* - By default this is set to TLS and in general does not
-need to be set.
+need to be set. To make use of OpenSSL, this can be set to `openssl.TLS`.
+Other valid values are `openssl.TLSv1.1` and `openssl.TLSv1.2`, which
+limit the minimum protocol version to TLSv1.1 and TLSv1.2 respectively.
+
+* *enabled-protocols* - The protocols to enable on the underlying
+`SSLEngine`.
+
+*NOTE* When using OpenSSL 1.1.0g or higher, the lowest and highest protocol
+versions specified by `enabled-protocols` will be used to set the minimum
+and maximum protocol versions on the underlying `SSLEngine`. For example,
+if `enabled-protocols` is set to ["TLSv1.0", "TLSv1.2"], the minimum
+protocol version will be set to TLSv1.0 and the maximum protocol version
+will be set to TLSv1.2.
 
 The SSL element then contains the nested `<keystore />` element, this is
 used to define how to load the key from the file based (JKS) keystore.
