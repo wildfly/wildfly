@@ -367,7 +367,7 @@
         <version.org.infinispan>9.4.19.Final</version.org.infinispan>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
-        <version.org.jberet>1.3.5.Final</version.org.jberet>
+        <version.org.jberet>1.3.6.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.arquillian.core>1.4.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
