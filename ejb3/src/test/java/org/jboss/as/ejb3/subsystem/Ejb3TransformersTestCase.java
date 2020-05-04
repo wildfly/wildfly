@@ -424,7 +424,9 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                     new FailedOperationTransformationConfig.NewAttributesConfig(
                             EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS,
                             EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS,
-                            EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN)
+                            EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN,
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT
+                            )
             );
 
             // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
@@ -441,12 +443,20 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         if (EJB3Model.VERSION_5_0_0.matches(version)) {
 
             config.addFailedAttribute(subsystemAddress,
-                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS));
+                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS,
+                            EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS,
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT));
 
             // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
 
         }
+
+        // need to include all changes from current to 6.0.0
+        if (EJB3Model.VERSION_6_0_0.matches(version)) {
+            config.addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT));
+        }
+
         return config;
     }
 
