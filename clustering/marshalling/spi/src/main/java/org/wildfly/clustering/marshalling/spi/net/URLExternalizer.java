@@ -28,6 +28,7 @@ import java.io.ObjectOutput;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
@@ -54,5 +55,14 @@ public class URLExternalizer implements Externalizer<URL> {
     @Override
     public Class<URL> getTargetClass() {
         return URL.class;
+    }
+
+    @Override
+    public OptionalInt size(URL url) {
+        try {
+            return NetExternalizerProvider.URI.cast(URI.class).size(url.toURI());
+        } catch (URISyntaxException e) {
+            return OptionalInt.empty();
+        }
     }
 }

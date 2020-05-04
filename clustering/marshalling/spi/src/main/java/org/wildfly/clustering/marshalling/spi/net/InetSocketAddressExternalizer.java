@@ -27,6 +27,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
@@ -56,5 +57,14 @@ public class InetSocketAddressExternalizer implements Externalizer<InetSocketAdd
     @Override
     public Class<InetSocketAddress> getTargetClass() {
         return InetSocketAddress.class;
+    }
+
+    @Override
+    public OptionalInt size(InetSocketAddress socketAddress) {
+        int size = NetExternalizerProvider.INET_ADDRESS.size(socketAddress.getAddress()).getAsInt() + IndexSerializer.UNSIGNED_SHORT.size(socketAddress.getPort());
+        if (socketAddress.getAddress() == null) {
+            size += socketAddress.getHostName().length() + 1;
+        }
+        return OptionalInt.of(size);
     }
 }
