@@ -20,30 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.util.EnumSet;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
 
-import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.util.UtilMarshaller;
-import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
- * Initializer that registers protobuf schema for java.util.* classes.
+ * Collection marshaller for collections constructed with a context.
  * @author Paul Ferraro
  */
-public class UtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class ContextualCollectionMarshaller<T extends Collection<Object>, C> extends AbstractCollectionMarshaller<T, C, C> {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.util.proto";
-    }
-
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new AbstractMarshallerProvider(EnumSet.allOf(UtilMarshaller.class)));
-        // These might be implemented as enums
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(UtilExternalizerProvider.NATURAL_ORDER_COMPARATOR));
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(UtilExternalizerProvider.REVERSE_ORDER_COMPARATOR));
+    public ContextualCollectionMarshaller(Class<T> targetClass, Function<C, T> factory, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
+        super(targetClass, factory, Map.Entry::getKey, context, contextMarshaller);
     }
 }

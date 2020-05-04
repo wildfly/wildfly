@@ -20,30 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.util.EnumSet;
+import java.util.Comparator;
+import java.util.SortedMap;
+import java.util.function.Function;
 
-import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.util.UtilMarshaller;
-import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
+import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
- * Initializer that registers protobuf schema for java.util.* classes.
  * @author Paul Ferraro
  */
-public class UtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends MapMarshaller<T, Comparator<Object>> {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.util.proto";
-    }
-
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new AbstractMarshallerProvider(EnumSet.allOf(UtilMarshaller.class)));
-        // These might be implemented as enums
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(UtilExternalizerProvider.NATURAL_ORDER_COMPARATOR));
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(UtilExternalizerProvider.REVERSE_ORDER_COMPARATOR));
+    @SuppressWarnings("unchecked")
+    public SortedMapMarshaller(Class<?> targetClass, Function<Comparator<Object>, T> factory) {
+        super(targetClass, factory, SortedMap::comparator, (ProtoStreamMarshaller<Comparator<Object>>) (ProtoStreamMarshaller<?>) ObjectMarshaller.INSTANCE);
     }
 }
