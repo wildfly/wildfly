@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.TimeZone;
 
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -70,6 +71,15 @@ public class CalendarExternalizer implements Externalizer<Calendar> {
                 .setTimeZone(UtilExternalizerProvider.TIME_ZONE.cast(TimeZone.class).readObject(input))
                 .setWeekDefinition(IndexSerializer.UNSIGNED_BYTE.readInt(input), IndexSerializer.UNSIGNED_BYTE.readInt(input))
                 .build();
+    }
+
+    @Override
+    public OptionalInt size(Calendar calendar) {
+        int calendarTypeSize = CALENDAR_TYPE_SERIALIZER.size(CALENDAR_TYPE_IDS.get(calendar.getCalendarType()));
+        int timeZoneSize = UtilExternalizerProvider.TIME_ZONE.cast(TimeZone.class).size(calendar.getTimeZone()).getAsInt();
+        int firstDayOfWeekSize = IndexSerializer.UNSIGNED_BYTE.size(calendar.getFirstDayOfWeek());
+        int minimalDaysInFirstWeekSize = IndexSerializer.UNSIGNED_BYTE.size(calendar.getMinimalDaysInFirstWeek());
+        return OptionalInt.of(calendarTypeSize + Long.BYTES + Byte.BYTES + timeZoneSize + firstDayOfWeekSize + minimalDaysInFirstWeekSize);
     }
 
     @Override

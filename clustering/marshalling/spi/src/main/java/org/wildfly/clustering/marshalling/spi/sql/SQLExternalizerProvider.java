@@ -36,7 +36,7 @@ public enum SQLExternalizerProvider implements ExternalizerProvider {
 
     SQL_DATE(new DateExternalizer<>(Date.class, Date::new)),
     SQL_TIME(new DateExternalizer<>(Time.class, Time::new)),
-    SQL_TIMESTAMP(new DateExternalizer.SqlTimestampExternalizer()),
+    SQL_TIMESTAMP(new TimestampExternalizer()),
     ;
     private final Externalizer<?> externalizer;
 

@@ -27,6 +27,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.time.Month;
 import java.time.YearMonth;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
@@ -52,5 +53,10 @@ public class YearMonthExternalizer implements Externalizer<YearMonth> {
     @Override
     public Class<YearMonth> getTargetClass() {
         return YearMonth.class;
+    }
+
+    @Override
+    public OptionalInt size(YearMonth value) {
+        return OptionalInt.of(Integer.BYTES + TimeExternalizerProvider.MONTH.size(value.getMonth()).getAsInt());
     }
 }

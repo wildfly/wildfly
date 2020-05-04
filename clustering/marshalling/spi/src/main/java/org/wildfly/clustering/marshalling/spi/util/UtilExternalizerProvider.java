@@ -35,6 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -76,8 +77,13 @@ public enum UtilExternalizerProvider implements ExternalizerProvider {
     LINKED_LIST(new CollectionExternalizer<>(LinkedList.class, size -> new LinkedList<>())),
     LOCALE(new StringExternalizer<>(Locale.class, Locale::forLanguageTag, Locale::toLanguageTag)),
     NATURAL_ORDER_COMPARATOR(new ValueExternalizer<>(Comparator.naturalOrder())),
-    @SuppressWarnings("unchecked")
-    OPTIONAL(new ObjectExternalizer<>(Optional.class, Optional::ofNullable, optional -> optional.orElse(null))),
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    OPTIONAL(new ObjectExternalizer<Optional>(Optional.class, Optional::ofNullable, optional -> optional.orElse(null)) {
+        @Override
+        public OptionalInt size(Optional optional) {
+            return optional.isPresent() ? OptionalInt.empty() : OptionalInt.of(Byte.BYTES);
+        }
+    }),
     OPTIONAL_DOUBLE(new OptionalDoubleExternalizer()),
     OPTIONAL_INT(new OptionalIntExternalizer()),
     OPTIONAL_LONG(new OptionalLongExternalizer()),

@@ -47,7 +47,8 @@ public class InetAddressExternalizer<A extends InetAddress> implements Externali
     @Override
     public void writeObject(ObjectOutput output, A address) throws IOException {
         if (!this.size.isPresent()) {
-            IndexSerializer.UNSIGNED_BYTE.writeInt(output, (address != null) ? address.getAddress().length : 0);
+            int length = (address != null) ? address.getAddress().length : 0;
+            IndexSerializer.UNSIGNED_BYTE.writeInt(output, length);
         }
         if (address != null) {
             output.write(address.getAddress());
@@ -66,5 +67,12 @@ public class InetAddressExternalizer<A extends InetAddress> implements Externali
     @Override
     public Class<A> getTargetClass() {
         return this.targetClass;
+    }
+
+    @Override
+    public OptionalInt size(A address) {
+        if (this.size.isPresent()) return this.size;
+        int length = (address != null) ? address.getAddress().length : 0;
+        return OptionalInt.of(IndexSerializer.UNSIGNED_BYTE.size(length) + length);
     }
 }
