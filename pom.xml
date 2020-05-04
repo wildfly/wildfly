@@ -143,7 +143,7 @@
         <servlet.dist.product.release.name>WildFly Servlet</servlet.dist.product.release.name>
         <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
         <servlet.dist.product.release.version>${ee.dist.product.release.version}</servlet.dist.product.release.version>
-        <product.docs.server.version>19</product.docs.server.version>
+        <product.docs.server.version>19.1</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>19.1</verifier.product.release.version>
 
