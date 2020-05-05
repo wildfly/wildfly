@@ -32,9 +32,12 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -320,6 +323,16 @@ public class AbstractValidationUnitTest {
     }
 
     protected static final class ErrorHandlerImpl implements ErrorHandler {
+        private final Path file;
+
+        ErrorHandlerImpl() {
+            this(null);
+        }
+
+        ErrorHandlerImpl(final Path file) {
+            this.file = file;
+        }
+
         @Override
         public void error(SAXParseException e) throws SAXException {
             fail(formatMessage(e));
@@ -344,6 +357,14 @@ public class AbstractValidationUnitTest {
                 sb.append(" systemId='").append(e.getSystemId()).append('\'');
             sb.append(' ').append(e.getLocalizedMessage());
             sb.append(" a possible cause may be that a subsystem is not using the most up to date schema.");
+            if (file != null) {
+                try {
+                    final List<String> lines = Files.readAllLines(file);
+                    final int i = e.getLineNumber() - 1;
+                    sb.append(System.lineSeparator());
+                    sb.append("Possible line: ").append(lines.get(i));
+                } catch (IOException ignore){}
+            }
             return sb.toString();
         }
     }
