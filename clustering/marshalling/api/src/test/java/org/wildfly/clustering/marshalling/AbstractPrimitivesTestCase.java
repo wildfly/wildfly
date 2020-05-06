@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling;
 
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -239,6 +240,20 @@ public abstract class AbstractPrimitivesTestCase {
         } catch (Throwable e) {
             this.factory.<Throwable>createTester().test(e, AbstractPrimitivesTestCase::assertEquals);
         }
+    }
+
+    @Test
+    public void testProxy() throws IOException {
+        Object proxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[] { Iterable.class }, new TestInvocationHandler(UUID.randomUUID()));
+
+        this.factory.createTester().test(proxy, AbstractPrimitivesTestCase::assertProxyEquals);
+    }
+
+    private static void assertProxyEquals(Object expected, Object actual) {
+        Assert.assertTrue(Proxy.isProxyClass(actual.getClass()));
+        TestInvocationHandler actualHandler = (TestInvocationHandler) Proxy.getInvocationHandler(actual);
+        TestInvocationHandler expectedHandler = (TestInvocationHandler) Proxy.getInvocationHandler(expected);
+        Assert.assertEquals(expectedHandler.getValue(), actualHandler.getValue());
     }
 
     private static void assertArrayEquals(float[] expected, float[] actual) {
