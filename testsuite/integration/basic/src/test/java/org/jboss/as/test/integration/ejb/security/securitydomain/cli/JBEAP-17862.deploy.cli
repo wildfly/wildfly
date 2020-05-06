@@ -1,0 +1,25 @@
+module add --name=loginmodule.custom --resources=./loginmodule.jar --dependencies=org.picketbox,javax.api
+
+echo "Deployed module"
+reload
+
+/subsystem="security"/security-domain="MySecurityDomain":add()
+/subsystem="security"/security-domain="MySecurityDomain"/authentication="classic":add()
+/subsystem="security"/security-domain="MySecurityDomain"/authentication="classic"/login-module="Remoting":add(code="Remoting",flag="optional",module-options={"password-stacking" => "useFirstPass"})
+/subsystem="security"/security-domain="MySecurityDomain"/authentication="classic"/login-module="RealmDirect":add(code="RealmDirect",flag="required",module-options={"password-stacking" => "useFirstPass"})
+
+echo "Created MySecurityDomain"
+
+/subsystem="security"/security-domain="MyNonValidatingDomain":add(cache-type="default")
+/subsystem="security"/security-domain="MyNonValidatingDomain"/authentication="classic":add()
+/subsystem="security"/security-domain="MyNonValidatingDomain"/authentication="classic"/login-module="loginmodule.custom.NonValidatingLoginModule1":add(code="loginmodule.custom.NonValidatingLoginModule1",flag="required",module="loginmodule.custom")
+
+echo "Created MyNonValidatingDomain"
+
+/core-service=management/security-realm=MyRealm/:add(map-groups-to-roles=true)
+/core-service=management/security-realm=MyRealm/authentication=jaas:add(name=MySecurityDomain)
+
+echo "Created MyRealm"
+
+reload
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=security-realm, value=MyRealm)
