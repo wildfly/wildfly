@@ -46,7 +46,17 @@ of each
       <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
     </data-stores>
   </timer-service>
-  <remote connector-ref="remoting-connector" thread-pool-name="default"/>
+  <remote connector-ref="remoting-connector" thread-pool-name="default">
+    <profiles>
+        <profile name="profile">
+          <static-ejb-discovery>
+            <module uri="http://localhost:8180/wildfly-services" module-name="foo" app-name="bar" distinct-name="baz"/>
+          </static-ejb-discovery>
+          <remote-http-connection name="connection" uri="http://localhost:8180/wildfly-services"/>
+          <remoting-ejb-receiver name="receiver" outbound-connection-ref="remote-ejb-connection"/>
+        </profile>
+    </profiles>
+  </remote>
   <thread-pools>
     <thread-pool name="default">
       <max-threads count="10"/>
@@ -167,6 +177,51 @@ information is saved to.
 This is used to enable remote EJB invocations. It specifies the remoting
 connector to use (as defined in the remoting subsystem configuration),
 and the thread pool to use for remote invocations.
+
+[[profile]]
+=== <profile>
+
+Remote profile specificies a configuration of remote invocations that can
+be referenced by many deployments. EJBs that are meant to be invoked can
+be discovered in either static or dynamic way.
+
+Static discovery decides which remote node to connect based on the information
+provided by the user.
+
+Dynamic discovery is responsible for monitoring available EJBs on all the
+nodes to which connections are configured and decides which remote node to
+connect based on gathered data.
+
+[[static-ejb-discovery]]
+==== <static-ejb-discovery>
+
+Static ejb discovery allows to explicitly specify on which remote nodes
+given EJBs are located. `module` tag is used to define it:
+
+* `module-name` the name of EJB module
+* `app-name` the name of EJB app
+* `distinct-name` the distinct name EJB
+* `uri` the address on which given EJB is located
+
+[[remoting-ejb-receiver]]
+==== <remoting-ejb-receiver>
+
+`remoting-ejb-receiver` tag is used to define dynamic discovery based on
+the remoting procol:
+
+* `name` name of the remote connection
+* `outbound-connection-ref` reference to outbound connection defined in
+the remoting subsystem
+* `connection-timeout` the timeout of the connection
+
+[[remote-http-connection]]
+==== <remote-http-connection>
+
+`remote-http-connection` tag is used to define dynamic discovery based on
+HTTP procol:
+
+* `name` name of the HTTP connection
+* `uri` URI of the connection
 
 [[thread-pools]]
 == <thread-pools>
