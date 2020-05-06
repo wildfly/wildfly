@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.wildfly.test.integration.microprofile.jwt;
+package org.wildfly.test.microprofile.jwt;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -58,8 +58,9 @@ public class TokenUtil {
         }
     }
 
-    public static String generateJWT(final String principal, final String birthdate, final String... groups) throws Exception {
-        PrivateKey privateKey = loadPrivateKey("src/test/resources/jwt/private.pem");
+    public static String generateJWT(final String keyLocation, final String principal, final String birthdate,
+            final String... groups) throws Exception {
+        PrivateKey privateKey = loadPrivateKey(keyLocation);
 
         JWSSigner signer = new RSASSASigner(privateKey);
         JsonArrayBuilder groupsBuilder = Json.createArrayBuilder();
