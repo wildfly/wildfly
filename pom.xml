@@ -2045,6 +2045,12 @@
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-amqp-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -2359,6 +2365,12 @@
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-stomp-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
