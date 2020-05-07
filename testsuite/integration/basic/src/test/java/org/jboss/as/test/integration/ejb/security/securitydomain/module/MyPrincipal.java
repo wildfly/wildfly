@@ -19,28 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.security.securitydomain.ejb;
 
-import javax.annotation.security.PermitAll;
-import javax.ejb.EJB;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+package org.jboss.as.test.integration.ejb.security.securitydomain.module;
 
-@Stateless(name="HelloTwoBean")
-@Remote(Hello.class)
-@PermitAll
-public class HelloTwoBean extends BaseHello implements Hello {
+import java.security.Principal;
 
-    public HelloTwoBean() {
-        // HelloTwoBean uses MyNonValidatingSecurityDomain which uses the org.jboss.as.test.integration.ejb.security.securitydomain.module.MyPrincipal
-        super("org.jboss.as.test.integration.ejb.security.securitydomain.module.MyPrincipal");
+/**
+ * @author Francesco Marchioni
+ */
+public class MyPrincipal implements Principal {
+
+    private final String name;
+
+    public MyPrincipal(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null");
+        }
+        this.name = name;
     }
 
-    @EJB(beanName="HelloOneBean")
-    private Hello hello1;
+    public String getName() {
+        return name;
+    }
 
-    @Override
-    protected Hello getOtherEJB() {
-        return hello1;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if ((o == null) || (getClass() != o.getClass())) {
+            return false;
+        }
+        MyPrincipal that = (MyPrincipal) o;
+        if (!name.equals(name)) {
+            return false;
+        }
+        return true;
+    }
+
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    public String toString() {
+        return getClass().getName() + ":" + getName();
     }
 }
