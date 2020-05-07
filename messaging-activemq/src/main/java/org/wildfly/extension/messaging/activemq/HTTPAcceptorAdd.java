@@ -55,14 +55,14 @@ public class HTTPAcceptorAdd extends ActiveMQReloadRequiredHandlers.AddStepHandl
     void launchServices(OperationContext context, String activeMQServerName, String acceptorName, ModelNode model) throws OperationFailedException {
         String httpConnectorName = HTTPAcceptorDefinition.HTTP_LISTENER.resolveModelAttribute(context, model).asString();
 
-        HTTPUpgradeService.installService(context.getServiceTarget(),
+        HTTPUpgradeService.installService(context.getCapabilityServiceTarget(),
                 activeMQServerName,
                 acceptorName,
                 httpConnectorName);
 
         boolean upgradeLegacy = HTTPAcceptorDefinition.UPGRADE_LEGACY.resolveModelAttribute(context, model).asBoolean();
         if (upgradeLegacy) {
-            HTTPUpgradeService.LegacyHttpUpgradeService.installService(context.getServiceTarget(),
+            HTTPUpgradeService.LegacyHttpUpgradeService.installService(context,
                     activeMQServerName,
                     acceptorName,
                     httpConnectorName);

@@ -82,7 +82,6 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode response = services.executeOperation(migrateOp);
 
-        //System.out.println("response = " + response);
         checkOutcome(response);
 
         ModelNode warnings = response.get(RESULT, "migration-warnings");
@@ -92,7 +91,6 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         assertEquals(warnings.toString(), 1 + 1 + 3, warnings.asList().size());
 
         model = services.readWholeModel();
-        //System.out.println("model = " + model);
 
         assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "unmigrated-backup", "ha-policy").isDefined());
         assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "unmigrated-shared-store", "ha-policy").isDefined());
@@ -225,7 +223,10 @@ public class MigrateTestCase extends AbstractSubsystemTest {
                             rootRegistration, ExtensionRegistryType.SERVER));
                 }
             }, null));
-            registerCapabilities(capabilityRegistry, JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), "org.wildfly.remoting.http-listener-registry");
+            registerCapabilities(capabilityRegistry,
+                    JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(),
+                    "org.wildfly.remoting.http-listener-registry",                          // static capability
+                    "org.wildfly.undertow.listener.http-upgrade-registry.default");         // dynamic capability based on httpListenerName
         }
 
         @Override

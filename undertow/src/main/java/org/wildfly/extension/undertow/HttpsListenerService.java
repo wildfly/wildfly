@@ -36,6 +36,7 @@ import io.undertow.server.protocol.http.AlpnOpenListener;
 import io.undertow.server.protocol.http.HttpOpenListener;
 import io.undertow.server.protocol.http2.Http2OpenListener;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.NetworkUtils;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.ssl.CipherSuiteSelector;
@@ -66,12 +67,12 @@ public class HttpsListenerService extends HttpListenerService {
     private final String cipherSuites;
     private final boolean proxyProtocol;
 
-    public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean proxyProtocol) {
-        this(name, serverName, listenerOptions, cipherSuites, socketOptions, false, false, proxyProtocol);
+    public HttpsListenerService(final PathAddress address, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean proxyProtocol) {
+        this(address, serverName, listenerOptions, cipherSuites, socketOptions, false, false, proxyProtocol);
     }
 
-    HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding, boolean proxyProtocol) {
-        super(name, serverName, listenerOptions, socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);
+    HttpsListenerService(final PathAddress address, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding, boolean proxyProtocol) {
+        super(address, serverName, listenerOptions, socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);
         this.cipherSuites = cipherSuites;
         this.proxyProtocol = proxyProtocol;
     }

@@ -39,8 +39,6 @@ import org.xnio.OptionMap;
  */
 public class HttpListenerAdd extends ListenerAdd {
 
-    static final ServiceName REGISTRY_SERVICE_NAME = ServiceName.JBOSS.append("http", "listener", "registry");
-
     HttpListenerAdd(ListenerResourceDefinition definition) {
         super(definition);
     }
@@ -54,10 +52,9 @@ public class HttpListenerAdd extends ListenerAdd {
         HttpListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model,listenerBuilder);
         HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.resolveOption(context, model,listenerBuilder);
 
-
         handleHttp2Options(context, model, listenerBuilder);
 
-        return new HttpListenerService(name, serverName, listenerBuilder.getMap(), socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);
+        return new HttpListenerService(context.getCurrentAddress(), serverName, listenerBuilder.getMap(), socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);
     }
 
     static void handleHttp2Options(OperationContext context, ModelNode model, OptionMap.Builder listenerBuilder) throws OperationFailedException {
@@ -76,6 +73,6 @@ public class HttpListenerAdd extends ListenerAdd {
             ServiceName serviceName = context.getCapabilityServiceName(REF_SOCKET_BINDING, redirectBindingRef.asString(), SocketBinding.class);
             serviceBuilder.addDependency(serviceName, SocketBinding.class, service.getRedirectSocket());
         }
-        serviceBuilder.addDependency(REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
+        serviceBuilder.addCapabilityRequirement(Capabilities.REF_HTTP_LISTENER_REGISTRY, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
     }
 }

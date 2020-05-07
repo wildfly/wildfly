@@ -119,7 +119,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setDeprecated(ModelVersion.create(4, 0, 0)).setMeasurementUnit(MeasurementUnit.SECONDS).setRequired(false).setAllowExpression(true).setAlternatives(Constants.SSL_CONTEXT).build();
 
     private HttpsListenerResourceDefinition() {
-        super(UndertowExtension.HTTPS_LISTENER_PATH);
+        super(new Parameters(UndertowExtension.HTTPS_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER)));
     }
 
     @Override
