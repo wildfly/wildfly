@@ -21,6 +21,22 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Logger;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -29,36 +45,16 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import java.io.StringWriter;
-import java.io.PrintWriter;
-import java.io.File;
-import java.io.IOException;
-
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Properties;
-import java.util.List;
-import java.util.logging.Logger;
-
 import org.jboss.as.test.integration.ejb.security.securitydomain.ejb.Hello;
 import org.jboss.as.test.integration.ejb.security.securitydomain.ejb.Info;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.shared.ServerSnapshot;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,7 +67,6 @@ import org.junit.runner.RunWith;
  */
 
 @RunWith(Arquillian.class)
-@FixMethodOrder(MethodSorters.DEFAULT)
 @ServerSetup(EJBContextMultipleSDTestCase.EJBContextMultipleSDTestCaseServerSetup.class)
 public class EJBContextMultipleSDTestCase {
 
@@ -108,9 +103,9 @@ public class EJBContextMultipleSDTestCase {
     }
 
     @Test
-    public void firstTest() throws Exception {
-
+    public void testSequentialInvocations() throws Exception {
         Context context = getInitialContext();
+
         Info info = new Info("Test1: client -> ejb1 (MySecurityDomain/SimplePrincipal) -> ejb2 (MyNonValidatingSecurityDomain/MyPrincipal)");
         Hello hello = (Hello) context.lookup(Hello.HelloOne);
         List<String> list = hello.sayHelloSeveralTimes(info);
@@ -119,15 +114,10 @@ public class EJBContextMultipleSDTestCase {
         Assert.assertEquals(list.get(0), "Correct: org.jboss.security.SimplePrincipal == org.jboss.security.SimplePrincipal");
         Assert.assertEquals(list.get(1), "Correct: loginmodule.custom.MyPrincipal == loginmodule.custom.MyPrincipal");
         Assert.assertEquals(list.get(2), "Correct: org.jboss.security.SimplePrincipal == org.jboss.security.SimplePrincipal");
-    }
 
-    @Test
-    public void secondTest() throws Exception {
-
-        Context context = getInitialContext();
-        Info info = new Info("Test2: client -> ejb2 (MyNonValidatingSecurityDomain/MyPrincipal) -> ejb1 (MySecurityDomain/SimplePrincipal)");
-        Hello hello = (Hello) context.lookup(Hello.HelloTwo);
-        List<String> list = hello.sayHelloSeveralTimes(info);
+        info = new Info("Test2: client -> ejb2 (MyNonValidatingSecurityDomain/MyPrincipal) -> ejb1 (MySecurityDomain/SimplePrincipal)");
+        hello = (Hello) context.lookup(Hello.HelloTwo);
+        list = hello.sayHelloSeveralTimes(info);
 
         Assert.assertEquals(list.get(0), "Correct: loginmodule.custom.MyPrincipal == loginmodule.custom.MyPrincipal");
         Assert.assertEquals(list.get(1), "Correct: org.jboss.security.SimplePrincipal == org.jboss.security.SimplePrincipal");
@@ -168,7 +158,7 @@ public class EJBContextMultipleSDTestCase {
                 File fileModule = null;
 
                 // Install module and SecurityManager
-                URL urlCLI = getClass().getResource("securitydomain/cli/JBEAP-17862.deploy.cli");
+                URL urlCLI = getClass().getResource("securitydomain/cli/WFLY-12516.deploy.cli");
                 fileCLI = new File(urlCLI.toURI());
 
                 String request1 = "run-batch --file=" + fileCLI.getAbsolutePath();
@@ -210,7 +200,7 @@ public class EJBContextMultipleSDTestCase {
                 ctx.connectController();
                 ModelNode cliCommand = null;
 
-                URL urlCLI = getClass().getResource("securitydomain/cli/JBEAP-17862.undeploy.cli");
+                URL urlCLI = getClass().getResource("securitydomain/cli/WFLY-12516.undeploy.cli");
                 fileCLI = new File(urlCLI.toURI());
                 String request1 = "run-batch --file=" + fileCLI.getAbsolutePath();
                 cliCommand = ctx.buildRequest(request1);
