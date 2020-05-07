@@ -372,17 +372,16 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             target.setSubjectInfo(source.getSubjectInfo());
         } else {
             currentUtil.createSubjectInfo(previousUtil.getUserPrincipal(), previousUtil.getCredential(), previousUtil.getSubject());
-        }
-        if (previousUtil.getRoles() != null) {
-            try {
-                currentUtil.setRoles((RoleGroup) previousUtil.getRoles().clone());
-            } catch (CloneNotSupportedException e) {
-                // should not happen, RoleGroup supports clone.
-                throw new RuntimeException(e);
+            if (previousUtil.getRoles() != null) {
+                try {
+                    currentUtil.setRoles((RoleGroup) previousUtil.getRoles().clone());
+                } catch (CloneNotSupportedException e) {
+                    // should not happen, RoleGroup supports clone.
+                    throw new RuntimeException(e);
+                }
             }
+            currentUtil.setIdentities(previousUtil.getIdentities(Identity.class));
         }
-        currentUtil.setIdentities(previousUtil.getIdentities(Identity.class));
-
     }
 
     public void authenticate() {
