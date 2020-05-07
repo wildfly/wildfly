@@ -64,6 +64,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
     private static final QName ROOT_1_1 = new QName(EJBClientDescriptor11Parser.NAMESPACE_1_1, "jboss-ejb-client");
     private static final QName ROOT_1_2 = new QName(EJBClientDescriptor12Parser.NAMESPACE_1_2, "jboss-ejb-client");
     private static final QName ROOT_1_3 = new QName(EJBClientDescriptor13Parser.NAMESPACE_1_3, "jboss-ejb-client");
+    private static final QName ROOT_1_4 = new QName(EJBClientDescriptor14Parser.NAMESPACE_1_4, "jboss-ejb-client");
     private static final QName ROOT_NO_NAMESPACE = new QName("jboss-ejb-client");
 
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
@@ -122,7 +123,9 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
         mapper.registerRootElement(ROOT_1_2, ejbClientDescriptor12Parser);
         final EJBClientDescriptor13Parser ejbClientDescriptor13Parser = new EJBClientDescriptor13Parser(propertyReplacer);
         mapper.registerRootElement(ROOT_1_3, ejbClientDescriptor13Parser);
-        mapper.registerRootElement(ROOT_NO_NAMESPACE, ejbClientDescriptor13Parser);
+        final EJBClientDescriptor14Parser ejbClientDescriptor14Parser = new EJBClientDescriptor14Parser(propertyReplacer);
+        mapper.registerRootElement(ROOT_1_4, ejbClientDescriptor14Parser);
+        mapper.registerRootElement(ROOT_NO_NAMESPACE, ejbClientDescriptor14Parser);
         return mapper;
     }
 
