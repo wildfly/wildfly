@@ -51,11 +51,13 @@ import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.shared.ServerSnapshot;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -100,6 +102,11 @@ public class EJBContextMultipleSDTestCase {
 
         Context context = new InitialContext(ejbClientProperties);
         return context;
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileEnabled(); // PicketBox specific scenario, Elytron testing not required.
     }
 
     @Test
