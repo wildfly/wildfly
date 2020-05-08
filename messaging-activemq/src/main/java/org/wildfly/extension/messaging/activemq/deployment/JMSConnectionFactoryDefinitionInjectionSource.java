@@ -49,6 +49,7 @@ import java.util.Set;
 import javax.resource.spi.TransactionSupport;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactoryImpl;
 
 import org.jboss.as.connector.deployers.ra.ConnectionFactoryDefinitionInjectionSource;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferenceFactoryService;
@@ -59,6 +60,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.Attachments;
@@ -417,6 +420,18 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             ServiceController binder = deploymentUnit.getServiceRegistry().getService(bindInfo.getBinderServiceName());
             if (binder != null) {
                 Object pcf = binder.getService().getValue();
+                //In case of multiple JNDI entries only the 1st is properly bound
+                if (pcf != null && pcf instanceof ContextListAndJndiViewManagedReferenceFactory) {
+                    ManagedReference ref = ((ContextListAndJndiViewManagedReferenceFactory) pcf).getReference();
+                    Object ra = ref.getInstance();
+                    if (ra instanceof ActiveMQRAConnectionFactoryImpl) {
+                        bindInfo = ContextNames.bindInfoFor(((ActiveMQRAConnectionFactoryImpl) ra).getReference().getClassName());
+                        binder = deploymentUnit.getServiceRegistry().getService(bindInfo.getBinderServiceName());
+                        if (binder != null) {
+                            pcf = binder.getService().getValue();
+                        }
+                    }
+                }
                 if (pcf != null && pcf instanceof ConnectionFactoryReferenceFactoryService) {
                     return ((ConnectionFactoryReferenceFactoryService) pcf).getName();
                 }
