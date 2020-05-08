@@ -72,6 +72,7 @@ import org.jboss.as.ejb3.deployment.processors.EjbJndiBindingsDeploymentUnitProc
 import org.jboss.as.ejb3.deployment.processors.EjbManagementDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbRefProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbResourceInjectionAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.HibernateValidatorDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.IIOPJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.ImplicitLocalViewProcessor;
 import org.jboss.as.ejb3.deployment.processors.MdbDeliveryDependenciesProcessor;
@@ -334,6 +335,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_MDB_POOL_NAME_MERGE, new MessageDrivenBeanPoolMergingProcessor());
                     // Add the deployment unit processor responsible for processing the user application specific container interceptors configured in jboss-ejb3.xml
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS, new ContainerInterceptorBindingsDDProcessor());
+                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_HIBERNATE_VALIDATOR, new HibernateValidatorDeploymentUnitProcessor());
 
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DEPLOYMENT_REPOSITORY, new DeploymentRepositoryProcessor());
