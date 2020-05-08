@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap710;
+package org.jboss.as.test.integration.domain.mixed.eap730;
 
 import org.jboss.as.test.integration.domain.mixed.ElytronOnlyMasterTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
@@ -32,12 +32,12 @@ import org.junit.runners.Suite;
  * @author Martin Simka
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses(value= {ElytronOnlyMasterSmoke710TestCase.class})
-@Version(Version.AsVersion.EAP_7_1_0)
-public class ElytronOnlyMaster710TestSuite extends ElytronOnlyMasterTestSuite {
+@Suite.SuiteClasses(value= {ElytronOnlyMasterSmoke730TestCase.class})
+@Version(Version.AsVersion.EAP_7_3_0)
+public class ElytronOnlyMaster730TestSuite extends ElytronOnlyMasterTestSuite {
 
     @BeforeClass
     public static void initializeDomain() {
-        ElytronOnlyMasterTestSuite.getSupport(ElytronOnlyMaster710TestSuite.class);
+        ElytronOnlyMasterTestSuite.getSupport(ElytronOnlyMaster730TestSuite.class);
     }
 }

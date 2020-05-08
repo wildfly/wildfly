@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap710;
+package org.jboss.as.test.integration.domain.mixed.eap730;
 
-import org.jboss.as.test.integration.domain.mixed.ElytronOnlyMasterTestSuite;
+import org.jboss.as.test.integration.domain.mixed.MixedDomainDeploymentTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
+import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 /**
- * @author Martin Simka
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(value= {ElytronOnlyMasterSmoke710TestCase.class})
-@Version(Version.AsVersion.EAP_7_1_0)
-public class ElytronOnlyMaster710TestSuite extends ElytronOnlyMasterTestSuite {
-
+@Version(AsVersion.EAP_7_3_0)
+public class MixedDomainDeployment730TestCase extends MixedDomainDeploymentTest {
     @BeforeClass
-    public static void initializeDomain() {
-        ElytronOnlyMasterTestSuite.getSupport(ElytronOnlyMaster710TestSuite.class);
+    public static void beforeClass() {
+        MixedDomain730TestSuite.initializeDomain();
+    }
+
+    @Override
+    protected boolean supportManagedExplodedDeployment() {
+        return true;
     }
 }
