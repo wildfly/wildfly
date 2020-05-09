@@ -40,7 +40,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.microprofile.health.EmptyMgmtUsersSetupTask;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

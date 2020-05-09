@@ -450,8 +450,8 @@
                                 <include>org/jboss/as/test/integration/management/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/messaging/mgmt/ExternalConnectionFactoryManagementTestCase.java</include>
                                 <include>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</include>
-                                <include>org/jboss/as/test/integration/microprofile/**/*TestCase.java</include>
-                                <include>org/jboss/as/test/integration/microprofile/**/*Test.java</include>
+                                <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
+                                <include>org/wildfly/test/integration/microprofile/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/security/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/security/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/weld/**/*TestCase.java</include>
@@ -669,7 +669,7 @@
                                         <include>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
+                                        <include>org/wildfly/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</include>
@@ -732,7 +732,7 @@
                                         <exclude>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
-                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
+                                        <include>org/wildfly/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <exclude>org/jboss/as/test/integration/management/cli/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>

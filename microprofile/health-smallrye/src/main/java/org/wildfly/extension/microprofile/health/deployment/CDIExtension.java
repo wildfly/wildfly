@@ -24,26 +24,21 @@ package org.wildfly.extension.microprofile.health.deployment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.AfterDeploymentValidation;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeShutdown;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.*;
 import javax.enterprise.util.AnnotationLiteral;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import io.smallrye.health.SmallRyeHealthReporter;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.health.Health;
-import org.eclipse.microprofile.health.HealthCheck;
-import org.eclipse.microprofile.health.HealthCheckResponse;
-import org.eclipse.microprofile.health.Liveness;
-import org.eclipse.microprofile.health.Readiness;
+import org.eclipse.microprofile.health.*;
 import org.jboss.modules.Module;
 import org.wildfly.extension.microprofile.health.HealthReporter;
 
@@ -74,19 +69,22 @@ public class CDIExtension implements Extension {
     public CDIExtension(HealthReporter healthReporter, Module module) {
         this.reporter = healthReporter;
         this.module = module;
-
     }
 
     /**
      * Get CDI <em>instances</em> of HealthCheck and
      * add them to the {@link HealthReporter}.
      */
-    private void afterDeploymentValidation(@Observes final AfterDeploymentValidation avd, BeanManager bm) {
-        instance = bm.createInstance();
+    private void afterDeploymentValidation(@Observes final AfterDeploymentValidation avd,
+                                           BeanManager eventBeanManager) {
+        // Get the bean manager from which to resolve all healthchecks in the deployment.
+        BeanManager beanManager = getBeanManager(module, eventBeanManager);
+        instance = beanManager.createInstance();
 
-        addHealthChecks(HealthLiteral.INSTANCE, reporter::addHealthCheck, healthChecks);
-        addHealthChecks(Liveness.Literal.INSTANCE, reporter::addLivenessCheck, livenessChecks);
-        addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, readinessChecks);
+        // Register them to be called using this module classloader
+        addHealthChecks(HealthLiteral.INSTANCE, reporter::addHealthCheck, module, healthChecks);
+        addHealthChecks(Liveness.Literal.INSTANCE, reporter::addLivenessCheck, module, livenessChecks);
+        addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, module, readinessChecks);
         if (readinessChecks.isEmpty()) {
             Config config = ConfigProvider.getConfig(module.getClassLoader());
             boolean disableDefaultprocedure = config.getOptionalValue("mp.health.disable-default-procedures", Boolean.class).orElse(false);
@@ -98,8 +96,23 @@ public class CDIExtension implements Extension {
         }
     }
 
+    private BeanManager getBeanManager(Module module, BeanManager eventBeanManager) {
+        return tryGetBeanManagerFromJndiLookup()
+                .orElseGet(() -> CDI.current().getBeanManager());
+    }
+
+    private Optional<BeanManager> tryGetBeanManagerFromJndiLookup() {
+        try {
+            BeanManager jndiBeanManager = InitialContext.doLookup("java:comp/BeanManager");
+            return Optional.of(jndiBeanManager);
+        } catch (NamingException e) {
+            return Optional.empty();
+        }
+    }
+
     private void addHealthChecks(AnnotationLiteral qualifier,
-                                 BiConsumer<HealthCheck, ClassLoader> healthFunction, List<HealthCheck> healthChecks) {
+                                 BiConsumer<HealthCheck, ClassLoader> healthFunction,
+                                 Module module, List<HealthCheck> healthChecks) {
         for (HealthCheck healthCheck : instance.select(HealthCheck.class, qualifier)) {
             healthFunction.accept(healthCheck, module.getClassLoader());
             healthChecks.add(healthCheck);
