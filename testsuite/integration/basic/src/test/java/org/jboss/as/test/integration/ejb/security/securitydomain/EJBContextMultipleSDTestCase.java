@@ -64,7 +64,7 @@ import org.jboss.as.test.integration.ejb.security.securitydomain.ejb.Info;
 import org.jboss.as.test.integration.ejb.security.securitydomain.module.MyPrincipal;
 import org.jboss.as.test.integration.ejb.security.securitydomain.module.NonValidatingLoginModule;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
@@ -149,6 +149,7 @@ public class EJBContextMultipleSDTestCase {
         protected Logger log = Logger.getLogger(this.getClass().getSimpleName());
 
         Path loginModuleJar;
+        TestModule module;
 
         Path createJar(String namePrefix, Class<?>... classes) throws IOException {
             Path testJar = Files.createTempFile(namePrefix, ".jar");
@@ -158,27 +159,15 @@ public class EJBContextMultipleSDTestCase {
         }
 
         void deployModule() throws Exception {
-            loginModuleJar = createJar("loginmodule", MyPrincipal.class, NonValidatingLoginModule.class);
-
-            StringBuilder moduleAddCommand = new StringBuilder("module add --name=loginmodule.custom");
-            moduleAddCommand.append(" --resources=");
-            moduleAddCommand.append(loginModuleJar.toAbsolutePath().toString());
-            moduleAddCommand.append(" --dependencies=org.picketbox,javax.api");
-
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(moduleAddCommand.toString(), false);
-            }
+            module = new TestModule("loginmodule.custom", "org.picketbox", "javax.api");
+            JavaArchive jar = module.addResource("loginmodule.custom.jar");
+            jar.addClasses(MyPrincipal.class, NonValidatingLoginModule.class);
+            module.create(true);
         }
 
         void undeployModule() throws Exception {
-            String moduleRemove = "module remove --name=loginmodule.custom";
-
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(moduleRemove, true);
-            }
-
-            if (loginModuleJar != null) {
-                Files.deleteIfExists(loginModuleJar);
+            if (module != null) {
+                module.remove();
             }
         }
 
