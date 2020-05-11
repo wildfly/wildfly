@@ -22,19 +22,18 @@
 
 package org.wildfly.clustering.ee.hotrod;
 
-import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 
 /**
  * @author Paul Ferraro
  */
-public class RemoteCacheManagerProperties implements CacheProperties {
+public class RemoteCacheProperties implements CacheProperties {
 
     private final boolean transactional;
 
-    public RemoteCacheManagerProperties(Configuration configuration) {
-        this.transactional = configuration.transaction().transactionMode() != TransactionMode.NONE;
+    public RemoteCacheProperties(RemoteCache<?, ?> cache) {
+        this.transactional = cache.getTransactionManager() != null;
     }
 
     @Override
@@ -44,7 +43,7 @@ public class RemoteCacheManagerProperties implements CacheProperties {
 
     @Override
     public boolean isLockOnWrite() {
-        return true;
+        return false;
     }
 
     @Override
