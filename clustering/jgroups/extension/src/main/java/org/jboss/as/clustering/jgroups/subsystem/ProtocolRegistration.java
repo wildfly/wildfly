@@ -65,6 +65,10 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         }
     }
 
+    enum SSLContextProtocol {
+        SSL_KEY_EXCHANGE;
+    }
+
     enum InitialHostsProtocol {
         TCPGOSSIP(InetSocketAddress.class, Function.identity()),
         TCPPING(PhysicalAddress.class, address -> new IpAddress(address.getAddress(), address.getPort())),
@@ -139,6 +143,15 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
             }
         }
 
+        for (SSLContextProtocol protocol : EnumSet.allOf(SSLContextProtocol.class)) {
+            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
+            if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+                parent.rejectChildResource(path);
+            } else {
+                SSLContextProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
+            }
+        }
+
         for (InitialHostsProtocol protocol : EnumSet.allOf(InitialHostsProtocol.class)) {
             PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
             if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
@@ -204,6 +217,12 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
         for (EncryptProtocol protocol : EnumSet.allOf(EncryptProtocol.class)) {
             new EncryptProtocolResourceDefinition<>(protocol.name(), protocol.entryClass, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            // Add deprecated override definition for legacy variant
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+        }
+
+        for (SSLContextProtocol protocol : EnumSet.allOf(SSLContextProtocol.class)) {
+            new SSLContextProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
             // Add deprecated override definition for legacy variant
             new GenericProtocolResourceDefinition(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
         }

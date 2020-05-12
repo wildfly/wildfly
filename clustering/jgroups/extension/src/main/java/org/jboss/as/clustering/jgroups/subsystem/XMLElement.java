@@ -46,6 +46,7 @@ public enum XMLElement {
     DEFAULT_THREAD_POOL("default-thread-pool"),
     DIGEST_TOKEN("digest-token"),
     ENCRYPT_PROTOCOL("encrypt-protocol"),
+    SSL_CONTEXT_PROTOCOL("ssl-context-protocol"),
     FORK(ForkResourceDefinition.WILDCARD_PATH),
     INTERNAL_THREAD_POOL("internal-thread-pool"),
     JDBC_PROTOCOL("jdbc-protocol"),
@@ -98,6 +99,7 @@ public enum XMLElement {
         SOCKET_PROTOCOL(XMLElement.SOCKET_PROTOCOL),
         JDBC_PROTOCOL(XMLElement.JDBC_PROTOCOL),
         ENCRYPT_PROTOCOL(XMLElement.ENCRYPT_PROTOCOL),
+        SSL_CONTEXT_PROTOCOL(XMLElement.SSL_CONTEXT_PROTOCOL),
         SOCKET_DISCOVERY_PROTOCOL(XMLElement.SOCKET_DISCOVERY_PROTOCOL),
         AUTH_PROTOCOL(XMLElement.AUTH_PROTOCOL),
         ;
@@ -143,6 +145,9 @@ public enum XMLElement {
         }
         for (ProtocolRegistration.EncryptProtocol protocol : EnumSet.allOf(ProtocolRegistration.EncryptProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.ENCRYPT_PROTOCOL);
+        }
+        for (ProtocolRegistration.SSLContextProtocol protocol : EnumSet.allOf(ProtocolRegistration.SSLContextProtocol.class)) {
+            protocols.put(protocol.name(), XMLElementFunction.SSL_CONTEXT_PROTOCOL);
         }
         for (ProtocolRegistration.InitialHostsProtocol protocol : EnumSet.allOf(ProtocolRegistration.InitialHostsProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.SOCKET_DISCOVERY_PROTOCOL);

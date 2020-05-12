@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
     <extension-module>org.jboss.as.clustering.jgroups</extension-module>
-    <subsystem xmlns="urn:jboss:domain:jgroups:7.0">
+    <subsystem xmlns="urn:jboss:domain:jgroups:8.0">
         <channels default="ee">
             <channel name="ee" stack="udp" cluster="ejb"/>
         </channels>

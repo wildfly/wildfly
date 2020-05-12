@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,34 +27,45 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource definition override for protocols that have an optional socket-binding.
- * @author Paul Ferraro
+ * Resource definition override for protocols that require an Elytron-provided client and server {@link javax.net.ssl.SSLContext}.
+ *
+ * @author Radoslav Husar
  */
-public class SocketProtocolResourceDefinition extends ProtocolResourceDefinition {
+public class SSLContextProtocolResourceDefinition extends ProtocolResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING) {
+        CLIENT_SSL_CONTEXT("client-ssl-context", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-                        .setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.SOCKET_BINDING))
+                return builder
+                        .setCapabilityReference(CommonUnaryRequirement.SSL_CONTEXT.getName())
+                        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
                         ;
             }
         },
-        CLIENT_SOCKET_BINDING("client-socket-binding", ModelType.STRING) {
+        SERVER_SSL_CONTEXT("server-ssl-context", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder
+                        .setCapabilityReference(CommonUnaryRequirement.SSL_CONTEXT.getName())
+                        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
+                        ;
+            }
+        },
+        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
@@ -67,7 +78,7 @@ public class SocketProtocolResourceDefinition extends ProtocolResourceDefinition
 
         Attribute(String name, ModelType type) {
             this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setRequired(false)
+                    .setRequired(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             ).build();
         }
@@ -76,15 +87,14 @@ public class SocketProtocolResourceDefinition extends ProtocolResourceDefinition
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
+        }
     }
 
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (JGroupsModel.VERSION_7_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.CLIENT_SOCKET_BINDING.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CLIENT_SOCKET_BINDING.getDefinition());
-        }
-
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
@@ -97,11 +107,22 @@ public class SocketProtocolResourceDefinition extends ProtocolResourceDefinition
 
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return this.configurator.apply(descriptor).addAttributes(Attribute.class);
+            return this.configurator.apply(descriptor)
+                    .addAttributes(Attribute.class)
+                    .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
+                    .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
+                    ;
         }
     }
 
-    SocketProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), SocketProtocolConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
+    private static class SslContextProtocolConfigurationConfiguratorFactory implements ResourceServiceConfiguratorFactory {
+        @Override
+        public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+            return new SSLContextProtocolConfigurationServiceConfigurator(address);
+        }
+    }
+
+    public SSLContextProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), new SslContextProtocolConfigurationConfiguratorFactory(), parentServiceConfiguratorFactory);
     }
 }
