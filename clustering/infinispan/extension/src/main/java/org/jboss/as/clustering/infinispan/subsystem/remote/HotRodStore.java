@@ -109,12 +109,12 @@ public class HotRodStore<K, V> implements SegmentedAdvancedLoadWriteStore<K, V>,
 
     @Override
     public void start() {
-        // Do nothing -- remoteCacheContainer is already started
+        this.remoteCache.start();
     }
 
     @Override
     public void stop() {
-        // Do nothing -- remoteCacheContainer lifecycle is controlled by the application server
+        this.remoteCache.stop();
     }
 
     @Override
