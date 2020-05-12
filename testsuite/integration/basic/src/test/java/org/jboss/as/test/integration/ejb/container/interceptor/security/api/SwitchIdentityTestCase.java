@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -40,8 +40,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.ejb.container.interceptor.security.CurrentUserCredential;
-import org.jboss.as.test.integration.ejb.container.interceptor.security.GuestDelegationLoginModule;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -207,7 +205,7 @@ public class SwitchIdentityTestCase {
                                 .usePassword(passwordsToUse.getOrDefault(username, ""))
                                 .setSaslMechanismSelector(SaslMechanismSelector.fromString("DIGEST-MD5"))
                                 .useMechanismProperties(getSaslProperties(builder.getMap()))
-                                .useProvidersFromClassLoader(org.jboss.as.test.integration.ejb.container.interceptor.security.SwitchIdentityTestCase.class.getClassLoader()));
+                                .useProvidersFromClassLoader(SwitchIdentityTestCase.class.getClassLoader()));
 
         return authenticationContext;
     }
@@ -232,7 +230,7 @@ public class SwitchIdentityTestCase {
             final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient), userName);
 
             // register the client side interceptor
-            final EJBClientContext ejbClientContext = EJBClientContext.getCurrent().withAddedInterceptors(new org.jboss.as.test.integration.ejb.container.interceptor.security.ClientSecurityInterceptor());
+            final EJBClientContext ejbClientContext = EJBClientContext.getCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
             SecurityContextAssociation.setPrincipal(new SimplePrincipal(userName));
 
             ejbClientContext.runCallable(() -> {
