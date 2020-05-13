@@ -91,7 +91,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         try {
             final TimerImpl timer = timerService.getTimer(timerId);
             try {
-                if (cancelled) {
+                if (timer == null || cancelled) {
                     EJB3_TIMER_LOGGER.debugf("Timer task was cancelled for %s", timer);
                     return;
                 }
