@@ -29,6 +29,7 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
@@ -66,7 +67,12 @@ public class InfinispanRoutingProvider implements RoutingProvider {
         List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
         configurators.add(Arrays.asList(localRouteConfigurator, registryEntryConfigurator, configurationConfigurator, cacheConfigurator));
 
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = requirement -> ServiceNameFactory.parseServiceName(requirement.resolve(containerName, serverName));
+        ServiceNameRegistry<ClusteringCacheRequirement> registry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
+            @Override
+            public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
+                return ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, serverName);
+            }
+        };
         for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
             configurators.add(provider.getServiceConfigurators(registry, containerName, serverName));
         }
