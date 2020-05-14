@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 2110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:jboss:domain:datasources-agroal:2.0"
+           xmlns="urn:jboss:domain:datasources-agroal:2.0" xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
+           elementFormDefault="qualified" version="1.0">
+
+    <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
+
+    <xs:element name="subsystem" type="subsystemType"/>
+
+    <xs:complexType name="subsystemType">
+        <xs:annotation>
+            <xs:documentation><![CDATA[ The configuration of the agroal subsystem ]]></xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="datasource" type="datasourceType">
+                    <xs:annotation>
+                        <xs:documentation><![CDATA[ A datasource ]]></xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="xa-datasource" type="xaDatasourceType">
+                    <xs:annotation>
+                        <xs:documentation><![CDATA[ A XA datasource ]]></xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+            <xs:element name="drivers" type="driversType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ List of available JDBC drivers ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- common datasource attributes -->
+
+    <xs:attributeGroup name="common-datasourceAttributes">
+        <xs:attribute name="name" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Name for the datasource (used for management) ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="jndi-name" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ JNDI name for the datasource ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Enable statistics for this datasource ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+    <!-- datasource -->
+
+    <xs:complexType name="datasourceType">
+        <xs:all>
+            <xs:element name="connection-factory" type="connectionFactoryType">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ Configuration for the connection factory ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-pool" type="connectionPoolType">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ Configuration for the connection pool ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="jta" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Enable JTA integration ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="connectable" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Enable CMR (Commit Markable Resource) functionality on this datasource ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="common-datasourceAttributes"/>
+    </xs:complexType>
+
+    <!-- xa-datasource -->
+
+    <xs:complexType name="xaDatasourceType">
+        <xs:all>
+            <xs:element name="connection-factory" type="connectionFactoryType">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ Configuration for the connection factory ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-pool" type="connectionPoolType">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ Configuration for the connection pool ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attributeGroup ref="common-datasourceAttributes"/>
+    </xs:complexType>
+
+    <!-- connection-factory -->
+
+    <xs:complexType name="connectionFactoryType">
+        <xs:all>
+            <xs:element name="connection-properties" type="connectionPropertiesType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ Properties for the JDBC driver ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ Access to credentials defined through CredentialStorage. Alternative to username / password. ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="driver" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Unique reference to the JDBC driver ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="url" type="xs:token">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ JDBC driver connection URL (e.g. "jdbc:h2:tcp://localhost:1234") ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="transaction-isolation" type="transactionIsolationType">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Set the java.sql.Connection transaction isolation level to use ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="new-connection-sql" type="xs:token">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ SQL statement to be executed on a connection after creation ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="username" type="xs:token">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Username to use for basic authentication with the database ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="password" type="xs:token">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Password to use for basic authentication with the database ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="authentication-context" type="xs:token">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Reference to a authentication context in Elytron. Alternative to username / password. ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:simpleType name="transactionIsolationType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[ Define constants used as the possible transaction isolation levels in transaction-isolation type ]>
+                <![CDATA[ Include: NONE, READ_UNCOMMITTED, READ_COMMITTED, REPEATABLE_READ, SERIALIZABLE ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="NONE"/>
+            <xs:enumeration value="READ_UNCOMMITTED"/>
+            <xs:enumeration value="READ_COMMITTED"/>
+            <xs:enumeration value="REPEATABLE_READ"/>
+            <xs:enumeration value="SERIALIZABLE"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- connection-factory features -->
+
+    <xs:complexType name="connectionPropertiesType">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="property" type="connectionPropertyType">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[ Properties to be passed to the JDBC driver when creating a connection ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="connectionPropertyType">
+        <xs:attribute name="name" type="xs:token" use="required"/>
+        <xs:attribute name="value" type="xs:token" use="required"/>
+    </xs:complexType>
+
+    <!-- connection-pool -->
+
+    <xs:complexType name="connectionPoolType">
+        <xs:attribute name="max-size" type="xs:nonNegativeInteger" use="required">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Maximum number of connections in the pool ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="min-size" type="xs:nonNegativeInteger">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Minimum number of connections the pool should hold ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="initial-size" type="xs:nonNegativeInteger">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Initial number of connections the pool should hold ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="blocking-timeout" type="xs:nonNegativeInteger" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[ Maximum time in milliseconds to block while waiting for a connection before throwing an exception ]]>
+                    <![CDATA[ This will never throw an exception if creating a new connection takes an inordinately long period of time ]]>
+                    <![CDATA[ Default is 0 meaning that a call will wait indefinitely ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="background-validation" type="xs:nonNegativeInteger">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[ Time in milliseconds between background validation runs ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="leak-detection" type="xs:nonNegativeInteger">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[ Time in milliseconds a connection has to be held before a leak warning ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="idle-removal" type="xs:nonNegativeInteger">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[ Time in minutes a connection has to be idle before it can be removed ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- drivers -->
+
+    <xs:complexType name="driversType">
+        <xs:sequence>
+            <xs:element name="driver" type="driverType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ Reference to a JDBC driver class ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="driverType">
+        <xs:attribute name="name" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Symbolic name of this JDBC driver (used to reference this driver) ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="module" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Name of module providing this driver ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="class" type="xs:token">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[ Fully qualified name of the connection provider class (either java.sql.Driver class (e.g. "org.h2.Driver"), javax.sql.DataSource or javax.sql.XADataSource) ]]>
+                    <![CDATA[ If this property is not set, the subsystem will try to load the driver using ServiceLoader ]]>
+                    <![CDATA[ XADataSource is required for xa-datasource ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+</xs:schema>

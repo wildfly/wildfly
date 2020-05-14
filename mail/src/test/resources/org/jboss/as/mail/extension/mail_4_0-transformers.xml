@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:mail:3.0">
+<subsystem xmlns="urn:jboss:domain:mail:4.0">
     <mail-session name="defaultMail" jndi-name="java:/Mail" from="user dot name at domain dot tld">
         <smtp-server outbound-socket-binding-ref="mail-smtp" tls="true" username="${exp.name:nobody}" />
         <pop3-server outbound-socket-binding-ref="mail-pop3"/>

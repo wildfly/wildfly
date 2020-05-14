@@ -65,6 +65,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final ResourceDescriptionResolver resolver;
     private final Map<Capability, Predicate<ModelNode>> capabilities = new HashMap<>();
     private final List<AttributeDefinition> attributes = new LinkedList<>();
+    private final Map<AttributeDefinition, OperationStepHandler> customAttributes = new HashMap<>();
     private final List<AttributeDefinition> parameters = new LinkedList<>();
     private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
@@ -112,6 +113,16 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     @Override
     public Map<AttributeDefinition, AttributeTranslation> getAttributeTranslations() {
         return this.attributeTranslations;
+    }
+
+    @Override
+    public Map<AttributeDefinition, OperationStepHandler> getCustomAttributes() {
+        return this.customAttributes;
+    }
+
+    public ResourceDescriptor addAttribute(Attribute attribute, OperationStepHandler writeAttributeHandler) {
+        this.customAttributes.put(attribute.getDefinition(), writeAttributeHandler);
+        return this;
     }
 
     public <E extends Enum<E> & Attribute> ResourceDescriptor addAttributes(Class<E> enumClass) {

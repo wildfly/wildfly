@@ -23,6 +23,8 @@ package org.wildfly.extension.messaging.activemq;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
@@ -50,6 +52,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CONNECTION_TTL_OVERRIDE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_BINDINGS_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_JOURNAL_DIR;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREDENTIAL_REFERENCE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.DISK_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.GLOBAL_MAX_DISK_USAGE;
@@ -198,6 +201,7 @@ class ServerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
+        handleCredentialReferenceUpdate(context, resource.getModel().get(CREDENTIAL_REFERENCE.getName()), CREDENTIAL_REFERENCE.getName());
 
         // add an operation to create all the messaging paths resources that have not been already been created
         // prior to adding the ActiveMQ server
@@ -257,6 +261,11 @@ class ServerAdd extends AbstractAddStepHandler {
         // Add a RUNTIME step to actually install the ActiveMQ Service. This will execute after the runtime step
         // added by any child resources whose ADD handler executes after this one in the model stage.
         context.addStep(new InstallServerHandler(resource), OperationContext.Stage.RUNTIME);
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(CREDENTIAL_REFERENCE, context, resource);
     }
 
     private class InstallServerHandler implements OperationStepHandler {
@@ -450,7 +459,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
             // inject credential-references for bridges
             addBridgeCredentialStoreReference(serverService, configuration, BridgeDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
-            addClusterCredentialStoreReference(serverService, ServerDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
+            addClusterCredentialStoreReference(serverService, CREDENTIAL_REFERENCE, context, model, serviceBuilder);
 
             // Install the ActiveMQ Service
             ServiceController activeMQServerServiceController = serviceBuilder.setInstance(serverService)

@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:10.0" default-server="some-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
+<subsystem xmlns="urn:jboss:domain:undertow:11.0" default-server="some-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="default"/>
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="extra"/>
    <byte-buffer-pool name="test-buffers" buffer-size="1000" leak-detection-percent="0" direct="true" max-pool-size="10" thread-local-cache-size="1" />
@@ -108,7 +108,7 @@
    <application-security-domains>
       <application-security-domain enable-jacc="true" http-authentication-factory="elytron-factory" name="other" override-deployment-config="true">
          <single-sign-on client-ssl-context="my-ssl-context" cookie-name="SSOID" domain="${prop.domain:myDomain}" http-only="true" key-alias="my-key-alias" key-store="my-key-store" path="/path" secure="true">
-            <credential-reference alias="my-credential-alias" store="my-credential-store" type="password"/>
+            <credential-reference alias="my-credential-alias" store="my-credential-store" clear-text="my-password" type="password"/>
          </single-sign-on>
       </application-security-domain>
    </application-security-domains>

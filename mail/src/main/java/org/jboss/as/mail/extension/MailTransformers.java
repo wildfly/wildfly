@@ -22,6 +22,7 @@
 
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.controller.security.CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT;
 import static org.jboss.as.mail.extension.MailExtension.CURRENT_MODEL_VERSION;
 import static org.jboss.as.mail.extension.MailExtension.MAIL_SESSION_PATH;
 import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM_SERVER_PATH;
@@ -42,6 +43,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class MailTransformers implements ExtensionTransformerRegistration {
     static final ModelVersion MODEL_VERSION_EAP6X = ModelVersion.create(1, 3, 0); //EAP6.2,6.3 & 6.4 have version 1.3.0
     static final ModelVersion MODEL_VERSION_EAP70 = ModelVersion.create(2, 0, 0);
+    static final ModelVersion MODEL_VERSION_EAP71 = ModelVersion.create(3, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -52,8 +54,19 @@ public class MailTransformers implements ExtensionTransformerRegistration {
     public void registerTransformers(SubsystemTransformerRegistration subsystem) {
         ChainedTransformationDescriptionBuilder chained = ResourceTransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
 
+        ResourceTransformationDescriptionBuilder builder71 = chained.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP71);
+        ResourceTransformationDescriptionBuilder sessionBuilder71 = builder71.addChildResource(MAIL_SESSION_PATH);
+        sessionBuilder71.addChildResource(PathElement.pathElement(SERVER_TYPE))
+                .getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, MailServerDefinition.CREDENTIAL_REFERENCE)
+                .end();
+        sessionBuilder71.addChildResource(CUSTOM_SERVER_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, MailServerDefinition.CREDENTIAL_REFERENCE)
+                .end();
 
-        ResourceTransformationDescriptionBuilder builder70 = chained.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP70);
+
+        ResourceTransformationDescriptionBuilder builder70 = chained.createBuilder(MODEL_VERSION_EAP71, MODEL_VERSION_EAP70);
         ResourceTransformationDescriptionBuilder sessionBuilder70 = builder70.addChildResource(MAIL_SESSION_PATH);
         sessionBuilder70.addChildResource(PathElement.pathElement(SERVER_TYPE))
                     .getAttributeBuilder()
@@ -70,6 +83,6 @@ public class MailTransformers implements ExtensionTransformerRegistration {
         chained.createBuilder(MODEL_VERSION_EAP70, MODEL_VERSION_EAP6X);
 
 
-        chained.buildAndRegister(subsystem, new ModelVersion[]{MODEL_VERSION_EAP70, MODEL_VERSION_EAP6X});
+        chained.buildAndRegister(subsystem, new ModelVersion[]{MODEL_VERSION_EAP71, MODEL_VERSION_EAP70, MODEL_VERSION_EAP6X});
     }
 }

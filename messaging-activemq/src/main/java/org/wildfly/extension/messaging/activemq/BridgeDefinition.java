@@ -47,6 +47,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -205,9 +206,14 @@ public class BridgeDefinition extends PersistentResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        CredentialReferenceWriteAttributeHandler credentialReferenceWriteAttributeHandler = new CredentialReferenceWriteAttributeHandler(CREDENTIAL_REFERENCE);
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
+                if (attr.equals(CREDENTIAL_REFERENCE)) {
+                    registry.registerReadWriteAttribute(attr, null, credentialReferenceWriteAttributeHandler);
+                } else {
+                    registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
+                }
             }
         }
 

@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:jgroups:7.0">
+<subsystem xmlns="urn:jboss:domain:jgroups:8.0">
     <channels default="default">
         <channel name="default" stack="minimal"/>
         <channel name="bridge" stack="default"/>
@@ -66,6 +66,13 @@
             <transport type="TCP_NIO2"
                        socket-binding="jgroups-tcp"
                        client-socket-binding="client-binding"/>
+        </stack>
+        <stack name="credentialReference1">
+            <transport type="TCP_NIO2"
+                       socket-binding="jgroups-tcp"/>
+            <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="alias">
+                <key-credential-reference store="my-credential-store" alias="credential-alias" clear-text="protocolpass" type="PASSWORD"/>
+            </encrypt-protocol>
         </stack>
     </stacks>
 </subsystem>

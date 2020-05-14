@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.security.CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.UNDEFINED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
@@ -69,6 +70,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        registerTransformers_WF_20(builder.createBuilder(MessagingExtension.VERSION_10_0_0, MessagingExtension.VERSION_9_0_0));
         registerTransformers_WF_19(builder.createBuilder(MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_8_0_0));
         registerTransformers_WF_18(builder.createBuilder(MessagingExtension.VERSION_8_0_0, MessagingExtension.VERSION_7_0_0));
         registerTransformers_WF_17(builder.createBuilder(MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_6_0_0));
@@ -81,7 +83,31 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0,
             MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_4_0_0, MessagingExtension.VERSION_5_0_0,
             MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_8_0_0,
-            MessagingExtension.VERSION_9_0_0});
+            MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_10_0_0});
+    }
+
+    private static void registerTransformers_WF_20(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+        server.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, ServerDefinition.CREDENTIAL_REFERENCE.getName())
+                .end();
+        ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
+        bridge.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, BridgeDefinition.CREDENTIAL_REFERENCE.getName())
+                .end();
+
+        ResourceTransformationDescriptionBuilder jmsBridge = subsystem.addChildResource(MessagingExtension.JMS_BRIDGE_PATH);
+        jmsBridge.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE.getName())
+                .end();
+        jmsBridge.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE.getName())
+                .end();
+
+        ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        pooledConnectionFactory.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE)
+                .end();
     }
 
     private static void registerTransformers_WF_19(ResourceTransformationDescriptionBuilder subsystem) {

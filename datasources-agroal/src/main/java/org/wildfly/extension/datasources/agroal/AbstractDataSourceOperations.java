@@ -36,6 +36,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -68,6 +69,7 @@ class AbstractDataSourceOperations {
 
     static final OperationStepHandler CONNECTION_POOL_WRITE_OPERATION = new ConnectionPoolAttributeWriter(AbstractDataSourceDefinition.CONNECTION_POOL_ATTRIBUTE.getValueTypes());
 
+    static final OperationStepHandler CREDENTIAL_REFERENCE_WRITE_OPERATION = new CredentialReferenceWriteAttributeHandler(AbstractDataSourceDefinition.CREDENTIAL_REFERENCE);
     // --- //
 
     static final OperationStepHandler FLUSH_ALL_OPERATION = new FlushOperation(AgroalDataSource.FlushMode.ALL);
