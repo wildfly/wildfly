@@ -44,7 +44,7 @@ public class HttpRemoteNamingServerService implements Service<HttpRemoteNamingSe
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming", "http-remote");
     public static final String NAMING = "/naming";
-    static final Function<String, Boolean> REJECT_CLASS_RESOLUTION_FILTER = name -> Boolean.FALSE;
+    private static final Function<String, Boolean> REJECT_CLASS_RESOLUTION_FILTER = name -> Boolean.FALSE;
     private final InjectedValue<PathHandler> pathHandlerInjectedValue = new InjectedValue<>();
     private final InjectedValue<NamingStore> namingStore = new InjectedValue<NamingStore>();
 
