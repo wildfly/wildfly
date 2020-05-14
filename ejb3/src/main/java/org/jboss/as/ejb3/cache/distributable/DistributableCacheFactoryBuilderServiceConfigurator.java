@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.cache.distributable;
 
 import java.security.PrivilegedAction;
 import java.time.Duration;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -58,7 +57,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
 
-    private final BeanManagerFactoryServiceConfiguratorFactory builder;
+    private final BeanManagerFactoryServiceConfiguratorFactory factory;
     private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
     public DistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
@@ -86,7 +85,7 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
     public DistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorFactoryProvider provider, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         super(name);
         this.config = config;
-        this.builder = provider.getBeanManagerFactoryBuilder(name, config);
+        this.factory = provider.getBeanManagerFactoryBuilder(name, config);
     }
 
     @Override
@@ -104,8 +103,8 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
-        return this.builder.getDeploymentServiceConfigurators(unit.getServiceName());
+    public Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
+        return this.factory.getDeploymentServiceConfigurators(unit.getServiceName());
     }
 
     @Override
@@ -143,7 +142,7 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
                 return Duration.ofMillis(TimeUnit.MILLISECONDS.convert(info.getValue(), info.getTimeUnit()));
             }
         };
-        CapabilityServiceConfigurator configurator = this.builder.getBeanManagerFactoryServiceConfigurator(context);
+        CapabilityServiceConfigurator configurator = this.factory.getBeanManagerFactoryServiceConfigurator(context);
         return new DistributableCacheFactoryServiceConfigurator<K, V>(name, configurator);
     }
 

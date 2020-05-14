@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.web.routing;
 
-import java.util.Collection;
-
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.service.SupplierDependency;
 
@@ -39,5 +37,5 @@ public interface RoutingProvider {
      * @param route the distinct route of the server
      * @return a service builder
      */
-    Collection<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route);
+    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route);
 }

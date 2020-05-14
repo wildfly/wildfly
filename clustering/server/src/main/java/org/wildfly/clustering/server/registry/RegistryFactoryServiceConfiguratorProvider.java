@@ -21,11 +21,10 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.CacheJndiNameFactory;
@@ -44,11 +43,9 @@ public class RegistryFactoryServiceConfiguratorProvider extends CacheRequirement
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
-        Collection<CapabilityServiceConfigurator> builders = super.getServiceConfigurators(registry, containerName, cacheName);
-        List<CapabilityServiceConfigurator> result = new ArrayList<>(builders.size() + 1);
-        result.addAll(builders);
-        result.add(new RegistryServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), containerName, cacheName));
-        return result;
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
+        Iterable<CapabilityServiceConfigurator> configurators = super.getServiceConfigurators(registry, containerName, cacheName);
+        CapabilityServiceConfigurator configurator = new RegistryServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), containerName, cacheName);
+        return new CompositeIterable<>(configurators, Collections.singleton(configurator));
     }
 }

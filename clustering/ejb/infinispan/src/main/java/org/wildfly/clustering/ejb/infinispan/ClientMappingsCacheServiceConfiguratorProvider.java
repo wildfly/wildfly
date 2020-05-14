@@ -22,7 +22,8 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -38,6 +39,7 @@ import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
+import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -61,22 +63,22 @@ public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServ
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName) {
-        List<CapabilityServiceConfigurator> configurators = new LinkedList<>();
-        if (aliasCacheName == null) {
-            String cacheName = BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME;
-            configurators.add(new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, aliasCacheName, this));
-            configurators.add(new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName));
-            ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, cacheName);
-            for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-                configurators.addAll(provider.getServiceConfigurators(routingRegistry, containerName, cacheName));
-            }
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName) {
+        if (aliasCacheName != null) return Collections.emptySet();
+        String cacheName = BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME;
+        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, aliasCacheName, this);
+        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName);
+        List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
+        configurators.add(Arrays.asList(configurationConfigurator, cacheConfigurator));
+        ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, cacheName);
+        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
+            configurators.add(provider.getServiceConfigurators(routingRegistry, containerName, cacheName));
         }
-        return configurators;
+        return new CompositeIterable<>(configurators);
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
         return this.getServiceConfigurators(registry, containerName, cacheName);
     }
 
