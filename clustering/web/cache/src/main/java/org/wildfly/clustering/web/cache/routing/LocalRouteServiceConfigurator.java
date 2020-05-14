@@ -44,7 +44,7 @@ public class LocalRouteServiceConfigurator extends SimpleServiceNameProvider imp
     private final SupplierDependency<String> route;
 
     public LocalRouteServiceConfigurator(String serverName, SupplierDependency<String> route) {
-        super(ServiceNameFactory.parseServiceName(WebDeploymentRequirement.LOCAL_ROUTE.resolve(serverName)));
+        super(ServiceNameFactory.parseServiceName(WebDeploymentRequirement.LOCAL_ROUTE.getName()).append(serverName));
         this.route = route;
     }
 
