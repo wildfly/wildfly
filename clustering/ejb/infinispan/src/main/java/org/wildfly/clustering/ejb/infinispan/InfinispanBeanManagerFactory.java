@@ -43,9 +43,8 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.group.Group;
 
 /**
  * Factory for creating an infinispan-based {@link BeanManager}.
@@ -88,8 +87,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, MarshallingContext>, BeanGroupFactory<I, T, MarshallingContext>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanContext().getTimeout(), properties.isPersistent() ? passivationListener : null);
         Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
-        NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
-        Registry<String, ?> registry = this.configuration.getRegistry();
+        Group<Address> group = this.configuration.getGroup();
         KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
         CommandDispatcherFactory dispatcherFactory = this.configuration.getCommandDispatcherFactory();
         Duration timeout = this.configuration.getBeanContext().getTimeout();
@@ -122,13 +120,8 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             }
 
             @Override
-            public Registry<String, ?> getRegistry() {
-                return registry;
-            }
-
-            @Override
-            public NodeFactory<Address> getNodeFactory() {
-                return nodeFactory;
+            public Group<Address> getGroup() {
+                return group;
             }
 
             @Override
