@@ -35,6 +35,7 @@ import org.wildfly.httpclient.naming.HttpRemoteNamingService;
 
 import javax.naming.Context;
 import java.util.Hashtable;
+import java.util.function.Function;
 
 /**
  * @author Stuart Douglas
@@ -43,13 +44,14 @@ public class HttpRemoteNamingServerService implements Service<HttpRemoteNamingSe
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming", "http-remote");
     public static final String NAMING = "/naming";
+    static final Function<String, Boolean> REJECT_CLASS_RESOLUTION_FILTER = name -> Boolean.FALSE;
     private final InjectedValue<PathHandler> pathHandlerInjectedValue = new InjectedValue<>();
     private final InjectedValue<NamingStore> namingStore = new InjectedValue<NamingStore>();
 
     @Override
     public void start(StartContext startContext) throws StartException {
         final Context namingContext = new NamingContext(namingStore.getValue(), new Hashtable<String, Object>());
-        HttpRemoteNamingService service = new HttpRemoteNamingService(namingContext);
+        HttpRemoteNamingService service = new HttpRemoteNamingService(namingContext, REJECT_CLASS_RESOLUTION_FILTER);
         pathHandlerInjectedValue.getValue().addPrefixPath(NAMING, service.createHandler());
     }
 
