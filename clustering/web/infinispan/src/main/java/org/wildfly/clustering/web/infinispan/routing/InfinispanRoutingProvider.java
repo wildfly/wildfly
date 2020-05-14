@@ -23,9 +23,11 @@
 package org.wildfly.clustering.web.infinispan.routing;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
@@ -47,6 +49,7 @@ import org.wildfly.clustering.web.routing.RoutingProvider;
  * @author Paul Ferraro
  */
 public class InfinispanRoutingProvider implements RoutingProvider {
+    static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
 
     private final InfinispanRoutingConfiguration config;
 
@@ -70,7 +73,7 @@ public class InfinispanRoutingProvider implements RoutingProvider {
         ServiceNameRegistry<ClusteringCacheRequirement> registry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
             @Override
             public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
-                return ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, serverName);
+                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, serverName) : null;
             }
         };
         for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
