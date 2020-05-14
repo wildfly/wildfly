@@ -457,7 +457,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
 
             if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY.getName(), null)) {
-                EJB3RemoteHTTPService service = new EJB3RemoteHTTPService();
+                EJB3RemoteHTTPService service = new EJB3RemoteHTTPService(new FilterSpecClassResolverFilter());
 
                 context.getServiceTarget().addService(EJB3RemoteHTTPService.SERVICE_NAME, service)
                         .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, service.getPathHandlerInjectedValue())
