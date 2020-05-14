@@ -23,7 +23,6 @@
 package org.wildfly.clustering.server;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.function.BiFunction;
 
@@ -56,7 +55,7 @@ public class CacheRequirementServiceConfiguratorProvider<T> implements CacheServ
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
         ServiceName name = registry.getServiceName(this.requirement);
         CapabilityServiceConfigurator configurator = this.factory.createServiceConfigurator(name, containerName, cacheName);
         if (this.jndiNameFactory == null) {

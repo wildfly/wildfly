@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import java.util.Collection;
-
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -43,7 +41,7 @@ public interface CacheFactoryBuilder<K, V extends Identifiable<K>> {
      * @param unit a deployment unit
      * @return a collection of service configurators
      */
-    Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit);
+    Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit);
 
     /**
      * Returns a configurator for a service supplying a cache factory.

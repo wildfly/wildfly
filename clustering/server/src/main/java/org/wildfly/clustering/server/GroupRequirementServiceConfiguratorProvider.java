@@ -23,7 +23,6 @@
 package org.wildfly.clustering.server;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
@@ -55,7 +54,7 @@ public class GroupRequirementServiceConfiguratorProvider<T> implements GroupServ
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group) {
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group) {
         CapabilityServiceConfigurator configurator = this.factory.createServiceConfigurator(registry.getServiceName(this.requirement), group);
         if (this.jndiNameFactory == null) {
             return Collections.singleton(configurator);

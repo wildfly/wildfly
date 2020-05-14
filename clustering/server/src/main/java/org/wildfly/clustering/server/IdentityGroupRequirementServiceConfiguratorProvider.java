@@ -23,7 +23,6 @@
 package org.wildfly.clustering.server;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
@@ -55,7 +54,7 @@ public class IdentityGroupRequirementServiceConfiguratorProvider implements Iden
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group, String targetGroup) {
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group, String targetGroup) {
         CapabilityServiceConfigurator configurator = new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(this.requirement), this.requirement, targetGroup);
         if ((this.jndiNameFactory == null) || JndiNameFactory.DEFAULT_LOCAL_NAME.equals(targetGroup)) {
             return Collections.singleton(configurator);
