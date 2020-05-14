@@ -24,9 +24,11 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.infinispan.commons.configuration.attributes.AttributeSet;
@@ -39,6 +41,7 @@ import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
@@ -55,6 +58,7 @@ import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
  * @author Paul Ferraro
  */
 public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServiceConfiguratorProvider, IdentityCacheServiceConfiguratorProvider, Consumer<ConfigurationBuilder> {
+    static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_ENTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
 
     private final Class<? extends CacheServiceConfiguratorProvider> providerClass;
 
@@ -70,7 +74,12 @@ public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServ
         CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName);
         List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
         configurators.add(Arrays.asList(configurationConfigurator, cacheConfigurator));
-        ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, cacheName);
+        ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
+            @Override
+            public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
+                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, cacheName) : null;
+            }
+        };
         for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
             configurators.add(provider.getServiceConfigurators(routingRegistry, containerName, cacheName));
         }
