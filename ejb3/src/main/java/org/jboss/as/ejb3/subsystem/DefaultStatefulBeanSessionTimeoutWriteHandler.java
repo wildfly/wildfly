@@ -31,8 +31,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
 
 public class DefaultStatefulBeanSessionTimeoutWriteHandler extends AbstractWriteAttributeHandler<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "defaultStatefulSessionTimeout");
@@ -60,13 +58,8 @@ public class DefaultStatefulBeanSessionTimeoutWriteHandler extends AbstractWrite
 
     void updateOrCreateDefaultStatefulBeanSessionTimeoutService(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final long defaultSessionTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT.resolveModelAttribute(context, model).asLong();
-        final ServiceController<?> sc = context.getServiceRegistry(true).getService(SERVICE_NAME);
-        if (sc != null) {
-            final AtomicLong existingValue = (AtomicLong) sc.getValue();
-            existingValue.set(defaultSessionTimeout);
-        } else {
-            // create and install the service
-            context.getServiceTarget().addService(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(new AtomicLong(defaultSessionTimeout)))).install();
-        }
+        final ServiceController<?> sc = context.getServiceRegistry(true).getRequiredService(SERVICE_NAME);
+        final AtomicLong existingValue = (AtomicLong) sc.getValue();
+        existingValue.set(defaultSessionTimeout);
     }
 }
