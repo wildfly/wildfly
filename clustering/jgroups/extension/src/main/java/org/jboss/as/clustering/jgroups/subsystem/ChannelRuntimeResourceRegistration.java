@@ -49,6 +49,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
+import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.protocols.relay.RELAY2;
 import org.jgroups.stack.Protocol;
@@ -139,8 +140,8 @@ public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegist
 
     static Class<? extends Protocol> findProtocolClass(OperationContext context, String protocolName, String moduleName) throws OperationFailedException {
         String className = protocolName;
-        if (moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
-            className = String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, protocolName);
+        if (moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(Global.PREFIX)) {
+            className = Global.PREFIX + protocolName;
         }
 
         try {

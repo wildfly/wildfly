@@ -30,18 +30,21 @@
         ucast_recv_buf_size="20m"
         ucast_send_buf_size="1m"
         port_range="0"
+        bundler_type="no-bundler"
     />
     <TCP
         send_buf_size="640k"
         sock_conn_timeout="300"
         port_range="0"
+        bundler_type="no-bundler"
     />
     <TCP_NIO2
         send_buf_size="640k"
         sock_conn_timeout="300"
         port_range="0"
+        bundler_type="no-bundler"
     />
-    <TCPPING port_range="0"/>
+    <TCPPING port_range="0" num_discovery_runs="4"/>
     <MPING ip_ttl="2"/>
     <kubernetes.KUBE_PING port_range="0"/>
     <MERGE3

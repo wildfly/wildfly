@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:jboss:domain:jaxrs:2.0"
+            xmlns="urn:jboss:domain:jaxrs:2.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
+
+    <!-- The jaxrs subsystem root element -->
+    <xs:element name="subsystem" type="subsystemType"/>
+    <xs:complexType name="subsystemType">
+       <xs:all minOccurs="0" maxOccurs="1">
+          <xs:element name="jaxrs-2-0-request-matching" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+          <xs:element name="resteasy-add-charset" type="xs:boolean" minOccurs="0" maxOccurs="1" default="true"/>
+          <xs:element name="resteasy-buffer-exception-entity" type="xs:boolean" minOccurs="0" maxOccurs="1" default="true"/>
+          <xs:element name="resteasy-disable-html-sanitizer" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+          <xs:element name="resteasy-disable-providers" type="classListType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="resteasy-document-expand-entity-references" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+          <xs:element name="resteasy-document-secure-disableDTDs" type="xs:boolean" minOccurs="0" maxOccurs="1" default ="true"/>
+          <xs:element name="resteasy-document-secure-processing-feature" type="xs:boolean" minOccurs="0" maxOccurs="1" default="true"/>
+          <xs:element name="resteasy-gzip-max-input" type="xs:integer" minOccurs="0" maxOccurs="1" default="10000000"/>
+          <xs:element name="resteasy-jndi-resources" type="jndiListType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="resteasy-language-mappings" type="mapType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="resteasy-media-type-mappings" type="mapType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="resteasy-media-type-param-mapping" type="xs:string" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="resteasy-prefer-jackson-over-jsonb" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+          <xs:element name="resteasy-providers" type="classListType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="resteasy-rfc7232preconditions" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+          <xs:element name="resteasy-role-based-security" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+          <xs:element name="resteasy-secure-random-max-use" type="xs:integer" minOccurs="0" maxOccurs="1" default="100"/>
+          <xs:element name="resteasy-use-builtin-providers" type="xs:boolean" minOccurs="0" maxOccurs="1" default="true"/>
+          <xs:element name="resteasy-use-container-form-params" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+          <xs:element name="resteasy-wider-request-matching" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+       </xs:all>
+    </xs:complexType>
+    
+    <xs:complexType name="classListType">
+       <xs:sequence>
+          <xs:element name="class" type="xs:NMTOKEN" minOccurs="1" maxOccurs="unbounded"/>
+       </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="jndiListType">
+       <xs:sequence>
+          <xs:element name="jndi" type="jndiType" minOccurs="1" maxOccurs="unbounded"/>
+       </xs:sequence>
+    </xs:complexType>
+    
+    <xs:simpleType name="jndiType">
+       <xs:restriction base = "xs:string">
+          <xs:pattern value="\w+:.+(/.+)*"/>
+       </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="mapType">
+       <xs:sequence>
+          <xs:element name="entry" type="entryType" minOccurs="1" maxOccurs="unbounded"/>
+       </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="entryType">
+       <xs:simpleContent>
+          <xs:extension base="xs:string">
+             <xs:attribute name="key"/>
+          </xs:extension>
+       </xs:simpleContent>
+    </xs:complexType>
+</xs:schema>

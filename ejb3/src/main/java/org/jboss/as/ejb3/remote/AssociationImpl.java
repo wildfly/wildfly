@@ -186,7 +186,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             Connection remotingConnection = invocationRequest.getProviderInterface(Connection.class);
             if(remotingConnection != null) {
                 SecurityActions.remotingContextSetConnection(remotingConnection);
-            } else {
+            } else if (invocationRequest.getSecurityIdentity() != null) {
                 SecurityActions.remotingContextSetConnection(new RemoteConnection() {
                     @Override
                     public SSLSession getSslSession() {
@@ -389,11 +389,12 @@ final class AssociationImpl implements Association, AutoCloseable {
 
             @Override
             public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
-                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
             @Override
             public void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+                // only send out moduleAvailability until module has started (WFLY-13009)
+                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
             @Override

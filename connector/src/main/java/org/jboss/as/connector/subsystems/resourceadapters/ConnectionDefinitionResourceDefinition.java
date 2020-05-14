@@ -23,6 +23,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
@@ -36,6 +37,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 
 /**
  *
@@ -86,6 +88,8 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                     resourceRegistration.registerReadWriteAttribute(attribute, null, PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler.INSTANCE);
                 } else if (attribute.equals(ENLISTMENT_TRACE)) {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, new EnlistmentTraceAttributeWriteHandler());
+                } else if (attribute.equals(RECOVERY_CREDENTIAL_REFERENCE)){
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, new CredentialReferenceWriteAttributeHandler(attribute));
                 } else {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, new ReloadRequiredWriteAttributeHandler(attribute));
                 }

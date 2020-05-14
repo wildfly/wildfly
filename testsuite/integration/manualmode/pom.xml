@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -58,8 +58,8 @@
         </dependency>
         <!-- The following are required at for JAXB on Java 11 -->
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>log4j-jboss-logmanager</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -134,7 +134,6 @@
     </dependencies>
 
     <profiles>
-
         <profile>
             <id>manualmode.integration.tests.profile</id>
             <activation>
@@ -142,16 +141,37 @@
                     <name>!noManualmode</name>
                 </property>
             </activation>
-
-            <properties>
-            </properties>
-
-            <!--
-                Server configuration executions.
-                Naming convention for executions (which we read in the log): for server config X, call it X.server
-            -->
             <build>
                 <plugins>
+                    <!-- Update server profile with shared configuration changes -->
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>manualmode-all.cli</script>
+                                    </scripts>
+                                    <jboss-home>${wildfly.dir}</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${jboss.dist}/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Generate the keystores and truststore needed for the manualmode tests -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
@@ -169,8 +189,7 @@
                             </execution>
                         </executions>
                     </plugin>
-
-                    <!-- Build the server configuration(s) -->
+                    <!-- Build the server configurations -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>

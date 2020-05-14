@@ -61,6 +61,56 @@ Default URL
 By default the web interface can be accessed here:
 http://localhost:9990/console.
 
+=== Custom HTTP Headers
+
+For the responses returned from the HTTP management interface it is also possible to define custom constant HTTP headers that will be added to any response based on matching a configured prefix against the request path.
+
+As an example it could be desirable to add a HTTP header `X-Help` which points users to the correct location to obtain assistance.  The following management operation can be executed within the CLI to activate returning this header on all requests.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /]  /core-service=management/management-interface=http-interface: \
+    write-attribute(name=constant-headers, value=[{path="/", \
+    headers=[{name="X-Help", value="wildfly.org"}]}])
+----
+
+The responses to all requests to the HTTP management interface will now include the header `X-Help` with the value `wildfly.org`.
+
+The resulting configuration will look like: -
+
+[source,xml,options="nowrap"]
+----
+<management-interfaces>
+    <http-interface security-realm="ManagementRealm">
+        <http-upgrade enabled="true"/>
+        <socket-binding http="management-http"/>
+        <constant-headers>
+            <header-mapping path="/">
+                <header name="X-Help" value="wildfly.org"/>
+            </header-mapping>
+        </constant-headers>
+    </http-interface>
+</management-interfaces>
+----
+
+The example here has illustrated adding a single header for all requests matching the path prefix `/` i.e. every request.  More advanced mappings can be defined by specifying a mapping for a more specific path prefix such as `/management`.
+
+If a request matches multiple mappings such as a request to `/management` where mappings for `/` and `/management` have been specified the headers from all of the mappings will be applied to the corresponding request.
+
+Within a single mapping it is also possible to define multiple headers which should be set on the corresponding response.
+
+As the `constant-headers` attribute is set verification will be performed to verify that the HTTP headers specified are only making use of allowed characters as specified in the HTTP specification RFCs.
+
+Additionally as they have special handling within the management interface overriding the following headers is disallowed and attempts to set these will result in an error being reported.
+
+ * `Connection`
+ * `Content-Length`
+ * `Content-Type`
+ * `Date`
+ * `Transfer-Encoding`
+
+The configured headers are set at the very end of processing the request immediately before the response is returned to the client, this will mean any of the configured headers will override the same headers set by the corresponding endpoint.
+
 include::Command_Line_Interface.adoc[leveloffset=+1]
 
 include::Default_HTTP_Interface_Security.adoc[leveloffset=+1]

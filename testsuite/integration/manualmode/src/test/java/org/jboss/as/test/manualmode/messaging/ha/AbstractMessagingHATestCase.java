@@ -229,10 +229,6 @@ public abstract class AbstractMessagingHATestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).set(address);
         operation.get(OP).set(READ_RESOURCE_OPERATION);
-        operation.get(INCLUDE_RUNTIME).set(true);
-        // ModelNode result = execute(client, operation);
-        // System.out.println(runtimeAttributeName + " = " + result.get(runtimeAttributeName));
-        //assertEquals(result.toJSONString(true), active, result.get(runtimeAttributeName).isDefined());
 
         // runtime operation
         operation.get(OP).set("list-messages");

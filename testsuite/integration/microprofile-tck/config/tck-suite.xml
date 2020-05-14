@@ -2,28 +2,23 @@
 
 <suite name="microprofile-config-TCK" verbose="2" configfailurepolicy="continue" >
 
-    <test name="microprofile-config 1.2 TCK">
+    <test name="microprofile-config TCK">
         <packages>
             <package name="org.eclipse.microprofile.config.tck.*">
             </package>
         </packages>
         <classes>
-            <!-- Exclude these 3 classes as they rely on a @ShouldThrowException(DeploymentException.class)
-                 that is not working with Arquillian WildFly container (https://issues.jboss.org/browse/WFARQ-59)
-            -->
-            <class name="org.eclipse.microprofile.config.tck.broken.MissingConverterOnInstanceInjectionTest">
+            <!-- TCK and spec challenge: https://github.com/eclipse/microprofile-config/issues/446 -->            
+            <class name="org.eclipse.microprofile.config.tck.ConfigProviderTest">
                 <methods>
-                    <exclude name=".*" />
+                    <exclude name="testEnvironmentConfigSource"/>
                 </methods>
             </class>
-            <class name="org.eclipse.microprofile.config.tck.broken.MissingValueOnInstanceInjectionTest">
+            <class name="org.eclipse.microprofile.config.tck.EmptyValuesTest">
                 <methods>
-                    <exclude name=".*" />
-                </methods>
-            </class>
-            <class name="org.eclipse.microprofile.config.tck.broken.WrongConverterOnInstanceInjectionTest">
-                <methods>
-                    <exclude name=".*" />
+                    <exclude name="testEmptyStringPropertyFromConfigFile"/>
+                    <exclude name="testEmptyStringProgrammaticLookup"/>
+                    <exclude name="testEmptyStringValues"/>
                 </methods>
             </class>
         </classes>

@@ -36,12 +36,13 @@ public class ManagedCommandDispatcherFactoryTestCase {
     @Test
     public void test() {
         AutoCloseableCommandDispatcherFactory factory = mock(AutoCloseableCommandDispatcherFactory.class);
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
         try (AutoCloseableCommandDispatcherFactory subject = new ManagedCommandDispatcherFactory(factory)) {
             String context = "context";
             CommandDispatcher<String> dispatcher = mock(CommandDispatcher.class);
 
-            when(factory.createCommandDispatcher("foo", context)).thenReturn(dispatcher);
+            when(factory.createCommandDispatcher(eq("foo"), same(context), same(loader))).thenReturn(dispatcher);
             when(dispatcher.getContext()).thenReturn(context);
 
             try (CommandDispatcher<String> dispatcher1 = subject.createCommandDispatcher("foo", context)) {

@@ -40,6 +40,7 @@ import static org.jboss.as.connector.subsystems.datasources.JdbcDriverDefinition
 import static org.jboss.as.connector.subsystems.datasources.XaDataSourceDefinition.PATH_XA_DATASOURCE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
+import static org.jboss.as.controller.security.CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT;
 
 import java.util.Map;
 
@@ -71,6 +72,8 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     private static final ModelVersion EAP_6_2 = ModelVersion.create(1, 2, 0);
     private static final ModelVersion EAP_6_3 = ModelVersion.create(1, 3, 0);
     private static final ModelVersion EAP_7_0 = ModelVersion.create(4, 0, 0);
+    private static final ModelVersion EAP_7_1 = ModelVersion.create(5, 0, 0);
+
     @Override
     public String getSubsystemName() {
         return SUBSYSTEM_NAME;
@@ -79,7 +82,8 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
-        get400TransformationDescription(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_0));
+        get500TransformationDescription(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_1));
+        get400TransformationDescription(chainedBuilder.createBuilder(EAP_7_1, EAP_7_0));
         get130TransformationDescription(chainedBuilder.createBuilder(EAP_7_0, EAP_6_3));
         get120TransformationDescription(chainedBuilder.createBuilder(EAP_6_3, EAP_6_2));
 
@@ -87,6 +91,7 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                 EAP_6_2,
                 EAP_6_3,
                 EAP_7_0,
+                EAP_7_1
         });
 
     }
@@ -121,10 +126,8 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     static TransformationDescription get120TransformationDescription(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), CONNECTABLE)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR, CONNECTABLE, ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, ModelNode.TRUE), STATISTICS_ENABLED)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ENLISTMENT_TRACE.getDefaultValue()), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(ModelNode.FALSE), ENLISTMENT_TRACE)
@@ -151,9 +154,8 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                 .end();
         builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), CONNECTABLE)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, CONNECTABLE, ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, ModelNode.TRUE), STATISTICS_ENABLED)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ENLISTMENT_TRACE.getDefaultValue()), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
@@ -184,15 +186,15 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     private static TransformationDescription get400TransformationDescription(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ELYTRON_ENABLED.getDefaultValue()), ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, ELYTRON_ENABLED)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
                 .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, ENLISTMENT_TRACE)
                 .end();
         builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ELYTRON_ENABLED.getDefaultValue()), ELYTRON_ENABLED, RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, ELYTRON_ENABLED, RECOVERY_ELYTRON_ENABLED)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED,
                         RECOVERY_CREDENTIAL_REFERENCE,
                         RECOVERY_AUTHENTICATION_CONTEXT,
@@ -207,11 +209,25 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                         CREDENTIAL_REFERENCE,
                         AUTHENTICATION_CONTEXT)
 
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, ENLISTMENT_TRACE)
                 .end();
         parentBuilder.addChildResource(PATH_DRIVER).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, MODULE_SLOT, JDBC_COMPLIANT, PROFILE,
                         DRIVER_MODULE_NAME, DRIVER_XA_DATASOURCE_CLASS_NAME, DRIVER_CLASS_NAME)
+                .end();
+        return parentBuilder.build();
+    }
+
+    private static TransformationDescription get500TransformationDescription(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
+        builder.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, CREDENTIAL_REFERENCE)
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, RECOVERY_CREDENTIAL_REFERENCE)
+                .end();
+        builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+        builder.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, CREDENTIAL_REFERENCE)
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, RECOVERY_CREDENTIAL_REFERENCE)
                 .end();
         return parentBuilder.build();
     }

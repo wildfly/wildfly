@@ -77,6 +77,10 @@ public class LayersTestCase {
         "org.eclipse.yasson",
         // injected by ee
         "org.wildfly.naming",
+        // Brought by galleon ServerRootResourceDefinition
+        "wildflyee.api",
+        // bootable jar runtime
+        "org.wildfly.bootable-jar"
         };
 
     @Test

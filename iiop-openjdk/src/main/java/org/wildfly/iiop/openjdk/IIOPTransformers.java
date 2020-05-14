@@ -57,7 +57,7 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
 
         ResourceTransformationDescriptionBuilder builder_2_0 = chained.createBuilder(CURRENT_MODEL_VERSION, VERSION_2);
         builder_2_0.getAttributeBuilder()
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(IIOPRootDefinition.SOCKET_BINDING), IIOPRootDefinition.SOCKET_BINDING);
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, IIOPRootDefinition.SOCKET_BINDING);
 
         /*
         --- Problems for relative address to root []:
@@ -73,9 +73,7 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
          */
         ResourceTransformationDescriptionBuilder builder_1_0 = chained.createBuilder(VERSION_2, VERSION_1);
         builder_1_0.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.CLIENT_REQUIRES_SSL.getDefaultValue()), IIOPRootDefinition.CLIENT_REQUIRES_SSL)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.SERVER_REQUIRES_SSL.getDefaultValue()), IIOPRootDefinition.SERVER_REQUIRES_SSL)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.INTEROP_IONA.getDefaultValue()), IIOPRootDefinition.INTEROP_IONA)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, IIOPRootDefinition.CLIENT_REQUIRES_SSL, IIOPRootDefinition.SERVER_REQUIRES_SSL, IIOPRootDefinition.INTEROP_IONA)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, IIOPRootDefinition.AUTHENTICATION_CONTEXT, IIOPRootDefinition.SERVER_SSL_CONTEXT, IIOPRootDefinition.CLIENT_SSL_CONTEXT)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                     @Override

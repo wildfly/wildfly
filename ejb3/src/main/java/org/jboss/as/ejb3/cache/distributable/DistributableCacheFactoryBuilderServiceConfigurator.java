@@ -134,8 +134,13 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
             @Override
             public Duration getTimeout() {
                 StatefulTimeoutInfo info = description.getStatefulTimeout();
+
+                // A value of -1 means the bean will never be removed due to timeout
+                if (info == null || info.getValue() < 0) {
+                    return null;
+                }
                 // TODO Once based on JDK9+, change to Duration.of(this.info.getValue(), this.info.getTimeUnit().toChronoUnit())
-                return (info != null) ? Duration.ofMillis(TimeUnit.MILLISECONDS.convert(info.getValue(), info.getTimeUnit())) : null;
+                return Duration.ofMillis(TimeUnit.MILLISECONDS.convert(info.getValue(), info.getTimeUnit()));
             }
         };
         CapabilityServiceConfigurator configurator = this.builder.getBeanManagerFactoryServiceConfigurator(context);

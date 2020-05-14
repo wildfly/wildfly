@@ -25,12 +25,18 @@ package org.wildfly.test.integration.elytron.ssl;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.codehaus.plexus.util.FileUtils;
@@ -161,8 +167,23 @@ public class UndertowSslSecurityDomainTestCase {
     public void testUntrustedCertificate() {
         HttpClient client = SSLTruststoreUtil
                 .getHttpClientWithSSL(UNTRUSTED_STORE_FILE, PASSWORD, CLIENT_TRUSTSTORE_FILE, PASSWORD);
-        assertProtectedAccess(client, SC_FORBIDDEN);
+        assertSslHandshakeFails(client);
         closeClient(client);
+    }
+
+    private void assertSslHandshakeFails(HttpClient client) {
+        try {
+            Utils.makeCallWithHttpClient(securedUrlRole1, client, SC_OK);
+        } catch (SSLHandshakeException | SocketException e) {
+            // expected
+            return;
+        } catch (SSLException e) {
+            if (e.getCause() instanceof SocketException) return; // expected
+            throw new IllegalStateException("Unexpected SSLException", e);
+        } catch (IOException | URISyntaxException ex) {
+            throw new IllegalStateException("Unable to request server root over HTTPS", ex);
+        }
+        fail("SSL handshake should fail");
     }
 
     private void assertUnprotectedAccess(HttpClient client) {
@@ -249,6 +270,7 @@ public class UndertowSslSecurityDomainTestCase {
                         .withTrustManagers(NAME)
                         .withSecurityDomain(NAME)
                         .withAuthenticationOptional(true)
+                        .withNeedClientAuth(true) // test that the handshake fails if the client certificate is not trusted
                         .build(),
                 UndertowSslContext.builder().withName(NAME).build()
             };

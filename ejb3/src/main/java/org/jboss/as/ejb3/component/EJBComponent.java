@@ -626,15 +626,17 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             return !identity.isAnonymous();
         }
         Roles roles = identity.getRoles("ejb", true);
-        if(roles.contains(roleName)) {
-            return true;
-        }
-        if(securityMetaData.getSecurityRoleLinks() != null) {
-            Collection<String> linked = securityMetaData.getSecurityRoleLinks().get(roleName);
-            if(linked != null) {
-                for (String role : roles) {
-                    if (linked.contains(role)) {
-                        return true;
+        if(roles != null) {
+            if(roles.contains(roleName)) {
+                return true;
+            }
+            if(securityMetaData.getSecurityRoleLinks() != null) {
+                Collection<String> linked = securityMetaData.getSecurityRoleLinks().get(roleName);
+                if(linked != null) {
+                    for (String role : roles) {
+                        if (linked.contains(role)) {
+                            return true;
+                        }
                     }
                 }
             }

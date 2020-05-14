@@ -31,6 +31,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.jsp.JspApplicationContext;
 import javax.servlet.jsp.JspFactory;
 import java.util.List;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Listener that sets up the {@link JspApplicationContext} with any wrapped EL expression factories and also
@@ -41,14 +42,18 @@ import java.util.List;
 public class JspInitializationListener implements ServletContextListener {
 
     public static final String CONTEXT_KEY = "org.jboss.as.web.deployment.JspInitializationListener.wrappers";
+    private static final String DISABLE_IMPORTED_CLASS_EL_RESOLVER_PROPERTY = "org.wildfly.extension.undertow.deployment.disableImportedClassELResolver";
 
     @Override
     public void contextInitialized(final ServletContextEvent sce) {
         // if the servlet version is 3.1 or higher, setup a ELResolver which allows usage of static fields java.lang.*
         final ServletContext servletContext = sce.getServletContext();
         final JspApplicationContext jspApplicationContext = JspFactory.getDefaultFactory().getJspApplicationContext(servletContext);
-        if (servletContext.getEffectiveMajorVersion() > 3
-                || (servletContext.getEffectiveMajorVersion() == 3 && servletContext.getEffectiveMinorVersion() >= 1)) {
+        boolean disableImportedClassELResolver = Boolean.parseBoolean(
+                WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(DISABLE_IMPORTED_CLASS_EL_RESOLVER_PROPERTY));
+        if (!disableImportedClassELResolver &&
+                (servletContext.getEffectiveMajorVersion() > 3 ||
+                (servletContext.getEffectiveMajorVersion() == 3 && servletContext.getEffectiveMinorVersion() >= 1))) {
             jspApplicationContext.addELResolver(new ImportedClassELResolver());
         }
         // setup a wrapped JspApplicationContext if there are any EL expression factory wrappers for this servlet context

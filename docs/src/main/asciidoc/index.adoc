@@ -15,9 +15,8 @@ and configure the server
 * _Developer Guides_ for those wanting to understand how to develop
 applications for the server
 
-There is also the http://wildscribe.github.io/[WildFly Model Reference]
-that provides information about all subsystem configuration options
-generated directly from the management model.
+* _Model Reference_ the WildFly Model Reference provides information about all subsystem
+configuration options generated directly from the management model.
 
 [[administrator-guides]]
 == Administrator Guides
@@ -35,6 +34,11 @@ configuration, and shows you how to configure key subsystems
 you how to create a cluster, how configure the web container and EJB
 container for clustering, and shows you how to configure load balancing
 and failover
+
+== Model Reference
+
+* The link:wildscribe[WildFly model reference^] provides information about all subsystem
+configuration options generated directly from the management model.
 
 [[developer-guides]]
 == Developer Guides
@@ -87,7 +91,7 @@ of the documentation details the available quickstarts
 
 * link:Glossary.html[Glossary]
 * http://www.wildfly.org[WildFly project page]
-* https://issues.jboss.org/browse/WFLY[WildFly issue tracker]
+* https://issues.redhat.com/browse/WFLY[WildFly issue tracker]
 * https://community.jboss.org/en/wildfly[WildFly user forum]
 * https://community.jboss.org/en/wildfly/dev[WildFly wiki]
 * https://github.com/wildfly/wildfly/[WildFly source]

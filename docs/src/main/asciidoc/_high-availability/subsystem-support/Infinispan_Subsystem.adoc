@@ -49,7 +49,7 @@ To create a JGroups transport using a distinct "alpha" channel, that uses the "t
 /subsystem=infinispan/cache-container=foo/transport=jgroups:add(channel=alpha)
 ----
 
-For a complete list of transport attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of transport attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 To remove an existing JGroups transport, you can either use the standard remove resource operation:
 
@@ -83,7 +83,7 @@ To create a local cache:
 /subsystem=infinispan/cache-container=foo/local-cache=bar:add()
 ----
 
-For a complete list of local-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of local-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ==== Replicated
 
@@ -99,7 +99,7 @@ To create a replicated cache:
 /subsystem=infinispan/cache-container=foo/replicated-cache=bar:add()
 ----
 
-For a complete list of replicated-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of replicated-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ==== Distributed
 
@@ -115,7 +115,7 @@ To create a distributed cache where a given entry is stored on 3 nodes:
 /subsystem=infinispan/cache-container=foo/distributed-cache=bar:add(owners=3)
 ----
 
-For a complete list of distributed-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of distributed-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ==== Scattered
 
@@ -136,7 +136,7 @@ To create a scattered cache:
 /subsystem=infinispan/cache-container=foo/scattered-cache=bar:add()
 ----
 
-For a complete list of scattered-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of scattered-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ==== Invalidation
 
@@ -152,7 +152,7 @@ To create an invalidation cache:
 /subsystem=infinispan/cache-container=foo/invalidation-cache=bar:add()
 ----
 
-For a complete list of invalidation-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of invalidation-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 === Cache features
 
@@ -235,7 +235,7 @@ e.g. To store a maximum of 100 objects in the Java heap:
 /subsystem=infinispan/cache-container=foo/local-cache=bar/memory=object:add(size=100)
 ----
 
-For a complete list of memory=object attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of memory=object attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ===== Binary storage (on-heap)
 
@@ -251,7 +251,7 @@ e.g. To store a maximum of 1 MB of binary data in the Java heap:
 /subsystem=infinispan/cache-container=foo/local-cache=bar/memory=binary:add(size=1048576, eviction-type=MEMORY)
 ----
 
-For a complete list of memory=binary attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of memory=binary attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ===== Off-heap binary storage
 
@@ -266,7 +266,7 @@ e.g. To store a maximum of 1 GB of binary data in native memory outside of the J
 /subsystem=infinispan/cache-container=foo/local-cache=bar/memory=off-heap:add(size=1073741824)
 ----
 
-For a complete list of memory=off-heap attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of memory=off-heap attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ==== Transactions
 
@@ -296,7 +296,7 @@ e.g. To configure a transactional cache using local Infinispan transactions with
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=transaction(mode=BATCH, locking=OPTIMISTIC)
 ----
 
-For a complete list of transaction attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of transaction attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ==== Locking
 
@@ -318,7 +318,7 @@ e.g. To configure a cache using REPEATABLE_READ isolation:
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=locking(isolation=REPEATABLE_READ)
 ----
 
-For a complete list of locking attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of locking attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ==== Expiration
 
@@ -334,7 +334,7 @@ e.g. To configure expiration of entries older than 1 day, or that have not been 
 
 CAUTION: max-idle based expiration is not generally safe for use with clustered caches, as the meta data of a cache entry is not replicated by cache read operations
 
-For a complete list of expiration attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of expiration attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 ==== Persistence
 
@@ -443,7 +443,7 @@ e.g. To configure a non-blocking state transfer:
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=0)
 ----
 
-For a complete list of state-transfer attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+For a complete list of state-transfer attributes, refer to the link:wildscribe[WildFly management model documentation^]
 
 [[remote_cache_container]]
 == Remote Cache Container

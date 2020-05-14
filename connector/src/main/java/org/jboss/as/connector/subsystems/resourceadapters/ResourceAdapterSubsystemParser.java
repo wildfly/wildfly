@@ -469,7 +469,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 case RESOURCEADAPTERS_2_0:
                 case RESOURCEADAPTERS_3_0:
                 case RESOURCEADAPTERS_4_0:
-                case RESOURCEADAPTERS_5_0:{
+                case RESOURCEADAPTERS_5_0:
+                case RESOURCEADAPTERS_6_0:{
                     localName = reader.getLocalName();
                     final Element element = Element.forName(reader.getLocalName());
                     SUBSYSTEM_RA_LOGGER.tracef("%s -> %s", localName, element);

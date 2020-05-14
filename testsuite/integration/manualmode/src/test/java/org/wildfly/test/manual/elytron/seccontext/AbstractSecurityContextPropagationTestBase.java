@@ -622,7 +622,6 @@ public abstract class AbstractSecurityContextPropagationTestBase {
                     }
                     addCliCommands(cliFIle, config.getCliCommands());
                     runBatch(cliFIle);
-                    switchJGroupsToTcpping();
                     cliFIle.delete();
                     reload();
 
@@ -703,28 +702,6 @@ public abstract class AbstractSecurityContextPropagationTestBase {
             }
             return new CLIOpResult(ModelNode.fromStream(new ByteArrayInputStream(consoleOut.toByteArray())))
                     .isIsOutcomeSuccess();
-        }
-
-        /**
-         * Switch JGroups subsystem (if present) from using UDP multicast to TCPPING discovery protocol.
-         */
-        private void switchJGroupsToTcpping() throws IOException {
-            consoleOut.reset();
-            try {
-                commandCtx.handle("if outcome==success of /subsystem=jgroups:read-resource()");
-                // TODO This command is deprecated
-                commandCtx.handle(String.format(
-                        "/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0, properties={initial_hosts=\"%1$s[7600],%1$s[9600]\",port_range=0})",
-                        Utils.stripSquareBrackets(host)));
-                commandCtx.handle("/subsystem=jgroups/stack=tcp/protocol=MPING:remove");
-                commandCtx.handle("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)");
-                commandCtx.handle("end-if");
-            } catch (CommandLineException e) {
-                LOGGER.error("Command line error occured during JGroups reconfiguration", e);
-            } finally {
-                LOGGER.debugf("Output of JGroups reconfiguration (switch to TCPPING): %s",
-                        new String(consoleOut.toByteArray(), StandardCharsets.UTF_8));
-            }
         }
 
         private void takeSnapshot() throws IOException, MgmtOperationException {

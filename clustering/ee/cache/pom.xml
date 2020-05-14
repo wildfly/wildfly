@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-ee-cache</artifactId>
@@ -47,6 +47,10 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ee-spi</artifactId>
         </dependency>
         <dependency>
@@ -54,8 +58,16 @@
             <artifactId>wildfly-clustering-marshalling-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-service</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>

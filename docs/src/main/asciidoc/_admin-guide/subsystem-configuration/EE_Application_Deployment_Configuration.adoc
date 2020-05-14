@@ -8,7 +8,7 @@ deployment behaviour for Jakarta EE Applications.
 == Global Modules
 
 Global modules is a set of JBoss Modules that will be added as
-dependencies to the JBoss Module of every Jakarta EE deployment. Such
+dependencies to the JBoss Modules module of every Jakarta EE deployment. Such
 dependencies allows Jakarta EE deployments to see the classes exported by
 the global modules.
 
@@ -23,8 +23,8 @@ of its XML configuration:
   </global-modules>
 ----
 
-The only mandatory attribute is the JBoss Module `name`, the `slot`
-attribute defaults to `main`, and both define the JBoss Module ID to
+The only mandatory attribute is the JBoss Modules module `name`, the `slot`
+attribute defaults to `main`, and both define the JBoss Modules module ID to
 reference.
 
 The optional `annotations` attribute, which defaults to `false`,
@@ -38,6 +38,75 @@ loader, and defaults to `false`.
 The optional `meta-inf` attribute, which defaults to `true`, indicates
 if the Module's `META-INF` path should be available to the deployment's
 class loader.
+
+[[global-directory]]
+== Global Directory
+Global modules can be used to share common libraries across all deployed applications, but it could be impractical if the name of a shared library changes very often or if there are many libraries you want to share. Both cases will require changes in the underlying module.xml that represents this global module.
+
+The EE subsystem allows the configuration of a global directory, which represents a directory tree scanned automatically to include .jar files and resources as a single additional dependency. This module dependency is added as a system dependency on each deployed application. Basically, with a global directory, you will be relying on WildFly to automate the maintenance and configuration of a JBoss Modules module that represents the jar files and resources of a specific directory.
+
+You can configure a global directory using the following operation:
+
+[source,xml,options="nowrap"]
+----
+  [standalone@localhost:9990 /] /subsystem=ee/global-directory=my-common-libs:add(path=lib, relative-to=jboss.home.dir)
+----
+
+The following attributes are available on the global-directory resource:
+
+* path: The path of the directory to scan. (Mandatory)
+* relative-to: The name of another previously named path, or of one of the standard paths provided by the system. (Optional)
+
+When a `global-directory` is created, the server establishes a JBoss Modules module with one https://jboss-modules.github.io/jboss-modules/manual/#path-resource-loader[Path Resource Loader] created using 'path' and 'relative-to' attributes and one https://jboss-modules.github.io/jboss-modules/manual/#jar-resource-loader[Jar Resource loader] for each jar file included in this directory and its subdirectories.
+
+The 'Path Resource Loader' will make available any file as a resource to the application. The 'Jar Resource loader' will make available any class inside of the jar file to the applications.
+
+For example, suppose you have configured one global directory pointing to the following directory tree:
+....
+/my-common-libs/Z/a-lib.jar
+/my-common-libs/A/A/z-lib.jar
+/my-common-libs/A/a-lib.jar
+/my-common-libs/A/b-lib.jar
+/my-common-libs/a-lib.jar
+/my-common-libs/A/B/a-lib.jar
+/my-common-libs/properties-1.properties
+/my-common-libs/A/B/properties-2.properties
+....
+
+The JBoss Modules module generated after scanning this global-directory will be equivalent to the following module.xml:
+
+....
+<module xmlns="urn:jboss:module:1.5" name="deployment.external.global-directory.my-common-libs">
+    <resources>
+        <resource-root path="/my-common-libs"/>
+        <resource-root path="/my-common-libs/a-lib.jar"/>
+        <resource-root path="/my-common-libs/A/a-lib.jar"/>
+        <resource-root path="/my-common-libs/A/b-lib.jar"/>
+        <resource-root path="/my-common-libs/A/A/z-lib.jar"/>
+        <resource-root path="/my-common-libs/A/B/a-lib.jar"/>
+        <resource-root path="/my-common-libs/Z/a-lib.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="javaee.api"/>
+    </dependencies>
+</module>
+....
+
+The name of the generated module follows the pattern _deployment.external.global-directory.{global-directory-name}_ and as such, it can be excluded selectively using your deployment-structure.xml.
+
+All resources will be available from the application class loader. For example, you could access the above property files using the context ClassLoader of your current thread:
+
+  Thread.currentThread().getContextClassLoader().getResourceAsStream("properties-1.properties");
+  Thread.currentThread().getContextClassLoader().getResourceAsStream("A/B/properties-2.properties");
+
+All classes inside of each jar file will also be available, and the order of how the resource-root are created internally will govern the order of the class loading. The jar resources of the generated module will be created iterating over all jar files found in the directory tree. Each directory is scanned alphabetically starting from the root, and on each level, each subdirectory is also explored alphabetically until visiting all the branch. Files found on each level are also added in alphabetical order.
+
+Notice you should know which classes are exposed on each .jar file and avoid conflicts including the same class twice with incompatible binary change. In those cases, classloading errors are likely to occur. Specifically, you should not add classes that interfere with the classes the server already makes available for your application; the goal of a global directory is not to override and replace existing library versions shipped with the server. It is a facility that will allow moving common frameworks you usually add to your application libs to a common place to facilitate maintenance.
+
+The module created from the shared directory is loaded as soon as the first application is deployed in the server after creating the global-directory. That means, if the server is started/restarted and there are no applications deployed, then the global directory is neither scanned nor the module loaded. Any change in any of the contents of the global-directory will require a server reload to make them available to the deployed applications.
+
+In case of domain mode or distributed environments, it is the user responsibility to make the content of the configured global directory consistent across all the server instances, as well as distribute the jar files that they contain.
 
 [[ear-subdeployments-isolation]]
 == EAR Subdeployments Isolation
@@ -106,6 +175,14 @@ shipped with WildFly.
   <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
 ----
 
+When enabled, properties can be replaced in the following deployment descriptors:
+
+* ejb-jar.xml
+* persistence.xml
+* application.xml
+* web.xml
+* permissions.xml
+
 [[jboss-descriptor-property-replacement]]
 === JBoss Descriptor Property Replacement
 
@@ -117,6 +194,15 @@ defaults to `true`.
 ----
   <jboss-descriptor-property-replacement>false</jboss-descriptor-property-replacement>
 ----
+
+When enabled, properties can be replaced in the following deployment descriptors:
+
+* jboss-ejb3.xml
+* jboss-app.xml
+* jboss-web.xml
+* jboss-permissions.xml
+* *-jms.xml
+* *-ds.xml
 
 [[annotation-property-replacement]]
 === Annotation Property Replacement

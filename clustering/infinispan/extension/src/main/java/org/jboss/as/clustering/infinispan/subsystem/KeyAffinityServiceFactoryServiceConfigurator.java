@@ -37,6 +37,7 @@ import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.controller.PathAddress;
@@ -48,13 +49,14 @@ import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Key affinity service factory that will only generates keys for use by the local node.
  * Returns a trivial implementation if the specified cache is not distributed.
  * @author Paul Ferraro
  */
-public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServiceNameProvider implements ServiceConfigurator, Function<ExecutorService, KeyAffinityServiceFactory>, Supplier<ExecutorService> {
+public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServiceNameProvider implements ServiceConfigurator, Function<ExecutorService, KeyAffinityServiceFactory>, Supplier<ExecutorService>, Consumer<ExecutorService> {
 
     private volatile int bufferSize = 100;
 
@@ -79,16 +81,21 @@ public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServ
             @Override
             public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
                 CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
-                return mode.isDistributed() || mode.isReplicated() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
+                return mode.needsStateTransfer() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
             }
         };
+    }
+
+    @Override
+    public void accept(ExecutorService executor) {
+        WildFlySecurityManager.doUnchecked(executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).startSynchronously().build(target);
         Consumer<KeyAffinityServiceFactory> affinityFactory = builder.provides(this.getServiceName());
-        Service service = new FunctionalService<>(affinityFactory, this, this, ExecutorService::shutdown);
+        Service service = new FunctionalService<>(affinityFactory, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 

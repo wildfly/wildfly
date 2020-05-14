@@ -31,9 +31,7 @@ import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceConfiguratorAdapter;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
@@ -47,7 +45,6 @@ import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.service.ServiceDependency;
-import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceConfigurator;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.
@@ -106,7 +103,6 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
         List<CapabilityServiceConfigurator> builders = new ArrayList<>(3);
         builders.add(new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, templateCacheName, configurator));
         builders.add(new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName).require(new ServiceDependency(name.append("marshalling"))));
-        builders.add(new ServiceConfiguratorAdapter(new RemoveOnCancelScheduledExecutorServiceConfigurator(name.append(this.name, "expiration"), new DefaultThreadFactory(InfinispanBeanManager.class))));
         return builders;
     }
 

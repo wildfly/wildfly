@@ -28,6 +28,7 @@ import java.util.ServiceLoader;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -71,14 +72,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final WeldSubsystemAdd INSTANCE = new WeldSubsystemAdd();
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE.validateAndSet(operation, model);
-        WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE.validateAndSet(operation, model);
-        WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE.validateAndSet(operation, model);
-        WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE.validateAndSet(operation, model);
+    WeldSubsystemAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override

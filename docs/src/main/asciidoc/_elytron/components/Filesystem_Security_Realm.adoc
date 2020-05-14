@@ -12,9 +12,9 @@ Every identity is stored in an XML file where the name of the file is the name o
 * `levels` The number of levels of directory hashing to apply. When this attribute is set to positive value, filesystem realm will store identities in directory structure where the name of subdirectories will be derived from first characters of identity name. For example, location of identity named "alex" could be `a/l/alex.xml`. This is useful not only because some filesystems can limit the amount of files that can be stored in a single directory, but also for performance reasons, because that might be influenced by the number of entries in a single directory as well. Default value is 2.
 * `encoded` When encoding is set to true, the identity names will be BASE32 encoded before they are used as filenames. This is beneficial, because some filesystems are case-insensitive or might restrict set of characters allowed in a filename. Default value is true.
 
-Filesystem security realm can be added with Wildfly management CLI or with Elytron API.
+Filesystem security realm can be added with WildFly management CLI or with Elytron API.
 
-=== Wildfly management CLI
+=== WildFly management CLI
 
 The following command creates realm with name `fsRealm` that resides in directory `fs-realm-users` inside the base configuration directory defined by `jboss.server.config.dir` property. The levels number is 2 and encoded value is true.
 
@@ -94,7 +94,7 @@ identity.delete();
 
 Supported password types for identity in filesystem realm are `Bcrypt`, `Clear`, `Simple Digest`, `Salted Simple Digest`, `Scram Digest`, `Digest` and `OTP`.
 
-=== Wildfly management CLI
+=== WildFly management CLI
 
 To set clear password to the identity:
 
@@ -131,7 +131,7 @@ identity.setCredentials(Collections.singleton(clearPassword));
 
 Attributes associated with identities can be read and updated through CLI as well as programmatically.
 
-=== Wildfly management CLI
+=== WildFly management CLI
 
 To add attribute to the identity, you have to specify the name of the attribute and its values (values are of type LIST):
 
@@ -218,7 +218,7 @@ modifiableIdentity.dispose();
 
 == Converting legacy properties file into Filesystem realm
 
-Wildfly can use authentication with a properties file based identity store. One properties file maps users to passwords and another maps users to roles. You can use `Elytron Tool` to convert these properties files into a filesystem realm. Below is an example of how to run this tool from the command line:
+WildFly can use authentication with a properties file based identity store. One properties file maps users to passwords and another maps users to roles. You can use `Elytron Tool` to convert these properties files into a filesystem realm. Below is an example of how to run this tool from the command line:
 
 [source,options="nowrap"]
 ----

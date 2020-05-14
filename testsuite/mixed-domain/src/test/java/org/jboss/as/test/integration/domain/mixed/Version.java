@@ -47,6 +47,7 @@ public @interface Version {
         EAP_7_0_0(EAP, 7, 0, 0, 8, 8),
         EAP_7_1_0(EAP, 7, 1, 0, 8, 8),
         EAP_7_2_0(EAP, 7, 2, 0, 11, 8),
+        EAP_7_3_0(EAP, 7, 3, 0, 11, 8),
         ;
 
 

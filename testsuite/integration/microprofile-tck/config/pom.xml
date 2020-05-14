@@ -24,15 +24,19 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ-mp</artifactId>
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-config</artifactId>
-    <name>WildFly Test Suite: Integration - MicroProfile - Config</name>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK - Config</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
@@ -56,6 +60,11 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -137,32 +146,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>org.wildfly.core</groupId>
-                                            <artifactId>wildfly-core-galleon-pack</artifactId>
-                                            <version>${version.org.wildfly.core}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -170,7 +156,9 @@
                                     <configurations>
                                         <config>
                                             <model>standalone</model>
-                                            <name>standalone.xml</name>
+                                            <!-- Call the file standalone-microprofile.xml as that is what
+                                                 arquillian.xml says to use for testing in the default maven profile-->
+                                            <name>standalone-microprofile.xml</name>
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                                 <layer>observability</layer>

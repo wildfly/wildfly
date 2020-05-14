@@ -70,6 +70,7 @@ public class ViewDescription {
     private final Deque<ViewConfigurator> configurators = new ArrayDeque<ViewConfigurator>();
     private boolean serializable;
     private boolean useWriteReplace;
+    private final String markupClassName;
 
     /**
      * Construct a new instance.
@@ -89,12 +90,17 @@ public class ViewDescription {
      * @param defaultConfiguratorRequired
      */
     public ViewDescription(final ComponentDescription componentDescription, final String viewClassName, final boolean defaultConfiguratorRequired) {
+        this(componentDescription, viewClassName, defaultConfiguratorRequired, null);
+    }
+
+    public ViewDescription(final ComponentDescription componentDescription, final String viewClassName, final boolean defaultConfiguratorRequired, final String markupClassName) {
         this.componentDescription = componentDescription;
         this.viewClassName = viewClassName;
         if (defaultConfiguratorRequired) {
             configurators.addFirst(DefaultConfigurator.INSTANCE);
         }
         configurators.addFirst(ViewBindingConfigurator.INSTANCE);
+        this.markupClassName = markupClassName;
     }
 
     /**
@@ -303,5 +309,9 @@ public class ViewDescription {
         int result = viewClassName != null ? viewClassName.hashCode() : 0;
         result = 31 * result + (componentDescription != null ? componentDescription.hashCode() : 0);
         return result;
+    }
+
+    public String getMarkupClassName() {
+        return markupClassName;
     }
 }

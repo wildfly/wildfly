@@ -21,14 +21,14 @@
  */
 package org.jboss.as.ejb3.cache.simple;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Identifiable;
@@ -38,6 +38,9 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.NodeAffinity;
+import org.wildfly.clustering.ee.Scheduler;
+import org.wildfly.clustering.ee.cache.scheduler.LinkedScheduledEntries;
+import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 
 /**
@@ -48,22 +51,27 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
+public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, Predicate<K> {
 
-    final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<>();
     private final ConcurrentMap<K, Entry<V>> entries = new ConcurrentHashMap<>();
     private final StatefulObjectFactory<V> factory;
     private final IdentifierFactory<K> identifierFactory;
-    private final StatefulTimeoutInfo timeout;
+    private final Duration timeout;
     private final ServerEnvironment environment;
-    private final ScheduledExecutorService executor;
+    private final Scheduler<K, Instant> scheduler = new LocalScheduler<>(new LinkedScheduledEntries<>(), this, Duration.ZERO);
 
-    public SimpleCache(StatefulObjectFactory<V> factory, IdentifierFactory<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment, ScheduledExecutorService executor) {
+    public SimpleCache(StatefulObjectFactory<V> factory, IdentifierFactory<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
         this.factory = factory;
         this.identifierFactory = identifierFactory;
-        this.timeout = timeout;
+
+        // A value of -1 means the bean will never be removed due to timeout
+        if (timeout == null || timeout.getValue() < 0) {
+            this.timeout = null;
+        } else {
+            this.timeout = Duration.ofMillis(TimeUnit.MILLISECONDS.convert(timeout.getValue(), timeout.getTimeUnit()));
+        }
+
         this.environment = environment;
-        this.executor = executor;
     }
 
     @Override
@@ -73,24 +81,10 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
 
     @Override
     public void stop() {
-        for (Future<?> future: this.expirationFutures.values()) {
-            future.cancel(true);
-        }
-        for (Future<?> future: this.expirationFutures.values()) {
-            if (!future.isCancelled() && !future.isDone()) {
-                try {
-                    future.get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException e) {
-                    // Ignore
-                }
-            }
-        }
-        for(Map.Entry<K, Entry<V>> entry : entries.entrySet()) {
+        this.scheduler.close();
+        for (Map.Entry<K, Entry<V>> entry : this.entries.entrySet()) {
             this.factory.destroyInstance(entry.getValue().getValue());
         }
-        this.expirationFutures.clear();
         this.entries.clear();
     }
 
@@ -135,12 +129,9 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
 
     @Override
     public V get(K key) {
-        Future<?> future = this.expirationFutures.get(key);
-        if (future != null) {
-            future.cancel(true);
-        }
         Entry<V> entry = this.entries.get(key);
         if (entry == null) return null;
+        this.scheduler.cancel(key);
         entry.use();
         return entry.getValue();
     }
@@ -156,15 +147,9 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
         Entry<V> entry = this.entries.get(id);
         if ((entry != null) && entry.done()) {
             if (this.timeout != null) {
-                long value = this.timeout.getValue();
-                if (value > 0) {
-                    TimeUnit unit = this.timeout.getTimeUnit();
-                    RemoveTask task = new RemoveTask(id);
-                    // Make sure the expiration future map insertion happens before map removal (during task execution).
-                    synchronized (task) {
-                        this.expirationFutures.put(id, this.executor.schedule(task, value, unit));
-                    }
-                } else if (value == 0) {
+                if (!this.timeout.isZero()) {
+                    this.scheduler.schedule(id, Instant.now().plus(this.timeout));
+                } else {
                     // The EJB specification allows a 0 timeout, which means the bean is immediately eligible for removal.
                     // However, removing it directly is faster than scheduling it for immediate removal.
                     remove(id);
@@ -188,20 +173,10 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
         return this.getCacheSize();
     }
 
-    class RemoveTask implements Runnable {
-        private final K key;
-
-        RemoveTask(K key) {
-            this.key = key;
-        }
-
-        @Override
-        public synchronized void run() {
-            if (!Thread.currentThread().isInterrupted()) {
-                SimpleCache.this.remove(this.key);
-            }
-            SimpleCache.this.expirationFutures.remove(this.key);
-        }
+    @Override
+    public boolean test(K key) {
+        this.remove(key);
+        return true;
     }
 
     static class Entry<V> {

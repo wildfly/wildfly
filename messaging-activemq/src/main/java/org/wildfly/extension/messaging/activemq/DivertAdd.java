@@ -22,10 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import java.util.List;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
-import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.DivertConfiguration;
 import org.apache.activemq.artemis.core.config.TransformerConfiguration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -36,7 +34,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -78,16 +75,6 @@ public class DivertAdd extends AbstractAddStepHandler {
         }
         // else the initial subsystem install is not complete; MessagingSubsystemAdd will add a
         // handler that calls addDivertConfigs
-    }
-
-    static void addDivertConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.DIVERT)) {
-            final List<DivertConfiguration> configs = configuration.getDivertConfigurations();
-            for (Property prop : model.get(CommonAttributes.DIVERT).asPropertyList()) {
-                configs.add(createDivertConfiguration(context, prop.getName(), prop.getValue()));
-
-            }
-        }
     }
 
     static DivertConfiguration createDivertConfiguration(final OperationContext context, String name, ModelNode model) throws OperationFailedException {

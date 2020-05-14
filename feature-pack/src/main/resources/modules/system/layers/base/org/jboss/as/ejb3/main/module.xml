@@ -42,16 +42,13 @@
         <module name="javax.orb.api"/>
         <!-- For message inflow -->
         <module name="javax.resource.api"/>
-        <module name="org.hibernate"/>
         <module name="org.jboss.common-beans" services="import"/>
         <module name="org.jboss.as.clustering.common"/>
-        <module name="org.wildfly.client.config"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
-        <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
-        <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.clustering.singleton"/>
@@ -73,7 +70,6 @@
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security"/>
         <module name="org.wildfly.security.elytron-private"/>
-        <module name="org.wildfly.security.elytron-web.undertow-server"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
@@ -85,8 +81,6 @@
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.jandex"/>
-        <!-- For SubordinationManager for remote Xid Transaction propagation -->
-        <module name="org.jboss.jts"/>
         <!-- For recovery manager (com.arjuna.ats.jbossatx.jta.RecoveryManagerService) -->
         <module name="org.jboss.jts.integration"/>
         <module name="org.jboss.logging"/>
@@ -115,5 +109,10 @@
 
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.transaction.client"/>
+        <!-- Those are needed for integration with hibernate validator -->
+        <module name="javax.enterprise.api" optional="true"/>
+        <module name="org.jboss.as.weld.common" optional="true"/>
+        <module name="org.hibernate.validator" optional="true"/>
+        <module name="org.hibernate.validator.cdi" optional="true"/>
     </dependencies>
 </module>

@@ -47,7 +47,7 @@ public class HashableMarshalledValueExternalizer<T> implements Externalizer<Hash
     public HashableMarshalledValue<T> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         SimpleMarshalledValue<T> value = this.externalizer.readObject(input);
         int hashCode = input.readInt();
-        return new HashableMarshalledValue<>(value.getBytes(), hashCode);
+        return new HashableMarshalledValue<>(value.getBuffer(), hashCode);
     }
 
     @SuppressWarnings("unchecked")

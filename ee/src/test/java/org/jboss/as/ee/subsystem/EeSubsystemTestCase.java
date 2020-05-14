@@ -64,7 +64,32 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-ee_4_0.xsd";
+        return "schema/jboss-as-ee_5_0.xsd";
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities(EeCapabilities.PATH_MANAGER_CAPABILITY);
+    }
+
+    @Test
+    public void testTransformers5_0() throws Exception {
+        final ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.EAP_7_2_0;
+        final ModelVersion legacyVersion = ModelVersion.create(4,0);
+        final KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        final List<ModelNode> xmlOps = builder.parseXml(readResource("subsystem.xml"));
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, legacyVersion)
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-ee:" + controllerVersion.getMavenGavVersion());
+        final KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        final FailedOperationTransformationConfig config =  new FailedOperationTransformationConfig()
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ManagedExecutorServiceResourceDefinition.THREAD_PRIORITY_AD))
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ManagedScheduledExecutorServiceResourceDefinition.THREAD_PRIORITY_AD))
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.GLOBAL_DIRECTORY)), REJECTED_RESOURCE);
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, legacyVersion, xmlOps, config);
     }
 
     @Test
@@ -136,7 +161,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     private void testTransformers1_1_x_reject(ModelTestControllerVersion controllerVersion) throws Exception {
             String subsystemXml = readResource("subsystem.xml");
             //Use the non-runtime version of the extension which will happen on the HC
-            KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+            KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
             List<ModelNode> xmlOps = builder.parseXml(subsystemXml);
 
@@ -152,7 +177,8 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
             .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE)), REJECTED_RESOURCE)
             .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY)), REJECTED_RESOURCE)
             .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
-            .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)), REJECTED_RESOURCE);
+            .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
+            .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.GLOBAL_DIRECTORY)), REJECTED_RESOURCE);
 
             ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
         }

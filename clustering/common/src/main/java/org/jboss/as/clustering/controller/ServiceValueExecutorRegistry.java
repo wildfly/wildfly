@@ -43,8 +43,8 @@ public class ServiceValueExecutorRegistry<T> implements ServiceValueRegistry<T>,
     }
 
     @Override
-    public void remove(ServiceName name) {
-        this.executors.remove(name);
+    public ServiceValueCaptor<T> remove(ServiceName name) {
+        return this.executors.remove(name);
     }
 
     @Override

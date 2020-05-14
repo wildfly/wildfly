@@ -72,6 +72,7 @@ import org.jboss.as.ejb3.deployment.processors.EjbJndiBindingsDeploymentUnitProc
 import org.jboss.as.ejb3.deployment.processors.EjbManagementDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbRefProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbResourceInjectionAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.HibernateValidatorDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.IIOPJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.ImplicitLocalViewProcessor;
 import org.jboss.as.ejb3.deployment.processors.MdbDeliveryDependenciesProcessor;
@@ -168,18 +169,17 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
 
-    EJB3SubsystemAdd(final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor) {
+    EJB3SubsystemAdd(final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor, AttributeDefinition... attributes) {
+        super(attributes);
         this.defaultSecurityDomainDeploymentProcessor = defaultSecurityDomainDeploymentProcessor;
         this.missingMethodPermissionsDenyAccessMergingProcessor = missingMethodPermissionsDenyAccessMergingProcessor;
     }
 
     @Override
     protected void populateModel(final OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        ModelNode model = resource.getModel();
-        for (AttributeDefinition attr : EJB3SubsystemRootResourceDefinition.ATTRIBUTES) {
-            attr.validateAndSet(operation, model);
-        }
+        super.populateModel(context, operation, resource);
 
+        ModelNode model = resource.getModel();
         // WFLY-5520 deal with legacy default-clustered-sfsb-cache
         ModelNode defClustered = DEFAULT_CLUSTERED_SFSB_CACHE.validateOperation(operation);
         if (defClustered.isDefined())  {
@@ -335,6 +335,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_MDB_POOL_NAME_MERGE, new MessageDrivenBeanPoolMergingProcessor());
                     // Add the deployment unit processor responsible for processing the user application specific container interceptors configured in jboss-ejb3.xml
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS, new ContainerInterceptorBindingsDDProcessor());
+                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_HIBERNATE_VALIDATOR, new HibernateValidatorDeploymentUnitProcessor());
 
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DEPLOYMENT_REPOSITORY, new DeploymentRepositoryProcessor());

@@ -23,8 +23,6 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.PathElement.pathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_1_0;
 import static org.junit.Assert.assertTrue;
@@ -50,7 +48,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.security.CredentialReference;
@@ -140,6 +137,7 @@ public class MessagingActiveMQSubsystem_7_0_TestCase extends AbstractSubsystemBa
     public void testTransformersWildfly16() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_6_0_0);
     }
+
     @Test
     public void testTransformersEAP_7_2_0() throws Exception {
         testTransformers(ModelTestControllerVersion.EAP_7_2_0, MessagingExtension.VERSION_4_0_0);
@@ -186,6 +184,7 @@ public class MessagingActiveMQSubsystem_7_0_TestCase extends AbstractSubsystemBa
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, messagingVersion);
+        mainServices.shutdown();
     }
 
     private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
@@ -322,6 +321,7 @@ public class MessagingActiveMQSubsystem_7_0_TestCase extends AbstractSubsystemBa
             config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX, ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
+        mainServices.shutdown();
     }
 
     @Override
@@ -333,39 +333,5 @@ public class MessagingActiveMQSubsystem_7_0_TestCase extends AbstractSubsystemBa
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain",
                 CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".cs1",
                 Capabilities.DATA_SOURCE_CAPABILITY + ".fooDS");
-    }
-
-    private static class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig> {
-
-        private final String attribute;
-
-        ChangeToTrueConfig(String attribute) {
-            super(attribute);
-            this.attribute = attribute;
-        }
-
-        @Override
-        protected boolean isAttributeWritable(String attributeName) {
-            return true;
-        }
-
-        @Override
-        protected boolean checkValue(ModelNode operation, String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
-            if (!isGeneratedWriteAttribute && Operations.getName(operation).equals(WRITE_ATTRIBUTE_OPERATION) && operation.hasDefined(NAME) && operation.get(NAME).asString().equals(this.attribute)) {
-                // The attribute won't be defined in the :write-attribute(name=<attribute name>,.. boot operation so don't reject in that case
-                return false;
-            }
-            return !attribute.equals(ModelNode.TRUE);
-        }
-
-        @Override
-        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-            throw new IllegalStateException();
-        }
-
-        @Override
-        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return ModelNode.TRUE;
-        }
     }
 }

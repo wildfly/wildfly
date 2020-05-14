@@ -67,7 +67,7 @@ on your application.
 ----
 
 * A small workaround is needed for the remote EJB transaction recovery on Kubernetes
-  (the issue could be tracked at link:https://issues.jboss.org/browse/WFCORE-4668[WFCORE-4668]).
+  (the issue could be tracked at link:https://issues.redhat.com/browse/WFCORE-4668[WFCORE-4668]).
   The WildFly application server has to be configured with property `wildfly.config.url`.
   The `wildfly.config.url` points to a XML configuration file. If we consider one being placed at `$JBOSS_HOME/standalone/configuration/wildfly-config.xml`
   then the property is setup as `JAVA_OPTS="$JAVA_OPTS -Dwildfly.config.url=$JBOSS_HOME/standalone/configuration/wildfly-config.xml"`.

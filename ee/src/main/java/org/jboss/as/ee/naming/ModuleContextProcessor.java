@@ -60,6 +60,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
      * @param phaseContext the deployment unit context
      * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
      */
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
@@ -106,10 +107,13 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION, setupAction);
     }
 
+    @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-        deploymentUnit.removeAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION);
-        deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof JavaNamespaceSetup);
-        deploymentUnit.getAttachmentList(SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof JavaNamespaceSetup);
+        JavaNamespaceSetup action = deploymentUnit.removeAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION);
+        if (action != null) {
+            deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS).remove(action);
+            deploymentUnit.getAttachmentList(SETUP_ACTIONS).remove(action);
+        }
         deploymentUnit.removeAttachment(MODULE_CONTEXT_CONFIG);
     }
 }

@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -61,6 +61,7 @@
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>vdx</module>
                 <module>iiop</module>
@@ -86,6 +87,7 @@
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>vdx</module>
                 <module>clustering</module>
@@ -220,7 +222,21 @@
             <modules>
                 <module>basic</module>
                 <module>elytron</module>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
+                <module>clustering</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.standalone.microprofile -->
+        <profile>
+            <id>ts.integ.group.standalone.microprofile</id>
+            <activation><property><name>ts.standalone.microprofile</name></property></activation>
+            <modules>
+                <module>basic</module>
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+                <module>clustering</module>
             </modules>
         </profile>
 
@@ -247,6 +263,7 @@
             <id>ts.integ.group.microprofile</id>
             <activation><property><name>ts.microprofile</name></property></activation>
             <modules>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
             </modules>
         </profile>
@@ -437,11 +454,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
         </dependency>
-
-      <!--  <dependency>
-            <groupId>org.jboss.arquillian.testenricher</groupId>
-            <artifactId>arquillian-testenricher-initialcontext</artifactId>
-        </dependency>-->
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>

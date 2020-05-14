@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -50,8 +51,9 @@ public class DefaultModuleServiceProvider implements ModuleServicesProvider {
         // ResourceInjectionServices
         // TODO I'm not quite sure we should use rootDeploymentUnit here
         services.add(new WeldResourceInjectionServices(rootDeploymentUnit.getServiceRegistry(),
-                rootDeploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION), module,
-                DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)));
+                rootDeploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION),
+                EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit),
+                module, DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)));
 
         // ClassFileServices
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);

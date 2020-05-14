@@ -55,18 +55,18 @@ public class EETransformers implements ExtensionTransformerRegistration {
 
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystem) {
-        final ModelVersion v1_0_0 = ModelVersion.create(1, 0, 0); //EAP 6.2.0
-        final ModelVersion v1_1_0 = ModelVersion.create(1, 1, 0);
-        final ModelVersion v3_0_0 = ModelVersion.create(3, 0, 0);
+
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getCurrentSubsystemVersion());
-        ResourceTransformationDescriptionBuilder builder_3_0 = chainedBuilder.createBuilder(subsystem.getCurrentSubsystemVersion(), v3_0_0);
 
-        ManagedExecutorServiceResourceDefinition.INSTANCE.registerTransformers_4_0(builder_3_0);
-        ManagedScheduledExecutorServiceResourceDefinition.INSTANCE.registerTransformers_4_0(builder_3_0);
+        registerTransformers5_0(chainedBuilder.createBuilder(EESubsystemModel.Version.v5_0_0, EESubsystemModel.Version.v4_0_0));
 
+        // 4.0.0 --> 3.0.0
+        ResourceTransformationDescriptionBuilder builder_3_0 = chainedBuilder.createBuilder(EESubsystemModel.Version.v4_0_0, EESubsystemModel.Version.v3_0_0);
+        ManagedExecutorServiceResourceDefinition.registerTransformers_4_0(builder_3_0);
+        ManagedScheduledExecutorServiceResourceDefinition.registerTransformers_4_0(builder_3_0);
 
         // 3.0.0 --> 1.1.0
-        ResourceTransformationDescriptionBuilder builder11 = chainedBuilder.createBuilder(v3_0_0, v1_1_0);
+        ResourceTransformationDescriptionBuilder builder11 = chainedBuilder.createBuilder(EESubsystemModel.Version.v3_0_0, EESubsystemModel.Version.v1_1_0);
         builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
         builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
         builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
@@ -74,22 +74,30 @@ public class EETransformers implements ExtensionTransformerRegistration {
         builder11.discardChildResource(EESubsystemModel.DEFAULT_BINDINGS_PATH);
 
         // 1.1.0 --> 1.0.0
-        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(v1_1_0, v1_0_0);
+        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(EESubsystemModel.Version.v1_1_0, EESubsystemModel.Version.v1_0_0);
         GlobalModulesRejecterConverter globalModulesRejecterConverter = new GlobalModulesRejecterConverter();
         builder.getAttributeBuilder()
                 // Deal with new attributes added to global-modules elements
                 .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
                 .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
                 // Deal with new attribute annotation-property-replacement
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT);
 
 
         chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{
-                v1_0_0,
-                v1_1_0,
-                v3_0_0
+                EESubsystemModel.Version.v1_0_0,
+                EESubsystemModel.Version.v1_1_0,
+                EESubsystemModel.Version.v3_0_0,
+                EESubsystemModel.Version.v4_0_0
         });
+
+    }
+
+    private static void registerTransformers5_0(ResourceTransformationDescriptionBuilder builder) {
+        ManagedExecutorServiceResourceDefinition.registerTransformers5_0(builder);
+        ManagedScheduledExecutorServiceResourceDefinition.registerTransformers5_0(builder);
+        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.GLOBAL_DIRECTORY));
     }
 
     /**

@@ -19,10 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.microprofile.opentracing;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory.TRACER_CAPABILITY_NAME;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -32,42 +32,80 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.wildfly.microprofile.opentracing.smallrye.TracerConfiguration;
+import org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants;
 
 public class SubsystemDefinition extends PersistentResourceDefinition {
+
     private static final String OPENTRACING_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing";
+    public static final String DEFAULT_TRACER_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing.default-tracer";
 
     private static final RuntimeCapability<Void> OPENTRACING_CAPABILITY = RuntimeCapability.Builder
             .of(OPENTRACING_CAPABILITY_NAME)
             .addRequirements(WELD_CAPABILITY_NAME)
             .build();
 
+    public static final RuntimeCapability<Void> DEFAULT_TRACER_CAPABILITY = RuntimeCapability.Builder
+            .of(DEFAULT_TRACER_CAPABILITY_NAME, false, TracerConfiguration.class)
+            .build();
+
+    public static final RuntimeCapability<Void> TRACER_CAPABILITY = RuntimeCapability.Builder
+            .of(TRACER_CAPABILITY_NAME, true, TracerConfiguration.class)
+            .build();
+
     static final String[] MODULES = {
-            "io.jaegertracing.jaeger",
-            "io.opentracing.contrib.opentracing-tracerresolver",
-            "io.opentracing.opentracing-api",
-            "io.opentracing.opentracing-util",
-            "org.eclipse.microprofile.opentracing",
-            "org.eclipse.microprofile.restclient"
+        "io.opentracing.contrib.opentracing-tracerresolver",
+        "io.opentracing.opentracing-api",
+        "io.opentracing.opentracing-util",
+        "org.eclipse.microprofile.opentracing",
+        "org.eclipse.microprofile.restclient",
+        "io.opentracing.contrib.opentracing-jaxrs2"
     };
 
     static final String[] EXPORTED_MODULES = {
-            "io.smallrye.opentracing",
-            "org.wildfly.microprofile.opentracing-smallrye",
-            "io.opentracing.contrib.opentracing-interceptors",
-    };
+        "io.smallrye.opentracing",
+        "org.wildfly.microprofile.opentracing-smallrye",
+        "io.opentracing.contrib.opentracing-interceptors",
+        };
+
+    public static final SimpleAttributeDefinition DEFAULT_TRACER = SimpleAttributeDefinitionBuilder
+            .create(TracerConfigurationConstants.DEFAULT_TRACER, ModelType.STRING, true)
+            .setCapabilityReference(TRACER_CAPABILITY_NAME)
+            .setRestartAllServices()
+            .build();
+
     protected SubsystemDefinition() {
-        super( new SimpleResourceDefinition.Parameters(SubsystemExtension.SUBSYSTEM_PATH, SubsystemExtension.getResourceDescriptionResolver(SubsystemExtension.SUBSYSTEM_NAME))
+        super(new SimpleResourceDefinition.Parameters(SubsystemExtension.SUBSYSTEM_PATH, SubsystemExtension.getResourceDescriptionResolver())
                 .setAddHandler(SubsystemAdd.INSTANCE)
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setRemoveHandler(new SubsystemRemoveHandler())
                 .setCapabilities(OPENTRACING_CAPABILITY)
         );
     }
 
     @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new JaegerTracerConfigurationDefinition());
+    }
+
+    @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.emptyList();
+        return Collections.singletonList(DEFAULT_TRACER);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_TRACER, null, new DefaultTracerWriteAttributeHandler());
     }
 
     @Override
@@ -77,6 +115,40 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
         }
         for (String m : EXPORTED_MODULES) {
             resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(m));
+        }
+    }
+
+    private static final class DefaultTracerWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
+
+        private DefaultTracerWriteAttributeHandler() {
+            super(DEFAULT_TRACER);
+        }
+
+        @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attributeDefinition,
+                ModelNode newValue, ModelNode oldValue) {
+            if (oldValue.isDefined()) {
+                context.deregisterCapability(DEFAULT_TRACER_CAPABILITY_NAME);
+            }
+            if (newValue.isDefined()) {
+                context.registerCapability(DEFAULT_TRACER_CAPABILITY);
+            }
+        }
+    }
+
+    private static final class SubsystemRemoveHandler extends ReloadRequiredRemoveStepHandler {
+
+        private SubsystemRemoveHandler() {
+            super();
+        }
+
+        @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+            ModelNode defaultTracer = DEFAULT_TRACER.resolveModelAttribute(context, resource.getModel());
+            if (defaultTracer.isDefined()) {
+                context.deregisterCapability(DEFAULT_TRACER_CAPABILITY_NAME);
+            }
         }
     }
 }

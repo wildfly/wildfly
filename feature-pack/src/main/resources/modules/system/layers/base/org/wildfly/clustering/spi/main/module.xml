@@ -40,5 +40,6 @@
         <module name="org.wildfly.clustering.server" services="import" optional="true"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

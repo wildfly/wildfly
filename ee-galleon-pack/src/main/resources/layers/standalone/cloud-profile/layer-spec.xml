@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="cloud-profile">
+    <dependencies>
+        <layer name="web-server"/>
+        <layer name="bean-validation" optional="true"/>
+        <layer name="cdi" optional="true"/>
+        <layer name="ee-security" optional="true"/>
+        <layer name="jaxrs" optional="true"/>
+        <layer name="jms-activemq" optional="true"/>
+        <layer name="jpa" optional="true"/>
+        <layer name="observability" optional="true"/>
+        <layer name="resource-adapters" optional="true"/>
+    </dependencies>
+</layer-spec>

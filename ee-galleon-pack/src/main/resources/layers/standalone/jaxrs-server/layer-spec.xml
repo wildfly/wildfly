@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jaxrs-server">
+    <dependencies>
+        <layer name="datasources-web-server"/>
+        <!-- cloud-server depends on jaxrs-server, jaxrs could be excluded from cloud-server,
+             this is why jaxrs is an optional dependency -->
+        <layer name="jaxrs" optional="true"/>
+        <layer name="bean-validation" optional="true"/>
+        <layer name="cdi" optional="true"/>
+        <layer name="jpa" optional="true"/>
+    </dependencies>
+</layer-spec>

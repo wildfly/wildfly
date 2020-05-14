@@ -61,6 +61,7 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
     private final int queueCapacity;
     private final InjectedValue<ContextServiceImpl> contextService = new InjectedValue<>();
     private final AbstractManagedExecutorService.RejectPolicy rejectPolicy;
+    private final Integer threadPriority;
     private final InjectedValue<RequestController> requestController = new InjectedValue<>();
     private ControlPoint controlPoint;
 
@@ -76,9 +77,10 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
      * @param threadLifeTime
      * @param queueCapacity
      * @param rejectPolicy
+     * @param threadPriority
      * @see ManagedExecutorServiceImpl#ManagedExecutorServiceImpl(String, org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl, long, boolean, int, int, long, java.util.concurrent.TimeUnit, long, int, org.glassfish.enterprise.concurrent.ContextServiceImpl, org.glassfish.enterprise.concurrent.AbstractManagedExecutorService.RejectPolicy, org.wildfly.extension.requestcontroller.ControlPoint)
      */
-    public ManagedExecutorServiceService(String name, String jndiName, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, AbstractManagedExecutorService.RejectPolicy rejectPolicy) {
+    public ManagedExecutorServiceService(String name, String jndiName, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, AbstractManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority) {
         super(jndiName);
         this.name = name;
         this.managedThreadFactoryInjectedValue = new InjectedValue<>();
@@ -91,13 +93,19 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
         this.threadLifeTime = threadLifeTime;
         this.queueCapacity = queueCapacity;
         this.rejectPolicy = rejectPolicy;
+        this.threadPriority = threadPriority;
     }
 
     @Override
     void startValue(StartContext context) throws StartException {
-        ManagedThreadFactoryImpl managedThreadFactory = managedThreadFactoryInjectedValue.getOptionalValue();
-        final int priority = managedThreadFactory != null ? managedThreadFactory.getPriority() : Thread.NORM_PRIORITY;
-        managedThreadFactory = new ManagedThreadFactoryImpl("EE-ManagedExecutorService-"+name, null, priority);
+        final int priority;
+        if (threadPriority != null) {
+            priority = threadPriority;
+        } else {
+            ManagedThreadFactoryImpl managedThreadFactory = managedThreadFactoryInjectedValue.getOptionalValue();
+            priority = managedThreadFactory != null ? managedThreadFactory.getPriority() : Thread.NORM_PRIORITY;
+        }
+        ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl("EE-ManagedExecutorService-"+name, null, priority);
         if(requestController.getOptionalValue() != null) {
             controlPoint = requestController.getValue().getControlPoint(name, "managed-executor-service");
         }
@@ -117,10 +125,14 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
     }
 
     public ManagedExecutorServiceAdapter getValue() throws IllegalStateException {
+        return getExecutorService().getAdapter();
+    }
+
+    public ManagedExecutorServiceImpl getExecutorService() throws IllegalStateException {
         if (executorService == null) {
             throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
-        return executorService.getAdapter();
+        return executorService;
     }
 
     public Injector<ManagedThreadFactoryImpl> getManagedThreadFactoryInjector() {

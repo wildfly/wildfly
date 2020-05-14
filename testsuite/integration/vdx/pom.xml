@@ -25,7 +25,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -40,7 +40,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <jbossas.server.locale>-Duser.language=en -Duser.country=US</jbossas.server.locale>
-        <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.build.output.dir>${testsuite.default.build.project.prefix}dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <dependencies>

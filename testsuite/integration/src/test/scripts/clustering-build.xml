@@ -22,21 +22,29 @@
   -->
 
 <project>
+    
+    <property name="wildfly-original" value="wildfly"/>
+    <property name="wildfly1" value="wildfly-1"/>
+    <property name="wildfly2" value="wildfly-2"/>
+    <property name="wildfly3" value="wildfly-3"/>
+    <property name="wildfly4" value="wildfly-4"/>
+    <property name="wildfly-load-balancer1" value="wildfly-load-balancer-1"/>
+    
     <target name="build-clustering">
-        <move todir="target/wildfly-1" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly"/>
+        <move todir="target/${wildfly1}" overwrite="true">
+            <fileset dir="${basedir}/target/${wildfly-original}"/>
         </move>
-        <copy todir="target/wildfly-2" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly-1"/>
+        <copy todir="target/${wildfly2}" overwrite="true">
+            <fileset dir="${basedir}/target/${wildfly1}"/>
         </copy>
-        <copy todir="target/wildfly-3" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly-1"/>
+        <copy todir="target/${wildfly3}" overwrite="true">
+            <fileset dir="${basedir}/target/${wildfly1}"/>
         </copy>
-        <copy todir="target/wildfly-4" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly-1"/>
+        <copy todir="target/${wildfly4}" overwrite="true">
+            <fileset dir="${basedir}/target/${wildfly1}"/>
         </copy>
-        <copy todir="target/wildfly-load-balancer-1" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly-1"/>
+        <copy todir="target/${wildfly-load-balancer1}" overwrite="true">
+            <fileset dir="${basedir}/target/${wildfly1}"/>
         </copy>
     </target>
 </project>

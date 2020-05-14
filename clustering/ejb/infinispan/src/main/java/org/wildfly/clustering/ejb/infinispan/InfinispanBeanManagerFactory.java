@@ -23,12 +23,10 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
@@ -47,6 +45,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 
 /**
  * Factory for creating an infinispan-based {@link BeanManager}.
@@ -94,7 +93,6 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
         CommandDispatcherFactory dispatcherFactory = this.configuration.getCommandDispatcherFactory();
         Duration timeout = this.configuration.getBeanContext().getTimeout();
-        ScheduledExecutorService scheduler = this.configuration.getScheduler();
         ExpirationConfiguration<T> expiration = new ExpirationConfiguration<T>() {
             @Override
             public Duration getTimeout() {
@@ -104,11 +102,6 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             @Override
             public RemoveListener<T> getRemoveListener() {
                 return removeListener;
-            }
-
-            @Override
-            public ScheduledExecutorService getExecutor() {
-                return scheduler;
             }
         };
         String name = this.configuration.getName();

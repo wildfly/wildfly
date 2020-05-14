@@ -1,0 +1,92 @@
+[[MicroProfile_OpenAPI_SmallRye]]
+= MicroProfile OpenAPI Subsystem Configuration
+
+The https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md[OpenAPI specification] defines a contract for JAX-RS applications in the same way that WSDL defined a contract for legacy web services.
+The https://download.eclipse.org/microprofile/microprofile-open-api-1.1.2/microprofile-openapi-spec.html[MicroProfile OpenAPI specification] defines a mechanism for generating an OpenAPI v3 document from a JAX-RS application as well as an API for customizing production of the document.
+
+== Subsystem
+
+The MicroProfile OpenAPI capability is provided by the microprofile-openapi-smallrye subsystem.
+This subsystem is included in the default standalone-microprofile.xml configuration of the WildFly distribution.
+
+You can also add the subsystem manually to any profile via the CLI:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.openapi-smallrye:add()
+
+[standalone@localhost:9990 /] /subsystem=microprofile-openapi-smallrye:add()
+----
+
+== Configuration
+
+The microprofile-openapi-smallrye subsytem obtains all of its configuration via MicroProfile Config.  Thus the subsystem itself defines no attributes.
+
+In addition to the https://download.eclipse.org/microprofile/microprofile-open-api-1.1.2/microprofile-openapi-spec.html#_core_configurations[standard Open API configuration] properties, WildFly supports the following additional MicroProfile Config properties:
+
+[cols="2,1,5"]
+|===
+|Property |Default |Description
+
+|mp.openapi.extensions.enabled
+|true
+|Enables/disables registration of an OpenAPI endpoint.  Many users will want to parameterize this to selectively enable/disable OpenAPI in different environments.
+
+|mp.openapi.extensions.path
+|/openapi
+|Used to customize the path of the OpenAPI endpoint.
+
+|mp.openapi.extensions.servers.relative
+|true
+|Indicates whether auto-generated Server records are absolute or relative to the location of the OpenAPI endpoint.  If absolute, WildFly will generate Server records including the protocols, hosts, and ports at which the given deployment is accessible.
+
+|===
+
+e.g. `/META-INF/microprofile-config.properties`:
+[source,options="nowrap"]
+---- 
+mp.openapi.extensions.enabled=${microprofile.openapi.enabled}
+mp.openapi.extensions.path=/swagger
+mp.openapi.extensions.servers.relative=false
+----
+
+== HTTP/S Endpoint
+
+The MicroProfile OpenAPI specification defines an HTTP endpoint that serves an OpenAPI 3.0 document describing the REST endpoints for the host.
+The OpenAPI endpoint is registered using the configured path (e.g. http://localhost:8080/openapi) local to the root of the host associated with a given deployment.
+
+[NOTE]
+Currently, the OpenAPI endpoint for a given virtual host can only document a single JAX-RS deployment.
+To use OpenAPI with multiple JAX-RS deployments registered with different context paths on the same virtual host, each deployment should use a distinct endpoint path.
+
+By default, the OpenAPI endpoint returns a YAML document.
+Alternatively, a JSON document can be requested via an `Accept` HTTP header, or a `format` query parameter.
+
+e.g.
+
+[source,shell]
+----
+$ curl -v http://localhost:8080/openapi?format=JSON
+< HTTP/1.1 200 OK
+...
+{"openapi": "3.0.1" ... }
+
+
+$ curl -v -H'Accept: application/json' http://localhost:8080/openapi
+< HTTP/1.1 200 OK
+...
+{"openapi": "3.0.1" ... }
+----
+
+If the Undertow server/host of a given application defines an HTTPS listener, then the OpenAPI document will also be available via HTTPS, e.g. https://localhost:8443/openapi
+
+== Component Reference
+
+The Eclipse MicroProfile OpenAPI implementation is provided by the SmallRye OpenAPI project.
+
+****
+
+* https://microprofile.io/project/eclipse/microprofile-open-api[Eclipse MicroProfile OpenAPI]
+* http://github.com/smallrye/smallrye-open-api/[SmallRye OpenAPI]
+
+****

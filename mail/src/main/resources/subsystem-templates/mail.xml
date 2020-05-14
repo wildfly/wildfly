@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.mail</extension-module>
-   <subsystem xmlns="urn:jboss:domain:mail:3.0">
+   <subsystem xmlns="urn:jboss:domain:mail:4.0">
        <mail-session name="default" jndi-name="java:jboss/mail/Default">
            <smtp-server outbound-socket-binding-ref="mail-smtp"/>
        </mail-session>

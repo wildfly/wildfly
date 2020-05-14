@@ -77,16 +77,16 @@ The _configuration name_ is the XML configuration file name (e.g.: _standalone.x
 == WildFly Galleon layers
 
 WildFly Galleon feature-packs expose some link:++https://docs.wildfly.org/galleon/#_layers++[Galleon layers]. 
-A layer identifies one or more server functionalities that can be installed on its own or 
+A layer identifies one or more server capabilities that can be installed on its own or
 in combination with other layers. For example, if your application (e.g.: microservice) 
-is only making use of _jaxrs_ and _cdi_ server functionalities, you can choose to only install 
+is only making use of _jaxrs_ and _cdi_ server capabilities, you can choose to only install
 the _jaxrs_ and _cdi_ layers. The _standalone.xml_ configuration would then only contain the 
 required subsystems and their dependencies.
 
 The benefit to installing WildFly using Galleon layers, in addition to configuration 
-trim down, is that Galleon only installs the needed content (JBOSS Modules modules, scripts, etc.).
+trim down, is that Galleon only installs the needed content (JBoss Modules modules, scripts, etc.).
 
-To install a server only configured with jaxrs and cdi functionalities call:
+To install a server only configured with jaxrs and cdi capabilities call:
 
 [source,options="nowrap"]
 ----
@@ -99,7 +99,7 @@ that depends on _jaxrs_ and _cdi_.
 [NOTE]
 ====
 
-* Tools (jboss-cli, add-user, ...) are not installed when installing WildFly using layers. 
+* Tools (jboss-cli, add-user, ...) are not always installed when installing WildFly using layers.
 Only server launcher scripts are installed into the _bin_ directory. To include these tools include the _core-tools_ layer.
 ====
 
@@ -115,34 +115,67 @@ WildFly defined layers to assemble a custom configuration. <<galleon-cli-recipes
 
 Basic layers:
 
-* _cdi_: Support for cdi.
+* _microprofile-fault-tolerance_: Support for MicroProfile Fault Tolerance.
+* _microprofile-jwt_: Support for MicroProfile JWT.
+* _microprofile-openapi_: Support for MicroProfile OpenAPI.
+
+==== WildFly EE layers
+
+Basic layers:
+
+* _bean-validation_: Support for Jakarta Bean Validation. Optionally depends on _cdi_.
+* _cdi_: Support for CDI.
 * _datasources_: Support for datasources.
-* _ee-security_: Support for Jakarta EE Security API
-* _jaxrs_: Support for jaxrs. Depends on _web-server_ (layer defined in the WildFly servlet feature-pack).
-* _jms-activemq_: Support for connections to a remote jms broker. 
-* _jpa_: Support for jpa (latest WildFly supported hibernate release).
-* _observability_: Support for microprofile monitoring and configuration features (config, health, metrics, open-tracing).
-* _open-tracing_: Support for microprofile open-tracing. This layer is an optional dependency of _observability_ layer.
+* _ee-security_: Support for EE Security. Depends on _cdi_.
+* _jaxrs_: Support for JAXRS. Depends on _web-server_ (defined in the WildFly servlet feature-pack).
+* _jms-activemq_: Support for connections to a remote JMS broker.
+* _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
+* _microprofile-config_: Support for MicroProfile Config.
+* _microprofile-metrics_: Support for MicroProfile Metrics.
+* _microprofile-health_: Support for MicroProfile Health.
+* _open-tracing_: Support for MicroProfile OpenTracing.
 * _resource-adapters_: Support for deployment of JCA adapters.
-* _h2-driver_: Support for h2 driver.
-* _h2-datasource_: Support for h2 datasource.
-* _h2-default-datasource_: Support for h2 datasource set as ee subsystem default datasource.
+* _h2-driver_: Support for the H2 JDBC driver.
+* _h2-datasource_: Support for an H2 datasource. Depends on _h2-driver_.
+* _h2-default-datasource_: Support for h2 datasource set as the ee subsystem default datasource. Depends on _h2-datasource_.
 
 Aggregation layers:
 
 * _cloud-profile_, an aggregation of the basic layers (except _h2-*_ layers) and a _web-server_ .
+
+Use-cases tailored server layers:
+
+[NOTE]
+====
+The following layers depend on _core-server_ and _core-tools_ (layers defined in WildFly core feature-pack). The security is handled by elytron.
+Undertow subsystem is configured with _other_ _application-security-domain_ that references Elytron _ApplicationDomain_ security domain.
+====
+
+* _datasources-web-server_: A servlet container (_web-server_ layer) with an optional dependency on _datasources_ layer.
+* _jaxrs-server_: An extension of _datasources-web-server_ layer with optional dependencies on _jaxrs_, _cdi_, _bean-validation_ and _jpa_ layers.
+* _cloud-server_: An extension of _jaxrs-server_ with optional dependencies on _ee-security_, _jms-activemq_, _observability_ and _resource-adapters_.
+
+
+Decorator layers:
+
+Layers that you combine with "use-case tailored" layers to extend the capabilities of the provisioned server.
+
+* _web-clustering_: Infinispan-based web session clustering.
+
+* _observability_: Support for MicroProfile monitoring and configuration features. 
+Includes Health support (optional), _microprofile-config_ (optional), _microprofile-metrics_ (optional) and _open-tracing_ (optional).
 
 ==== WildFly servlet layers
 
 Basic layers:
 
 * _ee_: Support for common functionality in the Jakarta EE platform.
-* _legacy-security_: Support for legacy web security. 
+* _legacy-security_: Support for legacy Picketbox-based web security.
 * _naming_: Support for JNDI.
 * _undertow_: Support for the Undertow HTTP server.
-* _undertow-legacy-https_: Support for the Undertow HTTPS server secured using ApplicationRealm.
+* _undertow-legacy-https_: Support for the Undertow HTTPS server secured using the legacy security ApplicationRealm.
 * _undertow-load-balancer_: Support for Undertow configured as a load balancer.
-* _vault_: Support Picketbox security vaults.
+* _vault_: Support for Picketbox security vaults.
 
 Servlet support layer:
 
@@ -162,12 +195,12 @@ Basic layers:
 * _io_: Support for XNIO workers and buffer pools.
 * _jmx_: Support for registration of Management Model MBeans.
 * _jmx-remoting_: Support for registration of Management Model MBeans and a JMX remoting connector.
-* _logging_: Support for logging subsystem.
-* _legacy-management_: Support for remote access to management interfaces secured with core ManagementRealm.
+* _logging_: Support for the logging subsystem.
+* _legacy-management_: Support for remote access to management interfaces secured with the core ManagementRealm.
 * _management_: Support for remote access to management interfaces (unsecured).
-* _remoting_: Support for inbound and outbound JBOSS Remoting connections.
+* _remoting_: Support for inbound and outbound JBoss Remoting connections.
 * _request-controller_: Support for request management.
-* _secure-management_: Support for remote access secured thanks to Elytron to management interfaces.
+* _secure-management_: Support for remote access to management interfaces secured using Elytron.
 * _security-management_: Support for security manager.
 
 Aggregation layers:

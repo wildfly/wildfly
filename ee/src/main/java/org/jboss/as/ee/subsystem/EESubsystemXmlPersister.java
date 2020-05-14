@@ -51,6 +51,7 @@ class EESubsystemXmlPersister implements XMLStreamConstants, XMLElementWriter<Su
 
         ModelNode eeSubSystem = context.getModelNode();
         GlobalModulesDefinition.INSTANCE.marshallAsElement(eeSubSystem, writer);
+        writeGlobalDirectoryElement(writer, eeSubSystem);
         EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
@@ -156,4 +157,22 @@ class EESubsystemXmlPersister implements XMLStreamConstants, XMLElementWriter<Su
         }
     }
 
+    private void writeGlobalDirectoryElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException {
+        if (eeSubSystem.hasDefined(EESubsystemModel.GLOBAL_DIRECTORY)) {
+            writer.writeStartElement(Element.GLOBAL_DIRECTORIES.getLocalName());
+            writeDirectoryElement(writer, eeSubSystem.get(EESubsystemModel.GLOBAL_DIRECTORY));
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeDirectoryElement(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
+        for (Property property : subModel.asPropertyList()) {
+            writer.writeStartElement(Element.DIRECTORY.getLocalName());
+            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            for (SimpleAttributeDefinition ad : GlobalDirectoryResourceDefinition.ATTRIBUTES) {
+                ad.marshallAsAttribute(property.getValue(), writer);
+            }
+            writer.writeEndElement();
+        }
+    }
 }

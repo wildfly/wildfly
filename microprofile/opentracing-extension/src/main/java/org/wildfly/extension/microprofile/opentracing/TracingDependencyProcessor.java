@@ -19,8 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.microprofile.opentracing;
+
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.DEFAULT_TRACER_CAPABILITY;
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.DEFAULT_TRACER_CAPABILITY_NAME;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -30,8 +32,18 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+
 import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.EXPORTED_MODULES;
 import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.MODULES;
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.TRACER_CAPABILITY;
+import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER_CONFIGURATION;
+
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.web.common.WarMetaData;
+import org.jboss.metadata.javaee.spec.ParamValueMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory;
 
 public class TracingDependencyProcessor implements DeploymentUnitProcessor {
 
@@ -39,8 +51,41 @@ public class TracingDependencyProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         addDependencies(deploymentUnit);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if(support.hasCapability(DEFAULT_TRACER_CAPABILITY_NAME)) {
+            phaseContext.getServiceTarget().addDependency(DEFAULT_TRACER_CAPABILITY.getCapabilityServiceName());
+        }
+        ServiceName tracerConfiguration = getTracerConfigurationServiceDependency(phaseContext);
+        if(tracerConfiguration != null) {
+            phaseContext.getServiceTarget().addDependency(tracerConfiguration);
+        }
     }
 
+    private JBossWebMetaData getJBossWebMetaData(DeploymentUnit deploymentUnit) {
+        WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        if (null == warMetaData) {
+            // not a web deployment, nothing to do here...
+            return null;
+        }
+        return warMetaData.getMergedJBossWebMetaData();
+    }
+
+    private ServiceName getTracerConfigurationServiceDependency(DeploymentPhaseContext deploymentPhaseContext) {
+        DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
+        JBossWebMetaData jbossWebMetaData = getJBossWebMetaData(deploymentUnit);
+        if (null == jbossWebMetaData || null == jbossWebMetaData.getContextParams()) {
+            return null;
+        }
+        for (ParamValueMetaData param : jbossWebMetaData.getContextParams()) {
+            if (SMALLRYE_OPENTRACING_TRACER_CONFIGURATION.equals(param.getParamName())) {
+                String value = param.getParamValue();
+                if (value != null && !value.isEmpty()) {
+                    return TRACER_CAPABILITY.getCapabilityServiceName(value);
+                }
+            }
+        }
+        return null;
+    }
     private void addDependencies(DeploymentUnit deploymentUnit) {
         ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
@@ -49,6 +94,9 @@ public class TracingDependencyProcessor implements DeploymentUnitProcessor {
         }
         for (String module : EXPORTED_MODULES) {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true, true, false));
+        }
+        for (String module : WildFlyTracerFactory.getModules()) {
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, true, false, true, false));
         }
     }
 

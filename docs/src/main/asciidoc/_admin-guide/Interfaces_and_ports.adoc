@@ -79,12 +79,21 @@ Some other examples:
 </interface>
 ----
 
+[NOTE]
+
+An interface configuration element is used to provide a single `InetAddress` to parts
+of the server that reference that interface. If the selection criteria specified for
+the interface element results in more than one address meeting the criteria, then a
+warning will be logged and one just one address will be selected and used. Preference
+will be given to network interfaces that are up, are non-loopback and are not
+point-to-point.
+
+
 === The -b command line argument
 
 WildFly supports using the `-b` command line argument to specify the
 address to assign to interfaces. See
-link:Command_line_parameters.adoc#controlling-the-bind-address[Controlling
-the Bind Address with -b] for further details.
+link:#controlling-the-bind-address[Controlling the Bind Address with -b] for further details.
 
 [[socket-binding-groups]]
 == Socket Binding Groups

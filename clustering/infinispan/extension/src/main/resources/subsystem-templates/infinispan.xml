@@ -9,25 +9,16 @@
         <replacement placeholder="CACHE-CONTAINERS">
             <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
                 <local-cache name="passivation">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
-                <local-cache name="sso">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                </local-cache>
+                <local-cache name="sso"/>
                 <local-cache name="routing"/>
             </cache-container>
             <cache-container name="server" default-cache="default" module="org.wildfly.clustering.server">
-                <local-cache name="default">
-                    <transaction mode="BATCH"/>
-                </local-cache>
+                <local-cache name="default"/>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
             </cache-container>

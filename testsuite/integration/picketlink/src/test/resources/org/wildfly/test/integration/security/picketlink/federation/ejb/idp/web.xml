@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:web="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <display-name>IDP</display-name>
+  <description>IDP</description>
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Images</web-resource-name>
+      <url-pattern>/images/*</url-pattern>
+    </web-resource-collection>
+  </security-constraint>
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>IDP</web-resource-name>
+      <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>All</role-name>
+    </auth-constraint>
+  </security-constraint>
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <realm-name>IDP Application</realm-name>
+    <form-login-config>
+      <form-login-page>/login.jsp</form-login-page>
+      <form-error-page>/error.jsp</form-error-page>
+    </form-login-config>
+  </login-config>
+  <security-role>
+    <description>The role that is required to log in to the IDP Application</description>
+    <role-name>All</role-name>
+  </security-role>
+</web-app>

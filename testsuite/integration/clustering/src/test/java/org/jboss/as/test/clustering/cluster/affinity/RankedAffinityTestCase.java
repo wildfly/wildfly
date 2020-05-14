@@ -40,7 +40,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.bouncycastle.util.Arrays;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -81,7 +80,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
     private static final String BALANCER_NAME = "mycluster";
 
     public RankedAffinityTestCase() {
-        super(Arrays.append(THREE_NODES, LOAD_BALANCER_1), THREE_DEPLOYMENTS);
+        super(new String[] { NODE_1, NODE_2, NODE_3, LOAD_BALANCER_1 }, THREE_DEPLOYMENTS);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -131,7 +130,6 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                String servedByNode = response.getFirstHeader(SimpleServlet.HEADER_NODE_NAME).getValue();
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 previousAffinities = entry.getValue().split("\\.");
 

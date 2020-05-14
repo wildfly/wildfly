@@ -28,8 +28,8 @@
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd">
-   <xs:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"/>
+           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee https://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd">
+   <xs:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="https://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"/>
 
    <xs:element name="security-role" type="security-roleType" substitutionGroup="javaee:assembly-descriptor-entry"/>
 

@@ -138,6 +138,11 @@
       <artifactId>json-patch</artifactId>
       <licenses>
         <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
           <name>GNU Lesser General Public License v3.0 or later</name>
           <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
           <distribution>repo</distribution>
@@ -599,17 +604,6 @@
     </dependency>
     <dependency>
       <groupId>io.smallrye</groupId>
-      <artifactId>smallrye-config</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.smallrye</groupId>
       <artifactId>smallrye-health</artifactId>
       <licenses>
         <license>
@@ -633,6 +627,39 @@
     <dependency>
       <groupId>io.smallrye</groupId>
       <artifactId>smallrye-opentracing</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config-common</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config-source-file-system</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2175,17 +2202,6 @@
     </dependency>
     <dependency>
       <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-hibernate-cache-v51</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.infinispan</groupId>
       <artifactId>infinispan-hibernate-cache-v53</artifactId>
       <licenses>
         <license>
@@ -2245,17 +2261,6 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss</groupId>
-      <artifactId>jboss-ejb-client-legacy</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -4685,6 +4690,17 @@
         <license>
           <name>Common Public License 1.0</name>
           <url>http://www.eclipse.org/legal/cpl-v10.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>xml-resolver</groupId>
+      <artifactId>xml-resolver</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>

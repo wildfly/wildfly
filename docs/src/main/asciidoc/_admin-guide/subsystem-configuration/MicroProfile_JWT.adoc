@@ -1,0 +1,151 @@
+[[MicroProfile_JWT_SmallRye]]
+= MicroProfile JWT Subsystem Configuration
+
+Support for https://microprofile.io/project/eclipse/microprofile-jwt-auth[Eclipse MicroProfile JWT RBAC] is provided by the _microprofile-jwt-smallrye_ subsystem.
+
+The MicroProfile JWT specification describes how authentication can be performed using cryptographically signed JWT tokens and the contents of the token to be used to establish a resuting identity without relying on access to external repositories of identities such as databases or directory servers.
+
+[[subsystem-configuration-microprofile-jwt-smallrye]]
+== Subsystem
+
+The MicroProfile JWT integration is provided by the _microprofile-jwt-smallrye_ subsystem and is included in the default configuration, if not present the subsystem can be added using the following CLI commands.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.jwt-smallrye:add
+
+[standalone@localhost:9990 /] /subsystem=microprofile-jwt-smallrye:add
+----
+
+At this point the server would need to be reloaded to activate the change.
+
+== Configuration
+
+The _microprofile-jwt-smallrye_ subsystem contains no configurable attributes or resources, it's presence is required however to detect if a deployment is making use of the MP-JWT authentication mechanism and to activate support for JWT making use of the https://github.com/smallrye/smallrye-jwt[SmallRye JWT] project.
+
+=== Activation
+
+The subsystem will scan all deployments to detect if the _MP-JWT_ mechanism is required for any web components and if true activate the integration and the authentication mechanism.
+
+The classes in the deployment will be scanned to identify if there is a class which extends `javax.ws.rs.core.Application` annotated with the `org.eclipse.microprofile.auth.LoginConfig` to specify an _auth-method_.  Additionally the _auth-method_ contained within the deployments _web.xml_ will be checked.
+
+If authentication configuration is defined within the `@LoginConfig` annotation and within the _web.xml_ deployment descriptor the contents of the web.xml are given precedence.
+
+If after evaluating the deployment the resulting _auth-method_ is _MP-JWT_ then this integration will be activated, in all other cases no activation will occur and deployment will continue as normal.
+
+=== MicroProfile Config
+
+For an individual deployment the configuration in relation to MicroProfile JWT can be provided using MicroProfile Config properties, many are defined within the MicroProfile JWT specification however SmallRye JWT also supports some additional properties.
+
+==== Standard Properties
+
+[cols="2,1,5"]
+|===
+|Property |Default |Description
+
+|mp.jwt.verify.publickey 
+|NONE
+|String representation of the public key encoded using one of the supported formats.  Must not be set at the same time as `mp.jwt.verify.publickey`.
+
+|mp.jwt.verify.publickey.location
+|NONE
+|The location of the public key, may be a relative path or URL.  Must not be set at the same time as `mp.jwt.verify.publickey.location`. 
+
+|mp.jwt.verify.issuer
+|NONE
+|The expected value of any `iss` claim of any JWT token being validated.
+
+|===
+
+A minimal `microprofile-config.properties` could look like: - 
+
+[source,options="nowrap"]
+----
+mp.jwt.verify.publickey.location=META-INF/public.pem
+mp.jwt.verify.issuer=quickstart-jwt-issuer
+----
+
+==== Unavailable Options
+
+There are presently a couple of limitations with support for JWKS which we are looking to address.
+
+ * If a JWKS is inlined using the `mp.jwt.verify.publickey` property then only the first key from the set will be used with the remainder being ignored.
+ * Encoding of JWKS using Base64 is presently unsupported.
+ 
+In both cases a clear text JWKS can be referenced instead using the `mp.jwt.verify.publickey.location` config property.
+
+Support for Base64 encoded JWKS keys and inlined JWKS keys within the `mp.jwt.verify.publickey` property will be further evaluation and either support added or a contibution to the specification to remove these options.
+
+==== SmallRye JWT Properties
+
+The SmallRye JWT specific properties allow for a lot of customisation not covered by the specification, however as these are not specification defined they could be subject to change.
+
+[cols="2,1,5"]
+|===
+|Property |Default |Description
+
+|smallrye.jwt.token.header
+|Authorization
+|The HTTP header to extract the token from.
+
+|smallrye.jwt.token.cookie
+|NONE
+|The name of the cookie to extract the token from, only applicable if `smallrye.jwt.token.header` is set to `Cookie`. 
+
+|smallrye.jwt.token.kid
+|NONE
+|The expected `kid` value for any token being validated.
+
+|smallrye.jwt.require.named-principal
+|false
+|When set to true require any token being validated to contain at least one of `sub`, `upn`, `preferred_user_name`.
+
+|smallrye.jwt.claims.sub
+|NONE
+|The default value to use for any `sub` claim if omitted from the incoming token.
+
+|smallrye.jwt.path.sub
+|NONE
+|Path to the claim containing the `sub` claim, allows for nesting within an alternative claim.
+
+|smallrye.jwt.claims.groups
+|NONE
+|The default value for any `groups` claim if omitted from the incoming token. 
+
+|smallrye.jwt.path.groups
+|NONE
+|Path to the claim containing the `groups` claim,  allows for nesting within an alternative claim.
+
+|smallrye.jwt.groups-separator
+|`{SPACE}`
+|Where `smallrye.jwt.path.groups` references an alternative path the separator to split the value into distinct groups.
+
+|smallrye.jwt.expiration.grace
+|60
+|The grace period in seconds a token will be accepted after it's expiration.
+
+|smallrye.jwt.jwks.refresh-interval
+|60
+|The refresh inerval where `mp.jwt.verify.publickey.location` points to a HTTPS location.
+
+|smallrye.jwt.whitelist.algorithms
+|RS256
+|List of supported algorithms.
+
+|smallrye.jwt.verify.aud
+|NONE
+|The expected audience values for a token.
+
+|===
+
+
+== Virtual Security
+
+For traditional deployments to WildFly where security is required a security domain name would be identified during deployment and this in turn would be mapped to use configured resources either within the _elytron_ or legacy _security_ subsystems.
+
+One of the main motivations for using MicroProfile JWT is the ability to describe an identity from the incoming token without relying on access to external resources.  For this reason MicroProfile JWT deployments will not depend on managed `SecurityDomain` resources, instead a virtual `SecurityDomain` will be created and used across the deployment.
+
+As the deployment is configured entirely within the MicroProfile Config properties other than the presence of the _microprofile-jwt-smallrye_ subsystem the virtual `SecurityDomain` means no other managed configuration is required for the deployment.
+
+
+

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.subsystem;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 
 /**
@@ -44,5 +45,17 @@ public interface EESubsystemModel {
     String SERVICE = "service";
 
     PathElement DEFAULT_BINDINGS_PATH = PathElement.pathElement(SERVICE,DEFAULT_BINDINGS);
+    String GLOBAL_DIRECTORY = "global-directory";
+
+    /**
+     * Versions of the EE subsystem model
+     */
+    interface Version {
+        ModelVersion v1_0_0 = ModelVersion.create(1, 0, 0); //EAP 6.2.0
+        ModelVersion v1_1_0 = ModelVersion.create(1, 1, 0);
+        ModelVersion v3_0_0 = ModelVersion.create(3, 0, 0);
+        ModelVersion v4_0_0 = ModelVersion.create(4, 0, 0);
+        ModelVersion v5_0_0 = ModelVersion.create(5, 0, 0);
+    }
 
 }

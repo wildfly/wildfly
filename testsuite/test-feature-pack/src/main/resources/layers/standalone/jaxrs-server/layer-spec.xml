@@ -1,9 +1,0 @@
-<?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jaxrs-server">
-    <dependencies>
-        <layer name="datasources-web-server"/>
-        <layer name="jaxrs" />
-        <layer name="cdi" optional="true"/>
-        <layer name="jpa" optional="true"/>
-    </dependencies>
-</layer-spec>

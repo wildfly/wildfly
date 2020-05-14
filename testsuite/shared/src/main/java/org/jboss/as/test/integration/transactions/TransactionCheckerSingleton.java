@@ -40,8 +40,8 @@ import javax.ejb.Singleton;
 @Remote
 @ManagedBean
 public class TransactionCheckerSingleton implements TransactionCheckerSingletonRemote {
-    private int committed, prepared, rolledback;
-    private int  synchronizedBegin, synchronizedBefore, synchronizedAfter,
+    private volatile int committed, prepared, rolledback;
+    private volatile int synchronizedBegin, synchronizedBefore, synchronizedAfter,
         synchronizedAfterCommitted, synchronizedAfterRolledBack;
     private Collection<String> messages = new ArrayList<>();
 

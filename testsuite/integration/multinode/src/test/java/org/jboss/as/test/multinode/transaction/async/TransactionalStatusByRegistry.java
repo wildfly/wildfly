@@ -21,9 +21,7 @@
  */
 package org.jboss.as.test.multinode.transaction.async;
 
-import java.rmi.RemoteException;
 import java.util.concurrent.Future;
-
 import javax.annotation.Resource;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
@@ -46,8 +44,13 @@ public class TransactionalStatusByRegistry implements TransactionalRemote {
     @Resource
     private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
 
-    public Future<Integer> transactionStatus() throws RemoteException {
+    public Future<Integer> transactionStatus() {
         return new AsyncResult<Integer>(transactionSynchronizationRegistry.getTransactionStatus());
     }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public Future<Integer> asyncWithRequired() {
+        throw new RuntimeException("Throw RuntimeException on purpose to cause the transaction rollback");
+    }
 }

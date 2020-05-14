@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:10.0">
+<domain xmlns="urn:jboss:domain:13.0">
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
@@ -286,6 +286,7 @@
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                 <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server"/>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
             <subsystem xmlns="urn:jboss:domain:undertow:6.0">
                 <buffer-cache name="default" />
                 <server name="default-server">

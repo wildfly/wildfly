@@ -84,7 +84,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
     private static final String TOPIC_NAME = "myTopic";
     private static final String DISCOVERY_GROUP_NAME = "dg1";
     private static final String MULTICAST_SOCKET_BINDING = "messaging-group";
-   private static final String TESTSUITE_MCAST = System.getProperty("mcast", "230.0.0.4");
+    private static final String TESTSUITE_MCAST = System.getProperty("mcast", "230.0.0.4");
 
     @ArquillianResource
     private URL url;
@@ -171,7 +171,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
         ModelNode addClientDiscoveryGroup(String name, String socketBinding) {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
-            address.add("discovery-group", name);
+            address.add("socket-discovery-group", name);
 
             ModelNode add = new ModelNode();
             add.get(OP).set(ADD);
@@ -196,7 +196,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
 
         ModelNode createDiscoveryGroupWithSocketBinding(ModelNode serverAddress, String discoveryGroupName, String socketBinding) throws Exception {
             ModelNode address = serverAddress.clone();
-            address.add("discovery-group", discoveryGroupName);
+            address.add("socket-discovery-group", discoveryGroupName);
             ModelNode op = Operations.createAddOperation(address);
             op.get("socket-binding").set(socketBinding);
             return op;
@@ -204,7 +204,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
 
         ModelNode createBroadcastGroupWithSocketBinding(ModelNode serverAddress, String broadcastGroupName, String socketBinding, String connector) throws Exception {
             ModelNode address = serverAddress.clone();
-            address.add("broadcast-group", broadcastGroupName);
+            address.add("socket-broadcast-group", broadcastGroupName);
             ModelNode op = Operations.createAddOperation(address);
             op.get("socket-binding").set(socketBinding);
             op.get("connectors").add(connector);

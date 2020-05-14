@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-jwt">
+    <dependencies>
+        <layer name="ee-security"/>
+        <layer name="elytron"/>
+        <layer name="microprofile-config"/>
+    </dependencies>
+    <feature spec="subsystem.microprofile-jwt-smallrye"/>
+</layer-spec>

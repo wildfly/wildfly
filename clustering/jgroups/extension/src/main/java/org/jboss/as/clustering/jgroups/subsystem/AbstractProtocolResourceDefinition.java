@@ -144,7 +144,7 @@ public class AbstractProtocolResourceDefinition extends ChildResourceDefinition<
                 }
             };
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.MODULE.getDefinition().getDefaultValue()), Attribute.MODULE.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MODULE.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.MODULE.getDefinition())
                     .setValueConverter(typeConverter, DeprecatedAttribute.TYPE.getDefinition())
                     .end();

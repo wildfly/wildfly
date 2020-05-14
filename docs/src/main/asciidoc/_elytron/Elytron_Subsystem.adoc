@@ -67,7 +67,7 @@ and the
 [[provided-components]]
 == Provided components
 
-Wildfly Elytron provides a default set of implementations in the
+WildFly Elytron provides a default set of implementations in the
 _elytron_ subsystem.
 
 [[factories]]
@@ -369,12 +369,12 @@ be used to obtain and revoke signed certificates.
 resources.
 
 |authentication-configuration |An individual authentication
-configuration definition, which is used by clients deployed to Wildfly
+configuration definition, which is used by clients deployed to WildFly
 and other resources for authenticating when making a remote connection.
 
 |authentication-context |An individual authentication context
 definition, which is used to supply an ssl-context and
-authentication-configuration when clients deployed to Wildfly and other
+authentication-configuration when clients deployed to WildFly and other
 resources make a remoting connection.
 
 |credential-store |Credential store to keep alias for sensitive

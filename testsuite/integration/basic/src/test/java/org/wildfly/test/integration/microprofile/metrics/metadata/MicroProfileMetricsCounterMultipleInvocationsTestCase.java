@@ -16,6 +16,12 @@
 
 package org.wildfly.test.integration.microprofile.metrics.metadata;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
+
+import java.net.URL;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -32,19 +38,15 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.metrics.TestApplication;
+import org.wildfly.test.integration.microprofile.metrics.metadata.resources.CustomCounterMetric;
 import org.wildfly.test.integration.microprofile.metrics.metadata.resources.MicroProfileMetricsCounterResource;
-
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
 
 
 /**
@@ -69,9 +71,10 @@ public class MicroProfileMetricsCounterMultipleInvocationsTestCase {
    @Deployment
    public static Archive<?> deploy() {
       WebArchive war = ShrinkWrap.create(WebArchive.class, MicroProfileMetricsCounterMultipleInvocationsTestCase.class.getSimpleName() + ".war")
-            .addClasses(TestApplication.class)
-            .addClasses(MicroProfileMetricsCounterResource.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+              .addClasses(TestApplication.class)
+              .addClasses(MicroProfileMetricsCounterResource.class, CustomCounterMetric.class)
+              .addAsManifestResource(new StringAsset("org.wildfly.test.integration.microprofile.metrics.metadata.resources.CustomCounterMetric.multiplier=2"), "microprofile-config.properties")
+              .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
       return war;
    }
 
@@ -101,8 +104,13 @@ public class MicroProfileMetricsCounterMultipleInvocationsTestCase {
 
       String jsonString = getJSONMetrics(managementClient, "application/helloCounter", true);
       JSONObject jsonObject = new JSONObject(jsonString);
-      int helloCounter = jsonObject.getInt("helloCounter");
 
-      Assert.assertTrue("Expected value of 'helloCounter' is 5, but was " + helloCounter, helloCounter == 5);
+      int helloCounter = jsonObject.getInt("helloCounter");
+      Assert.assertEquals("Unexpected value of 'helloCounter'", 5, helloCounter);
+
+      jsonString = getJSONMetrics(managementClient, "application/customCounter", true);
+      jsonObject = new JSONObject(jsonString);
+      int customCounter = jsonObject.getInt("customCounter");
+      Assert.assertEquals("Unexpected value of 'customCounter'", 10, customCounter);
    }
 }

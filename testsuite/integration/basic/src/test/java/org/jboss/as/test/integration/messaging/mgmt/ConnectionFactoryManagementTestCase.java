@@ -96,7 +96,7 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
 
     @Test
     public void testRemoveReferencedConnector() throws Exception {
-        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         ModelNode address = jmsOperations.getServerAddress().add("in-vm-connector", "in-vm-test");
         ModelNode addOp = Operations.createAddOperation(address);
         addOp.get("server-id").set(0);

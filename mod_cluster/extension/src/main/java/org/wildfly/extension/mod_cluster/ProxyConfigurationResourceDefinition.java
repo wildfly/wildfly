@@ -521,8 +521,8 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         if (ModClusterModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     // Discard if using default value, reject if set to other than previously hard-coded default of 10 seconds
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.STATUS_INTERVAL.getDefinition().getDefaultValue()), Attribute.STATUS_INTERVAL.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.STATUS_INTERVAL.getDefinition().getDefaultValue()), Attribute.STATUS_INTERVAL.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.STATUS_INTERVAL.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATUS_INTERVAL.getDefinition())
                     // Reject if using proxies, discard if undefined
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROXIES.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.PROXIES.getDefinition())

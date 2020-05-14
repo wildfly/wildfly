@@ -39,6 +39,10 @@ public interface Logger extends BasicLogger {
 
     Logger ROOT_LOGGER = org.jboss.logging.Logger.getMessageLogger(Logger.class, ROOT_LOGGER_CATEGORY);
 
+    @LogMessage(level = WARN)
+    @Message(id = 1, value = "Failed to expire session %s")
+    void failedToExpireSession(@Cause Throwable cause, String sessionId);
+
 //    @Message(id = 3, value = "Session %s is not valid")
 //    IllegalStateException invalidSession(String sessionId);
 

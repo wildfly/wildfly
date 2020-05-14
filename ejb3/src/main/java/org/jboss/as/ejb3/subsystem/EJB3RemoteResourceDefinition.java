@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -77,23 +73,13 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    private static final Map<String, AttributeDefinition> ATTRIBUTES;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(CLIENT_MAPPINGS_CLUSTER_NAME.getName(), CLIENT_MAPPINGS_CLUSTER_NAME);
-        map.put(CONNECTOR_REF.getName(), CONNECTOR_REF);
-        map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
-        map.put(EXECUTE_IN_WORKER.getName(), EXECUTE_IN_WORKER);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
-
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CLIENT_MAPPINGS_CLUSTER_NAME, CONNECTOR_REF, THREAD_POOL_NAME, EXECUTE_IN_WORKER };
+    static final EJB3RemoteServiceAdd ADD_HANDLER = new EJB3RemoteServiceAdd(ATTRIBUTES);
     public static final EJB3RemoteResourceDefinition INSTANCE = new EJB3RemoteResourceDefinition();
 
     private EJB3RemoteResourceDefinition() {
         super(new Parameters(EJB3SubsystemModel.REMOTE_SERVICE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTE))
-                .setAddHandler(EJB3RemoteServiceAdd.INSTANCE)
+                .setAddHandler(ADD_HANDLER)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
@@ -102,7 +88,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTES.values()) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
             // TODO: Make this read-write attribute
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }

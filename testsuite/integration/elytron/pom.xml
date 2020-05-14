@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -356,21 +356,9 @@
                                     <offline>true</offline>
                                     <feature-packs>
                                         <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>org.wildfly.core</groupId>
-                                            <artifactId>wildfly-core-galleon-pack</artifactId>
-                                            <version>${version.org.wildfly.core}</version>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
                                             <excluded-packages>
                                                 <name>product.conf</name>
                                                 <name>docs</name>
@@ -463,6 +451,7 @@
                                 <public.ip>${node0}</public.ip>
                                 <management.ip>${node0}</management.ip>
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${wildfly.dir}/modules</module.path>
                             </system-properties>
                         </configuration>
                     </plugin>
@@ -507,7 +496,7 @@
                                 <id>server-provisioning</id>
                                 <phase>none</phase>
                             </execution>
-                            <!-- Provision a cloud-server with web-clustering -->
+                            <!-- Provision a cloud-server with legacy https-->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
@@ -526,32 +515,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>org.wildfly.core</groupId>
-                                            <artifactId>wildfly-core-galleon-pack</artifactId>
-                                            <version>${version.org.wildfly.core}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>

@@ -35,12 +35,12 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-configadmin</artifactId>
 
-    <name>Wildfly: Config Admin</name>
+    <name>WildFly: Config Admin</name>
 
     <dependencies>
         <dependency>

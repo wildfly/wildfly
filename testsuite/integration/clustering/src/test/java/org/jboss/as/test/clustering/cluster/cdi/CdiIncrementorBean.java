@@ -41,4 +41,9 @@ public class CdiIncrementorBean implements Incrementor {
     public int increment() {
         return this.count.incrementAndGet();
     }
+
+    @Override
+    public void reset() {
+        this.count.set(0);
+    }
 }

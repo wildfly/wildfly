@@ -20,19 +20,14 @@
 ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-         version="3.0">
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
     <!-- No need for this app to be distributable and trigger the creation of a session cache -->
     <resource-ref>
-        <res-ref-name>infinispan/container</res-ref-name>
+        <res-ref-name>infinispan/cache</res-ref-name>
         <res-type>org.infinispan.Cache</res-type>
-        <lookup-name>java:jboss/infinispan/container/web</lookup-name>
-    </resource-ref>
-    <resource-ref>
-        <res-ref-name>infinispan/cache/config</res-ref-name>
-        <res-type>org.infinispan.configuration.cache.Configuration</res-type>
-        <lookup-name>java:jboss/infinispan/configuration/web/default</lookup-name>
+        <lookup-name>java:jboss/infinispan/cache/web/default</lookup-name>
     </resource-ref>
 </web-app>

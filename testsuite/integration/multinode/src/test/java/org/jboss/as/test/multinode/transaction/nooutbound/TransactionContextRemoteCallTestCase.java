@@ -25,7 +25,7 @@ package org.jboss.as.test.multinode.transaction.nooutbound;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.net.SocketPermission;
-import java.net.URL;
+import java.util.PropertyPermission;
 
 import javax.ejb.EJBException;
 import javax.inject.Inject;
@@ -34,7 +34,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,8 +55,6 @@ public class TransactionContextRemoteCallTestCase {
     public static final String SERVER_DEPLOYMENT = "server";
     private static final int serverPort = 8180;
 
-    @ArquillianResource
-    private URL url;
 
     @Inject
     private ClientStatelessBean clientBean;
@@ -71,7 +68,8 @@ public class TransactionContextRemoteCallTestCase {
                     TransactionContextRemoteCallTestCase.class)
             .addAsManifestResource(new StringAsset("Dependencies: org.wildfly.http-client.transaction\n"), "MANIFEST.MF")
             .addAsManifestResource(createPermissionsXmlAsset(
-                    new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0")) + ":" + serverPort, "connect,resolve")
+                    new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0")) + ":" + serverPort, "connect,resolve"),
+                    new PropertyPermission("node1", "read")
                 ), "permissions.xml");
     }
 
@@ -85,7 +83,7 @@ public class TransactionContextRemoteCallTestCase {
     @Test
     @OperateOnDeployment(CLIENT_DEPLOYMENT)
     public void remotePlusHttpMandatoryBean() {
-        ProviderUrlData providerUrl = new ProviderUrlData("remote+http", url.getHost(), serverPort);
+        ProviderUrlData providerUrl = new ProviderUrlData("remote+http", TestSuiteEnvironment.getServerAddressNode1(), serverPort);
         clientBean.call(providerUrl, ServerMandatoryStatelessBean.class.getSimpleName());
     }
 
@@ -93,7 +91,7 @@ public class TransactionContextRemoteCallTestCase {
     @OperateOnDeployment(CLIENT_DEPLOYMENT)
     public void remotePlusHttpNeverBean() {
         try {
-            ProviderUrlData providerUrl = new ProviderUrlData("remote+http", url.getHost(), serverPort);
+            ProviderUrlData providerUrl = new ProviderUrlData("remote+http", TestSuiteEnvironment.getServerAddressNode1(), serverPort);
             clientBean.call(providerUrl, ServerNeverStatelessBean.class.getSimpleName());
             Assert.fail(EJBException.class.getName() + " expected, transaction context propagated to TransactionAttributeType.NEVER");
         } catch (EJBException expected) {
@@ -103,7 +101,7 @@ public class TransactionContextRemoteCallTestCase {
     @Test
     @OperateOnDeployment(CLIENT_DEPLOYMENT)
     public void httpMandatoryBean() {
-        ProviderUrlData providerUrl = new ProviderUrlData("http", url.getHost(), serverPort);
+        ProviderUrlData providerUrl = new ProviderUrlData("http", TestSuiteEnvironment.getServerAddressNode1(), serverPort);
         clientBean.call(providerUrl, ServerMandatoryStatelessBean.class.getSimpleName());
     }
 
@@ -111,7 +109,7 @@ public class TransactionContextRemoteCallTestCase {
     @OperateOnDeployment(CLIENT_DEPLOYMENT)
     public void httpNeverBean() {
         try {
-            ProviderUrlData providerUrl = new ProviderUrlData("http", url.getHost(), serverPort);
+            ProviderUrlData providerUrl = new ProviderUrlData("http", TestSuiteEnvironment.getServerAddressNode1(), serverPort);
             clientBean.call(providerUrl, ServerNeverStatelessBean.class.getSimpleName());
             Assert.fail(EJBException.class.getName() + " expected, transaction context propagated to TransactionAttributeType.NEVER");
         } catch (EJBException expected) {

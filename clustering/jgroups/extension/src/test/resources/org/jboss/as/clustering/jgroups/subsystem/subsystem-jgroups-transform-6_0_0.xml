@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:jgroups:7.0">
+<subsystem xmlns="urn:jboss:domain:jgroups:8.0">
     <channels default="ee">
         <channel name="ee" stack="maximal" cluster="${test.expr:mycluster}">
             <fork name="web">

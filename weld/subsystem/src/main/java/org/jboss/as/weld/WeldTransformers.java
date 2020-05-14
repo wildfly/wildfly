@@ -82,7 +82,7 @@ public class WeldTransformers implements ExtensionTransformerRegistration {
                 }, WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
 
                 // development mode - not supported in older versions
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
                 // if the attribute was not discarded it means that it is defined as 'true'. Therefore, reject.
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE).end();
 

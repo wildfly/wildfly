@@ -103,7 +103,7 @@ credential to connect to the server. So there was no easy way to have
 the above code working.
 
 That was one of the use cases which prompted the
-https://issues.jboss.org/browse/EJBCLIENT-34 feature request. The
+https://issues.redhat.com/browse/EJBCLIENT-34 feature request. The
 proposal was to introduce a way, where you can have more control over
 the EJB client contexts and their association with JNDI contexts which
 are typically used for EJB invocations.
@@ -117,13 +117,13 @@ passing it the PROVIDER_URL which would point to the target server. That
 way any invocation done on EJB proxies looked up using that JNDI
 context, would end up on that server. If we look back at the example
 above, we'll realize that, we are ultimately aiming for a similar
-functionality through https://issues.jboss.org/browse/EJBCLIENT-34. We
+functionality through https://issues.redhat.com/browse/EJBCLIENT-34. We
 want the user applications to have more control over which EJB receiver
 gets used for a specific invocation.
 
-Before we introduced https://issues.jboss.org/browse/EJBCLIENT-34
+Before we introduced https://issues.redhat.com/browse/EJBCLIENT-34
 feature, the EJB client context was typically scoped to the client
-application. As part of https://issues.jboss.org/browse/EJBCLIENT-34 we
+application. As part of https://issues.redhat.com/browse/EJBCLIENT-34 we
 now allow the EJB client contexts to be scoped with the JNDI contexts.
 Consider the following example:
 

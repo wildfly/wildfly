@@ -31,6 +31,7 @@ import javax.resource.ResourceException;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -53,7 +54,7 @@ import org.jboss.msc.value.InjectedValue;
 public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProcessor {
 
     private static final ServiceName SERVICE_NAME = ServiceName.of("jca", "cachedConnectionManagerSetupProcessor");
-
+    private static final AttachmentKey<SetupAction> ATTACHMENT_KEY = AttachmentKey.create(SetupAction.class);
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -67,13 +68,14 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
                 .install();
         deploymentUnit.addToAttachmentList(Attachments.WEB_SETUP_ACTIONS, action);
         deploymentUnit.addToAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS, action);
-
+        deploymentUnit.putAttachment(ATTACHMENT_KEY, action);
     }
 
     @Override
     public void undeploy(final DeploymentUnit deploymentUnit) {
-        deploymentUnit.getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof CachedConnectionManagerSetupAction);
-        deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof CachedConnectionManagerSetupAction);
+        SetupAction action = deploymentUnit.removeAttachment(ATTACHMENT_KEY);
+        deploymentUnit.getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS).remove(action);
+        deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).remove(action);
     }
 
     private static class CachedConnectionManagerSetupAction implements SetupAction, Service<Void> {

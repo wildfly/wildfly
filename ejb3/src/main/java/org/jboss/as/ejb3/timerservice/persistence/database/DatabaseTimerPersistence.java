@@ -331,7 +331,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         String createTimer = sql(CREATE_TIMER);
         Connection connection = null;
         PreparedStatement statement = null;
-        ResultSet resultSet = null;
         try {
             synchronized (this) {
                 knownTimerIds.get(timerEntity.getTimedObjectId()).add(timerEntity.getId());
@@ -343,7 +342,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            safeClose(resultSet);
             safeClose(statement);
             safeClose(connection);
         }
@@ -353,7 +351,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     public void persistTimer(final TimerImpl timerEntity) {
         Connection connection = null;
         PreparedStatement statement = null;
-        ResultSet resultSet = null;
         try {
             connection = dataSource.getConnection();
             if (timerEntity.getState() == TimerState.CANCELED ||
@@ -387,7 +384,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            safeClose(resultSet);
             safeClose(statement);
             safeClose(connection);
         }

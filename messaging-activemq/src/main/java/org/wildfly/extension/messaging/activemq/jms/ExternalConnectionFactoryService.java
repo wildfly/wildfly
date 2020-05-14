@@ -32,8 +32,9 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.extension.messaging.activemq.DiscoveryGroupAdd;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
+import org.wildfly.extension.messaging.activemq.SocketDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
@@ -109,13 +110,13 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
                 if (commandDispatcherFactories.containsKey(key)) {
                     CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                     String clusterName = clusterNames.get(key);
-                    config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, groupConfiguration, commandDispatcherFactory, clusterName);
+                    config = JGroupsDiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, groupConfiguration, commandDispatcherFactory, clusterName);
                 } else {
                     final SocketBinding binding = groupBindings.get(key).get();
                     if (binding == null) {
                         throw MessagingLogger.ROOT_LOGGER.failedToFindDiscoverySocketBinding(name);
                     }
-                    config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, groupConfiguration, binding);
+                    config = SocketDiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, groupConfiguration, binding);
                     binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
                 }
                 if (ha) {

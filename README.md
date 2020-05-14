@@ -1,6 +1,6 @@
 WildFly Application Server
 ========================
-http://wildfly.org
+https://wildfly.org
 
 * Fast Startup
 * Small Footprint

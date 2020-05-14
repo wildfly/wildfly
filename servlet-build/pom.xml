@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-build</artifactId>
@@ -87,12 +87,11 @@
                                     <excluded-packages>
                                         <name>docs.schema</name>
                                     </excluded-packages>
-                                    <inheritConfigs>false</inheritConfigs>
                                 </feature-pack>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${ee.maven.version}</version>
                                     <excluded-packages>
                                         <name>docs.schema</name>
                                     </excluded-packages>

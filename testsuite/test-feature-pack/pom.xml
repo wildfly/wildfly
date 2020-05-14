@@ -30,13 +30,17 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>19.0.0.Beta1-SNAPSHOT</version>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>20.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-test-galleon-pack</artifactId>
 
-    <name>WildFly:  Test Feature Pack</name>
+    <name>WildFly: Test Feature Pack</name>
     <packaging>pom</packaging>
     <description>
         Provides a Galleon feature pack for use in provisioning installations for testsuite use.
@@ -78,7 +82,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-galleon-pack</artifactId>
+            <artifactId>wildfly-ee-galleon-pack</artifactId>
             <type>pom</type>
             <exclusions>
                 <exclusion>

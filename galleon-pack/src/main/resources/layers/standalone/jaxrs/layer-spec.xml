@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jaxrs">
-    <dependencies>
-        <layer name="web-server"/>
-    </dependencies>
-    <feature spec="subsystem.jaxrs"/>
-</layer-spec>

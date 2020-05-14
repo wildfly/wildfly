@@ -22,32 +22,38 @@
 
 package org.jboss.as.ee.concurrent;
 
-import static org.jboss.as.ee.concurrent.ControlPointUtils.doWrap;
-import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
+import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
+import org.wildfly.extension.requestcontroller.ControlPoint;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.wildfly.extension.requestcontroller.ControlPoint;
+import static org.jboss.as.ee.concurrent.ControlPointUtils.doWrap;
+import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 
 /**
  * @author Stuart Douglas
+ * @author emmartins
  */
 public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl {
 
     private final ControlPoint controlPoint;
+    private final ManagedExecutorRuntimeStats runtimeStats;
 
     public ManagedExecutorServiceImpl(String name, ManagedThreadFactoryImpl managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, ContextServiceImpl contextService, RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint) {
         super(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService, rejectPolicy, queue);
         this.controlPoint = controlPoint;
+        this.runtimeStats = new ManagedExecutorRuntimeStatsImpl(this);
     }
 
     public ManagedExecutorServiceImpl(String name, ManagedThreadFactoryImpl managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, ContextServiceImpl contextService, RejectPolicy rejectPolicy, ControlPoint controlPoint) {
         super(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, contextService, rejectPolicy);
         this.controlPoint = controlPoint;
+        this.runtimeStats = new ManagedExecutorRuntimeStatsImpl(this);
     }
 
     @Override
@@ -68,5 +74,18 @@ public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurr
     @Override
     public void execute(Runnable command) {
         super.execute(doIdentityWrap(doWrap(command, controlPoint)));
+    }
+
+    @Override
+    protected ThreadPoolExecutor getThreadPoolExecutor() {
+        return (ThreadPoolExecutor) super.getThreadPoolExecutor();
+    }
+
+    /**
+     *
+     * @return the executor's runtime stats
+     */
+    public ManagedExecutorRuntimeStats getRuntimeStats() {
+        return runtimeStats;
     }
 }

@@ -216,7 +216,7 @@ to open administrative interfaces and accept management requests but not
 start servers or, if this host controlleris the master for the domain,
 accept incoming connections from slave host controllers.
 
-|--domain-config-c |domain.xml |A relative path which is interpreted to
+|--domain-config -c |domain.xml |A relative path which is interpreted to
 be relative to jboss.domain.config.dir. The name of the domain wide
 configuration file to use.
 
@@ -271,11 +271,6 @@ configuration, but it may launch servers and handlerequests to deployed
 applications etc.
 |=======================================================================
 
-[cols=",",options="header"]
-|====
-|  | 
-|====
-
 [[common-parameters]]
 === Common parameters
 
@@ -296,7 +291,7 @@ for further details.
 <value>. See Controlling the Default Multicast Address with -u for
 further details.
 
-|--version-v-V |Prints the version of WildFly to standard output and
+|--version -v -V |Prints the version of WildFly to standard output and
 exits the JVM.
 
 |--help-h |Prints a help message explaining the options and exits the
@@ -309,9 +304,9 @@ JVM.
 WildFly binds sockets to the IP addresses and interfaces contained in
 the `<interfaces>` elements in `standalone.xml`, `domain.xml` and
 `host.xml`. (See
-link:General_configuration_concepts.html#src-557065_Generalconfigurationconcepts-interfaces[Interfaces]
+link:#interfaces[Interfaces]
 and
-link:General_configuration_concepts.html#src-557065_Generalconfigurationconcepts-socket-bindings[Socket
+link:#socket-bindings-and-socket-binding-groups[Socket
 Bindings] for further information on these elements.) The standard
 configurations that ship with WildFly includes two interface
 configurations:
@@ -354,8 +349,6 @@ In the standard config files, public interfaces are those not associated
 with server management. Public interfaces handle normal end-user
 requests.
 
-Interface names
-
 [IMPORTANT]
 
 The interface named "public" is not inherently special. It is provided
@@ -379,8 +372,6 @@ $JBOSS_HOME/bin/standalone.sh -bmanagement=192.168.100.10
 In the standard config files, management interfaces are those sockets
 associated with server management, such as the socket used by the CLI,
 the HTTP socket used by the admin console, and the JMX connector socket.
-
-Be Careful
 
 [IMPORTANT]
 

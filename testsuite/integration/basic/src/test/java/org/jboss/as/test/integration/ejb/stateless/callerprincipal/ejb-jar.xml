@@ -1,0 +1,34 @@
+<!DOCTYPE ejb-jar PUBLIC '-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN' 'http://java.sun.com/dtd/ejb-jar_2_0.dtd'>
+
+<ejb-jar>
+  <enterprise-beans>
+    <session>
+      <ejb-name>TestEJB2Bean</ejb-name>
+      <home>org.jboss.as.test.integration.ejb.stateless.callerprincipal.TestEJB2Home</home>
+      <remote>org.jboss.as.test.integration.ejb.stateless.callerprincipal.TestEJB2</remote>
+      <ejb-class>org.jboss.as.test.integration.ejb.stateless.callerprincipal.TestEJB2Bean</ejb-class>
+      <session-type>Stateless</session-type>
+      <transaction-type>Container</transaction-type>
+    </session>
+  </enterprise-beans>
+
+  <assembly-descriptor>
+    <method-permission>
+      <role-name>Users</role-name>
+      <method>
+        <ejb-name>TestEJB2Bean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>*</method-name>
+      </method>
+    </method-permission>
+    <container-transaction>
+      <method>
+        <ejb-name>TestEJB2Bean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>*</method-name>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+  </assembly-descriptor>
+
+</ejb-jar>

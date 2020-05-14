@@ -25,16 +25,20 @@ package org.wildfly.clustering.web.cache.session;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 
 /**
  * Configuration of a factory for creating a {@link SessionAttributes} object.
- * @author Paul Ferraro
- * @param <MV> meta-data cache entry type
+ * @param <S> the HttpSession specification type
+ * @param <C> the ServletContext specification type
+ * @param <L> the HttpSessionActivationListener specification type
  * @param <V> attributes cache entry type
- * @param <S> attributes serialized form type
+ * @param <SV> attributes serialized form type
+ * @author Paul Ferraro
  */
-public interface SessionAttributesFactoryConfiguration<V, S> {
-    Marshaller<V, S> getMarshaller();
+public interface SessionAttributesFactoryConfiguration<S, C, L, V, SV> {
+    Marshaller<V, SV> getMarshaller();
     CacheProperties getCacheProperties();
     Immutability getImmutability();
+    HttpSessionActivationListenerProvider<S, C, L> getHttpSessionActivationListenerProvider();
 }

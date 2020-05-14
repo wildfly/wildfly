@@ -26,41 +26,44 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
-
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 
 /**
  * Generic HotRod-based session manager implementation - independent of cache mapping strategy.
+ * @param <SC> the ServletContext specification type
+ * @param <MV> the meta-data value type
+ * @param <AV> the attributes value type
+ * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManager<MV, AV, L> implements SessionManager<L, TransactionBatch> {
+public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
     private final Registrar<SessionExpirationListener> expirationRegistrar;
     private final SessionExpirationListener expirationListener;
-    private final Scheduler expirationScheduler;
-    private final SessionFactory<MV, AV, L> factory;
+    private final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
+    private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
-    private final ServletContext context;
+    private final SC context;
     private final Batcher<TransactionBatch> batcher;
     private final Duration stopTimeout;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
 
-    public HotRodSessionManager(SessionFactory<MV, AV, L> factory, HotRodSessionManagerConfiguration configuration) {
+    public HotRodSessionManager(SessionFactory<SC, MV, AV, LC> factory, HotRodSessionManagerConfiguration<SC> configuration) {
         this.factory = factory;
         this.expirationRegistrar = configuration.getExpirationRegistrar();
         this.expirationListener = configuration.getExpirationListener();
@@ -107,7 +110,7 @@ public class HotRodSessionManager<MV, AV, L> implements SessionManager<L, Transa
     }
 
     @Override
-    public Session<L> findSession(String id) {
+    public Session<LC> findSession(String id) {
         Map.Entry<MV, AV> entry = this.factory.findValue(id);
         if (entry == null) {
             Logger.ROOT_LOGGER.tracef("Session %s not found", id);
@@ -125,10 +128,10 @@ public class HotRodSessionManager<MV, AV, L> implements SessionManager<L, Transa
     }
 
     @Override
-    public Session<L> createSession(String id) {
+    public Session<LC> createSession(String id) {
         Map.Entry<MV, AV> entry = this.factory.createValue(id, null);
         if (entry == null) return null;
-        Session<L> session = this.factory.createSession(id, entry, this.context);
+        Session<LC> session = this.factory.createSession(id, entry, this.context);
         session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
         return new ValidSession<>(session, this.expirationScheduler);
     }

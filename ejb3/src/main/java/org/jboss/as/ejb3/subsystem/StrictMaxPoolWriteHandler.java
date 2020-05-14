@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
@@ -44,7 +43,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-    StrictMaxPoolWriteHandler(Collection<AttributeDefinition> attributes) {
+    StrictMaxPoolWriteHandler(AttributeDefinition...  attributes) {
         super(attributes);
     }
 

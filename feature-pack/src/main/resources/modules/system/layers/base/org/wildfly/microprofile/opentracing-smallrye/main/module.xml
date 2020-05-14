@@ -35,21 +35,21 @@
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>
 
-        <module name="io.jaegertracing.jaeger"/>
         <module name="io.opentracing.opentracing-api"/>
         <module name="io.opentracing.opentracing-noop"/>
-        <module name="io.opentracing.opentracing-util"/>
         <module name="io.opentracing.contrib.opentracing-concurrent"/>
         <module name="io.opentracing.contrib.opentracing-jaxrs2"/>
-        <module name="io.opentracing.contrib.opentracing-tracerresolver"/>
         <module name="io.opentracing.contrib.opentracing-web-servlet-filter"/>
         <module name="io.opentracing.contrib.opentracing-interceptors" services="import"/>
+
+        <module name="io.smallrye.config"/>
         <module name="io.smallrye.opentracing"/>
 
-        <module name="org.eclipse.microprofile.opentracing"/>
+        <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>
+        <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.eclipse.microprofile.config.api"/>
-        <module name="io.smallrye.config"/>
+        <module name="org.eclipse.microprofile.opentracing"/>
     </dependencies>
 </module>

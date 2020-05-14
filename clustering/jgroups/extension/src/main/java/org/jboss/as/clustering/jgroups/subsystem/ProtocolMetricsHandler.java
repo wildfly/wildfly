@@ -266,7 +266,10 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         };
         FunctionExecutor<JChannel> executor = this.executors.get(channelServiceName);
         try {
-            context.getResult().set((executor != null) ? executor.execute(function) : null);
+            ModelNode value = (executor != null) ? executor.execute(function) : null;
+            if (value != null) {
+                context.getResult().set(value);
+            }
         } catch (Exception e) {
             context.getFailureDescription().set(e.getLocalizedMessage());
         } finally {

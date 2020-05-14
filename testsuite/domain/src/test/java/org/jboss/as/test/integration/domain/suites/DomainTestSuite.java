@@ -41,9 +41,10 @@ import org.junit.runners.Suite;
         DatasourceTestCase.class,
         DeploymentManagementTestCase.class,
         DeploymentOverlayTestCase.class,
+        GlobalDirectoryDomainTestCase.class,
         JcaCCMRuntimeOnlyProfileOpsTestCase.class,
         ModelPersistenceTestCase.class,
-        ReadEnvironmentVariablesTestCase.class,
+        ReadEnvironmentVariablesTestCase.class
 })
 public class DomainTestSuite {
 

@@ -846,6 +846,8 @@ unit bootstrap, which improves JPA integration with CDI. Setting the
 wildfly.jpa.twophasebootstrap hint to false, disables the two phase
 bootstrap (for the persistence unit that contains the hint).
 
+|wildfly.jpa.applicationdatasource |set to true when using an application defined DataSource or resource reference to a global DataSource.
+
 |wildfly.jpa.allowdefaultdatasourceuse |set to false to prevent
 persistence unit from using the default data source. Defaults to true.
 This is only important for persistence units that do not specify a

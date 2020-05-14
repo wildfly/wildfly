@@ -121,6 +121,6 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
             }
         }
 
-        this.registry.remove(JCHANNEL.getServiceName(address));
+        context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.registry.remove(JCHANNEL.getServiceName(address))).getServiceName());
     }
 }

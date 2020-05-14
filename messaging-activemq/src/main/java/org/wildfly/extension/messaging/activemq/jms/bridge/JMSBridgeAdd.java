@@ -23,6 +23,8 @@
 package org.wildfly.extension.messaging.activemq.jms.bridge;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.jboss.as.server.Services.requireServerExecutor;
 
 import java.util.Properties;
@@ -44,6 +46,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
@@ -72,6 +75,14 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
 
     private JMSBridgeAdd() {
         super(JMSBridgeDefinition.ATTRIBUTES);
+    }
+
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        super.populateModel(context, operation, resource);
+        final ModelNode model = resource.getModel();
+        handleCredentialReferenceUpdate(context, model.get(JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE.getName()), JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE.getName());
+        handleCredentialReferenceUpdate(context, model.get(JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE.getName()), JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE.getName());
     }
 
     @Override
@@ -115,6 +126,12 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
             }
 
         }, OperationContext.Stage.RUNTIME);
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE, context, resource);
+        rollbackCredentialStoreUpdate(JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE, context, resource);
     }
 
     private boolean dependsOnLocalResources(OperationContext context, ModelNode model, AttributeDefinition attr) throws OperationFailedException {

@@ -27,6 +27,10 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/wildfly/clustering/ee/infinispan/logging"/>
+    </exports>
+
     <resources>
         <artifact name="${org.wildfly:wildfly-clustering-ee-infinispan}"/>
     </resources>
@@ -34,9 +38,13 @@
     <dependencies>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.jboss.logging"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.infinispan.spi"/>
+        <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.spi"/>
+        <module name="org.wildfly.common"/>
     </dependencies>
 </module>

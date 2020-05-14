@@ -28,8 +28,8 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            attributeFormDefault="unqualified"
            elementFormDefault="qualified"
-           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd">
-   <xs:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"/>
+           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee https://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd">
+   <xs:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="https://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"/>
 
    <xs:element name="delivery" substitutionGroup="javaee:assembly-descriptor-entry" type="deliveryType"/>
 
