@@ -32,6 +32,7 @@ import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
@@ -55,7 +56,10 @@ public class IdentityCacheRequirementServiceConfiguratorProvider implements Iden
 
     @Override
     public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
-        CapabilityServiceConfigurator configurator = new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(this.requirement), this.requirement, containerName, targetCacheName);
+        ServiceName name = registry.getServiceName(this.requirement);
+        if (name == null) return Collections.emptySet();
+
+        CapabilityServiceConfigurator configurator = new IdentityCapabilityServiceConfigurator<>(name, this.requirement, containerName, targetCacheName);
         if ((this.jndiNameFactory == null) || JndiNameFactory.DEFAULT_LOCAL_NAME.equals(targetCacheName)) {
             return Collections.singleton(configurator);
         }

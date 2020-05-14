@@ -24,6 +24,7 @@ package org.wildfly.clustering.server.registry;
 import java.util.Collections;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
@@ -45,7 +46,10 @@ public class RegistryFactoryServiceConfiguratorProvider extends CacheRequirement
     @Override
     public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
         Iterable<CapabilityServiceConfigurator> configurators = super.getServiceConfigurators(registry, containerName, cacheName);
-        CapabilityServiceConfigurator configurator = new RegistryServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), containerName, cacheName);
+        ServiceName registryServiceName = registry.getServiceName(ClusteringCacheRequirement.REGISTRY);
+        if (registryServiceName == null) return configurators;
+
+        CapabilityServiceConfigurator configurator = new RegistryServiceConfigurator<>(registryServiceName, containerName, cacheName);
         return new CompositeIterable<>(configurators, Collections.singleton(configurator));
     }
 }
