@@ -57,6 +57,7 @@ public class CacheRequirementServiceConfiguratorProvider<T> implements CacheServ
     @Override
     public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
         ServiceName name = registry.getServiceName(this.requirement);
+        if (name == null) return Collections.emptySet();
         CapabilityServiceConfigurator configurator = this.factory.createServiceConfigurator(name, containerName, cacheName);
         if (this.jndiNameFactory == null) {
             return Collections.singleton(configurator);
