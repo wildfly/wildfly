@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
+
 import java.io.Closeable;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -37,7 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
@@ -61,6 +62,7 @@ import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
+import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
@@ -74,8 +76,6 @@ import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.xnio.IoUtils;
 
-import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
-
 /**
  * MK2 implementation of EJB3.1 {@link TimerService}
  *
@@ -83,6 +83,12 @@ import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
  * @version $Revision: $
  */
 public class TimerServiceImpl implements TimerService, Service<TimerService> {
+    /**
+     * Flag to enable programmatic timer refresh from database timer persistence.
+     * When set to true, {@link #getAllTimers()} method programmatically refreshes
+     * from the database timer persistence before returning all timers.
+     */
+    private static final String PROGRAMMATIC_TIMER_REFRESH_ENABLED = "wildfly.ejb.timer.refresh.enabled";
 
     /**
      * inactive timer states
@@ -133,8 +139,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private final TimerServiceRegistry timerServiceRegistry;
 
     /**
-    * Dynamic resource. Exposed under service=timer-service.
-    */
+     * Dynamic resource. Exposed under service=timer-service.
+     */
     private TimerServiceResource resource = new TimerServiceResource();
 
     private Closeable listenerHandle;
@@ -149,6 +155,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     private static final Integer MAX_RETRY = Integer.getInteger("jboss.timer.TaskPostPersist.maxRetry", 10);
+
     /**
      * Creates a {@link TimerServiceImpl}
      *
@@ -165,10 +172,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Creates a {@link TimerServiceImpl}
      *
-     * @param autoTimers The auto timers associated with this timer service
+     * @param autoTimers  The auto timers associated with this timer service
      * @param serviceName The service name of this timer service
-     * @param registry The {@link TimerServiceRegistry} which has the knowledge of other timer services belonging to the EJB module to which this
-     *                  timer service belongs.
+     * @param registry    The {@link TimerServiceRegistry} which has the knowledge of other timer services belonging to the EJB module to which this
+     *                    timer service belongs.
      */
     public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName, final TimerServiceRegistry registry) {
         this.autoTimers = autoTimers;
@@ -421,9 +428,29 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     /**
      * {@inheritDoc}
+     * <p>
+     * When {@link #PROGRAMMATIC_TIMER_REFRESH_ENABLED} is set to true,
+     * this method programmatically refreshes from the database timer persistence
+     * before returning all timers.
      */
     @Override
     public Collection<Timer> getAllTimers() throws IllegalStateException, EJBException {
+        final TimerPersistence persistence = timerPersistence.getOptionalValue();
+        if (persistence instanceof DatabaseTimerPersistence) {
+            final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
+            if (currentInvocationContext != null) {
+                try {
+                    final Map<String, Object> contextData = currentInvocationContext.getContextData();
+                    final Object flag = contextData.get(PROGRAMMATIC_TIMER_REFRESH_ENABLED);
+                    if (Boolean.TRUE.equals(flag) || "true".equals(flag)) {
+                        ((DatabaseTimerPersistence) persistence).refreshTimers();
+                    }
+                } catch (IllegalStateException e) {
+                    //ignore, context data is not set
+                }
+            }
+        }
+
         // query the registry
         if (this.timerServiceRegistry != null) {
             return this.timerServiceRegistry.getAllActiveTimers();
@@ -600,18 +627,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 final ContextTransactionManager transactionManager = ContextTransactionManager.getInstance();
                 Transaction clientTX = transactionManager.getTransaction();
                 if (newTimer || timer.isCanceled()) {
-                    if( clientTX == null ){
+                    if (clientTX == null) {
                         transactionManager.begin();
                     }
                     try {
-                        if( newTimer ) timerPersistence.getValue().addTimer(timer);
+                        if (newTimer) timerPersistence.getValue().addTimer(timer);
                         else timerPersistence.getValue().persistTimer(timer);
-                        if(clientTX == null) transactionManager.commit();
-                    } catch (Exception e){
-                        if(clientTX == null) {
+                        if (clientTX == null) transactionManager.commit();
+                    } catch (Exception e) {
+                        if (clientTX == null) {
                             try {
                                 transactionManager.rollback();
-                            } catch (Exception ee){
+                            } catch (Exception ee) {
                                 EjbLogger.EJB3_TIMER_LOGGER.timerUpdateFailedAndRollbackNotPossible(ee);
                             }
                         }
@@ -767,7 +794,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             } else if (!ineligibleTimerStates.contains(activeTimer.getState())) {
                 startTimer(activeTimer);
             }
-            EJB3_TIMER_LOGGER.debugv("Started timer: {0}",  activeTimer);
+            EJB3_TIMER_LOGGER.debugv("Started timer: {0}", activeTimer);
         }
 
         for (ScheduleTimer timer : newAutoTimers) {
@@ -938,7 +965,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         EJB3_TIMER_LOGGER.debugv("Removed timer {0} from internal cache", timer);
     }
 
-    public boolean isScheduled(final String tid){
+    public boolean isScheduled(final String tid) {
         synchronized (this.scheduledTimerFutures) {
             return this.scheduledTimerFutures.containsKey(tid);
         }
@@ -984,7 +1011,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             transactionManager.begin();
             persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId, this);
             transactionManager.commit();
-        } catch (Exception e){
+        } catch (Exception e) {
             try {
                 transactionManager.rollback();
             } catch (Exception ee) {
@@ -1299,9 +1326,9 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         public void run() {
             final ExecutorService executor = executorServiceInjectedValue.getOptionalValue();
             if (executor != null) {
-                if(controlPoint == null) {
+                if (controlPoint == null) {
                     executor.submit(delegate);
-                } else if(!queued) {
+                } else if (!queued) {
                     queued = true;
                     controlPoint.queueTask(new Runnable() {
                         @Override
@@ -1333,7 +1360,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         @Override
         public void timerRemoved(String timerId) {
             TimerImpl timer = TimerServiceImpl.this.getTimer(timerId);
-            if(timer != null) {
+            if (timer != null) {
                 TimerServiceImpl.this.cancelTimeout(timer);
                 TimerServiceImpl.this.removeTimerFromInternalCache(timer);
             }
