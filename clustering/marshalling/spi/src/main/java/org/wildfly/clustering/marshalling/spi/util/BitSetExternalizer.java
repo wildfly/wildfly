@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,42 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.BitSet;
 
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
- * Base {@link Externalizer} for enumerations.
  * @author Paul Ferraro
  */
-public class EnumExternalizer<E extends Enum<E>> implements Externalizer<E> {
+public class BitSetExternalizer implements Externalizer<BitSet> {
 
-    private final IntSerializer ordinalExternalizer;
-    private final Class<E> enumClass;
-    private final E[] values;
-
-    public EnumExternalizer(Class<E> enumClass) {
-        this.ordinalExternalizer = IndexSerializer.select(enumClass.getEnumConstants().length);
-        this.enumClass = enumClass;
-        this.values = enumClass.getEnumConstants();
+    @Override
+    public void writeObject(ObjectOutput output, BitSet set) throws IOException {
+        byte[] bytes = set.toByteArray();
+        IndexSerializer.VARIABLE.writeInt(output, bytes.length);
+        output.write(bytes);
     }
 
     @Override
-    public void writeObject(ObjectOutput output, E value) throws IOException {
-        this.ordinalExternalizer.writeInt(output, value.ordinal());
+    public BitSet readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        byte[] bytes = new byte[IndexSerializer.VARIABLE.readInt(input)];
+        input.readFully(bytes);
+        return BitSet.valueOf(bytes);
     }
 
     @Override
-    public E readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.values[this.ordinalExternalizer.readInt(input)];
-    }
-
-    @Override
-    public Class<E> getTargetClass() {
-        return this.enumClass;
+    public Class<BitSet> getTargetClass() {
+        return BitSet.class;
     }
 }
