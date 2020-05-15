@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,46 +20,57 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.sso;
+package org.jboss.as.test.clustering.cluster.web.remote;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.web.sso.SSOTestBase;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
+import org.jboss.as.test.clustering.single.web.Mutable;
+import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
 /**
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ InfinispanServerSetupTask.class, RemoteSingleSignOnTestCase.ServerSetupTask.class, HostSSOServerSetupTask.class })
-public class RemoteSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
+@ServerSetup({ InfinispanServerSetupTask.class, LocalRoutingServerSetup.class })
+public class FineTransactionalHotRodWebFailoverTestCase extends AbstractHotRodWebFailoverTestCase {
+
+    private static final String DEPLOYMENT_NAME = FineTransactionalHotRodWebFailoverTestCase.class.getSimpleName() + ".war";
+
+    public FineTransactionalHotRodWebFailoverTestCase() {
+        super(DEPLOYMENT_NAME);
+    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> deployment1() {
-        return createArchive();
+        return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
     public static Archive<?> deployment2() {
-        return createArchive();
+        return getDeployment();
     }
 
-    private static Archive<?> createArchive() {
-        return SSOTestBase.createSsoEar();
+    @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
+    @TargetsContainer(NODE_3)
+    public static Archive<?> deployment3() {
+        return getDeployment();
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
-        public ServerSetupTask() {
-            this.builder.node(TWO_NODES)
-                    .setup("/subsystem=distributable-web/hotrod-single-sign-on-management=default-host:add(remote-cache-container=sso)")
-                    .teardown("/subsystem=distributable-web/hotrod-single-sign-on-management=default-host:remove")
-            ;
-        }
+    private static Archive<?> getDeployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
+        war.addClasses(SimpleServlet.class, Mutable.class);
+        war.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
+        war.addAsWebInfResource(FineTransactionalHotRodWebFailoverTestCase.class.getPackage(), "jboss-all_fine_transactional.xml", "jboss-all.xml");
+        war.addAsWebInfResource(FineTransactionalHotRodWebFailoverTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        return war;
     }
 }

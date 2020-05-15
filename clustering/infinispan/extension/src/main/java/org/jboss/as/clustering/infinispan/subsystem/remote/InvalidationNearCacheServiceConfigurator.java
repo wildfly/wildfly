@@ -22,13 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import java.util.OptionalInt;
-
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -41,7 +38,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  */
 public class InvalidationNearCacheServiceConfigurator extends ComponentServiceConfigurator<NearCacheConfiguration> {
 
-    private volatile OptionalInt maxEntries;
+    private volatile int maxEntries;
 
     InvalidationNearCacheServiceConfigurator(PathAddress address) {
         super(RemoteCacheContainerComponent.NEAR_CACHE, address);
@@ -49,14 +46,15 @@ public class InvalidationNearCacheServiceConfigurator extends ComponentServiceCo
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.maxEntries = ModelNodes.optionalInt(InvalidationNearCacheResourceDefinition.Attribute.MAX_ENTRIES.resolveModelAttribute(context, model));
+        this.maxEntries = InvalidationNearCacheResourceDefinition.Attribute.MAX_ENTRIES.resolveModelAttribute(context, model).asInt(-1);
         return this;
     }
 
     @Override
     public NearCacheConfiguration get() {
-        NearCacheConfigurationBuilder builder = new ConfigurationBuilder().nearCache().mode(NearCacheMode.INVALIDATED);
-        this.maxEntries.ifPresent(builder::maxEntries);
+        NearCacheConfigurationBuilder builder = new ConfigurationBuilder().nearCache()
+                .mode(NearCacheMode.INVALIDATED)
+                .maxEntries(this.maxEntries);
         return builder.create();
     }
 }

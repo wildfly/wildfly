@@ -31,6 +31,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import javax.transaction.TransactionManager;
+
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.Flag;
@@ -73,8 +75,8 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public boolean removeWithVersion(K key, long version) {
-        return this.cache.removeWithVersion(key, version);
+    public TransactionManager getTransactionManager() {
+        return this.cache.getTransactionManager();
     }
 
     @Override
@@ -202,6 +204,11 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     @Override
     public boolean remove(Object key, Object value) {
         return this.cache.remove(key, value);
+    }
+
+    @Override
+    public boolean removeWithVersion(K key, long version) {
+        return this.cache.removeWithVersion(key, version);
     }
 
     @Override
