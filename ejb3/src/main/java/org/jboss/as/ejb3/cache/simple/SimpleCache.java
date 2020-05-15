@@ -46,10 +46,9 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
 /**
  * Simple {@link Cache} implementation using in-memory storage and eager expiration.
  *
- * @author Paul Ferraro
- *
  * @param <K> the cache key type
  * @param <V> the cache value type
+ * @author Paul Ferraro
  */
 public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, Predicate<K> {
 
