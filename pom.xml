@@ -437,7 +437,7 @@
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.14.3</version.org.testng>
-        <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>2.2.1.Final-SNAPSHOT</version.org.wildfly.arquillian>
         <version.org.wildfly.core>12.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.20.Final</version.org.wildfly.http-client>
