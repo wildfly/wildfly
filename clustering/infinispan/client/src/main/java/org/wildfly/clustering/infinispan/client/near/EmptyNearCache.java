@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,45 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ee.hotrod;
+package org.wildfly.clustering.infinispan.client.near;
 
-import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.infinispan.client.hotrod.MetadataValue;
+import org.infinispan.client.hotrod.near.NearCache;
 
 /**
+ * An empty near cache.
  * @author Paul Ferraro
  */
-public class RemoteCacheManagerProperties implements CacheProperties {
+public class EmptyNearCache<K, V> implements NearCache<K, V> {
 
-    private final boolean transactional;
-
-    public RemoteCacheManagerProperties(Configuration configuration) {
-        this.transactional = configuration.transaction().transactionMode() != TransactionMode.NONE;
+    @Override
+    public void put(K key, MetadataValue<V> value) {
     }
 
     @Override
-    public boolean isLockOnRead() {
+    public void putIfAbsent(K key, MetadataValue<V> value) {
+    }
+
+    @Override
+    public boolean remove(K key) {
         return false;
     }
 
     @Override
-    public boolean isLockOnWrite() {
-        return true;
+    public MetadataValue<V> get(K key) {
+        return null;
     }
 
     @Override
-    public boolean isMarshalling() {
-        return true;
+    public void clear() {
     }
 
     @Override
-    public boolean isPersistent() {
-        return true;
-    }
-
-    @Override
-    public boolean isTransactional() {
-        return this.transactional;
+    public int size() {
+        return 0;
     }
 }

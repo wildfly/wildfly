@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod.session;
+package org.wildfly.clustering.ee.hotrod;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.hotrod.RemoteCacheProperties;
 
 /**
  * @author Paul Ferraro
  */
-public interface HotRodSessionMetaDataFactoryConfiguration {
+public class RemoteCacheProperties implements CacheProperties {
 
-    <CK, CV> RemoteCache<CK, CV> getCache();
+    private final boolean transactional;
 
-    default CacheProperties getCacheProperties() {
-        return new RemoteCacheProperties(this.getCache());
+    public RemoteCacheProperties(RemoteCache<?, ?> cache) {
+        this.transactional = cache.getTransactionManager() != null;
+    }
+
+    @Override
+    public boolean isLockOnRead() {
+        return false;
+    }
+
+    @Override
+    public boolean isLockOnWrite() {
+        return false;
+    }
+
+    @Override
+    public boolean isMarshalling() {
+        return true;
+    }
+
+    @Override
+    public boolean isPersistent() {
+        return true;
+    }
+
+    @Override
+    public boolean isTransactional() {
+        return this.transactional;
     }
 }

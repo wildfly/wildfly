@@ -54,6 +54,7 @@ import org.infinispan.persistence.spi.SegmentedAdvancedLoadWriteStore;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.reactivestreams.Publisher;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.near.EmptyNearCacheService;
 
 import io.reactivex.Flowable;
 import io.reactivex.functions.Consumer;
@@ -87,13 +88,19 @@ public class HotRodStore<K, V> implements SegmentedAdvancedLoadWriteStore<K, V>,
 
             // Administration support was introduced in protocol version 2.7
             if (protocolVersion.compareTo(ProtocolVersion.PROTOCOL_VERSION_27) < 0) {
-                this.remoteCache = remoteCacheContainer.getCache(cacheName, false);
+                // Auto-disable near cache
+                try (RemoteCacheContainer.NearCacheRegistration registration = remoteCacheContainer.registerNearCacheFactory(cacheName, EmptyNearCacheService::new)) {
+                    this.remoteCache = remoteCacheContainer.getCache(cacheName, false);
+                }
                 if (this.remoteCache == null) {
                     throw InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(protocolVersion.toString(), cacheName);
                 }
             } else {
                 InfinispanLogger.ROOT_LOGGER.remoteCacheCreated(cacheName, cacheConfiguration);
-                this.remoteCache = remoteCacheContainer.administration().getOrCreateCache(cacheName, cacheConfiguration);
+                // Auto-disable near cache
+                try (RemoteCacheContainer.NearCacheRegistration registration = remoteCacheContainer.registerNearCacheFactory(cacheName, EmptyNearCacheService::new)) {
+                    this.remoteCache = remoteCacheContainer.administration().getOrCreateCache(cacheName, cacheConfiguration);
+                }
             }
         } catch (HotRodClientException ex) {
             throw new PersistenceException(ex);
@@ -102,12 +109,12 @@ public class HotRodStore<K, V> implements SegmentedAdvancedLoadWriteStore<K, V>,
 
     @Override
     public void start() {
-        // Do nothing -- remoteCacheContainer is already started
+        this.remoteCache.start();
     }
 
     @Override
     public void stop() {
-        // Do nothing -- remoteCacheContainer lifecycle is controlled by the application server
+        this.remoteCache.stop();
     }
 
     @Override
