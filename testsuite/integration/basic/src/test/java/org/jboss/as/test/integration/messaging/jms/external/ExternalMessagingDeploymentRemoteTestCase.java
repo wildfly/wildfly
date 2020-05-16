@@ -41,6 +41,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
@@ -104,6 +105,8 @@ public class ExternalMessagingDeploymentRemoteTestCase {
             op = Operations.createAddOperation(getExternalQueueAddress());
             op.get("entries").add(QUEUE_LOOKUP);
             op.get("entries").add("/queue/myAwesomeClientQueue");
+            execute(managementClient, op, true);
+            op = Operations.createWriteAttributeOperation(PathAddress.parseCLIStyleAddress("/subsystem=ejb3").toModelNode(), "default-resource-adapter-name", REMOTE_PCF);
             execute(managementClient, op, true);
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
@@ -188,7 +191,7 @@ public class ExternalMessagingDeploymentRemoteTestCase {
     public static WebArchive createArchive() {
         return create(WebArchive.class, "ClientMessagingDeploymentTestCase.war")
                 .addClass(MessagingServlet.class)
-                .addClasses(QueueMDB.class, TopicMDB.class)
+                .addClasses(DefaultResourceAdapterQueueMDB.class, TopicMDB.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         new SocketPermission("localhost", "resolve")), "permissions.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
