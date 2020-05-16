@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,42 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.OptionalDouble;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Base {@link Externalizer} for enumerations.
+ * Externalizer for an {@link OptionalDouble}.
  * @author Paul Ferraro
  */
-public class EnumExternalizer<E extends Enum<E>> implements Externalizer<E> {
+public class OptionalDoubleExternalizer implements Externalizer<OptionalDouble> {
 
-    private final IntSerializer ordinalExternalizer;
-    private final Class<E> enumClass;
-    private final E[] values;
-
-    public EnumExternalizer(Class<E> enumClass) {
-        this.ordinalExternalizer = IndexSerializer.select(enumClass.getEnumConstants().length);
-        this.enumClass = enumClass;
-        this.values = enumClass.getEnumConstants();
+    @Override
+    public void writeObject(ObjectOutput output, OptionalDouble value) throws IOException {
+        boolean present = value.isPresent();
+        output.writeBoolean(present);
+        if (present) {
+            output.writeDouble(value.getAsDouble());
+        }
     }
 
     @Override
-    public void writeObject(ObjectOutput output, E value) throws IOException {
-        this.ordinalExternalizer.writeInt(output, value.ordinal());
+    public OptionalDouble readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return (input.readBoolean()) ? OptionalDouble.of(input.readDouble()) : OptionalDouble.empty();
     }
 
     @Override
-    public E readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.values[this.ordinalExternalizer.readInt(input)];
-    }
-
-    @Override
-    public Class<E> getTargetClass() {
-        return this.enumClass;
+    public Class<OptionalDouble> getTargetClass() {
+        return OptionalDouble.class;
     }
 }

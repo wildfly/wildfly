@@ -31,11 +31,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.MonthDay;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.Period;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.EnumExternalizerTester;
@@ -59,11 +62,18 @@ public class TimeExternalizerTestCase {
         new ExternalizerTester<>(DefaultExternalizer.LOCAL_DATE.cast(LocalDate.class)).test(LocalDate.now());
         new ExternalizerTester<>(DefaultExternalizer.LOCAL_DATE_TIME.cast(LocalDateTime.class)).test(LocalDateTime.now());
         new ExternalizerTester<>(DefaultExternalizer.LOCAL_TIME.cast(LocalTime.class)).test(LocalTime.now());
+        new ExternalizerTester<>(DefaultExternalizer.OFFSET_DATE_TIME.cast(OffsetDateTime.class)).test(OffsetDateTime.now(ZoneOffset.UTC));
+        new ExternalizerTester<>(DefaultExternalizer.OFFSET_DATE_TIME.cast(OffsetDateTime.class)).test(OffsetDateTime.now(ZoneOffset.MIN));
+        new ExternalizerTester<>(DefaultExternalizer.OFFSET_DATE_TIME.cast(OffsetDateTime.class)).test(OffsetDateTime.now(ZoneOffset.MAX));
+        new ExternalizerTester<>(DefaultExternalizer.OFFSET_TIME.cast(OffsetTime.class)).test(OffsetTime.now(ZoneOffset.UTC));
+        new ExternalizerTester<>(DefaultExternalizer.OFFSET_TIME.cast(OffsetTime.class)).test(OffsetTime.now(ZoneOffset.MIN));
+        new ExternalizerTester<>(DefaultExternalizer.OFFSET_TIME.cast(OffsetTime.class)).test(OffsetTime.now(ZoneOffset.MAX));
         new ExternalizerTester<>(DefaultExternalizer.MONTH_DAY.cast(MonthDay.class)).test(MonthDay.now());
         new ExternalizerTester<>(DefaultExternalizer.PERIOD.cast(Period.class)).test(Period.between(LocalDate.ofEpochDay(0), LocalDate.now()));
         new ExternalizerTester<>(DefaultExternalizer.YEAR.cast(Year.class)).test(Year.now());
         new ExternalizerTester<>(DefaultExternalizer.YEAR_MONTH.cast(YearMonth.class)).test(YearMonth.now());
         new ExternalizerTester<>(DefaultExternalizer.ZONE_OFFSET.cast(ZoneOffset.class)).test(ZoneOffset.UTC);
         new ExternalizerTester<>(DefaultExternalizer.ZONE_ID.cast(ZoneId.class)).test(ZoneId.of("America/New_York"));
+        new ExternalizerTester<>(DefaultExternalizer.ZONED_DATE_TIME.cast(ZonedDateTime.class)).test(ZonedDateTime.now(ZoneOffset.UTC));
     }
 }
