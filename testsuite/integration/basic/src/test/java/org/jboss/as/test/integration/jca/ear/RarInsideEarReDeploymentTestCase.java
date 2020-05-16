@@ -125,7 +125,7 @@ public class RarInsideEarReDeploymentTestCase extends
                 "ra.xml")
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),
+                                "Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),
                         "MANIFEST.MF");
 
         final EnterpriseArchive ear = ShrinkWrap.create(
