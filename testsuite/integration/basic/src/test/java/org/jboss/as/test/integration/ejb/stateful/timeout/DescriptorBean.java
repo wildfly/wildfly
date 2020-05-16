@@ -22,18 +22,22 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 /**
  * stateful session bean
- *
  */
 public class DescriptorBean {
+    static volatile boolean preDestroy;
 
-    public static volatile boolean preDestroy = false;
+    @PostConstruct
+    private void postConstruct() {
+        preDestroy = false;
+    }
 
     @PreDestroy
-    public void preDestroy() {
+    private void preDestroy() {
         preDestroy = true;
     }
 
