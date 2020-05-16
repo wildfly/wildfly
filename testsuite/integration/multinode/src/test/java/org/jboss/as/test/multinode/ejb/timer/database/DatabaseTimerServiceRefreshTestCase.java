@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2020, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.multinode.ejb.timer.database;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -30,13 +31,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.multinode.ejb.timer.database.DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.getRemoteContext;
+import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.CLIENT1;
+import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.SERVER1;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.net.SocketPermission;
 import java.security.SecurityPermission;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
 
 import org.h2.tools.Server;
@@ -49,37 +54,25 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/**
- * Tests that timers are never doubled up
- *
- *
- * @author Stuart Douglas
- */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(DatabaseTimerServiceMultiNodeTestCase.DatabaseTimerServiceTestCaseServerSetup.class)
-public class DatabaseTimerServiceMultiNodeTestCase {
-
-    public static final String ARCHIVE_NAME = "testTimerServiceSimple";
-    public static final int TIMER_COUNT = 100;
+@ServerSetup(DatabaseTimerServiceRefreshTestCase.DatabaseTimerServiceTestCaseServerSetup.class)
+public class DatabaseTimerServiceRefreshTestCase {
+    private static final String ARCHIVE_NAME = "testTimerServiceRefresh";
     private static Server server;
-
-    private static final int TIMER_DELAY = 400;
+    private static final long TIMER_DELAY = TimeUnit.MINUTES.toMillis(20);
 
     @AfterClass
     public static void afterClass() {
-        if(server != null) {
+        if (server != null) {
             server.stop();
         }
     }
@@ -89,7 +82,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
 
-            if(server == null) {
+            if (server == null) {
                 //we need a TCP server that can be shared between the two servers
                 server = Server.createTcpServer().start();
             }
@@ -124,7 +117,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
             op.get(OP_ADDR).add("database-data-store", "dbstore");
             op.get("datasource-jndi-name").set("java:jboss/datasources/TimeDs");
             op.get("database").set("postgresql");
-            op.get("refresh-interval").set(100);
+            op.get("refresh-interval").set(TimeUnit.MINUTES.toMillis(30));
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
@@ -153,10 +146,8 @@ public class DatabaseTimerServiceMultiNodeTestCase {
     @ContainerResource("multinode-server")
     private ManagementClient serverClient;
 
-
     @ContainerResource("multinode-client")
     private ManagementClient clientClient;
-
 
     @Deployment(name = "server", testable = false)
     @TargetsContainer("multinode-server")
@@ -172,14 +163,11 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
     private static Archive<?> createDeployment(boolean client) {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
-        war.addClasses(Collector.class, RemoteTimedBean.class, TimedObjectTimerServiceBean.class, TimerData.class, FileUtils.class);
-        war.addAsWebInfResource(DatabaseTimerServiceMultiNodeTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        if(!client) {
-            war.addClass(CollectionSingleton.class);
-        }
-        war.addAsResource(new StringAsset(client ? "client" : "server"), "node.txt");
+        war.addClasses(RefreshInterceptor.class, RefreshIF.class, RefreshBeanBase.class, RefreshBean1.class, RefreshBean2.class);
+        war.addAsWebInfResource(DatabaseTimerServiceRefreshTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+
         if (client) {
-            war.addAsManifestResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+            war.addAsManifestResource(DatabaseTimerServiceRefreshTestCase.class.getPackage(), "jboss-ejb-client-refresh-test.xml", "jboss-ejb-client.xml");
             war.addAsManifestResource(
                     createPermissionsXmlAsset(
                             new SocketPermission("*:9092", "connect,resolve"),
@@ -189,49 +177,84 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         return war;
     }
 
+    /**
+     * Verifies that application can programmatically refresh timers across different nodes,
+     * when programmatic refresh is enabled through interceptor.
+     */
     @Test
-    public void testEjbTimeoutOnOtherNode() throws Exception {
+    public void testTimerProgrammaticRefresh() throws Exception {
+        Context clientContext = null;
+        Context serverContext = null;
 
-        Context clientContext = getRemoteContext(clientClient);
         try {
-            RemoteTimedBean clientBean = (RemoteTimedBean) clientContext.lookup(ARCHIVE_NAME + "/" + TimedObjectTimerServiceBean.class.getSimpleName() + "!" + RemoteTimedBean.class.getName());
-            Set<String> names = new HashSet<>();
-            long time = System.currentTimeMillis() + TIMER_DELAY;
-            for (int i = 0; i < TIMER_COUNT; ++i) {
-                String name = "timer" + i;
-                clientBean.scheduleTimer(time, name);
-                names.add(name);
+            clientContext = getRemoteContext(clientClient);
+            serverContext = getRemoteContext(serverClient);
+
+            RefreshIF bean1Client = (RefreshIF) clientContext.lookup(ARCHIVE_NAME + "/" + RefreshBean1.class.getSimpleName() + "!" + RefreshIF.class.getName());
+            RefreshIF bean2Client = (RefreshIF) clientContext.lookup(ARCHIVE_NAME + "/" + RefreshBean2.class.getSimpleName() + "!" + RefreshIF.class.getName());
+
+            RefreshIF bean1Server = (RefreshIF) serverContext.lookup(ARCHIVE_NAME + "/" + RefreshBean1.class.getSimpleName() + "!" + RefreshIF.class.getName());
+            RefreshIF bean2Server = (RefreshIF) serverContext.lookup(ARCHIVE_NAME + "/" + RefreshBean2.class.getSimpleName() + "!" + RefreshIF.class.getName());
+
+            RefreshIF[] serverBeans = {bean1Server, bean2Server};
+            RefreshIF[] clientBeans = {bean1Client, bean2Client};
+
+            // client bean 1 creates a timer in client node
+            // both client beans will see this newly-created timer
+            bean1Client.createTimer(TIMER_DELAY, CLIENT1);
+            for (RefreshIF b : clientBeans) {
+                verifyTimerInfo(b.getAllTimerInfoNoRefresh(), 1, CLIENT1);
+            }
+            // without refresh, both server beans see no timer
+            for (RefreshIF b : serverBeans) {
+                verifyTimerInfo(b.getAllTimerInfoNoRefresh(), 0);
+            }
+            // after server bean 1 refreshes, both server beans see the timer created in client node
+            verifyTimerInfo(bean1Server.getAllTimerInfoWithRefresh(), 1, CLIENT1);
+            verifyTimerInfo(bean2Server.getAllTimerInfoNoRefresh(), 1, CLIENT1);
+
+            // after cancelling the timer, client beans see no timer
+            // but both server beans still see 1 obsolete timer
+            bean1Client.cancelTimers();
+            for (RefreshIF b : clientBeans) {
+                verifyTimerInfo(b.getAllTimerInfoNoRefresh(), 0);
+            }
+            for (RefreshIF b : serverBeans) {
+                verifyTimerInfo(b.getAllTimerInfoNoRefresh(), 1, CLIENT1);
             }
 
-            final Context remoteContext = getRemoteContext(serverClient);
-            try {
-                Collector serverBean = (Collector) remoteContext.lookup(ARCHIVE_NAME + "/" + CollectionSingleton.class.getSimpleName() + "!" + Collector.class.getName());
-                List<TimerData> res = serverBean.collect(TIMER_COUNT);
-                Assert.assertEquals("Expected " + TIMER_COUNT + " was " + res.size() + " " + res, TIMER_COUNT, res.size());
-                boolean server = false;
-                boolean client = false;
-                final Set<String> newNames = new HashSet<>(names);
-                for (TimerData r : res) {
-                    if (!newNames.remove(r.getInfo())) {
-                        if (!names.contains(r.getInfo())) {
-                            throw new RuntimeException("Timer " + r.getInfo() + " not run " + res);
-                        } else {
-                            throw new RuntimeException("Timer " + r.getInfo() + " run twice " + res);
-                        }
-                    }
-                    if (r.getNode().equals("client")) {
-                        client = true;
-                    } else if (r.getNode().equals("server")) {
-                        server = true;
-                    }
-                }
-                Assert.assertTrue(client);
-                Assert.assertTrue(server);
-            } finally {
-                remoteContext.close();
+            // after server bean 2 refreshes, both server beans see no timer
+            verifyTimerInfo(bean2Server.getAllTimerInfoWithRefresh2(), 0);
+            verifyTimerInfo(bean1Server.getAllTimerInfoNoRefresh(), 0);
+
+            // after server bean 1 creates a timer, both client beans see no timer
+            // after client bean 2 refreshes, both client beans see this timer
+            bean1Server.createTimer(TIMER_DELAY, SERVER1);
+            for (RefreshIF b : clientBeans) {
+                verifyTimerInfo(b.getAllTimerInfoNoRefresh(), 0);
             }
+            verifyTimerInfo(bean2Client.getAllTimerInfoWithRefresh(), 1, SERVER1);
+            verifyTimerInfo(bean1Client.getAllTimerInfoNoRefresh(), 1, SERVER1);
+
+            // server bean 1 cancels this timer
+            // after refresh, both client beans see no timer
+            bean1Server.cancelTimers();
+            verifyTimerInfo(bean1Client.getAllTimerInfoWithRefresh2(), 0);
+            verifyTimerInfo(bean2Client.getAllTimerInfoNoRefresh(), 0);
         } finally {
-            clientContext.close();
+            if (clientContext != null) {
+                clientContext.close();
+            }
+            if (serverContext != null) {
+                serverContext.close();
+            }
+        }
+    }
+
+    private void verifyTimerInfo(List<Serializable> infoList, int expectedSize, Serializable... expectedInfo) {
+        assertEquals(expectedSize, infoList.size());
+        for (Serializable e : expectedInfo) {
+            assertTrue("Expecting timer info: " + e + " not found in timer info list: " + infoList, infoList.contains(e));
         }
     }
 }
