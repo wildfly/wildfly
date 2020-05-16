@@ -599,6 +599,8 @@ public class TimerImpl implements Timer {
             sb.append(this.persistent);
             sb.append(" timerService=");
             sb.append(this.timerService);
+            sb.append(" previousRun=");
+            sb.append(this.previousRun);
             sb.append(" initialExpiration=");
             sb.append(this.initialExpiration);
             sb.append(" intervalDuration(in milli sec)=");
