@@ -37,7 +37,7 @@
         <module name="javax.security.auth.message.api" />
         <module name="javax.api" />
         <module name="javax.interceptor.api" />
-        <module name="javax.annotation.api" />
+        <module name="ee.annotation.api" />
         <module name="javax.inject.api" />
     </dependencies>
 </module>

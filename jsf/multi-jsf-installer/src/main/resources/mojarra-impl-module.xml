@@ -29,7 +29,7 @@
 
     <dependencies>
         <module name="javax.faces.api:${jsf-impl-name}-${jsf-version}"/>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
         <module name="javax.websocket.api" />

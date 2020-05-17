@@ -53,7 +53,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier JBOSS_AS_EE = ModuleIdentifier.create("org.jboss.as.ee");
 
     private static final ModuleIdentifier[] JAVA_EE_API_MODULES = {
-            ModuleIdentifier.create("javax.annotation.api"),
+            ModuleIdentifier.create("ee.annotation.api"),
             ModuleIdentifier.create("javax.enterprise.concurrent.api"),
             ModuleIdentifier.create("javax.interceptor.api"),
             ModuleIdentifier.create(JSON_API),

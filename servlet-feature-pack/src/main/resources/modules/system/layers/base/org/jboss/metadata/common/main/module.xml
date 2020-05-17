@@ -32,7 +32,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.api"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.logging"/>

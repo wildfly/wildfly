@@ -36,7 +36,7 @@
         <module name="org.eclipse.microprofile.jwt.auth.api"/>
         <module name="org.jboss.logging" />
         <module name="javax.enterprise.api" />
-        <module name="javax.annotation.api" />
+        <module name="ee.annotation.api" />
         <module name="javax.json.api" />
         <module name="javax.ws.rs.api" />
         <module name="io.smallrye.config" services="import"/>

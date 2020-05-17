@@ -36,7 +36,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.concurrent.api"/>
         <module name="javax.el.api"/>

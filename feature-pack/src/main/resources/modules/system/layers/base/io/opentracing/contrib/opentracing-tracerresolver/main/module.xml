@@ -25,7 +25,7 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
 
         <module name="io.opentracing.opentracing-api"/>
         <module name="io.opentracing.opentracing-util"/>

@@ -33,7 +33,7 @@
 
     <dependencies>
         <module name="asm.asm"/>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.wildfly.security.elytron-private"/>

@@ -46,6 +46,6 @@
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.extension.microprofile.config-smallrye" />
         <module name="javax.enterprise.api" />
-        <module name="javax.annotation.api" />
+        <module name="ee.annotation.api" />
     </dependencies>
 </module>

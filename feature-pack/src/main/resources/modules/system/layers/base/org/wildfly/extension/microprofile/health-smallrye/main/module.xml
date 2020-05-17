@@ -47,7 +47,7 @@
         <module name="org.wildfly.extension.microprofile.config-smallrye" />
         <module name="org.jboss.as.weld.common" />
         <module name="javax.enterprise.api" />
-        <module name="javax.annotation.api" />
+        <module name="ee.annotation.api" />
         <module name="javax.json.api" />
     </dependencies>
 </module>

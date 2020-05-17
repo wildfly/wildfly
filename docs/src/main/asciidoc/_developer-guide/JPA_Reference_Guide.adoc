@@ -534,7 +534,7 @@ depends on OpenJPA, to deploy on WildFly.
     </resources>
  
     <dependencies>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>
@@ -573,7 +573,7 @@ that depends on EclipseLink, to deploy on WildFly.
     <dependencies>
         <module name="asm.asm"/>
         <module name="javax.api"/>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>

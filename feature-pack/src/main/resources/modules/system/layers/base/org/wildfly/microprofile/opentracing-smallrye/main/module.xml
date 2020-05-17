@@ -27,7 +27,7 @@
     <dependencies>
         <module name="javax.api"/> <!-- for javax.naming -->
 
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.enterprise.concurrent.api"/>
         <module name="javax.inject.api"/>

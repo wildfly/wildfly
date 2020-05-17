@@ -41,7 +41,7 @@
         <module name="io.undertow.jsp"/>
         <module name="io.undertow.websocket"/>
         <module name="sun.jdk"/>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.security.auth.message.api"/>
         <module name="javax.servlet.api"/>

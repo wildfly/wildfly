@@ -33,7 +33,7 @@
 
     <dependencies>
         <module name="org.jboss.metadata.common"/>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.servlet.api" optional="true"/>
         <module name="javax.servlet.jsp.api" optional="true"/>

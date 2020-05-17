@@ -44,7 +44,7 @@
         <module name="javax.orb.api"/>
         <module name="javax.enterprise.api"/>
         <module name="org.jboss.weld.core"/>
-        <module name="javax.annotation.api" export="true" />
+        <module name="ee.annotation.api" export="true" />
         <module name="javax.interceptor.api" export="true" />
         <module name="org.wildfly.transaction.client"/>
         <module name="org.jboss.as.transactions">

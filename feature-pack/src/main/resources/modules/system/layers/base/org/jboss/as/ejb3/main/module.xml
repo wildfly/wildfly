@@ -32,7 +32,7 @@
 
     <dependencies>
         <module name="org.wildfly.http-client.ejb" />
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.ejb.api"/>
         <module name="javax.interceptor.api"/>

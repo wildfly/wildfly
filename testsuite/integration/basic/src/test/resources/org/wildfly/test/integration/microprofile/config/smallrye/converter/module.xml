@@ -30,6 +30,6 @@
 
     <dependencies>
         <module name="org.eclipse.microprofile.config.api"/>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
     </dependencies>
 </module>

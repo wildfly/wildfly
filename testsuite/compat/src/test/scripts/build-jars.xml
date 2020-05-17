@@ -53,7 +53,7 @@
 &lt;dependencies&gt;
 &lt;module name="asm.asm"/&gt;
 &lt;module name="javax.api"/&gt;
-&lt;module name="javax.annotation.api"/&gt;
+&lt;module name="ee.annotation.api"/&gt;
 &lt;module name="javax.enterprise.api"/&gt;
 &lt;module name="javax.persistence.api"/&gt;
 &lt;module name="javax.transaction.api"/&gt;
@@ -87,7 +87,7 @@
 &lt;/resources&gt;
 
 &lt;dependencies&gt;
-&lt;module name="javax.annotation.api"/&gt;
+&lt;module name="ee.annotation.api"/&gt;
 &lt;module name="javax.enterprise.api"/&gt;
 &lt;module name="javax.persistence.api"/&gt;
 &lt;module name="javax.transaction.api"/&gt;

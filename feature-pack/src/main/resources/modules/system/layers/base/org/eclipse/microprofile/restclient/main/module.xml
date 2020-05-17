@@ -34,7 +34,7 @@
 
   <dependencies>
     <module name="javax.api"/>
-    <module name="javax.annotation.api"/>
+    <module name="ee.annotation.api"/>
     <module name="javax.enterprise.api"/>
     <module name="javax.xml.bind.api"/>
     <module name="javax.ws.rs.api"/>

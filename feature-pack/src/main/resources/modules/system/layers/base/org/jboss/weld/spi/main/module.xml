@@ -35,7 +35,7 @@
     <dependencies>
         <module name="java.desktop"/>
         <module name="java.naming"/>
-        <module name="javax.annotation.api"/>
+        <module name="ee.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="javax.persistence.api"/>
