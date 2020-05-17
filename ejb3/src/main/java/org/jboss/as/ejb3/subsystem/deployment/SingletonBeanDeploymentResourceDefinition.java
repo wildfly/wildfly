@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.subsystem.deployment;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -42,7 +43,7 @@ public class SingletonBeanDeploymentResourceDefinition extends AbstractEJBCompon
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    static final SimpleAttributeDefinition DEPENDS_ON = new SimpleAttributeDefinitionBuilder("depends-on", ModelType.LIST)
+    static final StringListAttributeDefinition DEPENDS_ON = StringListAttributeDefinition.Builder.of("depends-on")
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 

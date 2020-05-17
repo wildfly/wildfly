@@ -25,15 +25,14 @@ package org.jboss.as.ejb3.subsystem.deployment;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -56,15 +55,15 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-     static final SimpleAttributeDefinition JNDI_NAMES = new SimpleAttributeDefinitionBuilder("jndi-names", ModelType.LIST)
+     static final StringListAttributeDefinition JNDI_NAMES = StringListAttributeDefinition.Builder.of("jndi-names")
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-     static final SimpleAttributeDefinition BUSINESS_LOCAL = new SimpleAttributeDefinitionBuilder("business-local", ModelType.LIST)
+     static final StringListAttributeDefinition BUSINESS_LOCAL = StringListAttributeDefinition.Builder.of("business-local")
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-     static final SimpleAttributeDefinition BUSINESS_REMOTE = new SimpleAttributeDefinitionBuilder("business-remote", ModelType.LIST)
+     static final StringListAttributeDefinition BUSINESS_REMOTE = StringListAttributeDefinition.Builder.of("business-remote")
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
@@ -72,7 +71,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-     static final SimpleAttributeDefinition ASYNC_METHODS = new SimpleAttributeDefinitionBuilder("async-methods", ModelType.LIST)
+     static final StringListAttributeDefinition ASYNC_METHODS = StringListAttributeDefinition.Builder.of("async-methods")
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
@@ -114,7 +113,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    public static final ListAttributeDefinition DECLARED_ROLES = new PrimitiveListAttributeDefinition.Builder("declared-roles", ModelType.STRING)
+    public static final StringListAttributeDefinition DECLARED_ROLES = StringListAttributeDefinition.Builder.of("declared-roles")
             .setRequired(false)
             .setElementValidator(new StringLengthValidator(1))
             .setStorageRuntime()
