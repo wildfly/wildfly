@@ -52,7 +52,7 @@
         <module name="java.xml"/>
         <module name="ee.annotation.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.enterprise.concurrent.api"/>
+        <module name="ee.enterprise.concurrent.api"/>
         <module name="javax.interceptor.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>

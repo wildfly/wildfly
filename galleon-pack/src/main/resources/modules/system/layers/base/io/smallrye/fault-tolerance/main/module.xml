@@ -38,7 +38,7 @@
         <module name="ee.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.enterprise.concurrent.api"/>
+        <module name="ee.enterprise.concurrent.api"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.fault-tolerance.api"/>
         <module name="org.eclipse.microprofile.metrics.api"/>
