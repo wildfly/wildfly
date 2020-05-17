@@ -32,14 +32,17 @@
         <artifact name="${org.glassfish:jakarta.el}">
             <filter>
                 <!-- This artifact packages both the API and the impl in the same jar,
-                     but we want to use our own API jar (see javax.el.api module).
-                     So suppress the API packages. -->
+                     but we want to use our own API jar (see ee.el.api module).
+                     So suppress the API packages. Exclude both javax/* and jakarta/*
+                     so regardless of whether this module is used for an EE 8 or EE 9
+                     impl artifact the API packages are excluded. -->
                 <exclude path="javax/*"/>
+                <exclude path="jakarta/*"/>
             </filter>
         </artifact>
     </resources>
     <dependencies>
             <module name="javax.api"/>
-            <module name="javax.el.api" services="import" export="true"/>
+            <module name="ee.el.api" services="import" export="true"/>
     </dependencies>
 </module>

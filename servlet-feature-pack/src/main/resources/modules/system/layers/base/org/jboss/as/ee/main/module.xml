@@ -39,7 +39,7 @@
         <module name="ee.annotation.api"/>
         <module name="javax.api"/>
         <module name="ee.enterprise.concurrent.api"/>
-        <module name="javax.el.api"/>
+        <module name="ee.el.api"/>
         <module name="javax.interceptor.api"/>
         <module name="org.glassfish.javax.enterprise.concurrent"/>
         <module name="org.jboss.staxmapper"/>
