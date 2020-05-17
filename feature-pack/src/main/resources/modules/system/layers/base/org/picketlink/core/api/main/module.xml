@@ -35,7 +35,7 @@
     <dependencies>
         <module name="javax.enterprise.api" />
         <module name="javax.inject.api" />
-        <module name="javax.servlet.api" optional="true" />
+        <module name="ee.servlet.api" optional="true" />
         <module name="ee.persistence.api" optional="true" />
         <module name="org.picketlink.common" />
         <module name="org.picketlink.idm.api" export="true" />

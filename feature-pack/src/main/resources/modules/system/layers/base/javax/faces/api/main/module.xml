@@ -26,7 +26,7 @@
     <dependencies>
         <module name="com.sun.jsf-impl"/>
         <module name="javax.enterprise.api" export="true"/>
-        <module name="javax.servlet.api" export="true"/>
+        <module name="ee.servlet.api" export="true"/>
         <module name="javax.servlet.jsp.api" export="true"/>
         <module name="javax.servlet.jstl.api" export="true"/>
         <module name="javax.validation.api" export="true"/>

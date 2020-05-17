@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.5" name="javax.servlet.jsp.api">
     <dependencies>
-        <module name="javax.servlet.api" export="true"/>
+        <module name="ee.servlet.api" export="true"/>
         <module name="org.glassfish.jakarta.el" export="true"/>
     </dependencies>
 

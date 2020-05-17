@@ -33,7 +33,7 @@
 
     <dependencies>
         <module name="javax.security.enterprise.api" />
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.security.auth.message.api" />
         <module name="javax.api" />

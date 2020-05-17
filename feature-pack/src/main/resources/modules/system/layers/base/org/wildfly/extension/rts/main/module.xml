@@ -50,7 +50,7 @@
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.jts"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="io.undertow.core"/>
         <module name="io.undertow.servlet"/>
         <module name="org.wildfly.extension.undertow"/>

@@ -34,7 +34,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="sun.jdk"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
         <module name="javax.servlet.jstl.api"/>
         <module name="org.jboss.logging"/>

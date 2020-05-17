@@ -35,7 +35,7 @@
     <dependencies>
         <module name="javax.api" />
         <module name="javax.security.auth.message.api"/>
-        <module name="javax.servlet.api" />
+        <module name="ee.servlet.api" />
         <module name="javax.jws.api" />
         <module name="javax.wsdl4j.api" />
         <module name="javax.xml.bind.api" />

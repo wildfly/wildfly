@@ -30,7 +30,7 @@
     <dependencies>
         <module name="javax.faces.api" slot="myfaces"/>
         <module name="ee.annotation.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
         <module name="javax.websocket.api" />
         <module name="javax.validation.api"/>

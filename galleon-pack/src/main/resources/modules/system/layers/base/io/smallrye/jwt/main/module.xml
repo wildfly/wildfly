@@ -30,7 +30,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.security.enterprise.api" />
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="org.bitbucket.jose4j"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.jwt.auth.api"/>

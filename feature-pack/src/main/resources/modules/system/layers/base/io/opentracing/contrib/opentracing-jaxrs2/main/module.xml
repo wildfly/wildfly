@@ -25,7 +25,7 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.ws.rs.api"/>
 
         <module name="io.opentracing.opentracing-api"/>

@@ -38,7 +38,7 @@
         <module name="org.jboss.xts" />
         <module name="org.jboss.resteasy.resteasy-jaxrs" />
         <module name="org.jboss.weld.core" />
-        <module name="javax.servlet.api" />
+        <module name="ee.servlet.api" />
         <module name="javax.interceptor.api"  export="true" />
     </dependencies>
 </module>

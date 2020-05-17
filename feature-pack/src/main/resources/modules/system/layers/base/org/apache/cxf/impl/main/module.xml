@@ -71,7 +71,7 @@
         <module name="javax.jws.api" />
         <module name="javax.mail.api" />
         <module name="javax.resource.api" />
-        <module name="javax.servlet.api" />
+        <module name="ee.servlet.api" />
         <module name="javax.wsdl4j.api" />
         <module name="javax.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>

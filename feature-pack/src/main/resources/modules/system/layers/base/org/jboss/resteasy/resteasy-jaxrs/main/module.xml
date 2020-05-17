@@ -43,7 +43,7 @@
         <module name="org.apache.log4j"/>
         <module name="org.hibernate.validator" optional="true" services="import"/>
         <module name="org.slf4j" />
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="org.jboss.resteasy.resteasy-validator-provider" optional="true" services="export" export="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.reactivestreams"/>

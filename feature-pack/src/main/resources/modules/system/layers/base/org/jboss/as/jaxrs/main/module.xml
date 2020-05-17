@@ -39,7 +39,7 @@
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.ws.rs.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.wildfly.security.elytron-private"/>

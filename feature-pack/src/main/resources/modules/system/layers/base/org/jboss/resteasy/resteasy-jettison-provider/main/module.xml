@@ -38,7 +38,7 @@
         <module name="javax.xml.bind.api"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>

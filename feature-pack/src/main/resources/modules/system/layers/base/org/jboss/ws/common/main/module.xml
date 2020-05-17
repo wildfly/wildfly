@@ -37,7 +37,7 @@
         <module name="ee.annotation.api"/>
         <module name="javax.xml.stream.api"/>
         <module name="javax.jws.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.wsdl4j.api" />
         <module name="javax.xml.ws.api"/>
         <module name="org.jboss.ws.api"/>

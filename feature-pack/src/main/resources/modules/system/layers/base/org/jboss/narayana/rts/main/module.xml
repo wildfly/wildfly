@@ -38,7 +38,7 @@
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="javax.ws.rs.api" services="export"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.xml.bind.api"/>
         <module name="javax.ejb.api"/>
         <module name="org.jboss.jts"/>

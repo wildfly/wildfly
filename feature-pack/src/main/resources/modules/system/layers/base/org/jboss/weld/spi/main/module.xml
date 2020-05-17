@@ -39,7 +39,7 @@
         <module name="javax.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="ee.persistence.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="org.jboss.weld.api"/>

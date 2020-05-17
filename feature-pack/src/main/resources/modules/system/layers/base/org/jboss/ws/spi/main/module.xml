@@ -34,7 +34,7 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.xml.stream.api"/>
         <module name="javax.xml.ws.api"/>
         <module name="org.jboss.logging"/>

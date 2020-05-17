@@ -41,7 +41,7 @@
         <module name="javax.api"/>
         <module name="javax.ejb.api"/>
         <module name="javax.jws.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.xml.ws.api"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.jandex"/>

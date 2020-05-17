@@ -39,7 +39,7 @@
         <module name="javax.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="javax.interceptor.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.weld.spi" />

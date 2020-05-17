@@ -28,7 +28,7 @@
         <module name="javax.xml.soap.api" export="true"/>
         <!--  javax.xml.namespace.QName -->
         <!--  javax.servlet.ServletContext -->
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
     </dependencies>
 
     <resources>

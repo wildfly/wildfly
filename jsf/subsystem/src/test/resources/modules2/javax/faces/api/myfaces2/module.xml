@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.5" name="javax.faces.api" slot="myfaces2">
     <dependencies>
         <module name="ee.el.api" export="true"/>
-        <module name="javax.servlet.api" export="true"/>
+        <module name="ee.servlet.api" export="true"/>
         <module name="javax.servlet.jsp.api" export="true"/>
         <module name="javax.servlet.jstl.api" export="true"/>
         <module name="javax.validation.api" export="true"/>

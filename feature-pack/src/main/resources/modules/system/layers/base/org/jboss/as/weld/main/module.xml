@@ -54,7 +54,7 @@
         <module name="javax.enterprise.api"/>
         <module name="ee.enterprise.concurrent.api"/>
         <module name="javax.interceptor.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>

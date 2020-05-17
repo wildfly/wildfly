@@ -35,7 +35,7 @@
         <module name="org.jboss.metadata.common"/>
         <module name="ee.annotation.api"/>
         <module name="javax.api"/>
-        <module name="javax.servlet.api" optional="true"/>
+        <module name="ee.servlet.api" optional="true"/>
         <module name="javax.servlet.jsp.api" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.logging"/>

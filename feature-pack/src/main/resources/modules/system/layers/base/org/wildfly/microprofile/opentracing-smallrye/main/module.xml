@@ -32,7 +32,7 @@
         <module name="ee.enterprise.concurrent.api"/>
         <module name="javax.inject.api"/>
         <module name="javax.interceptor.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="ee.servlet.api"/>
         <module name="javax.ws.rs.api"/>
 
         <module name="io.opentracing.opentracing-api"/>
