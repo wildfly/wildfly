@@ -48,7 +48,7 @@
         <module name="javax.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>
         <module name="com.sun.xml.messaging.saaj" export="true" services="export"/>
-        <module name="javax.xml.soap.api" />
+        <module name="ee.xml.soap.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.ws.api" />
         <module name="com.sun.xml.fastinfoset"/>

@@ -30,7 +30,7 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.xml.soap.api"/>
+        <module name="ee.xml.soap.api"/>
         <module name="javax.xml.ws.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>

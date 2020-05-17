@@ -39,7 +39,7 @@
         <module name="org.jboss.ws.api" services="export"/>
         <module name="org.jboss.ws.jaxws-client" services="export"/>
         <module name="org.jboss.ws.cxf.jbossws-cxf-client" services="export"/>
-        <module name="javax.xml.soap.api"/>
+        <module name="ee.xml.soap.api"/>
         <module name="javax.xml.ws.api"/>
         <module name="javax.xml.stream.api"/>
 

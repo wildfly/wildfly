@@ -34,7 +34,7 @@
 
     <dependencies>
         <module name="javax.api" />
-        <module name="javax.xml.soap.api" />
+        <module name="ee.xml.soap.api" />
         <module name="javax.xml.stream.api"/>
         <module name="javax.activation.api"/>
         <module name="org.apache.xerces" services="import" />
