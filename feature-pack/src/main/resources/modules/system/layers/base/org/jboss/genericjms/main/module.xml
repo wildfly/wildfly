@@ -28,7 +28,7 @@
     <dependencies>
         <module name="javax.api" slot="main"/>
         <!-- WFLY-4656 export the JMS API module,  otherwise MDB using this RA will not found JMS classes -->
-        <module name="javax.jms.api" slot="main" export="true"/>
+        <module name="ee.jms.api" slot="main" export="true"/>
         <module name="javax.resource.api" slot="main"/>
         <module name="org.jboss.logging" slot="main"/>
 

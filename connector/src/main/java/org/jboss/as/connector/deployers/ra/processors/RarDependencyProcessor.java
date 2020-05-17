@@ -38,7 +38,7 @@ import org.jboss.modules.ModuleLoader;
 
 public class RarDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier JMS_ID = ModuleIdentifier.create("javax.jms.api");
+    private static ModuleIdentifier JMS_ID = ModuleIdentifier.create("ee.jms.api");
     private static ModuleIdentifier IRON_JACAMAR_ID = ModuleIdentifier.create("org.jboss.ironjacamar.api");
     private static ModuleIdentifier IRON_JACAMAR_IMPL_ID = ModuleIdentifier.create("org.jboss.ironjacamar.impl");
     private static ModuleIdentifier VALIDATION_ID = ModuleIdentifier.create("javax.validation.api");

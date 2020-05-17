@@ -41,7 +41,7 @@
     <dependencies>
         <module name="com.google.guava"/>
         <module name="javax.api"/>
-        <module name="javax.jms.api" />
+        <module name="ee.jms.api" />
         <module name="javax.json.api"/>
         <module name="org.apache.commons.beanutils" />
         <module name="org.apache.activemq.artemis.journal" export="true"/>

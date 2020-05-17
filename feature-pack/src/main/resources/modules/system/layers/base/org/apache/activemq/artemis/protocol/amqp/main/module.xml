@@ -28,7 +28,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.jms.api"/>
+        <module name="ee.jms.api"/>
         <module name="org.apache.qpid.proton"/>
         <module name="io.netty"/>
         <!-- required to load ActiveMQ protocol SPI -->

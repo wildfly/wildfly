@@ -31,7 +31,7 @@
             <subsystem name="undertow" />
         </exclude-subsystems>
         <exclusions>
-            <module name="javax.jms.api"></module>
+            <module name="ee.jms.api"></module>
         </exclusions>
     </deployment>
 </jboss-deployment-structure>

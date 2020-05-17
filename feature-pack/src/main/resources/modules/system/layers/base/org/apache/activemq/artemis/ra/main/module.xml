@@ -34,7 +34,7 @@
     <dependencies>
         <module name="io.netty"/>
         <module name="javax.api"/>
-        <module name="javax.jms.api" />
+        <module name="ee.jms.api" />
         <module name="javax.resource.api"/>
         <module name="org.apache.activemq.artemis"/>
         <module name="org.jboss.jboss-transaction-spi"/>

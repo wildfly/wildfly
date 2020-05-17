@@ -28,6 +28,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.jms.api" />
+        <module name="ee.jms.api" />
     </dependencies>
 </module>

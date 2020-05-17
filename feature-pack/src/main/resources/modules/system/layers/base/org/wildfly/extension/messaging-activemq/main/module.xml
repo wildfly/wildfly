@@ -38,7 +38,7 @@
         <module name="io.netty" />
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.jms.api"/>
+        <module name="ee.jms.api"/>
         <module name="javax.json.api"/>
         <module name="javax.resource.api" />
         <module name="javax.transaction.api"/>

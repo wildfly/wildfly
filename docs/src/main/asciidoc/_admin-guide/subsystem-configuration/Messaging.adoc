@@ -453,7 +453,7 @@ We define the module in `module.xml`:
     <dependencies>
        <!-- add the dependencies required by JMS Bridge code                -->
        <module name="javax.api" />
-       <module name="javax.jms.api" />
+       <module name="ee.jms.api" />
        <module name="javax.transaction.api"/>
        <module name="org.jboss.remote-naming"/>
        <!-- we depend on org.apache.activemq.artemis module since we will send messages to  -->

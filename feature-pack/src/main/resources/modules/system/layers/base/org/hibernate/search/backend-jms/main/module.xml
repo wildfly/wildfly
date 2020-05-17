@@ -31,7 +31,7 @@
     <dependencies>
         <module name="org.hibernate.search.engine"/>
         <module name="org.jboss.logging"/>
-        <module name="javax.jms.api"/>
+        <module name="ee.jms.api"/>
         <module name="org.jboss.as.naming"/>
         <module name="javax.api"/>
     </dependencies>

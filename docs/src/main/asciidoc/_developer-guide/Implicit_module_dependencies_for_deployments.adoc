@@ -95,7 +95,7 @@ org.jboss.resteasy.resteasy-multipart-provider
 org.jboss.resteasy.async-http-servlet-30 |The presence of JAX-RS
 annotations in the deployment
 
-|JCA subsystem |javax.resource.api |javax.jms.api javax.validation.api
+|JCA subsystem |javax.resource.api |ee.jms.api javax.validation.api
 org.jboss.logging org.jboss.ironjacamar.api org.jboss.ironjacamar.impl
 org.hibernate.validator |If the deployment is a resource adaptor (RAR)
 deployment.
