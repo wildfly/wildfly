@@ -45,7 +45,7 @@
         <module name="org.jboss.msc"/>
         <module name="javax.enterprise.api"/>
         <module name="org.wildfly.transaction.client"/>
-        <module name="javax.persistence.api"/>
+        <module name="ee.persistence.api"/>
         <module name="javax.transaction.api"/>
     </dependencies>
 

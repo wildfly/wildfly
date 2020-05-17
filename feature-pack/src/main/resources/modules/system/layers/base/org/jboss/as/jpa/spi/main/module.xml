@@ -32,7 +32,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.persistence.api"/>
+        <module name="ee.persistence.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>

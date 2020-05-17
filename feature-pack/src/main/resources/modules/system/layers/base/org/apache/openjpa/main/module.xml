@@ -35,7 +35,7 @@
     <dependencies>
         <module name="ee.annotation.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.persistence.api"/>
+        <module name="ee.persistence.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="javax.xml.bind.api"/>

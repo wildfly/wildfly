@@ -36,7 +36,7 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.persistence.api" optional="true"/>
+        <module name="ee.persistence.api" optional="true"/>
         <module name="javax.resource.api" optional="true"/>
         <module name="javax.security.auth.message.api" optional="true"/>
         <module name="javax.security.jacc.api"/>

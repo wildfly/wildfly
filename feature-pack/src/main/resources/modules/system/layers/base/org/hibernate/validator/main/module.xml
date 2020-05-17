@@ -30,7 +30,7 @@
 
   <dependencies>
     <module name="com.fasterxml.classmate"/>
-    <module name="javax.persistence.api"/>
+    <module name="ee.persistence.api"/>
     <module name="javax.validation.api"/>
     <module name="javax.xml.bind.api"/>
     <module name="org.glassfish.jakarta.el"/>

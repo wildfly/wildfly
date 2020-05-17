@@ -41,7 +41,7 @@
         <module name="javax.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="javax.interceptor.api"/>
-        <module name="javax.persistence.api"/>
+        <module name="ee.persistence.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>

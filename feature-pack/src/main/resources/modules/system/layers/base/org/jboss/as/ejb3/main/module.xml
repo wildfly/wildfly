@@ -37,7 +37,7 @@
         <module name="javax.ejb.api"/>
         <module name="javax.interceptor.api"/>
         <module name="ee.jms.api"/>
-        <module name="javax.persistence.api" />
+        <module name="ee.persistence.api" />
         <module name="javax.security.jacc.api"/>
         <module name="javax.orb.api"/>
         <!-- For message inflow -->
