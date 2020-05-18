@@ -777,6 +777,11 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-spi</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -6444,6 +6449,17 @@
             <dependency>
                 <groupId>org.infinispan.protostream</groupId>
                 <artifactId>protostream</artifactId>
+                <version>${version.org.infinispan.protostream}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan.protostream</groupId>
+                <artifactId>protostream-processor</artifactId>
                 <version>${version.org.infinispan.protostream}</version>
                 <exclusions>
                     <exclusion>

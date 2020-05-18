@@ -20,41 +20,45 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.util.OptionalInt;
+
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
+ * ProtoStream marshaller for fixed values.
  * @author Paul Ferraro
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class ValueMarshaller<T> implements ProtoStreamMarshaller<T> {
 
-    @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
+    private final T value;
+
+    public ValueMarshaller(T value) {
+        this.value = value;
     }
 
     @Override
-    public Object readFrom(InputStream input) throws IOException {
-        try {
-            return new ObjectInputStream(input).readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
+    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        return this.value;
     }
 
     @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) {
+        // Nothing to write
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<? extends T> getJavaClass() {
+        return (Class<T>) this.value.getClass();
+    }
+
+    @Override
+    public OptionalInt size(ImmutableSerializationContext context, T value) {
+        return OptionalInt.of(0);
     }
 }

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package java.util.concurrent.atomic;
+
+// IDs: 80 - 89
+
+/**
+ * @TypeId(80)
+ */
+message AtomicBoolean {
+	required	bool	value	= 1;
+}
+
+/**
+ * @TypeId(81)
+ */
+message AtomicInteger {
+	required	int32	value	= 1;
+}
+
+/**
+ * @TypeId(82)
+ */
+message AtomicLong {
+	required	int64	value	= 1;
+}
+
+/**
+ * @TypeId(83)
+ */
+message AtomicReference {
+	optional	bytes	value	= 1;
+}

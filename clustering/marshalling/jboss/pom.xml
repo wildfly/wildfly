@@ -41,8 +41,8 @@
 
     <name>WildFly: Marshalling for WildFly clustering: JBoss Marshalling integration</name>
     <description>
-        Adapts implementations of wildfly-clustering-marshalling-api to JBoss marshalling.
-        Also contains wildfly-clustering-marshalling-spi implementations that use JBoss marshalling.
+        Adapts implementations of wildfly-clustering-marshalling-api to JBoss Marshalling.
+        Also contains wildfly-clustering-marshalling-spi implementations using JBoss Marshalling.
     </description>
 
     <dependencies>

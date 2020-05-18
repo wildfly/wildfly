@@ -20,41 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.util.EnumSet;
+
+import org.infinispan.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
+ * Initializer that registers protobuf schema for java.net.* classes.
  * @author Paul Ferraro
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class NetSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
+    public String getProtoFileName() {
+        return "java.net.proto";
     }
 
     @Override
-    public Object readFrom(InputStream input) throws IOException {
-        try {
-            return new ObjectInputStream(input).readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
-    }
-
-    @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(EnumSet.of(
+                DefaultExternalizer.INET_ADDRESS,
+                DefaultExternalizer.INET_SOCKET_ADDRESS,
+                DefaultExternalizer.INET4_ADDRESS,
+                DefaultExternalizer.INET6_ADDRESS,
+                DefaultExternalizer.URI,
+                DefaultExternalizer.URL)));
     }
 }

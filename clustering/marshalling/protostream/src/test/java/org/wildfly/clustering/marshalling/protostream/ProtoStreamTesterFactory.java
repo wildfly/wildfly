@@ -20,41 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.wildfly.clustering.marshalling.MarshallingTester;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferTestMarshaller;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
  * @author Paul Ferraro
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
 
-    @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
+    private final ImmutableSerializationContext context;
+
+    public ProtoStreamTesterFactory() {
+        this.context = new SerializationContextBuilder().build();
+    }
+
+    public ProtoStreamTesterFactory(ClassLoader loader) {
+        this.context = new SerializationContextBuilder().register(loader).build();
     }
 
     @Override
-    public Object readFrom(InputStream input) throws IOException {
-        try {
-            return new ObjectInputStream(input).readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
-    }
-
-    @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    public <T> MarshallingTester<T> createTester() {
+        return new MarshallingTester<>(new ByteBufferTestMarshaller<>(new ProtoStreamByteBufferMarshaller(this.context)));
     }
 }

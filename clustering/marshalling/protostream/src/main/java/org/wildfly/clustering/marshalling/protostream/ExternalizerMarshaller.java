@@ -20,32 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.io.StreamCorruptedException;
+
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtoStreamWriter;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
+ * ProtoStream marshaller that delegates to an externalizer.
  * @author Paul Ferraro
+ * @param <T> the target type of the associated externalizer
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class ExternalizerMarshaller<T> implements ProtoStreamMarshaller<T> {
+    private final Externalizer<T> externalizer;
 
-    @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
+    public ExternalizerMarshaller(Externalizer<T> externalizer) {
+        this.externalizer = externalizer;
     }
 
     @Override
-    public Object readFrom(InputStream input) throws IOException {
+    public Class<? extends T> getJavaClass() {
+        return this.externalizer.getTargetClass();
+    }
+
+    @Override
+    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
         try {
-            return new ObjectInputStream(input).readObject();
+            T result = this.externalizer.readObject(new ProtoStreamObjectInput(context, reader));
+            if (reader.readTag() != 0) {
+                throw new StreamCorruptedException();
+            }
+            return result;
         } catch (ClassNotFoundException e) {
             InvalidClassException exception = new InvalidClassException(e.getMessage());
             exception.initCause(e);
@@ -54,7 +64,7 @@ public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
     }
 
     @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T object) throws IOException {
+        this.externalizer.writeObject(new ProtoStreamObjectOutput(context, writer), object);
     }
 }
