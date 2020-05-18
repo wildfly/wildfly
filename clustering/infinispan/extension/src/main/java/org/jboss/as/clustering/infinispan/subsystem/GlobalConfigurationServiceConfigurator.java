@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
+import java.nio.file.Paths;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
@@ -36,6 +37,7 @@ import java.util.function.Supplier;
 import javax.management.MBeanServer;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalStatePathConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
@@ -139,6 +141,8 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
         // Disable configuration storage
         builder.globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
+        // Workaround for ISPN-11845
+        builder.globalState().persistentLocation(Paths.get(GlobalStatePathConfiguration.PATH.getDefaultValue()).getRoot().toString());
 
         return builder.build();
     }
