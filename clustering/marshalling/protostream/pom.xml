@@ -28,7 +28,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-clustering-infinispan</artifactId>
+        <artifactId>wildfly-clustering-marshalling</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,30 +36,51 @@
         <version>21.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
+    <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
     <packaging>jar</packaging>
 
-    <name>WildFly: Infinispan marshalling</name>
+    <name>WildFly: Marshalling for WildFly clustering: ProtoStream integration</name>
     <description>
-        Module containing marshalling logic common to embedded and remote client.
+        Adapts implementations of wildfly-clustering-marshalling-api to ProtoStream.
+        Also contains wildfly-clustering-marshalling-spi implementations using ProtoStream.
     </description>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+            <artifactId>wildfly-clustering-marshalling-api</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons</artifactId>
+            <groupId>org.infinispan.protostream</groupId>
+            <artifactId>protostream</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.modules</groupId>
             <artifactId>jboss-modules</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-api</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
 </project>

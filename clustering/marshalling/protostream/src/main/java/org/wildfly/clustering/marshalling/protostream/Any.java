@@ -20,41 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
+ * A wrapper for an arbitrary object.
  * @author Paul Ferraro
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class Any implements Supplier<Object> {
 
-    @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
+    private final Object value;
+
+    public Any(Object value) {
+        this.value = value;
     }
 
     @Override
-    public Object readFrom(InputStream input) throws IOException {
-        try {
-            return new ObjectInputStream(input).readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
+    public Object get() {
+        return this.value;
     }
 
     @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    public int hashCode() {
+        return (this.value != null) ? this.value.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Any)) return false;
+        return Objects.equals(this.value, ((Any) object).value);
+    }
+
+    @Override
+    public String toString() {
+        return (this.value != null) ? this.value.toString() : null;
     }
 }

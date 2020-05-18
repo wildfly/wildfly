@@ -20,41 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import org.wildfly.clustering.marshalling.AbstractUtilTestCase;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
+ * ProtoStream tests for java.util package.
  * @author Paul Ferraro
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class ProtoStreamUtilTestCase extends AbstractUtilTestCase {
 
-    @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
-    }
-
-    @Override
-    public Object readFrom(InputStream input) throws IOException {
-        try {
-            return new ObjectInputStream(input).readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
-    }
-
-    @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    public ProtoStreamUtilTestCase() {
+        super(new ProtoStreamTesterFactory());
     }
 }

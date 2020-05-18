@@ -20,41 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
  * @author Paul Ferraro
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public interface ProtoStreamWriterContext extends AutoCloseable {
 
-    @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
-    }
+    ThreadLocal<ProtoStreamWriterContext> INSTANCE = new ThreadLocal<ProtoStreamWriterContext>() {
+        @Override
+        protected ProtoStreamWriterContext initialValue() {
+            return new ProtoStreamWriterContext() {
+                private final Map<Object, Integer> references = new IdentityHashMap<>();
+                private int index = 0;
 
-    @Override
-    public Object readFrom(InputStream input) throws IOException {
-        try {
-            return new ObjectInputStream(input).readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
+                @Override
+                public Integer getReferenceId(Object object) {
+                    return this.references.get(object);
+                }
+
+                @Override
+                public void setReference(Object object) {
+                    this.references.put(object, this.index++);
+                }
+            };
         }
-    }
+    };
+
+    Integer getReferenceId(Object object);
+
+    void setReference(Object object);
 
     @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    default void close() {
+        INSTANCE.remove();
     }
 }

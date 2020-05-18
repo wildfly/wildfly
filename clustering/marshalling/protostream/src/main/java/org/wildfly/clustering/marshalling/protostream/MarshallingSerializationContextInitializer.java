@@ -20,41 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import org.infinispan.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
  * @author Paul Ferraro
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class MarshallingSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
+    public String getProtoFileName() {
+        return "org.wildfly.clustering.marshalling.spi.proto";
     }
 
     @Override
-    public Object readFrom(InputStream input) throws IOException {
-        try {
-            return new ObjectInputStream(input).readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
-    }
-
-    @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new ExternalizerMarshaller<>(DefaultExternalizer.MARSHALLED_VALUE));
     }
 }

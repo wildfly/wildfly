@@ -20,41 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.infinispan.spi.marshalling;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import org.jboss.modules.Module;
+import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.infinispan.spi.metadata.MetadataSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 
 /**
- * A {@ByteBufferMarshaller} that uses Java serialization.
  * @author Paul Ferraro
  */
-public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class InfinispanProtoStreamMarshaller extends ProtoStreamMarshaller {
 
-    @Override
-    public boolean isMarshallable(Object object) {
-        return object instanceof Serializable;
-    }
-
-    @Override
-    public Object readFrom(InputStream input) throws IOException {
-        try {
-            return new ObjectInputStream(input).readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
-    }
-
-    @Override
-    public void writeTo(OutputStream output, Object value) throws IOException {
-        new ObjectOutputStream(output).writeObject(value);
+    public InfinispanProtoStreamMarshaller(Module module) {
+        super(new SerializationContextBuilder().register(new MetadataSerializationContextInitializer()).register(module.getClassLoader()));
     }
 }

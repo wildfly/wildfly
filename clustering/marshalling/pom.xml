@@ -45,6 +45,7 @@
         <module>api</module>
         <module>spi</module>
         <module>jboss</module>
+        <module>protostream</module>
     </modules>
 
     <build>
