@@ -28,9 +28,11 @@ import org.wildfly.clustering.web.LocalContextFactory;
 
 /**
  * @author Paul Ferraro
+ * @param <C> marshalling context type
+ * @param <L> local context type
  */
-public interface SSOManagerConfiguration<L, C> {
+public interface SSOManagerConfiguration<C, L> {
     IdentifierFactory<String> getIdentifierFactory();
-    LocalContextFactory<L> getLocalContextFactory();
     MarshalledValueFactory<C> getMarshalledValueFactory();
+    LocalContextFactory<L> getLocalContextFactory();
 }

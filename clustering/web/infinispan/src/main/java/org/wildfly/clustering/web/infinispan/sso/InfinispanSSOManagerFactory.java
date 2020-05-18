@@ -51,7 +51,7 @@ public class InfinispanSSOManagerFactory<A, D, S> implements SSOManagerFactory<A
     }
 
     @Override
-    public <L, C> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<L, C> configuration) {
+    public <C, L> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<C, L> configuration) {
         Cache<Key<String>, ?> cache = this.configuration.getCache();
         CacheProperties properties = new InfinispanCacheProperties(cache.getCacheConfiguration());
         SessionsFactory<Map<D, S>, D, S> sessionsFactory = new CoarseSessionsFactory<>(this.configuration.getCache(), properties);

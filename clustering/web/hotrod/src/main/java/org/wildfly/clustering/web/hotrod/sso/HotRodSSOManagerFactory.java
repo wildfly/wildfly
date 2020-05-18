@@ -51,7 +51,7 @@ public class HotRodSSOManagerFactory<A, D, S> implements SSOManagerFactory<A, D,
     }
 
     @Override
-    public <L, C> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<L, C> config) {
+    public <C, L> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<C, L> config) {
         RemoteCache<Key<String>, ?> cache = this.configuration.getRemoteCache();
         SessionsFactory<Map<D, S>, D, S> sessionsFactory = new CoarseSessionsFactory<>(this.configuration.getRemoteCache());
         SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new HotRodSSOFactory<>(this.configuration.getRemoteCache(), new MarshalledValueMarshaller<>(config.getMarshalledValueFactory()), config.getLocalContextFactory(), sessionsFactory);

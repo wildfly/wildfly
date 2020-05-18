@@ -55,7 +55,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
  * @param <MC> the marshalling context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactory<S, SC, AL, BL, LC, MC> implements SessionManagerFactory<SC, LC, TransactionBatch> {
+public class HotRodSessionManagerFactory<S, SC, AL, BL, MC, LC> implements SessionManagerFactory<SC, LC, TransactionBatch> {
 
     final Registrar<SessionExpirationListener> expirationRegistrar;
     final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
