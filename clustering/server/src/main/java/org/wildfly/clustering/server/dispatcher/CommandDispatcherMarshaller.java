@@ -22,46 +22,35 @@
 
 package org.wildfly.clustering.server.dispatcher;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.AbstractMap;
+import java.util.Map;
 
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.Marshalling;
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
-import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
  * @author Paul Ferraro
  */
 public class CommandDispatcherMarshaller<C, MC> implements CommandMarshaller<C> {
 
-    private final MarshallingContext context;
+    private final ByteBufferMarshaller marshaller;
     private final Object id;
     private final MarshalledValueFactory<MC> factory;
 
-    public CommandDispatcherMarshaller(MarshallingContext context, Object id, MarshalledValueFactory<MC> factory) {
-        this.context = context;
+    public CommandDispatcherMarshaller(ByteBufferMarshaller marshaller, Object id, MarshalledValueFactory<MC> factory) {
+        this.marshaller = marshaller;
         this.id = id;
         this.factory = factory;
     }
 
     @Override
     public <R> ByteBuffer marshal(Command<R, ? super C> command) throws IOException {
-        int version = this.context.getCurrentVersion();
-        ByteBufferOutputStream buffer = new ByteBufferOutputStream();
-        try (DataOutputStream output = new DataOutputStream(buffer)) {
-            IndexSerializer.VARIABLE.writeInt(output, version);
-            try (Marshaller marshaller = this.context.createMarshaller(version)) {
-                marshaller.start(Marshalling.createByteOutput(output));
-                marshaller.writeObject(this.id);
-                marshaller.writeObject(this.factory.createMarshalledValue(command));
-                marshaller.flush();
-            }
-            return buffer.getBuffer();
-        }
+        MarshalledValue<Command<R, ? super C>, MC> value = this.factory.createMarshalledValue(command);
+        Map.Entry<Object, MarshalledValue<Command<R, ? super C>, MC>> entry = new AbstractMap.SimpleImmutableEntry<>(this.id, value);
+        return this.marshaller.write(entry);
     }
 }

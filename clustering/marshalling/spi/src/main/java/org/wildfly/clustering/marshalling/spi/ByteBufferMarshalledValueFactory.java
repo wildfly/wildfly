@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.marshalling.jboss;
 
-import java.io.IOException;
-
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.Unmarshaller;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+package org.wildfly.clustering.marshalling.spi;
 
 /**
- * A marshalling context for use with a {@link MarshalledValue}.
+ * Factory for creating a {@link ByteBufferMarshalledValue}.
  * @author Paul Ferraro
  */
-public interface MarshallingContext extends Marshallability {
-    ClassLoader getClassLoader();
+public class ByteBufferMarshalledValueFactory implements MarshalledValueFactory<ByteBufferMarshaller> {
 
-    int getCurrentVersion();
+    private final ByteBufferMarshaller marshaller;
 
-    Unmarshaller createUnmarshaller(int version) throws IOException;
+    public ByteBufferMarshalledValueFactory(ByteBufferMarshaller marshaller) {
+        this.marshaller = marshaller;
+    }
 
-    Marshaller createMarshaller(int version) throws IOException;
+    @Override
+    public boolean isMarshallable(Object object) {
+        return this.marshaller.isMarshallable(object);
+    }
+
+    @Override
+    public <T> ByteBufferMarshalledValue<T> createMarshalledValue(T object) {
+        return new ByteBufferMarshalledValue<>(object, this.marshaller);
+    }
+
+    @Override
+    public ByteBufferMarshaller getMarshallingContext() {
+        return this.marshaller;
+    }
 }

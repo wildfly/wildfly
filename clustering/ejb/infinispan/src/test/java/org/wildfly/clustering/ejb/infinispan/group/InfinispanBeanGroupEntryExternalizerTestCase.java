@@ -29,17 +29,12 @@ import java.util.UUID;
 
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContext;
+import org.wildfly.clustering.marshalling.spi.JavaByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
  * Unit test for {@link InfinispanBeanGroupEntryExternalizer}.
@@ -47,22 +42,18 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContext;
  */
 public class InfinispanBeanGroupEntryExternalizerTestCase {
 
-    private static final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", InfinispanBeanGroupEntryExternalizerTestCase.class.getClassLoader());
-    private static final MarshallingConfigurationRepository repository = new SimpleMarshallingConfigurationRepository(new MarshallingConfiguration());
-    private static final MarshallingContext context = new SimpleMarshallingContext(factory, repository, InfinispanBeanGroupEntryExternalizerTestCase.class.getClassLoader());
-
     @Test
     public void test() throws IOException {
         SessionID id = new UUIDSessionID(UUID.randomUUID());
         Map<SessionID, String> beans = Collections.singletonMap(id, "bean");
-        InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry = new InfinispanBeanGroupEntry<>(new SimpleMarshalledValue<>(beans, context));
-        new ExternalizerTester<>(new InfinispanBeanGroupEntryExternalizer<SessionID, String>()).test(entry, InfinispanBeanGroupEntryExternalizerTestCase::assertEquals);
+        InfinispanBeanGroupEntry<SessionID, String, ByteBufferMarshaller> entry = new InfinispanBeanGroupEntry<>(new ByteBufferMarshalledValue<>(beans, JavaByteBufferMarshaller.INSTANCE));
+        new ExternalizerTester<>(new InfinispanBeanGroupEntryExternalizer<SessionID, String, ByteBufferMarshaller>()).test(entry, InfinispanBeanGroupEntryExternalizerTestCase::assertEquals);
     }
 
-    static void assertEquals(InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry1, InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry2) {
+    static void assertEquals(InfinispanBeanGroupEntry<SessionID, String, ByteBufferMarshaller> entry1, InfinispanBeanGroupEntry<SessionID, String, ByteBufferMarshaller> entry2) {
         try {
-            Assert.assertEquals(entry1.getBeans().get(context), entry2.getBeans().get(context));
-        } catch (ClassNotFoundException | IOException e) {
+            Assert.assertEquals(entry1.getBeans().get(JavaByteBufferMarshaller.INSTANCE), entry2.getBeans().get(JavaByteBufferMarshaller.INSTANCE));
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }

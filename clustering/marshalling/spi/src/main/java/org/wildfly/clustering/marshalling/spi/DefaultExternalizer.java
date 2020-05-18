@@ -102,6 +102,7 @@ import org.wildfly.clustering.marshalling.spi.util.UUIDExternalizer;
  * @author Paul Ferraro
  */
 public enum DefaultExternalizer implements Externalizer<Object> {
+    MARSHALLED_VALUE(new ByteBufferMarshalledValueExternalizer()),
     // java.net
     INET_ADDRESS(new InetAddressExternalizer<>(InetAddress.class, OptionalInt.empty())),
     INET4_ADDRESS(new InetAddressExternalizer<>(Inet4Address.class, OptionalInt.of(4))),
