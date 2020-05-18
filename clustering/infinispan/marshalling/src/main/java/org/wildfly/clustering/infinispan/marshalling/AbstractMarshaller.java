@@ -51,7 +51,6 @@ public abstract class AbstractMarshaller implements Marshaller, StreamAwareMarsh
         return this.getBufferSizePredictor(object).nextSize(object);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public BufferSizePredictor getBufferSizePredictor(Object object) {
         return this.hints.getBufferSizePredictor(object);

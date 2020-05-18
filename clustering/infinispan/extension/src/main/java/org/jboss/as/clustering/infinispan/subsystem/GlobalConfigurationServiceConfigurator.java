@@ -139,6 +139,8 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
         // Disable configuration storage
         builder.globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
+        // Workaround for ISPN-11845
+        builder.globalState().persistentLocation("/");
 
         return builder.build();
     }
