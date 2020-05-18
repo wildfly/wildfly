@@ -23,10 +23,10 @@ package org.wildfly.extension.microprofile.faulttolerance.tck;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -52,7 +52,7 @@ public class FaultToleranceApplicationArchiveProcessor implements ApplicationArc
     @Override
     public void process(Archive<?> applicationArchive, TestClass testClass) {
         if (!(applicationArchive instanceof ClassContainer)) {
-            LOGGER.warning(
+            LOGGER.warn(
                     "Unable to add additional classes - not a class/resource container: "
                             + applicationArchive);
             return;
@@ -81,7 +81,7 @@ public class FaultToleranceApplicationArchiveProcessor implements ApplicationArc
         }
         classContainer.addAsResource(new StringAsset(config), MP_CONFIG_PATH);
 
-        LOGGER.info("Added additional resources to " + applicationArchive.toString(true));
+        LOGGER.debug("Added additional resources to " + applicationArchive.toString(true));
     }
 
     private ByteArrayOutputStream readCurrentConfig(Archive<?> appArchive) {

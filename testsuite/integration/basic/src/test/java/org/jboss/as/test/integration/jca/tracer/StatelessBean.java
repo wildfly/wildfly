@@ -49,14 +49,14 @@ public class StatelessBean implements StatelessBeanRemote {
     public void insertToDB() {
         String sql = String.format("INSERT INTO %s (%s) VALUES (%s)", table, column, 1);
         executeUpdate(sql);
-        log.infof("sql '%s' executed", sql);
+        log.debugf("sql '%s' executed", sql);
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void createTable() {
         String sql = String.format("CREATE TABLE IF NOT EXISTS %s (%s int)", table, column);
         executeUpdate(sql);
-        log.infof("sql '%s' executed", sql);
+        log.debugf("sql '%s' executed", sql);
     }
 
     private void executeUpdate(String sql) {

@@ -49,12 +49,12 @@ public class TransactionParticipant implements Volatile2PCParticipant {
     }
 
     public static void resetInvocations() {
-        LOGGER.infof("resetting invocations %s", INVOCATIONS);
+        LOGGER.debugf("resetting invocations %s", INVOCATIONS);
         INVOCATIONS.clear();
     }
 
     public static List<String> getInvocations() {
-        LOGGER.infof("returning invocations %s", INVOCATIONS);
+        LOGGER.debugf("returning invocations %s", INVOCATIONS);
         return Collections.unmodifiableList(INVOCATIONS);
     }
 
@@ -65,32 +65,32 @@ public class TransactionParticipant implements Volatile2PCParticipant {
     @Override
     public Vote prepare() throws WrongStateException, SystemException {
         INVOCATIONS.add("prepare");
-        LOGGER.infof("preparing call on %s", this);
+        LOGGER.debugf("preparing call on %s", this);
         return new Prepared();
     }
 
     @Override
     public void commit() throws WrongStateException, SystemException {
         INVOCATIONS.add("commit");
-        LOGGER.infof("commit call on %s", this);
+        LOGGER.debugf("commit call on %s", this);
     }
 
     @Override
     public void rollback() throws WrongStateException, SystemException {
         INVOCATIONS.add("rollback");
-        LOGGER.infof("rollback call on %s", this);
+        LOGGER.debugf("rollback call on %s", this);
     }
 
     @Override
     public void unknown() throws SystemException {
         INVOCATIONS.add("unknown");
-        LOGGER.infof("unknown call on %s", this);
+        LOGGER.debugf("unknown call on %s", this);
     }
 
     @Override
     public void error() throws SystemException {
         INVOCATIONS.add("error");
-        LOGGER.infof("error call on %s", this);
+        LOGGER.debugf("error call on %s", this);
     }
 
     @Override

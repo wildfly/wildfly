@@ -167,7 +167,7 @@ public abstract class AbstractClusteringTestCase {
                 // Even though we should be able to just stop the container object this currently fails with:
                 // WFARQ-47 Calling "container.stop();" always ends exceptionally "Caught exception closing ManagementClient: java.lang.NullPointerException"
                 this.stop(container.getName());
-                log.infof("Stopped container '%s' which was started but not requested for this test.", container.getName());
+                log.debugf("Stopped container '%s' which was started but not requested for this test.", container.getName());
             }
         });
 

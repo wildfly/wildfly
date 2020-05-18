@@ -36,7 +36,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -57,7 +56,6 @@ import org.wildfly.test.api.Authentication;
  */
 @RunWith(Arquillian.class)
 public class ExpressionSubstitutionInContainerTestCase {
-    private static final Logger log = Logger.getLogger(ExpressionSubstitutionInContainerTestCase.class);
 
     private static final String ARCHIVE_NAME = "expression-substitution-test";
 
@@ -188,16 +186,13 @@ public class ExpressionSubstitutionInContainerTestCase {
     private void systemPropertyEvaluation() {
         // test resolution of expressions
         String result = bean.getJBossProperty(PROP_NAME);
-        log.infof("systemPropertyEvaluation: JBoss property %s was resolved to %s", PROP_NAME, result);
         Assert.assertEquals("jboss property " + PROP_NAME + " evaluation - value should be taken from system property", EXPRESSION_PROP_VALUE, result);
 
 
         result = bean.getSystemProperty(EXPRESSION_PROP_NAME);
-        log.infof("systemPropertyEvaluationsystemPropertyEvaluation: System property %s has value %s", EXPRESSION_PROP_NAME, result);
         Assert.assertEquals("system property " + EXPRESSION_PROP_NAME + " from directly defined system property", EXPRESSION_PROP_VALUE, result);
 
         result = bean.getSystemProperty(PROP_NAME);
-        log.infof("systemPropertyEvaluation:  System property %s has value %s", PROP_NAME, result);
         Assert.assertEquals("system property " + PROP_NAME + " from evaluated jboss property", EXPRESSION_PROP_VALUE, result);
     }
 
@@ -218,11 +213,9 @@ public class ExpressionSubstitutionInContainerTestCase {
         try {
             // evaluation the inner prop name in addition
             String result = bean.getJBossProperty(INNER_PROP_NAME);
-            log.infof("expressionEvaluation: JBoss property %s was resolved to %s", INNER_PROP_NAME, result);
             Assert.assertEquals("jboss property " + INNER_PROP_NAME + " substitution evaluation expected", EXPRESSION_PROP_VALUE, result);
 
             result = bean.getSystemProperty(INNER_PROP_NAME);
-            log.infof("expressionEvaluation: System property %s has value %s", INNER_PROP_NAME, result);
             Assert.assertEquals("system property " + INNER_PROP_NAME + " from substitued jboss property", EXPRESSION_PROP_VALUE, result);
 
             // then evaluation of the rest
@@ -262,21 +255,17 @@ public class ExpressionSubstitutionInContainerTestCase {
     }*/
     private void expresionEvaluation() {
         String result = bean.getJBossProperty(EXPRESSION_PROP_NAME);
-        log.infof("expressionEvaluation: JBoss property %s was resolved to %s", EXPRESSION_PROP_NAME, result);
         Assert.assertEquals("jboss property " + EXPRESSION_PROP_NAME + " defined directly", EXPRESSION_PROP_VALUE, result);
 
 
         result = bean.getJBossProperty(PROP_NAME);
-        log.infof("expressionEvaluation: JBoss property %s was resolved to %s", PROP_NAME, result);
         Assert.assertEquals("jboss property " + PROP_NAME + " substitution evaluation expected", EXPRESSION_PROP_VALUE, result);
 
 
         result = bean.getSystemProperty(EXPRESSION_PROP_NAME);
-        log.infof("expressionEvaluation: System property %s has value %s", EXPRESSION_PROP_NAME, result);
         Assert.assertEquals("system property " + EXPRESSION_PROP_NAME + " from directly defined jboss property", EXPRESSION_PROP_VALUE, result);
 
         result = bean.getSystemProperty(PROP_NAME);
-        log.infof("expressionEvaluation:  System property %s has value %s", PROP_NAME, result);
         Assert.assertEquals("system property " + PROP_NAME + " from evaluated jboss property", EXPRESSION_PROP_VALUE, result);
     }
 }

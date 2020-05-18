@@ -38,12 +38,12 @@ public class CommonStatefulSBImpl implements CommonStatefulSB {
     @PostConstruct
     private void init() {
         serial = 0;
-        log.infof("New SFSB created: %s.", this);
+        log.debugf("New SFSB created: %s.", this);
     }
 
     @Override
     public int getSerialAndIncrement() {
-        log.infof("getSerialAndIncrement() called on non-forwarding node %s", getCurrentNode());
+        log.debugf("getSerialAndIncrement() called on non-forwarding node %s", getCurrentNode());
         return serial++;
     }
 

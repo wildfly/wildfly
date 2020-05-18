@@ -47,7 +47,7 @@ public class BusinessActivityRemoteService implements RemoteService {
 
     @Override
     public void execute() throws Exception {
-        LOGGER.infof("trying to enlist participant to the business activity %s",
+        LOGGER.debugf("trying to enlist participant to the business activity %s",
                 BusinessActivityManager.getBusinessActivityManager().currentTransaction());
 
         String participantId = new Uid().stringForm();
@@ -57,7 +57,7 @@ public class BusinessActivityRemoteService implements RemoteService {
                         businessActivityParticipant.getId());
         participantManager.completed();
 
-        LOGGER.infof("enlisted participant %s", businessActivityParticipant);
+        LOGGER.debugf("enlisted participant %s", businessActivityParticipant);
     }
 
     @Override
