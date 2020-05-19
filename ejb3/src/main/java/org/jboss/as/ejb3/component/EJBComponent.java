@@ -137,6 +137,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private SecurityIdentity incomingRunAsIdentity;
     private final Function<SecurityIdentity, Set<SecurityIdentity>> identityOutflowFunction;
     private final boolean securityRequired;
+    private final EJBComponentDescription componentDescription;
 
     /**
      * Construct a new instance.
@@ -191,6 +192,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.incomingRunAsIdentity = null;
         this.identityOutflowFunction = ejbComponentCreateService.getIdentityOutflowFunction();
         this.securityRequired = ejbComponentCreateService.isSecurityRequired();
+        this.componentDescription = ejbComponentCreateService.getComponentDescription();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -626,15 +628,17 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             return !identity.isAnonymous();
         }
         Roles roles = identity.getRoles("ejb", true);
-        if(roles.contains(roleName)) {
-            return true;
-        }
-        if(securityMetaData.getSecurityRoleLinks() != null) {
-            Collection<String> linked = securityMetaData.getSecurityRoleLinks().get(roleName);
-            if(linked != null) {
-                for (String role : roles) {
-                    if (linked.contains(role)) {
-                        return true;
+        if(roles != null) {
+            if(roles.contains(roleName)) {
+                return true;
+            }
+            if(securityMetaData.getSecurityRoleLinks() != null) {
+                Collection<String> linked = securityMetaData.getSecurityRoleLinks().get(roleName);
+                if(linked != null) {
+                    for (String role : roles) {
+                        if (linked.contains(role)) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -655,5 +659,9 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public EJBSuspendHandlerService getEjbSuspendHandlerService() {
         return this.ejbSuspendHandlerService;
+    }
+
+    public EJBComponentDescription getComponentDescription() {
+        return componentDescription;
     }
 }

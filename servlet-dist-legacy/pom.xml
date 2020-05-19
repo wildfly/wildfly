@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-dist-legacy</artifactId>
@@ -245,7 +245,7 @@
                                             <parameters>
                                                 <parameter>
                                                     <name>version</name>
-                                                    <value>${product.release.version}</value>
+                                                    <value>${servlet.dist.product.release.version}</value>
                                                 </parameter>
                                                 <parameter>
                                                     <name>product.release.name</name>

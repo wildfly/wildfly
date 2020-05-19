@@ -25,6 +25,8 @@ package org.jboss.as.test.integration.domain.mixed.eap700;
 import org.jboss.as.test.integration.domain.mixed.MixedDomainDeploymentTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
 import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 
 /**
@@ -35,6 +37,9 @@ import org.junit.BeforeClass;
 public class MixedDomainDeployment700TestCase extends MixedDomainDeploymentTest {
     @BeforeClass
     public static void beforeClass() {
+        // WFLY-12649 -- embedded broker doesn't start correctly on an EAP 7.0.0 server running on OpenJ9
+        Assume.assumeFalse(TestSuiteEnvironment.isJ9Jvm());
+
         MixedDomain700TestSuite.initializeDomain();
     }
 

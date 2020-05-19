@@ -34,6 +34,7 @@ import org.jboss.msc.service.ServiceRegistry;
  * since the state of the target service will be unaffected by the logic in {@link ServiceSupplier#get()}.
  * @author Paul Ferraro
  */
+@Deprecated
 public class PassiveServiceSupplier<T> extends ServiceSupplier<T> {
 
     public PassiveServiceSupplier(ServiceRegistry target, ServiceName name) {

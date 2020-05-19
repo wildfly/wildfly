@@ -23,12 +23,12 @@ package org.wildfly.clustering.server.singleton;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 
 /**
  * Factory for creating distributed {@link SingletonServiceBuilder} instances.

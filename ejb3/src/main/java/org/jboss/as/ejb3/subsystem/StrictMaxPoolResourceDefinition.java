@@ -24,11 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService.Derive;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -57,8 +53,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
-
-    public static final StrictMaxPoolResourceDefinition INSTANCE = new StrictMaxPoolResourceDefinition();
 
     public static final SimpleAttributeDefinition MAX_POOL_SIZE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MAX_POOL_SIZE, ModelType.INT, true)
@@ -100,18 +94,9 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
                     .build();
 
-    public static final Map<String, AttributeDefinition> ATTRIBUTES ;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(MAX_POOL_SIZE.getName(), MAX_POOL_SIZE);
-        map.put(DERIVE_SIZE.getName(), DERIVE_SIZE);
-        map.put(INSTANCE_ACQUISITION_TIMEOUT.getName(), INSTANCE_ACQUISITION_TIMEOUT);
-        map.put(INSTANCE_ACQUISITION_TIMEOUT_UNIT.getName(), INSTANCE_ACQUISITION_TIMEOUT_UNIT);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
-
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MAX_POOL_SIZE, DERIVE_SIZE, INSTANCE_ACQUISITION_TIMEOUT, INSTANCE_ACQUISITION_TIMEOUT_UNIT };
+    private static final StrictMaxPoolAdd ADD_HANDLER = new StrictMaxPoolAdd(ATTRIBUTES);
+    public static final StrictMaxPoolResourceDefinition INSTANCE = new StrictMaxPoolResourceDefinition();
 
     private static final String NONE_VALUE = "none";
     private static final String FROM_WORKER_POOLS_VALUE = "from-worker-pools";
@@ -165,15 +150,14 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
     private StrictMaxPoolResourceDefinition() {
         super(PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL),
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL),
-                StrictMaxPoolAdd.INSTANCE, new ServiceRemoveStepHandler(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME, StrictMaxPoolAdd.INSTANCE),
+                ADD_HANDLER, new ServiceRemoveStepHandler(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME, ADD_HANDLER),
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        Collection<AttributeDefinition> ads = ATTRIBUTES.values();
-        OperationStepHandler osh = new StrictMaxPoolWriteHandler(ads);
-        for (AttributeDefinition attr : ads) {
+        OperationStepHandler osh = new StrictMaxPoolWriteHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, osh);
         }
 

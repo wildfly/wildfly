@@ -26,6 +26,8 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
+import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -33,8 +35,9 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -151,7 +154,11 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this.definition = this.apply(createBuilder(name, type)).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
         }
 
         Attribute(String name) {
@@ -181,7 +188,12 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         private final AttributeDefinition definition;
 
         ExecutorAttribute(String name) {
-            this.definition = createBuilder(name, ModelType.STRING).setAllowExpression(false).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+                    .setAllowExpression(false)
+                    .setRequired(false)
+                    .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
         }
 
         @Override
@@ -205,7 +217,12 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
-            this.definition = this.apply(createBuilder(name, type)).setDeprecated(deprecation.getVersion()).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    ).build();
         }
 
         @Override
@@ -219,31 +236,14 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowExpression(true)
-                .setRequired(false)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                ;
-    }
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
-                builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
-            }
-            for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
-                builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
-            }
-        } else {
-            for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
-                pool.buildTransformation(version, parent);
-            }
-            for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
-                pool.buildTransformation(version, parent);
-            }
+        for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
+            pool.buildTransformation(builder, version);
+        }
+        for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+            pool.buildTransformation(builder, version);
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
@@ -302,8 +302,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addAttributes(ExecutorAttribute.class)
-                .addAttributes(DeprecatedAttribute.class)
+                .addIgnoredAttributes(ExecutorAttribute.class)
+                .addIgnoredAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CAPABILITIES.values())
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CLUSTERING_CAPABILITIES.values())
@@ -312,7 +312,9 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)
                 .setResourceTransformation(CacheContainerResource::new)
                 ;
-        ResourceServiceHandler handler = new CacheContainerServiceHandler();
+        ServiceValueExecutorRegistry<EmbeddedCacheManager> managerExecutors = new ServiceValueExecutorRegistry<>();
+        ServiceValueExecutorRegistry<Cache<?, ?>> cacheExecutors = new ServiceValueExecutorRegistry<>();
+        ResourceServiceHandler handler = new CacheContainerServiceHandler(managerExecutors, cacheExecutors);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         // Translate legacy add-alias operation to list-add operation
@@ -338,8 +340,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         registration.registerOperationHandler(ALIAS_REMOVE, removeAliasHandler);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new CacheContainerMetricExecutor(), CacheContainerMetric.class).register(registration);
-            new CacheRuntimeResourceDefinition().register(registration);
+            new MetricHandler<>(new CacheContainerMetricExecutor(managerExecutors), CacheContainerMetric.class).register(registration);
+            new CacheRuntimeResourceDefinition(cacheExecutors).register(registration);
         }
 
         new JGroupsTransportResourceDefinition().register(registration);
@@ -352,11 +354,11 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             pool.register(registration);
         }
 
-        new LocalCacheResourceDefinition().register(registration);
-        new InvalidationCacheResourceDefinition().register(registration);
-        new ReplicatedCacheResourceDefinition().register(registration);
-        new DistributedCacheResourceDefinition().register(registration);
-        new ScatteredCacheResourceDefinition().register(registration);
+        new LocalCacheResourceDefinition(cacheExecutors).register(registration);
+        new InvalidationCacheResourceDefinition(cacheExecutors).register(registration);
+        new ReplicatedCacheResourceDefinition(cacheExecutors).register(registration);
+        new DistributedCacheResourceDefinition(cacheExecutors).register(registration);
+        new ScatteredCacheResourceDefinition(cacheExecutors).register(registration);
 
         return registration;
     }

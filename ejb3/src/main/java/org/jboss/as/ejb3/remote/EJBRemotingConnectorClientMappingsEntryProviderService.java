@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.AbstractMap;
@@ -49,6 +50,7 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.common.net.Inet;
 
 /**
  * @author Jaikiran Pai
@@ -91,24 +93,36 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements C
         return new AbstractMap.SimpleImmutableEntry<>(this.group.get().getLocalMember().getName(), this.getClientMappings());
     }
 
+    /**
+     * This method provides client-mapping entries for all connected EJB clients.
+     * It returns either a set of user-defined client mappings for a multi-homed host or a single default client mapping for the single-homed host.
+     * Hostnames are preferred over literal IP addresses for the destination address part (due to EJBCLIENT-349).
+     *
+     * @return the client mappings for this host
+     */
     List<ClientMapping> getClientMappings() {
         final List<ClientMapping> ret = new ArrayList<>();
         RemotingConnectorBindingInfoService.RemotingConnectorInfo info = this.remotingConnectorInfo.get();
+
         if (info.getSocketBinding().getClientMappings() != null && !info.getSocketBinding().getClientMappings().isEmpty()) {
             ret.addAll(info.getSocketBinding().getClientMappings());
         } else {
-            // TODO: We use the textual form of IP address as the destination address for now.
-            // This needs to be configurable (i.e. send either host name or the IP address). But
-            // since this is a corner case (i.e. absence of any client-mappings for a socket binding),
-            // this should be OK for now
-            final String destinationAddress = info.getSocketBinding().getAddress().getHostAddress();
+            // for the destination, prefer the hostname over the literal IP address
+            final InetAddress destination = info.getSocketBinding().getAddress();
+            final String destinationName = Inet.toURLString(destination, true);
+
+            // for the network, send a CIDR that is compatible with the address we are sending
             final InetAddress clientNetworkAddress;
             try {
-                clientNetworkAddress = InetAddress.getByName("::");
+                if (destination instanceof Inet4Address) {
+                    clientNetworkAddress = InetAddress.getByName("0.0.0.0");
+                } else {
+                    clientNetworkAddress = InetAddress.getByName("::");
+                }
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);
             }
-            final ClientMapping defaultClientMapping = new ClientMapping(clientNetworkAddress, 0, destinationAddress, info.getSocketBinding().getAbsolutePort());
+            final ClientMapping defaultClientMapping = new ClientMapping(clientNetworkAddress, 0, destinationName, info.getSocketBinding().getAbsolutePort());
             ret.add(defaultClientMapping);
         }
         return ret;

@@ -89,9 +89,9 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -622,7 +622,6 @@ public abstract class AbstractSecurityContextPropagationTestBase {
                     }
                     addCliCommands(cliFIle, config.getCliCommands());
                     runBatch(cliFIle);
-                    switchJGroupsToTcpping();
                     cliFIle.delete();
                     reload();
 
@@ -705,28 +704,6 @@ public abstract class AbstractSecurityContextPropagationTestBase {
                     .isIsOutcomeSuccess();
         }
 
-        /**
-         * Switch JGroups subsystem (if present) from using UDP multicast to TCPPING discovery protocol.
-         */
-        private void switchJGroupsToTcpping() throws IOException {
-            consoleOut.reset();
-            try {
-                commandCtx.handle("if outcome==success of /subsystem=jgroups:read-resource()");
-                // TODO This command is deprecated
-                commandCtx.handle(String.format(
-                        "/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0, properties={initial_hosts=\"%1$s[7600],%1$s[9600]\",port_range=0})",
-                        Utils.stripSquareBrackets(host)));
-                commandCtx.handle("/subsystem=jgroups/stack=tcp/protocol=MPING:remove");
-                commandCtx.handle("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)");
-                commandCtx.handle("end-if");
-            } catch (CommandLineException e) {
-                LOGGER.error("Command line error occured during JGroups reconfiguration", e);
-            } finally {
-                LOGGER.debugf("Output of JGroups reconfiguration (switch to TCPPING): %s",
-                        new String(consoleOut.toByteArray(), StandardCharsets.UTF_8));
-            }
-        }
-
         private void takeSnapshot() throws IOException, MgmtOperationException {
             DomainTestUtils.executeForResult(Util.createOperation("take-snapshot", null), client);
             readSnapshot();
@@ -756,8 +733,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
         }
 
         private void reload() {
-            ModelNode operation = Util.createOperation("reload", null);
-            ServerReload.executeReloadAndWaitForCompletion(client, operation, (int) SECONDS.toMillis(90), host,
+            ServerReload.executeReloadAndWaitForCompletion(client, (int) SECONDS.toMillis(90), false, host,
                     getManagementPort());
         }
 

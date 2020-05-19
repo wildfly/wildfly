@@ -14,7 +14,7 @@ The _<authentication-client/>_ element can be added to the wildfly-config.xml co
 </configuration>
 ----
 
-_Note: A single wildfly-config.xml could be used by multiple projects using multiple versions of Wildfly Elytron, newer versions of WildFly Elytron will introduce new configuration using later namespace versions however they will still continue to support the previously released schemas until advertised otherwise.  For the configuration to be compatible with this either use a schema and namespace compatible with all the versions in use, or multiple authentication-client elements can be added, these should be added ordered by namespace youngest to oldest.  If a configuration with a later namespace is discovered by a newer WildFly Elytron client it will be used and parsing will not look for an older version as well._
+_Note: A single wildfly-config.xml could be used by multiple projects using multiple versions of WildFly Elytron, newer versions of WildFly Elytron will introduce new configuration using later namespace versions however they will still continue to support the previously released schemas until advertised otherwise.  For the configuration to be compatible with this either use a schema and namespace compatible with all the versions in use, or multiple authentication-client elements can be added, these should be added ordered by namespace youngest to oldest.  If a configuration with a later namespace is discovered by a newer WildFly Elytron client it will be used and parsing will not look for an older version as well._
 
 The _<authentication-client />_ configuration can contain the following sections: -
 
@@ -382,13 +382,13 @@ The <ssl-contexts /> element holds individual names SSLContext definitions that 
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration>
-    <authentication-client xmlns="urn:elytron:1.0">
+    <authentication-client xmlns="urn:elytron:1.4">
         <ssl-contexts>
             <default-ssl-context name="..."/>
             <ssl-context name="...">
                 <key-store-ssl-certificate>...</key-store-ssl-certificate>
                 <trust-store key-store-name="..." />
-                <cipher-suite selector="..." />
+                <cipher-suite selector="..." names="..." />
                 <protocol names="... ..." />
                 <provider-name name="..." />
                 <providers>...</providers>
@@ -424,16 +424,25 @@ This structure is identical to the structure use in [<key-store-credential />|#k
 
  <trust-store-key-store-name />:: A reference to a KeyStore that will be used to initialise the TrustManager.
 
- <cipher-suite-selector />:: Configuration to filter the enabled cipher suites, the format of the selector is [org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)|http://wildfly-security.github.io/wildfly-elytron/1.1.x/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-].
+ <cipher-suite selector="..." names="..." />:: Configuration to filter the enabled cipher suites. This element must contain at least one of the following two attributes: -
 
-The following would be a cipher suite selector performing the default filtering.
+ selector:: _(Optional)_ Used to configure the enabled cipher suites for TLSv1.2 and below. The format of the `selector` attribute is described in detail
+ in http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+ The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and excludes any cipher suites that have no authentication.
+
+ names:: _(Optional)_ Used to configure the enabled cipher suites for TLSv1.3. The format of the `names` attribute is a simple colon (":")
+ separated list of TLSv1.3 cipher suite names (e.g., `TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`).
+ This attribute must be specified in order for TLSv1.3 to be enabled.
+
+The following example configuration specifies that the default filtering should be used for TLSv1.2 and below and specifies that the
+`TLS_AES_128_CCM_8_SHA256` and `TLS_AES_256_GCM_SHA384` cipher suites should be used for TLSv1.3.
 
 [source,xml,options="nowrap"]
 ----
-<cipher-suite selector="DEFAULT" />
+<cipher-suite selector="DEFAULT" names="TLS_AES_128_CCM_8_SHA256:TLS_AES_256_GCM_SHA384"/>
 ----
 
- <protocol />:: used to define a space separated list of the protocols to be supported.
+ <protocol names="..."/>:: Used to define a space separated list of the protocols to be supported. The default value is `TLSv1 TLSv1.1 TLSv1.2 TLSv1.3`. Note that the TLSv1.3 protocol will only be usable when running against JDK 11 or higher.
 
  <provider-name />:: Once the available providers have been identified only the provider with the name defined on this element will be used.
 

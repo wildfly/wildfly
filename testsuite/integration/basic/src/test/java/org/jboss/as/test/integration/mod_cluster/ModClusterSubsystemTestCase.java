@@ -80,7 +80,7 @@ public class ModClusterSubsystemTestCase {
             Assert.assertEquals("Adding mod_cluster subsystem failed! " + response.toJSONString(false), SUCCESS, outcome);
 
             // We need to reload the server here since the add operation leaves the server in 'reload-required' state
-            ServerReload.executeReloadAndWaitForCompletion(controllerClient);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
             // Test subsystem remove
             request = ctx.buildRequest("/subsystem=modcluster:remove");
@@ -102,7 +102,7 @@ public class ModClusterSubsystemTestCase {
 
             // Remove leaves the server in 'reload-required' state, we need to reload the server in order not to leave running services
             // around for subsequent tests
-            ServerReload.executeReloadAndWaitForCompletion(controllerClient);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         } finally {
             ctx.terminateSession();
         }

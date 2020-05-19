@@ -94,7 +94,7 @@ public class DefaultResponseCodeTestCase extends ContainerResourceMgmtTestBase {
             operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "remove");
             operation.get("address").add("location","/");
             executeOperation(operation);
-            executeReloadAndWaitForCompletion(getModelControllerClient());
+            executeReloadAndWaitForCompletion(getManagementClient());
             HttpGet httpget = new HttpGet(url.toString() + URL_PATTERN);
             HttpResponse response = this.httpclient.execute(httpget);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());

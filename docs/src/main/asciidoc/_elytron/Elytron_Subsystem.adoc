@@ -67,7 +67,7 @@ and the
 [[provided-components]]
 == Provided components
 
-Wildfly Elytron provides a default set of implementations in the
+WildFly Elytron provides a default set of implementations in the
 _elytron_ subsystem.
 
 [[factories]]
@@ -297,6 +297,13 @@ always returns the same constant.
 
 |simple-role-decoder |Definition of a simple RoleDecoder that takes a
 single attribute and maps it directly to roles.
+
+|source-address-role-decoder |Definition of a RoleDecoder that maps roles
+based on the IP address of the remote client.
+
+|aggregate-role-decoder |A role decoder that is an aggregation of other
+role decoders. An aggregate role decoder combines the roles obtained using
+each role decoder.
 |=======================================================================
 
 [[role-mappers]]
@@ -325,6 +332,10 @@ performs a logical operation using two referenced role mappers.
 
 |mapped-role-mapper |A role mapper definition for a role mapper that uses
 configured mapping of role names to map role names.
+
+|regex-role-mapper |A role mapper definition for a role mapper that
+performs a regex matching and maps matching roles with provided pattern.
+Regex can capture groups that replacement pattern can make use of.
 |=======================================================================
 
 [[ssl-components]]
@@ -369,12 +380,12 @@ be used to obtain and revoke signed certificates.
 resources.
 
 |authentication-configuration |An individual authentication
-configuration definition, which is used by clients deployed to Wildfly
+configuration definition, which is used by clients deployed to WildFly
 and other resources for authenticating when making a remote connection.
 
 |authentication-context |An individual authentication context
 definition, which is used to supply an ssl-context and
-authentication-configuration when clients deployed to Wildfly and other
+authentication-configuration when clients deployed to WildFly and other
 resources make a remoting connection.
 
 |credential-store |Credential store to keep alias for sensitive
@@ -524,6 +535,7 @@ and openssl provider loaders.
             "openssl"
         ]}},
         "aggregate-realm" => undefined,
+        "aggregate-role-decoder" => undefined,
         "aggregate-role-mapper" => undefined,
         "aggregate-sasl-server-factory" => undefined,
         "aggregate-security-event-listener" => undefined,
@@ -665,6 +677,7 @@ and openssl provider loaders.
             }
         },
         "provider-sasl-server-factory" => {"global" => {"providers" => undefined}},
+        "regex-role-mapper" => undefined,
         "regex-principal-transformer" => undefined,
         "regex-validating-principal-transformer" => undefined,
         "sasl-authentication-factory" => {
@@ -764,6 +777,7 @@ and openssl provider loaders.
         "simple-regex-realm-mapper" => undefined,
         "simple-role-decoder" => {"groups-to-roles" => {"attribute" => "groups"}},
         "size-rotating-file-audit-log" => undefined,
+        "source-address-role-decoder" => undefined,
         "syslog-audit-log" => undefined,
         "token-realm" => undefined,
         "trust-manager" => undefined,

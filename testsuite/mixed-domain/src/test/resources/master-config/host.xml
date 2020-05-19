@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host name="master" xmlns="urn:jboss:domain:10.0">
+<host name="master" xmlns="urn:jboss:domain:13.0">
 
     <management>
         <security-realms>
@@ -75,15 +75,15 @@
         </interface>
     </interfaces>
 
- 	<jvms>
- 	   <jvm name="default">
+    <jvms>
+        <jvm name="default">
           <heap size="64m" max-size="256m"/>
           <permgen size="256m" max-size="256m"/>
             <jvm-options>
                 <option value="-server"/>
             </jvm-options>
        </jvm>
- 	</jvms>
+    </jvms>
 
     <servers>
         <server name="server-one" group="other-server-group" auto-start="false">

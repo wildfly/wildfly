@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -52,27 +48,19 @@ public class RemotingEjbReceiverDefinition extends SimpleResourceDefinition {
             EJB3SubsystemModel.CONNECT_TIMEOUT, ModelType.LONG, true).setDefaultValue(new ModelNode(5000L))
             .setAllowExpression(true).build();
 
-    public static final Map<String, AttributeDefinition> ATTRIBUTES;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(OUTBOUND_CONNECTION_REF.getName(), OUTBOUND_CONNECTION_REF);
-        map.put(CONNECT_TIMEOUT.getName(), CONNECT_TIMEOUT);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { OUTBOUND_CONNECTION_REF, CONNECT_TIMEOUT };
 
     public static final RemotingEjbReceiverDefinition INSTANCE = new RemotingEjbReceiverDefinition();
 
     private RemotingEjbReceiverDefinition() {
         super(PathElement.pathElement(EJB3SubsystemModel.REMOTING_EJB_RECEIVER), EJB3Extension
                 .getResourceDescriptionResolver(EJB3SubsystemModel.REMOTING_EJB_RECEIVER), new RemotingProfileChildResourceAddHandler(
-                ATTRIBUTES.values()), new RemotingProfileChildResourceRemoveHandler());
+                ATTRIBUTES), new RemotingProfileChildResourceRemoveHandler());
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (final AttributeDefinition attr : ATTRIBUTES.values()) {
+        for (final AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new RemotingProfileResourceChildWriteAttributeHandler(attr));
         }
     }

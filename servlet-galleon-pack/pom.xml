@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-galleon-pack</artifactId>
@@ -169,7 +169,7 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.enterprise.concurrent</artifactId>
+            <artifactId>jakarta.enterprise.concurrent</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -581,6 +581,7 @@
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFile>${feature-pack.license.directory}/servlet-feature-pack-licenses.xml</licensesConfigFile>
                             <licensesOutputFile>${license.directory}/servlet-feature-pack-licenses.xml</licensesOutputFile>
+                            <excludedArtifacts>wildfly-core-galleon-pack</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -600,7 +601,7 @@
                             <release-name>${servlet.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <task-properties>
-                                <product.release.version>${product.release.version}</product.release.version>
+                                <product.release.version>${ee.dist.product.release.version}</product.release.version>
                             </task-properties>
                         </configuration>
                     </execution>

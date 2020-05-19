@@ -23,38 +23,47 @@
 package org.wildfly.clustering.web.cache.session;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
 /**
  * Configuration for a factory for creating {@link SessionAttributes} objects, based on marshalled values.
  * @author Paul Ferraro
+ * @param <S> the HttpSession specification type
+ * @param <SC> the ServletContext specification type
+ * @param <AL> the HttpSessionAttributeListener specification type
  * @param <V> the attributes value type
- * @param <C> the marshalling context type
- * @param <L> the local context type
+ * @param <MC> the marshalling context type
+ * @param <LC> the local context type
  */
-public abstract class MarshalledValueSessionAttributesFactoryConfiguration<V, C extends Marshallability, L> implements SessionAttributesFactoryConfiguration<V, MarshalledValue<V, C>> {
+public abstract class MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements SessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
     private final Immutability immutability;
-    private final Marshaller<V, MarshalledValue<V, C>> marshaller;
+    private final Marshaller<V, MarshalledValue<V, MC>> marshaller;
+    private final HttpSessionActivationListenerProvider<S, SC, AL> provider;
 
-    protected MarshalledValueSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<C, L> configuration) {
-        MarshalledValueFactory<C> factory = configuration.getMarshalledValueFactory();
-        C context = configuration.getMarshallingContext();
+    protected MarshalledValueSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, SC, AL, ?, MC, LC> configuration) {
+        MarshalledValueFactory<MC> factory = configuration.getMarshalledValueFactory();
         this.immutability = configuration.getImmutability();
-        this.marshaller = new MarshalledValueMarshaller<>(factory, context);
+        this.marshaller = new MarshalledValueMarshaller<>(factory);
+        this.provider = configuration.getSpecificationProvider();
     }
 
     @Override
-    public Marshaller<V, MarshalledValue<V, C>> getMarshaller() {
+    public Marshaller<V, MarshalledValue<V, MC>> getMarshaller() {
         return this.marshaller;
     }
 
     @Override
     public Immutability getImmutability() {
         return this.immutability;
+    }
+
+    @Override
+    public HttpSessionActivationListenerProvider<S, SC, AL> getHttpSessionActivationListenerProvider() {
+        return this.provider;
     }
 }

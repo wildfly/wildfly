@@ -23,8 +23,7 @@ package org.wildfly.clustering.web.cache.session.coarse;
 
 import java.io.NotSerializableException;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
@@ -39,12 +38,12 @@ import org.wildfly.clustering.web.cache.session.SessionAttributes;
  */
 public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes implements SessionAttributes {
     private final Map<String, Object> attributes;
-    private final Set<String> mutations = ConcurrentHashMap.newKeySet();
     private final Mutator mutator;
     private final Marshallability marshallability;
     private final Immutability immutability;
     private final CacheProperties properties;
     private final SessionActivationNotifier notifier;
+    private final AtomicBoolean dirty = new AtomicBoolean(false);
 
     public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, Marshallability marshallability, Immutability immutability, CacheProperties properties, SessionActivationNotifier notifier) {
         super(attributes);
@@ -63,7 +62,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     public Object removeAttribute(String name) {
         Object value = this.attributes.remove(name);
         if (value != null) {
-            this.mutations.add(name);
+            this.dirty.set(true);
         }
         return value;
     }
@@ -77,9 +76,8 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
             throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
         Object old = this.attributes.put(name, value);
-        if (old != value) {
-            this.mutations.add(name);
-        }
+        // Always trigger mutation, even if this is an immutable object that was previously retrieved via getAttribute(...)
+        this.dirty.set(true);
         return old;
     }
 
@@ -87,7 +85,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     public Object getAttribute(String name) {
         Object value = this.attributes.get(name);
         if (!this.immutability.test(value)) {
-            this.mutations.add(name);
+            this.dirty.set(true);
         }
         return value;
     }
@@ -98,9 +96,8 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
             this.notifier.prePassivate();
         }
 
-        if (!this.mutations.isEmpty()) {
+        if (this.dirty.compareAndSet(true, false)) {
             this.mutator.mutate();
         }
-        this.mutations.clear();
     }
 }

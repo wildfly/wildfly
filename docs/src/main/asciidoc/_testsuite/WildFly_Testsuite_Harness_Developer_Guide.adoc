@@ -3,7 +3,7 @@
 
 *Audience:* Whoever wants to change the testsuite harness
 
-*JIRA*: https://issues.jboss.org/browse/WFLY-576[WFLY-576]
+*JIRA*: https://issues.redhat.com/browse/WFLY-576[WFLY-576]
 
 [[testsuite-requirements]]
 == Testsuite requirements
@@ -33,7 +33,7 @@ for testsuite modules.>>
 
 ﻿Propagated to tests through arquillian.xml: +
 `<property name="javaVmArguments">${server.jvm.args}</property>` +
-TBD: https://issues.jboss.org/browse/ARQ-647
+TBD: https://issues.redhat.com/browse/ARQ-647
 
 [[jboss-as-instance-dir]]
 === JBoss AS instance dir

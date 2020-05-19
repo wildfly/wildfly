@@ -25,33 +25,36 @@ import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
+import org.jboss.as.clustering.controller.MetricFunction;
+import org.jboss.as.clustering.controller.FunctionExecutor;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * @author Paul Ferraro
  */
 public abstract class CacheMetricExecutor<C> implements MetricExecutor<C>, Function<Cache<?, ?>, C> {
 
+    private final FunctionExecutorRegistry<Cache<?, ?>> executors;
     private final BinaryCapabilityNameResolver resolver;
 
-    protected CacheMetricExecutor() {
-        this(BinaryCapabilityNameResolver.PARENT_CHILD);
+    protected CacheMetricExecutor(FunctionExecutorRegistry<Cache<?, ?>> executors) {
+        this(executors, BinaryCapabilityNameResolver.PARENT_CHILD);
     }
 
-    protected CacheMetricExecutor(BinaryCapabilityNameResolver resolver) {
+    protected CacheMetricExecutor(FunctionExecutorRegistry<Cache<?, ?>> executors, BinaryCapabilityNameResolver resolver) {
+        this.executors = executors;
         this.resolver = resolver;
     }
 
     @Override
     public ModelNode execute(OperationContext context, Metric<C> metric) throws OperationFailedException {
         ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, this.resolver);
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(false), name).get();
-        C metricContext = (cache != null) ? this.apply(cache) : null;
-        return (metricContext != null) ? metric.execute(metricContext) : null;
+        FunctionExecutor<Cache<?, ?>> executor = this.executors.get(name);
+        return (executor != null) ? executor.execute(new MetricFunction<>(this, metric)) : null;
     }
 }

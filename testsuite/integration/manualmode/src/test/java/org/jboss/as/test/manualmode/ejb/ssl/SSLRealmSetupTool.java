@@ -194,7 +194,7 @@ public class SSLRealmSetupTool {
         ModelNode result = managementClient.getControllerClient().execute(operation);
         log.infof("remove HTTPS connector", result);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
         // restore https connector to previous state
         operation = new ModelNode();
@@ -207,7 +207,7 @@ public class SSLRealmSetupTool {
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
         // Removing security realm
         ModelNode secRealmAddress = getSecurityRealmsAddress();

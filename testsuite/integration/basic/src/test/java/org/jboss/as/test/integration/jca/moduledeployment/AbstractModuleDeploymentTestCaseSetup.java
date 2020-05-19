@@ -187,7 +187,7 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
             removeModule(defaultPath, true);
         }
         if (reloadRequired) {
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
         for (Path p : toRemove) {
             deleteRecursively(p);

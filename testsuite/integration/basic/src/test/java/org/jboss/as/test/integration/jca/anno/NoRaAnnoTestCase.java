@@ -51,8 +51,6 @@ import org.jboss.as.test.integration.jca.annorar.AnnoMessageListener1;
 import org.jboss.as.test.integration.jca.annorar.AnnoResourceAdapter;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.metadata.spec.ConnectorImpl;
@@ -66,8 +64,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,7 +74,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(NoRaAnnoTestCase.NoRaAnnoTestCaseSetup.class)
-public class NoRaAnnoTestCase extends ContainerResourceMgmtTestBase {
+public class NoRaAnnoTestCase {
 
     /**
      * The logger
@@ -120,14 +116,13 @@ public class NoRaAnnoTestCase extends ContainerResourceMgmtTestBase {
         ResourceAdapterArchive raa = ShrinkWrap.create(
                 ResourceAdapterArchive.class, "ra16anno.rar");
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class);
-        ja.addClasses(MgmtOperationException.class, XMLElementReader.class,
-                XMLElementWriter.class, NoRaAnnoTestCase.class);
+        ja.addClasses(NoRaAnnoTestCase.class);
         ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(
                 AnnoConnectionFactory.class.getPackage());
         raa.addAsLibrary(ja)
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: javax.inject.api,org.jboss.as.connector,org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),
+                                "Dependencies: javax.inject.api,org.jboss.as.connector\n"),
                         "MANIFEST.MF");
         return raa;
     }

@@ -57,7 +57,7 @@ public class RemoteSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
             this.builder.node(TWO_NODES)
-                    .setup("/subsystem=distributable-web/hotrod-single-sign-on-management=default-host:add(remote-cache-container=web)")
+                    .setup("/subsystem=distributable-web/hotrod-single-sign-on-management=default-host:add(remote-cache-container=sso)")
                     .teardown("/subsystem=distributable-web/hotrod-single-sign-on-management=default-host:remove")
             ;
         }

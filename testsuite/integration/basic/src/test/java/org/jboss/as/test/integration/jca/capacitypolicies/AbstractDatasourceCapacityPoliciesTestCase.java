@@ -118,7 +118,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
                 JcaTestsUtil.class,
                 TimeoutUtil.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector," +
-                "org.jboss.as.controller,org.jboss.dmr,org.jboss.as.cli,org.jboss.staxmapper," +
+                "org.jboss.as.controller,org.jboss.dmr,org.jboss.staxmapper," +
                 "org.jboss.ironjacamar.impl, org.jboss.ironjacamar.jdbcadapters,org.jboss.remoting\n"), "MANIFEST.MF");
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),

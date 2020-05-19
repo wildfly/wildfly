@@ -33,9 +33,12 @@
 
     <dependencies>
         <module name="javax.transaction.api"/>
+        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.logging"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

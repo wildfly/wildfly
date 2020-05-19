@@ -43,7 +43,7 @@ class TransactionTimeoutSetupStep extends SnapshotRestoreSetupTask {
     public void doSetup(ManagementClient managementClient, String serverId) throws Exception {
         setTimeout(managementClient, 5);
 
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private void setTimeout(ManagementClient managementClient, int timeout) throws IOException, MgmtOperationException {

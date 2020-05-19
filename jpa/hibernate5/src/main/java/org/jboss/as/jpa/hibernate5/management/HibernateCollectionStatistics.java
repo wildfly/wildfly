@@ -85,13 +85,13 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
         return null;
     }
 
-    private CollectionStatistics getStatistics(final EntityManagerFactory entityManagerFactory, String collectionName) {
+    private CollectionStatistics getStatistics(final EntityManagerFactory entityManagerFactory, PathAddress pathAddress) {
         if (entityManagerFactory == null) {
             return null;
         }
         SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
-            return sessionFactory.getStatistics().getCollectionStatistics(collectionName);
+            return sessionFactory.getStatistics().getCollectionStatistics(pathAddress.getValue(HibernateStatistics.COLLECTION));
         }
         return null;
     }
@@ -106,7 +106,7 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
     private Operation collectionUpdateCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getUpdateCount() : 0);
         }
     };
@@ -114,7 +114,7 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
     private Operation collectionRemoveCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getRemoveCount() : 0);
         }
     };
@@ -122,7 +122,7 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
     private Operation collectionRecreatedCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getRemoveCount() : 0);
         }
     };
@@ -130,7 +130,7 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
     private Operation collectionLoadCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getLoadCount() : 0);
         }
     };
@@ -138,7 +138,7 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
     private Operation collectionFetchCount = new Operation() {
         @Override
         public Object invoke(Object... args) {
-            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getStatisticName(args));
+            CollectionStatistics statistics = getStatistics(getEntityManagerFactory(args), getPathAddress(args));
             return Long.valueOf(statistics != null ? statistics.getFetchCount() : 0);
         }
     };

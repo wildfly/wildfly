@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -62,27 +58,20 @@ public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
 
     private final PathManager pathManager;
 
-    public static final Map<String, AttributeDefinition> ATTRIBUTES;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(PATH.getName(), PATH);
-        map.put(RELATIVE_TO.getName(), RELATIVE_TO);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { PATH, RELATIVE_TO };
+    private static final FileDataStoreAdd ADD_HANDER = new FileDataStoreAdd(ATTRIBUTES);
 
     public FileDataStoreResourceDefinition(final PathManager pathManager) {
         super(EJB3SubsystemModel.FILE_DATA_STORE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.FILE_DATA_STORE),
-                FileDataStoreAdd.INSTANCE, new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, FileDataStoreAdd.INSTANCE),
+                ADD_HANDER, new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, ADD_HANDER),
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.pathManager = pathManager;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTES.values()) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
     }

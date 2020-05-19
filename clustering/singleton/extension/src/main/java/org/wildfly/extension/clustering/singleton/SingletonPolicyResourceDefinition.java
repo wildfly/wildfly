@@ -29,6 +29,7 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -43,6 +44,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonRequirement;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringDefaultCacheRequirement;
@@ -144,15 +146,16 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
                 .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
                 .setResourceTransformation(SingletonPolicyResource::new)
                 ;
-        ResourceServiceHandler handler = new SingletonPolicyServiceHandler();
+        ServiceValueExecutorRegistry<Singleton> executors = new ServiceValueExecutorRegistry<>();
+        ResourceServiceHandler handler = new SingletonPolicyServiceHandler(executors);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new RandomElectionPolicyResourceDefinition().register(registration);
         new SimpleElectionPolicyResourceDefinition().register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new SingletonDeploymentResourceDefinition().register(registration);
-            new SingletonServiceResourceDefinition().register(registration);
+            new SingletonDeploymentResourceDefinition(executors).register(registration);
+            new SingletonServiceResourceDefinition(executors).register(registration);
         }
 
         return registration;

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="domain-server-groups" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature spec="domain.server-group">
+        <param name="server-group" value="main-server-group"/>
+        <param name="profile" value="full" />
+        <param name="socket-binding-group" value="full-sockets" />
+        <feature spec="domain.server-group.jvm">
+            <param name="jvm" value="default"/>
+            <param name="heap-size" value="64m"/>
+            <param name="max-heap-size" value="512m"/>
+        </feature>
+    </feature>
+    <feature spec="domain.server-group">
+        <param name="server-group" value="other-server-group"/>
+        <param name="profile" value="full-ha" />
+        <param name="socket-binding-group" value="full-ha-sockets" />
+        <feature spec="domain.server-group.jvm">
+            <param name="jvm" value="default"/>
+            <param name="heap-size" value="64m"/>
+            <param name="max-heap-size" value="512m"/>
+        </feature>
+    </feature>
+
+</feature-group-spec>

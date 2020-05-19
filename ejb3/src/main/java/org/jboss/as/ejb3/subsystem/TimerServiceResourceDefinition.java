@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -57,17 +53,9 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     //.setDefaultValue(new ModelNode("default-file-store")) //for backward compatibility!
                     .build();
 
-    public static final Map<String, AttributeDefinition> ATTRIBUTES ;
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME, DEFAULT_DATA_STORE };
 
     private final PathManager pathManager;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
-        map.put(DEFAULT_DATA_STORE.getName(), DEFAULT_DATA_STORE);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
 
     public TimerServiceResourceDefinition(final PathManager pathManager) {
         super(EJB3SubsystemModel.TIMER_SERVICE_PATH,
@@ -80,7 +68,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTES.values()) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
     }

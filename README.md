@@ -1,6 +1,6 @@
 WildFly Application Server
 ========================
-http://wildfly.org
+https://wildfly.org
 
 * Fast Startup
 * Small Footprint
@@ -51,11 +51,16 @@ To stop the server, press Ctrl + C, or use the admin console
 
     ./jboss-cli.sh --connect command=:shutdown
 
-More information: https://docs.jboss.org/author/display/WFLY10/Getting+Started+Guide
+Check 'Getting Started Guide' in the WildFly documentation for more information about how to start and stop WildFly.
+
+Documentation
+------------------------------------------
+
+* https://docs.wildfly.org/
 
 Contributing
 ------------------
-https://developer.jboss.org/wiki/HackingOnWildFly
+* https://developer.jboss.org/wiki/HackingOnWildFly
 
 Build vs. Dist directories
 --------------------------

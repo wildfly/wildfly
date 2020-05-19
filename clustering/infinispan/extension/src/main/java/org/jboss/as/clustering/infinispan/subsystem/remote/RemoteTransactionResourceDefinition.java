@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Capability;
@@ -50,6 +51,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker.SimpleRejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -67,10 +69,10 @@ public class RemoteTransactionResourceDefinition extends ComponentResourceDefini
         MODE("mode", ModelType.STRING, new ModelNode(TransactionMode.NONE.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(TransactionMode.class, EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH, TransactionMode.NON_DURABLE_XA)));
+                return builder.setValidator(new EnumValidator<>(TransactionMode.class, EnumSet.complementOf(EnumSet.of(TransactionMode.FULL_XA))));
             }
         },
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(60000L)) {
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(1))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
@@ -97,6 +99,11 @@ public class RemoteTransactionResourceDefinition extends ComponentResourceDefini
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         if (InfinispanModel.VERSION_9_0_0.requiresTransformation(version)) {
             parent.addChildResource(PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
+        } else {
+            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder().addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(TransactionMode.NON_XA.name())), Attribute.MODE.getDefinition());
+            }
         }
     }
 

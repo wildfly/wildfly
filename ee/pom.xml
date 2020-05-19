@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -44,7 +44,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.enterprise.concurrent</artifactId>
+            <artifactId>jakarta.enterprise.concurrent</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>

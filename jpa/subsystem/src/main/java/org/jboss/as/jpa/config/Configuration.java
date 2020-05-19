@@ -152,6 +152,8 @@ public class Configuration {
      */
     public static final String JPA_ALLOW_TWO_PHASE_BOOTSTRAP = "wildfly.jpa.twophasebootstrap";
 
+    private static final String JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE = "wildfly.jpa.applicationdatasource";
+
     /**
      * set to false to ignore default data source (defaults to true)
      */
@@ -161,6 +163,11 @@ public class Configuration {
      * set to true to defer detaching entities until persistence context is closed (WFLY-3674)
      */
     private static final String JPA_DEFER_DETACH = "jboss.as.jpa.deferdetach";
+
+    /**
+     * set to true to defer detaching query results until persistence context is closed (WFLY-12674)
+     */
+    private static final String JPA_SKIP_QUERY_DETACH = "wildfly.jpa.skipquerydetach";
 
     /**
      * unique name for the persistence unit that is unique across all deployments (
@@ -292,6 +299,20 @@ public class Configuration {
     }
 
     /**
+     * Determine if persistence unit can use application defined DataSource (e.g. DataSourceDefinition or resource ref).
+     *
+     * @param pu
+     * @return true if application defined DataSource can be used, false (default) if not.
+     */
+    public static boolean allowApplicationDefinedDatasource(PersistenceUnitMetadata pu) {
+        boolean result = false;
+        if (pu.getProperties().containsKey(Configuration.JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE)) {
+            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE));
+        }
+        return result;
+    }
+
+    /**
      * Determine if the default data-source should be used
      *
      * @param pu
@@ -316,6 +337,20 @@ public class Configuration {
         boolean result = false;
         if ( properties.containsKey(JPA_DEFER_DETACH))
             result = Boolean.parseBoolean((String)properties.get(JPA_DEFER_DETACH));
+        return result;
+    }
+
+    /**
+     * Return true if detaching of query results (entities) should be deferred until the entity manager is closed.
+     * Note:  only applies to transaction scoped entity managers used without an active JTA transaction.
+     *
+     * @param properties
+     * @return
+     */
+    public static boolean skipQueryDetach(final Map<String, Object> properties) {
+        boolean result = false;
+        if ( properties.containsKey(JPA_SKIP_QUERY_DETACH))
+            result = Boolean.parseBoolean((String)properties.get(JPA_SKIP_QUERY_DETACH));
         return result;
     }
 
@@ -368,4 +403,5 @@ public class Configuration {
         }
         return result;
     }
+
 }

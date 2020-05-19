@@ -56,8 +56,8 @@ public class SubsystemFullParsingTestCase extends AbstractSubsystemTest {
      * Tests that the xml is parsed into the correct operations
      */
     @Test
-    public void testParse_1_0_Subsystem() throws Exception {
-        parseXmlResource("agroal_1_0-full.xml");
+    public void testParseSubsystem() throws Exception {
+        parseXmlResource("agroal_2_0-full.xml");
     }
 
     @SuppressWarnings("SameParameterValue")

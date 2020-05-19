@@ -29,7 +29,9 @@ import org.jboss.as.clustering.controller.Attribute;
  */
 public interface ThreadPoolDefinition extends ScheduledThreadPoolDefinition {
 
-    Attribute getMinThreads();
+    Attribute getMaxThreads();
 
     Attribute getQueueLength();
+
+    boolean isNonBlocking();
 }

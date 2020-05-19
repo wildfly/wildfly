@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -50,9 +46,6 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
 
-    public static final EJB3IIOPResourceDefinition INSTANCE = new EJB3IIOPResourceDefinition();
-
-
     static final SimpleAttributeDefinition USE_QUALIFIED_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.USE_QUALIFIED_NAME, ModelType.BOOLEAN)
                     .setAllowExpression(true)
@@ -67,21 +60,13 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
                     .setRequired(true)
                     .build();
 
-    private static final Map<String, AttributeDefinition> ATTRIBUTES;
-
-    static {
-        final Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(ENABLE_BY_DEFAULT.getName(), ENABLE_BY_DEFAULT);
-        map.put(USE_QUALIFIED_NAME.getName(), USE_QUALIFIED_NAME);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
-
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ENABLE_BY_DEFAULT, USE_QUALIFIED_NAME };
+    public static final EJB3IIOPResourceDefinition INSTANCE = new EJB3IIOPResourceDefinition();
 
     private EJB3IIOPResourceDefinition() {
         super(EJB3SubsystemModel.IIOP_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IIOP),
-                EJB3IIOPAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+                new EJB3IIOPAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
@@ -98,7 +83,7 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
             @Override
             void applySetting(final IIOPSettingsService service, OperationContext context, final ModelNode model) throws OperationFailedException {
                 final boolean value = ENABLE_BY_DEFAULT.resolveModelAttribute(context, model).asBoolean();
-                service.setUseQualifiedName(value);
+                service.setEnabledByDefault(value);
             }
         });
     }

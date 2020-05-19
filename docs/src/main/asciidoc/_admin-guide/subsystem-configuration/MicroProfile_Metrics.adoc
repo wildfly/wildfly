@@ -16,7 +16,7 @@ element to the xml or by using the following CLI operation:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.metrics-smallrye:add
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.metrics-smallrye:add
 ----
 
 == Management Model
@@ -94,7 +94,7 @@ A corresponding metric will be exposed for it with the name and labels:
 * `wildfly_undertow_request_count_total{deployment="helloworld-rs.war",servlet="org.jboss.as.quickstarts.rshelloworld.JAXActivator",subdeployment="helloworld-rs.war"}`
 
 [NOTE]
-Some subsystems (such as `undertow` or `messaing-activemq`) do not enable their statistics by default
+Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their statistics by default
 as they have an impact on performance and memory usage. These subsystems provides a `statistics-enabled` attribute that must
 be set to `true` to enable them.
 For convenience, WildFly standalone configuration provides expression to enable the statistics by setting a

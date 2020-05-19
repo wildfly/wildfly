@@ -22,42 +22,46 @@
 
 package org.wildfly.clustering.server.dispatcher;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.marshalling.jboss.ByteBufferOutputStream;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class CommandDispatcherMarshaller<C> implements CommandMarshaller<C> {
+public class CommandDispatcherMarshaller<C, MC> implements CommandMarshaller<C> {
 
     private final MarshallingContext context;
     private final Object id;
+    private final MarshalledValueFactory<MC> factory;
 
-    public CommandDispatcherMarshaller(MarshallingContext context, Object id) {
+    public CommandDispatcherMarshaller(MarshallingContext context, Object id, MarshalledValueFactory<MC> factory) {
         this.context = context;
         this.id = id;
+        this.factory = factory;
     }
 
     @Override
-    public <R> byte[] marshal(Command<R, ? super C> command) throws IOException {
+    public <R> ByteBuffer marshal(Command<R, ? super C> command) throws IOException {
         int version = this.context.getCurrentVersion();
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        try (DataOutputStream output = new DataOutputStream(bytes)) {
+        ByteBufferOutputStream buffer = new ByteBufferOutputStream();
+        try (DataOutputStream output = new DataOutputStream(buffer)) {
             IndexSerializer.VARIABLE.writeInt(output, version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(Marshalling.createByteOutput(output));
                 marshaller.writeObject(this.id);
-                marshaller.writeObject(command);
+                marshaller.writeObject(this.factory.createMarshalledValue(command));
                 marshaller.flush();
             }
-            return bytes.toByteArray();
+            return buffer.getBuffer();
         }
     }
 }

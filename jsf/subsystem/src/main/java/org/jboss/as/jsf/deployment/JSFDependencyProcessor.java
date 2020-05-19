@@ -61,7 +61,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
+        final DeploymentUnit tl = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
@@ -71,7 +71,8 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) && !DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        String jsfVersion = JsfVersionMarker.getVersion(deploymentUnit);
+        //Set default when no default version has been set on the war file
+        String jsfVersion = JsfVersionMarker.getVersion(tl).equals(JsfVersionMarker.NONE)? JSFModuleIdFactory.getInstance().getDefaultSlot() : JsfVersionMarker.getVersion(tl);
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
             //if JSF is provided by the application we leave it alone
             return;

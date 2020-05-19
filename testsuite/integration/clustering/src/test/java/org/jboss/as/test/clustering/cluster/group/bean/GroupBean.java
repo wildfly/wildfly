@@ -6,6 +6,9 @@ import javax.annotation.Resource;
 import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.GroupListener;
@@ -17,7 +20,7 @@ import org.wildfly.clustering.group.Node;
 @Local(Group.class)
 public class GroupBean implements Group, GroupListener {
 
-    @Resource(lookup = "java:jboss/clustering/group/default")
+    @Resource(name = "clustering/group")
     private org.wildfly.clustering.group.Group group;
     private Registration registration;
     private volatile Membership previousMembership;
@@ -34,6 +37,21 @@ public class GroupBean implements Group, GroupListener {
 
     @Override
     public void membershipChanged(Membership previousMembership, Membership membership, boolean merged) {
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+            // Ensure the correct naming context is set
+            Context context = new InitialContext();
+            try {
+                context.lookup("java:comp/env/clustering/group");
+            } finally {
+                context.close();
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        } catch (NamingException e) {
+            throw new IllegalStateException(e);
+        }
         this.previousMembership = previousMembership;
     }
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-openapi">
+    <dependencies>
+        <layer name="jaxrs"/>
+        <layer name="microprofile-config"/>
+    </dependencies>
+    <feature spec="subsystem.microprofile-openapi-smallrye"/>
+</layer-spec>

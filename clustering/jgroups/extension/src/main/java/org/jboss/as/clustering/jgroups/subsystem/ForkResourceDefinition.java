@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
@@ -39,6 +40,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -94,8 +96,11 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
         }
     }
 
-    ForkResourceDefinition() {
+    private final FunctionExecutorRegistry<JChannel> executors;
+
+    ForkResourceDefinition(FunctionExecutorRegistry<JChannel> executors) {
         super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
+        this.executors = executors;
     }
 
     @Override
@@ -110,7 +115,7 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
         ResourceServiceHandler handler = new ForkServiceHandler(serviceConfiguratorFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new ProtocolRegistration(serviceConfiguratorFactory, new ForkProtocolRuntimeResourceRegistration()).register(registration);
+        new ProtocolRegistration(serviceConfiguratorFactory, new ForkProtocolRuntimeResourceRegistration(this.executors)).register(registration);
 
         return registration;
     }

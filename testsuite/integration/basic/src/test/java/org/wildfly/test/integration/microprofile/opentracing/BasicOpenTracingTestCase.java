@@ -31,6 +31,6 @@ public class BasicOpenTracingTestCase {
     @Test
     public void hasDefaultInjectedTracer() {
         Assert.assertNotNull(tracer);
-        Assert.assertTrue(tracer instanceof JaegerTracer);
+        Assert.assertTrue(tracer.toString(), tracer instanceof JaegerTracer);
     }
 }

@@ -43,4 +43,14 @@ public class SimpleMarshalledValueFactory implements MarshalledValueFactory<Mars
     public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) {
         return new SimpleMarshalledValue<>(object, this.context);
     }
+
+    @Override
+    public MarshallingContext getMarshallingContext() {
+        return this.context;
+    }
+
+    @Override
+    public boolean isMarshallable(Object object) {
+        return this.context.isMarshallable(object);
+    }
 }

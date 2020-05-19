@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -84,6 +85,15 @@ public class CollectionExternalizerTestCase {
         new ExternalizerTester<>(DefaultExternalizer.EMPTY_NAVIGABLE_SET.cast(NavigableSet.class), Assert::assertSame).test(Collections.emptyNavigableSet());
         new ExternalizerTester<>(DefaultExternalizer.EMPTY_SET.cast(Set.class), Assert::assertSame).test(Collections.emptySet());
         new ExternalizerTester<>(DefaultExternalizer.EMPTY_SORTED_SET.cast(SortedSet.class), Assert::assertSame).test(Collections.emptySortedSet());
+
+        // Regular EnumSet
+        new ExternalizerTester<>(DefaultExternalizer.ENUM_SET.cast(EnumSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(EnumSet.noneOf(Thread.State.class));
+        new ExternalizerTester<>(DefaultExternalizer.ENUM_SET.cast(EnumSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(EnumSet.of(Thread.State.NEW));
+        new ExternalizerTester<>(DefaultExternalizer.ENUM_SET.cast(EnumSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(EnumSet.allOf(Thread.State.class));
+        // Jumbo EnumSet
+        new ExternalizerTester<>(DefaultExternalizer.ENUM_SET.cast(EnumSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(EnumSet.noneOf(Character.UnicodeScript.class));
+        new ExternalizerTester<>(DefaultExternalizer.ENUM_SET.cast(EnumSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(EnumSet.of(Character.UnicodeScript.LATIN));
+        new ExternalizerTester<>(DefaultExternalizer.ENUM_SET.cast(EnumSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(EnumSet.allOf(Character.UnicodeScript.class));
 
         new ExternalizerTester<>(DefaultExternalizer.SINGLETON_LIST.cast(List.class), CollectionExternalizerTestCase::assertCollectionEquals).test(Collections.singletonList(1));
         new ExternalizerTester<>(DefaultExternalizer.SINGLETON_SET.cast(Set.class), CollectionExternalizerTestCase::assertCollectionEquals).test(Collections.singleton(1));

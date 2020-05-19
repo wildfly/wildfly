@@ -78,7 +78,7 @@ class RemoteConnectorChannelCreationOptionResource extends SimpleResourceDefinit
     }
 
     private static void recreateParentService(OperationContext context, ModelNode ejb3RemoteServiceModelNode) throws OperationFailedException {
-        EJB3RemoteServiceAdd.INSTANCE.installRuntimeServices(context, ejb3RemoteServiceModelNode);
+        EJB3RemoteResourceDefinition.ADD_HANDLER.installRuntimeServices(context, ejb3RemoteServiceModelNode);
     }
 
     /**

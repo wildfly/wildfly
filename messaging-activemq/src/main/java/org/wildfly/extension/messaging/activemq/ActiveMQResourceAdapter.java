@@ -55,16 +55,6 @@ public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.Acti
         this.getProperties().setEnable1xPrefixes(true);
     }
 
-
-    /**
-     * @deprecated temporary hack workaround for https://issues.jboss.org/browse/WFLY-12226; will be removed as
-     * soon as isUseTopologyForLoadBalancing returns Boolean
-     */
-    @Deprecated
-    public Boolean getUseTopologyForLoadBalancing() {
-        return isUseTopologyForLoadBalancing();
-    }
-
     @Override
     protected BroadcastEndpointFactory createBroadcastEndpointFactory(ConnectionFactoryProperties overrideProperties) {
         String clusterName = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName() : getJgroupsChannelName();

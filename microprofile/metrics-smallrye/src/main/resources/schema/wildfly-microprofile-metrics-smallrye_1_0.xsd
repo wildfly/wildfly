@@ -41,7 +41,7 @@
             <xs:attribute name="exposed-subsystems" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>
-                        The names of the subsystems (separated by spaces) that exposes their metrics in the vendor scope (or '*' to expose any subystem metrics).
+                        The names of the subsystems (separated by spaces) that exposes their metrics in the vendor scope (or '*' to expose any subsystem metrics).
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>

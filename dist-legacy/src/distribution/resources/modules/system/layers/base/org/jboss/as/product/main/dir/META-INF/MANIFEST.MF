@@ -1,0 +1,2 @@
+JBoss-Product-Release-Name: ${ee.dist.product.release.name}
+JBoss-Product-Release-Version: ${ee.dist.product.release.version}

@@ -128,7 +128,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
             executeOperations(updates);
 
             if (System.getProperty("elytron") != null) {
-                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 50000);
+                ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
             }
         }
 

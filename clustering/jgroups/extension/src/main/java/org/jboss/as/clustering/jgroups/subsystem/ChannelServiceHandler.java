@@ -36,7 +36,9 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ModuleServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
@@ -46,6 +48,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
@@ -60,6 +63,12 @@ import org.wildfly.clustering.spi.GroupServiceConfiguratorProvider;
  */
 public class ChannelServiceHandler implements ResourceServiceHandler {
 
+    private final ServiceValueRegistry<JChannel> registry;
+
+    public ChannelServiceHandler(ServiceValueRegistry<JChannel> registry) {
+        this.registry = registry;
+    }
+
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
@@ -69,10 +78,13 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         ServiceTarget target = context.getServiceTarget();
 
         new ChannelClusterServiceConfigurator(address).configure(context, model).build(target).install();
-        new ChannelServiceConfigurator(JCHANNEL, address).statisticsEnabled(STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean()).configure(context, model).build(target).install();
+        ChannelServiceConfigurator channelBuilder = new ChannelServiceConfigurator(JCHANNEL, address).statisticsEnabled(STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
+        channelBuilder.configure(context, model).build(target).install();
         new IdentityServiceConfigurator<>(JCHANNEL_FACTORY.getServiceName(address), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, stack)).build(target).install();
         new ForkChannelFactoryServiceConfigurator(FORK_CHANNEL_FACTORY, address.append(ForkResourceDefinition.pathElement(name))).configure(context, new ModelNode()).build(target).install();
         new ModuleServiceConfigurator(JCHANNEL_MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+
+        new ServiceValueCaptorServiceConfigurator<>(this.registry.add(channelBuilder.getServiceName())).build(target).install();
 
         new BinderServiceConfigurator(JGroupsBindingFactory.createChannelBinding(name), JGroupsRequirement.CHANNEL.getServiceName(context, name)).build(target).install();
         new BinderServiceConfigurator(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name)).build(target).install();
@@ -108,5 +120,7 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
                 context.removeService(configurator.getServiceName());
             }
         }
+
+        context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.registry.remove(JCHANNEL.getServiceName(address))).getServiceName());
     }
 }

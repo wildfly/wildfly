@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -19,12 +19,6 @@
     <packaging>jar</packaging>
 
     <name>WildFly Test Suite: Shared</name>
-
-
-    <properties>
-        <!-- Arquillian dependency versions -->
-        <enforcer.skip>true</enforcer.skip>
-    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -112,6 +106,16 @@
 
     <build>
         <plugins>
+            <plugin>
+                <!-- This enforcer.skip property was set to true in the properties. However this doesn't work if the
+                     property is passed on the command line. Therefore we need to explicitly skip it.
+                -->
+                <!-- Arquillian dependency versions -->
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>

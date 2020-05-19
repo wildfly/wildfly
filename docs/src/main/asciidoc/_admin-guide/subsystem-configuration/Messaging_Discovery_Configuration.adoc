@@ -48,9 +48,9 @@ e.g.
 ----
 
 
-== Cluster behind an HTTP load-balancer
+== Cluster behind an HTTP load balancer
 
-If the cluster is behind an HTTP load-balancer we need to indicate to the clients that they must not use the cluster topology to connect to it but keep on using the initial connection to the load-balancer.
+If the cluster is behind an HTTP load balancer we need to indicate to the clients that they must not use the cluster topology to connect to it but keep on using the initial connection to the load-balancer.
 For this you need to specify on the (pooled) connection factory not to use the topology by setting the attribute "use-topology-for-load-balancing" to false.
 
 [source,options="nowrap"]

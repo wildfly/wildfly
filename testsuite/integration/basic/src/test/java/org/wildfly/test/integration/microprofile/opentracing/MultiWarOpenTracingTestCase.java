@@ -89,7 +89,7 @@ public class MultiWarOpenTracingTestCase {
     @Test
     public void testMultipleWarServicesUseDifferentTracersAfterReload() throws Exception {
         testHttpInvokation();
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
         testHttpInvokation();
     }
 

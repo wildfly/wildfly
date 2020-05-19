@@ -23,6 +23,7 @@ package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.Externalizable;
 import java.io.Serializable;
+import java.security.PrivilegedAction;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -32,21 +33,31 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.TimeZone;
 
+import org.wildfly.security.manager.WildFlySecurityManager;
+
 /**
  * {@link org.jboss.marshalling.ClassTable} implementation that dynamically loads {@link ClassTableContributor} instances visible from a given {@link ClassLoader}.
  * @author Paul Ferraro
  */
 public class DynamicClassTable extends SimpleClassTable {
 
-    public DynamicClassTable(ClassLoader loader) {
-        super(findClasses(loader));
+    public DynamicClassTable(ClassLoader... loaders) {
+        super(findClasses(loaders));
     }
 
-    private static List<Class<?>> findClasses(ClassLoader loader) {
-        List<Class<?>> knownClasses = new LinkedList<>();
-        for (ClassTableContributor contributor : ServiceLoader.load(ClassTableContributor.class, loader)) {
-            knownClasses.addAll(contributor.getKnownClasses());
-        }
+    private static List<Class<?>> findClasses(ClassLoader... loaders) {
+        List<Class<?>> knownClasses = WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<Class<?>>>() {
+            @Override
+            public List<Class<?>> run() {
+                List<Class<?>> classes = new LinkedList<>();
+                for (ClassLoader loader : loaders) {
+                    for (ClassTableContributor contributor : ServiceLoader.load(ClassTableContributor.class, loader)) {
+                        classes.addAll(contributor.getKnownClasses());
+                    }
+                }
+                return classes;
+            }
+        });
 
         List<Class<?>> classes = new ArrayList<>(knownClasses.size() + 36);
         classes.add(Serializable.class);

@@ -171,8 +171,8 @@ public abstract class AbstractClusteringTestCase {
             }
         });
 
-        NodeUtil.start(this.controller, nodes);
-        NodeUtil.deploy(this.deployer, deployments);
+        start(nodes);
+        deploy(deployments);
     }
 
     /**
@@ -180,8 +180,8 @@ public abstract class AbstractClusteringTestCase {
      */
     @After
     public void afterTestMethod() throws Exception {
-        NodeUtil.start(this.controller, nodes);
-        NodeUtil.undeploy(this.deployer, deployments);
+        start(nodes);
+        undeploy(deployments);
     }
 
     // Node and deployment lifecycle management convenience methods

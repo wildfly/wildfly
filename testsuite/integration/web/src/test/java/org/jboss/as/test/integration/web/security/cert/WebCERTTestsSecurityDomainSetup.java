@@ -165,7 +165,7 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
 
             log.debug("end of the domain creation");
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         } catch (Exception e) {
             log.error("Failed to setup domain creation.", e);
         }

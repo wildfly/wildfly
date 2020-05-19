@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,8 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
@@ -54,8 +53,10 @@ import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.notifications.cachelistener.filter.EventType;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.context.DefaultExecutorService;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
+import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.jboss.as.clustering.logging.ClusteringLogger;
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
@@ -66,9 +67,8 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryListener;
-import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
+import org.wildfly.clustering.spi.group.Group;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -79,14 +79,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <V> value type
  */
 @org.infinispan.notifications.Listener
-public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Object, Object>, ExceptionRunnable<CacheException> {
+public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Object, Object>, ExceptionRunnable<CacheException>, Function<RegistryListener<K, V>, ExecutorService> {
 
-    private static ThreadFactory createThreadFactory(Class<?> targetClass) {
-        PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
-        return WildFlySecurityManager.doUnchecked(action);
-    }
-
-    private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(createThreadFactory(this.getClass()));
+    private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
     private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<Address, Map.Entry<K, V>> cache;
     private final Batcher<? extends Batch> batcher;
@@ -139,8 +134,13 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
 
     @Override
     public Registration register(RegistryListener<K, V> listener) {
-        this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
+        this.listeners.computeIfAbsent(listener, this);
         return () -> this.unregister(listener);
+    }
+
+    @Override
+    public ExecutorService apply(RegistryListener<K, V> listener) {
+        return new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD);
     }
 
     private void unregister(RegistryListener<K, V> listener) {
@@ -298,7 +298,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
                             }
                         }
                     } catch (Throwable e) {
-                        ClusteringServerLogger.ROOT_LOGGER.registryListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), this.cache.getName(), type, entries);
+                        ClusteringServerLogger.ROOT_LOGGER.registryListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName(), this.cache.getName(), type, entries);
                     }
                 });
             } catch (RejectedExecutionException e) {
@@ -308,8 +308,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
     }
 
     private void shutdown(ExecutorService executor) {
-        PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
-        WildFlySecurityManager.doUnchecked(action);
+        WildFlySecurityManager.doUnchecked(executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
         try {
             executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {

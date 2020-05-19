@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import org.jboss.logging.Logger;
 
+import javax.inject.Inject;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -76,6 +77,8 @@ public class ResourceInjectionSubstitutionTestCase {
 
     private SimpleSLSB slsb;
     private SimpleSFSB sfsb;
+    @Inject
+    private SimpleCDIBean cdiBean;
 
     static class SystemPropertySetup implements ServerSetupTask {
 
@@ -252,5 +255,15 @@ public class ResourceInjectionSubstitutionTestCase {
         } finally {
             con.close();
         }
+    }
+
+    /**
+     * Test resource injection with SFSB
+     */
+    @Test
+    public void testResourceInjectionSubstitutionCDI() {
+        Assert.assertTrue("@Resource with name wasn't injected in CDI bean", cdiBean.isResourceWithNameInjected());
+        Assert.assertTrue("@Resource with lookup wasn't injected in CDI bean", cdiBean.isResourceWithLookupNameInjected());
+        Assert.assertTrue("@Resource with mappedName wasn't injected in CDI bean", cdiBean.isResourceWithMappedNameInjected());
     }
 }

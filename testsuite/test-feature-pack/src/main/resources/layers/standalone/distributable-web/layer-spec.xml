@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="distributable-web">
+    <dependencies>
+        <layer name="web-server"/>
+        <layer name="transactions"/>
+    </dependencies>
+    <feature-group name="distributable-web"/>
+    <feature-group name="infinispan-local-web"/>
+    <packages>
+        <!-- The distributable-web subsystem doesn't assume undertow,
+             and undertow subysystem doesn't assume clustering, but the
+             combination requires the clustering<->undertow integration package -->
+        <package name="org.wildfly.clustering.web.undertow"/>
+    </packages>
+</layer-spec>

@@ -1,7 +1,7 @@
 [[Message_Driven_Beans_Controlled_Delivery]]
 = Message Driven Beans Controlled Delivery
 
-There are three mechanisms in Wildfly that allow controlling if a
+There are three mechanisms in WildFly that allow controlling if a
 specific MDB is actively receiving or not messages:
 
 * delivery active
@@ -77,7 +77,7 @@ public class HelloWorldMDB implements MessageListener {
 
 These management operations dynamically change the value of the active
 attribute, enabling or disabling delivery for the MDB. at runtime To use
-them, connect to the Wildfly instance you want to manage, then enter the
+them, connect to the WildFly instance you want to manage, then enter the
 path of the MDB you want to manage delivery for:
 
 [source,options="nowrap"]
@@ -102,7 +102,7 @@ whenever the group is not active.
 You can add a delivery group to the ejb3 subsystem using either the
 subsystem xml or cli. Next, we will see examples of each case. In those
 examples we will add only a single delivery group, but keep in mind that
-you can add as many delivery groups as you need to a Wildfly instance.
+you can add as many delivery groups as you need to a WildFly instance.
 
 * the ejb3 subsystem xml (located in your configuration xml, such as
 standalone.xml)
@@ -299,7 +299,7 @@ public class HelloWorldMDB implements MessageListener {
 ----
 
 Notice that all the delivery-groups used by an application must be installed in
-the Wildfly server upon deployment, or the deployment will fail with a message
+the WildFly server upon deployment, or the deployment will fail with a message
 stating that the delivery-group is missing.
 
 [[clustered-singleton-delivery]]
@@ -317,7 +317,7 @@ that there is always one node processing the messages. This node is what
 we call the MDB clustered singleton master node.
 
 Notice that applications using clustered singleton delivery can only be
-deployed in clustered Wildfly servers (i.e., servers that are using the
+deployed in clustered WildFly servers (i.e., servers that are using the
 ha configuration).
 
 To mark delivery as clustered singleton, you can use the jboss-ejb3.xml

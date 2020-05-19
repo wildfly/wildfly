@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-mixed-domain</artifactId>
@@ -56,6 +56,8 @@
 
         <ts.elytron.cli>../shared/enable-elytron-domain.cli</ts.elytron.cli>
         <ts.skipTests>${skipTests}</ts.skipTests>
+        <!-- Use the complete build, not just the ee one, for this testsuite -->
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <!--

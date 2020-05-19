@@ -19,11 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
@@ -31,11 +32,11 @@ import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILI
 import static org.wildfly.extension.messaging.activemq.Capabilities.PATH_MANAGER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAST_GROUP;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.INCOMING_INTERCEPTORS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_BROADCAST_GROUP;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.MODULE;
@@ -51,6 +52,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CONNECTION_TTL_OVERRIDE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_BINDINGS_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_JOURNAL_DIR;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREDENTIAL_REFERENCE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.DISK_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.GLOBAL_MAX_DISK_USAGE;
@@ -157,16 +159,15 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder;
 import org.wildfly.extension.messaging.activemq.jms.JMSService;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.source.CredentialSource;
-
 
 /**
  * Add handler for a ActiveMQ server instance.
@@ -177,6 +178,7 @@ import org.wildfly.security.credential.source.CredentialSource;
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 class ServerAdd extends AbstractAddStepHandler {
+
     public static final ServerAdd INSTANCE = new ServerAdd();
 
 // Artemis-specific system properties
@@ -186,7 +188,7 @@ class ServerAdd extends AbstractAddStepHandler {
     private static final String ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS = "brokerconfig.storeConfiguration.jdbcLockAcquisitionTimeoutMillis";
 
     private ServerAdd() {
-        super(ACTIVEMQ_SERVER_CAPABILITY, ServerDefinition.ATTRIBUTES);
+        super(ServerDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -199,6 +201,7 @@ class ServerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
+        handleCredentialReferenceUpdate(context, resource.getModel().get(CREDENTIAL_REFERENCE.getName()), CREDENTIAL_REFERENCE.getName());
 
         // add an operation to create all the messaging paths resources that have not been already been created
         // prior to adding the ActiveMQ server
@@ -242,7 +245,7 @@ class ServerAdd extends AbstractAddStepHandler {
      */
     private void checkNoAttributesIsDefined(String definedAttributeName, PathAddress address, ModelNode model, AttributeDefinition... attrs) throws OperationFailedException {
         List<String> definedAttributes = new ArrayList<>();
-        for(AttributeDefinition attr : attrs) {
+        for (AttributeDefinition attr : attrs) {
             if (model.get(attr.getName()).isDefined()) {
                 definedAttributes.add(attr.getName());
             }
@@ -258,6 +261,11 @@ class ServerAdd extends AbstractAddStepHandler {
         // Add a RUNTIME step to actually install the ActiveMQ Service. This will execute after the runtime step
         // added by any child resources whose ADD handler executes after this one in the model stage.
         context.addStep(new InstallServerHandler(resource), OperationContext.Stage.RUNTIME);
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(CREDENTIAL_REFERENCE, context, resource);
     }
 
     private class InstallServerHandler implements OperationStepHandler {
@@ -384,9 +392,8 @@ class ServerAdd extends AbstractAddStepHandler {
                 for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
-                    ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
-
-                    if (broadcastGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                    if (model.hasDefined(JGROUPS_BROADCAST_GROUP, name)) {
+                        ModelNode broadcastGroupModel = model.get(JGROUPS_BROADCAST_GROUP, name);
                         ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
                         ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
@@ -410,8 +417,8 @@ class ServerAdd extends AbstractAddStepHandler {
                 for (final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                     final String name = config.getName();
                     final String key = "discovery" + name;
-                    ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
-                    if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                    if (model.hasDefined(JGROUPS_DISCOVERY_GROUP, name)) {
+                        ModelNode discoveryGroupModel = model.get(JGROUPS_DISCOVERY_GROUP, name);
                         ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
                         ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
@@ -452,21 +459,26 @@ class ServerAdd extends AbstractAddStepHandler {
 
             // inject credential-references for bridges
             addBridgeCredentialStoreReference(serverService, configuration, BridgeDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
-            addClusterCredentialStoreReference(serverService, ServerDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
+            addClusterCredentialStoreReference(serverService, CREDENTIAL_REFERENCE, context, model, serviceBuilder);
 
             // Install the ActiveMQ Service
             ServiceController activeMQServerServiceController = serviceBuilder.setInstance(serverService)
                     .install();
             //Add the queue services for the core queues  created throught the internal broker configuration (those queues are not added as service via the QueueAdd OSH)
-            for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
-                final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
-                final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
-                sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
-                Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
-                final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
-                sb.setInitialMode(Mode.PASSIVE);
-                sb.setInstance(queueService);
-                sb.install();
+            if (model.hasDefined(CommonAttributes.QUEUE)) {
+                ModelNode coreQueues = model.get(CommonAttributes.QUEUE);
+                for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
+                    if (coreQueues.has(queueConfiguration.getName())) {
+                        final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
+                        final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
+                        sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
+                        Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
+                        final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
+                        sb.setInitialMode(Mode.PASSIVE);
+                        sb.setInstance(queueService);
+                        sb.install();
+                    }
+                }
             }
             // Provide our custom Resource impl a ref to the ActiveMQ server so it can create child runtime resources
             ((ActiveMQServerResource) resource).setActiveMQServerServiceController(activeMQServerServiceController);
@@ -640,13 +652,13 @@ class ServerAdd extends AbstractAddStepHandler {
             processSecuritySettings(context, configuration, model);
 
             // Add in items from child resources
-            GroupingHandlerAdd.addGroupingHandlerConfig(context, configuration, model);
-            configuration.setDiscoveryGroupConfigurations(DiscoveryGroupAdd.addDiscoveryGroupConfigs(context, model));
-            DivertAdd.addDivertConfigs(context, configuration, model);
-            QueueAdd.addQueueConfigs(context, configuration, model);
-            BridgeAdd.addBridgeConfigs(context, configuration, model);
-            ClusterConnectionAdd.addClusterConnectionConfigs(context, configuration, model);
-            ConnectorServiceDefinition.addConnectorServiceConfigs(context, configuration, model);
+            ConfigurationHelper.addGroupingHandlerConfiguration(context, configuration, model);
+            configuration.setDiscoveryGroupConfigurations(ConfigurationHelper.addDiscoveryGroupConfigurations(context, model));
+            ConfigurationHelper.addDivertConfigurations(context, configuration, model);
+            ConfigurationHelper.addQueueConfigurations(context, configuration, model);
+            ConfigurationHelper.addBridgeConfigurations(context, configuration, model);
+            ConfigurationHelper.addClusterConnectionConfigurations(context, configuration, model);
+            ConfigurationHelper.addConnectorServiceConfigurations(context, configuration, model);
 
             return configuration;
         }

@@ -232,7 +232,7 @@ public class ServletRunAsTestCase {
                 + Utils.encodeQueryParam(CallProtectedEjbServlet.FILE_PARAM, INCORRECT_ROLE_AND_STOP_SERVER.getAbsolutePath()));
         Utils.makeCall(servletUrl.toURI(), HTTP_OK);
 
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 50000);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
     }
 
     /**

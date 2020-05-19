@@ -26,9 +26,14 @@ import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfiguration;
 
 /**
+ * @param <S> the HttpSession specification type
+ * @param <C> the ServletContext specification type
+ * @param <L> the HttpSessionActivationListener specification type
+ * @param <V> attributes cache entry type
+ * @param <SV> attributes serialized form type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionAttributesFactoryConfiguration<V, S> extends InfinispanSessionMetaDataFactoryConfiguration, SessionAttributesFactoryConfiguration<V, S> {
+public interface InfinispanSessionAttributesFactoryConfiguration<S, C, L, V, SV> extends InfinispanSessionMetaDataFactoryConfiguration, SessionAttributesFactoryConfiguration<S, C, L, V, SV> {
 
     @Override
     default CacheProperties getCacheProperties() {

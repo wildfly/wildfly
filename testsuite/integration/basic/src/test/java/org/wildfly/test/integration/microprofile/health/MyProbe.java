@@ -22,6 +22,10 @@
 
 package org.wildfly.test.integration.microprofile.health;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
@@ -33,10 +37,24 @@ import org.eclipse.microprofile.health.Liveness;
 @Health
 public class MyProbe implements HealthCheck {
 
+    // Inject a property whose value is configured in a ConfigSource
+    // inside the deployment to check that MP Config properly injects properties
+    // when HealthChecks are called in WildFly management endpoints.
+    @Inject
+    @ConfigProperty
+    Provider<Boolean> propertyConfiguredByTheDeployment;
+
     static boolean up = true;
 
     @Override
     public HealthCheckResponse call() {
+
+        if (!propertyConfiguredByTheDeployment.get()) {
+            return HealthCheckResponse.named("myProbe")
+                    .down()
+                    .build();
+        }
+
         return HealthCheckResponse.named("myProbe")
                 .state(up)
                 .build();

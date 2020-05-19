@@ -28,11 +28,11 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp</artifactId>
-    <name>WildFly Test Suite: Integration - MicroProfile</name>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK</name>
 
     <packaging>pom</packaging>
 
@@ -40,63 +40,20 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <microprofile.jvm.args>-server -Xms64m -Xmx512m ${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</microprofile.jvm.args>
     </properties>
 
     <modules>
         <module>config</module>
+        <module>fault-tolerance</module>
         <module>health</module>
+        <module>jwt</module>
         <module>metrics</module>
+        <module>openapi</module>
         <module>opentracing</module>
     </modules>
 
     <profiles>
-
-        <profile>
-            <id>rbac-soak</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <!-- default values usable for development -->
-                <jboss.test.rbac.soak.clients>10</jboss.test.rbac.soak.clients>
-                <jboss.test.rbac.soak.iterations>5</jboss.test.rbac.soak.iterations>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <failIfNoTests>false</failIfNoTests>
-                            <!-- parallel>none</parallel -->
-                            <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-
-                            <!-- System properties to forked surefire JVM which runs clients. -->
-                            <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
-
-                            <systemPropertyVariables>
-                                <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                                <jboss.options>-ea</jboss.options>
-                                <jboss.home>${project.basedir}/target/wildfly</jboss.home>
-                                <module.path>${jboss.dist}/modules</module.path>
-                                <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
-                                <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
-                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Djbossas.ts.dir=${jbossas.ts.dir} ${extra.server.jvm.args}</server.jvm.args>
-                                <jboss.test.rbac.soak.clients>${jboss.test.rbac.soak.clients}</jboss.test.rbac.soak.clients>
-                                <jboss.test.rbac.soak.iterations>${jboss.test.rbac.soak.iterations}</jboss.test.rbac.soak.iterations>
-                            </systemPropertyVariables>
-                            <includes>
-                                <include>org/jboss/as/test/integration/domain/rbac/RbacSoakTest.java</include>
-                            </includes>
-                            <argLine />
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <profile>
             <id>layers.profile</id>
             <activation>
@@ -116,6 +73,58 @@
                                 <phase>test</phase>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>standalone.microprofile.profile</id>
+            <activation>
+                <property>
+                    <name>ts.standalone.microprofile</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!--Re-enable the default surefire execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>test</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+            By default the arquillian.xml files in the TCK modules use standalone-microprofile.xml for the config.
+            For those modules that support it, switch back to using standalone.xml as the server config
+            if we are testing against a non-MP build
+        -->
+        <profile>
+            <id>alt.dist.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.default.build.project.prefix</name>
+                    <value>ee-</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables combine.children="append">
+                                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                            </systemPropertyVariables>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

@@ -48,8 +48,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -83,7 +81,7 @@ import static org.junit.Assert.assertNull;
  * - shutdown A                                 // membership = {B}
  * - crash B                                    // membership = {B}
  * - start A                                    // membership = {A,B}
- * In this case, B is e member of the cluster (according to the DNR) but it has crashed.
+ * In this case, B is a member of the cluster (according to the DNR) but it has crashed.
  *
  * @author Richard Achmatowicz
  */
@@ -137,12 +135,6 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
         }
     }
 
-    @BeforeClass
-    public static void beforeClass() {
-        // restrict test to run under Java < 9 until arquillian-byteman-extension supports JDK 9
-        Assume.assumeTrue(System.getProperty("java.version").startsWith("1.8"));
-    }
-
     // Byteman rules to capture the DNR contents after each invocation
     @BMRules({
         @BMRule(name = "Set up results linkMap (SETUP)",
@@ -178,14 +170,12 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
             condition = "debug(\"returning the result\")",
             action = "return getNodeListMap();")
     })
-
     @Test
     @RunAsClient
     public void testDNRContentsAfterLastNodeToLeave() throws Exception {
+
         List<Future<?>> futures = new ArrayList<>(THREADS);
-
         LOGGER.info("\n *** Starting test case test()\n");
-
         LOGGER.info("*** Started nodes = " + getStartedNodes());
 
         ExecutorService executorService = Executors.newFixedThreadPool(THREADS);
@@ -303,7 +293,7 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
     }
 
     /*
-     * Method to allow determing the set of started nodes so that a Byteman rule
+     * Method to allow determining the set of started nodes so that a Byteman rule
      * can keep track of them.
      */
     private Set<String> getStartedNodes() {

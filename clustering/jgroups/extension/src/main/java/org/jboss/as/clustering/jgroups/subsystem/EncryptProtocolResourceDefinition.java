@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.security.KeyStore;
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -36,6 +37,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
@@ -85,6 +87,11 @@ public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry> extends
     }
 
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.KEY_CREDENTIAL.getName())
+                    .end();
+        }
 
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
@@ -99,7 +106,8 @@ public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry> extends
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return this.configurator.apply(descriptor)
-                    .addAttributes(Attribute.class)
+                    .addAttributes(EnumSet.complementOf(EnumSet.of(Attribute.KEY_CREDENTIAL)))
+                    .addAttribute(Attribute.KEY_CREDENTIAL, new CredentialReferenceWriteAttributeHandler(Attribute.KEY_CREDENTIAL.getDefinition()))
                     .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
                     .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
                     ;

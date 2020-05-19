@@ -10,12 +10,16 @@ import org.jboss.as.controller.ModelVersion;
 public enum EJB3Model {
 
     VERSION_1_2_0(1, 2, 0),
-    VERSION_1_2_1(1, 2, 1),
-    VERSION_1_3_0(1, 3, 0),
-    VERSION_4_0_0(4, 0, 0)
+    VERSION_1_2_1(1, 2, 1), // EAP 6.4.0
+    VERSION_1_3_0(1, 3, 0), // EAP 6.4.7
+    VERSION_3_0_0(3, 0, 0), //
+    VERSION_4_0_0(4, 0, 0), // EAP 7.0.0
+    VERSION_5_0_0(5, 0, 0), // EAP 7.2.0, EAP 7.1.0
+    VERSION_6_0_0(6, 0, 0),
+    VERSION_7_0_0(7, 0, 0)
     ;
 
-    static final EJB3Model CURRENT = VERSION_4_0_0;
+    static final EJB3Model CURRENT = VERSION_7_0_0;
 
     private final ModelVersion version;
 

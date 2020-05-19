@@ -3,7 +3,7 @@
 <config>
     <extension-module>org.jboss.as.connector</extension-module>
 
-    <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0">
+    <subsystem xmlns="urn:jboss:domain:resource-adapters:6.0">
         <resource-adapters>
             <resource-adapter id="generic-jms-ra.rar">
                 <module slot="main" id="org.jboss.genericjms"/>

@@ -473,9 +473,9 @@ public class TimerImpl implements Timer {
      */
     protected void assertTimerState() {
         if (timerState == TimerState.EXPIRED)
-            throw EjbLogger.EJB3_TIMER_LOGGER.timerHasExpired();
+            throw EjbLogger.EJB3_TIMER_LOGGER.timerHasExpired(id);
         if (timerState == TimerState.CANCELED)
-            throw EjbLogger.EJB3_TIMER_LOGGER.timerWasCanceled();
+            throw EjbLogger.EJB3_TIMER_LOGGER.timerWasCanceled(id);
         AllowedMethodsInformation.checkAllowed(MethodType.TIMER_SERVICE_METHOD);
     }
 
@@ -599,6 +599,8 @@ public class TimerImpl implements Timer {
             sb.append(this.persistent);
             sb.append(" timerService=");
             sb.append(this.timerService);
+            sb.append(" previousRun=");
+            sb.append(this.previousRun);
             sb.append(" initialExpiration=");
             sb.append(this.initialExpiration);
             sb.append(" intervalDuration(in milli sec)=");

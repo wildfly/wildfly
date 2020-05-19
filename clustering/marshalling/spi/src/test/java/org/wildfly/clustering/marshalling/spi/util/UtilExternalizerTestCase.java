@@ -23,10 +23,14 @@
 package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -44,15 +48,35 @@ public class UtilExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
+        new ExternalizerTester<>(DefaultExternalizer.BIT_SET.cast(BitSet.class)).test(createBitSet(0));
+        new ExternalizerTester<>(DefaultExternalizer.BIT_SET.cast(BitSet.class)).test(createBitSet(8));
+        new ExternalizerTester<>(DefaultExternalizer.BIT_SET.cast(BitSet.class)).test(createBitSet(9));
         new ExternalizerTester<>(DefaultExternalizer.CURRENCY.cast(Currency.class)).test(Currency.getInstance(Locale.US));
         new ExternalizerTester<>(DefaultExternalizer.LOCALE.cast(Locale.class)).test(Locale.US);
         new ExternalizerTester<>(DefaultExternalizer.NATURAL_ORDER_COMPARATOR.cast(Comparator.class)).test(Comparator.naturalOrder());
         new ExternalizerTester<>(DefaultExternalizer.OPTIONAL.cast(Optional.class)).test(Optional.empty());
         new ExternalizerTester<>(DefaultExternalizer.OPTIONAL.cast(Optional.class)).test(Optional.of(UUID.randomUUID()));
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_DOUBLE.cast(OptionalDouble.class)).test(OptionalDouble.empty());
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_DOUBLE.cast(OptionalDouble.class)).test(OptionalDouble.of(Double.MIN_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_DOUBLE.cast(OptionalDouble.class)).test(OptionalDouble.of(Double.MAX_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_INT.cast(OptionalInt.class)).test(OptionalInt.empty());
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_INT.cast(OptionalInt.class)).test(OptionalInt.of(Integer.MIN_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_INT.cast(OptionalInt.class)).test(OptionalInt.of(Integer.MAX_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_LONG.cast(OptionalLong.class)).test(OptionalLong.empty());
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_LONG.cast(OptionalLong.class)).test(OptionalLong.of(Long.MIN_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL_LONG.cast(OptionalLong.class)).test(OptionalLong.of(Long.MAX_VALUE));
         new ExternalizerTester<>(DefaultExternalizer.REVERSE_ORDER_COMPARATOR.cast(Comparator.class)).test(Comparator.reverseOrder());
         new EnumExternalizerTester<>(DefaultExternalizer.TIME_UNIT.cast(TimeUnit.class)).test();
         new ExternalizerTester<>(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class)).test(TimeZone.getDefault());
         new ExternalizerTester<>(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class)).test(TimeZone.getTimeZone("America/New_York"));
         new ExternalizerTester<>(DefaultExternalizer.UUID.cast(UUID.class)).test(UUID.randomUUID());
+    }
+
+    private static BitSet createBitSet(int size) {
+        BitSet set = new BitSet(size);
+        for (int i = 0; i < size; ++i) {
+            set.set(i, (i % 2) == 0);
+        }
+        return set;
     }
 }

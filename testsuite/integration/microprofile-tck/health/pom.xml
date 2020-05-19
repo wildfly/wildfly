@@ -28,11 +28,15 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ-mp</artifactId>
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-health</artifactId>
-    <name>WildFly Test Suite: Integration - MicroProfile - Health</name>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK - Health</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
@@ -72,7 +76,9 @@
                         <dependency>org.eclipse.microprofile.health:microprofile-health-tck</dependency>
                     </dependenciesToScan>
                     <systemPropertyVariables>
-                        <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
+                        <!-- Disable default procedures as the MP Metrics TCK must be run without them -->
+                        <!-- https://github.com/eclipse/microprofile-health/blob/master/tck/running_the_tck.asciidoc#disabling-default-vendor-procedures -->
+                        <microprofile.jvm.args>${microprofile.jvm.args} -Dmp.health.disable-default-procedures=true</microprofile.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -130,32 +136,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>org.wildfly.core</groupId>
-                                            <artifactId>wildfly-core-galleon-pack</artifactId>
-                                            <version>${version.org.wildfly.core}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -163,7 +146,9 @@
                                     <configurations>
                                         <config>
                                             <model>standalone</model>
-                                            <name>standalone.xml</name>
+                                            <!-- Call the file standalone-microprofile.xml as that is what
+                                                 arquillian.xml says to use for testing in the default maven profile-->
+                                            <name>standalone-microprofile.xml</name>
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                                 <layer>observability</layer>

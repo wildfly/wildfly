@@ -28,6 +28,12 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 
+/**
+ * SPI for a distributable session manager.
+ * @param <L> the local context type
+ * @param <B> the batch type
+ * @author Paul Ferraro
+ */
 public interface SessionManager<L, B extends Batch> extends IdentifierFactory<String>, ActiveSessionStatistics {
 
     /**

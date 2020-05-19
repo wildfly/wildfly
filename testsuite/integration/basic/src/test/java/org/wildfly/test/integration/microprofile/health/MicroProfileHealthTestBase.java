@@ -36,6 +36,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -64,7 +65,8 @@ public abstract class MicroProfileHealthTestBase {
     @Deployment(name = "MicroProfileHealthTestCase", managed = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class, MyProbe.class, MyLiveProbe.class)
+                .addClasses(TestApplication.class, TestApplication.Resource.class, MyProbe.class, MyLiveProbe.class, HealthConfigSource.class)
+                .addAsServiceProvider(ConfigSource.class, HealthConfigSource.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }

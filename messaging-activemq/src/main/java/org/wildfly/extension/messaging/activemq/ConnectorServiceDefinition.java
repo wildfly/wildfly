@@ -26,12 +26,6 @@ import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNT
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.activemq.artemis.core.config.Configuration;
-import org.apache.activemq.artemis.core.config.ConnectorServiceConfiguration;
 import org.apache.activemq.artemis.utils.ClassloadingUtil;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -41,7 +35,6 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
@@ -62,26 +55,6 @@ public class ConnectorServiceDefinition extends PersistentResourceDefinition {
                 MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.CONNECTOR_SERVICE),
                 new ConnectorServiceAddHandler(ATTRIBUTES),
                 new ActiveMQReloadRequiredHandlers.RemoveStepHandler());
-    }
-
-    static void addConnectorServiceConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.CONNECTOR_SERVICE)) {
-            final List<ConnectorServiceConfiguration> configs = configuration.getConnectorServiceConfigurations();
-            for (Property prop : model.get(CommonAttributes.CONNECTOR_SERVICE).asPropertyList()) {
-                configs.add(createConnectorServiceConfiguration(context, prop.getName(), prop.getValue()));
-            }
-        }
-    }
-
-    static ConnectorServiceConfiguration createConnectorServiceConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
-
-        final String factoryClass = CommonAttributes.FACTORY_CLASS.resolveModelAttribute(context, model).asString();
-        Map<String, String> unwrappedParameters = CommonAttributes.PARAMS.unwrap(context, model);
-        Map<String, Object> parameters = new HashMap<String, Object>(unwrappedParameters);
-        return new ConnectorServiceConfiguration()
-                .setFactoryClassName(factoryClass)
-                .setParams(parameters)
-                .setName(name);
     }
 
     @Override

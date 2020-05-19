@@ -36,7 +36,7 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,12 +50,11 @@ public class RegistryTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        jar.addPackage(RegistryRetriever.class.getPackage());
-        jar.addAsManifestResource(createPermissionsXmlAsset(
-                new PropertyPermission(NODE_NAME_PROPERTY, "read")
-        ), "permissions.xml");
-        return jar;
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
+        war.addPackage(RegistryRetriever.class.getPackage());
+        war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new RuntimePermission("getClassLoader")), "permissions.xml");
+        war.setWebXML(org.jboss.as.test.clustering.cluster.registry.RegistryTestCase.class.getPackage(), "web.xml");
+        return war;
     }
 
     @Test

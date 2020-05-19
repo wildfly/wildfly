@@ -51,7 +51,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -154,7 +153,6 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
     protected boolean createPermissions(final EjbJaccConfig ejbJaccConfig, final EJBComponentDescription description, final EJBViewConfiguration ejbViewConfiguration,
                                      final Method viewMethod, final DeploymentReflectionIndex index, final ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions) {
 
-        MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(viewMethod);
         EJBMethodSecurityAttribute ejbMethodSecurityMetaData = permissions.getViewAttribute(ejbViewConfiguration.getMethodIntf(), viewMethod);
         //if this is null we try with the corresponding bean method.
         if (ejbMethodSecurityMetaData == null) {
@@ -164,7 +162,6 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
         final Method classMethod = ClassReflectionIndexUtil.findMethod(index, ejbViewConfiguration.getComponentConfiguration().getComponentClass(), viewMethod);
         if (ejbMethodSecurityMetaData == null) {
             if (classMethod != null) {
-                methodIdentifier = MethodIdentifier.getIdentifierForMethod(classMethod);
                 //if this is null we try with the corresponding bean method.
                 ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewConfiguration.getMethodIntf(), classMethod);
                 if (ejbMethodSecurityMetaData == null) {
@@ -177,7 +174,7 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
         // check if any security metadata was defined for the method.
         if (ejbMethodSecurityMetaData != null) {
             final MethodInterfaceType interfaceType = this.getMethodInterfaceType(ejbViewConfiguration.getMethodIntf());
-            final EJBMethodPermission permission = new EJBMethodPermission(description.getEJBName(), methodIdentifier.getName(), interfaceType.name(), methodIdentifier.getParameterTypes());
+            final EJBMethodPermission permission = new EJBMethodPermission(description.getEJBName(), interfaceType.name(), viewMethod);
 
             if (ejbMethodSecurityMetaData.isPermitAll()) {
                 ejbJaccConfig.addPermit(permission);

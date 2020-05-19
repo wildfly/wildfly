@@ -818,7 +818,11 @@ public class WarJACCService extends JaccService<WarMetaData> {
          * @return true if the other pattern starts with this pattern less the "/*", false otherwise
          */
         public boolean matches(PatternInfo other) {
-            int matchLength = pattern.length() - 2;
+            if ("/*".equals(pattern)) {
+                // all patterns except EXACT ones are matched (and EXACT ones are never checked)
+                return true;
+            }
+            int matchLength = pattern.length() - 1;
             boolean matches = pattern.regionMatches(0, other.pattern, 0, matchLength);
             return matches;
         }

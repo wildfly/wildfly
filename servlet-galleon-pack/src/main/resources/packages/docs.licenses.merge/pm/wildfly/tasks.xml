@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 
 <tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+    <delete path="docs/licenses/licenses.html"/>
     <xml-merge basedir="docs/licenses" output="docs/licenses/licenses.xml">
         <filter pattern="*-licenses.xml" include="true"/>
     </xml-merge>

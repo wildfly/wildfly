@@ -35,7 +35,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.CompositeDependency;
@@ -47,6 +46,7 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.wildfly.clustering.singleton.service.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 
 /**
  * Distributed {@link SingletonServiceConfigurator} implementation that uses JBoss MSC 1.4.x service installation.

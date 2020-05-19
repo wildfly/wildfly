@@ -44,6 +44,7 @@ import org.wildfly.security.authz.MapAttributes;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.Evidence;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
+import org.wildfly.security.evidence.X509PeerCertificateChainEvidence;
 
 /**
  * A {@link SecurityRealm} implementation that delegates credential verification to an underlying {@link SecurityDomainContext}.
@@ -123,6 +124,8 @@ public class SecurityDomainContextRealm implements SecurityRealm {
     public SupportLevel getEvidenceVerifySupport(Class<? extends Evidence> evidenceType, String algorithmName) throws RealmUnavailableException {
         if (PasswordGuessEvidence.class.isAssignableFrom(evidenceType)) {
             return SupportLevel.SUPPORTED;
+        } else if (X509PeerCertificateChainEvidence.class.isAssignableFrom(evidenceType)) {
+            return SupportLevel.POSSIBLY_SUPPORTED;
         }
         return SupportLevel.UNSUPPORTED;
     }
@@ -169,7 +172,10 @@ public class SecurityDomainContextRealm implements SecurityRealm {
                 final Subject jaasSubject = new Subject();
                 Object jaasCredential = evidence;
                 if (evidence instanceof PasswordGuessEvidence) {
-                    jaasCredential = ((PasswordGuessEvidence) evidence).getGuess();
+                    // the original array may be cleared, some auth managers cache the password, so clone it
+                    jaasCredential = ((PasswordGuessEvidence) evidence).getGuess().clone();
+                } else if (evidence instanceof X509PeerCertificateChainEvidence) {
+                    jaasCredential = ((X509PeerCertificateChainEvidence) evidence).getFirstCertificate();
                 }
                 final boolean isValid = domainContext.getAuthenticationManager().isValid(principal, jaasCredential, jaasSubject);
                 if (isValid) {

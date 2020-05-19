@@ -23,10 +23,8 @@ package org.jboss.as.test.clustering;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -41,18 +39,9 @@ import org.junit.Assert;
  */
 public class ClusterTestUtil {
 
-    /**
-     * <em>Note that should you need to manually add an extra set of permissions, the following permission is required for this utility to work within
-     * security manager:</em>
-     *
-     * <pre>{@code
-     * war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new ServerPermission("getCurrentServiceContainer")), "permissions.xml");
-     * }</pre>
-     */
     public static <A extends Archive<A> & ClassContainer<A> & ManifestContainer<A>> A addTopologyListenerDependencies(A archive) {
         archive.addClasses(TopologyChangeListener.class, TopologyChangeListenerBean.class, TopologyChangeListenerServlet.class);
-        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common, org.jboss.as.controller, org.jboss.as.server, org.infinispan, org.wildfly.clustering.infinispan.spi\n"));
-        archive.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new ServerPermission("getCurrentServiceContainer")), "permissions.xml");
+        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
         return archive;
     }
 

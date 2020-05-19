@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="cloud-server">
+    <dependencies>
+        <layer name="jaxrs-server"/>
+        <layer name="ee-security" optional="true"/>
+        <layer name="jms-activemq" optional="true"/>
+        <layer name="observability" optional="true"/>
+        <layer name="resource-adapters" optional="true"/>
+    </dependencies>
+</layer-spec>

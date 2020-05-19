@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.EnumSet;
+
 import javax.transaction.SystemException;
 
 import org.infinispan.Cache;
@@ -83,24 +85,26 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     @Override
     public CompositeSessionMetaDataEntry<L> findValue(String id) {
-        return this.getValue(id, this.findCreationMetaDataCache);
+        return this.getValue(id);
     }
 
     @Override
     public CompositeSessionMetaDataEntry<L> tryValue(String id) {
-        return this.getValue(id, this.findCreationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY));
+        return this.getValue(id, Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY);
     }
 
-    private CompositeSessionMetaDataEntry<L> getValue(String id, Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache) {
+    private CompositeSessionMetaDataEntry<L> getValue(String id, Flag... flags) {
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
-        SessionCreationMetaDataEntry<L> creationMetaDataEntry = creationMetaDataCache.get(key);
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = this.findCreationMetaDataCache.getAdvancedCache().withFlags(flags).get(key);
         if (creationMetaDataEntry != null) {
             SessionAccessMetaData accessMetaData = this.accessMetaDataCache.get(new SessionAccessMetaDataKey(id));
             if (accessMetaData != null) {
                 return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
             }
-            // Purge orphaned entry, making sure not to trigger cache listener
-            creationMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LISTENER_NOTIFICATION).remove(key);
+            if (flags.length == 0) {
+                // Purge orphaned entry, making sure not to trigger cache listener
+                this.purge(id);
+            }
         }
         return null;
     }
@@ -126,26 +130,27 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     @Override
     public boolean remove(String id) {
-        return this.remove(id, this.creationMetaDataCache);
-    }
-
-    @Override
-    public boolean purge(String id) {
-        return this.remove(id, this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION));
-    }
-
-    private boolean remove(String id, Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache) {
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
         try {
-            if (!this.properties.isLockOnWrite() || (creationMetaDataCache.getAdvancedCache().getTransactionManager().getTransaction() == null) || creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
-                creationMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(key);
-                this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAccessMetaDataKey(id));
-                return true;
+            if (!this.properties.isLockOnWrite() || (this.creationMetaDataCache.getAdvancedCache().getTransactionManager().getTransaction() == null) || this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
+                return this.delete(id);
             }
             return false;
         } catch (SystemException e) {
             throw new CacheException(e);
         }
+    }
+
+    @Override
+    public boolean purge(String id) {
+        return this.delete(id, Flag.SKIP_LISTENER_NOTIFICATION);
+    }
+
+    private boolean delete(String id, Flag... flags) {
+        SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
+        this.creationMetaDataCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(key);
+        this.accessMetaDataCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionAccessMetaDataKey(id));
+        return true;
     }
 
     @CacheEntriesEvicted

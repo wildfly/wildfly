@@ -98,11 +98,9 @@ public class RemoveDeploymentPermissionsServerSetupTask implements ServerSetupTa
 
     /**
      * Provide reload operation on the server
-     *
-     * @throws Exception
      */
-    private static void reload(final ManagementClient managementClient) throws Exception {
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+    private static void reload(final ManagementClient managementClient) {
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
 }

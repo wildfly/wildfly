@@ -22,19 +22,18 @@
 
 package org.wildfly.mod_cluster.undertow;
 
-import static java.security.AccessController.doPrivileged;
-
-import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import io.undertow.servlet.api.Deployment;
+
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController.State;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -44,7 +43,6 @@ import org.jboss.modcluster.container.Server;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
@@ -86,14 +84,7 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         eventHandler.start(this.server);
 
         // Start the periodic STATUS thread
-        ThreadGroup group = new ThreadGroup(UndertowEventHandlerAdapterService.class.getSimpleName());
-        ThreadFactory factory = doPrivileged(new PrivilegedAction<ThreadFactory>() {
-            @Override
-            public ThreadFactory run() {
-                return new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null);
-            }
-        });
-        this.executor = Executors.newScheduledThreadPool(1, factory);
+        this.executor = Executors.newScheduledThreadPool(1, new DefaultThreadFactory(UndertowEventHandlerAdapterService.class));
         this.executor.scheduleWithFixedDelay(this, 0, this.configuration.getStatusInterval().toMillis(), TimeUnit.MILLISECONDS);
         this.configuration.getSuspendController().registerActivity(this);
     }
@@ -123,10 +114,16 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
 
     private synchronized void onStart(Context context) {
         ContainerEventHandler handler = this.configuration.getContainerEventHandler();
+
         handler.add(context);
 
+        State state = this.configuration.getSuspendController().getState();
+
         // TODO break into onDeploymentAdd once implemented in Undertow
-        handler.start(context);
+        if(state == State.RUNNING) {
+            handler.start(context);
+        }
+
         this.contexts.add(context);
     }
 

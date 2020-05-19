@@ -201,7 +201,7 @@ public abstract class AbstractCertificateLoginModuleTestCase {
             operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
             Utils.applyUpdate(operation, client);
 
-            executeReloadAndWaitForCompletion(client, 100000);
+            executeReloadAndWaitForCompletion(managementClient, 100000);
 
             operation = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2" , ADD);
             operation.get(PORT).set(Integer.toString(HTTPS_PORT));

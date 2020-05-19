@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -45,7 +45,6 @@
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
 
         <ts.skipTests>${skipTests}</ts.skipTests>
-        <enforcer.skip>true</enforcer.skip>
 
         <ts.elytron.cli>../../shared/enable-elytron.cli</ts.elytron.cli>
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
@@ -62,6 +61,7 @@
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>vdx</module>
                 <module>iiop</module>
@@ -87,6 +87,7 @@
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>vdx</module>
                 <module>clustering</module>
@@ -220,7 +221,22 @@
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
                 <module>basic</module>
+                <module>elytron</module>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
+                <module>clustering</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.standalone.microprofile -->
+        <profile>
+            <id>ts.integ.group.standalone.microprofile</id>
+            <activation><property><name>ts.standalone.microprofile</name></property></activation>
+            <modules>
+                <module>basic</module>
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+                <module>clustering</module>
             </modules>
         </profile>
 
@@ -247,6 +263,7 @@
             <id>ts.integ.group.microprofile</id>
             <activation><property><name>ts.microprofile</name></property></activation>
             <modules>
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
             </modules>
         </profile>
@@ -308,6 +325,15 @@
 
     <build>
         <plugins>
+            <plugin>
+                <!-- This enforcer.skip property was set to true in the properties. However this doesn't work if the
+                     property is passed on the command line. Therefore we need to explicitly skip it.
+                -->
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <!-- General plugin configuration for all integration tests -->
 
             <!-- Resources plugin. -->
@@ -428,11 +454,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
         </dependency>
-
-      <!--  <dependency>
-            <groupId>org.jboss.arquillian.testenricher</groupId>
-            <artifactId>arquillian-testenricher-initialcontext</artifactId>
-        </dependency>-->
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>

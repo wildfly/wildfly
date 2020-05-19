@@ -22,8 +22,7 @@
 package org.wildfly.extension.microprofile.health;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.json.Json;
@@ -43,9 +42,9 @@ public class HealthReporter {
 
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";
-    private List<HealthCheck> healthChecks = new ArrayList<>();
-    private List<HealthCheck> livenessChecks = new ArrayList<>();
-    private List<HealthCheck> readinessChecks = new ArrayList<>();
+    private Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
+    private Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
+    private Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
 
     private final String emptyLivenessChecksStatus;
     private final String emptyReadinessChecksStatus;
@@ -70,13 +69,13 @@ public class HealthReporter {
 
 
     @SafeVarargs
-    private final SmallRyeHealth getHealth(String emptyChecksStatus, List<HealthCheck>... checks) {
+    private final SmallRyeHealth getHealth(String emptyChecksStatus, Map<HealthCheck, ClassLoader>... checks) {
         JsonArrayBuilder results = Json.createArrayBuilder();
         HealthCheckResponse.State status = HealthCheckResponse.State.UP;
 
         if (checks != null) {
-            for (List<HealthCheck> instance : checks) {
-                status = processChecks(instance, results, status);
+            for (Map<HealthCheck, ClassLoader> entry : checks) {
+                status = processChecks(entry, results, status);
             }
         }
 
@@ -90,10 +89,19 @@ public class HealthReporter {
         return new SmallRyeHealth(builder.build());
     }
 
-    private HealthCheckResponse.State processChecks(Iterable<HealthCheck> checks, JsonArrayBuilder results, HealthCheckResponse.State status) {
+    private HealthCheckResponse.State processChecks(Map<HealthCheck, ClassLoader> checks, JsonArrayBuilder results, HealthCheckResponse.State status) {
         if (checks != null) {
-            for (HealthCheck check : checks) {
-                status = fillCheck(check, results, status);
+            for (Map.Entry<HealthCheck, ClassLoader> entry : checks.entrySet()) {
+                // use the classloader of the deployment's module instead of the TCCL (which is the server's ModuleClassLoader
+                // to ensure that any resources that checks the TCCL (such as MP Config) will use the correct one
+                // when the health checks are called.
+                final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(entry.getValue());
+                    status = fillCheck(entry.getKey(), results, status);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(oldTCCL);
+                }
             }
         }
 
@@ -101,9 +109,6 @@ public class HealthReporter {
     }
 
     private HealthCheckResponse.State fillCheck(HealthCheck check, JsonArrayBuilder results, HealthCheckResponse.State globalOutcome) {
-        if (check == null) {
-            return globalOutcome;
-        }
         JsonObject each = jsonObject(check);
         results.add(each);
         if (globalOutcome == HealthCheckResponse.State.UP) {
@@ -150,9 +155,9 @@ public class HealthReporter {
         return builder.build();
     }
 
-    public void addHealthCheck(HealthCheck check) {
+    public void addHealthCheck(HealthCheck check, ClassLoader moduleClassLoader) {
         if (check != null) {
-            healthChecks.add(check);
+            healthChecks.put(check, moduleClassLoader);
         }
     }
 
@@ -160,9 +165,9 @@ public class HealthReporter {
         healthChecks.remove(check);
     }
 
-    public void addReadinessCheck(HealthCheck check) {
+    public void addReadinessCheck(HealthCheck check, ClassLoader moduleClassLoader) {
         if (check != null) {
-            readinessChecks.add(check);
+            readinessChecks.put(check, moduleClassLoader);
         }
     }
 
@@ -170,9 +175,9 @@ public class HealthReporter {
         readinessChecks.remove(check);
     }
 
-    public void addLivenessCheck(HealthCheck check) {
+    public void addLivenessCheck(HealthCheck check, ClassLoader moduleClassLoader) {
         if (check != null) {
-            livenessChecks.add(check);
+            livenessChecks.put(check, moduleClassLoader);
         }
     }
 

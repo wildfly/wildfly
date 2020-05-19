@@ -22,7 +22,9 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.singleton.Singleton;
 
 /**
  * Executor for singleton service metrics.
@@ -30,7 +32,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class SingletonServiceMetricExecutor extends SingletonMetricExecutor {
 
-    public SingletonServiceMetricExecutor() {
-        super(ServiceName::parse);
+    public SingletonServiceMetricExecutor(FunctionExecutorRegistry<Singleton> executors) {
+        super(ServiceName::parse, executors);
     }
 }

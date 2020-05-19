@@ -107,7 +107,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getCacheStoreWriteOperation(String containerName, String cacheName, String cacheType, Attribute attribute, String value) {
-        return Operations.createWriteAttributeOperation(getCustomCacheStoreAddress(containerName,  cacheType, cacheName), attribute, new ModelNode(value));
+        return Operations.createWriteAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), attribute, new ModelNode(value));
     }
 
     protected static ModelNode getJDBCCacheStoreReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
@@ -140,7 +140,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getCacheStorePropertyAddOperation(String containerName, String cacheName, String cacheType, String propertyName, String value) {
-        ModelNode operation = Util.createAddOperation(getCacheStorePropertyAddress(containerName,  cacheType, cacheName, propertyName));
+        ModelNode operation = Util.createAddOperation(getCacheStorePropertyAddress(containerName, cacheType, cacheName, propertyName));
         // required attributes
         operation.get(VALUE).set(value);
         return operation;

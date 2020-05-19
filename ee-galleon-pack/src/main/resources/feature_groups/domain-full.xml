@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="domain-full" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="domain-interfaces"/>
+
+    <feature spec="domain.interface">
+        <param name="interface" value="unsecure"/>
+        <param name="inet-address" value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+    </feature>
+
+    <feature spec="domain.socket-binding-group">
+        <param name="socket-binding-group" value="full-sockets"/>
+        <param name="default-interface" value="public" />
+        <feature-group name="domain-sockets"/>
+        <feature-group name="domain-iiop-sockets"/>
+        <feature-group name="domain-mail-sockets"/>
+        <feature-group name="domain-transactions-sockets"/>
+        <feature-group name="domain-server-groups"/>
+    </feature>
+
+    <feature spec="profile">
+        <param name="profile" value="full"/>
+        <feature-group name="domain-profile"/>
+        <feature-group name="jsr77"/>
+        <feature-group name="iiop-openjdk"/>
+        <feature-group name="messaging-activemq"/>
+        <feature spec="subsystem.ejb3">
+            <feature spec="subsystem.ejb3.service.iiop">
+                <param name="enable-by-default" value="false"/>
+                <param name="use-qualified-name" value="false"/>
+            </feature>
+        </feature>
+    </feature>
+
+    <feature spec="domain.system-property">
+        <param name="system-property" value="java.net.preferIPv4Stack"/>
+        <param name="value" value="true"/>
+    </feature>
+    <feature-group name="access-control"/>
+    <feature-group name="domain-host-excludes"/>
+
+</feature-group-spec>

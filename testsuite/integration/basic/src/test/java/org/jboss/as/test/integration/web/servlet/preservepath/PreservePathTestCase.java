@@ -38,8 +38,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
@@ -75,7 +75,7 @@ public class PreservePathTestCase {
 
       CoreUtils.applyUpdate(setPreservePathOp, managementClient.getControllerClient());
 
-      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+      ServerReload.executeReloadAndWaitForCompletion(managementClient);
    }
 
    @After
@@ -88,7 +88,7 @@ public class PreservePathTestCase {
       ModelNode setPreservePathOp = createOpNode("subsystem=undertow/servlet-container=default", UNDEFINE_ATTRIBUTE_OPERATION);
       setPreservePathOp.get("name").set("preserve-path-on-forward");
       CoreUtils.applyUpdate(setPreservePathOp, managementClient.getControllerClient());
-      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+      ServerReload.executeReloadAndWaitForCompletion(managementClient);
    }
 
    @Deployment
@@ -140,11 +140,9 @@ public class PreservePathTestCase {
 
       if (preservePathOnForward != null && preservePathOnForward) {
          expectedServletPath = "/test";
-         // Note that in the true case, there is an extra slash before test. This might be removed in the future
-         expectedRequestURL = url + "/test";
+         expectedRequestURL = url + "test";
       } else{
          expectedServletPath = "/preserve-path.jsp";
-         // Note that in the true case, there is an extra slash before test. This might be removed in the future
          expectedRequestURL = url + "preserve-path.jsp";
       }
 
@@ -171,6 +169,6 @@ public class PreservePathTestCase {
 
       CoreUtils.applyUpdate(setPreservePathOp, managementClient.getControllerClient());
 
-      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+      ServerReload.executeReloadAndWaitForCompletion(managementClient);
    }
 }

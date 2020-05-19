@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-feature-pack</artifactId>
@@ -156,7 +156,7 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.enterprise.concurrent</artifactId>
+            <artifactId>jakarta.enterprise.concurrent</artifactId>
         </dependency>
 
         <dependency>
@@ -550,6 +550,7 @@
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                                     <licensesConfigFile>${project.basedir}/src/license/servlet-feature-pack-licenses.xml</licensesConfigFile>
                                     <licensesOutputFile>${license.directory}/servlet-feature-pack-licenses.xml</licensesOutputFile>
+                                    <excludedArtifacts>wildfly-core-feature-pack</excludedArtifacts>
                                 </configuration>
                             </execution>
                         </executions>
@@ -595,11 +596,11 @@
                                             <parameters>
                                                 <parameter>
                                                     <name>version</name>
-                                                    <value>${product.release.version}</value>
+                                                    <value>${ee.dist.product.release.version}</value>
                                                 </parameter>
                                                 <parameter>
                                                     <name>product.release.name</name>
-                                                    <value>${full.dist.product.release.name}</value>
+                                                    <value>${ee.dist.product.release.name}</value>
                                                 </parameter>
                                             </parameters>
                                         </transformationSet>

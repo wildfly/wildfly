@@ -31,13 +31,11 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 public class InfinispanServerSetupTask extends CLIServerSetupTask {
     public InfinispanServerSetupTask() {
         this.builder.node(AbstractClusteringTestCase.TWO_NODES)
-                .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:add(port=11622,host=%s)", AbstractClusteringTestCase.TESTSUITE_NODE0)
-                .setup("/subsystem=infinispan/remote-cache-container=web:add(default-remote-cluster=infinispan-server-cluster, module=org.wildfly.clustering.web.hotrod)")
-                .setup("/subsystem=infinispan/remote-cache-container=web/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server-1])")
-                .setup("/subsystem=distributable-web/hotrod-single-sign-on-management=other:add(remote-cache-container=web)")
-                .teardown("/subsystem=distributable-web/hotrod-single-sign-on-management=other:remove()")
-                .teardown("/subsystem=infinispan/remote-cache-container=web:remove")
-                .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:remove")
+                .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=11622,host=%s)", AbstractClusteringTestCase.TESTSUITE_NODE0)
+                .setup("/subsystem=infinispan/remote-cache-container=sso:add(default-remote-cluster=infinispan-server-cluster, module=org.wildfly.clustering.web.hotrod, protocol-version=2.9)")
+                .setup("/subsystem=infinispan/remote-cache-container=sso/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
+                .teardown("/subsystem=infinispan/remote-cache-container=sso:remove")
+                .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
                 ;
     }
 }

@@ -38,7 +38,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -49,20 +48,27 @@ import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.web.session.SpecificationProvider;
 
 /**
+ * @param <S> the HttpSession specification type
+ * @param <SC> the ServletContext specification type
+ * @param <AL> the HttpSessionAttributeListener specification type
+ * @param <BL> the HttpSessionBindingListener specification type
+ * @param <MC> the marshalling context type
+ * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryServiceConfigurator<C extends Marshallability, L>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<C, L>, Supplier<SessionManagerFactory<L, TransactionBatch>> {
+public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
 
     private final HotRodSessionManagementConfiguration configuration;
-    private final SessionManagerFactoryConfiguration<C, L> factoryConfiguration;
+    private final SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration;
 
     private volatile ServiceConfigurator cacheConfigurator;
     @SuppressWarnings("rawtypes")
     private volatile SupplierDependency<RemoteCache> cache;
 
-    public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<C, L> factoryConfiguration) {
+    public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration) {
         super(ServiceName.JBOSS.append("clustering", "web", factoryConfiguration.getDeploymentName()));
         this.configuration = configuration;
         this.factoryConfiguration = factoryConfiguration;
@@ -81,13 +87,13 @@ public class HotRodSessionManagerFactoryServiceConfigurator<C extends Marshallab
         this.cacheConfigurator.build(target).install();
 
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SessionManagerFactory<L, TransactionBatch>> factory = this.cache.register(builder).provides(this.getServiceName());
+        Consumer<SessionManagerFactory<SC, LC, TransactionBatch>> factory = this.cache.register(builder).provides(this.getServiceName());
         Service service = new FunctionalService<>(factory, Function.identity(), this, Consumers.close());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
-    public SessionManagerFactory<L, TransactionBatch> get() {
+    public SessionManagerFactory<SC, LC, TransactionBatch> get() {
         return new HotRodSessionManagerFactory<>(this);
     }
 
@@ -112,17 +118,12 @@ public class HotRodSessionManagerFactoryServiceConfigurator<C extends Marshallab
     }
 
     @Override
-    public MarshalledValueFactory<C> getMarshalledValueFactory() {
+    public MarshalledValueFactory<MC> getMarshalledValueFactory() {
         return this.factoryConfiguration.getMarshalledValueFactory();
     }
 
     @Override
-    public C getMarshallingContext() {
-        return this.factoryConfiguration.getMarshallingContext();
-    }
-
-    @Override
-    public LocalContextFactory<L> getLocalContextFactory() {
+    public LocalContextFactory<LC> getLocalContextFactory() {
         return this.factoryConfiguration.getLocalContextFactory();
     }
 
@@ -144,5 +145,10 @@ public class HotRodSessionManagerFactoryServiceConfigurator<C extends Marshallab
     @Override
     public <K, V> RemoteCache<K, V> getCache() {
         return this.cache.get();
+    }
+
+    @Override
+    public SpecificationProvider<S, SC, AL, BL> getSpecificationProvider() {
+        return this.factoryConfiguration.getSpecificationProvider();
     }
 }

@@ -25,15 +25,7 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.DURABLE;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.FILTER;
-import static org.wildfly.extension.messaging.activemq.QueueDefinition.DEFAULT_ROUTING_TYPE;
-
-import java.util.List;
 import java.util.function.Supplier;
-import org.apache.activemq.artemis.api.core.RoutingType;
-
-import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -41,16 +33,12 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
-import static org.wildfly.extension.messaging.activemq.QueueDefinition.ROUTING_TYPE;
-
-import java.util.Locale;
 
 /**
  * Core queue add update.
@@ -74,13 +62,14 @@ public class QueueAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
         ServiceController<?> serverService = registry.getService(serviceName);
         if (serverService != null) {
             final String queueName = context.getCurrentAddressValue();
-            final CoreQueueConfiguration queueConfiguration = createCoreQueueConfiguration(context, queueName, model);
+            final CoreQueueConfiguration queueConfiguration = ConfigurationHelper.createCoreQueueConfiguration(context, queueName, model);
             final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(serviceName).append(queueName);
             final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
             sb.requires(ActiveMQActivationService.getServiceName(serviceName));
@@ -92,34 +81,6 @@ public class QueueAdd extends AbstractAddStepHandler {
         }
         // else the initial subsystem install is not complete; MessagingSubsystemAdd will add a
         // handler that calls addQueueConfigs
-    }
-
-    static void addQueueConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.QUEUE)) {
-            final List<CoreQueueConfiguration> configs = configuration.getQueueConfigurations();
-            for (Property prop : model.get(CommonAttributes.QUEUE).asPropertyList()) {
-                configs.add(createCoreQueueConfiguration(context, prop.getName(), prop.getValue()));
-            }
-        }
-    }
-
-    private static CoreQueueConfiguration createCoreQueueConfiguration(final OperationContext context, String name, ModelNode model) throws OperationFailedException {
-        final String queueAddress = QueueDefinition.ADDRESS.resolveModelAttribute(context, model).asString();
-        final String filter = FILTER.resolveModelAttribute(context, model).asStringOrNull();
-        final String routing;
-        if(DEFAULT_ROUTING_TYPE != null && ! model.hasDefined(ROUTING_TYPE.getName())) {
-            routing = RoutingType.valueOf(DEFAULT_ROUTING_TYPE.toUpperCase(Locale.ENGLISH)).toString();
-        } else {
-            routing = ROUTING_TYPE.resolveModelAttribute(context, model).asString();
-        }
-        final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
-
-        return new CoreQueueConfiguration()
-                .setAddress(queueAddress)
-                .setName(name)
-                .setFilterString(filter)
-                .setDurable(durable)
-                .setRoutingType(RoutingType.valueOf(routing));
     }
 
 }

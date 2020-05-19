@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -51,8 +51,6 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
-
-        <enforcer.skip>true</enforcer.skip>
 
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.org.hsqldb.hsqldb>2.5.0</version.org.hsqldb.hsqldb>
@@ -358,21 +356,9 @@
                                     <offline>true</offline>
                                     <feature-packs>
                                         <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>org.wildfly.core</groupId>
-                                            <artifactId>wildfly-core-galleon-pack</artifactId>
-                                            <version>${version.org.wildfly.core}</version>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <transitive>true</transitive>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
                                             <excluded-packages>
                                                 <name>product.conf</name>
                                                 <name>docs</name>
@@ -455,6 +441,7 @@
                         <configuration>
                             <offline>true</offline>
                             <scripts>
+                                <script>enable-elytron.cli</script>
                                 <script>modify-elytron-config.cli</script>
                             </scripts>
                             <jboss-home>${wildfly.dir}</jboss-home>
@@ -464,8 +451,133 @@
                                 <public.ip>${node0}</public.ip>
                                 <management.ip>${node0}</management.ip>
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${wildfly.dir}/modules</module.path>
                             </system-properties>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Test against slimmed servers provisioned by Galleon -->
+        <profile>
+            <id>ts.clustering.layers.profile</id>
+            <activation>
+                <property>
+                    <name>ts.layers</name>
+                </property>
+            </activation>
+            <properties>
+                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Instead provision slimmed installations -->
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the standard provisioning -->
+                            <execution>
+                                <id>server-provisioning</id>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Provision a cloud-server with legacy https-->
+                            <execution>
+                                <id>cloud-profile-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/${wildfly.instance.name}</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-full.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>undertow-legacy-https</layer>
+                                                <layer>h2-default-datasource</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <!-- Disable the standard enable-elytron.cli script as it's  already provisioned -->
+                            <scripts combine.children="override">
+                                <script>modify-elytron-config.cli</script>
+                            </scripts>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <!-- Override the standard module path that points at the shared module set from dist.
+                                     Have all the servers use wildfly-1 for the modules -->
+                                <module.path>${project.build.directory}/${wildfly.instance.name}/modules${path.separator}${basedir}/target/modules</module.path>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <executions>
+                            <!-- Re-enable the defaut test execution but exclude tests incompatible with this configxf. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>test</phase>
+                                <configuration>
+                                    <excludes combine-children="append">
+                                        <!-- Needs batch -->
+                                        <exclude>org/wildfly/test/integration/elytron/batch/*TestCase.java</exclude>
+                                        <!-- Needs ejb -->
+                                        <exclude>org/wildfly/test/integration/elytron/ejb/*TestCase.java</exclude>
+                                        <exclude>org/wildfly/test/integration/elytron/permissionmappers/ConstantPermissionMapperTestCase.java</exclude>
+                                        <!-- Needs embedded jms -->
+                                        <exclude>org/wildfly/test/integration/elytron/sasl/AnonymousSaslMechTestCase.java</exclude>
+                                        <exclude>org/wildfly/test/integration/elytron/sasl/DefaultSaslConfigTestCase.java</exclude>
+                                        <exclude>org/wildfly/test/integration/elytron/sasl/OtpSaslTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

@@ -46,8 +46,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
@@ -160,7 +160,7 @@ public class WebTestsSecurityDomainSetup extends AbstractSecurityDomainSetup {
                 domainMapper.remove(cli);
                 ps.remove(cli);
                 cli.close();
-                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             } catch (Exception e) {
                 throw new RuntimeException("Cleaning up for Elytron based security domain failed.", e);
             }

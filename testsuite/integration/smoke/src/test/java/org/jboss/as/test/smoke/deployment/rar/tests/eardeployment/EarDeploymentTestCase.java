@@ -81,7 +81,7 @@ public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
         ja.addPackage(MultipleConnectionFactory1.class.getPackage());
         raa.addAsManifestResource(EarDeploymentTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
                 .addAsManifestResource(EarDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
 
         WebArchive wa = ShrinkWrap.create(WebArchive.class, "servlet.war");
         wa.addClasses(RaServlet.class);

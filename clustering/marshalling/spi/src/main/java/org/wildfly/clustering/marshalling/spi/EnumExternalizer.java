@@ -36,10 +36,12 @@ public class EnumExternalizer<E extends Enum<E>> implements Externalizer<E> {
 
     private final IntSerializer ordinalExternalizer;
     private final Class<E> enumClass;
+    private final E[] values;
 
     public EnumExternalizer(Class<E> enumClass) {
         this.ordinalExternalizer = IndexSerializer.select(enumClass.getEnumConstants().length);
         this.enumClass = enumClass;
+        this.values = enumClass.getEnumConstants();
     }
 
     @Override
@@ -49,7 +51,7 @@ public class EnumExternalizer<E extends Enum<E>> implements Externalizer<E> {
 
     @Override
     public E readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.enumClass.getEnumConstants()[this.ordinalExternalizer.readInt(input)];
+        return this.values[this.ordinalExternalizer.readInt(input)];
     }
 
     @Override

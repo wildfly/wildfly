@@ -78,7 +78,7 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
         }
 
         // Reload before continuing
-        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient(), TimeoutUtil.adjust(50000));
+        ServerReload.executeReloadAndWaitForCompletion(getManagementClient(), TimeoutUtil.adjust(50000));
     }
 
     @After

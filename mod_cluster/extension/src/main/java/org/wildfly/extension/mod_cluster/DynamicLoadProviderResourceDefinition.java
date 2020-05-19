@@ -129,10 +129,9 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
         }
 
         if (ModClusterModel.VERSION_7_0_0.requiresTransformation(version)) {
-            ModelNode legacyInitialLoad = new ModelNode(-1);
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(legacyInitialLoad), Attribute.INITIAL_LOAD.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(legacyInitialLoad), Attribute.INITIAL_LOAD.getDefinition())
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(-1)), Attribute.INITIAL_LOAD.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.INITIAL_LOAD.getDefinition())
                     .end();
         }
 

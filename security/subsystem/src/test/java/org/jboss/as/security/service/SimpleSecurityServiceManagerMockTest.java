@@ -29,6 +29,10 @@ import org.jboss.security.ISecurityManagement;
 import org.jboss.security.RunAs;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
+import org.jboss.security.SecurityContextFactory;
+import org.jboss.security.SecurityContextUtil;
+import org.jboss.security.SubjectInfo;
+import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -89,6 +93,18 @@ public class SimpleSecurityServiceManagerMockTest {
         }
         if(incomingRunAs != null) {
             when(context.getIncomingRunAs()).thenReturn(incomingRunAs);
+        }
+        SubjectInfo subjectInfo = mock(SubjectInfo.class);
+        when(subjectInfo.getRoles()).thenReturn(new SimpleRoleGroup("TEST"));
+
+        when(context.getSubjectInfo()).thenReturn(subjectInfo);
+
+        try {
+            SecurityContextUtil sessionContextUtil = SecurityContextFactory.createUtil(context);
+            when(sessionContextUtil.getRoles()).thenReturn(new SimpleRoleGroup("TEST"));
+            when(context.getUtil()).thenReturn(sessionContextUtil);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         SecurityContextAssociation.setSecurityContext(context);

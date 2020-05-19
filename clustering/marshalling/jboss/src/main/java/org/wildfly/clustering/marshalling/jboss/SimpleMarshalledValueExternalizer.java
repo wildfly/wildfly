@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.jboss;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.nio.ByteBuffer;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -36,23 +37,31 @@ import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 @MetaInfServices(Externalizer.class)
 public class SimpleMarshalledValueExternalizer<T> implements Externalizer<SimpleMarshalledValue<T>> {
 
-    @Override
-    public SimpleMarshalledValue<T> readObject(ObjectInput input) throws IOException {
+    static ByteBuffer readBuffer(ObjectInput input) throws IOException {
         int size = IndexSerializer.VARIABLE.readInt(input);
         byte[] bytes = (size > 0) ? new byte[size] : null;
         if (bytes != null) {
             input.readFully(bytes);
         }
-        return new SimpleMarshalledValue<>(bytes);
+        return (bytes != null) ? ByteBuffer.wrap(bytes) : null;
+    }
+
+    static void writeBuffer(ObjectOutput output, ByteBuffer buffer) throws IOException {
+        int length = (buffer != null) ? buffer.limit() - buffer.arrayOffset() : 0;
+        IndexSerializer.VARIABLE.writeInt(output, length);
+        if (length > 0) {
+            output.write(buffer.array(), buffer.arrayOffset(), length);
+        }
+    }
+
+    @Override
+    public SimpleMarshalledValue<T> readObject(ObjectInput input) throws IOException {
+        return new SimpleMarshalledValue<>(readBuffer(input));
     }
 
     @Override
     public void writeObject(ObjectOutput output, SimpleMarshalledValue<T> object) throws IOException {
-        byte[] bytes = object.getBytes();
-        IndexSerializer.VARIABLE.writeInt(output, (bytes != null) ? bytes.length : 0);
-        if (bytes != null) {
-            output.write(bytes);
-        }
+        writeBuffer(output, object.getBuffer());
     }
 
     @SuppressWarnings("unchecked")

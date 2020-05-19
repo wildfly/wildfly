@@ -115,6 +115,10 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             return methodIdentifier;
         }
 
+        public boolean getRetainIfException() {
+            return retainIfException;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

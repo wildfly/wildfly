@@ -31,10 +31,14 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ModuleServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.OperationContext;
@@ -59,6 +63,14 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * @author Paul Ferraro
  */
 public class CacheContainerServiceHandler implements ResourceServiceHandler {
+
+    private final ServiceValueRegistry<EmbeddedCacheManager> containerRegistry;
+    private final ServiceValueRegistry<Cache<?, ?>> cacheRegistry;
+
+    public CacheContainerServiceHandler(ServiceValueRegistry<EmbeddedCacheManager> containerRegistry, ServiceValueRegistry<Cache<?, ?>> cacheRegistry) {
+        this.containerRegistry = containerRegistry;
+        this.cacheRegistry = cacheRegistry;
+    }
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
@@ -90,8 +102,10 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         GlobalConfigurationServiceConfigurator configBuilder = new GlobalConfigurationServiceConfigurator(address);
         configBuilder.configure(context, model).build(target).install();
 
-        CacheContainerServiceConfigurator containerBuilder = new CacheContainerServiceConfigurator(address).configure(context, model);
+        CacheContainerServiceConfigurator containerBuilder = new CacheContainerServiceConfigurator(address, this.cacheRegistry).configure(context, model);
         containerBuilder.build(target).install();
+
+        new ServiceValueCaptorServiceConfigurator<>(this.containerRegistry.add(containerBuilder.getServiceName())).build(target).install();
 
         new KeyAffinityServiceFactoryServiceConfigurator(address).build(target).install();
 
@@ -150,6 +164,8 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         for (Capability capability : EnumSet.allOf(CacheContainerResourceDefinition.Capability.class)) {
             context.removeService(capability.getServiceName(address));
         }
+
+        context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.containerRegistry.remove(CacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(address))).getServiceName());
     }
 
     private static Resource safeGetResource(OperationContext context, PathElement path) {

@@ -23,16 +23,19 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
+import org.wildfly.clustering.ee.cache.scheduler.ScheduledEntries;
+import org.wildfly.clustering.ee.cache.scheduler.LinkedScheduledEntries;
+import org.wildfly.clustering.ee.cache.scheduler.SortedScheduledEntries;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
+import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 
 /**
@@ -43,16 +46,21 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
-    final Map<I, Future<?>> expirationFutures = new ConcurrentHashMap<>();
-    final Batcher<TransactionBatch> batcher;
-    final BeanFactory<I, T> factory;
-    final ExpirationConfiguration<T> expiration;
+public class BeanExpirationScheduler<I, T> implements Scheduler<I, ImmutableBeanEntry<I>>, Predicate<I> {
 
-    public BeanExpirationScheduler(Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, ExpirationConfiguration<T> expiration) {
+    private final LocalScheduler<I> scheduler;
+    private final Batcher<TransactionBatch> batcher;
+    private final BeanFactory<I, T> factory;
+    private final ExpirationConfiguration<T> expiration;
+    private final BeanRemover<I, T> remover;
+
+    public BeanExpirationScheduler(Group group, Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, ExpirationConfiguration<T> expiration, BeanRemover<I, T> remover, Duration closeTimeout) {
+        ScheduledEntries<I, Instant> entries = group.isSingleton() ? new LinkedScheduledEntries<>() : new SortedScheduledEntries<>();
+        this.scheduler = new LocalScheduler<>(entries, this, closeTimeout);
         this.batcher = batcher;
         this.factory = factory;
         this.expiration = expiration;
+        this.remover = remover;
     }
 
     @Override
@@ -68,93 +76,44 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
         Duration timeout = this.expiration.getTimeout();
         if (!timeout.isNegative()) {
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Scheduling stateful session bean %s to expire in %s", id, timeout);
-            Runnable task = new ExpirationTask(id);
-            Duration delay = Duration.between(Instant.now(), entry.getLastAccessedTime().plus(timeout));
-            long millis = !delay.isNegative() ? delay.toMillis() : 0;
-            // Make sure the expiration future map insertion happens before map removal (during task execution).
-            synchronized (task) {
-                this.expirationFutures.put(id, this.expiration.getExecutor().schedule(task, millis, TimeUnit.MILLISECONDS));
-            }
+            this.scheduler.schedule(id, entry.getLastAccessedTime().plus(timeout));
         }
-    }
-
-    @Override
-    public void prepareRescheduling(I id) {
-        cancel(id);
     }
 
     @Override
     public void cancel(I id) {
-        Future<?> future = this.expirationFutures.remove(id);
-        if (future != null) {
-            future.cancel(false);
-        }
+        this.scheduler.cancel(id);
     }
 
     @Override
     public void cancel(Locality locality) {
-        for (I id: this.expirationFutures.keySet()) {
+        for (I id: this.scheduler) {
             if (Thread.currentThread().isInterrupted()) break;
-            if (!locality.isLocal(id)) {
-                this.cancel(id);
+            if (!locality.isLocal(new InfinispanBeanKey<>(id))) {
+                this.scheduler.cancel(id);
             }
         }
     }
 
     @Override
     public void close() {
-        for (Future<?> future: this.expirationFutures.values()) {
-            future.cancel(false);
-        }
-        for (Future<?> future: this.expirationFutures.values()) {
-            if (!future.isDone()) {
-                try {
-                    future.get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException e) {
-                    // Ignore
-                }
-            }
-        }
-        this.expirationFutures.clear();
+        this.scheduler.close();
     }
 
-    private class ExpirationTask implements Runnable {
-        private final I id;
-
-        ExpirationTask(I id) {
-            this.id = id;
-        }
-
-        @Override
-        public void run() {
-            InfinispanEjbLogger.ROOT_LOGGER.tracef("Expiring stateful session bean %s", this.id);
-            BeanEntry<I> entry = null;
-            try (Batch batch = BeanExpirationScheduler.this.batcher.createBatch()) {
-                try {
-                    entry = BeanExpirationScheduler.this.factory.findValue(this.id);
-                    if (entry != null) {
-                        if (entry.isExpired(BeanExpirationScheduler.this.expiration.getTimeout())) {
-                            InfinispanEjbLogger.ROOT_LOGGER.tracef("Removing expired bean %s", this.id);
-                            BeanExpirationScheduler.this.factory.remove(this.id, BeanExpirationScheduler.this.expiration.getRemoveListener());
-                            entry = null;
-                        }
-                    }
-                } catch (Throwable e) {
-                    InfinispanEjbLogger.ROOT_LOGGER.failedToExpireBean(e, this.id);
-                    batch.discard();
-                }
-            } finally {
-                synchronized (this) {
-                    if (entry == null) {
-                        BeanExpirationScheduler.this.expirationFutures.remove(this.id);
-                    } else {
-                        // If bean was not yet expired or failed to expire (likely due to a lock timeout), just reschedule it
-                        BeanExpirationScheduler.this.schedule(this.id, entry);
-                    }
-                }
+    @Override
+    public boolean test(I id) {
+        InfinispanEjbLogger.ROOT_LOGGER.tracef("Expiring stateful session bean %s", id);
+        try (Batch batch = this.batcher.createBatch()) {
+            try {
+                this.remover.remove(id, this.expiration.getRemoveListener());
+                return true;
+            } catch (RuntimeException e) {
+                batch.discard();
+                throw e;
             }
+        } catch (RuntimeException e) {
+            InfinispanEjbLogger.ROOT_LOGGER.failedToExpireBean(e, id);
+            return false;
         }
     }
 }

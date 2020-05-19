@@ -25,6 +25,8 @@ package org.wildfly.clustering.marshalling.spi;
 /**
  * @author Paul Ferraro
  */
-public interface MarshalledValueFactory<C> {
+public interface MarshalledValueFactory<C> extends Marshallability {
     <T> MarshalledValue<T, C> createMarshalledValue(T object);
+
+    C getMarshallingContext();
 }

@@ -34,15 +34,14 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Hibernate "hibernate.ejb.use_class_enhancer" test that causes hibernate to add a
@@ -98,13 +97,6 @@ public class ClassFileTransformerTestCase {
                         "</ejb-jar>");
     }
 
-    @BeforeClass
-    public static void skipSecurityManager() {
-        // See WFLY-11359
-        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
-    }
-
-
     @ArquillianResource
     private InitialContext iniCtx;
 
@@ -119,27 +111,38 @@ public class ClassFileTransformerTestCase {
 
     @Test
     public void test_persistenceUnitInfoURLS() throws Exception {
-        try {
-            assertTrue("testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is vfs based, failed because getPersistenceUnitRootUrl is " +
-                            TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol(),
-                    "vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()));
-            InputStream inputStream = TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream();
-            assertNotNull("getPersistenceUnitRootUrl().openStream() returned non-null value", inputStream);
-
-            assertTrue("getPersistenceUnitRootUrl returned a JarInputStream", inputStream instanceof JarInputStream);
-
-            JarInputStream jarInputStream = (JarInputStream) inputStream;
-            ZipEntry entry = jarInputStream.getNextEntry();
-            assertNotNull("got zip entry from getPersistenceUnitRootUrl", entry);
-
-            while (entry != null && !entry.getName().contains("persistence.xml")) {
-                entry = jarInputStream.getNextEntry();
+        if(WildFlySecurityManager.isChecking()) {  // avoid Permission check failed (permission "("org.jboss.vfs.VirtualFilePermission"
+            try {
+                assertTrue("testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is vfs based, failed because getPersistenceUnitRootUrl is " +
+                                TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol(),
+                        "vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()));
+            } finally {
+                TestPersistenceProvider.clearLastPersistenceUnitInfo();
             }
-            assertNotNull("didn't find persistence.xml in getPersistenceUnitRootUrl, details=" +
-                            urlOpenStreamDetails(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream()),
-                    entry);
-        } finally {
-            TestPersistenceProvider.clearLastPersistenceUnitInfo();
+        }
+        else {
+            try {
+                assertTrue("testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is vfs based, failed because getPersistenceUnitRootUrl is " +
+                                TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol(),
+                        "vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()));
+                InputStream inputStream = TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream();
+                assertNotNull("getPersistenceUnitRootUrl().openStream() returned non-null value", inputStream);
+
+                assertTrue("getPersistenceUnitRootUrl returned a JarInputStream", inputStream instanceof JarInputStream);
+
+                JarInputStream jarInputStream = (JarInputStream) inputStream;
+                ZipEntry entry = jarInputStream.getNextEntry();
+                assertNotNull("got zip entry from getPersistenceUnitRootUrl", entry);
+
+                while (entry != null && !entry.getName().contains("persistence.xml")) {
+                    entry = jarInputStream.getNextEntry();
+                }
+                assertNotNull("didn't find persistence.xml in getPersistenceUnitRootUrl, details=" +
+                                urlOpenStreamDetails(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream()),
+                        entry);
+            } finally {
+                TestPersistenceProvider.clearLastPersistenceUnitInfo();
+            }
         }
     }
 

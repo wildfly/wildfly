@@ -55,6 +55,7 @@ import org.wildfly.security.x500.cert.BasicConstraintsExtension;
 import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
 import org.wildfly.security.x500.cert.X509CertificateBuilder;
 import org.wildfly.test.integration.elytron.certs.CommonBase;
+import org.wildfly.test.integration.elytron.util.WelcomeContent;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.CertificateRevocationList;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -84,7 +85,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({CertificateRevocationListTestBase.CrlServerSetup.class})
+@ServerSetup({CertificateRevocationListTestBase.CrlServerSetup.class, WelcomeContent.SetupTask.class })
 public class CertificateRevocationListTestBase extends CommonBase {
 
     protected static KeyStore trustStore;

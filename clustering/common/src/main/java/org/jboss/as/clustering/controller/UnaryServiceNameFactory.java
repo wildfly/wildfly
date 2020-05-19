@@ -55,6 +55,6 @@ public interface UnaryServiceNameFactory {
      */
     default ServiceName getServiceName(OperationContext context, UnaryCapabilityNameResolver resolver) {
         String[] parts = resolver.apply(context.getCurrentAddress());
-        return this.getServiceName(context, parts[0]);
+        return this.getServiceName(context.getCapabilityServiceSupport(), parts[0]);
     }
 }

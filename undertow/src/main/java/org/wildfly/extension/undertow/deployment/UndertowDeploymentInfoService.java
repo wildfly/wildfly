@@ -115,6 +115,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.AuthenticationManager;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.auth.login.JASPIAuthenticationInfo;
 import org.jboss.security.authorization.config.AuthorizationModuleEntry;
@@ -145,6 +146,7 @@ import org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechani
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecureResponseHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
+import org.wildfly.security.auth.server.SecurityDomain;
 import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
@@ -175,8 +177,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-
-import org.jboss.security.AuthenticationManager;
 
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
@@ -236,7 +236,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final WebSocketDeploymentInfo webSocketDeploymentInfo;
     private final File tempDir;
     private final List<File> externalResources;
-    private final InjectedValue<BiFunction> securityFunction = new InjectedValue<>();
+    private final InjectedValue<SecurityDomain> rawSecurityDomain = new InjectedValue<>();
+    private final InjectedValue<BiFunction> applySecurityFunction = new InjectedValue<>();
     private final List<Predicate> allowSuspendedRequests;
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final HashMap<String, TagLibraryInfo> tldInfo, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources, List<Predicate> allowSuspendedRequests) {
@@ -277,7 +278,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             deploymentInfo.setConfidentialPortManager(getConfidentialPortManager());
 
             handleDistributable(deploymentInfo);
-            if (securityFunction.getOptionalValue() == null) {
+            if (!isElytronActive()) {
                 if (securityDomain != null) {
                     handleIdentityManager(deploymentInfo);
                     handleJASPIMechanism(deploymentInfo);
@@ -438,7 +439,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     @Override
     public synchronized void stop(final StopContext stopContext) {
         IoUtils.safeClose(this.deploymentInfo.getResourceManager());
-        if (securityDomain != null && securityFunction.getOptionalValue() == null) {
+        if (securityDomain != null && !isElytronActive()) {
             AuthenticationManager authManager = securityDomainContextValue.getValue().getAuthenticationManager();
             if (authManager != null && authManager instanceof JBossCachedAuthenticationManager) {
                 ((JBossCachedAuthenticationManager) authManager).releaseModuleEntries(module.getClassLoader());
@@ -541,17 +542,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
     }
 
-    /*
-    This is to address WFLY-1894 but should probably be moved to some other place.
-     */
-    private String resolveContextPath() {
-        if (deploymentName.equals(host.getValue().getDefaultWebModule())) {
-            return "/";
-        } else {
-            return contextPath;
-        }
-    }
-
     private DeploymentInfo createServletConfig() throws StartException {
         final ComponentRegistry componentRegistry = componentRegistryInjectedValue.getValue();
         try {
@@ -560,7 +550,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
             mergedMetaData.resolveRunAs();
             final DeploymentInfo d = new DeploymentInfo();
-            d.setContextPath(resolveContextPath());
+            d.setContextPath(contextPath);
             if (mergedMetaData.getDescriptionGroup() != null) {
                 d.setDisplayName(mergedMetaData.getDescriptionGroup().getDisplayName());
             }
@@ -962,14 +952,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.addSecurityRoles(mergedMetaData.getSecurityRoleNames());
             Map<String, Set<String>> principalVersusRolesMap = mergedMetaData.getPrincipalVersusRolesMap();
 
-            BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> securityFunction = this.securityFunction.getOptionalValue();
-            if (securityFunction != null) {
+            if (isElytronActive()) {
                 Map<String, RunAsIdentityMetaData> runAsIdentityMap = mergedMetaData.getRunAsIdentity();
-                registration = securityFunction.apply(d, runAsIdentityMap::get);
-                d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
-                if(mergedMetaData.isUseJBossAuthorization()) {
-                    UndertowLogger.ROOT_LOGGER.configurationOptionIgnoredWhenUsingElytron("use-jboss-authorization");
-                }
+                applyElytronSecurity(d, runAsIdentityMap::get);
             } else {
                 if (securityDomain != null) {
                     d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));
@@ -1230,6 +1215,43 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         };
     }
 
+    /*
+     * Elytron Security Methods
+     */
+
+    private boolean isElytronActive() {
+        return applySecurityFunction.getOptionalValue() != null || rawSecurityDomain.getOptionalValue() != null;
+    }
+
+    private void applyElytronSecurity(final DeploymentInfo deploymentInfo, Function<String, RunAsIdentityMetaData> runAsMapping) {
+        BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> securityFunction = applySecurityFunction.getOptionalValue();
+        if (securityFunction != null) {
+            registration = securityFunction.apply(deploymentInfo, runAsMapping);
+        } else {
+            SecurityDomain securityDomain = rawSecurityDomain.getValue();
+
+            org.wildfly.elytron.web.undertow.server.servlet.AuthenticationManager.Builder builder =
+                    org.wildfly.elytron.web.undertow.server.servlet.AuthenticationManager.builder();
+            builder.setSecurityDomain(securityDomain)
+                .setOverrideDeploymentConfig(true)
+                .setRunAsMapper(runAsMapping)
+                .setIntegratedJaspi(false)
+                .setEnableJaspi(true);
+
+            org.wildfly.elytron.web.undertow.server.servlet.AuthenticationManager authenticationManager = builder.build();
+            authenticationManager.configure(deploymentInfo);
+        }
+
+        deploymentInfo.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
+        if(mergedMetaData.isUseJBossAuthorization()) {
+            UndertowLogger.ROOT_LOGGER.configurationOptionIgnoredWhenUsingElytron("use-jboss-authorization");
+        }
+    }
+
+    /*
+     * Injector Accessor Methods
+     */
+
     public void addInjectedExecutor(final String name, final InjectedValue<Executor> injected) {
         executorsByName.put(name, injected);
     }
@@ -1270,8 +1292,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return serverEnvironmentInjectedValue;
     }
 
+    public Injector<SecurityDomain> getRawSecurityDomainInjector() {
+        return rawSecurityDomain;
+    }
+
     public Injector<BiFunction> getSecurityFunctionInjector() {
-        return securityFunction;
+        return applySecurityFunction;
     }
 
     public InjectedValue<Host> getHost() {

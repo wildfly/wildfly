@@ -34,6 +34,7 @@ import org.jboss.msc.service.ServiceRegistry;
  * since the temporary service installed might force the target service to change state.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ActiveServiceSupplier<T> extends ServiceSupplier<T> {
 
     public ActiveServiceSupplier(ServiceRegistry target, ServiceName name) {

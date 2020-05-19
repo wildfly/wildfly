@@ -55,6 +55,6 @@ class SingleThreadedBatchSetup extends SnapshotRestoreSetupTask {
 
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 }

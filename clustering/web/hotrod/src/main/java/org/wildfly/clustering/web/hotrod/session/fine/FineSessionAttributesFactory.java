@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.servlet.ServletContext;
-
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
@@ -46,6 +44,7 @@ import org.wildfly.clustering.web.cache.session.fine.FineImmutableSessionAttribu
 import org.wildfly.clustering.web.cache.session.fine.FineSessionAttributes;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
@@ -55,7 +54,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory<V> implements SessionAttributesFactory<Map<String, UUID>> {
+public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, UUID>> {
 
     private final RemoteCache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
     private final RemoteCache<SessionAttributeKey, V> attributeCache;
@@ -63,14 +62,16 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     private final Immutability immutability;
     private final CacheProperties properties;
     private final MutatorFactory<SessionAttributeKey, V> mutatorFactory;
+    private final HttpSessionActivationListenerProvider<S, C, L> provider;
 
-    public FineSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<Object, V> configuration) {
+    public FineSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.namesCache = configuration.getCache();
         this.attributeCache = configuration.getCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
         this.mutatorFactory = new RemoteCacheMutatorFactory<>(this.attributeCache);
+        this.provider = configuration.getHttpSessionActivationListenerProvider();
     }
 
     @Override
@@ -114,9 +115,9 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, ServletContext context) {
+    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, C context) {
         ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, names);
-        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier(new CompositeImmutableSession(id, metaData, attributes), context);
+        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
         return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.withFlags(Flag.FORCE_RETURN_VALUE), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 

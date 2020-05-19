@@ -21,8 +21,13 @@
  */
 package org.wildfly.extension.mod_cluster;
 
+import java.util.function.Function;
+
+import org.jboss.as.clustering.controller.FunctionExecutor;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.controller.OperationExecutor;
+import org.jboss.as.clustering.controller.OperationFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -34,7 +39,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * @author Radoslav Husar
@@ -69,11 +73,16 @@ public class ProxyOperationExecutor implements OperationExecutor<ModClusterServi
             .setStorageRuntime()
             .build();
 
+    private final FunctionExecutorRegistry<ModClusterServiceMBean> executors;
+
+    public ProxyOperationExecutor(FunctionExecutorRegistry<ModClusterServiceMBean> executors) {
+        this.executors = executors;
+    }
+
     @Override
     public ModelNode execute(OperationContext context, ModelNode operation, Operation<ModClusterServiceMBean> executable) throws OperationFailedException {
         ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(context.getCurrentAddress());
-        ModClusterServiceMBean service = new PassiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(!executable.isReadOnly()), serviceName).get();
-
-        return (service != null) ? executable.execute(context, operation, service) : null;
+        FunctionExecutor<ModClusterServiceMBean> executor = this.executors.get(serviceName);
+        return (executor != null) ? executor.execute(new OperationFunction<>(context, operation, Function.identity(), executable)) : null;
     }
 }

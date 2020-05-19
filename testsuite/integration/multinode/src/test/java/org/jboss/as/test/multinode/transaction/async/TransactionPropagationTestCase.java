@@ -104,8 +104,17 @@ public class TransactionPropagationTestCase {
         ejb.callToStatusByTransactionmanager();
     }
 
+    @Test
+    @OperateOnDeployment(CLIENT_DEPLOYMENT)
+    public void testRemoteWithRequired() throws Exception {
+        final ClientBean ejb = getClient();
+        ejb.callToRequired();
+    }
+
     private ClientBean getClient() throws Exception {
         final InitialContext context = new InitialContext();
-        return (ClientBean) context.lookup("java:module/" + ClientBean.class.getSimpleName());
+        final ClientBean lookupResult = (ClientBean) context.lookup("java:module/" + ClientBean.class.getSimpleName());
+        context.close();
+        return lookupResult;
     }
 }

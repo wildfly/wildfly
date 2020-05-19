@@ -148,7 +148,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
 
         logger.trace("Restarting server.");
 
-        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(getManagementClient());
 
         // wait until the connector is available on the new port
         final String testUrl = new URL("http", testHost, TEST_PORT + 1, "/").toString();

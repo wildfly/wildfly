@@ -38,6 +38,9 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeU
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.security.CredentialReference.CREDENTIAL_REFERENCE;
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 
 import javax.sql.DataSource;
 import java.sql.Driver;
@@ -112,7 +115,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             DataSourceStatisticsService.registerStatisticsResources(resource);
         }
         super.populateModel(context, operation, resource);
-
+        final ModelNode model = resource.getModel();
+        handleCredentialReferenceUpdate(context, model.get(CREDENTIAL_REFERENCE), CREDENTIAL_REFERENCE);
+        handleCredentialReferenceUpdate(context, model.get(Constants.RECOVERY_CREDENTIAL_REFERENCE.getName()), Constants.RECOVERY_CREDENTIAL_REFERENCE.getName());
     }
 
     @Override
@@ -138,6 +143,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
 
         }
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(Constants.CREDENTIAL_REFERENCE, context, resource);
+        rollbackCredentialStoreUpdate(Constants.RECOVERY_CREDENTIAL_REFERENCE, context, resource);
     }
 
      void firstRuntimeStep(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

@@ -23,13 +23,12 @@
 package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-
-import javax.servlet.ServletContext;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -53,6 +52,7 @@ import org.wildfly.clustering.web.cache.session.fine.FineSessionAttributes;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
@@ -63,7 +63,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(sync = false)
-public class FineSessionAttributesFactory<V> implements SessionAttributesFactory<Map<String, UUID>> {
+public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, UUID>> {
 
     private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
     private final Cache<SessionAttributeKey, V> attributeCache;
@@ -71,14 +71,16 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     private final Immutability immutability;
     private final CacheProperties properties;
     private final MutatorFactory<SessionAttributeKey, V> mutatorFactory;
+    private final HttpSessionActivationListenerProvider<S, C, L> provider;
 
-    public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<Object, V> configuration) {
+    public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.namesCache = configuration.getCache();
         this.attributeCache = configuration.getCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
         this.mutatorFactory = new InfinispanMutatorFactory<>(this.attributeCache, this.properties);
+        this.provider = configuration.getHttpSessionActivationListenerProvider();
     }
 
     @Override
@@ -88,6 +90,15 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
 
     @Override
     public Map<String, UUID> findValue(String id) {
+        return this.getValue(id, true);
+    }
+
+    @Override
+    public Map<String, UUID> tryValue(String id) {
+        return this.getValue(id, false);
+    }
+
+    private Map<String, UUID> getValue(String id, boolean purgeIfInvalid) {
         Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (names != null) {
             for (Map.Entry<String, UUID> nameEntry : names.entrySet()) {
@@ -102,7 +113,9 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
                 } else {
                     InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, nameEntry.getKey());
                 }
-                this.remove(id);
+                if (purgeIfInvalid) {
+                    this.purge(id);
+                }
                 return null;
             }
             return names;
@@ -112,19 +125,28 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
 
     @Override
     public boolean remove(String id) {
-        Map<String, UUID> names = this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(new SessionAttributeNamesKey(id));
+        return this.delete(id);
+    }
+
+    @Override
+    public boolean purge(String id) {
+        return this.delete(id, Flag.SKIP_LISTENER_NOTIFICATION);
+    }
+
+    private boolean delete(String id, Flag... flags) {
+        Map<String, UUID> names = this.namesCache.getAdvancedCache().withFlags(EnumSet.of(Flag.FORCE_SYNCHRONOUS, flags)).remove(new SessionAttributeNamesKey(id));
         if (names != null) {
             for (UUID attributeId : names.values()) {
-                this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId));
+                this.attributeCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionAttributeKey(id, attributeId));
             }
         }
         return true;
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, ServletContext context) {
+    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, C context) {
         ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, names);
-        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier(new CompositeImmutableSession(id, metaData, attributes), context);
+        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
         return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 

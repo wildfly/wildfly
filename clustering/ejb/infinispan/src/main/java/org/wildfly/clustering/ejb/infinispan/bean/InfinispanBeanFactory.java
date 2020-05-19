@@ -49,16 +49,16 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
+public class InfinispanBeanFactory<I, T, C> implements BeanFactory<I, T> {
     private final String beanName;
-    private final BeanGroupFactory<I, T> groupFactory;
+    private final BeanGroupFactory<I, T, C> groupFactory;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
     private final Cache<BeanKey<I>, BeanEntry<I>> findCache;
     private final Duration timeout;
     private final PassivationListener<T> listener;
     private final MutatorFactory<BeanKey<I>, BeanEntry<I>> mutatorFactory;
 
-    public InfinispanBeanFactory(String beanName, BeanGroupFactory<I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<I>> cache, CacheProperties properties, Duration timeout, PassivationListener<T> listener) {
+    public InfinispanBeanFactory(String beanName, BeanGroupFactory<I, T, C> groupFactory, Cache<BeanKey<I>, BeanEntry<I>> cache, CacheProperties properties, Duration timeout, PassivationListener<T> listener) {
         this.beanName = beanName;
         this.groupFactory = groupFactory;
         this.cache = cache;
@@ -76,7 +76,7 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
     @Override
     public Bean<I, T> createBean(I id, BeanEntry<I> entry) {
         I groupId = entry.getGroupId();
-        BeanGroupEntry<I, T> groupEntry = this.groupFactory.findValue(groupId);
+        BeanGroupEntry<I, T, C> groupEntry = this.groupFactory.findValue(groupId);
         if (groupEntry == null) {
             InfinispanEjbLogger.ROOT_LOGGER.invalidBeanGroup(id, groupId);
             this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(this.createKey(id));
@@ -109,7 +109,7 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
         BeanEntry<I> entry = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(this.createKey(id));
         if (entry != null) {
             I groupId = entry.getGroupId();
-            BeanGroupEntry<I, T> groupEntry = this.groupFactory.findValue(groupId);
+            BeanGroupEntry<I, T, C> groupEntry = this.groupFactory.findValue(groupId);
             if (groupEntry != null) {
                 try (BeanGroup<I, T> group = this.groupFactory.createGroup(groupId, groupEntry)) {
                     T bean = group.removeBean(id);

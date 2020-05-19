@@ -25,13 +25,18 @@ package org.jboss.as.test.clustering.cluster.singleton.partition;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_2;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
+import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceExecutorRegistry;
 import org.jboss.as.test.clustering.cluster.singleton.service.SingletonElectionListenerService;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ActiveServiceSupplier;
+import org.wildfly.clustering.service.ChildTargetService;
 import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 import org.wildfly.clustering.singleton.election.NamePreference;
 import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
@@ -51,10 +56,17 @@ public class SingletonServiceActivator implements ServiceActivator {
 
     @Override
     public void activate(ServiceActivatorContext context) {
-        SingletonServiceConfiguratorFactory factory = new ActiveServiceSupplier<SingletonServiceConfiguratorFactory>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY.resolve(CONTAINER_NAME))).get();
-        ServiceTarget target = context.getServiceTarget();
-        install(target, factory, SERVICE_A_NAME, SERVICE_A_PREFERRED_NODE);
-        install(target, factory, SERVICE_B_NAME, SERVICE_B_PREFERRED_NODE);
+        ServiceBuilder<?> builder = context.getServiceTarget().addService(ServiceName.JBOSS.append("test1", "service", "installer"));
+        Supplier<SingletonServiceConfiguratorFactory> factoryDependency = builder.requires(ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY.resolve(CONTAINER_NAME)));
+        Consumer<ServiceTarget> installer = target -> {
+            SingletonServiceConfiguratorFactory factory = factoryDependency.get();
+            install(target, factory, SERVICE_A_NAME, SERVICE_A_PREFERRED_NODE);
+            install(target, factory, SERVICE_B_NAME, SERVICE_B_PREFERRED_NODE);
+        };
+        builder.setInstance(new ChildTargetService(installer)).install();
+
+        new ServiceValueCaptorServiceConfigurator<>(NodeServiceExecutorRegistry.INSTANCE.add(SERVICE_A_NAME)).build(context.getServiceTarget()).install();
+        new ServiceValueCaptorServiceConfigurator<>(NodeServiceExecutorRegistry.INSTANCE.add(SERVICE_B_NAME)).build(context.getServiceTarget()).install();
     }
 
     private static void install(ServiceTarget target, SingletonServiceConfiguratorFactory factory, ServiceName name, String preferredNode) {

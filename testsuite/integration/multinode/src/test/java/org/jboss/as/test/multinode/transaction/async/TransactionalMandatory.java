@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.multinode.transaction.async;
 
-import java.rmi.RemoteException;
 import java.util.concurrent.Future;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
@@ -40,8 +39,13 @@ import javax.ejb.TransactionAttributeType;
 @TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class TransactionalMandatory implements TransactionalRemote {
 
-    public Future<Integer> transactionStatus() throws RemoteException {
+    public Future<Integer> transactionStatus() {
         return new AsyncResult<Integer>(-1);
     }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public Future<Integer> asyncWithRequired() {
+        throw new RuntimeException("Throw RuntimeException on purpose to cause the transaction rollback");
+    }
 }

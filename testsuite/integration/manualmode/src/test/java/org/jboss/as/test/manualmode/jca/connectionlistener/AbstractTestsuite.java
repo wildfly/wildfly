@@ -186,7 +186,7 @@ public abstract class AbstractTestsuite {
             operation.get("value").set("true");
             executeOperation(operation);
 
-            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient(), 50000);
+            ServerReload.executeReloadAndWaitForCompletion(getManagementClient(), 50000);
 
             return address;
         }

@@ -43,6 +43,7 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class CachedThreadPoolExecutorServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, Function<ExecutorService, ExecutorService>, Supplier<ExecutorService>, Consumer<ExecutorService> {
 
     private final ThreadFactory factory;

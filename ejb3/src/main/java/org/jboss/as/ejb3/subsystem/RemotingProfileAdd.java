@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -60,10 +61,8 @@ import org.xnio.Options;
  */
 public class RemotingProfileAdd extends AbstractAddStepHandler {
 
-    static final RemotingProfileAdd INSTANCE = new RemotingProfileAdd();
-
-    private RemotingProfileAdd() {
-        super(RemotingProfileResourceDefinition.ATTRIBUTES.values());
+    RemotingProfileAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override
@@ -208,7 +207,7 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode model = Resource.Tools.readModel(resource);
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            RemotingProfileAdd.INSTANCE.installServices(context, address, model);
+            RemotingProfileResourceDefinition.ADD_HANDLER.installServices(context, address, model);
         }
     }
 

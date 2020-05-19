@@ -23,12 +23,10 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
@@ -47,6 +45,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 
 /**
  * Factory for creating an infinispan-based {@link BeanManager}.
@@ -69,7 +68,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
-        Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
+        Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, MarshallingContext>> groupCache = this.configuration.getCache();
         CacheProperties properties = new InfinispanCacheProperties(groupCache.getCacheConfiguration());
         String beanName = this.configuration.getBeanContext().getBeanName();
         BeanPassivationConfiguration passivationConfig = this.configuration.getPassivationConfiguration();
@@ -85,8 +84,8 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             }
         };
         Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter = new BeanFilter<>(beanName);
-        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, context, properties, passivation);
-        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
+        BeanGroupFactory<I, T, MarshallingContext> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, properties, passivation);
+        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, MarshallingContext>, BeanGroupFactory<I, T, MarshallingContext>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanContext().getTimeout(), properties.isPersistent() ? passivationListener : null);
         Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
         NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
@@ -94,7 +93,6 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
         CommandDispatcherFactory dispatcherFactory = this.configuration.getCommandDispatcherFactory();
         Duration timeout = this.configuration.getBeanContext().getTimeout();
-        ScheduledExecutorService scheduler = this.configuration.getScheduler();
         ExpirationConfiguration<T> expiration = new ExpirationConfiguration<T>() {
             @Override
             public Duration getTimeout() {
@@ -104,11 +102,6 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             @Override
             public RemoveListener<T> getRemoveListener() {
                 return removeListener;
-            }
-
-            @Override
-            public ScheduledExecutorService getExecutor() {
-                return scheduler;
             }
         };
         String name = this.configuration.getName();

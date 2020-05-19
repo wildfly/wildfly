@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
@@ -43,7 +41,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -143,6 +140,7 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, messagingVersion);
+        mainServices.shutdown();
     }
 
     private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
@@ -206,6 +204,7 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
                                 ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                 ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST))
         );
+        mainServices.shutdown();
     }
 
     @Override
@@ -223,39 +222,5 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
         model1.get(ModelDescriptionConstants.SUBSYSTEM).remove("jgroups");
         model2.get(ModelDescriptionConstants.SUBSYSTEM).remove("jgroups");
         super.compare(model1, model2);
-    }
-
-    private static class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig> {
-
-        private final String attribute;
-
-        ChangeToTrueConfig(String attribute) {
-            super(attribute);
-            this.attribute = attribute;
-        }
-
-        @Override
-        protected boolean isAttributeWritable(String attributeName) {
-            return true;
-        }
-
-        @Override
-        protected boolean checkValue(ModelNode operation, String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
-            if (!isGeneratedWriteAttribute && Operations.getName(operation).equals(WRITE_ATTRIBUTE_OPERATION) && operation.hasDefined(NAME) && operation.get(NAME).asString().equals(this.attribute)) {
-                // The attribute won't be defined in the :write-attribute(name=<attribute name>,.. boot operation so don't reject in that case
-                return false;
-            }
-            return !attribute.equals(ModelNode.TRUE);
-        }
-
-        @Override
-        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-            throw new IllegalStateException();
-        }
-
-        @Override
-        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return ModelNode.TRUE;
-        }
     }
 }

@@ -1,7 +1,7 @@
 [[EJB_over_HTTP]]
 = EJB over HTTP
 
-Beginning with Wildfly 11 it is now possible to use HTTP as the
+Beginning with WildFly 11 it is now possible to use HTTP as the
 transport (instead of remoting) for remote EJB and JNDI invocations.
 
 Everything mentioned below is applicable for both JNDI and EJB

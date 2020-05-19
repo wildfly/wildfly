@@ -90,12 +90,17 @@ By default, the HTTP endpoints will return `UP` if there are no health check pro
 
 However, it is possible to change this behaviour.
 The `/health/live` HTTP endpoint (as well as the `check-live` management operation) can return `DOWN` when there are no liveness check probes by setting the `empty-liveness-checks-status` attribute
-on the `subystem` resource to `DOWN`.
+on the `subsystem` resource to `DOWN`.
 Similarly, the `/health/ready` HTTP endpoint (as well as the `check-ready` management operation) can return `DOWN` when there are no readiness check probes by setting the `empty-readiness-checks-status` attribute
-on the `subystem` resource to `DOWN`.
+on the `subsystem` resource to `DOWN`.
 
 This allows application to ensure that the HTTP liveness and readiness endpoints will return `DOWN` until their probes are deployed and used to determine the actual
 liveness and readiness state of the application.
+
+[NOTE]
+There is a specific behaviour for deployments that provides no _readiness_ probes. In that the case, WildFly automatically adds a readiness probe for the deployment that always return
+`UP`. This allows existing deployments that do not provide readiness probes to configure WildFly so it will not be ready until this deployment is actually deployed.
+
 
 == Component Reference
 

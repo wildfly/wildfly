@@ -33,6 +33,7 @@ import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -48,13 +49,14 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
@@ -103,7 +105,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
             }
         },
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_29.toString())) {
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_30.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new EnumValidator<>(ProtocolVersion.class));
@@ -144,14 +146,14 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
+            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName());
+            }
             if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
                 builder.getAttributeBuilder()
                         .setDiscard(new DiscardAttributeValueChecker(false, true, ModelNode.FALSE), Attribute.STATISTICS_ENABLED.getDefinition())
                         .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
                         .end();
-            }
-            if (InfinispanModel.VERSION_9_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.PROTOCOL_VERSION.getDefinition()), Attribute.PROTOCOL_VERSION.getDefinition());
             }
 
             RemoteCacheContainerMetric.buildTransformation(version, builder);
@@ -163,7 +165,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
             InvalidationNearCacheResourceDefinition.buildTransformation(version, builder);
             RemoteClusterResourceDefinition.buildTransformation(version, builder);
 
-            ThreadPoolResourceDefinition.CLIENT.buildTransformation(version, builder);
+            ThreadPoolResourceDefinition.CLIENT.buildTransformation(builder, version);
 
             RemoteCacheResourceDefinition.buildTransformation(version, builder);
         }
@@ -184,11 +186,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)
                 .setResourceTransformation(RemoteCacheContainerResource::new)
                 ;
-        ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(this);
+        ServiceValueExecutorRegistry<RemoteCacheContainer> executors = new ServiceValueExecutorRegistry<>();
+        ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(this, executors);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new ConnectionPoolResourceDefinition().register(registration);
-        new RemoteClusterResourceDefinition(this).register(registration);
+        new RemoteClusterResourceDefinition(this, executors).register(registration);
         new SecurityResourceDefinition().register(registration);
         new RemoteTransactionResourceDefinition().register(registration);
 
@@ -198,9 +201,9 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         ThreadPoolResourceDefinition.CLIENT.register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new RemoteCacheContainerMetricExecutor(), RemoteCacheContainerMetric.class).register(registration);
+            new MetricHandler<>(new RemoteCacheContainerMetricExecutor(executors), RemoteCacheContainerMetric.class).register(registration);
 
-            new RemoteCacheResourceDefinition().register(registration);
+            new RemoteCacheResourceDefinition(executors).register(registration);
         }
 
         return registration;

@@ -35,6 +35,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.elytron.util.WelcomeContent;
 
 /**
  * Tests to check OCSP feature using XiPKI OCSP responder.
@@ -43,7 +44,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({OcspTestBase.OcspServerSetup.class})
+@ServerSetup({OcspTestBase.OcspServerSetup.class, WelcomeContent.SetupTask.class})
 public class OcspTestCase extends OcspTestBase {
 
     /**

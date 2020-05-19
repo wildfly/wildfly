@@ -43,7 +43,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -191,7 +191,7 @@ public class IIOPTransactionPropagationTestCase {
             }
 
             if (isNeedReload) {
-                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
+                ServerReload.executeReloadAndWaitForCompletion(managementClient, 40000);
             }
         }
 
@@ -213,7 +213,7 @@ public class IIOPTransactionPropagationTestCase {
             }
 
             if (isNeedReload) {
-                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
+                ServerReload.executeReloadAndWaitForCompletion(managementClient, 40000);
             }
         }
 

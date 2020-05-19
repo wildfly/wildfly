@@ -24,8 +24,11 @@ package org.wildfly.clustering.infinispan.spi.distribution;
 import java.util.Collections;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.KeyPartitioner;
+import org.infinispan.remoting.transport.Address;
 import org.infinispan.topology.CacheTopology;
 
 /**
@@ -37,7 +40,10 @@ public class ConsistentHashLocality implements Locality {
     private final LocalizedCacheTopology topology;
 
     public ConsistentHashLocality(Cache<?, ?> cache, ConsistentHash hash) {
-        this.topology = new LocalizedCacheTopology(cache.getCacheConfiguration().clustering().cacheMode(), new CacheTopology(0, 0, hash, null, CacheTopology.Phase.NO_REBALANCE, Collections.emptyList(), Collections.emptyList()), cache.getCacheConfiguration().clustering().hash().keyPartitioner(), cache.getCacheManager().getAddress(), true);
+        CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
+        KeyPartitioner partitioner = cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class);
+        Address localAddress = cache.getAdvancedCache().getDistributionManager().getCacheTopology().getLocalAddress();
+        this.topology = new LocalizedCacheTopology(mode, new CacheTopology(0, 0, hash, null, CacheTopology.Phase.NO_REBALANCE, Collections.emptyList(), Collections.emptyList()), partitioner, localAddress, true);
     }
 
     public ConsistentHashLocality(LocalizedCacheTopology topology) {

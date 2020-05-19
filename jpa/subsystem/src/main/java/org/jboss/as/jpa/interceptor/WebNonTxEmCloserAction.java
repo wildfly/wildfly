@@ -22,6 +22,7 @@
 
 package org.jboss.as.jpa.interceptor;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,6 +56,6 @@ public class WebNonTxEmCloserAction implements SetupAction {
 
     @Override
     public Set<ServiceName> dependencies() {
-        return null;
+        return Collections.emptySet();
     }
 }

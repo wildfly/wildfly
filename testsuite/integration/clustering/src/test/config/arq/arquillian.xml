@@ -45,9 +45,9 @@
     <group qualifier="clustering-all">
         <container qualifier="node-1" mode="custom">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-1</property>
+                <property name="jbossHome">${basedir}/target/${wildfly1}</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/${wildfly1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>
@@ -59,8 +59,8 @@
         </container>
         <container qualifier="node-2" mode="custom">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-2</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-2 -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.private=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-2 -Djboss.socket.binding.port-offset=100</property>
+                <property name="jbossHome">${basedir}/target/${wildfly2}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/${wildfly2} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.private=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-2 -Djboss.socket.binding.port-offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node1}</property>
@@ -71,8 +71,8 @@
         </container>
         <container qualifier="node-3" mode="custom">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-3</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-3 -Djboss.bind.address=${node2} -Djboss.bind.address.management=${node2} -Djboss.bind.address.private=${node2} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-3 -Djboss.socket.binding.port-offset=200</property>
+                <property name="jbossHome">${basedir}/target/${wildfly3}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/${wildfly3} -Djboss.bind.address=${node2} -Djboss.bind.address.management=${node2} -Djboss.bind.address.private=${node2} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-3 -Djboss.socket.binding.port-offset=200</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node2}</property>
@@ -83,8 +83,8 @@
         </container>
         <container qualifier="node-4" mode="custom">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-4</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-4 -Djboss.bind.address=${node3} -Djboss.bind.address.management=${node3} -Djboss.bind.address.private=${node3} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-4 -Djboss.socket.binding.port-offset=300</property>
+                <property name="jbossHome">${basedir}/target/${wildfly4}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/${wildfly4} -Djboss.bind.address=${node3} -Djboss.bind.address.management=${node3} -Djboss.bind.address.private=${node3} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-4 -Djboss.socket.binding.port-offset=300</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node3}</property>
@@ -96,10 +96,10 @@
 
         <container qualifier="infinispan-server-1" mode="custom">
             <configuration>
-                <property name="jbossHome">${basedir}/target/infinispan-server-${version.org.infinispan}</property>
+                <property name="jbossHome">${basedir}/target/infinispan-server</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.socket.binding.port-offset=400</property>
                 <property name="serverConfig">clustered.xml</property>
-                <property name="modulePath">${basedir}/target/infinispan-server-${version.org.infinispan}/modules</property>
+                <property name="modulePath">${basedir}/target/infinispan-server/modules</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">10390</property>
                 <property name="waitForPorts">10390</property>
@@ -109,7 +109,7 @@
 
         <container qualifier="load-balancer-1" mode="custom">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-load-balancer-1</property>
+                <property name="jbossHome">${basedir}/target/${wildfly-load-balancer1}</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.socket.binding.port-offset=500</property>
                 <property name="serverConfig">standalone-load-balancer.xml</property>
                 <property name="managementAddress">${node0}</property>
@@ -121,8 +121,8 @@
 
         <container qualifier="node-non-ha" mode="custom">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+                <property name="jbossHome">${basedir}/target/${wildfly1}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/${wildfly1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
                 <property name="serverConfig">standalone.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>

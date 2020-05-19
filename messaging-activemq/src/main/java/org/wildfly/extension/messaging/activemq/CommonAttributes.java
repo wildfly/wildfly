@@ -389,6 +389,8 @@ public interface CommonAttributes {
     String IN_VM_CONNECTOR = "in-vm-connector";
     String LEGACY = "legacy";
     String LEGACY_CONNECTION_FACTORY = "legacy-connection-factory";
+    String JGROUPS_BROADCAST_GROUP = "jgroups-broadcast-group";
+    String JGROUPS_DISCOVERY_GROUP = "jgroups-discovery-group";
     String JMS_BRIDGE = "jms-bridge";
     String JMS_CONNECTION_FACTORIES = "jms-connection-factories";
     String JMS_DESTINATION = "jms-destination";
@@ -447,6 +449,8 @@ public interface CommonAttributes {
     String SHARED_STORE_MASTER = "shared-store-master";
     String SHARED_STORE_SLAVE = "shared-store-slave";
     String SLAVE = "slave";
+    String SOCKET_BROADCAST_GROUP = "socket-broadcast-group";
+    String SOCKET_DISCOVERY_GROUP = "socket-discovery-group";
     String SOURCE = "source";
     String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";

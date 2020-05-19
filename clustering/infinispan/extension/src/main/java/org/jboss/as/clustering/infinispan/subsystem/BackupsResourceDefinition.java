@@ -22,10 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
@@ -58,8 +60,11 @@ public class BackupsResourceDefinition extends ComponentResourceDefinition {
         BackupResourceDefinition.buildTransformation(version, builder);
     }
 
-    public BackupsResourceDefinition() {
+    private final FunctionExecutorRegistry<Cache<?, ?>> executors;
+
+    public BackupsResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(PATH);
+        this.executors = executors;
     }
 
     @Override
@@ -71,7 +76,7 @@ public class BackupsResourceDefinition extends ComponentResourceDefinition {
         ResourceServiceHandler handler = new ParentResourceServiceHandler(serviceConfiguratorFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new BackupResourceDefinition(serviceConfiguratorFactory).register(registration);
+        new BackupResourceDefinition(serviceConfiguratorFactory, this.executors).register(registration);
 
         return registration;
     }

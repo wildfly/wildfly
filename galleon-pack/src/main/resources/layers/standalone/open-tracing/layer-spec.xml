@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="open-tracing">
-    <dependencies>
-        <layer name="cdi"/>
-    </dependencies>
-    <feature spec="subsystem.microprofile-opentracing-smallrye"/>
-</layer-spec>

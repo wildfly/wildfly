@@ -16,7 +16,7 @@ You can also set a hint to indicate which log manager is being used. The hint at
 will bind to the correct log manager. It also adds the hinted logging package to the modules system packages.
 
 IMPORTANT: If using the embedded API with Java 11 you'll need to add `--add-module=java.se` to your JVM arguments. See
-https://issues.jboss.org/browse/MODULES-372[MODULES-372] for details.
+https://issues.redhat.com/browse/MODULES-372[MODULES-372] for details.
 
 == Standalone API
 

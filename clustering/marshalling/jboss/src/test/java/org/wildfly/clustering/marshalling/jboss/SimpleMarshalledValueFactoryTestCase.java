@@ -90,7 +90,7 @@ public class SimpleMarshalledValueFactoryTestCase {
 
         mv = this.factory.createMarshalledValue(null);
         assertNull(mv.peek());
-        assertNull(mv.getBytes());
+        assertNull(mv.getBuffer());
         assertNull(mv.get(this.context));
     }
 

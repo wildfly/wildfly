@@ -31,18 +31,24 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.FunctionExecutor;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceName;
+import org.jgroups.JChannel;
 import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Util;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
  * A generic handler for protocol metrics based on reflection.
@@ -52,10 +58,6 @@ import org.jgroups.util.Util;
  * @author Paul Ferraro
  */
 public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
-
-    interface ProtocolLocator {
-        Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException;
-    }
 
     interface Attribute {
         String getName();
@@ -229,45 +231,53 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private final ProtocolLocator locator;
+    private final FunctionExecutorRegistry<JChannel> executors;
 
-    public ProtocolMetricsHandler(ProtocolLocator locator) {
-        this.locator = locator;
+    public ProtocolMetricsHandler(FunctionExecutorRegistry<JChannel> executors) {
+        this.executors = executors;
     }
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         String name = Operations.getAttributeName(operation);
-
-        try {
-            Protocol protocol = this.locator.findProtocol(context);
-            if (protocol != null) {
-                Attribute attribute = getAttribute(protocol.getClass(), name);
-                if (attribute != null) {
-                    FieldType type = FieldType.valueOf(attribute.getType());
-                    try {
-                        ModelNode result = new ModelNode();
-                        Object value = attribute.read(protocol);
-                        if (value != null) {
-                            type.setValue(result, value);
-                        }
-                        context.getResult().set(result);
-                    } catch (Exception e) {
-                        context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.privilegedAccessExceptionForAttribute(name));
-                    }
-                } else {
-                    context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
+        String protocolName = context.getCurrentAddressValue();
+        ServiceName channelServiceName = JGroupsRequirement.CHANNEL.getServiceName(context, UnaryCapabilityNameResolver.PARENT);
+        ExceptionFunction<JChannel, ModelNode, Exception> function = new ExceptionFunction<JChannel, ModelNode, Exception>() {
+            @Override
+            public ModelNode apply(JChannel channel) throws Exception {
+                int index = protocolName.lastIndexOf('.');
+                Protocol protocol = channel.getProtocolStack().findProtocol((index < 0) ? protocolName : protocolName.substring(index + 1));
+                if (protocol == null) {
+                    throw new IllegalArgumentException(protocolName);
                 }
+                Attribute attribute = getAttribute(protocol.getClass(), name);
+                if (attribute == null) {
+                    throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
+                }
+                FieldType type = FieldType.valueOf(attribute.getType());
+                ModelNode result = new ModelNode();
+                Object value = attribute.read(protocol);
+                if (value != null) {
+                    type.setValue(result, value);
+                }
+                return result;
             }
-        } catch (ClassNotFoundException | ModuleLoadException e) {
+        };
+        FunctionExecutor<JChannel> executor = this.executors.get(channelServiceName);
+        try {
+            ModelNode value = (executor != null) ? executor.execute(function) : null;
+            if (value != null) {
+                context.getResult().set(value);
+            }
+        } catch (Exception e) {
             context.getFailureDescription().set(e.getLocalizedMessage());
         } finally {
             context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
         }
     }
 
-    private static Attribute getAttribute(Class<? extends Protocol> targetClass, String name) {
+    static Attribute getAttribute(Class<? extends Protocol> targetClass, String name) {
         Map<String, Attribute> attributes = findProtocolAttributes(targetClass);
         return attributes.get(name);
     }

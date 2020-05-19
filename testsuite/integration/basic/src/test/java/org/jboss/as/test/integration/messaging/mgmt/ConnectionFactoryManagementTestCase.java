@@ -48,7 +48,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,7 +91,7 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
         }
 
         jmsOperations.removeJmsConnectionFactory(CF_NAME);
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
             jmsOperations.removeJmsConnectionFactory(CF_NAME);
             managementClient.getControllerClient().execute( Operations.createRemoveOperation(address));
         }
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private static ModelNode execute(ModelControllerClient client, ModelNode operation) throws Exception {

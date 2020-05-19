@@ -109,6 +109,7 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
         lib.addClasses(Student.class);
         lib.addClass(IntegerType.class);
+        lib.addClass(StackOverFlowTestClass.class);
         lib.addClass(IntegerUserVersionType.class);
         lib.addClass(BooleanSingleColumnType.class);
         lib.addClass(BooleanAbstractStandardBasicType.class);
@@ -439,6 +440,13 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
     }
 
     @Test
+    public void testJDBCResourceBundle() {
+        // WFLY-12699 stack overflow occurs when StackOverFlowTestClass class is loaded into memory + transformed
+        // by the Hibernate51CompatibilityTransformer
+        StackOverFlowTestClass.class.getName();
+    }
+
+    @Test
     public void testCompositeUserTypeImplemented() {
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
@@ -482,7 +490,7 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
         public void tearDown(ManagementClient managementClient, String s) throws Exception {
             ModelNode op = Operations.createRemoveOperation(PROP_ADDR_ENABLETRANSFORMER);
             managementClient.getControllerClient().execute(op);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 }

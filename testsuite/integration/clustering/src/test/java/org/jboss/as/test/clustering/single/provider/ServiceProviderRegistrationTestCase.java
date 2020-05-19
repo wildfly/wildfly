@@ -36,7 +36,7 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,12 +50,11 @@ public class ServiceProviderRegistrationTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejbJar.addPackage(ServiceProviderRetriever.class.getPackage());
-        ejbJar.addAsManifestResource(createPermissionsXmlAsset(
-                new PropertyPermission(NODE_NAME_PROPERTY, "read")
-        ), "permissions.xml");
-        return ejbJar;
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
+        war.addPackage(ServiceProviderRetriever.class.getPackage());
+        war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new RuntimePermission("getClassLoader")), "permissions.xml");
+        war.setWebXML(org.jboss.as.test.clustering.cluster.provider.ServiceProviderRegistrationTestCase.class.getPackage(), "web.xml");
+        return war;
     }
 
     @Test

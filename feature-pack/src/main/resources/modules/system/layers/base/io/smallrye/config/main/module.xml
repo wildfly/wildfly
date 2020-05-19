@@ -24,7 +24,9 @@
 
 <module xmlns="urn:jboss:module:1.8" name="io.smallrye.config">
     <resources>
-        <artifact name="${io.smallrye:smallrye-config}"/>
+        <artifact name="${io.smallrye.config:smallrye-config}"/>
+        <artifact name="${io.smallrye.config:smallrye-config-common}"/>
+        <artifact name="${io.smallrye.config:smallrye-config-source-file-system}"/>
     </resources>
 
     <dependencies>

@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.Cache;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -33,14 +35,17 @@ public class LockingRuntimeResourceDefinition extends CacheComponentRuntimeResou
 
     static final PathElement PATH = pathElement("locking");
 
-    LockingRuntimeResourceDefinition() {
+    private final FunctionExecutorRegistry<Cache<?, ?>> executors;
+
+    LockingRuntimeResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(PATH);
+        this.executors = executors;
     }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = super.register(parent);
-        new MetricHandler<>(new LockingMetricExecutor(),  LockingMetric.class).register(registration);
+        new MetricHandler<>(new LockingMetricExecutor(this.executors), LockingMetric.class).register(registration);
         return registration;
     }
 }

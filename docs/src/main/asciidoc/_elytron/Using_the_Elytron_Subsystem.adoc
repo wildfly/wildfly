@@ -2231,7 +2231,12 @@ by this SSLContext. The format of this attribute is described in detail in
 http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
 The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
 excludes any cipher suites that have no authentication.
-protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`.
+cipher-suite-names:: _(Optional)_ The enabled cipher suites for TLSv1.3. The format of this attribute is a simple colon
+(":") separated list of TLSv1.3 cipher suite names (e.g., `TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`).
+This attribute must be specified in order for TLSv1.3 to be enabled.
+protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`. The default value
+is `TLSv1 TLSv1.1 TLSv1.2 TLSv1.3`. Note that the TLSv1.3 protocol will only be usable when running against JDK 11 or
+higher.
 want-client-auth:: _(Optional)_ To request (but not to require) a client certificate on SSL handshake. If a
 `security-domain` is configured and supports X509 evidence, this will be set to `true` automatically. Ignored when
 `need-client-auth` is set. The default value is `false`.
@@ -2278,10 +2283,29 @@ by this SSLContext. The format of this attribute is described in detail in
 http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
 The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
 excludes any cipher suites that have no authentication.
-protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`.
+cipher-suite-names:: _(Optional)_ The enabled cipher suites for TLSv1.3. The format of this attribute is a simple colon
+(":") separated list of TLSv1.3 cipher suite names (e.g., `TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256`).
+This attribute must be specified in order for TLSv1.3 to be enabled.
+protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`. The default value
+is `TLSv1 TLSv1.1 TLSv1.2 TLSv1.3`. Note that the TLSv1.3 protocol will only be usable when running against JDK 11 or higher.
 provider-name:: _(Optional)_ The name of the provider to use. If not specified, all providers from `providers` will be
 passed to the `SSLContext`.
 providers:: _(Optional)_ The name of the providers to obtain the `Provider[]` to use to load the `SSLContext`.
+
+*WARNING* It is possible to use TLSv1.3 with WildFly when running against JDK 11 or higher. However, if JDK 11
+is in use and if there is a very large number of TLSv1.3 requests being made, it is possible that a drop in
+performance (throughput and response time) will occur compared to TLSv1.2. Upgrading to newer JDK versions
+should improve performance. For this reason, the use of TLSv1.3 is currently disabled by default. TLSv1.3 can
+be enabled by configuring the new `cipher-suite-names` attribute in the SSL Context resource definition in the
+Elytron subsystem as described in the previous two sections. It is recommended to test for performance
+degradation prior to enabling TLSv1.3 in a production environment. See https://issues.redhat.com/browse/WFWIP-160[WFWIP-160]
+for more details.
+
+*Note:* When using TLSv1.3, it is important to keep in mind that session IDs have become essentially obsolete.
+This means that the session ID can no longer reliably be used to test if a session was resumed. Instead,
+creation time can be used to test if a session was resumed. Currently, clients need to read from the server after
+the first handshake in order to receive the `NewSessionTicket` that can be used for resumption. However, this may
+change once https://bugs.openjdk.java.net/browse/JDK-8209953[JDK-8209953] is resolved.
 
 
 === Default SSLContext
@@ -2498,13 +2522,91 @@ sections.
 A role decoder converts attributes from the identity provided by the
 security realm into roles. Role decoders are also specifically typed
 based on their functionality, for example _empty-role-decoder_,
-_simple-role-decoder_, and _custom-role-decoder_.
+_simple-role-decoder_, _custom-role-decoder_, and _aggregate-role-decoder_.
 
 Adding a role decoder takes the general form:
 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/ROLE-DECODER-TYPE=roleDeoderName:add(....)
+----
+
+==== Create an Elytron Role Decoder that makes use of the IP Address of the Remote Client
+
+A role decoder that is configured on a security realm assigns roles to
+an identity based on attributes provided by the security realm. It is
+also possible to configure a role decoder that makes use of the IP
+address of the remote client when determining the roles associated
+with an identity. As an example, we might want to make use of the IP
+address of the remote client in order to assign a user a particular
+role when establishing a connection to the server from a corporate
+network and a different role when establishing a connection to the
+server from a different network.
+
+Adding a role decoder that makes use of the remote client's IP
+address takes the general form:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=roleDecoderName:add(source-address="...", pattern="...", roles=[...])
+----
+
+In particular, a _source-address-role-decoder_ has the following attributes:
+
+* _source-address_ - The IP address of the remote client.
+
+* _pattern_ - A regular expression that specifies the IP address to match.
+
+* _roles_ - The list of roles to assign if the source IP address matches the given address.
+
+Only one of _source-address_ and _pattern_ should be specified.
+
+For example, the following _source-address-role-decoder_ could be configured to specify
+that a user should be assigned the "Administrator" role when establishing a connection
+to the server from the 10.10.10.10 IP address:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+----
+
+Once a _source-address-role-decoder_ has been configured, it can be referenced from a _security-domain_:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/security-domain=exampleSD:add(..., role-decoder=decoder1)
+----
+
+It is also possible to assign permissions to an identity based on its roles using a
+link:Using_the_Elytron_Subsystem{outfilesuffix}#create-an-elytron-permission-mapper[simple permission mapper].
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+/subsystem=elytron/simple-permission-mapper=ipPermissionMapper:add(permission-mappings=[{roles=["Administrator"], permission-sets=[{permission-set=login-permission}]}])
+/subsystem=elytron/security-domain=exampleSD:add(..., role-decoder=decoder1, permission-mapper=ipPermissionMapper)
+----
+
+The above example configures a security domain with a source address role decoder that
+will assign the "Administrator" role when the IP address of the remote client matches
+the configured address and a simple permission mapper that only assigns the
+"LoginPermission" if the identity has the "Administrator" role. Thus, authentication
+will succeed if the IP address of the remote client matches the configured address.
+
+It is also possible to configure an _aggregate-role-decoder_. This consists of
+two or more _role-decoder_ elements where each element is a reference to a configured
+role decoder. Each role decoder will be applied and the returned value will be a union of
+the roles returned by each decoder.
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+/subsystem=elytron/source-address-role-decoder=decoder2:add(source-address="12.12.12.12", roles=["Users"])
+/subsystem=elytron/aggregate-role-decoder=aggregateDecoder:add(role-decoders=[decoder1, decoder2])
 ----
 
 [[create-an-elytron-permission-set]]

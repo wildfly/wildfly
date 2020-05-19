@@ -56,7 +56,7 @@ As of WildFly 8, this feature was implemented.
 [[configuring-container-interceptors]]
 == Configuring container interceptors
 
-As you can see from the JIRA https://issues.jboss.org/browse/AS7-5897,
+As you can see from the JIRA https://issues.redhat.com/browse/AS7-5897,
 one of the goals of this feature implementation was to make sure that we
 don't introduce any new WildFly specific library dependencies for the
 container interceptors. So we decided to allow the Jakarta EE interceptors
@@ -150,7 +150,7 @@ the interceptor:
 
 .Example of container interceptor
 
-[source,java,options="nowrap"
+[source,java,options="nowrap"]
 ----
 public class ClassLevelContainerInterceptor {
     @AroundInvoke

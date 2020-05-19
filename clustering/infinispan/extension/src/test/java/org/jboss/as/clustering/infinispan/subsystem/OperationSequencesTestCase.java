@@ -48,7 +48,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
-        ModelNode addCacheOp = getCacheAddOperation("maximal2",  LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
+        ModelNode addCacheOp = getCacheAddOperation("maximal2", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);

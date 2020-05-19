@@ -22,11 +22,17 @@
 
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
@@ -60,6 +66,19 @@ class MailServerAdd extends RestartParentResourceAddHandler {
     }
 
     @Override
+    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        populateModel(operation, resource.getModel());
+        handleCredentialReferenceUpdate(context, resource.getModel());
+        recordCapabilitiesAndRequirements(context, operation, resource);
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(MailServerDefinition.CREDENTIAL_REFERENCE, context, resource);
+    }
+
+    @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
         MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel);
     }
@@ -75,5 +94,28 @@ class MailServerAdd extends RestartParentResourceAddHandler {
         String jndiName = MailSessionAdd.getJndiName(parentModel, context);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         context.removeService(bindInfo.getBinderServiceName());
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.isDefaultRequiresRuntime() && !context.isBooting()) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                    final ModelNode model = context.readResourceFromRoot(context.getCurrentAddress(), false).getModel();
+                    if (model.hasDefined(MailServerDefinition.CREDENTIAL_REFERENCE.getName())) {
+                        final ModelNode resolvedValue = MailServerDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
+                        // This call will force the creation of the new alias in the credential-store if it is needed
+                        CredentialReference.getCredentialSourceSupplier(context, MailServerDefinition.CREDENTIAL_REFERENCE, model, null);
+                        context.completeStep(new OperationContext.RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                rollbackCredentialStoreUpdate(MailServerDefinition.CREDENTIAL_REFERENCE, context, resolvedValue);
+                            }
+                        });
+                    }
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+        super.execute(context, operation);
     }
 }

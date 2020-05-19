@@ -74,7 +74,7 @@ public class ConnectionFactoryClientMappingTestCase {
             attr.get("connectors").add("http-test-connector");
             ops.addJmsConnectionFactory("TestConnectionFactory", CONNECTION_FACTORY_JNDI_NAME, attr);
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private ModelNode clientMapping(String destAddr, String destPort) {

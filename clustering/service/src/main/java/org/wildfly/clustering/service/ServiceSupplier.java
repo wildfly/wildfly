@@ -23,23 +23,28 @@
 package org.wildfly.clustering.service;
 
 import java.time.Duration;
+import java.util.EnumSet;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.msc.Service;
+import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StabilityMonitor;
 
 /**
  * Returns the value supplied by a {@link Service}.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ServiceSupplier<T> implements Supplier<T> {
 
     private final Supplier<ServiceController<?>> factory;
@@ -70,43 +75,53 @@ public class ServiceSupplier<T> implements Supplier<T> {
         // Create one-time service name
         ServiceName name = sourceName.append(UUID.randomUUID().toString());
 
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch removeLatch = new CountDownLatch(1);
         ServiceBuilder<?> builder = target.addService(name);
         Supplier<T> supplier = builder.requires(sourceName);
-        ServiceController<?> controller = builder.setInitialMode(this.mode).install();
+        Reference<T> reference = new Reference<>();
+        ServiceController<?> controller = builder.setInstance(new FunctionalService<>(reference, Function.identity(), supplier))
+                .addListener(new CountDownLifecycleListener(startLatch, EnumSet.of(LifecycleEvent.UP, LifecycleEvent.FAILED)))
+                .addListener(new CountDownLifecycleListener(removeLatch, EnumSet.of(LifecycleEvent.REMOVED)))
+                .setInitialMode(this.mode)
+                .install();
 
-        StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(controller);
         try {
-            Duration duration = this.duration;
-            if (duration == null) {
-                monitor.awaitStability();
-            } else if (!monitor.awaitStability(duration.toMillis(), TimeUnit.MILLISECONDS)) {
-                throw new IllegalStateException(new TimeoutException());
-            }
-            switch (controller.getState()) {
-                case START_FAILED: {
-                    throw new IllegalStateException(controller.getStartException());
-                }
-                case UP: {
-                    return supplier.get();
-                }
-                default: {
-                    // Otherwise target service is not started
-                    return null;
+            // Don't wait for start latch if there are unavailable dependencies
+            if (controller.getUnavailableDependencies().isEmpty()) {
+                Duration duration = this.duration;
+                if (duration == null) {
+                    startLatch.await();
+                } else if (!startLatch.await(duration.toMillis(), TimeUnit.MILLISECONDS)) {
+                    throw new IllegalStateException(new TimeoutException());
                 }
             }
+
+            return reference.get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(e);
         } finally {
             controller.setMode(ServiceController.Mode.REMOVE);
             try {
-                monitor.awaitStability();
+                removeLatch.await();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-            } finally {
-                monitor.removeController(controller);
             }
+        }
+    }
+
+    static class Reference<T> implements Supplier<T>, Consumer<T> {
+        private volatile T value = null;
+
+        @Override
+        public void accept(T value) {
+            this.value = value;
+        }
+
+        @Override
+        public T get() {
+            return this.value;
         }
     }
 }

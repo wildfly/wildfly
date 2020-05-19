@@ -55,6 +55,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -1147,4 +1148,15 @@ public interface EeLogger extends BasicLogger {
     //        "Support for this setting will be removed once all EE 8 APIs are provided and certified.")
     //void notUsingEE8PreviewMode();
 
+    @Message(id = 120, value = "Failed to locate executor service '%s'")
+    OperationFailedException executorServiceNotFoundForMetrics(ServiceName serviceName);
+
+    @Message(id = 121, value = "Unsupported attribute '%s'")
+    IllegalStateException unsupportedExecutorServiceMetric(String attributeName);
+
+    @Message(id = 122, value = "Directory path %s in %s global-directory resource does not point to a valid directory.")
+    StartException globalDirectoryDoNotExist(String globalDirectoryPath, String globalDirectoryName);
+
+    @Message(id = 123, value = "Global directory %s cannot be added, because global directory %s is already defined.")
+    OperationFailedException oneGlobalDirectory(String newGlobalDirectory, String existingGlobalDirectory);
 }

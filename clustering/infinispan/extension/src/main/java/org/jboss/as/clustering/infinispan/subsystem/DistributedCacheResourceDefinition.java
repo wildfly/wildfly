@@ -24,6 +24,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.UnaryOperator;
 
+import org.infinispan.Cache;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
@@ -98,13 +100,13 @@ public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDe
 
         if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.L1_LIFESPAN.getDefinition()), Attribute.L1_LIFESPAN.getDefinition())
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.L1_LIFESPAN.getName())
                     .end();
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.CAPACITY_FACTOR.getDefinition().getDefaultValue()), Attribute.CAPACITY_FACTOR.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.CAPACITY_FACTOR.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CAPACITY_FACTOR.getDefinition())
                     .end();
         }
@@ -112,7 +114,7 @@ public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDe
         SegmentedCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    DistributedCacheResourceDefinition() {
-        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(DistributedCacheServiceConfigurator::new));
+    DistributedCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
+        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(DistributedCacheServiceConfigurator::new), executors);
     }
 }

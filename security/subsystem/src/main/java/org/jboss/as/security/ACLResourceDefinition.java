@@ -45,11 +45,12 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
     private ACLResourceDefinition() {
         super(SecurityExtension.ACL_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.ACL),
-                ACLResourceDefinitionAdd.INSTANCE,
+                new ACLResourceDefinitionAdd(),
                 new SecurityDomainReloadRemoveHandler());
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(ACL_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.ACL_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.ACL_MODULE));
     }
@@ -74,19 +75,14 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
     }
 
     static class ACLResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
-        static final ACLResourceDefinitionAdd INSTANCE = new ACLResourceDefinitionAdd();
 
         @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            super.updateModel(context, operation);
+            if (operation.hasDefined(ACL_MODULES.getName())) {
+                context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
+            }
         }
-        @Override
-               protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-                   super.updateModel(context, operation);
-                   if (operation.hasDefined(ACL_MODULES.getName())) {
-                       context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
-                   }
-               }
-
     }
 
 }

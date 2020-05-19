@@ -819,4 +819,14 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 88, value = "Can not migrate attribute failback-delay to resource %s. Artemis detects failback deterministically and it no longer requires to specify a delay for failback to occur.")
     String couldNotMigrateFailbackDelayAttribute(PathAddress address);
+
+    @Message(id = 89, value = "Can not migrate discovery group %s as no network configuration is properly defined.")
+    String couldNotMigrateDiscoveryGroup(PathAddress address);
+
+    @Message(id = 90, value = "Can not migrate broadcast group %s as no network configuration is properly defined.")
+    String couldNotMigrateBroadcastGroup(PathAddress address);
+
+    @Message(id = 91, value = "Can not migrate broadcast group %s as no connector is properly defined.")
+    String couldNotMigrateBroadcastGroupWithoutConnectors(PathAddress address);
 }
+

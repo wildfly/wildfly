@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-ee-spi</artifactId>
@@ -41,7 +41,7 @@
 
     <name>WildFly: EE clustering SPI</name>
     <description>
-        This module contains code that is common to the wildlfy-clustering-ejb-spi and wildlfy-clustering-web-spi modules.
+        This module contains code that is common to the wildfly-clustering-ejb-spi and wildfly-clustering-web-spi modules.
     </description>
 
     <dependencies>

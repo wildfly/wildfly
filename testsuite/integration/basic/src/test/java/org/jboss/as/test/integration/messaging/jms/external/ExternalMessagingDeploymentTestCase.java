@@ -80,7 +80,7 @@ public class ExternalMessagingDeploymentTestCase {
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), true);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient, true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
             ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
@@ -100,7 +100,7 @@ public class ExternalMessagingDeploymentTestCase {
             op.get("entries").add(QUEUE_LOOKUP);
             op.get("entries").add("/queue/myAwesomeClientQueue");
             execute(managementClient, op, true);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private ModelNode execute(final org.jboss.as.arquillian.container.ManagementClient managementClient, final ModelNode op, final boolean expectSuccess) throws IOException {

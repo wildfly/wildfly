@@ -22,10 +22,10 @@
 
 package org.jboss.as.clustering.jgroups;
 
-import java.security.PrivilegedAction;
-
+import org.jboss.as.clustering.context.ContextClassLoaderReference;
+import org.jboss.as.clustering.context.ContextReferenceExecutor;
+import org.jboss.as.clustering.context.Contextualizer;
 import org.jgroups.util.ThreadFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link ThreadFactory} decorator that associates a specific class loader to created threads.
@@ -33,37 +33,25 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory {
     private final ThreadFactory factory;
-    private final ClassLoader loader;
+    private final ClassLoader targetLoader;
+    private final Contextualizer contextualizer;
 
-    public ClassLoaderThreadFactory(ThreadFactory factory, ClassLoader loader) {
+    public ClassLoaderThreadFactory(ThreadFactory factory, ClassLoader targetLoader) {
         this.factory = factory;
-        this.loader = loader;
+        this.targetLoader = targetLoader;
+        this.contextualizer = new ContextReferenceExecutor<>(targetLoader, ContextClassLoaderReference.INSTANCE);
     }
 
     @Override
-    public Thread newThread(Runnable r) {
-        return this.newThread(r, null);
+    public Thread newThread(Runnable runner) {
+        return this.newThread(runner, null);
     }
 
     @Override
-    public Thread newThread(final Runnable r, String name) {
-        Runnable task = () -> {
-            try {
-                r.run();
-            } finally {
-                // Defensively reset the TCCL
-                this.setContextClassLoader(Thread.currentThread());
-            }
-        };
-        return this.setContextClassLoader(this.factory.newThread(task, name));
-    }
-
-    private Thread setContextClassLoader(Thread thread) {
-        PrivilegedAction<Thread> action = () -> {
-            thread.setContextClassLoader(this.loader);
-            return thread;
-        };
-        return WildFlySecurityManager.doUnchecked(action);
+    public Thread newThread(final Runnable runner, String name) {
+        Thread thread = this.factory.newThread(this.contextualizer.contextualize(runner), name);
+        ContextClassLoaderReference.INSTANCE.accept(thread, this.targetLoader);
+        return thread;
     }
 
     @Override

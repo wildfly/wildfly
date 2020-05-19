@@ -73,7 +73,7 @@ public class SendToExternalJMSQueueTestCase {
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), true);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient, true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
             ops.createJmsQueue("myAwesomeQueue", "/queue/myAwesomeQueue");
@@ -90,7 +90,7 @@ public class SendToExternalJMSQueueTestCase {
             op.get("entries").add(QUEUE_LOOKUP);
             op.get("entries").add("/queue/myAwesomeClientQueue");
             execute(managementClient, op, true);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private ModelNode execute(final org.jboss.as.arquillian.container.ManagementClient managementClient, final ModelNode op, final boolean expectSuccess) throws IOException {

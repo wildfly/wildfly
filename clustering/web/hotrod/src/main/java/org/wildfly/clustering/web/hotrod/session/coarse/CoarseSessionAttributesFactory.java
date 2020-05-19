@@ -22,11 +22,8 @@
 
 package org.wildfly.clustering.web.hotrod.session.coarse;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletContext;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
@@ -45,43 +42,45 @@ import org.wildfly.clustering.web.cache.session.coarse.CoarseImmutableSessionAtt
 import org.wildfly.clustering.web.cache.session.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * @author Paul Ferraro
  */
-public class CoarseSessionAttributesFactory<V> implements SessionAttributesFactory<Map.Entry<Map<String, Object>, V>> {
+public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 
     private final RemoteCache<SessionAttributesKey, V> cache;
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final Immutability immutability;
     private final CacheProperties properties;
     private final MutatorFactory<SessionAttributesKey, V> mutatorFactory;
+    private final HttpSessionActivationListenerProvider<S, C, L> provider;
 
-    public CoarseSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration) {
+    public CoarseSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration) {
         this.cache = configuration.getCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
         this.mutatorFactory = new RemoteCacheMutatorFactory<>(this.cache);
+        this.provider = configuration.getHttpSessionActivationListenerProvider();
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, V> createValue(String id, Void context) {
+    public Map<String, Object> createValue(String id, Void context) {
         Map<String, Object> attributes = new ConcurrentHashMap<>();
         V value = this.marshaller.write(attributes);
         this.cache.put(new SessionAttributesKey(id), value);
-        return new SimpleImmutableEntry<>(attributes, value);
+        return attributes;
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, V> findValue(String id) {
+    public Map<String, Object> findValue(String id) {
         V value = this.cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
-                Map<String, Object> attributes = this.marshaller.read(value);
-                return new SimpleImmutableEntry<>(attributes, value);
+                return this.marshaller.read(value);
             } catch (InvalidSerializedFormException e) {
                 Logger.ROOT_LOGGER.failedToActivateSession(e, id.toString());
                 this.remove(id);
@@ -91,16 +90,16 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry, ImmutableSessionMetaData metaData, ServletContext context) {
-        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, entry);
-        SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier(new CompositeImmutableSession(id, metaData, attributes), context);
-        Mutator mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), entry.getValue());
-        return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller, this.immutability, this.properties, notifier);
+    public SessionAttributes createSessionAttributes(String id, Map<String, Object> values, ImmutableSessionMetaData metaData, C context) {
+        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, values);
+        SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
+        Mutator mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(values));
+        return new CoarseSessionAttributes(values, mutator, this.marshaller, this.immutability, this.properties, notifier);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry) {
-        return new CoarseImmutableSessionAttributes(entry.getKey());
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, Object> values) {
+        return new CoarseImmutableSessionAttributes(values);
     }
 
     @Override

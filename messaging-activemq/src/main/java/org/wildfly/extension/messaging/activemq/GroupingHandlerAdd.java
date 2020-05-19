@@ -22,15 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS;
-import static org.wildfly.extension.messaging.activemq.GroupingHandlerDefinition.GROUP_TIMEOUT;
-import static org.wildfly.extension.messaging.activemq.GroupingHandlerDefinition.REAPER_PERIOD;
-import static org.wildfly.extension.messaging.activemq.GroupingHandlerDefinition.TIMEOUT;
-
-import org.apache.activemq.artemis.api.core.SimpleString;
-import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
-import org.apache.activemq.artemis.core.server.group.impl.GroupingHandlerConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -39,7 +31,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -60,13 +51,6 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (final AttributeDefinition attr : GroupingHandlerDefinition.ATTRIBUTES) {
-            attr.validateAndSet(operation, model);
-        }
-    }
-
-    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
@@ -80,6 +64,7 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
             // the groupingHandler is added as a child of the server resource. Requires a reload to restart the server with the grouping-handler
             if (context.isNormalServer()) {
                 context.addStep(new OperationStepHandler() {
+                    @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         context.reloadRequired();
                         context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
@@ -88,27 +73,5 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
             }
         }
         // else the initial subsystem install is not complete and the grouping handler will be added in ServerAdd
-    }
-
-    static void addGroupingHandlerConfig(final OperationContext context, final Configuration configuration, final ModelNode model) throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
-            final Property prop = model.get(CommonAttributes.GROUPING_HANDLER).asProperty();
-            final String name = prop.getName();
-            final ModelNode node = prop.getValue();
-
-            final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(GroupingHandlerDefinition.TYPE.resolveModelAttribute(context, node).asString());
-            final String address = GROUPING_HANDLER_ADDRESS.resolveModelAttribute(context, node).asString();
-            final int timeout = TIMEOUT.resolveModelAttribute(context, node).asInt();
-            final long groupTimeout = GROUP_TIMEOUT.resolveModelAttribute(context, node).asLong();
-            final long reaperPeriod = REAPER_PERIOD.resolveModelAttribute(context, node).asLong();
-            final GroupingHandlerConfiguration conf = new GroupingHandlerConfiguration()
-                    .setName(SimpleString.toSimpleString(name))
-                    .setType(type)
-                    .setAddress(SimpleString.toSimpleString(address))
-                    .setTimeout(timeout)
-                    .setGroupTimeout(groupTimeout)
-                    .setReaperPeriod(reaperPeriod);
-            configuration.setGroupingHandlerConfiguration(conf);
-        }
     }
 }

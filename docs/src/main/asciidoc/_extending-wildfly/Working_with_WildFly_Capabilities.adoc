@@ -118,8 +118,8 @@ of the management resource that registers the capability. For example,
 the management resource at the address
 '/socket-binding-group=standard-sockets/socket-binding=web' will
 register a dynamically named capability named
-'org.wildlfy.network.socket-binding.web'. The
-'org.wildlfy.network.socket-binding' portion is the static part of the
+'org.wildfly.network.socket-binding.web'. The
+'org.wildfly.network.socket-binding' portion is the static part of the
 name.
 
 All dynamically named capabilities that have the same static portion of

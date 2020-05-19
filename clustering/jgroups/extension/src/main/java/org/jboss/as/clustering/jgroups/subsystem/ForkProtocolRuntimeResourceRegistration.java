@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
@@ -39,54 +40,19 @@ import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.JChannel;
-import org.jgroups.protocols.FORK;
-import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * Operation handler for registration of fork protocol runtime resources.
  * @author Paul Ferraro
  */
-public class ForkProtocolRuntimeResourceRegistration implements RuntimeResourceRegistration, ProtocolMetricsHandler.ProtocolLocator {
+public class ForkProtocolRuntimeResourceRegistration implements RuntimeResourceRegistration {
 
-    @Override
-    public Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException {
-        PathAddress address = context.getCurrentAddress();
-        String channelName = address.getElement(address.size() - 3).getValue();
-        String forkName = address.getElement(address.size() - 2).getValue();
-        String protocolName = address.getElement(address.size() - 1).getValue();
+    private final FunctionExecutorRegistry<JChannel> executors;
 
-        ServiceRegistry registry = context.getServiceRegistry(false);
-        JChannel channel = new PassiveServiceSupplier<JChannel>(registry, JGroupsRequirement.CHANNEL.getServiceName(context, channelName)).get();
-        if (channel != null) {
-            FORK fork = (FORK) channel.getProtocolStack().findProtocol(FORK.class);
-            if (fork != null) {
-                ChannelFactory factory = new PassiveServiceSupplier<ChannelFactory>(registry, JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channelName)).get();
-                if (factory != null) {
-                    ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
-                    ProtocolConfiguration<? extends TP> transport = configuration.getTransport();
-                    if (transport.getName().equals(protocolName)) {
-                        Class<? extends Protocol> protocolClass = transport.createProtocol(configuration).getClass();
-                        return channel.getProtocolStack().findProtocol(protocolClass);
-                    }
-                    for (ProtocolConfiguration<? extends Protocol> protocol : configuration.getProtocols()) {
-                        if (protocol.getName().equals(protocolName)) {
-                            Class<? extends Protocol> protocolClass = protocol.createProtocol(configuration).getClass();
-                            return fork.get(forkName).getProtocolStack().findProtocol(protocolClass);
-                        }
-                    }
-                }
-            }
-        }
-        return null;
+    public ForkProtocolRuntimeResourceRegistration(FunctionExecutorRegistry<JChannel> executors) {
+        this.executors = executors;
     }
 
     @Override
@@ -122,7 +88,7 @@ public class ForkProtocolRuntimeResourceRegistration implements RuntimeResourceR
             registration = registration.registerOverrideModel(protocolName, provider);
         }
 
-        ProtocolMetricsHandler handler = new ProtocolMetricsHandler(this);
+        ProtocolMetricsHandler handler = new ProtocolMetricsHandler(this.executors);
 
         for (Attribute attribute : attributes.values()) {
             String name = attribute.getName();

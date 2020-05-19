@@ -4,7 +4,7 @@
 The EE subsystem provides common functionality in the Jakarta EE platform,
 such as the EE Concurrency Utilities (JSR 236) and `@Resource`
 injection. The subsystem is also responsible for managing the lifecycle
-of Jakarta EE application's deployments, that is, `.ear` files.
+of Jakarta EE application's deployments, that is, `.ear` files and configuration of global directories to share common libraries across all deployed applications.
 
 The EE subsystem configuration may be used to:
 
@@ -13,16 +13,16 @@ The EE subsystem configuration may be used to:
 * define the default bindings
 
 The subsystem name is ee and this document covers EE subsystem version
-`2.0`, which XML namespace within WildFly XML configurations is
-`urn:jboss:domain:ee:2.0`. The path for the subsystem's XML schema,
-within WildFly's distribution, is `docs/schema/jboss-as-ee_2_0.xsd`.
+`5.0`, which XML namespace within WildFly XML configurations is
+`urn:jboss:domain:ee:5.0`. The path for the subsystem's XML schema,
+within WildFly's distribution, is `docs/schema/jboss-as-ee_5_0.xsd`.
 
 Subsystem XML configuration example with all elements and attributes
 specified:
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:ee:2.0" >
+<subsystem xmlns="urn:jboss:domain:ee:5.0">
     <global-modules>
         <module name="org.jboss.logging"
                 slot="main"/>
@@ -31,6 +31,9 @@ specified:
                 meta-inf="true"
                 services="false" />
     </global-modules>
+    <global-directories>
+        <directory name="common-libs" path="libs" relative-to="jboss.server.base.dir"/>
+    </global-directories>
     <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
     <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
     <jboss-descriptor-property-replacement>false</jboss-descriptor-property-replacement>

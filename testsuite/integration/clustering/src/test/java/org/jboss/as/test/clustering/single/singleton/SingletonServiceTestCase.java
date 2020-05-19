@@ -22,7 +22,6 @@
 package org.jboss.as.test.clustering.single.singleton;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,7 +37,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -62,12 +60,7 @@ public class SingletonServiceTestCase {
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addPackage(NodeServiceServlet.class.getPackage());
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
-        war.addAsManifestResource(createPermissionsXmlAsset(
-                new RuntimePermission("getClassLoader"), // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()
-                new ServerPermission("useServiceRegistry"), // See org.jboss.as.server.deployment.service.SecuredServiceRegistry
-                new ServerPermission("getCurrentServiceContainer")
-        ), "permissions.xml");
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common\n"));
         war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, NodeServiceActivator.class);
         return war;
     }

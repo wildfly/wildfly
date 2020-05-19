@@ -46,6 +46,8 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.controller.ServiceValueRegistry;
+import org.jboss.msc.service.ServiceName;
 import org.junit.After;
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
@@ -57,7 +59,8 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  */
 public class DefaultCacheContainerTestCase {
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final CacheContainer subject = new DefaultCacheContainer(this.manager);
+    private final ServiceValueRegistry<Cache<?, ?>> registry = mock(ServiceValueRegistry.class);
+    private final CacheContainer subject = new DefaultCacheContainer(this.manager, this.registry, ServiceName::parse);
 
     @After
     public void cleanup() {
@@ -67,7 +70,7 @@ public class DefaultCacheContainerTestCase {
     @Test
     public void getName() {
         String name = "foo";
-        GlobalConfiguration global = new GlobalConfigurationBuilder().globalJmxStatistics().cacheManagerName(name).build();
+        GlobalConfiguration global = new GlobalConfigurationBuilder().cacheManagerName(name).build();
 
         when(this.manager.getCacheManagerConfiguration()).thenReturn(global);
 
@@ -90,6 +93,7 @@ public class DefaultCacheContainerTestCase {
 
         when(this.manager.getCache()).thenReturn(cache);
         when(cache.getAdvancedCache()).thenReturn(cache);
+        when(cache.getName()).thenReturn("foo");
 
         Cache<Object, Object> result = this.subject.getCache();
 
@@ -104,6 +108,7 @@ public class DefaultCacheContainerTestCase {
 
         when(this.manager.getCache("other")).thenReturn(cache);
         when(cache.getAdvancedCache()).thenReturn(cache);
+        when(cache.getName()).thenReturn("other");
 
         Cache<Object, Object> result = this.subject.getCache("other");
 
@@ -119,6 +124,7 @@ public class DefaultCacheContainerTestCase {
         when(this.manager.getCache("non-existent", true)).thenReturn(cache);
         when(this.manager.getCache("non-existent", false)).thenReturn(null);
         when(cache.getAdvancedCache()).thenReturn(cache);
+        when(cache.getName()).thenReturn("non-existent");
 
         Cache<Object, Object> result = this.subject.getCache("non-existent", true);
 
@@ -137,6 +143,7 @@ public class DefaultCacheContainerTestCase {
 
         when(this.manager.getCache("other", templateName)).thenReturn(cache);
         when(cache.getAdvancedCache()).thenReturn(cache);
+        when(cache.getName()).thenReturn("other");
 
         Cache<Object, Object> result = this.subject.getCache("other", templateName);
 
@@ -154,6 +161,7 @@ public class DefaultCacheContainerTestCase {
         when(this.manager.getCache("non-existent", templateName, true)).thenReturn(cache);
         when(this.manager.getCache("non-existent", templateName, false)).thenReturn(null);
         when(cache.getAdvancedCache()).thenReturn(cache);
+        when(cache.getName()).thenReturn("non-existent");
 
         Cache<Object, Object> result = this.subject.getCache("non-existent", templateName, true);
 
@@ -195,16 +203,6 @@ public class DefaultCacheContainerTestCase {
     }
 
     @Test
-    public void getListeners() {
-        Set<Object> expected = Collections.singleton(new Object());
-        when(this.manager.getListeners()).thenReturn(expected);
-
-        Set<Object> result = this.subject.getListeners();
-
-        assertSame(expected, result);
-    }
-
-    @Test
     public void defineConfiguration() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         Configuration config = builder.build();
@@ -221,6 +219,7 @@ public class DefaultCacheContainerTestCase {
         this.subject.undefineConfiguration("test");
 
         verify(this.manager).undefineConfiguration("test");
+        verify(this.registry).remove(ServiceName.parse("test"));
     }
 
     @Test

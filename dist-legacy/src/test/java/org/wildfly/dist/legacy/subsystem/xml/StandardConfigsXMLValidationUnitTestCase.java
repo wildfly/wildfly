@@ -164,15 +164,16 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
+        final File xmlFile = getXmlFile(xmlName);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        schemaFactory.setErrorHandler(new ErrorHandlerImpl());
+        schemaFactory.setErrorHandler(new ErrorHandlerImpl(xmlFile.toPath()));
         schemaFactory.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
         Schema schema = schemaFactory.newSchema(SCHEMAS);
         Validator validator = schema.newValidator();
-        validator.setErrorHandler(new ErrorHandlerImpl());
+        validator.setErrorHandler(new ErrorHandlerImpl(xmlFile.toPath()));
         validator.setFeature("http://apache.org/xml/features/validation/schema", true);
         validator.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
-        validator.validate(new StreamSource(getXmlFile(xmlName)));
+        validator.validate(new StreamSource(xmlFile));
     }
 
     private File getXmlFile(String xmlName) throws IOException {
@@ -187,6 +188,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
             List<String> lines = Files.readAllLines(target.toPath(), StandardCharsets.UTF_8);
             for (String line : lines) {
                 writer.write(fixExpressions(line));
+                writer.newLine();
             }
         }
         return tmp;

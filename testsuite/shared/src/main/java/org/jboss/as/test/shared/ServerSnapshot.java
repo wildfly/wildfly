@@ -53,7 +53,7 @@ public class ServerSnapshot {
             return new AutoCloseable() {
                 @Override
                 public void close() throws Exception {
-                    ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), fileName);
+                    ServerReload.executeReloadAndWaitForCompletion(client, fileName);
 
                     ModelNode node = new ModelNode();
                     node.get(ModelDescriptionConstants.OP).set("write-config");

@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.clustering.controller.descriptions.SimpleResourceDescriptionResolver;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
@@ -48,49 +49,21 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jgroups.Global;
 import org.jgroups.JChannel;
-import org.jgroups.protocols.TP;
 import org.jgroups.protocols.relay.RELAY2;
 import org.jgroups.stack.Protocol;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * @author Paul Ferraro
  */
-public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegistration, ProtocolMetricsHandler.ProtocolLocator {
+public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegistration {
 
-    @Override
-    public Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException {
-        PathAddress address = context.getCurrentAddress();
-        String channelName = address.getParent().getLastElement().getValue();
-        String protocolName = address.getLastElement().getValue();
+    private final FunctionExecutorRegistry<JChannel> executors;
 
-        ServiceRegistry registry = context.getServiceRegistry(false);
-        JChannel channel = new PassiveServiceSupplier<JChannel>(registry, JGroupsRequirement.CHANNEL.getServiceName(context, channelName)).get();
-        if (channel != null) {
-            ChannelFactory factory = new PassiveServiceSupplier<ChannelFactory>(registry, JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channelName)).get();
-            if (factory != null) {
-                ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
-                ProtocolConfiguration<? extends TP> transport = configuration.getTransport();
-                if (transport.getName().equals(protocolName)) {
-                    Class<? extends Protocol> protocolClass = transport.createProtocol(configuration).getClass();
-                    return channel.getProtocolStack().findProtocol(protocolClass);
-                }
-                for (ProtocolConfiguration<? extends Protocol> protocol : configuration.getProtocols()) {
-                    if (protocol.getName().equals(protocolName)) {
-                        Class<? extends Protocol> protocolClass = protocol.createProtocol(configuration).getClass();
-                        return channel.getProtocolStack().findProtocol(protocolClass);
-                    }
-                }
-            }
-        }
-        return null;
+    public ChannelRuntimeResourceRegistration(FunctionExecutorRegistry<JChannel> executors) {
+        this.executors = executors;
     }
 
     @Override
@@ -152,7 +125,7 @@ public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegist
 
         SimpleResourceDescriptionResolver resolver = new SimpleResourceDescriptionResolver(protocolName, protocolClass.getSimpleName());
         ResourceBuilder builder = ResourceBuilder.Factory.create(ProtocolResourceDefinition.pathElement(protocolName), resolver).setRuntime();
-        ProtocolMetricsHandler handler = new ProtocolMetricsHandler(this);
+        ProtocolMetricsHandler handler = new ProtocolMetricsHandler(this.executors);
 
         for (Map.Entry<String, Attribute> entry: ProtocolMetricsHandler.findProtocolAttributes(protocolClass).entrySet()) {
             String name = entry.getKey();
@@ -167,8 +140,8 @@ public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegist
 
     static Class<? extends Protocol> findProtocolClass(OperationContext context, String protocolName, String moduleName) throws OperationFailedException {
         String className = protocolName;
-        if (moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
-            className = String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, protocolName);
+        if (moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(Global.PREFIX)) {
+            className = Global.PREFIX + protocolName;
         }
 
         try {

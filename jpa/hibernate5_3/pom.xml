@@ -29,99 +29,12 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>18.0.0.Final-SNAPSHOT</version>
+        <version>20.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>jipijapa-hibernate5-3</artifactId>
 
     <name>jipijapa Hibernate 5.3.x (JPA 2.2) integration</name>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <scope>provided</scope>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-spi</artifactId>
-                <version>${version.org.infinispan}</version>
-                <scope>provided</scope>
-                <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-commons</artifactId>
-                <version>${version.org.infinispan}</version>
-                <scope>provided</scope>
-                <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-core</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>caffeine</artifactId>
-                        <groupId>com.github.ben-manes.caffeine</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>hamcrest-core</artifactId>
-                        <groupId>org.hamcrest</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jgroups</artifactId>
-                        <groupId>org.jgroups</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-logging</artifactId>
-                        <groupId>org.jboss.logging</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-marshalling-osgi</artifactId>
-                        <groupId>org.jboss.marshalling</groupId>
-                    </exclusion>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
-                    <exclusion>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>rxjava</artifactId>
-                        <groupId>io.reactivex.rxjava2</groupId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-        
 
     <dependencies>
         <!-- testing -->
@@ -183,46 +96,25 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <scope>provided</scope>
-            <version>${version.org.hibernate}</version>
-            <exclusions>
-              <exclusion>
-                 <groupId>*</groupId>
-                 <artifactId>*</artifactId>
-              </exclusion>
-           </exclusions>
-
         </dependency>
 
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-hibernate-cache-spi</artifactId>
             <scope>provided</scope>
-            <exclusions>
-              <exclusion>
-                 <groupId>*</groupId>
-                 <artifactId>*</artifactId>
-              </exclusion>
-           </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-hibernate-cache-commons</artifactId>
+            <artifactId>infinispan-component-annotations</artifactId>
             <scope>provided</scope>
-             <exclusions>
-              <exclusion>
-                 <groupId>*</groupId>
-                 <artifactId>*</artifactId>
-              </exclusion>
-           </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>

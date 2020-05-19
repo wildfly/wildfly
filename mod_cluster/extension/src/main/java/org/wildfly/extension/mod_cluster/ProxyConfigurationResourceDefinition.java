@@ -32,6 +32,7 @@ import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
@@ -345,8 +346,11 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         }
     }
 
-    public ProxyConfigurationResourceDefinition() {
+    private final FunctionExecutorRegistry<ModClusterServiceMBean> executors;
+
+    public ProxyConfigurationResourceDefinition(FunctionExecutorRegistry<ModClusterServiceMBean> executors) {
         super(WILDCARD_PATH, ModClusterExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
+        this.executors = executors;
     }
 
     @SuppressWarnings("deprecation")
@@ -408,7 +412,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         });
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new OperationHandler<>(new ProxyOperationExecutor(), ProxyOperation.class).register(registration);
+            new OperationHandler<>(new ProxyOperationExecutor(this.executors), ProxyOperation.class).register(registration);
         }
 
         new ReloadRequiredResourceRegistration(descriptor).register(registration);
@@ -517,8 +521,8 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         if (ModClusterModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     // Discard if using default value, reject if set to other than previously hard-coded default of 10 seconds
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.STATUS_INTERVAL.getDefinition().getDefaultValue()), Attribute.STATUS_INTERVAL.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.STATUS_INTERVAL.getDefinition().getDefaultValue()), Attribute.STATUS_INTERVAL.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.STATUS_INTERVAL.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATUS_INTERVAL.getDefinition())
                     // Reject if using proxies, discard if undefined
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROXIES.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.PROXIES.getDefinition())

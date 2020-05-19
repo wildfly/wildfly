@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Predicate;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -71,21 +72,38 @@ public class LoggingUtil {
         return Paths.get(System.getProperty("jboss.server.log.dir")).resolve(logFile);
     }
 
-    public static boolean hasLogMessage(String logFileName, String logMessage) throws Exception {
 
-        boolean found = false;
+    @SafeVarargs
+    public static boolean hasLogMessage(String logFileName, String logMessage, Predicate<String>... filters) throws Exception {
+
         Path logPath = LoggingUtil.getInServerLogPath(logFileName);
+        return isMessageInLogFile(logPath, logMessage, filters);
+    }
 
+    @SafeVarargs
+    public static boolean hasLogMessage(ManagementClient managementClient, String handlerName, String logMessage, Predicate<String>... filters) throws Exception {
+
+        Path logPath = LoggingUtil.getLogPath(managementClient, "file-handler", handlerName);
+        return isMessageInLogFile(logPath, logMessage, filters);
+    }
+
+    @SafeVarargs
+    private static boolean isMessageInLogFile(Path logPath, String logMessage, Predicate<String>... filters) throws Exception{
+        boolean found = false;
         try (BufferedReader fileReader = Files.newBufferedReader(logPath)) {
             String line = "";
             while ((line = fileReader.readLine()) != null) {
                 if (line.contains(logMessage)) {
                     found = true;
-                    break;
+                    for (int i = 0; found && filters != null && i < filters.length; i++) {
+                        found = filters[i].test(line);
+                    }
+                    if (found) {
+                        break;
+                    }
                 }
             }
         }
         return found;
     }
-
 }

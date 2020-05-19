@@ -16,7 +16,7 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,9 +37,10 @@ public class RegistryTestCase extends AbstractClusteringTestCase {
     }
 
     private static Archive<?> createDeployment() {
-        return ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar")
+        return ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war")
                 .addPackage(RegistryRetriever.class.getPackage())
-                .addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml")
+                .setWebXML(RegistryTestCase.class.getPackage(), "web.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new RuntimePermission("getClassLoader")), "permissions.xml")
                 ;
     }
 

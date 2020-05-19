@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.Cache;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
@@ -34,15 +36,18 @@ public class PartitionHandlingRuntimeResourceDefinition extends CacheComponentRu
 
     static final PathElement PATH = pathElement("partition-handling");
 
-    PartitionHandlingRuntimeResourceDefinition() {
+    private final FunctionExecutorRegistry<Cache<?, ?>> executors;
+
+    PartitionHandlingRuntimeResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(PATH);
+        this.executors = executors;
     }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = super.register(parent);
-        new MetricHandler<>(new PartitionHandlingMetricExecutor(),  PartitionHandlingMetric.class).register(registration);
-        new OperationHandler<>(new PartitionHandlingOperationExecutor(),  PartitionHandlingOperation.class).register(registration);
+        new MetricHandler<>(new PartitionHandlingMetricExecutor(this.executors), PartitionHandlingMetric.class).register(registration);
+        new OperationHandler<>(new PartitionHandlingOperationExecutor(this.executors), PartitionHandlingOperation.class).register(registration);
         return registration;
     }
 }

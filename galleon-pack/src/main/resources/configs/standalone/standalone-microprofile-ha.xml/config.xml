@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+
+<config xmlns="urn:jboss:galleon:config:1.0" name="standalone-microprofile-ha.xml" model="standalone">
+    <layers>
+        <include name="cloud-server"/>
+        <include name="h2-default-datasource"/>
+        <include name="microprofile-fault-tolerance"/>
+        <include name="microprofile-jwt"/>
+        <include name="microprofile-openapi"/>
+        <include name="undertow-legacy-https"/>
+        <exclude name="management-security-realm"/>
+        <exclude name="jpa"/>
+        <include name="jpa-distributed"/>
+        <include name="web-clustering"/>
+    </layers>
+</config>

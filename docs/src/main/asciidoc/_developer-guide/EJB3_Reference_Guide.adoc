@@ -269,4 +269,8 @@ include::ejb3/Securing_EJBs.adoc[]
 
 include::ejb3/EJB_Client_Interceptors.adoc[]
 
+include::ejb3/EJB_on_Kubernetes.adoc[]
+
+include::ejb3/EJB_Deployment_Runtime_Resources.adoc[]
+
 :leveloffset: -1

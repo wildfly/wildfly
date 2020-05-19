@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -66,7 +67,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -100,7 +101,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
                 return builder.setValidator(new EnumValidator<>(TransactionMode.class));
             }
         },
-        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000L)) {
+        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(10))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
@@ -282,7 +283,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
             builder.setCustomResourceTransformer(modeTransformer);
 
             // change default value of stop-timeout attribute
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.STOP_TIMEOUT.getDefinition()), Attribute.STOP_TIMEOUT.getDefinition());
+            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.STOP_TIMEOUT.getName());
         }
 
         buildOperationTransformation(builder, ModelDescriptionConstants.ADD, addOperationTransformers);

@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.glassfish:javax.enterprise.concurrent}"/>
+        <artifact name="${org.glassfish:jakarta.enterprise.concurrent}"/>
     </resources>
 
     <dependencies>

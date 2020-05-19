@@ -22,10 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
+import org.jboss.as.clustering.controller.FunctionExecutor;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
+import org.jboss.as.clustering.controller.MetricFunction;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,19 +35,22 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * @author Paul Ferraro
  */
-public class RemoteCacheMetricExecutor  implements MetricExecutor<RemoteCacheClientStatisticsMXBean> {
+public class RemoteCacheMetricExecutor implements MetricExecutor<RemoteCacheClientStatisticsMXBean> {
+
+    private final FunctionExecutorRegistry<RemoteCacheContainer> executors;
+
+    public RemoteCacheMetricExecutor(FunctionExecutorRegistry<RemoteCacheContainer> executors) {
+        this.executors = executors;
+    }
 
     @Override
     public ModelNode execute(OperationContext context, Metric<RemoteCacheClientStatisticsMXBean> metric) throws OperationFailedException {
         ServiceName name = InfinispanClientRequirement.REMOTE_CONTAINER.getServiceName(context, UnaryCapabilityNameResolver.PARENT);
-        RemoteCacheContainer container = new PassiveServiceSupplier<RemoteCacheContainer>(context.getServiceRegistry(false), name).get();
-        String cacheName = context.getCurrentAddressValue();
-        RemoteCache<?, ?> cache = container.getCacheNames().contains(cacheName) ? container.getCache(cacheName, false) : null;
-        return (cache != null) ? metric.execute(cache.clientStatistics()) : null;
+        FunctionExecutor<RemoteCacheContainer> executor = this.executors.get(name);
+        return (executor != null) ? executor.execute(new MetricFunction<>(new RemoteCacheClientStatisticsFactory(context.getCurrentAddressValue()), metric)) : null;
     }
 }

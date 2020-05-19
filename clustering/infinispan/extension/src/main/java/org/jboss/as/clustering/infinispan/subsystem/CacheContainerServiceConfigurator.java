@@ -32,11 +32,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.factories.impl.BasicComponentRegistry;
-import org.infinispan.globalstate.GlobalConfigurationManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
@@ -46,14 +45,15 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.infinispan.LocalGlobalConfigurationManager;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -63,6 +63,7 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
@@ -73,22 +74,35 @@ import org.wildfly.clustering.service.SupplierDependency;
 @Listener
 public class CacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<EmbeddedCacheManager, CacheContainer>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
 
+    private final ServiceValueRegistry<Cache<?, ?>> registry;
     private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
+    private final PathAddress address;
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
+    private final SupplierDependency<Module> module;
 
     private volatile Registrar<String> registrar;
     private volatile ServiceName[] names;
 
-    public CacheContainerServiceConfigurator(PathAddress address) {
+    public CacheContainerServiceConfigurator(PathAddress address, ServiceValueRegistry<Cache<?, ?>> registry) {
         super(CONTAINER, address);
+        this.address = address;
         this.name = address.getLastElement().getValue();
         this.configuration = new ServiceSupplierDependency<>(CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(address));
+        this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
+        this.registry = registry;
     }
 
     @Override
     public CacheContainer apply(EmbeddedCacheManager manager) {
-        return new DefaultCacheContainer(manager);
+        PathAddress containerAddress = this.address;
+        Function<String, ServiceName> serviceNameFactory = new Function<String, ServiceName>() {
+            @Override
+            public ServiceName apply(String cacheName) {
+                return CacheResourceDefinition.Capability.CACHE.getServiceName(containerAddress.append(CacheRuntimeResourceDefinition.pathElement(cacheName)));
+            }
+        };
+        return new DefaultCacheContainer(manager, this.registry, serviceNameFactory);
     }
 
     @Override
@@ -102,11 +116,6 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         if (defaultCacheName != null) {
             manager.undefineConfiguration(defaultCacheName);
         }
-        // Override GlobalConfigurationManager with a local implementation
-        @SuppressWarnings("deprecation")
-        BasicComponentRegistry registry = manager.getGlobalComponentRegistry().getComponent(BasicComponentRegistry.class);
-        registry.replaceComponent(GlobalConfigurationManager.class.getName(), new LocalGlobalConfigurationManager(), false);
-        registry.rewire();
 
         manager.start();
         manager.addListener(this);
@@ -136,7 +145,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<CacheContainer> container = this.configuration.register(builder).provides(this.names);
+        Consumer<CacheContainer> container = new CompositeDependency(this.configuration, this.module).register(builder).provides(this.names);
         Service service = new FunctionalService<>(container, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }

@@ -120,13 +120,19 @@
             <broadcast-group name="groupB">
                 <group-address>224.0.1.105</group-address>
                 <group-port>34567</group-port>
+                <connector-ref>http</connector-ref>
             </broadcast-group>
             <broadcast-group name="groupS">
                 <socket-binding>group-s-binding</socket-binding>
+                <connector-ref>http</connector-ref>
             </broadcast-group>
             <broadcast-group name="groupT">
                 <jgroups-stack>${jgroups.stack:udp}</jgroups-stack>
                 <jgroups-channel>${jgroups.channel:hq-cluster}</jgroups-channel>
+                <connector-ref>in-vm</connector-ref>
+            </broadcast-group>
+            <broadcast-group name="groupV">
+                <socket-binding>messaging-group</socket-binding>
             </broadcast-group>
         </broadcast-groups>
         <discovery-groups>

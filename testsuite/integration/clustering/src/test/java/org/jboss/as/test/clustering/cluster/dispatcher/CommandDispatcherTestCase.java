@@ -22,7 +22,9 @@
 
 package org.jboss.as.test.clustering.cluster.dispatcher;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -34,9 +36,10 @@ import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetri
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,9 +61,11 @@ public class CommandDispatcherTestCase extends AbstractClusteringTestCase {
     }
 
     private static Archive<?> createDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejbJar.addPackage(ClusterTopologyRetriever.class.getPackage());
-        return ejbJar;
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
+        war.addPackage(ClusterTopologyRetriever.class.getPackage());
+        war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
+        war.setWebXML(CommandDispatcherTestCase.class.getPackage(), "web.xml");
+        return war;
     }
 
     @Test

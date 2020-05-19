@@ -45,8 +45,8 @@ safely run, are:
 The `test` phase is not recommended to be used for scripted jobs as we
 are planning to switch to the `failsafe` plugin bound to the
 `integration-test` and `verify` phases. See
-https://issues.jboss.org/browse/WFLY-625[WFLY-625] and
-https://issues.jboss.org/browse/WFLY-228[WFLY-228].
+https://issues.redhat.com/browse/WFLY-625[WFLY-625] and
+https://issues.redhat.com/browse/WFLY-228[WFLY-228].
 
 [[testsuite-structure]]
 === Testsuite structure
@@ -477,7 +477,7 @@ the pattern is `**/*TestCase.xml`, without need to specify `-DallTests`.
 [[creating-coverage-reports]]
 === Creating coverage reports
 
-*Jira:* https://issues.jboss.org/browse/WFLY-585
+*Jira:* https://issues.redhat.com/browse/WFLY-585
 
 Coverage reports are created by
 http://www.eclemma.org/jacoco/trunk/index.html[JaCoCo].
@@ -545,4 +545,4 @@ Or:
 mvn clean install ... -Dmaven.repo.local=localrepo
 ----
 
-See also https://issues.jboss.org/browse/WFLY-628.
+See also https://issues.redhat.com/browse/WFLY-628.

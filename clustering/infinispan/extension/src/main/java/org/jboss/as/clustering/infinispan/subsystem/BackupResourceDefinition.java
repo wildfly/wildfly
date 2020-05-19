@@ -22,15 +22,18 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
+import org.infinispan.Cache;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
@@ -70,12 +73,22 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
                 return builder.setValidator(new EnumValidator<>(BackupStrategy.class));
             }
         },
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(10000L)),
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(10))) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = this.apply(createBuilder(name, type, defaultValue)).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
         }
 
         @Override
@@ -96,7 +109,13 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         private final AttributeDefinition definition;
 
         TakeOfflineAttribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+                    .build();
         }
 
         @Override
@@ -105,25 +124,17 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         }
     }
 
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowExpression(true)
-                .setRequired(false)
-                .setDefaultValue(defaultValue)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                ;
-    }
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         // Nothing to transform
     }
 
     private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
+    private final FunctionExecutorRegistry<Cache<?, ?>> executors;
 
-    BackupResourceDefinition(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+    BackupResourceDefinition(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory, FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
         this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
+        this.executors = executors;
     }
 
     @Override
@@ -137,7 +148,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);
+            new OperationHandler<>(new BackupOperationExecutor(this.executors), BackupOperation.class).register(registration);
         }
 
         return registration;

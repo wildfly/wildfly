@@ -33,12 +33,11 @@ import javax.ejb.EJBMetaData;
 import javax.rmi.PortableRemoteObject;
 import javax.transaction.TransactionManager;
 
-import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
@@ -84,9 +83,10 @@ import org.wildfly.iiop.openjdk.csiv2.CSIv2Policy;
 import org.wildfly.iiop.openjdk.rmi.ir.InterfaceRepository;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import com.sun.corba.se.spi.extension.ZeroPortPolicy;
 import org.wildfly.transaction.client.ContextTransactionManager;
+
+import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
+import com.sun.corba.se.spi.extension.ZeroPortPolicy;
 
 /**
  * This is an IIOP "proxy factory" for <code>EJBHome</code>s and
@@ -240,6 +240,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     }
 
 
+    @Override
     public synchronized void start(final StartContext startContext) throws StartException {
 
 
@@ -272,7 +273,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 name = component.getComponentName();
             }
             name = name.replace(".", "_");
-
+            EjbLogger.DEPLOYMENT_LOGGER.iiopBindings(component.getComponentName(), component.getModuleName(),
+                    name);
 
             final ORB orb = this.orb.getValue();
             if (interfaceRepositorySupported) {

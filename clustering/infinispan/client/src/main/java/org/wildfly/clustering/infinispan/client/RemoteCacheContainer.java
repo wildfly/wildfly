@@ -63,16 +63,19 @@ public interface RemoteCacheContainer extends org.infinispan.client.hotrod.Remot
 
     @Override
     default <K, V> RemoteCache<K, V> getCache() {
+        // Defer to global configuration for forceReturnValues
         return this.getCache(this.getConfiguration().forceReturnValues());
     }
 
     @Override
     default <K, V> RemoteCache<K, V> getCache(String cacheName) {
-        return this.getCache(cacheName, null, null);
+        // Defer to global configuration for forceReturnValues and transactional behavior
+        return this.getCache(cacheName, this.getConfiguration().forceReturnValues(), null, null);
     }
 
     @Override
     default <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
+        // Defer to global configuration for forceReturnValues
         return this.getCache(cacheName, this.getConfiguration().forceReturnValues(), transactionMode, transactionManager);
     }
 

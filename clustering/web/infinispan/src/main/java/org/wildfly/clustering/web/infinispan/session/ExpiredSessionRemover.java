@@ -36,14 +36,18 @@ import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * Session remover that removes a session if and only if it is expired.
+ * @param <SC> the ServletContext specification type
+ * @param <MV> the meta-data value type
+ * @param <AV> the attributes value type
+ * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class ExpiredSessionRemover<MV, AV, L> implements Remover<String>, Registrar<SessionExpirationListener> {
+public class ExpiredSessionRemover<SC, MV, AV, LC> implements Remover<String>, Registrar<SessionExpirationListener> {
 
-    private final SessionFactory<MV, AV, L> factory;
+    private final SessionFactory<SC, MV, AV, LC> factory;
     private final Collection<SessionExpirationListener> listeners = new CopyOnWriteArraySet<>();
 
-    public ExpiredSessionRemover(SessionFactory<MV, AV, L> factory) {
+    public ExpiredSessionRemover(SessionFactory<SC, MV, AV, LC> factory) {
         this.factory = factory;
     }
 

@@ -67,7 +67,7 @@ public class ExternalPooledConnectionFactoryStatisticsTestCase {
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), true);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient, true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
             ModelNode attr = new ModelNode();
@@ -79,7 +79,7 @@ public class ExternalPooledConnectionFactoryStatisticsTestCase {
             op.get("entries").add("java:/JmsXA java:jboss/DefaultJMSConnectionFactory");
             op.get("connectors").add("http-test-connector");
             execute(managementClient, op, true);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private ModelNode execute(final org.jboss.as.arquillian.container.ManagementClient managementClient, final ModelNode op, final boolean expectSuccess) throws IOException {
@@ -163,7 +163,7 @@ public class ExternalPooledConnectionFactoryStatisticsTestCase {
     private void enableStatistics() throws IOException {
         ModelNode op = Operations.createWriteAttributeOperation(getPooledConnectionFactoryAddress(), STATISTICS_ENABLED, true);
         execute(op, true);
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private int readStatistic(String name) throws IOException {

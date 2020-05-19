@@ -61,7 +61,7 @@ public class RewriteLocationByDeplomentTestCase extends ContainerResourceMgmtTes
             op.get("handler").set("welcome-content");
             executeOperation(op);
 
-            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(getManagementClient());
             response = getResponse("/test");
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
             Assert.assertTrue("Expected to receive welcome page, but content length is 0",

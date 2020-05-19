@@ -30,8 +30,8 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.ejb.interceptor.serverside.AbstractServerInterceptorsSetupTask;
-import org.jboss.as.test.integration.ejb.interceptor.serverside.InterceptorModule;
+import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.AbstractServerInterceptorsSetupTask;
+import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.InterceptorModule;
 import org.jboss.as.test.integration.ejb.interceptor.serverside.SampleBean;
 import org.jboss.as.test.integration.ejb.interceptor.serverside.ServerInterceptor;
 import org.jboss.shrinkwrap.api.Archive;
@@ -56,6 +56,7 @@ public class MultipleInterceptorsTestCase {
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test-multiple-server-interceptor.jar");
+        jar.addClass(SampleBean.class);
         jar.addPackage(MultipleInterceptorsTestCase.class.getPackage());
         jar.addPackage(AbstractServerInterceptorsSetupTask.class.getPackage());
         return jar;

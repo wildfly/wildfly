@@ -26,7 +26,6 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -35,7 +34,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -71,14 +69,7 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        super.registerAddOperation(resourceRegistration, new AbstractAddStepHandler() {
-            @Override
-            protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-                for (AttributeDefinition attr : getAttributes()) {
-                    attr.validateAndSet(operation, model);
-                }
-            }
-        }, OperationEntry.Flag.RESTART_NONE);
+        super.registerAddOperation(resourceRegistration, new AbstractAddStepHandler(this.getAttributes()), OperationEntry.Flag.RESTART_NONE);
     }
 
     @Override

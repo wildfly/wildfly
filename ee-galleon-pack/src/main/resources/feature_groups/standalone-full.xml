@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-full" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="standalone"/>
+
+    <feature spec="interface">
+        <param name="interface" value="unsecure"/>
+        <param name="inet-address" value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+    </feature>
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <param name="port-offset" value="${jboss.socket.binding.port-offset:0}"/>
+        <param name="default-interface" value="public"/>
+        <feature-group name="iiop-sockets"/>
+    </feature>
+
+    <feature-group name="jsr77"/>
+    <feature-group name="iiop-openjdk"/>
+    <feature-group name="messaging-activemq"/>
+
+    <feature spec="subsystem.ejb3">
+        <feature spec="subsystem.ejb3.service.iiop">
+            <param name="enable-by-default" value="false"/>
+            <param name="use-qualified-name" value="false"/>
+        </feature>
+    </feature>
+
+</feature-group-spec>

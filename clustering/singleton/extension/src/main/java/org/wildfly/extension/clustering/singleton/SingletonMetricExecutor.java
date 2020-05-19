@@ -23,18 +23,18 @@
 package org.wildfly.extension.clustering.singleton;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
+import org.jboss.as.clustering.controller.FunctionExecutor;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
+import org.jboss.as.clustering.controller.MetricFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceNotFoundException;
-import org.jboss.msc.service.ServiceRegistry;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
 import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
  * Generic executor for singleton metrics.
@@ -43,26 +43,31 @@ import org.wildfly.clustering.singleton.Singleton;
 public class SingletonMetricExecutor implements MetricExecutor<Singleton> {
 
     private final Function<String, ServiceName> serviceNameFactory;
+    private final FunctionExecutorRegistry<Singleton> executors;
 
-    public SingletonMetricExecutor(Function<String, ServiceName> serviceNameFactory) {
+    public SingletonMetricExecutor(Function<String, ServiceName> serviceNameFactory, FunctionExecutorRegistry<Singleton> executors) {
         this.serviceNameFactory = serviceNameFactory;
+        this.executors = executors;
     }
 
     @Override
     public ModelNode execute(OperationContext context, Metric<Singleton> metric) throws OperationFailedException {
         ServiceName name = this.serviceNameFactory.apply(context.getCurrentAddressValue());
-        Singleton singleton = findSingleton(context.getServiceRegistry(false), name);
-        return metric.execute(singleton);
+        FunctionExecutor<Singleton> executor = this.executors.get(name.append("singleton"));
+        return ((executor != null) ? executor : new LegacySingletonFunctionExecutor(context, name)).execute(new MetricFunction<>(Function.identity(), metric));
     }
 
-    @SuppressWarnings("deprecation")
-    private static Singleton findSingleton(ServiceRegistry registry, ServiceName name) {
-        try {
-            Supplier<Singleton> singleton = new PassiveServiceSupplier<>(registry, name.append("singleton"));
-            return singleton.get();
-        } catch (ServiceNotFoundException e) {
-            // Legacy logic
-            return (Singleton) registry.getRequiredService(name).getService();
+    private static class LegacySingletonFunctionExecutor implements FunctionExecutor<Singleton> {
+        private final Singleton singleton;
+
+        @SuppressWarnings("deprecation")
+        LegacySingletonFunctionExecutor(OperationContext context, ServiceName name) {
+            this.singleton = (Singleton) context.getServiceRegistry(false).getRequiredService(name).getService();
+        }
+
+        @Override
+        public <R, E extends Exception> R execute(ExceptionFunction<Singleton, R, E> function) throws E {
+            return function.apply(this.singleton);
         }
     }
 }

@@ -21,12 +21,9 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -35,21 +32,19 @@ import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceConfiguratorAdapter;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
+import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.service.ServiceDependency;
-import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceConfigurator;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.
@@ -60,17 +55,6 @@ import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutor
  * @param <I> the bean identifier type
  */
 public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implements BeanManagerFactoryServiceConfiguratorFactory {
-
-    private static final ThreadFactory EXPIRATION_THREAD_FACTORY = createThreadFactory();
-
-    private static ThreadFactory createThreadFactory() {
-        return AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
-            @Override
-            public ThreadFactory run() {
-                return new JBossThreadFactory(new ThreadGroup(InfinispanBeanManager.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-            }
-        });
-    }
 
     static String getCacheName(ServiceName deploymentUnitServiceName, String beanManagerFactoryName) {
         List<String> parts = new ArrayList<>(3);
@@ -97,7 +81,6 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
         String templateCacheName = this.config.getCacheName();
 
         // Ensure eviction and expiration are disabled
-        @SuppressWarnings("deprecation")
         Consumer<ConfigurationBuilder> configurator = builder -> {
             // Ensure expiration is not enabled on cache
             ExpirationConfiguration expiration = builder.expiration().create();
@@ -112,14 +95,13 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
             if (strategy.isEnabled()) {
                 // Only evict bean group entries
                 // We will cascade eviction to the associated beans
-                builder.dataContainer().dataContainer(EvictableDataContainer.createDataContainer(builder, size, BeanGroupKey.class::isInstance));
+                builder.addModule(DataContainerConfigurationBuilder.class).evictable(BeanGroupKey.class::isInstance);
             }
         };
 
         List<CapabilityServiceConfigurator> builders = new ArrayList<>(3);
-        builders.add(new TemplateConfigurationServiceConfigurator(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName, configurator));
-        builders.add(new CacheServiceConfigurator<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName).require(new ServiceDependency(name.append("marshalling"))));
-        builders.add(new ServiceConfiguratorAdapter(new RemoveOnCancelScheduledExecutorServiceConfigurator(name.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY)));
+        builders.add(new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, templateCacheName, configurator));
+        builders.add(new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName).require(new ServiceDependency(name.append("marshalling"))));
         return builders;
     }
 

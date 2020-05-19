@@ -21,6 +21,8 @@
  */
 package org.wildfly.microprofile.opentracing.smallrye;
 
+import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER;
+
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jaxrs2.server.OperationNameProvider;
 import io.opentracing.contrib.jaxrs2.server.OperationNameProvider.ClassNameOperationName;
@@ -49,7 +51,7 @@ public class TracerDynamicFeature implements DynamicFeature {
         Optional<String> operationNameProvider = config.getOptionalValue("mp.opentracing.server.operation-name-provider", String.class);
         Tracer tracer;
 
-        Object tracerObject = servletContext.getAttribute(TracerInitializer.SMALLRYE_OPENTRACING_TRACER);
+        Object tracerObject = servletContext.getAttribute(SMALLRYE_OPENTRACING_TRACER);
         if (tracerObject instanceof Tracer) {
             tracer = (Tracer) tracerObject;
         } else {

@@ -101,7 +101,7 @@ public class ReloadWSDLPublisherTestCase {
         Service service = Service.create(wsdlURL, serviceName);
         EndpointIface proxy = service.getPort(EndpointIface.class);
         Assert.assertEquals("Hello World!", proxy.helloString("World"));
-        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 100000);
+        executeReloadAndWaitForCompletion(managementClient, 100000);
         checkWsdl(wsdlURL);
         serviceName = new QName("http://jbossws.org/basic", "POJOService");
         service = Service.create(wsdlURL, serviceName);

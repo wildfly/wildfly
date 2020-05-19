@@ -24,58 +24,52 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.List;
 
+import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 
 /**
  * Scheduler that delegates to a list of schedulers.
  * @author Paul Ferraro
  */
-public class CompositeScheduler<I> implements Scheduler<I> {
+public class CompositeScheduler<I> implements Scheduler<I, ImmutableBeanEntry<I>> {
 
-    private final List<Scheduler<I>> schedulers;
+    private final List<Scheduler<I, ImmutableBeanEntry<I>>> schedulers;
 
-    public CompositeScheduler(List<Scheduler<I>> schedulers) {
+    public CompositeScheduler(List<Scheduler<I, ImmutableBeanEntry<I>>> schedulers) {
         this.schedulers = schedulers;
     }
 
     @Override
     public void schedule(I id) {
-        for (Scheduler<I> scheduler : this.schedulers) {
+        for (Scheduler<I, ImmutableBeanEntry<I>> scheduler : this.schedulers) {
             scheduler.schedule(id);
         }
     }
 
     @Override
     public void schedule(I id, ImmutableBeanEntry<I> entry) {
-        for (Scheduler<I> scheduler : this.schedulers) {
+        for (Scheduler<I, ImmutableBeanEntry<I>> scheduler : this.schedulers) {
             scheduler.schedule(id, entry);
         }
     }
 
     @Override
-    public void prepareRescheduling(I id) {
-        for (Scheduler<I> scheduler : this.schedulers) {
-            scheduler.prepareRescheduling(id);
-        }
-    }
-
-    @Override
     public void cancel(I id) {
-        for (Scheduler<I> scheduler : this.schedulers) {
+        for (Scheduler<I, ImmutableBeanEntry<I>> scheduler : this.schedulers) {
             scheduler.cancel(id);
         }
     }
 
     @Override
     public void cancel(Locality locality) {
-        for (Scheduler<I> scheduler : this.schedulers) {
+        for (Scheduler<I, ImmutableBeanEntry<I>> scheduler : this.schedulers) {
             scheduler.cancel(locality);
         }
     }
 
     @Override
     public void close() {
-        for (Scheduler<I> scheduler : this.schedulers) {
+        for (Scheduler<I, ImmutableBeanEntry<I>> scheduler : this.schedulers) {
             scheduler.close();
         }
     }

@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.modules.ModuleLoadException;
@@ -45,36 +47,44 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class ModuleClassLoaderLocator implements ClassLoaderLocator {
     private final ModuleLoader moduleLoader;
 
+    private final Map<ClassLoader, Map<List<String>, ClassLoader>> combinedClassLoaders;
     public ModuleClassLoaderLocator(ModuleLoader loader) {
         this.moduleLoader = loader;
+        this.combinedClassLoaders = new ConcurrentHashMap<>();
     }
 
     @Override
     public ClassLoader get(String key) {
-        List<String> modules = new ArrayList<>();
-        modules.add(key);
-        return this.get(modules);
+        return this.get(Collections.singletonList(key));
     }
 
     @Override
     public ClassLoader get(List<String> modules) {
-        try {
+        // TCCL is usually a deployment ModuleClassLoader
+        final ClassLoader TCCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        return combinedClassLoaders.computeIfAbsent(TCCL, cl -> new ConcurrentHashMap<>()).computeIfAbsent(modules, ms -> {
             List<ClassLoader> classLoaders = new ArrayList<>();
-            for (String module : modules) {
-                if (module != null && !module.isEmpty()) {
-                    classLoaders.add(SecurityActions.getModuleClassLoader(moduleLoader, module));
+            try {
+                for (String module : modules) {
+                    if (module != null && !module.isEmpty()) {
+                        classLoaders.add(SecurityActions.getModuleClassLoader(moduleLoader, module));
+                    }
                 }
+                classLoaders.add(TCCL);
+                /**
+                 * A Login Module can be in a custom user module.
+                 * The local resources (such as users.properties) can be present in a web deployment,
+                 * whose CL is available on the TCCL.
+                 */
+            } catch (ModuleLoadException e) {
+                throw SecurityLogger.ROOT_LOGGER.runtimeException(e);
             }
-            classLoaders.add(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
-            /**
-             * A Login Module can be in a custom user module.
-             * The local resources (such as users.properties) can be present in a web deployment,
-             * whose CL is available on the TCCL.
-             */
             return SecurityActions.createCombinedClassLoader(classLoaders);
-        } catch (ModuleLoadException e) {
-            throw SecurityLogger.ROOT_LOGGER.runtimeException(e);
-        }
+        });
+    }
+
+    public void clearCache() {
+        combinedClassLoaders.clear();
     }
 
     /** A Classloader that takes a list of Classloaders to delegate to */

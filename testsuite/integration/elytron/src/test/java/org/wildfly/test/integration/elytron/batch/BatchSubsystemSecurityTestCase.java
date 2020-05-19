@@ -373,7 +373,7 @@ public class BatchSubsystemSecurityTestCase {
             final ModelNode result = managementClient.getControllerClient().execute(setOp);
             Assert.assertTrue(result.get("outcome").asString().equals("success"));
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
     }

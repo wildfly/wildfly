@@ -22,6 +22,7 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.wildfly.clustering.dispatcher.Command;
 
@@ -38,5 +39,5 @@ public interface CommandMarshaller<C> {
      * @return a serialized command.
      * @throws IOException if marshalling fails.
      */
-    <R> byte[] marshal(Command<R, ? super C> command) throws IOException;
+    <R> ByteBuffer marshal(Command<R, ? super C> command) throws IOException;
 }

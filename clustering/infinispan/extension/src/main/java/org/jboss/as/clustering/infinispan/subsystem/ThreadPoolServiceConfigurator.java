@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -30,19 +29,20 @@ import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
+import org.jboss.as.clustering.infinispan.DefaultNonBlockingThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
+ * Configures a service providing a {@link ThreadPoolConfiguration}.
  * @author Radoslav Husar
+ * @author Paul Ferraro
  */
 public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigurator<ThreadPoolConfiguration> {
-    static final PrivilegedAction<ClassLoader> GET_CLASS_LOADER_ACTION = () -> ThreadPoolExecutorFactory.class.getClassLoader();
 
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ThreadPoolDefinition definition;
@@ -58,11 +58,12 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
                 this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt(),
                 this.definition.getMinThreads().resolveModelAttribute(context, model).asInt(),
                 this.definition.getQueueLength().resolveModelAttribute(context, model).asInt(),
-                this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong()
+                this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong(),
+                this.definition.isNonBlocking()
         ) {
             @Override
             public ExecutorService createExecutor(ThreadFactory factory) {
-                return super.createExecutor(new ClassLoaderThreadFactory(factory, WildFlySecurityManager.doUnchecked(GET_CLASS_LOADER_ACTION)));
+                return super.createExecutor(this.createsNonBlockingThreads() ? new DefaultNonBlockingThreadFactory(factory) : new DefaultThreadFactory(factory));
             }
         };
         this.builder.threadPoolFactory(factory);

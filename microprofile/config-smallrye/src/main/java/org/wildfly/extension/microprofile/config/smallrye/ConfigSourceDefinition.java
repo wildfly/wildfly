@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-import io.smallrye.config.PropertiesConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -52,6 +51,8 @@ import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger;
+
+import io.smallrye.config.PropertiesConfigSource;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -104,7 +105,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { ORDINAL, PROPERTIES, CLASS, DIR };
 
-    protected ConfigSourceDefinition() {
+    protected ConfigSourceDefinition(Registry<ConfigSource> sources) {
         super(MicroProfileConfigExtension.CONFIG_SOURCE_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PATH.getKey()),
                 new AbstractAddStepHandler(ATTRIBUTES) {
@@ -121,31 +122,33 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                         ModelNode props = PROPERTIES.resolveModelAttribute(context, model);
                         ModelNode classModel = CLASS.resolveModelAttribute(context, model);
                         ModelNode dirModel = DIR.resolveModelAttribute(context, model);
-                        final ConfigSource configSource;
                         if (classModel.isDefined()) {
                             Class configSourceClass = unwrapClass(classModel);
                             try {
-                                configSource = ConfigSource.class.cast(configSourceClass.newInstance());
+                                sources.register(name, ConfigSource.class.cast(configSourceClass.newInstance()));
                                 MicroProfileConfigLogger.ROOT_LOGGER.loadConfigSourceFromClass(configSourceClass);
-                                ConfigSourceService.install(context, name, configSource);
                             } catch (Exception e) {
                                 throw new OperationFailedException(e);
                             }
                         } else if (dirModel.isDefined()) {
                             String path = PATH.resolveModelAttribute(context, dirModel).asString();
                             String relativeTo = RELATIVE_TO.resolveModelAttribute(context, dirModel).asStringOrNull();
-                            DirConfigSourceService.install(context, name, path, relativeTo, ordinal);
+                            DirConfigSourceRegistrationService.install(context, name, path, relativeTo, ordinal, sources);
                         } else {
                             Map<String, String> properties = PropertiesAttributeDefinition.unwrapModel(context, props);
-                            configSource = new PropertiesConfigSource(properties, name, ordinal);
-                            ConfigSourceService.install(context, name, configSource);
+                            sources.register(name, new PropertiesConfigSource(properties, name, ordinal));
                         }
                     }
                 }, new AbstractRemoveStepHandler() {
                     @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
                         String name = context.getCurrentAddressValue();
-                        context.removeService(ServiceNames.CONFIG_SOURCE.append(name));
+                        ModelNode dirModel = DIR.resolveModelAttribute(context, model);
+                        if (dirModel.isDefined()) {
+                            context.removeService(ServiceNames.CONFIG_SOURCE.append(name));
+                        } else {
+                            sources.unregister(name);
+                        }
                     }
                 });
     }

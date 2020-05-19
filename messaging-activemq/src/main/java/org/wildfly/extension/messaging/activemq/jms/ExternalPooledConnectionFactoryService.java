@@ -105,16 +105,17 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ActiveMQResourceAdapter;
-import org.wildfly.extension.messaging.activemq.DiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.ExternalBrokerConfigurationService;
 import org.wildfly.extension.messaging.activemq.GroupBindingService;
+import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.SocketDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -315,6 +316,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
         serviceBuilder.install();
     }
 
+    @SuppressWarnings("unchecked")
     private static void installService0(ServiceBuilder serviceBuilder,
             ExternalBrokerConfigurationService configuration,
             ExternalPooledConnectionFactoryService service,
@@ -410,13 +412,13 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                 if (commandDispatcherFactories.containsKey(key)) {
                     CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                     String clusterName = clusterNames.get(key);
-                    config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, discoveryGroupConfiguration, commandDispatcherFactory, clusterName);
+                    config = JGroupsDiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, discoveryGroupConfiguration, commandDispatcherFactory, clusterName);
                 } else {
                     final SocketBinding binding = groupBindings.get(key).get();
                     if (binding == null) {
                         throw MessagingLogger.ROOT_LOGGER.failedToFindDiscoverySocketBinding(dgName);
                     }
-                    config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, discoveryGroupConfiguration, binding);
+                    config = SocketDiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, discoveryGroupConfiguration, binding);
                     binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
                 }
                 BroadcastEndpointFactory bgCfg = config.getBroadcastEndpointFactory();

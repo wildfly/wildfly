@@ -42,17 +42,19 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
 
     static final PathElement PATH = pathElement("off-heap");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CAPACITY("capacity", ModelType.INT, new ModelNode(1048576)),
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        CAPACITY("capacity", ModelType.INT, new ModelNode(1048576), InfinispanModel.VERSION_12_0_0),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
         }
 
@@ -71,8 +73,8 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return descriptor.addAttributes(Attribute.class)
-                    .addAttributes(BinaryMemoryResourceDefinition.Attribute.class)
+            return descriptor.addAttributes(BinaryMemoryResourceDefinition.Attribute.class)
+                    .addIgnoredAttributes(DeprecatedAttribute.class)
                     ;
         }
     }

@@ -52,7 +52,7 @@ public class JcaMgmtBase extends ContainerResourceMgmtTestBase {
      * @throws Exception
      */
     public void reload() throws Exception {
-        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient(), 50000);
+        ServerReload.executeReloadAndWaitForCompletion(getManagementClient(), 50000);
     }
 
     /**

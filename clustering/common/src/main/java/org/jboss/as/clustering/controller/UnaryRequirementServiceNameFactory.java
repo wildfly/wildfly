@@ -41,11 +41,11 @@ public class UnaryRequirementServiceNameFactory implements UnaryServiceNameFacto
 
     @Override
     public ServiceName getServiceName(OperationContext context, String name) {
-        return context.getCapabilityServiceName(this.requirement.resolve(name), this.requirement.getType());
+        return context.getCapabilityServiceName(this.requirement.getName(), this.requirement.getType(), name);
     }
 
     @Override
     public ServiceName getServiceName(CapabilityServiceSupport support, String name) {
-        return support.getCapabilityServiceName(this.requirement.resolve(name));
+        return support.getCapabilityServiceName(this.requirement.getName(), name);
     }
 }

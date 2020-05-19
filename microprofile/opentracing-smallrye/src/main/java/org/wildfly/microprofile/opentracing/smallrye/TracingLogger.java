@@ -43,7 +43,7 @@ public interface TracingLogger extends BasicLogger {
     @Message(id = 2, value = "A Tracer is already registered at the GlobalTracer. Skipping resolution.")
     void alreadyRegistered();
 
-    @LogMessage(level = WARN)
+    @LogMessage(level = DEBUG)
     @Message(id = 3, value = "Could not determine the service name and can't therefore use Jaeger Tracer. Using NoopTracer.")
     void noServiceName();
 

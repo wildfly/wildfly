@@ -22,14 +22,13 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
+import static org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescriptionDeploymentUnitProcessor.getEjbJarDescription;
 import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.ejb.MessageDriven;
 import javax.jms.MessageListener;
 
@@ -41,6 +40,7 @@ import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescripti
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.util.EjbValidationsUtil;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
@@ -147,11 +147,11 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
                 } else {
                     messagingType = null;
                 }
-                messageListenerInterfaceName = messagingType != null ? messagingType : getMessageListenerInterface(compositeIndex, messageBeanAnnotation);
+                messageListenerInterfaceName = messagingType != null ? messagingType : getMessageListenerInterface(compositeIndex, messageBeanAnnotation, deploymentUnit);
 
             } else {
                 beanClassName = beanClassInfo.name().toString();
-                messageListenerInterfaceName = getMessageListenerInterface(compositeIndex, messageBeanAnnotation);
+                messageListenerInterfaceName = getMessageListenerInterface(compositeIndex, messageBeanAnnotation, deploymentUnit);
             }
             final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
             final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName, activationConfigProperties, defaultResourceAdapterName, beanMetaData, defaultMdbPoolAvailable);
@@ -163,7 +163,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         EjbDeploymentMarker.mark(deploymentUnit);
     }
 
-    private String getMessageListenerInterface(final CompositeIndex compositeIndex, final AnnotationInstance messageBeanAnnotation) throws DeploymentUnitProcessingException {
+    private String getMessageListenerInterface(final CompositeIndex compositeIndex, final AnnotationInstance messageBeanAnnotation, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final AnnotationValue value = messageBeanAnnotation.value("messageListenerInterface");
         if (value != null)
             return value.asClass().name().toString();
@@ -172,7 +172,16 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         // check super class(es) of the bean
         DotName superClassDotName = beanClass.superName();
         while (interfaces.isEmpty() && superClassDotName != null && !superClassDotName.toString().equals(Object.class.getName())) {
-            final ClassInfo superClass = compositeIndex.getClassByName(superClassDotName);
+            ClassInfo superClass = compositeIndex.getClassByName(superClassDotName);
+            if (superClass == null) {
+                final DeploymentUnit parent = deploymentUnit.getParent();
+                if (parent != null) {
+                    final CompositeIndex parentIndex = parent.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+                    if (parentIndex != null) {
+                        superClass = parentIndex.getClassByName(superClassDotName);
+                    }
+                }
+            }
             if (superClass == null) {
                 break;
             }

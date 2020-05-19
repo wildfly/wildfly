@@ -110,14 +110,16 @@ public class DynamicJaspiTestCase extends JaspiTestBase {
                 assertEquals("Unexpected content of HTTP response.", "user1", EntityUtils.toString(response.getEntity()));
             }
 
-            // Now try and EJB call
-            request = new HttpGet(new URI(url.toExternalForm()) + "?action=ejb");
-            request.addHeader("X-USERNAME", "user1");
-            request.addHeader("X-PASSWORD", "password1");
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
-                int statusCode = response.getStatusLine().getStatusCode();
-                assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
-                assertEquals("Unexpected content of HTTP response.", "user1", EntityUtils.toString(response.getEntity()));
+            if (ejbSupported) {
+                // Now try and EJB call
+                request = new HttpGet(new URI(url.toExternalForm()) + "?action=ejb");
+                request.addHeader("X-USERNAME", "user1");
+                request.addHeader("X-PASSWORD", "password1");
+                try (CloseableHttpResponse response = httpClient.execute(request)) {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
+                    assertEquals("Unexpected content of HTTP response.", "user1", EntityUtils.toString(response.getEntity()));
+                }
             }
 
             // Remove the registration

@@ -59,7 +59,7 @@ import org.wildfly.test.security.common.elytron.MechanismConfiguration;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ SilentBasicMechTestCase.ServerSetup.class})
-public class SilentBasicMechTestCase extends FormMechTestCase {
+public class SilentBasicMechTestCase extends FormMechTestBase {
 
     private static final String FORBIDDEN_CONTENT = "Forbidden";
     private static final String NAME = SilentBasicMechTestCase.class.getSimpleName();
