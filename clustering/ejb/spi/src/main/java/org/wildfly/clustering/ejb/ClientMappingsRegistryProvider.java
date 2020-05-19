@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import java.util.List;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.network.ClientMapping;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices({ DistributedCacheServiceConfiguratorProvider.class, IdentityCacheServiceConfiguratorProvider.class })
-public class DistributedClientMappingsCacheServiceConfiguratorProvider extends ClientMappingsCacheServiceConfiguratorProvider implements DistributedCacheServiceConfiguratorProvider {
+public interface ClientMappingsRegistryProvider {
 
-    public DistributedClientMappingsCacheServiceConfiguratorProvider() {
-        super(DistributedCacheServiceConfiguratorProvider.class);
-    }
+    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String containerName, String connectorName, SupplierDependency<List<ClientMapping>> clientMappings);
 }
