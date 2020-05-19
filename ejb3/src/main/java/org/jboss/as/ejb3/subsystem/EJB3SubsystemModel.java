@@ -43,6 +43,7 @@ public interface EJB3SubsystemModel {
     String IIOP = "iiop";
 
     String CONNECTOR_REF = "connector-ref";
+    String CONNECTORS = "connectors";
     String IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE = "in-vm-remote-interface-invocation-pass-by-value";
 
     String DATASOURCE_JNDI_NAME = "datasource-jndi-name";
