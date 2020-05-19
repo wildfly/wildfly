@@ -172,6 +172,10 @@ Includes Health support (optional), _microprofile-config_ (optional), _microprof
 
 * _ejb-dist-cache_: Infinispan-based distributed cache for stateful session bean.
 
+Tools layers:
+
+* _web-console_: Support for HAL web console.
+
 ==== WildFly servlet layers
 
 Basic layers:
