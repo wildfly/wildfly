@@ -2115,6 +2115,42 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>web-console-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/web-console</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>web-console</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>all-layers-provisioning-full</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2196,6 +2232,7 @@
                                                 <layer>undertow-load-balancer</layer>
                                                 <layer>vault</layer>
                                                 <layer>web-clustering</layer>
+                                                <layer>web-console</layer>
                                                 <layer>web-server</layer>
                                             </layers>
                                         </config>
@@ -2203,7 +2240,7 @@
                                 </configuration>
                             </execution>
 
-                            <!-- This is an all layers variant excluding jpa and adding jpa-distributed -->
+                           <!-- This is an all layers variant excluding jpa and adding jpa-distributed -->
                             <execution>
                                 <id>all-layers-jpa-distributed-provisioning-full</id>
                                 <goals>
@@ -2286,6 +2323,7 @@
                                                 <layer>undertow-load-balancer</layer>
                                                 <layer>vault</layer>
                                                 <layer>web-clustering</layer>
+                                                <layer>web-console</layer>
                                                 <layer>web-server</layer>
                                             </layers>
                                             <excluded-layers>

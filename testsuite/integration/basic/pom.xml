@@ -1201,6 +1201,84 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Provision a server with Web Console -->
+                            <execution>
+                                <id>web-console-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-web-console</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>web-console</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with Web Console combined with cloud-server to configure metrics -->
+                            <execution>
+                                <id>web-console-cloud-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-web-console-cloud</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>web-console</layer>
+                                                <layer>cloud-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
                     <plugin>
@@ -1363,6 +1441,61 @@
                                         <include>org/jboss/as/test/integration/jpa/**/NonTransactionalEmTestCase.java</include>
                                         <!-- WebJPATestCase is currently the only test that does not need EJB -->
                                         <include>org/jboss/as/test/integration/jpa/**/WebJPATestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with the Web Console -->
+                            <execution>
+                                <id>web-console-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-web-console</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-web-console</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-web-console</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-web-console</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-web-console</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-web-console/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-web-console</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <!-- notice HttpManagementConstantHeadersTestCase#testHeadersOverrideNonManagementEndpoint will be ignored because the provisioning don't configure metrics -->
+                                        <include>org/jboss/as/test/integration/management/console/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with the Web Console -->
+                            <execution>
+                                <id>web-console-cloud-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-web-console-cloud</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-web-console-cloud</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-web-console-cloud</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-web-console-cloud</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-web-console-cloud</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-web-console-cloud/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-web-console-cloud</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/management/console/*TestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>

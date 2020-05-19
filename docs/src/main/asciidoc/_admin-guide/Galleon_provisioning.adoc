@@ -165,6 +165,10 @@ Layers that you combine with "use-case tailored" layers to extend the capabiliti
 * _observability_: Support for MicroProfile monitoring and configuration features. 
 Includes Health support (optional), _microprofile-config_ (optional), _microprofile-metrics_ (optional) and _open-tracing_ (optional).
 
+Tools layers:
+
+* _web-console_: Support for HAL web console.
+
 ==== WildFly servlet layers
 
 Basic layers:
