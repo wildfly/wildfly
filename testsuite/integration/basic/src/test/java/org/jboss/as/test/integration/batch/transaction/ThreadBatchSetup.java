@@ -38,11 +38,11 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 
-class SingleThreadedBatchSetup extends SnapshotRestoreSetupTask {
+class ThreadBatchSetup extends SnapshotRestoreSetupTask {
 
     @Override
     public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
-        setThreadSize(managementClient, 1);
+        setThreadSize(managementClient, 3);
     }
 
     private void setThreadSize(ManagementClient managementClient, int threadCount) throws IOException, MgmtOperationException {
