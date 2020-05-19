@@ -165,6 +165,11 @@ public class Configuration {
     private static final String JPA_DEFER_DETACH = "jboss.as.jpa.deferdetach";
 
     /**
+     * set to true to defer detaching query results until persistence context is closed (WFLY-12674)
+     */
+    private static final String JPA_SKIP_QUERY_DETACH = "wildfly.jpa.skipquerydetach";
+
+    /**
      * unique name for the persistence unit that is unique across all deployments (
      * defaults to include the application name prepended to the persistence unit name)
      */
@@ -332,6 +337,20 @@ public class Configuration {
         boolean result = false;
         if ( properties.containsKey(JPA_DEFER_DETACH))
             result = Boolean.parseBoolean((String)properties.get(JPA_DEFER_DETACH));
+        return result;
+    }
+
+    /**
+     * Return true if detaching of query results (entities) should be deferred until the entity manager is closed.
+     * Note:  only applies to transaction scoped entity managers used without an active JTA transaction.
+     *
+     * @param properties
+     * @return
+     */
+    public static boolean skipQueryDetach(final Map<String, Object> properties) {
+        boolean result = false;
+        if ( properties.containsKey(JPA_SKIP_QUERY_DETACH))
+            result = Boolean.parseBoolean((String)properties.get(JPA_SKIP_QUERY_DETACH));
         return result;
     }
 
