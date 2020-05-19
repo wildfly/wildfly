@@ -230,11 +230,15 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (resource.hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
             ModelNode remoteModel = resource.getChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH).getModel();
             String clusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, remoteModel).asString();
-            String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, remoteModel).asString();
+
             // For each connector
-            Map.Entry<Injector<RemotingConnectorInfo>, Injector<Registry>> entry = associationService.addConnectorInjectors(connectorName);
-            associationServiceBuilder.addDependency(RemotingConnectorBindingInfoService.serviceName(connectorName), RemotingConnectorInfo.class, entry.getKey());
-            associationServiceBuilder.addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(context, clusterName, connectorName), Registry.class, entry.getValue());
+            for (ModelNode connector : EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, remoteModel).asList()) {
+                String connectorName = connector.asString();
+
+                Map.Entry<Injector<RemotingConnectorInfo>, Injector<Registry>> entry = associationService.addConnectorInjectors(connectorName);
+                associationServiceBuilder.addDependency(RemotingConnectorBindingInfoService.serviceName(connectorName), RemotingConnectorInfo.class, entry.getKey());
+                associationServiceBuilder.addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(context, clusterName, connectorName), Registry.class, entry.getValue());
+            }
         }
         associationServiceBuilder.install();
 

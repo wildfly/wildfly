@@ -39,7 +39,7 @@
             <param name="thread-pool-name" value="default"/>
         </feature>
         <feature spec="subsystem.ejb3.service.remote">
-            <param name="connector-ref" value="http-remoting-connector"/>
+            <param name="connectors" value="[http-remoting-connector]"/>
             <param name="thread-pool-name" value="default"/>
             <feature spec="subsystem.ejb3.service.remote.channel-creation-options">
                 <param name="channel-creation-options" value="MAX_OUTBOUND_MESSAGES"/>

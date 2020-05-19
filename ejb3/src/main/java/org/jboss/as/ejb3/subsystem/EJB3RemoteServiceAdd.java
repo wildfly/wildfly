@@ -83,6 +83,21 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         this.provider = providers.hasNext() ? providers.next() : null;
     }
 
+    /**
+     * Override populateModel() to handle case of deprecated attribute connector-ref
+     * - if connector-ref is present, use it to initialise connectors
+     * - if connector-ref is not present and connectors is not present, throw an exception
+     */
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        if (operation.hasDefined(EJB3RemoteResourceDefinition.CONNECTOR_REF.getName())) {
+            ModelNode connectorRef = operation.remove(EJB3RemoteResourceDefinition.CONNECTOR_REF.getName());
+            operation.get(EJB3RemoteResourceDefinition.CONNECTORS.getName()).set(new ModelNode().add(connectorRef));
+        }
+        super.populateModel(operation, model);
+    }
+
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         installRuntimeServices(context, model);
@@ -90,21 +105,26 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
     void installRuntimeServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final String clientMappingsClusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model).asString();
-        final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
+        final List<ModelNode> connectorNameNodes = EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, model).asList();
         final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final boolean executeInWorker = EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget target = context.getServiceTarget();
 
-        // Install the client-mapping service for the remoting connector
-        ServiceConfigurator clientMappingsEntryProviderConfigurator = new EJBRemotingConnectorClientMappingsEntryProviderService(clientMappingsClusterName, connectorName).configure(context);
-        clientMappingsEntryProviderConfigurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        // for each connector specified, we need to set up a client-mappings cache
+        for (ModelNode connectorNameNode : connectorNameNodes) {
+            String connectorName = connectorNameNode.asString();
 
-        if (this.provider != null) {
-            // Install the registry for the remoting connector's client mappings
-            SupplierDependency<Map.Entry<String, List<ClientMapping>>> registryEntryDependency = new ServiceSupplierDependency<>(clientMappingsEntryProviderConfigurator.getServiceName());
-            for (CapabilityServiceConfigurator configurator : this.provider.getServiceConfigurators(clientMappingsClusterName, connectorName, new FunctionSupplierDependency<>(registryEntryDependency, Map.Entry::getValue))) {
-                configurator.configure(context).build(target).install();
+            // Install the client-mapping service for the remoting connector
+            ServiceConfigurator clientMappingsEntryProviderConfigurator = new EJBRemotingConnectorClientMappingsEntryProviderService(clientMappingsClusterName, connectorName).configure(context);
+            clientMappingsEntryProviderConfigurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+
+            if (this.provider != null) {
+                // Install the registry for the remoting connector's client mappings
+                SupplierDependency<Map.Entry<String, List<ClientMapping>>> registryEntryDependency = new ServiceSupplierDependency<>(clientMappingsEntryProviderConfigurator.getServiceName());
+                for (CapabilityServiceConfigurator configurator : this.provider.getServiceConfigurators(clientMappingsClusterName, connectorName, new FunctionSupplierDependency<>(registryEntryDependency, Map.Entry::getValue))) {
+                    configurator.configure(context).build(target).install();
+                }
             }
         }
 

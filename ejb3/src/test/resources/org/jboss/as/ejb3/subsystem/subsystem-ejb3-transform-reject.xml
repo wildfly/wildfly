@@ -46,7 +46,8 @@
         </data-stores>
     </timer-service>
     <!-- the 'cluster' attribute with value other than 'ejb' should be rejected -->
-    <remote connector-ref="remoting-connector" thread-pool-name="default" cluster="not-ejb">
+    <!-- the 'connectors' attribute with list size > 1 should be rejected -->
+    <remote connectors="remoting-connector http-remoting-connector" thread-pool-name="default" cluster="not-ejb">
         <channel-creation-options>
             <option name="READ_TIMEOUT" value="${prop.remoting-connector.read.timeout:20}" type="xnio"/>
             <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>

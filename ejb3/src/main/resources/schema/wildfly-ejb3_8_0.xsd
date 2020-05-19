@@ -95,11 +95,15 @@
                         maxOccurs="1"/>
             <xs:element name="profiles" type="profilesType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
-        <xs:attribute name="connector-ref" type="xs:string" use="required"/>
+        <xs:attribute name="connectors" type="connectorsType" use="required"/>
         <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
         <xs:attribute name="cluster" type="xs:string" use="optional"/>
         <xs:attribute name="execute-in-worker" type="xs:boolean" use="optional" default="true"/>
     </xs:complexType>
+
+    <xs:simpleType name="connectorsType">
+        <xs:list itemType="xs:string"/>
+    </xs:simpleType>
 
     <xs:complexType name="profilesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">

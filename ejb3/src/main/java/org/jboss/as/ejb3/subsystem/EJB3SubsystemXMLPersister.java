@@ -348,7 +348,8 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (model.hasDefined(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME)) {
             writer.writeAttribute(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CLUSTER_NAME.getLocalName(), model.require(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME).asString());
         }
-        writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
+        // the default marshalling will marshal as an element, and we want to marshal as an attribute, so a change of coding here
+        EJB3RemoteResourceDefinition.CONNECTORS.getMarshaller().marshallAsAttribute(EJB3RemoteResourceDefinition.CONNECTORS, model, true, writer);
         writer.writeAttribute(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME.getLocalName(), model.require(EJB3SubsystemModel.THREAD_POOL_NAME).asString());
 
         EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.marshallAsAttribute(model, writer);
