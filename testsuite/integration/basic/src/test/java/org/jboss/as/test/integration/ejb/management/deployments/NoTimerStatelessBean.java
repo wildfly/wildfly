@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.management.deployments;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.Pool;
@@ -39,6 +40,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
 @Pool("slsb-strict-max-pool")
+@LocalBean
 public class NoTimerStatelessBean implements BusinessInterface {
 
     @Override

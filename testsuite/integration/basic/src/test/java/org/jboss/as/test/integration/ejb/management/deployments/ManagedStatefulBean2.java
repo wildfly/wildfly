@@ -22,32 +22,48 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
+import java.util.concurrent.TimeUnit;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
+import javax.ejb.AfterBegin;
+import javax.ejb.AfterCompletion;
+import javax.ejb.BeforeCompletion;
 import javax.ejb.LocalBean;
-import javax.ejb.Schedule;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
+import javax.ejb.Remove;
+import javax.ejb.Stateful;
+import javax.ejb.StatefulTimeout;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 
-import org.jboss.ejb3.annotation.Pool;
+import org.jboss.ejb3.annotation.Cache;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
-/**
- * Bean to use in tests of management resources for SLSBs.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
- */
-@Stateless
+@Stateful(passivationCapable = false)
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
-@Pool("slsb-strict-max-pool")
+@Cache("passivating")
+@StatefulTimeout(value = 2, unit = TimeUnit.HOURS)
+@TransactionManagement(TransactionManagementType.BEAN)
 @LocalBean
-public class ManagedStatelessBean extends AbstractManagedBean implements BusinessInterface {
-    @Timeout
-    @Schedule(second="15", persistent = false, info = "timer1")
-    public void timeout(final Timer timer) {
-        // no-op
+public class ManagedStatefulBean2 extends AbstractManagedBean implements BusinessInterface {
+    @AfterBegin
+    private void afterBegin() {
+    }
+
+    @BeforeCompletion
+    private void beforeCompletion() {
+    }
+
+    @AfterCompletion
+    private void afterCompletion() {
+    }
+
+    @Remove(retainIfException = true)
+    public void removeTrue() {
+    }
+
+    @Remove(retainIfException = false)
+    public void removeFalse() {
     }
 }

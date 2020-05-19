@@ -24,7 +24,12 @@ package org.jboss.as.test.integration.ejb.management.deployments;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.DependsOn;
+import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
+import javax.ejb.Startup;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
@@ -34,9 +39,13 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @Singleton
+@Startup
+@DependsOn({"ManagedSingletonBean"})
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@LocalBean
 public class NoTimerSingletonBean implements BusinessInterface {
 
     @Override
