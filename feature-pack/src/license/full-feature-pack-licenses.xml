@@ -124,6 +124,17 @@
     </dependency>
     <dependency>
       <groupId>com.github.fge</groupId>
+      <artifactId>btf</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v3.0 or later</name>
+          <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.github.fge</groupId>
       <artifactId>jackson-coreutils</artifactId>
       <licenses>
         <license>
@@ -142,6 +153,17 @@
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
+        <license>
+          <name>GNU Lesser General Public License v3.0 or later</name>
+          <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.github.fge</groupId>
+      <artifactId>msg-simple</artifactId>
+      <licenses>
         <license>
           <name>GNU Lesser General Public License v3.0 or later</name>
           <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
