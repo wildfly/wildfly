@@ -10,4 +10,6 @@ public interface WhoAmI {
 
     String whoAmI();
 
+    String whoAmIRestricted();
+
 }

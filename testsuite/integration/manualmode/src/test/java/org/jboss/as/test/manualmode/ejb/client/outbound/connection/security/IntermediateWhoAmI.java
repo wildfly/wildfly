@@ -16,4 +16,8 @@ public class IntermediateWhoAmI implements WhoAmI {
         return whoAmIBean.whoAmI();
     }
 
+    public String whoAmIRestricted() {
+        return whoAmIBean.whoAmIRestricted();
+    }
+
 }

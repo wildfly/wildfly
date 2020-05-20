@@ -297,6 +297,13 @@ always returns the same constant.
 
 |simple-role-decoder |Definition of a simple RoleDecoder that takes a
 single attribute and maps it directly to roles.
+
+|source-address-role-decoder |Definition of a RoleDecoder that maps roles
+based on the IP address of the remote client.
+
+|aggregate-role-decoder |A role decoder that is an aggregation of other
+role decoders. An aggregate role decoder combines the roles obtained using
+each role decoder.
 |=======================================================================
 
 [[role-mappers]]
@@ -528,6 +535,7 @@ and openssl provider loaders.
             "openssl"
         ]}},
         "aggregate-realm" => undefined,
+        "aggregate-role-decoder" => undefined,
         "aggregate-role-mapper" => undefined,
         "aggregate-sasl-server-factory" => undefined,
         "aggregate-security-event-listener" => undefined,
@@ -769,6 +777,7 @@ and openssl provider loaders.
         "simple-regex-realm-mapper" => undefined,
         "simple-role-decoder" => {"groups-to-roles" => {"attribute" => "groups"}},
         "size-rotating-file-audit-log" => undefined,
+        "source-address-role-decoder" => undefined,
         "syslog-audit-log" => undefined,
         "token-realm" => undefined,
         "trust-manager" => undefined,
