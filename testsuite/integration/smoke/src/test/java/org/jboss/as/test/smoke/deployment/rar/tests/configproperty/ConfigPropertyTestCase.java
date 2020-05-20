@@ -35,18 +35,13 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnection;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,7 +53,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(ConfigPropertyTestCase.ConfigPropertyTestClassSetup.class)
-public class ConfigPropertyTestCase extends ContainerResourceMgmtTestBase {
+public class ConfigPropertyTestCase {
 
     /**
      * Class that performs setup before the deployment is deployed
@@ -158,13 +153,12 @@ public class ConfigPropertyTestCase extends ContainerResourceMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "as7_1452.jar");
         ja.addPackage("org.jboss.as.test.smoke.deployment.rar.configproperty")
-                .addClasses(ConfigPropertyTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                .addClasses(ConfigPropertyTestCase.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource(ConfigPropertyTestCase.class.getPackage(), "ra.xml", "ra.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
+        raa.addAsManifestResource(ConfigPropertyTestCase.class.getPackage(), "ra.xml", "ra.xml");
 
         return raa;
     }

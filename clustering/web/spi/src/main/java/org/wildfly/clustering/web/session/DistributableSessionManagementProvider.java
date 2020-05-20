@@ -25,7 +25,6 @@ package org.wildfly.clustering.web.session;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 
 /**
@@ -47,7 +46,7 @@ public interface DistributableSessionManagementProvider {
      * @param configuration the configuration of the session manager factory
      * @return a service configurator
      */
-    <S, SC, AL, BL, MC extends Marshallability, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration);
+    <S, SC, AL, BL, MC, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration);
 
     /**
      * Returns a {@link CapabilityServiceConfigurator} used to configure a service providing a {@link org.wildfly.clustering.web.routing.RouteLocator}.

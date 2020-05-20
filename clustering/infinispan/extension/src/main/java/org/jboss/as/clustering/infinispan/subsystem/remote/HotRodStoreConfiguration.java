@@ -28,13 +28,11 @@ import org.infinispan.commons.configuration.attributes.AttributeDefinition;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
-import org.infinispan.configuration.cache.SingletonStoreConfiguration;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 /**
  * @author Radoslav Husar
  */
-@SuppressWarnings("deprecation")
 @BuiltBy(HotRodStoreConfigurationBuilder.class)
 @ConfigurationFor(HotRodStore.class)
 public class HotRodStoreConfiguration extends AbstractStoreConfiguration {
@@ -43,8 +41,8 @@ public class HotRodStoreConfiguration extends AbstractStoreConfiguration {
 
     static final AttributeDefinition<String> CACHE_CONFIGURATION = AttributeDefinition.builder("cacheConfiguration", null, String.class).build();
 
-    public HotRodStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore) {
-        super(attributes, async, singletonStore);
+    public HotRodStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async) {
+        super(attributes, async);
     }
 
     @Override

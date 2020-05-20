@@ -150,7 +150,7 @@ the interceptor:
 
 .Example of container interceptor
 
-[source,java,options="nowrap"
+[source,java,options="nowrap"]
 ----
 public class ClassLevelContainerInterceptor {
     @AroundInvoke

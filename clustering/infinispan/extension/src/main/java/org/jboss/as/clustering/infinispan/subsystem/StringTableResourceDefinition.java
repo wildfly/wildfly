@@ -79,7 +79,7 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress storeAddress = Operations.getPathAddress(operation).getParent();
                     ModelNode value = new ModelNode();
-                    for (Set<? extends org.jboss.as.clustering.controller.Attribute> attributes : Arrays.asList(EnumSet.allOf(Attribute.class), EnumSet.complementOf(EnumSet.of(TableResourceDefinition.Attribute.CREATE_ON_START, TableResourceDefinition.Attribute.DROP_ON_STOP)), EnumSet.allOf(TableResourceDefinition.ColumnAttribute.class))) {
+                    for (Set<? extends org.jboss.as.clustering.controller.Attribute> attributes : Arrays.asList(EnumSet.allOf(Attribute.class), EnumSet.complementOf(EnumSet.of(TableResourceDefinition.Attribute.CREATE_ON_START, TableResourceDefinition.Attribute.DROP_ON_STOP)), EnumSet.complementOf(EnumSet.of(TableResourceDefinition.ColumnAttribute.SEGMENT)))) {
                         for (org.jboss.as.clustering.controller.Attribute attribute : attributes) {
                             String name = attribute.getName();
                             if (operation.hasDefined(name)) {

@@ -34,14 +34,14 @@ import org.wildfly.clustering.ee.Remover;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public interface BeanGroupFactory<I, T> extends Creator<I, BeanGroupEntry<I, T>, Void>, Locator<I, BeanGroupEntry<I, T>>, Remover<I>, BeanGroupEvictor<I> {
+public interface BeanGroupFactory<I, T, C> extends Creator<I, BeanGroupEntry<I, T, C>, Void>, Locator<I, BeanGroupEntry<I, T, C>>, Remover<I>, BeanGroupEvictor<I> {
     /**
      * Create a new bean group using the specified identifier and entry.
      * @param id a group identifier
      * @param entry the cache entry for the group
      * @return a bean group
      */
-    BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry);
+    BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T, C> entry);
 
     BeanGroupKey<I> createKey(I id);
 

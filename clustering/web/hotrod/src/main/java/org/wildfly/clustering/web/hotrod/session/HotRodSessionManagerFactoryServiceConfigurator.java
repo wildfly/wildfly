@@ -38,7 +38,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -60,7 +59,7 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC extends Marshallability, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
+public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
 
     private final HotRodSessionManagementConfiguration configuration;
     private final SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration;
@@ -121,11 +120,6 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC ex
     @Override
     public MarshalledValueFactory<MC> getMarshalledValueFactory() {
         return this.factoryConfiguration.getMarshalledValueFactory();
-    }
-
-    @Override
-    public MC getMarshallingContext() {
-        return this.factoryConfiguration.getMarshallingContext();
     }
 
     @Override

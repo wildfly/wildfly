@@ -40,7 +40,7 @@ import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
+import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
@@ -81,7 +81,6 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
         String templateCacheName = this.config.getCacheName();
 
         // Ensure eviction and expiration are disabled
-        @SuppressWarnings("deprecation")
         Consumer<ConfigurationBuilder> configurator = builder -> {
             // Ensure expiration is not enabled on cache
             ExpirationConfiguration expiration = builder.expiration().create();
@@ -96,7 +95,7 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
             if (strategy.isEnabled()) {
                 // Only evict bean group entries
                 // We will cascade eviction to the associated beans
-                builder.dataContainer().dataContainer(EvictableDataContainer.createDataContainer(builder, size, BeanGroupKey.class::isInstance));
+                builder.addModule(DataContainerConfigurationBuilder.class).evictable(BeanGroupKey.class::isInstance);
             }
         };
 

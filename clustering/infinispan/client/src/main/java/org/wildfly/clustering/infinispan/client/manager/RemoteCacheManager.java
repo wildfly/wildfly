@@ -61,6 +61,11 @@ public class RemoteCacheManager extends org.infinispan.client.hotrod.RemoteCache
     }
 
     @Override
+    public <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
+        return this.getCache(cacheName, this.getConfiguration().forceReturnValues(), transactionMode, transactionManager);
+    }
+
+    @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue, TransactionMode transactionMode, TransactionManager transactionManager) {
         return new RegisteredRemoteCache<>(this, super.getCache(cacheName, forceReturnValue, transactionMode, transactionManager), this.registrar);
     }
@@ -83,5 +88,11 @@ public class RemoteCacheManager extends org.infinispan.client.hotrod.RemoteCache
         @SuppressWarnings("unchecked")
         Function<ClientListenerNotifier, NearCacheService<K, V>> factory = (cacheName != null) ? (Function<ClientListenerNotifier, NearCacheService<K, V>>) (Function<?, ?>) this.nearCacheFactories.get(cacheName) : null;
         return (factory != null) ? factory.apply(this.listenerNotifier) : super.createNearCacheService(cacheName, config);
+    }
+
+    @Override
+    public <K, V> RemoteCache<K, V> getCache(String cacheName) {
+        // Disable hotrod transactions for remote-caches returned via RemoteCacheManagerAdmin
+        return this.getCache(cacheName, TransactionMode.NONE);
     }
 }

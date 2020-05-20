@@ -317,7 +317,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         return this.mdbPoolConfigName;
     }
 
-    private String getMessageListenerInterfaceName() {
+    public String getMessageListenerInterfaceName() {
         return messageListenerInterfaceName;
     }
 

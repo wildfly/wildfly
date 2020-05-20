@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.web.hotrod.session;
 
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
 /**
@@ -33,5 +32,5 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC extends Marshallability, LC> extends HotRodSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, HotRodSessionMetaDataFactoryConfiguration {
+public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> extends HotRodSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, HotRodSessionMetaDataFactoryConfiguration {
 }

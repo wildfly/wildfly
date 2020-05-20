@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.cache.session;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
@@ -41,16 +40,15 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
  * @param <MC> the marshalling context type
  * @param <LC> the local context type
  */
-public abstract class MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC extends Marshallability, LC> implements SessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
+public abstract class MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements SessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
     private final Immutability immutability;
     private final Marshaller<V, MarshalledValue<V, MC>> marshaller;
     private final HttpSessionActivationListenerProvider<S, SC, AL> provider;
 
     protected MarshalledValueSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, SC, AL, ?, MC, LC> configuration) {
         MarshalledValueFactory<MC> factory = configuration.getMarshalledValueFactory();
-        MC context = configuration.getMarshallingContext();
         this.immutability = configuration.getImmutability();
-        this.marshaller = new MarshalledValueMarshaller<>(factory, context);
+        this.marshaller = new MarshalledValueMarshaller<>(factory);
         this.provider = configuration.getSpecificationProvider();
     }
 

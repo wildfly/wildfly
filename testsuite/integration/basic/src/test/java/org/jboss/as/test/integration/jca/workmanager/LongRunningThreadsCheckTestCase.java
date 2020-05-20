@@ -46,7 +46,6 @@ import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter3;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -54,8 +53,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,7 +67,7 @@ import java.lang.reflect.ReflectPermission;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(LongRunningThreadsCheckTestCase.TestCaseSetup.class)
-public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
+public class LongRunningThreadsCheckTestCase {
 
     public static String ctx = "customContext";
     public static String wm = "customWM";
@@ -137,16 +134,13 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
      * @return The deployment archive
      */
     @Deployment
-    public static EnterpriseArchive createDeployment() throws Exception {
+    public static EnterpriseArchive createDeployment() {
 
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "wm.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(LongRunningThreadsCheckTestCase.class,
-                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, JcaMgmtServerSetupTask.class,
-                JcaMgmtBase.class, JcaTestsUtil.class);
+                JcaMgmtServerSetupTask.class, JcaMgmtBase.class, JcaTestsUtil.class);
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
-        ja.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, " +
-                        "org.jboss.as.controller-client, org.jboss.as.cli, " +
-                        "org.jboss.as.connector, org.jboss.threads"),
+        ja.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.connector, org.jboss.threads"),
                 "MANIFEST.MF");
 
         ResourceAdapterArchive ra1 = ShrinkWrap.create(ResourceAdapterArchive.class, "wm1.rar");

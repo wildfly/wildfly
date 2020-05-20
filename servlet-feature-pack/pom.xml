@@ -550,6 +550,7 @@
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                                     <licensesConfigFile>${project.basedir}/src/license/servlet-feature-pack-licenses.xml</licensesConfigFile>
                                     <licensesOutputFile>${license.directory}/servlet-feature-pack-licenses.xml</licensesOutputFile>
+                                    <excludedArtifacts>wildfly-core-feature-pack</excludedArtifacts>
                                 </configuration>
                             </execution>
                         </executions>

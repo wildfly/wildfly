@@ -23,7 +23,6 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
@@ -37,7 +36,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, MC extends Marshallability, LC> extends InfinispanSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, InfinispanSessionMetaDataFactoryConfiguration {
+public interface InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> extends InfinispanSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, InfinispanSessionMetaDataFactoryConfiguration {
 
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();
 

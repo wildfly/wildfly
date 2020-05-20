@@ -339,6 +339,8 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 }
             }
 
+            this.nonTxWait.run();
+
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
@@ -389,6 +391,8 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                     }
                 }
             }
+
+            this.nonTxWait.run();
 
             // Destroy session
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {

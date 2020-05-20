@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.hotrod.session;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.hotrod.RemoteCacheManagerProperties;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheProperties;
 
 /**
  * @author Paul Ferraro
@@ -34,6 +34,6 @@ public interface HotRodSessionMetaDataFactoryConfiguration {
     <CK, CV> RemoteCache<CK, CV> getCache();
 
     default CacheProperties getCacheProperties() {
-        return new RemoteCacheManagerProperties(this.getCache().getRemoteCacheManager().getConfiguration());
+        return new RemoteCacheProperties(this.getCache());
     }
 }

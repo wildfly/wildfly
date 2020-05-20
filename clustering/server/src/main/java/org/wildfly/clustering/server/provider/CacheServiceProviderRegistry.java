@@ -273,7 +273,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                         try {
                             listener.providersChanged(members);
                         } catch (Throwable e) {
-                            ClusteringServerLogger.ROOT_LOGGER.serviceProviderRegistrationListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), this.cache.getName(), members);
+                            ClusteringServerLogger.ROOT_LOGGER.serviceProviderRegistrationListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName(), this.cache.getName(), members);
                         }
                     });
                 } catch (RejectedExecutionException e) {

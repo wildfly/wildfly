@@ -37,5 +37,6 @@
         <module name="io.netty"/>
         <module name="org.infinispan.commons"/>
         <module name="org.jboss.logging"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

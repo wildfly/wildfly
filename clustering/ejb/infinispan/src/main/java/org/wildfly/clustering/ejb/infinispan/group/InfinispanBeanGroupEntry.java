@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 /**
@@ -38,17 +37,17 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValue;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBeanGroupEntry<I, T> implements BeanGroupEntry<I, T>, Function<I, AtomicInteger> {
+public class InfinispanBeanGroupEntry<I, T, C> implements BeanGroupEntry<I, T, C>, Function<I, AtomicInteger> {
 
-    private final MarshalledValue<Map<I, T>, MarshallingContext> beans;
+    private final MarshalledValue<Map<I, T>, C> beans;
     private final Map<I, AtomicInteger> usage = new ConcurrentHashMap<>();
 
-    public InfinispanBeanGroupEntry(MarshalledValue<Map<I, T>, MarshallingContext> beans) {
+    public InfinispanBeanGroupEntry(MarshalledValue<Map<I, T>, C> beans) {
         this.beans = beans;
     }
 
     @Override
-    public MarshalledValue<Map<I, T>, MarshallingContext> getBeans() {
+    public MarshalledValue<Map<I, T>, C> getBeans() {
         return this.beans;
     }
 

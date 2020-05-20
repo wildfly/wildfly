@@ -137,6 +137,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private SecurityIdentity incomingRunAsIdentity;
     private final Function<SecurityIdentity, Set<SecurityIdentity>> identityOutflowFunction;
     private final boolean securityRequired;
+    private final EJBComponentDescription componentDescription;
 
     /**
      * Construct a new instance.
@@ -191,6 +192,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.incomingRunAsIdentity = null;
         this.identityOutflowFunction = ejbComponentCreateService.getIdentityOutflowFunction();
         this.securityRequired = ejbComponentCreateService.isSecurityRequired();
+        this.componentDescription = ejbComponentCreateService.getComponentDescription();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -657,5 +659,9 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public EJBSuspendHandlerService getEjbSuspendHandlerService() {
         return this.ejbSuspendHandlerService;
+    }
+
+    public EJBComponentDescription getComponentDescription() {
+        return componentDescription;
     }
 }

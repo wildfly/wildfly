@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
@@ -44,7 +43,7 @@ public class InfinispanSessionManagementProvider implements DistributableSession
     }
 
     @Override
-    public <S, SC, AL, BL, MC extends Marshallability, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> config) {
+    public <S, SC, AL, BL, MC, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> config) {
         return new InfinispanSessionManagerFactoryServiceConfigurator<>(this.configuration, config);
     }
 

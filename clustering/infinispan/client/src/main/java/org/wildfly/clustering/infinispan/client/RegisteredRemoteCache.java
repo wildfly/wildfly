@@ -31,6 +31,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import javax.transaction.TransactionManager;
+
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.Flag;
@@ -73,8 +75,13 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public boolean removeWithVersion(K key, long version) {
-        return this.cache.removeWithVersion(key, version);
+    public boolean isTransactional() {
+        return this.cache.isTransactional();
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return this.cache.getTransactionManager();
     }
 
     @Override
@@ -205,6 +212,11 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
+    public boolean removeWithVersion(K key, long version) {
+        return this.cache.removeWithVersion(key, version);
+    }
+
+    @Override
     public CompletableFuture<Boolean> removeWithVersionAsync(K key, long version) {
         return this.cache.removeWithVersionAsync(key, version);
     }
@@ -325,18 +337,6 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
         return this.manager;
     }
 
-    @Deprecated
-    @Override
-    public Map<K, V> getBulk() {
-        return this.cache.getBulk();
-    }
-
-    @Deprecated
-    @Override
-    public Map<K, V> getBulk(int size) {
-        return this.cache.getBulk(size);
-    }
-
     @Override
     public Map<K, V> getAll(Set<? extends K> keys) {
         return this.cache.getAll(keys);
@@ -362,6 +362,7 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
         this.cache.removeClientListener(listener);
     }
 
+    @Deprecated
     @Override
     public Set<Object> getListeners() {
         return this.cache.getListeners();
@@ -420,6 +421,11 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     @Override
     public int size() {
         return this.cache.size();
+    }
+
+    @Override
+    public CompletableFuture<Long> sizeAsync() {
+        return this.cache.sizeAsync();
     }
 
     @Override

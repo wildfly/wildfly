@@ -47,6 +47,7 @@ public enum EJB3SubsystemXMLAttribute {
     CORE_THREADS("core-threads"),
 
     DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
+    DEFAULT_SESSION_TIMEOUT("default-session-timeout"),
     DEFAULT_DATA_STORE("default-data-store"),
     DATABASE("database"),
     DATASOURCE_JNDI_NAME("datasource-jndi-name"),

@@ -34,16 +34,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidResourceAdapter;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -62,21 +58,19 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
      * @return The deployment archive
      */
     @Deployment
-    public static ResourceAdapterArchive createDeployment() throws Exception {
+    public static ResourceAdapterArchive createDeployment() {
         String deploymentName = "ij.rar";
 
         ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "ij.jar");
-        ja.addPackage(ValidResourceAdapter.class.getPackage()).addClasses(IronJacamarDeploymentTestCase.class,
-                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
+        ja.addPackage(ValidResourceAdapter.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(IronJacamarDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(IronJacamarDeploymentTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),
+                                "Dependencies: javax.inject.api,org.jboss.as.connector\n"),
                         "MANIFEST.MF");
 
         return raa;
