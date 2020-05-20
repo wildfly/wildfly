@@ -39,6 +39,7 @@ import org.jboss.as.test.integration.ws.authentication.policy.resources.EchoServ
 import org.jboss.as.test.integration.ws.authentication.policy.resources.PicketLinkSTSService;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -188,6 +189,10 @@ public class AuthenticationPolicyContextTestCase {
 
     @BeforeClass
     public static void initClient() throws Exception {
+        // With JDK 13 and Bouncycastle 1.65 various picketlink tests interact incorrectly
+        // such that execution of this test results in subsequent tests failing.
+        AssumeTestGroupUtil.assumeJDKVersionBefore(13);
+
         wsClient = new WSTrustClient("PicketLinkSTS", "PicketLinkSTSPort",
                 getHttpUrl(DEFAULT_HOST, DEFAULT_PORT) + "picketlink-sts/PicketLinkSTS", new WSTrustClient.SecurityInfo(USERNAME, PASSWORD));
     }
