@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+      	  http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd"
+         version="3.2">
+    <enterprise-beans>
+        <message-driven>
+            <ejb-name>NoTimerMDB</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.management.deployments.NoTimerMDB</ejb-class>
+            <messaging-type>javax.jms.MessageListener</messaging-type>
+            <message-destination-type>javax.jms.Queue</message-destination-type>
+            <message-destination-link>queue/NoTimerMDB-queue</message-destination-link>
+            <activation-config>
+                <activation-config-property>
+                    <activation-config-property-name>destination</activation-config-property-name>
+                    <activation-config-property-value>java:/queue/NoTimerMDB-queue</activation-config-property-value>
+                </activation-config-property>
+                <activation-config-property>
+                    <activation-config-property-name>destinationType</activation-config-property-name>
+                    <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+                </activation-config-property>
+                <activation-config-property>
+                    <activation-config-property-name>acknowledgeMode</activation-config-property-name>
+                    <activation-config-property-value>Auto-acknowledge</activation-config-property-value>
+                </activation-config-property>
+            </activation-config>
+        </message-driven>
+    </enterprise-beans>
+    <assembly-descriptor>
+        <message-destination>
+            <message-destination-name>queue/NoTimerMDB-queue</message-destination-name>
+            <lookup-name>java:/queue/NoTimerMDB-queue</lookup-name>
+        </message-destination>
+    </assembly-descriptor>
+</ejb-jar>

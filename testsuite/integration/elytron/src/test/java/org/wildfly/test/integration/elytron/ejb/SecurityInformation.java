@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,35 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.test.integration.elytron.ejb;
 
-package org.jboss.as.test.integration.ejb.management.deployments;
+public interface SecurityInformation {
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.LocalBean;
-import javax.ejb.Schedule;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
+    String getPrincipalName();
 
-import org.jboss.ejb3.annotation.Pool;
-import org.jboss.ejb3.annotation.SecurityDomain;
-
-/**
- * Bean to use in tests of management resources for SLSBs.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
- */
-@Stateless
-@SecurityDomain("other")
-@DeclareRoles(value = {"Role1", "Role2", "Role3"})
-@RunAs("Role3")
-@Pool("slsb-strict-max-pool")
-@LocalBean
-public class ManagedStatelessBean extends AbstractManagedBean implements BusinessInterface {
-    @Timeout
-    @Schedule(second="15", persistent = false, info = "timer1")
-    public void timeout(final Timer timer) {
-        // no-op
-    }
 }
+
