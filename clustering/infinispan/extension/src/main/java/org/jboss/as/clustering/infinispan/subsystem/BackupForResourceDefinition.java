@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -49,7 +48,7 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "BACKUP_FOR");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CACHE("remote-cache", ModelType.STRING, new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME)),
+        CACHE("remote-cache", ModelType.STRING, new ModelNode("___defaultcache")),
         SITE("remote-site", ModelType.STRING, null),
         ;
         private final AttributeDefinition definition;
@@ -59,7 +58,7 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion())
                     .build();
         }
@@ -86,7 +85,7 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addIgnoredAttributes(Attribute.class);
         new SimpleResourceRegistration(descriptor, null).register(registration);
 
         return registration;

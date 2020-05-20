@@ -80,6 +80,7 @@ public enum XMLElement {
     REMOTE_STORE("remote-store"),
     REPLICATED_CACHE(ReplicatedCacheResourceDefinition.WILDCARD_PATH),
     SCATTERED_CACHE(ScatteredCacheResourceDefinition.WILDCARD_PATH),
+    SEGMENT_COLUMN(TableResourceDefinition.ColumnAttribute.SEGMENT),
     STATE_TRANSFER(StateTransferResourceDefinition.PATH),
     STATE_TRANSFER_THREAD_POOL("state-transfer-thread-pool"),
     STORE(StoreResourceDefinition.WILDCARD_PATH),

@@ -298,7 +298,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
                             }
                         }
                     } catch (Throwable e) {
-                        ClusteringServerLogger.ROOT_LOGGER.registryListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), this.cache.getName(), type, entries);
+                        ClusteringServerLogger.ROOT_LOGGER.registryListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName(), this.cache.getName(), type, entries);
                     }
                 });
             } catch (RejectedExecutionException e) {

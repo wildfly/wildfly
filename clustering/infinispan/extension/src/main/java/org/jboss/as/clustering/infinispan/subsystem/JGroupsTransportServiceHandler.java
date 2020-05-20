@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.TransportResourceDefinition.CLUSTERING_CAPABILITIES;
 
-import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -55,8 +54,6 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
         JGroupsTransportServiceConfigurator transportBuilder = new JGroupsTransportServiceConfigurator(address).configure(context, model);
         transportBuilder.build(target).install();
 
-        new SiteServiceConfigurator(address).configure(context, model).build(target).install();
-
         String channel = transportBuilder.getChannel();
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
@@ -82,8 +79,6 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
             }
         }
 
-        for (CacheContainerComponent component: EnumSet.allOf(CacheContainerComponent.class)) {
-            context.removeService(component.getServiceName(address));
-        }
+        context.removeService(new JGroupsTransportServiceConfigurator(address).getServiceName());
     }
 }

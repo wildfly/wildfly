@@ -50,8 +50,8 @@ public class ConnectionPoolServiceConfigurator extends ComponentServiceConfigura
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.exhaustedAction = ExhaustedAction.valueOf(ConnectionPoolResourceDefinition.Attribute.EXHAUSTED_ACTION.resolveModelAttribute(context, model).asString());
-        this.maxActive = ConnectionPoolResourceDefinition.Attribute.MAX_ACTIVE.resolveModelAttribute(context, model).asInt();
-        this.maxWait = ConnectionPoolResourceDefinition.Attribute.MAX_WAIT.resolveModelAttribute(context, model).asLong();
+        this.maxActive = ConnectionPoolResourceDefinition.Attribute.MAX_ACTIVE.resolveModelAttribute(context, model).asInt(-1);
+        this.maxWait = ConnectionPoolResourceDefinition.Attribute.MAX_WAIT.resolveModelAttribute(context, model).asLong(-1L);
         this.minEvictableIdleTime = ConnectionPoolResourceDefinition.Attribute.MIN_EVICTABLE_IDLE_TIME.resolveModelAttribute(context, model).asLong();
         this.minIdle = ConnectionPoolResourceDefinition.Attribute.MIN_IDLE.resolveModelAttribute(context, model).asInt();
         return this;

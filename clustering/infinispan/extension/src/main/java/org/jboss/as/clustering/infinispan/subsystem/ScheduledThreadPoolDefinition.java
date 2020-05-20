@@ -30,7 +30,7 @@ import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
  */
 public interface ScheduledThreadPoolDefinition extends ResourceServiceNameFactory {
 
-    Attribute getMaxThreads();
+    Attribute getMinThreads();
 
     Attribute getKeepAliveTime();
 }

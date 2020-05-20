@@ -23,6 +23,8 @@
 package org.jboss.as.test.integration.ejb.stateful.persistencecontext;
 
 import java.io.Serializable;
+
+import javax.ejb.Remove;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -53,5 +55,10 @@ public class StatefulTransientBean implements Serializable, StatefulRemote {
     public void find(int id) {
         if (manager.find(Customer.class, id) == null)
             throw new RuntimeException("not found");
+    }
+
+    @Remove
+    @Override
+    public void close() {
     }
 }

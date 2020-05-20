@@ -70,7 +70,7 @@ public class DefaultCacheContainerTestCase {
     @Test
     public void getName() {
         String name = "foo";
-        GlobalConfiguration global = new GlobalConfigurationBuilder().globalJmxStatistics().cacheManagerName(name).build();
+        GlobalConfiguration global = new GlobalConfigurationBuilder().cacheManagerName(name).build();
 
         when(this.manager.getCacheManagerConfiguration()).thenReturn(global);
 
@@ -200,16 +200,6 @@ public class DefaultCacheContainerTestCase {
         this.subject.removeListener(listener);
 
         verify(this.manager).removeListener(listener);
-    }
-
-    @Test
-    public void getListeners() {
-        Set<Object> expected = Collections.singleton(new Object());
-        when(this.manager.getListeners()).thenReturn(expected);
-
-        Set<Object> result = this.subject.getListeners();
-
-        assertSame(expected, result);
     }
 
     @Test

@@ -249,7 +249,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             }
         }
 
-        for (CapabilityReferenceRecorder recorder : context.getResourceRegistration().getRequirements()) {
+        for (CapabilityReferenceRecorder recorder : registration.getRequirements()) {
             recorder.addCapabilityRequirements(context, resource, null);
         }
     }
@@ -264,6 +264,9 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             builder.addParameter(attribute);
         }
         for (AttributeDefinition attribute : this.descriptor.getCustomAttributes().keySet()) {
+            builder.addParameter(attribute);
+        }
+        for (AttributeDefinition attribute : this.descriptor.getIgnoredAttributes()) {
             builder.addParameter(attribute);
         }
         for (AttributeDefinition parameter : this.descriptor.getExtraParameters()) {

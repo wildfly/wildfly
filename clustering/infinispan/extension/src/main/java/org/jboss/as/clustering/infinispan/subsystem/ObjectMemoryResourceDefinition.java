@@ -38,6 +38,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -68,7 +69,7 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion())
                     ).build();
         }
@@ -88,12 +89,17 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : InfinispanModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, EVICTION_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
 
+        if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(DeprecatedAttribute.MAX_ENTRIES.getDefinition()), DeprecatedAttribute.MAX_ENTRIES.getDefinition())
+                .end();
+        }
         if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                 .addRename(Attribute.SIZE.getDefinition(), DeprecatedAttribute.MAX_ENTRIES.getName())
                 .setValueConverter(new SimpleAttributeConverter((address, name, value, model, context) -> {
                     // Set legacy eviction strategy to NONE if size is negative, otherwise set to LRU
-                    if (model.hasDefined(Attribute.SIZE.getName()) && (model.get(Attribute.SIZE.getName()).asLong() < 0)) {
+                    if (!model.hasDefined(Attribute.SIZE.getName()) || (model.get(Attribute.SIZE.getName()).asLong() < 0)) {
                         value.set(EvictionStrategy.NONE.name());
                     } else {
                         value.set(EvictionStrategy.LRU.name());
@@ -114,7 +120,7 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return descriptor.addAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MAX_ENTRIES)))
+            return descriptor.addIgnoredAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MAX_ENTRIES)))
                     .addAlias(DeprecatedAttribute.MAX_ENTRIES, Attribute.SIZE)
                     ;
         }

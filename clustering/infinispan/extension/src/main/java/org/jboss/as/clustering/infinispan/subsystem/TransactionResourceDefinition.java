@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -100,7 +101,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
                 return builder.setValidator(new EnumValidator<>(TransactionMode.class));
             }
         },
-        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000L)) {
+        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(10))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);

@@ -42,13 +42,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
+import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -76,7 +75,7 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC extends Marshallability, LC> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>>, Consumer<ConfigurationBuilder> {
+public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC, LC> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>>, Consumer<ConfigurationBuilder> {
 
     private final InfinispanSessionManagementConfiguration configuration;
     private final SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration;
@@ -115,7 +114,6 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, M
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void accept(ConfigurationBuilder builder) {
         // Ensure expiration is not enabled on cache
@@ -135,7 +133,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, M
         if (strategy.isEnabled()) {
             // Only evict creation meta-data entries
             // We will cascade eviction to the remaining entries for a given session
-            builder.dataContainer().dataContainer(EvictableDataContainer.createDataContainer(builder, size, SessionCreationMetaDataKey.class::isInstance));
+            builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionCreationMetaDataKey.class::isInstance);
         }
     }
 
@@ -204,11 +202,6 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, M
     @Override
     public MarshalledValueFactory<MC> getMarshalledValueFactory() {
         return this.factoryConfiguration.getMarshalledValueFactory();
-    }
-
-    @Override
-    public MC getMarshallingContext() {
-        return this.factoryConfiguration.getMarshallingContext();
     }
 
     @Override

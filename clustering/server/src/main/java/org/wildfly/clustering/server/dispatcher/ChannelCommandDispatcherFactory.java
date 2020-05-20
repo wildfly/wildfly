@@ -208,7 +208,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 Contextualizer contextualizer = context.getContextualizer();
                 @SuppressWarnings("unchecked")
                 MarshalledValue<Command<Object, Object>, Object> value = (MarshalledValue<Command<Object, Object>, Object>) unmarshaller.readObject();
-                Command<Object, Object> command = value.get(context.getMarshallingContext());
+                Command<Object, Object> command = value.get(context.getMarshalledValueFactory().getMarshallingContext());
                 ExceptionSupplier<Object, Exception> commandExecutionTask = new ExceptionSupplier<Object, Exception>() {
                     @Override
                     public Object get() throws Exception {
@@ -262,11 +262,6 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             @Override
             public MarshalledValueFactory<MarshallingContext> getMarshalledValueFactory() {
                 return factory;
-            }
-
-            @Override
-            public MarshallingContext getMarshallingContext() {
-                return marshallingContext;
             }
         };
         if (this.contexts.putIfAbsent(id, context) != null) {

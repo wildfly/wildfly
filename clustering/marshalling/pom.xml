@@ -44,7 +44,6 @@
     <modules>
         <module>api</module>
         <module>spi</module>
-        <module>infinispan</module>
         <module>jboss</module>
     </modules>
 </project>

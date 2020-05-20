@@ -56,14 +56,15 @@ public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefi
         BIAS_LIFESPAN("bias-lifespan", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(5))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build());
+                return builder.setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build())
+                        .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+                        ;
             }
         },
         INVALIDATION_BATCH_SIZE("invalidation-batch-size", ModelType.INT, new ModelNode(128)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new IntRangeValidatorBuilder().min(0).configure(builder).build())
-                        .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                         ;
             }
         },
