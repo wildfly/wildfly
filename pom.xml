@@ -260,8 +260,10 @@
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.10.4</version.com.fasterxml.jackson>
         <version.com.github.ben-manes.caffeine>2.6.2</version.com.github.ben-manes.caffeine>
-        <version.com.github.fge.jackson-coreutils>1.0</version.com.github.fge.jackson-coreutils>
+        <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
+        <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
+        <version.com.github.fge.msg-simple>1.1</version.com.github.fge.msg-simple>
         <version.com.github.spullara.mustache>0.9.6</version.com.github.spullara.mustache>
         <version.com.google.code.gson>2.8.6</version.com.google.code.gson>
         <version.com.google.guava>25.0-jre</version.com.google.guava>
@@ -1431,6 +1433,12 @@
 
             <dependency>
                 <groupId>com.github.fge</groupId>
+                <artifactId>btf</artifactId>
+                <version>${version.com.github.fge.btf}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.fge</groupId>
                 <artifactId>jackson-coreutils</artifactId>
                 <version>${version.com.github.fge.jackson-coreutils}</version>
             </dependency>
@@ -1439,6 +1447,12 @@
                 <groupId>com.github.fge</groupId>
                 <artifactId>json-patch</artifactId>
                 <version>${version.com.github.fge.json-patch}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.fge</groupId>
+                <artifactId>msg-simple</artifactId>
+                <version>${version.com.github.fge.msg-simple}</version>
             </dependency>
 
             <dependency>

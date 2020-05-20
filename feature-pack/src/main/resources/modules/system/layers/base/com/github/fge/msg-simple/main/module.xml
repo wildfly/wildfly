@@ -22,21 +22,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="com.github.fge.jackson-coreutils">
+<module xmlns="urn:jboss:module:1.7" name="com.github.fge.msg-simple">
 
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${com.github.fge:jackson-coreutils}"/>
+        <artifact name="${com.github.fge:msg-simple}"/>
     </resources>
 
     <dependencies>
-        <module name="com.github.fge.msg-simple" export="true"/>
-        <module name="com.fasterxml.jackson.core.jackson-annotations"/>
-        <module name="com.fasterxml.jackson.core.jackson-core"/>
-        <module name="com.fasterxml.jackson.core.jackson-databind"/>
-        <module name="com.google.guava"/>
+        <module name="com.github.fge.btf" export="true"/>
     </dependencies>
 </module>
