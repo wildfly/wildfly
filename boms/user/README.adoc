@@ -10,6 +10,7 @@ The following BOMs are available:
 * JMS Client (Maven coordinates "org.wildfly:wildfly-jms-client-bom", built by /clients/jms-client/pom.xml)
 * Jakarta EE 8 (Maven coordinates "org.wildfly.bom:wildfly-jakartaee8", built by /jakartaee8/pom.xml)
 * Jakarta EE 8 with Tools (Maven coordinates "org.wildfly.bom:wildfly-jakartaee8-with-tools", built by /jakartaee8/jakartaee8-with-tools/pom.xml)
+* MicroProfile (Maven coordinates "org.wildfly.bom:wildfly-microprofile", built by /microprofile/pom.xml)
 
 == Usage
 
