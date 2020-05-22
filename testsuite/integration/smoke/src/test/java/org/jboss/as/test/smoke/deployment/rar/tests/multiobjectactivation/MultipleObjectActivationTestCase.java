@@ -37,6 +37,7 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject2;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
@@ -64,6 +65,7 @@ public class MultipleObjectActivationTestCase {
             String xml = FileUtils.readFile(MultipleObjectActivationTestCase.class, "multiple.xml");
             List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
             executeOperation(operationListToCompositeOperation(operations));
+            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
         }
 
         @Override

@@ -37,6 +37,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsyst
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -68,6 +69,7 @@ public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
             String xml = FileUtils.readFile(RaTestConnectionTestCase.class, "testcon_multiple.xml");
             List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
             executeOperation(operationListToCompositeOperation(operations));
+            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
         }
 
         @Override

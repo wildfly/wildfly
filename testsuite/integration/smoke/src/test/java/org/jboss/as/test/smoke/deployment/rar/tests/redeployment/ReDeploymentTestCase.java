@@ -41,6 +41,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsyst
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
@@ -99,6 +100,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
         operation.get(OP).set("activate");
         operation.get(OP_ADDR).set(address);
         executeOperation(operation);
+        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
 
     }
 

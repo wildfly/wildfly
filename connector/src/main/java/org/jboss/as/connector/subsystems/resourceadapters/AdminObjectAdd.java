@@ -128,5 +128,9 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         final Resource aoResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
         resource.registerChild(peAO, aoResource);
+
+        if(!context.isBooting()){
+            context.reloadRequired();
+        }
     }
 }

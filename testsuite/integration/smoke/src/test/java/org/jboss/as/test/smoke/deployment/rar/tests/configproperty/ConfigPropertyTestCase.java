@@ -35,6 +35,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnection;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionFactory;
@@ -126,6 +127,8 @@ public class ConfigPropertyTestCase {
             operationConfigConn.get(OP_ADDR).set(addressConfigConn);
             operationConfigConn.get("value").set("B");
             executeOperation(operationConfigConn);
+
+            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
         }
 
         @Override

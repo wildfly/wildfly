@@ -228,6 +228,9 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
 
             resource.registerChild(peExtended, extendedResource);
 
+            if(!context.isBooting()){
+                context.reloadRequired();
+            }
 
         } catch (Exception e) {
             throw new OperationFailedException(e, new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToCreate("ConnectionDefinition", operation, e.getLocalizedMessage())));
