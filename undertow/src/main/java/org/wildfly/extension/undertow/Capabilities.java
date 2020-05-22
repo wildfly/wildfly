@@ -53,6 +53,7 @@ public final class Capabilities {
      */
 
     public static final String REF_IO_WORKER = "org.wildfly.io.worker";
+    public static final String REF_LEGACY_SECURITY = "org.wildfly.legacy-security";
     public static final String REF_SECURITY_DOMAIN = "org.wildfly.security.security-domain";
     public static final String REF_SOCKET_BINDING = "org.wildfly.network.socket-binding";
     public static final String REF_SSL_CONTEXT = "org.wildfly.security.ssl-context";
