@@ -16,7 +16,7 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import static org.jboss.as.server.security.VirtualDomainMarkerUtility.isVirtualDomainRequired;
+import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
 import static org.wildfly.extension.undertow.Capabilities.REF_LEGACY_SECURITY;
 import static org.wildfly.extension.undertow.deployment.UndertowAttachments.RESOLVED_SECURITY_DOMAIN;
 
@@ -28,11 +28,15 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.security.SecurityMetaData;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.security.SecurityConstants;
+import org.wildfly.extension.undertow.Capabilities;
+import org.wildfly.extension.undertow.Constants;
 
 /**
  * A {@code DeploymentUnitProcessor} to resolve the security domain name for the deployment.
@@ -56,8 +60,13 @@ public class SecurityDomainResolvingProcessor implements DeploymentUnitProcessor
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        if (warMetaData == null || isVirtualDomainRequired(deploymentUnit)) {
+        if (warMetaData == null) {
             return;
+        }
+
+        final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+        if (securityMetaData != null && securityMetaData.getSecurityDomain() != null) {
+            return; // The SecurityDomain is already defined.
         }
 
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
@@ -70,6 +79,13 @@ public class SecurityDomainResolvingProcessor implements DeploymentUnitProcessor
 
         if (securityDomain != null) {
             if (mappedSecurityDomain.test(securityDomain)) {
+                ServiceName securityDomainName = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
+                        .getCapabilityServiceName(
+                                Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN,
+                                securityDomain).append(Constants.SECURITY_DOMAIN);
+                if (securityMetaData != null) {
+                    securityMetaData.setSecurityDomain(securityDomainName);
+                }
                 deploymentUnit.putAttachment(RESOLVED_SECURITY_DOMAIN, securityDomain);
             } else if (legacySecurityInstalled(deploymentUnit)) {
                 deploymentUnit.putAttachment(RESOLVED_SECURITY_DOMAIN, securityDomain);

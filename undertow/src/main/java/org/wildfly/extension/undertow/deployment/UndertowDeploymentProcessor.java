@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.isVirtualDomainRequired;
-import static org.jboss.as.server.security.VirtualDomainMarkerUtility.virtualDomainName;
 import static org.wildfly.extension.undertow.Capabilities.REF_LEGACY_SECURITY;
 
 import java.net.MalformedURLException;
@@ -73,6 +73,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ExplodedDeploymentMarker;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.security.SecurityMetaData;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
@@ -133,7 +134,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
     private final String defaultServer;
     private final String defaultHost;
     private final String defaultContainer;
-    private final Predicate<String> knownSecurityDomain;
+    private final Predicate<String> mappedSecurityDomain;
     /**
         default module mappings, where we have key as name of default deployment,
         for value we have Map.Entry which has key as server-name where deployment is bound to,
@@ -143,7 +144,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
     private final SessionManagementProviderFactory sessionManagementProviderFactory;
     private final SessionManagementProvider nonDistributableSessionManagementProvider;
 
-    public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, Predicate<String> knownSecurityDomain) {
+    public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, Predicate<String> mappedSecurityDomain) {
         this.defaultHost = defaultHost;
         this.defaultModuleMappingProvider = DefaultDeploymentMappingProvider.instance();
         if (defaultHost == null) {
@@ -151,7 +152,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         }
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
-        this.knownSecurityDomain = knownSecurityDomain;
+        this.mappedSecurityDomain = mappedSecurityDomain;
         Iterator<SessionManagementProviderFactory> factories = ServiceLoader.load(SessionManagementProviderFactory.class, SessionManagementProviderFactory.class.getClassLoader()).iterator();
         this.sessionManagementProviderFactory = factories.hasNext() ? factories.next() : null;
         this.nonDistributableSessionManagementProvider = new NonDistributableSessionManagementProvider(this);
@@ -343,9 +344,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         }
 
         if (isVirtualDomainRequired(deploymentUnit)) {
-            infoBuilder.addDependency(virtualDomainName(deploymentUnit), SecurityDomain.class, undertowDeploymentInfoService.getRawSecurityDomainInjector());
+            final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+            infoBuilder.addDependency(securityMetaData.getSecurityDomain(), SecurityDomain.class, undertowDeploymentInfoService.getRawSecurityDomainInjector());
         } else if(securityDomain != null) {
-            if (knownSecurityDomain.test(securityDomain)) {
+            if (mappedSecurityDomain.test(securityDomain)) {
                 infoBuilder.addDependency(
                         deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
                                 .getCapabilityServiceName(
