@@ -55,6 +55,8 @@ import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -69,6 +71,16 @@ import org.junit.runner.RunWith;
 @ServerSetup(WebCERTTestsSetup.class)
 @Category(CommonCriteria.class)
 public class WebSecurityCERTTestCase {
+
+    @BeforeClass
+    public static void setup() throws Exception {
+        System.setProperty("com.ibm.jsse2.overrideDefaultTLS", "true");
+    }
+
+    @AfterClass
+    public static void teardown() throws Exception {
+        System.clearProperty("com.ibm.jsse2.overrideDefaultTLS");
+    }
 
     @ArquillianResource
     private ManagementClient mgmtClient;
