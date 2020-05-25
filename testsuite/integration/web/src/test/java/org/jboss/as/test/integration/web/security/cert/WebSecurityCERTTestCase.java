@@ -51,10 +51,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -69,6 +72,27 @@ import org.junit.runner.RunWith;
 @ServerSetup(WebCERTTestsSetup.class)
 @Category(CommonCriteria.class)
 public class WebSecurityCERTTestCase {
+
+    private static final String IBM_JSSE2_DEFAULT_TSL = "com.ibm.jsse2.overrideDefaultTLS";
+    private static String defaultTSLValue = null;
+
+    @BeforeClass
+    public static void setup() throws Exception {
+        if (Utils.IBM_JDK) {
+            defaultTSLValue = System.setProperty(IBM_JSSE2_DEFAULT_TSL, "true");
+        }
+    }
+
+    @AfterClass
+    public static void teardown() throws Exception {
+        if (Utils.IBM_JDK) {
+            if (IBM_JSSE2_DEFAULT_TSL != null) {
+                System.setProperty(IBM_JSSE2_DEFAULT_TSL, defaultTSLValue);
+            } else {
+                System.clearProperty(IBM_JSSE2_DEFAULT_TSL);
+            }
+        }
+    }
 
     @ArquillianResource
     private ManagementClient mgmtClient;
