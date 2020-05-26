@@ -372,7 +372,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> operations = builder.parseXmlResource("infinispan-transformer-reject.xml");
+        List<ModelNode> operations = builder.parseXmlResource("subsystem-infinispan-transformer-reject.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, operations, createFailedOperationConfig(version));
     }
 
