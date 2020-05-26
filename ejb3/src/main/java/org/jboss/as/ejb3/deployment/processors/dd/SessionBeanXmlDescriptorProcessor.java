@@ -129,3 +129,4 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
     }
 
 }
+

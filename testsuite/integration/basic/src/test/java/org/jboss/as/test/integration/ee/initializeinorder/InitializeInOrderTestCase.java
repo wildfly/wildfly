@@ -65,8 +65,8 @@ public class InitializeInOrderTestCase {
     @Test
     public void testPostConstruct() throws NamingException {
         Assert.assertEquals(2, initOrder.size());
-        Assert.assertEquals("MyServlet", initOrder.get(0));
-        Assert.assertEquals("MyEjb", initOrder.get(1));
+        Assert.assertEquals("MyEjb", initOrder.get(0));
+        Assert.assertEquals("MyServlet", initOrder.get(1));
     }
 
     public static void recordInit(final String clazz) {

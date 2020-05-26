@@ -279,7 +279,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         final EarMetaData earConfig = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
-        if (earConfig == null || !earConfig.getInitializeInOrder())  {
+        final List<String> startupBeanModules = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.DEPLOYMENT_STARTUP_MODULES);
+
+        if (earConfig == null || (!earConfig.getInitializeInOrder() && (startupBeanModules.isEmpty())))  {
             // in-order install of sub-deployments may result in service dependencies deadlocks if the jndi dependency services of subdeployments are added as dependencies
             for (DeploymentUnit sub : subDeployments) {
                 startService.requires(JndiNamingDependencyProcessor.serviceName(sub));
@@ -338,3 +340,4 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         return setupActions;
     }
 }
+

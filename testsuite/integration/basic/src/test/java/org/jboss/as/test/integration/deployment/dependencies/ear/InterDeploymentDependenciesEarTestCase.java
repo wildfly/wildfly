@@ -142,7 +142,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
         final LogAccess helloApp1 = lookupEJB(DEP_APP1);
         final LogAccess helloApp2 = lookupEJB(DEP_APP2);
-        assertEquals(SleeperContextListener.class.getSimpleName() + LogAccessBean.class.getSimpleName(), helloApp1.getLog());
+        assertEquals(LogAccessBean.class.getSimpleName()+SleeperContextListener.class.getSimpleName(), helloApp1.getLog());
         assertEquals(LogAccessBean.class.getSimpleName(), helloApp2.getLog());
 
         forceDependeeUndeploy();
@@ -169,7 +169,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
         LogAccess helloApp1 = lookupEJB(DEP_APP1);
         LogAccess helloApp2 = lookupEJB(DEP_APP2);
-        assertEquals(SleeperContextListener.class.getSimpleName() + LogAccessBean.class.getSimpleName(), helloApp1.getLog());
+        assertEquals(LogAccessBean.class.getSimpleName()+SleeperContextListener.class.getSimpleName(), helloApp1.getLog());
         assertEquals(LogAccessBean.class.getSimpleName(), helloApp2.getLog());
 
         ModelNode redeploy = Util.createEmptyOperation("redeploy", PathAddress.pathAddress("deployment", DEPENDEE.getName()));
@@ -177,7 +177,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
         helloApp1 = lookupEJB(DEP_APP1);
         helloApp2 = lookupEJB(DEP_APP2);
-        assertEquals(SleeperContextListener.class.getSimpleName() + LogAccessBean.class.getSimpleName(), helloApp1.getLog());
+        assertEquals(LogAccessBean.class.getSimpleName()+SleeperContextListener.class.getSimpleName(), helloApp1.getLog());
         assertEquals(LogAccessBean.class.getSimpleName(), helloApp2.getLog());
 
         forceDependeeUndeploy();

@@ -22,6 +22,7 @@
 package org.jboss.as.ee.structure;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
@@ -49,24 +50,45 @@ public class InitializeInOrderProcessor implements DeploymentUnitProcessor {
         if (parent == null) {
             return;
         }
+
         final EarMetaData earConfig = parent.getAttachment(Attachments.EAR_METADATA);
-        if (earConfig != null) {
-            final boolean inOrder = earConfig.getInitializeInOrder();
-            if (inOrder && earConfig.getModules().size() > 1) {
 
-                final Map<String, DeploymentUnit> deploymentUnitMap = new HashMap<String, DeploymentUnit>();
-                for (final DeploymentUnit subDeployment : parent.getAttachment(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS)) {
+        if (earConfig == null || earConfig.getModules().size() <= 1) {
+            return;
+        }
 
-                    final ResourceRoot deploymentRoot = subDeployment.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-                    final ModuleMetaData moduleMetaData = deploymentRoot.getAttachment(Attachments.MODULE_META_DATA);
-                    if (moduleMetaData != null) {
-                        deploymentUnitMap.put(moduleMetaData.getFileName(), subDeployment);
-                    }
+        final boolean inOrder = earConfig.getInitializeInOrder();
+        final List<String> startupBeanModules = parent.getAttachmentList(org.jboss.as.ee.component.Attachments.DEPLOYMENT_STARTUP_MODULES);
+        final Map<String, DeploymentUnit> deploymentUnitMap = new HashMap<String, DeploymentUnit>();
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
+        final ModuleMetaData thisModulesMetadata = deploymentRoot.getAttachment(Attachments.MODULE_META_DATA);
+
+        if((inOrder || (!startupBeanModules.isEmpty())) && !startupBeanModules.contains(deploymentUnit.getName())) {
+            for (final DeploymentUnit subDeployment : parent.getAttachment(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS)) {
+
+                final ResourceRoot subdeploymentRoot = subDeployment.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
+                final ModuleMetaData moduleMetaData = subdeploymentRoot.getAttachment(Attachments.MODULE_META_DATA);
+                if (moduleMetaData != null) {
+                    deploymentUnitMap.put(moduleMetaData.getFileName(), subDeployment);
                 }
+            }
+        }
 
+        if(!startupBeanModules.isEmpty() && !startupBeanModules.contains(deploymentUnit.getName())) {
+            if (thisModulesMetadata != null && thisModulesMetadata.getType() != ModuleMetaData.ModuleType.Client) {
+                for (String startupModule : startupBeanModules) {
+                    final ServiceName serviceName = Services.deploymentUnitName(parent.getName(), startupModule);
+                    phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, serviceName.append(Phase.INSTALL.name()));
+                    final DeploymentUnit prevDeployment = deploymentUnitMap.get(startupModule);
 
-                final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-                final ModuleMetaData thisModulesMetadata = deploymentRoot.getAttachment(Attachments.MODULE_META_DATA);
+                    phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, DeploymentCompleteServiceProcessor.serviceName(prevDeployment.getServiceName()));
+                }
+            }
+        }
+
+        if (!startupBeanModules.contains(deploymentUnit.getName())) {
+            if (inOrder) {
+
                 if (thisModulesMetadata != null && thisModulesMetadata.getType() != ModuleMetaData.ModuleType.Client) {
                     ModuleMetaData previous = null;
                     boolean found = false;
@@ -97,3 +119,4 @@ public class InitializeInOrderProcessor implements DeploymentUnitProcessor {
     public void undeploy(DeploymentUnit context) {
     }
 }
+

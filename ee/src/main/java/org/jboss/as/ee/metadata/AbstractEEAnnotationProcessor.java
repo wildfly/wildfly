@@ -57,7 +57,15 @@ public abstract class AbstractEEAnnotationProcessor implements DeploymentUnitPro
             final Map<String, ClassAnnotationInformation<?, ?>> data = factory.createAnnotationInformation(index, propertyReplacer);
             for (Map.Entry<String, ClassAnnotationInformation<?, ?>> entry : data.entrySet()) {
                 EEModuleClassDescription clazz = eeModuleDescription.addOrGetLocalClassDescription(entry.getKey());
-                clazz.addAnnotationInformation(entry.getValue());
+                ClassAnnotationInformation annotationInfo = entry.getValue();
+                clazz.addAnnotationInformation(annotationInfo);
+                DeploymentUnit parent = deploymentUnit.getParent();
+
+                if(parent!=null && annotationInfo!=null && annotationInfo.getAnnotationType()!=null && annotationInfo.getAnnotationType().toString().contains("javax.ejb.Startup")) {
+                    List<String> startupBeanModules = parent.getAttachmentList(org.jboss.as.ee.component.Attachments.DEPLOYMENT_STARTUP_MODULES);
+                    if(!startupBeanModules.contains(deploymentUnit.getName()))
+                        parent.addToAttachmentList(Attachments.DEPLOYMENT_STARTUP_MODULES, deploymentUnit.getName());
+                }
             }
         }
 
@@ -83,3 +91,4 @@ public abstract class AbstractEEAnnotationProcessor implements DeploymentUnitPro
 
     }
 }
+

@@ -93,4 +93,10 @@ public class Attachments {
     public static final AttachmentKey<AttachmentList<ContextHandleFactory>> ADDITIONAL_FACTORIES = AttachmentKey.createList(ContextHandleFactory.class);
 
     public static final AttachmentKey<ConcurrentContextSetupAction> CONCURRENT_CONTEXT_SETUP_ACTION = AttachmentKey.create(ConcurrentContextSetupAction.class);
+
+    /**
+     * The modules with (sub)deployment units that contain a startup initialized bean
+     */
+    public static final AttachmentKey<AttachmentList<String>> DEPLOYMENT_STARTUP_MODULES = AttachmentKey.createList(String.class);
 }
+

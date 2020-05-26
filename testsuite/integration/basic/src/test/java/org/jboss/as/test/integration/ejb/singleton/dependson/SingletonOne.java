@@ -26,11 +26,13 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.ejb.Startup;
 
 /**
  * @author Ondrej Chaloupka
  */
 @Singleton
+@Startup
 public class SingletonOne {
     @EJB(lookup = "java:global/callcounter/CallCounterSingleton")
     CallCounterSingleton callCounter;
