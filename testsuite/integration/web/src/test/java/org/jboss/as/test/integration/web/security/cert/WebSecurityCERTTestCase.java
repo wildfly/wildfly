@@ -86,7 +86,9 @@ public class WebSecurityCERTTestCase {
 
     private static CloseableHttpClient getHttpsClient(String alias) {
         try {
-            SSLContext ctx = SSLContext.getInstance("TLS");
+            // Ensure the protocol enabled here matches what was configured on server side
+            // to avoid failures on IBM JDK
+            SSLContext ctx = SSLContext.getInstance("TLSv1.2");
             JBossJSSESecurityDomain jsseSecurityDomain = new JBossJSSESecurityDomain("client-cert");
             jsseSecurityDomain.setKeyStorePassword(WebCERTTestsSetup.getPassword());
             URL keystore = WebCERTTestsSetup.getClientKeystoreFile().toURI().toURL();
