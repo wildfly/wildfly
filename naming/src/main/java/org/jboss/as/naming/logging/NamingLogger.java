@@ -594,8 +594,4 @@ public interface NamingLogger extends BasicLogger {
 
     @Message(id = 65, value = "Could not load module %s - the module or one of its dependencies is missing [%s]")
     OperationFailedException moduleNotFound(ModuleIdentifier moduleID, String missingModule);
-
-    @LogMessage(level = WARN)
-    @Message(id = 66, value = "Invalid '%s' name segment for env, name can't start with '/' prefix, prefix has been removed")
-    void invalidNamePrefix(String name);
 }

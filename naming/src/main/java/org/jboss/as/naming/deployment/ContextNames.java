@@ -85,9 +85,6 @@ public class ContextNames {
      */
     public static final ServiceName EXPORTED_CONTEXT_SERVICE_NAME = JBOSS_CONTEXT_SERVICE_NAME.append("exported");
 
-    private static final String INVALID_ENV_STRING = "env//";
-    private static final String VALID_ENV_STRING = "env/";
-
     /**
      * Get the base service name of a component's JNDI namespace.
      *
@@ -132,36 +129,35 @@ public class ContextNames {
      */
     public static BindInfo bindInfoFor(String app, String module, String comp, String context) {
         if (context.startsWith("java:")) {
-            String sanitizedContext = sanitizeContext(context);
             final String namespace;
-            final int i = sanitizedContext.indexOf('/');
+            final int i = context.indexOf('/');
             if (i == -1) {
-                namespace = sanitizedContext.substring(5);
+                namespace = context.substring(5);
             } else if (i == 5) {
                 // Absolute path
-                return new BindInfo(JAVA_CONTEXT_SERVICE_NAME, sanitizedContext.substring(6));
+                return new BindInfo(JAVA_CONTEXT_SERVICE_NAME, context.substring(6));
             } else {
-                namespace = sanitizedContext.substring(5, i);
+                namespace = context.substring(5, i);
             }
 
             sanitazeNameSpace(namespace,context);
             if (namespace.equals("global")) {
-                return new BindInfo(GLOBAL_CONTEXT_SERVICE_NAME, sanitizedContext.substring(12));
+                return new BindInfo(GLOBAL_CONTEXT_SERVICE_NAME, context.substring(12));
             } else if (namespace.equals("jboss")) {
-                String rest = sanitizedContext.substring(i);
+                String rest = context.substring(i);
                 if(rest.startsWith("/exported/")) {
-                    return new BindInfo(EXPORTED_CONTEXT_SERVICE_NAME, sanitizedContext.substring(20));
+                    return new BindInfo(EXPORTED_CONTEXT_SERVICE_NAME, context.substring(20));
                 } else {
-                    return new BindInfo(JBOSS_CONTEXT_SERVICE_NAME, sanitizedContext.substring(11));
+                    return new BindInfo(JBOSS_CONTEXT_SERVICE_NAME, context.substring(11));
                 }
             } else if (namespace.equals("app")) {
-                return new BindInfo(contextServiceNameOfApplication(app), sanitizedContext.substring(9));
+                return new BindInfo(contextServiceNameOfApplication(app), context.substring(9));
             } else if (namespace.equals("module")) {
-                return new BindInfo(contextServiceNameOfModule(app, module), sanitizedContext.substring(12));
+                return new BindInfo(contextServiceNameOfModule(app, module), context.substring(12));
             } else if (namespace.equals("comp")) {
-                return new BindInfo(contextServiceNameOfComponent(app, module, comp), sanitizedContext.substring(10));
+                return new BindInfo(contextServiceNameOfComponent(app, module, comp), context.substring(10));
             } else {
-                return new BindInfo(JBOSS_CONTEXT_SERVICE_NAME, sanitizedContext);
+                return new BindInfo(JBOSS_CONTEXT_SERVICE_NAME, context);
             }
         } else {
             return null;
@@ -173,15 +169,6 @@ public class ContextNames {
         // java:context/restOfURL - where nameSpace is part between ':' and '/'
         if(namespace.contains(":")){
             throw NamingLogger.ROOT_LOGGER.invalidJndiName(inContext);
-        }
-    }
-
-    private static String sanitizeContext(String context) {
-        if (context.contains(INVALID_ENV_STRING)) {
-            NamingLogger.ROOT_LOGGER.invalidNamePrefix(context.substring(context.indexOf(INVALID_ENV_STRING) + INVALID_ENV_STRING.length() - 1));
-            return context.replace(INVALID_ENV_STRING, VALID_ENV_STRING);
-        } else {
-            return context;
         }
     }
     /**

@@ -46,6 +46,8 @@ import java.util.Set;
  */
 public final class LookupInjectionSource extends InjectionSource {
 
+    private static final String SLASH = "/";
+
     // the schemes of supported URLs
     private static final Set<String> URL_SCHEMES;
 
@@ -84,15 +86,17 @@ public final class LookupInjectionSource extends InjectionSource {
         final boolean compUsesModule = resolutionContext.isCompUsesModule();
         final String scheme = org.jboss.as.naming.InitialContext.getURLScheme(lookupName);
         if (scheme == null) {
+            String sanitizedLookupName = sanitizeLookupName(lookupName);
+
             // relative name, build absolute name and setup normal lookup injection
             if (componentName != null && !compUsesModule) {
-                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:comp/env/" + lookupName)
+                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:comp/env/" + sanitizedLookupName)
                         .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
             } else if (compUsesModule) {
-                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:module/env/" + lookupName)
+                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:module/env/" + sanitizedLookupName)
                         .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
             } else {
-                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:jboss/env/" + lookupName)
+                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:jboss/env/" + sanitizedLookupName)
                         .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
             }
         } else {
@@ -138,6 +142,16 @@ public final class LookupInjectionSource extends InjectionSource {
                 injector.inject(managedReferenceFactory);
             }
         }
+    }
+
+    private String sanitizeLookupName(String lookupName) {
+        int slashIndex = lookupName.indexOf(SLASH);
+
+        if (slashIndex == 0) {
+            EeLogger.ROOT_LOGGER.invalidNamePrefix(lookupName);
+            return lookupName.substring(1);
+        }
+        return lookupName;
     }
 
     public boolean equals(Object configuration) {

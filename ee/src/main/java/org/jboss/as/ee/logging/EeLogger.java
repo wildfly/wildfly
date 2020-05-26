@@ -1159,4 +1159,8 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 123, value = "Global directory %s cannot be added, because global directory %s is already defined.")
     OperationFailedException oneGlobalDirectory(String newGlobalDirectory, String existingGlobalDirectory);
+
+    @LogMessage(level = WARN)
+    @Message(id = 124, value = "Invalid '%s' name segment for env, name can't start with '/' prefix, prefix has been removed")
+    void invalidNamePrefix(String name);
 }
