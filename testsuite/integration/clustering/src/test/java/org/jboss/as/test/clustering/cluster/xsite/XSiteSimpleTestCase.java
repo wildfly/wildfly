@@ -68,7 +68,7 @@ import org.junit.runner.RunWith;
  * @author Richard Achmatowicz
  */
 @RunWith(Arquillian.class)
-@ServerSetup({XSiteSimpleTestCase.ServerSetupTask.class})
+@ServerSetup({ XSiteSimpleTestCase.CacheSetupTask.class, XSiteSimpleTestCase.ServerSetupTask.class })
 public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = XSiteSimpleTestCase.class.getSimpleName();
@@ -198,13 +198,25 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
         }
     }
 
+    public static class CacheSetupTask extends CLIServerSetupTask {
+        public CacheSetupTask() {
+            this.builder.node(NODE_1, NODE_2, NODE_3, NODE_4)
+                    .setup("/subsystem=infinispan/cache-container=foo:add")
+                    .setup("/subsystem=infinispan/cache-container=foo/transport=jgroups:add")
+                    .setup("/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add")
+                    .teardown("/subsystem=infinispan/cache-container=foo/distributed-cache=bar:remove")
+                    .teardown("/subsystem=infinispan/cache-container=foo:remove")
+                    ;
+        }
+    }
+
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
             this.builder
                     // LON
                     .node(NODE_1, NODE_2)
-                    .setup("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=NYC:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
-                    .setup("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=SFO:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
+                    .setup("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=NYC:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
+                    .setup("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=SFO:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
                     .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY:add(site=LON)")
                     .setup("/subsystem=jgroups/stack=tcp/relay=RELAY/remote-site=NYC:add(channel=bridge)")
@@ -213,8 +225,8 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
                     .teardown("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
                     .teardown("/subsystem=jgroups/stack=tcp/relay=RELAY:remove")
                     .teardown("/subsystem=jgroups/channel=bridge:remove")
-                    .teardown("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=SFO:remove")
-                    .teardown("/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=backups/backup=NYC:remove")
+                    .teardown("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=SFO:remove")
+                    .teardown("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=NYC:remove")
                     .parent()
                     // NYC
                     .node(NODE_3)

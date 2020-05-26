@@ -28,6 +28,6 @@
     <resource-ref>
         <res-ref-name>infinispan/cache</res-ref-name>
         <res-type>org.infinispan.Cache</res-type>
-        <lookup-name>java:jboss/infinispan/cache/web/default</lookup-name>
+        <lookup-name>java:jboss/infinispan/cache/foo/bar</lookup-name>
     </resource-ref>
 </web-app>
