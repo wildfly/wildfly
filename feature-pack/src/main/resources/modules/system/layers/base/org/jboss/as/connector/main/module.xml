@@ -59,7 +59,6 @@
         <module name="org.jboss.ironjacamar.impl"/>
         <module name="org.jboss.ironjacamar.jdbcadapters"/>
         <module name="org.jboss.jandex"/>
-        <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="org.jboss.logging"/>
