@@ -18,9 +18,9 @@ Key Features
 
 Release Notes
 -------------
-You can obtain the 14.0.1.Final release notes here:
+You can obtain release notes here:
 
-http://wildfly.org/news/2018/08/30/WildFly14-Final-Released/
+http://wildfly.org/
 
 Getting Started
 ---------------
@@ -31,7 +31,7 @@ WildFly has two modes of operation: Standalone and Domain. For more
 information regarding these modes, please refer to the documentation 
 available on the JBoss.org site:
 
-http://docs.wildfly.org/15/
+http://docs.wildfly.org
 
 
 Starting a Standalone Server
