@@ -47,19 +47,24 @@ public class ApplicationSecurityDomainService implements Service {
 
     private final Supplier<SecurityDomain> securityDomainSupplier;
     private final Consumer<ApplicationSecurityDomainService.ApplicationSecurityDomain> applicationSecurityDomainConsumer;
+    private final Consumer<SecurityDomain> securityDomainConsumer;
     private final Set<RegistrationImpl> registrations = new HashSet<>();
     private final boolean enableJacc;
 
     public ApplicationSecurityDomainService(boolean enableJacc,
-            Supplier<SecurityDomain> securityDomainSupplier, Consumer<ApplicationSecurityDomainService.ApplicationSecurityDomain> applicationSecurityDomainConsumer) {
+            Supplier<SecurityDomain> securityDomainSupplier, Consumer<ApplicationSecurityDomainService.ApplicationSecurityDomain> applicationSecurityDomainConsumer,
+            Consumer<SecurityDomain> securityDomainConsumer) {
         this.enableJacc = enableJacc;
         this.securityDomainSupplier = securityDomainSupplier;
         this.applicationSecurityDomainConsumer = applicationSecurityDomainConsumer;
+        this.securityDomainConsumer = securityDomainConsumer;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        applicationSecurityDomainConsumer.accept(new ApplicationSecurityDomain(securityDomainSupplier.get(), enableJacc));
+        SecurityDomain securityDomain = securityDomainSupplier.get();
+        applicationSecurityDomainConsumer.accept(new ApplicationSecurityDomain(securityDomain, enableJacc));
+        securityDomainConsumer.accept(securityDomain);
     }
 
     @Override
