@@ -207,6 +207,7 @@ Basic layers:
 * _deployment-scanner_: Support for deployment directory scanning.
 * _discovery_: Support for discovery.
 * _elytron_: Support for Elytron security.
+*._git-history_: Support for using _git_ for configuration history.
 * _io_: Support for XNIO workers and buffer pools.
 * _jmx_: Support for registration of Management Model MBeans.
 * _jmx-remoting_: Support for registration of Management Model MBeans and a JMX remoting connector.
