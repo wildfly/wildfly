@@ -3208,4 +3208,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 516, value = "IIOP bindings for session bean named '%s' in deployment unit '%s' are as follows: %s")
     void iiopBindings(final String componentName, final String moduleName, final String name);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 517, value = "[EJB3.2 spec, section 4.1] Spec violation for class %s. Session EJBs should have only one of the following types : Stateful, Stateless, Singleton.")
+    void typeSpecViolation(String className);
 }
