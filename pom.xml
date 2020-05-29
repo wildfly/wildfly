@@ -347,7 +347,8 @@
         <version.org.cryptacular>1.2.4</version.org.cryptacular>
         <version.org.eclipse.jdt.core.compiler>4.6.1</version.org.eclipse.jdt.core.compiler>
         <version.org.eclipse.microprofile.config.api>1.4</version.org.eclipse.microprofile.config.api>
-        <version.org.eclipse.microprofile.fault-tolerance.api>2.1.1-RC1</version.org.eclipse.microprofile.fault-tolerance.api>
+        <version.org.eclipse.microprofile.fault-tolerance.api>2.1</version.org.eclipse.microprofile.fault-tolerance.api>
+        <version.org.eclipse.microprofile.fault-tolerance.tck>2.1.1-RC4</version.org.eclipse.microprofile.fault-tolerance.tck>
         <version.org.eclipse.microprofile.health.api>2.2</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>1.1.1</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.metrics.api>2.3</version.org.eclipse.microprofile.metrics.api>
@@ -5529,7 +5530,7 @@
             <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
                 <artifactId>microprofile-fault-tolerance-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.fault-tolerance.api}</version>
+                <version>${version.org.eclipse.microprofile.fault-tolerance.tck}</version>
                 <scope>test</scope>
             </dependency>
 
