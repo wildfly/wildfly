@@ -52,8 +52,27 @@ public class ClientBean implements ClientBeanRemote {
             // matches the order during 2PC processing
             tm.getTransaction().enlistResource(new TestXAResource(TestXAResource.TestAction.PREPARE_CRASH_VM));
         } catch (SystemException | RollbackException e) {
-            throw new RuntimeException("Cannot enlist TestXAResource to the current transaction", e);
+            throw new RuntimeException("Cannot enlist " + TestXAResource.class.getSimpleName() + " to the current transaction", e);
         }
+    }
+
+    public void twoPhaseIntermittentCommitFailureOnServer(String remoteDeploymentName) {
+        TransactionalRemote bean = getRemote(remoteDeploymentName);
+        bean.intermittentCommitFailure();
+        try {
+            // Enlisting second resource to force 2PC being processed
+            tm.getTransaction().enlistResource(new TestXAResource());
+        } catch (SystemException | RollbackException e) {
+            throw new RuntimeException("Cannot enlist " + TestXAResource.class.getSimpleName() + " to the current transaction", e);
+        }
+    }
+
+
+    public void onePhaseIntermittentCommitFailureOnServer(String remoteDeploymentName) {
+        TransactionalRemote bean = getRemote(remoteDeploymentName);
+        // Enlisting only remote EJB bean by the remote call and no other resource to process with 1PC
+        // but the remote EJB works with two resources and on 1PC commit it triggers the 2PC
+        bean.intermittentCommitFailureTwoPhase();
     }
 
     private TransactionalRemote getRemote(String remoteDeployment) {
