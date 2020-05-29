@@ -319,9 +319,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 }
             }
 
-            String securityDomain = "CORBA_REMOTE"; //TODO: what should this default to
+            String securityDomainName = "CORBA_REMOTE"; //TODO: what should this default to
             if (component.getSecurityMetaData() != null) {
-                securityDomain = component.getSecurityMetaData().getSecurityDomain();
+                securityDomainName = component.getSecurityMetaData().getSecurityDomainName();
             }
 
             Policy[] policies = policyList.toArray(new Policy[policyList.size()]);
@@ -338,7 +338,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
             // Instantiate home servant, bind it to the servant registry, and create CORBA reference to the EJBHome.
             final EjbCorbaServant homeServant = new EjbCorbaServant(poaCurrent, homeMethodMap, homeRepositoryIds, homeInterfaceDef,
-                    orb, homeView.getValue(), factory, configuration, jtsTransactionManager, module.getClassLoader(), true, securityDomain,
+                    orb, homeView.getValue(), factory, configuration, jtsTransactionManager, module.getClassLoader(), true, securityDomainName,
                     component.getSecurityDomain());
 
             homeServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
@@ -375,7 +375,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             // Instantiate the ejb object servant and bind it to the servant registry.
             final EjbCorbaServant beanServant = new EjbCorbaServant(poaCurrent, beanMethodMap, beanRepositoryIds,
                     beanInterfaceDef, orb, remoteView.getValue(), factory, configuration, jtsTransactionManager,
-                    module.getClassLoader(), false, securityDomain, component.getSecurityDomain());
+                    module.getClassLoader(), false, securityDomainName, component.getSecurityDomain());
             beanReferenceFactory = beanServantRegistry.bind(beanServantName(name), beanServant, policies);
 
             // Register bean home in local CORBA naming context

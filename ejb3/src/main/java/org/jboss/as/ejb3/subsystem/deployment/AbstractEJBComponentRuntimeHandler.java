@@ -155,8 +155,8 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
             result.set(component.isBeanManagedTransaction() ? TransactionManagementType.BEAN.name() : TransactionManagementType.CONTAINER.name());
         } else if (SECURITY_DOMAIN.getName().equals(attributeName)) {
             EJBSecurityMetaData md = component.getSecurityMetaData();
-            if (md != null && md.getSecurityDomain() != null) {
-                result.set(md.getSecurityDomain());
+            if (md != null && md.getSecurityDomainName() != null) {
+                result.set(md.getSecurityDomainName());
             }
         } else if (RUN_AS_ROLE.getName().equals(attributeName)) {
             EJBSecurityMetaData md = component.getSecurityMetaData();
