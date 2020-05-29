@@ -230,8 +230,8 @@ public class MaximumTimeoutTestCase {
 
             op = executeForResult(managementClient.getControllerClient(), Util.getReadAttributeOperation(TX_ADDRESS, DEF_TIMEOUT_ATTR));
             defaultTimeout = op.asInt();
-            LOGGER.info("max timeout: " + maxTimeout);
-            LOGGER.info("default timeout: " + defaultTimeout);
+            LOGGER.debug("max timeout: " + maxTimeout);
+            LOGGER.debug("default timeout: " + defaultTimeout);
         }
 
         @Override

@@ -49,12 +49,12 @@ public class BusinessActivityParticipant implements BusinessAgreementWithPartici
     }
 
     public static void resetInvocations() {
-        LOGGER.infof("resetting invocations %s", INVOCATIONS);
+        LOGGER.debugf("resetting invocations %s", INVOCATIONS);
         INVOCATIONS.clear();
     }
 
     public static List<String> getInvocations() {
-        LOGGER.infof("returning invocations %s", INVOCATIONS);
+        LOGGER.debugf("returning invocations %s", INVOCATIONS);
         return Collections.unmodifiableList(INVOCATIONS);
     }
 
@@ -65,38 +65,38 @@ public class BusinessActivityParticipant implements BusinessAgreementWithPartici
     @Override
     public void close() throws WrongStateException, SystemException {
         INVOCATIONS.add("close");
-        LOGGER.infof("close call on %s", this);
+        LOGGER.debugf("close call on %s", this);
     }
 
     @Override
     public void cancel() throws FaultedException, WrongStateException, SystemException {
         INVOCATIONS.add("cancel");
-        LOGGER.infof("cancel call on %s", this);
+        LOGGER.debugf("cancel call on %s", this);
     }
 
     @Override
     public void compensate() throws FaultedException, WrongStateException, SystemException {
         INVOCATIONS.add("compensate");
-        LOGGER.infof("compensate call on %s", this);
+        LOGGER.debugf("compensate call on %s", this);
     }
 
     @Override
     public String status() throws SystemException {
         INVOCATIONS.add("status");
-        LOGGER.infof("status call on %s", this);
+        LOGGER.debugf("status call on %s", this);
         return Status.STATUS_ACTIVE;
     }
 
     @Override
     public void unknown() throws SystemException {
         INVOCATIONS.add("unknown");
-        LOGGER.infof("unknown call on %s", this);
+        LOGGER.debugf("unknown call on %s", this);
     }
 
     @Override
     public void error() throws SystemException {
         INVOCATIONS.add("error");
-        LOGGER.infof("error call on %s", this);
+        LOGGER.debugf("error call on %s", this);
     }
 
     @Override

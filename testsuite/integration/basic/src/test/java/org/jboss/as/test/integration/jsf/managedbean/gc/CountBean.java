@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jsf.managedbean.gc;
 
 import java.io.Serializable;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -31,6 +30,8 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+
+import org.jboss.logging.Logger;
 
 @ManagedBean
 @SessionScoped
@@ -47,19 +48,19 @@ public class CountBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        LOG.info("CountBean#Initializing counter with @PostConstruct ...");
+        LOG.debug("CountBean#Initializing counter with @PostConstruct ...");
         count = initBean.getInit();
     }
 
     @PreDestroy
     public void destroy() {
-        LOG.info("Destroyed CountBean");
+        LOG.debug("Destroyed CountBean");
         TestResultsBean.setPreDestroySessionScoped(true);
     }
 
     public String invalidateGC() {
 
-        LOG.info("Running Garbage Collect and Invalidating Session");
+        LOG.debug("Running Garbage Collect and Invalidating Session");
 
         System.gc();
 

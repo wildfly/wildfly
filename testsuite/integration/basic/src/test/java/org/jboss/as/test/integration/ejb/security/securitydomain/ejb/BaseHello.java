@@ -28,7 +28,8 @@ import javax.ejb.SessionContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+
+import org.jboss.logging.Logger;
 
 @PermitAll
 public abstract class BaseHello implements Hello {
@@ -57,8 +58,8 @@ public abstract class BaseHello implements Hello {
     @Override
     public Info sayHello(Info info) {
 
-        log.info("**** ejb-context =" + ejbContext);
-        log.info("**** session-context =" + stx);
+        log.debug("**** ejb-context =" + ejbContext);
+        log.debug("**** session-context =" + stx);
 
         return info.update(this.getClass().getSimpleName(), ejbContext, expectedPrincipalClassName);
     }
@@ -69,12 +70,12 @@ public abstract class BaseHello implements Hello {
         data = (HashMap<String, Object>) ejbContext.getContextData();
 
         for (Map.Entry<String, Object> entry : data.entrySet()) {
-            System.out.println(" key =" + entry.getKey() + "\t value =" + entry.getValue());
+            log.debug(" key =" + entry.getKey() + "\t value =" + entry.getValue());
         }
-        log.info("######## ejb context data =" + data.toString() + "\n\n");
+        log.debugf("######## ejb context data =%s%n%n", data);
 
-        log.info("**** ejb-context =" + ejbContext);
-        log.info("**** session-context =" + stx);
+        log.debug("**** ejb-context =" + ejbContext);
+        log.debug("**** session-context =" + stx);
 
         // update info with this step
         info.update(this.getClass().getSimpleName(), ejbContext, expectedPrincipalClassName);

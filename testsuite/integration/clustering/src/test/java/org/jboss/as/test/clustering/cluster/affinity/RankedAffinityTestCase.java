@@ -133,7 +133,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 previousAffinities = entry.getValue().split("\\.");
 
-                log.info("Response #1:" + response);
+                log.debugf("Response #1: %s", response);
 
                 Assert.assertNotNull(entry);
                 Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
@@ -153,9 +153,9 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 PathAddress address = PathAddress.parseCLIStyleAddress(String.format("/subsystem=undertow/configuration=filter/mod-cluster=load-balancer/balancer=%s/node=%s", BALANCER_NAME, node));
                 operation.get(OP_ADDR).set(address.toModelNode());
                 ModelNode result = lbManagementClient.getControllerClient().execute(operation);
-                log.info("Running operation: " + operation.toJSONString(false));
+                log.debugf("Running operation: %s", operation.toJSONString(false));
                 Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-                log.info("Operation result: " + result.toJSONString(false));
+                log.debugf("Operation result: %s", result.toJSONString(false));
 
                 operation = new ModelNode();
                 operation.get(OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
@@ -164,9 +164,9 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 operation.get(ModelDescriptionConstants.RECURSIVE).set(ModelNode.TRUE);
                 operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(ModelNode.TRUE);
                 result = lbManagementClient.getControllerClient().execute(operation);
-                log.info("Running operation: " + operation.toJSONString(false));
+                log.debugf("Running operation: %s", operation.toJSONString(false));
                 Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-                log.info("Operation result: " + result.toJSONString(false));
+                log.debugf("Operation result: %s", result.toJSONString(false));
 
                 Thread.sleep(GRACE_TIME_TOPOLOGY_CHANGE);
 

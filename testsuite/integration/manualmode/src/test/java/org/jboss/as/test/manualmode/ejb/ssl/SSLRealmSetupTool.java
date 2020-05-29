@@ -120,7 +120,7 @@ public class SSLRealmSetupTool {
         operation.get(OP_ADDR).set(secRealmAddress);
         operation.get(OP).set(ADD);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        log.infof("Adding security realm %s with result %s", SECURITY_REALM_NAME, result);
+        log.debugf("Adding security realm %s with result %s", SECURITY_REALM_NAME, result);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // Adding SERVER IDENTITY
@@ -138,7 +138,7 @@ public class SSLRealmSetupTool {
         operation.get("keystore-path").set(KEYSTORES_ABSOLUTE_PATH + File.separator + SERVER_KEYSTORE_FILENAME);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.infof("Setting server-identity ssl for realm %s (password %s, keystore path %s) with result %s", SECURITY_REALM_NAME,
+        log.debugf("Setting server-identity ssl for realm %s (password %s, keystore path %s) with result %s", SECURITY_REALM_NAME,
                 SERVER_KEYSTORE_PASSWORD, KEYSTORES_ABSOLUTE_PATH, result.get(OUTCOME));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
@@ -172,7 +172,7 @@ public class SSLRealmSetupTool {
         operation.get("connector-ref").set("https");
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.infof("Adding HTTPS connector", result);
+        log.debugf("Adding HTTPS connector", result);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
     }
 
@@ -192,7 +192,7 @@ public class SSLRealmSetupTool {
         operation.get(OP).set(REMOVE);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        log.infof("remove HTTPS connector", result);
+        log.debugf("remove HTTPS connector", result);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
@@ -217,7 +217,7 @@ public class SSLRealmSetupTool {
         operation.get(OP).set(REMOVE);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.infof("Removing security realm %s with result %s", SECURITY_REALM_NAME, result);
+        log.debugf("Removing security realm %s with result %s", SECURITY_REALM_NAME, result);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
     }

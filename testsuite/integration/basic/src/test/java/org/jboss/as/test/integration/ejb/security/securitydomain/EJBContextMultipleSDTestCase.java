@@ -40,7 +40,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -68,6 +67,7 @@ import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -241,7 +241,7 @@ public class EJBContextMultipleSDTestCase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            log.info("Installing modules and Security Domains");
+            log.debug("Installing modules and Security Domains");
 
             deployModule();
 
