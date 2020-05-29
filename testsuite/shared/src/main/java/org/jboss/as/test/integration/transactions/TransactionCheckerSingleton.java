@@ -22,13 +22,12 @@
 
 package org.jboss.as.test.integration.transactions;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.annotation.ManagedBean;
 import javax.ejb.LocalBean;
-import javax.ejb.Remote;
 import javax.ejb.Singleton;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Singleton class used as log for actions done during testing.
@@ -37,144 +36,150 @@ import javax.ejb.Singleton;
  */
 @Singleton
 @LocalBean
-@Remote
-@ManagedBean
 public class TransactionCheckerSingleton implements TransactionCheckerSingletonRemote {
-    private volatile int committed, prepared, rolledback;
-    private volatile int synchronizedBegin, synchronizedBefore, synchronizedAfter,
-        synchronizedAfterCommitted, synchronizedAfterRolledBack;
-    private Collection<String> messages = new ArrayList<>();
+    private final AtomicInteger committed = new AtomicInteger();
+    private final AtomicInteger prepared = new AtomicInteger();
+    private final AtomicInteger rolledback = new AtomicInteger();
+    private final AtomicInteger synchronizedBegin = new AtomicInteger();
+    private final AtomicInteger synchronizedBefore = new AtomicInteger();
+    private final AtomicInteger synchronizedAfter = new AtomicInteger();
+    private final AtomicInteger synchronizedAfterCommitted = new AtomicInteger();
+    private final AtomicInteger synchronizedAfterRolledBack = new AtomicInteger();
+    private final Map<String,String> messages = new ConcurrentHashMap<>();
 
     @Override
     public int getCommitted() {
-        return committed;
+        return committed.get();
     }
 
     @Override
     public void addCommit() {
-        committed++;
+        committed.incrementAndGet();
     }
 
     @Override
     public int getPrepared() {
-        return prepared;
+        return prepared.get();
     }
 
     @Override
     public void addPrepare() {
-        prepared++;
+        prepared.incrementAndGet();
     }
 
     @Override
     public int getRolledback() {
-        return rolledback;
+        System.out.println("returning rollback value " + rolledback.get() + "!::" + this);
+        return rolledback.get();
     }
 
     @Override
     public void addRollback() {
-        rolledback++;
+        System.out.println("incrementing rollback value!::" + this);
+        rolledback.incrementAndGet();
     }
 
     @Override
     public boolean isSynchronizedBefore() {
-        return synchronizedBefore > 0;
+        return synchronizedBefore.get() > 0;
     }
 
     @Override
     public void setSynchronizedBefore() {
-        synchronizedBefore++;
+        synchronizedBefore.incrementAndGet();
     }
 
     @Override
     public boolean isSynchronizedAfter() {
-        return synchronizedAfter > 0;
+        return synchronizedAfter.get() > 0;
     }
 
     @Override
     public void setSynchronizedAfter(boolean isCommit) {
-        synchronizedAfter++;
+        synchronizedAfter.incrementAndGet();
         if(isCommit) {
-            synchronizedAfterCommitted++;
+            synchronizedAfterCommitted.incrementAndGet();
         } else {
-            synchronizedAfterRolledBack++;
+            synchronizedAfterRolledBack.incrementAndGet();
         }
     }
 
     @Override
     public boolean isSynchronizedBegin() {
-        return synchronizedBegin > 0;
+        return synchronizedBegin.get() > 0;
     }
 
     @Override
     public void setSynchronizedBegin() {
-        synchronizedBegin++;
+        synchronizedBegin.incrementAndGet();
     }
 
     @Override
     public void resetCommitted() {
-        committed = 0;
+        committed.set(0);
     }
 
     @Override
     public void resetPrepared() {
-        prepared = 0;
+        prepared.set(0);
     }
 
     @Override
     public void resetRolledback() {
-        rolledback = 0;
+        System.out.println("rollback reset! ::" + this);
+        rolledback.set(0);
     }
 
     @Override
     public void resetSynchronizedBefore() {
-        synchronizedBefore = 0;
+        synchronizedBefore.set(0);
     }
 
     @Override
     public void resetSynchronizedAfter() {
-        synchronizedAfter = 0;
-        synchronizedAfterCommitted = 0;
-        synchronizedAfterRolledBack = 0;
+        synchronizedAfter.set(0);
+        synchronizedAfterCommitted.set(0);
+        synchronizedAfterRolledBack.set(0);
     }
 
     @Override
     public void resetSynchronizedBegin() {
-        synchronizedBegin = 0;
+        synchronizedBegin.set(0);
     }
 
     @Override
     public int countSynchronizedBefore() {
-        return synchronizedBefore;
+        return synchronizedBefore.get();
     }
 
     @Override
     public int countSynchronizedAfter() {
-        return synchronizedAfter;
+        return synchronizedAfter.get();
     }
 
     @Override
     public int countSynchronizedAfterCommitted() {
-        return synchronizedAfterCommitted;
+        return synchronizedAfterCommitted.get();
     }
 
     @Override
     public int countSynchronizedAfterRolledBack() {
-        return synchronizedAfterRolledBack;
+        return synchronizedAfterRolledBack.get();
     }
 
     @Override
     public int countSynchronizedBegin() {
-        return synchronizedBegin;
+        return synchronizedBegin.get();
     }
 
     @Override
     public void addMessage(String msg) {
-        messages.add(msg);
+        messages.put(msg,msg);
     }
 
     @Override
     public Collection<String> getMessages() {
-        return messages;
+        return messages.values();
     }
 
     @Override
