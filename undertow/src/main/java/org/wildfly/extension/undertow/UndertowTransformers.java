@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.security.CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT;
 import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.ENABLE_JASPI;
 import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.INTEGRATED_JASPI;
 import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.SECURITY_DOMAIN;
@@ -80,6 +81,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
     private static ModelVersion MODEL_VERSION_EAP7_1_0 = ModelVersion.create(4, 0, 0);
     private static ModelVersion MODEL_VERSION_EAP7_2_0 = ModelVersion.create(7, 0, 0);
     private static final ModelVersion MODEL_VERSION_WILDFLY_16 = ModelVersion.create(8, 0, 0);
+    private static final ModelVersion MODEL_VERSION_WILDFLY_18 = ModelVersion.create(10, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -91,12 +93,21 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
 
-        registerTransformersWildFly16(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), MODEL_VERSION_WILDFLY_16));
+        registerTransformersWildFly18(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), MODEL_VERSION_WILDFLY_18));
+        registerTransformersWildFly16(chainedBuilder.createBuilder(MODEL_VERSION_WILDFLY_18, MODEL_VERSION_WILDFLY_16));
         registerTransformers_EAP_7_2_0(chainedBuilder.createBuilder(MODEL_VERSION_WILDFLY_16, MODEL_VERSION_EAP7_2_0));
         registerTransformers_EAP_7_1_0(chainedBuilder.createBuilder(MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0));
         registerTransformers_EAP_7_0_0(chainedBuilder.createBuilder(MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0));
 
-        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_WILDFLY_16, MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0});
+        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_WILDFLY_18, MODEL_VERSION_WILDFLY_16, MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0});
+    }
+
+    private static void registerTransformersWildFly18(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        subsystemBuilder.addChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN)
+                .addChildResource(UndertowExtension.PATH_SSO)
+                .getAttributeBuilder()
+                    .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, ApplicationSecurityDomainSingleSignOnDefinition.Attribute.CREDENTIAL.getName())
+                .end();
     }
 
     private static void registerTransformersWildFly16(ResourceTransformationDescriptionBuilder subsystemBuilder) {

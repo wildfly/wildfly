@@ -853,12 +853,18 @@ persistence unit from using the default data source. Defaults to true.
 This is only important for persistence units that do not specify a
 datasource.
 
-|jboss.as.jpa.deferdetach |Controls whether transaction scoped
-persistence context used in non-JTA transaction thread, will detach
+|jboss.as.jpa.deferdetach |Controls whether a transaction scoped
+persistence context used in a non-JTA transaction thread will detach
 loaded entities after each EntityManager invocation or when the
 persistence context is closed (e.g. business method ends). Defaults to
 false (entities are cleared after EntityManager invocation) and if set
 to true, the detach is deferred until the context is closed.
+
+|wildfly.jpa.skipquerydetach |Controls whether a transaction scoped
+persistence context used in a non-JTA transaction thread will detach
+Query results immediately. Defaults to
+false (Query results are detached immediately) and if set
+to true, the detach is deferred until the persistence context is closed.
 
 |wildfly.jpa.hibernate.search.module |Controls which version of
 Hibernate Search to include on classpath. Only makes sense when using

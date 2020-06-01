@@ -23,6 +23,6 @@
             <!--Exclude wildfly content -->
             <contents include="false"/>
         </feature-pack>
-        <feature-pack groupId="org.infinispan.server" artifactId="infinispan-server-feature-pack" version="${version.org.infinispan}"/>
+        <feature-pack groupId="org.infinispan.server" artifactId="infinispan-server-feature-pack" version="${version.org.infinispan.server}"/>
     </feature-packs>
 </server-provisioning>

@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -440,6 +440,7 @@
                                 <include>org/jboss/as/test/integration/jaxb/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/jaxrs/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/jaxrs/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/jca/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/json/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/json/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/jsp/**/*TestCase.java</include>
@@ -491,6 +492,9 @@
                                 <!-- requires ejb and remoting3 (deprecated) -->
                                 <exclude>org/jboss/as/test/integration/management/api/expression/ExpressionSubstitutionInContainerTestCase.java</exclude>
                                 <!-- requires ejb -->
+                                <exclude>org/jboss/as/test/integration/jca/deployment/EjbDeploymentTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/statistics/xa/XaDataSourcePoolStatisticsTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/tracer/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/management/cli/RemoveEJBSubsystemTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatefulEJBRemoteHomeRuntimeNameTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatelessEJBRemoteHomeRuntimeNameTestCase.java</exclude>
@@ -517,7 +521,25 @@
                                 <exclude>org/jboss/as/test/integration/deployment/xml/datasource/DeployedXmlJpaDataSourceTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/jaxrs/integration/ejb/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/jaxrs/packaging/ear/*TestCase.java</exclude>
+                                <!-- JCA TBD -->
+                                <exclude>org/jboss/as/test/integration/jca/ear/*TestCase.java</exclude>
                                 <!-- No legacy security -->
+                                <exclude>org/jboss/as/test/integration/jca/anno/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/basic/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</exclude>
+                                <!-- TODO why does this one need legacy security? Its name implies it should just be elytron -->
+                                <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithSecurityDomainTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/management/**/security/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/aselytron/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/auditing/*TestCase.java</exclude>
@@ -1195,6 +1217,18 @@
                                     </environmentVariables>
                                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
+                                        <include>org/jboss/as/test/integration/jca/anno/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/basic/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</include>
                                         <include>org/jboss/as/test/integration/management/api/security/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/security/aselytron/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/security/auditing/*TestCase.java</include>
@@ -1211,12 +1245,43 @@
                                         <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
                                         <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                         <!-- no ejb -->
+                                        <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
+                                        <!-- truststore setting used in LDAPs testing was affected by some other test - need a separate execution -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                     </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- truststore setting used in LDAPs testing was affected by some other test - need an extra run -->
+                            <execution>
+                                <id>legacy-security-layers-ldap.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-security</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>
+                                    </includes>
                                 </configuration>
                             </execution>
                         </executions>

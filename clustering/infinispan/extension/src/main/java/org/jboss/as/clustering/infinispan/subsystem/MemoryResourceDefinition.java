@@ -54,7 +54,7 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        SIZE("size", ModelType.LONG, new ModelNode(-1L)),
+        SIZE("size", ModelType.LONG, null),
         ;
         private final AttributeDefinition definition;
 

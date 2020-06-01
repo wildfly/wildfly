@@ -133,12 +133,8 @@
                         <property name="wildfly.sasl.local-user.default-user" value="$local"/>
                     </properties>
                     <filters>
-                        <filter>
-                            <pattern-filter value="JBOSS-LOCAL-USER"/>
-                        </filter>
-                        <filter>
-                            <pattern-filter value="DIGEST-MD5"/>
-                        </filter>
+                        <filter pattern="JBOSS-LOCAL-USER"/>
+                        <filter pattern="DIGEST-MD5"/>
                     </filters>
                 </configurable-sasl-server-factory>
                 <mechanism-provider-filtering-sasl-server-factory name="elytron" sasl-server-factory="global">

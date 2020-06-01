@@ -22,17 +22,17 @@
 package org.jboss.as.test.integration.ejb.remote.byreference;
 
 
-import java.util.logging.Logger;
-
 import javax.ejb.Stateless;
+
+import org.jboss.logging.Logger;
 
 @Stateless
 public class HelloBean implements HelloRemote {
 
-    private Logger log = Logger.getLogger(this.getClass().getSimpleName().toString());
+    private final Logger log = Logger.getLogger(this.getClass());
 
     public TransferReturnValue hello ( TransferParameter param ) throws RemoteByReferenceException {
-        log.info("hello("+ param +") = Hello " + param );
+        log.debug("hello("+ param +") = Hello " + param );
 
         if(param == null)
             throw new RemoteByReferenceException("Param was null");
@@ -42,7 +42,7 @@ public class HelloBean implements HelloRemote {
 
     @Override
     public SerializableObject helloSerializable(SerializableObject param) throws RemoteByReferenceException {
-        log.info("helloserializable("+ param +") = Hello " + param );
+        log.debug("helloserializable("+ param +") = Hello " + param );
 
         if(param == null)
             throw new RemoteByReferenceException("Param was null");
@@ -53,7 +53,7 @@ public class HelloBean implements HelloRemote {
 
     @Override
     public NonSerializableObject helloNonSerializable(NonSerializableObject param) throws RemoteByReferenceException {
-        log.info("helloserializable("+ param +") = Hello " + param );
+        log.debug("helloserializable("+ param +") = Hello " + param );
 
         if(param == null)
             throw new RemoteByReferenceException("Param was null");
@@ -65,7 +65,7 @@ public class HelloBean implements HelloRemote {
     @Override
     public SerializableObject helloNonSerializableToSerializable(NonSerializableObject param)
             throws RemoteByReferenceException {
-        log.info("helloserializable("+ param +") = Hello " + param );
+        log.debug("helloserializable("+ param +") = Hello " + param );
 
         if(param == null)
             throw new RemoteByReferenceException("Param was null");
@@ -77,7 +77,7 @@ public class HelloBean implements HelloRemote {
     @Override
     public NonSerializableObject helloSerializableToNonSerializable(SerializableObject param)
             throws RemoteByReferenceException {
-        log.info("helloserializable("+ param +") = Hello " + param );
+        log.debug("helloserializable("+ param +") = Hello " + param );
 
         if(param == null)
             throw new RemoteByReferenceException("Param was null");

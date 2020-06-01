@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
+import static org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescriptionDeploymentUnitProcessor.getEjbJarDescription;
 
 import java.lang.reflect.Modifier;
 import java.util.List;

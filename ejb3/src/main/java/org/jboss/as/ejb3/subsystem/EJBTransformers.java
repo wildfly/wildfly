@@ -34,6 +34,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_3_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_4_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_5_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_6_0_0;
+import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_7_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EXECUTION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
@@ -91,13 +92,14 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         ModelVersion currentModel = subsystemRegistration.getCurrentSubsystemVersion();
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(currentModel);
 
-        registerTransformers_5_0_0(chainedBuilder.createBuilder(currentModel, VERSION_5_0_0.getVersion()));
+        registerTransformers_6_0_0(chainedBuilder.createBuilder(currentModel, VERSION_6_0_0.getVersion()));
+        registerTransformers_5_0_0(chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion()));
         registerTransformers_4_0_0(chainedBuilder.createBuilder(VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion()));
         registerTransformers_3_0_0(chainedBuilder.createBuilder(VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion()));
         registerTransformers_1_3_0(chainedBuilder.createBuilder(VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion()));
         registerTransformers_1_2_1(chainedBuilder.createBuilder(VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()));
 
-        chainedBuilder.buildAndRegister(subsystemRegistration,new ModelVersion[]{VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()});
+        chainedBuilder.buildAndRegister(subsystemRegistration,new ModelVersion[]{VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()});
     }
 
     /*
@@ -259,6 +261,17 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, PoolAttributeDefinitions.CORE_THREADS)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, PoolAttributeDefinitions.CORE_THREADS)
+                .end();
+    }
+
+    /*
+     * Transformers for changes in model version 7.0.0
+     */
+    private static void registerTransformers_6_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        // default stateful session timeout
+        subsystemBuilder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT)
                 .end();
     }
 

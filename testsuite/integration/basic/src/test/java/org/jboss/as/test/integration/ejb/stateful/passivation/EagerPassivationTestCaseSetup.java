@@ -30,6 +30,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
@@ -47,6 +48,7 @@ public class EagerPassivationTestCaseSetup implements ServerSetupTask {
         operation.get(ModelDescriptionConstants.VALUE).set("PT1S");
         ModelNode result = client.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        ServerReload.reloadIfRequired(client);
     }
 
     @Override
@@ -54,5 +56,6 @@ public class EagerPassivationTestCaseSetup implements ServerSetupTask {
         ModelNode operation = Util.createRemoveOperation(PathAddress.pathAddress(PathElement.pathElement("system-property", EAGER_PASSIVATION_PROPERTY)));
         ModelNode result = client.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        ServerReload.reloadIfRequired(client);
     }
 }

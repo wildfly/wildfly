@@ -22,20 +22,27 @@
 
 package org.wildfly.test.integration.agroal;
 
-import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.After;
-import org.junit.Before;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.jboss.as.controller.client.helpers.Operations.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
@@ -43,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  *
  * @author <a href="mailto:lbarreiro@redhat.com">Luis Barreiro</a>
  */
+@ServerSetup(AgroalDatasourceTestBase.SubsystemSetupTask.class)
 public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTestBase {
 
     private static final Logger log = Logger.getLogger(AgroalDatasourceTestBase.class);
@@ -55,43 +63,46 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
         return String.format("${%s}", propertyName);
     }
 
-    @Before
-    public void enableExtension() throws Exception {
-        ModelNode extensionOp = new ModelNode();
-        extensionOp.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(EXTENSION, AGROAL_EXTENTION);
-        extensionOp.get(OP).set(ADD);
 
-        try {
-            executeOperation(extensionOp);
-        } catch (MgmtOperationException e) {
-            log.infof( "Can't add extension '%s' by cli: %s", EXTENSION, e.getResult().get(FAILURE_DESCRIPTION));
+    public static class SubsystemSetupTask extends SnapshotRestoreSetupTask {
+        @Override
+        protected void doSetup(final ManagementClient client, final String containerId) throws Exception {
+            final CompositeOperationBuilder builder = CompositeOperationBuilder.create();
+            ModelNode extensionOp = new ModelNode();
+            extensionOp.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(EXTENSION, AGROAL_EXTENTION);
+            extensionOp.get(OP).set(ADD);
+            builder.addStep(extensionOp);
+
+            ModelNode subsystemOp = new ModelNode();
+            subsystemOp.get(OP_ADDR).set(SUBSYSTEM, DATASOURCES_SUBSYSTEM);
+            subsystemOp.get(OP).set(ADD);
+            builder.addStep(subsystemOp);
+
+            executeOperation(client, builder.build());
+
+            // Reload before continuing
+            ServerReload.executeReloadAndWaitForCompletion(client, TimeoutUtil.adjust(50000));
         }
 
-        ModelNode subsystemOp = new ModelNode();
-        subsystemOp.get(OP_ADDR).set(SUBSYSTEM, DATASOURCES_SUBSYSTEM);
-        subsystemOp.get(OP).set(ADD);
-
-        try {
-            executeOperation(subsystemOp);
-        } catch (MgmtOperationException e) {
-            log.infof( "Can't add subsystem '%s' by cli: %s", DATASOURCES_SUBSYSTEM, e.getResult().get(FAILURE_DESCRIPTION));
+        private void executeOperation(final ManagementClient client, final Operation op) throws IOException {
+            final ModelNode result = client.getControllerClient().execute(op);
+            if (!isSuccessfulOutcome(result)) {
+                // Throwing an exception does not seem to stop the tests from running, log the error as well for some
+                // better details
+                log.errorf("Failed to execute operation: %s%n%s",
+                        getFailureDescription(result).asString(), op.getOperation());
+                throw new RuntimeException("Failed to execute operation: " + getFailureDescription(result).asString());
+            }
         }
-
-        // Reload before continuing
-        ServerReload.executeReloadAndWaitForCompletion(getManagementClient(), TimeoutUtil.adjust(50000));
     }
 
-    @After
-    public void disableExtension() throws Exception {
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(EXTENSION, AGROAL_EXTENTION);
-        operation.get(OP).set(REMOVE);
-
-        try {
-            executeOperation(operation);
-        } catch (MgmtOperationException e) {
-            log.warnf("Can't remove extension '%s' by cli: ", AGROAL_EXTENTION, e.getResult().get(FAILURE_DESCRIPTION));
-        }
+    /*
+     * A dummy deployment is required for a ServerSetupTask to run.
+     */
+    @Deployment
+    public static JavaArchive deployment() {
+        return ShrinkWrap.create(JavaArchive.class, "dummy-deployment.jar")
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     // --- //
@@ -203,7 +214,7 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
         try {
             executeOperation(driverOp);
         } catch (MgmtOperationException e) {
-            log.infof( "Can't add driver '%s' by cli: %s", DATASOURCES_SUBSYSTEM, e.getResult().get(FAILURE_DESCRIPTION));
+            Assert.fail(String.format( "Can't add driver '%s' by cli: %s", DATASOURCES_SUBSYSTEM, e.getResult().get(FAILURE_DESCRIPTION)));
         }
     }
 
@@ -215,7 +226,7 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
         ModelNode address = new ModelNode().add(SUBSYSTEM, DATASOURCES_SUBSYSTEM).add("driver", datasource.getDriverName());
         address.protect();
         try {
-            ModelNode removeOperation = Operations.createRemoveOperation(address);
+            ModelNode removeOperation = createRemoveOperation(address);
             removeOperation.get(ModelDescriptionConstants.OPERATION_HEADERS).get("allow-resource-service-restart").set(true);
             executeOperation(removeOperation);
         } catch (MgmtOperationException e) {

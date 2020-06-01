@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -33,6 +34,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,6 +64,13 @@ public class MapExternalizerTestCase {
         new ExternalizerTester<>(DefaultExternalizer.EMPTY_NAVIGABLE_MAP.cast(NavigableMap.class), Assert::assertSame).test(Collections.emptyNavigableMap());
         new ExternalizerTester<>(DefaultExternalizer.EMPTY_SORTED_MAP.cast(SortedMap.class), Assert::assertSame).test(Collections.emptySortedMap());
 
+        EnumMap<TimeUnit, Integer> enumMap = new EnumMap<>(TimeUnit.class);
+        new ExternalizerTester<>(DefaultExternalizer.ENUM_MAP.cast(EnumMap.class), MapExternalizerTestCase::assertMapEquals).test(enumMap);
+
+        enumMap.put(TimeUnit.SECONDS, Integer.valueOf(1));
+        enumMap.put(TimeUnit.MINUTES, Integer.valueOf(2));
+
+        new ExternalizerTester<>(DefaultExternalizer.ENUM_MAP.cast(EnumMap.class), MapExternalizerTestCase::assertMapEquals).test(enumMap);
         new ExternalizerTester<>(DefaultExternalizer.SINGLETON_MAP.cast(Map.class), MapExternalizerTestCase::assertMapEquals).test(Collections.singletonMap(1, 2));
 
         new ExternalizerTester<>(DefaultExternalizer.CONCURRENT_SKIP_LIST_MAP.cast(ConcurrentSkipListMap.class), MapExternalizerTestCase::assertMapEquals).test(new ConcurrentSkipListMap<>(basis));

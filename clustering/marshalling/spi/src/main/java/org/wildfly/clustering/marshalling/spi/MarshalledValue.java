@@ -23,11 +23,10 @@
 package org.wildfly.clustering.marshalling.spi;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author Paul Ferraro
  */
-public interface MarshalledValue<T, C> extends Serializable {
+public interface MarshalledValue<T, C> {
     T get(C context) throws IOException, ClassNotFoundException;
 }

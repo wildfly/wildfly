@@ -43,12 +43,14 @@ public enum Namespace {
 
     DATASOURCES_4_0("urn:jboss:domain:datasources:4.0"),
 
-    DATASOURCES_5_0("urn:jboss:domain:datasources:5.0");
+    DATASOURCES_5_0("urn:jboss:domain:datasources:5.0"),
+
+    DATASOURCES_6_0("urn:jboss:domain:datasources:6.0");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DATASOURCES_5_0;
+    public static final Namespace CURRENT = DATASOURCES_6_0;
 
     private final String name;
 

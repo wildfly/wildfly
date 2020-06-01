@@ -23,8 +23,11 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.Properties;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +37,10 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.commons.executors.ExecutorFactory;
+import org.infinispan.commons.util.concurrent.BlockingRejectedExecutionHandler;
+import org.infinispan.commons.util.concurrent.NonBlockingRejectedExecutionHandler;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
+import org.jboss.as.clustering.infinispan.DefaultNonBlockingThreadFactory;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentServiceConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -63,13 +69,19 @@ public class ClientThreadPoolServiceConfigurator extends ComponentServiceConfigu
         int minThreads = this.definition.getMinThreads().resolveModelAttribute(context, model).asInt();
         int queueLength = this.definition.getQueueLength().resolveModelAttribute(context, model).asInt();
         long keepAliveTime = this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong();
+        boolean nonBlocking = this.definition.isNonBlocking();
 
         this.factory = new ExecutorFactory() {
             @Override
             public ExecutorService getExecutor(Properties property) {
+                BlockingQueue<Runnable> queue = queueLength == 0 ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(queueLength);
                 ThreadFactory factory = new DefaultThreadFactory(new DaemonThreadFactory(DefaultAsyncExecutorFactory.THREAD_NAME));
+                if (nonBlocking) {
+                    factory = new DefaultNonBlockingThreadFactory(factory);
+                }
+                RejectedExecutionHandler handler = nonBlocking ? NonBlockingRejectedExecutionHandler.getInstance() : BlockingRejectedExecutionHandler.getInstance();
 
-                return new ThreadPoolExecutor(minThreads, maxThreads, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(queueLength), factory);
+                return new ThreadPoolExecutor(minThreads, maxThreads, keepAliveTime, TimeUnit.MILLISECONDS, queue, factory, handler);
             }
         };
 

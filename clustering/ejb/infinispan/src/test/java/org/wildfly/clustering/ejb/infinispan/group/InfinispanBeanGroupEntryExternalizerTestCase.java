@@ -55,11 +55,11 @@ public class InfinispanBeanGroupEntryExternalizerTestCase {
     public void test() throws ClassNotFoundException, IOException {
         SessionID id = new UUIDSessionID(UUID.randomUUID());
         Map<SessionID, String> beans = Collections.singletonMap(id, "bean");
-        InfinispanBeanGroupEntry<SessionID, String> entry = new InfinispanBeanGroupEntry<>(new SimpleMarshalledValue<>(beans, context));
+        InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry = new InfinispanBeanGroupEntry<>(new SimpleMarshalledValue<>(beans, context));
         new ExternalizerTester<>(new InfinispanBeanGroupEntryExternalizer<>(), InfinispanBeanGroupEntryExternalizerTestCase::assertEquals).test(entry);
     }
 
-    static void assertEquals(InfinispanBeanGroupEntry<SessionID, String> entry1, InfinispanBeanGroupEntry<SessionID, String> entry2) {
+    static void assertEquals(InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry1, InfinispanBeanGroupEntry<SessionID, String, MarshallingContext> entry2) {
         try {
             Assert.assertEquals(entry1.getBeans().get(context), entry2.getBeans().get(context));
         } catch (ClassNotFoundException | IOException e) {

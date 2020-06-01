@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
 
@@ -36,4 +37,12 @@ public interface WriteAttributeStepHandlerDescriptor extends OperationStepHandle
      * @return a collection of attributes
      */
     Collection<AttributeDefinition> getAttributes();
+
+    /**
+     * Attributes (not specified by {@link #getAttributes()}) will be ignored at runtime..
+     * @return a collection of ignored attributes
+     */
+    default Collection<AttributeDefinition> getIgnoredAttributes() {
+        return Collections.emptySet();
+    }
 }

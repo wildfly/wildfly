@@ -24,7 +24,10 @@ package org.jboss.as.test.integration.ejb.management.deployments;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateful;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.ejb3.annotation.SecurityDomain;
@@ -39,5 +42,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
 @Cache("passivating")
+@TransactionManagement(TransactionManagementType.BEAN)
+@LocalBean
 public class ManagedStatefulBean extends AbstractManagedBean implements BusinessInterface {
 }

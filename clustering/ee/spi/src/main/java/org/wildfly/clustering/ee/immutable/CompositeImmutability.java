@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.ee.immutable;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import org.wildfly.clustering.ee.Immutability;
@@ -46,6 +47,11 @@ public class CompositeImmutability implements Immutability {
 
     @Override
     public boolean test(Object object) {
+        if (object == null) return true;
+        // Short-circuit test if object is an array
+        if (object.getClass().isArray()) {
+            return Array.getLength(object) == 0;
+        }
         for (Immutability immutability : this.immutabilities) {
             if (immutability.test(object)) {
                 return true;

@@ -41,7 +41,6 @@ public class MemoryServiceConfigurator extends ComponentServiceConfigurator<Memo
 
     private final StorageType storageType;
     private volatile long size;
-    private volatile int capacity;
     private volatile EvictionType evictionType;
 
     MemoryServiceConfigurator(StorageType storageType, PathAddress address) {
@@ -51,9 +50,8 @@ public class MemoryServiceConfigurator extends ComponentServiceConfigurator<Memo
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.size = MemoryResourceDefinition.Attribute.SIZE.resolveModelAttribute(context, model).asLong();
+        this.size = MemoryResourceDefinition.Attribute.SIZE.resolveModelAttribute(context, model).asLong(-1L);
         this.evictionType = ModelNodes.asEnum(BinaryMemoryResourceDefinition.Attribute.EVICTION_TYPE.resolveModelAttribute(context, model), EvictionType.class);
-        this.capacity = OffHeapMemoryResourceDefinition.Attribute.CAPACITY.resolveModelAttribute(context, model).asInt();
         return this;
     }
 
@@ -64,7 +62,6 @@ public class MemoryServiceConfigurator extends ComponentServiceConfigurator<Memo
                 .storageType(this.storageType)
                 .evictionStrategy(this.size > 0 ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL)
                 .evictionType(this.evictionType)
-                .addressCount(this.capacity)
                 .create();
     }
 }

@@ -55,6 +55,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
@@ -264,8 +265,13 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        CredentialReferenceWriteAttributeHandler credentialReferenceWriteAttributeHandler = new CredentialReferenceWriteAttributeHandler(SOURCE_CREDENTIAL_REFERENCE, TARGET_CREDENTIAL_REFERENCE);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
+            if (attr.equals(SOURCE_CREDENTIAL_REFERENCE) || attr.equals(TARGET_CREDENTIAL_REFERENCE)) {
+                registry.registerReadWriteAttribute(attr, null, credentialReferenceWriteAttributeHandler);
+            } else {
+                registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
+            }
         }
         for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
             registry.registerReadOnlyAttribute(attr, JMSBridgeHandler.INSTANCE);

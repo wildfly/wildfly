@@ -33,6 +33,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SECURITY_DO
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_GRACEFUL_TXN_SHUTDOWN;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDENTITY;
@@ -77,7 +78,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_6_0.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_7_0.getUriString(), false);
         writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();
@@ -447,6 +448,10 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (statefulBeanModel.hasDefined(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)) {
             String defaultAccessTimeout = statefulBeanModel.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).asString();
             writer.writeAttribute(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName(), defaultAccessTimeout);
+        }
+        if (statefulBeanModel.hasDefined(DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT)) {
+            String defaultSessionTimeout = statefulBeanModel.get(DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT).asString();
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.DEFAULT_SESSION_TIMEOUT.getLocalName(), defaultSessionTimeout);
         }
         if (statefulBeanModel.hasDefined(DEFAULT_SFSB_CACHE)) {
             String cache = statefulBeanModel.get(DEFAULT_SFSB_CACHE).asString();

@@ -45,7 +45,7 @@ public class AgroalExtension implements Extension {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append(SUBSYSTEM_NAME);
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
     private static final String RESOURCE_NAME = AgroalExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -60,6 +60,7 @@ public class AgroalExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, AgroalNamespace.AGROAL_1_0.getUriString(), AgroalSubsystemParser_1_0.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, AgroalNamespace.AGROAL_2_0.getUriString(), AgroalSubsystemParser_2_0.INSTANCE);
     }
 
     @Override
@@ -68,6 +69,6 @@ public class AgroalExtension implements Extension {
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(AgroalSubsystemDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        subsystem.registerXMLElementWriter(AgroalSubsystemParser_1_0.INSTANCE);
+        subsystem.registerXMLElementWriter(AgroalSubsystemParser_2_0.INSTANCE);
     }
 }

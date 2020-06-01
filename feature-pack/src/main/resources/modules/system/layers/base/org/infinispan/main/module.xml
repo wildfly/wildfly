@@ -34,16 +34,16 @@
         <module name="javax.transaction.api"/>
         <module name="com.github.ben-manes.caffeine"/>
         <module name="io.reactivex.rxjava2.rxjava"/>
-        <module name="net.jcip"/>
         <module name="org.infinispan.persistence.jdbc" optional="true"/>
         <module name="org.infinispan.persistence.remote" optional="true"/>
         <module name="org.infinispan.client.hotrod" optional="true"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.component.annotations"/>
+        <module name="org.infinispan.protostream"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
         <module name="org.jgroups" optional="true"/>
         <module name="org.reactivestreams"/>
-        <module name="sun.jdk"/>
+        <module name="sun.jdk" optional="true"/>
     </dependencies>
 </module>

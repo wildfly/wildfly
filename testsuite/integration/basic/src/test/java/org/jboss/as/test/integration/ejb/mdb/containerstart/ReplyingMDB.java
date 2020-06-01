@@ -73,7 +73,7 @@ public class ReplyingMDB implements MessageListener {
             if (message instanceof TextMessage) {
                 if (text.equals("await") && !message.getJMSRedelivered()) {
                     // we have received the first message
-                    log.infof("Message [%s, %s] contains text 'await'", message, text);
+                    log.debugf("Message [%s, %s] contains text 'await'", message, text);
                     // synchronize with test to start with undeploy
                     HelperSingletonImpl.barrier.await(WAIT_S, SECONDS);
                     HelperSingletonImpl.barrier.reset();
@@ -96,7 +96,7 @@ public class ReplyingMDB implements MessageListener {
             Destination destination = message.getJMSReplyTo();
             message.setJMSDeliveryMode(NON_PERSISTENT);
             sender.send(destination, replyMessage);
-            log.infof("onMessage method [OK], msg: [%s] with id [%s]. Replying to destination [%s].",
+            log.debugf("onMessage method [OK], msg: [%s] with id [%s]. Replying to destination [%s].",
                     text, message, destination);
         } catch (Exception e) {
             throw new RuntimeException(e);

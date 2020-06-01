@@ -23,12 +23,12 @@
 <xs:schema targetNamespace="urn:jboss:domain:jgroups:7.0"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:tns="urn:jboss:domain:jgroups:7.0"
-           xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
+           xmlns:credential-reference="urn:wildfly:credential-reference:1.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="7.0">
 
-    <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
+    <xs:import namespace="urn:wildfly:credential-reference:1.0" schemaLocation="wildfly-credential-reference_1_0.xsd"/>
 
     <xs:element name="subsystem" type="tns:subsystem">
         <xs:annotation>

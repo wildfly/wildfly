@@ -2522,13 +2522,91 @@ sections.
 A role decoder converts attributes from the identity provided by the
 security realm into roles. Role decoders are also specifically typed
 based on their functionality, for example _empty-role-decoder_,
-_simple-role-decoder_, and _custom-role-decoder_.
+_simple-role-decoder_, _custom-role-decoder_, and _aggregate-role-decoder_.
 
 Adding a role decoder takes the general form:
 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/ROLE-DECODER-TYPE=roleDeoderName:add(....)
+----
+
+==== Create an Elytron Role Decoder that makes use of the IP Address of the Remote Client
+
+A role decoder that is configured on a security realm assigns roles to
+an identity based on attributes provided by the security realm. It is
+also possible to configure a role decoder that makes use of the IP
+address of the remote client when determining the roles associated
+with an identity. As an example, we might want to make use of the IP
+address of the remote client in order to assign a user a particular
+role when establishing a connection to the server from a corporate
+network and a different role when establishing a connection to the
+server from a different network.
+
+Adding a role decoder that makes use of the remote client's IP
+address takes the general form:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=roleDecoderName:add(source-address="...", pattern="...", roles=[...])
+----
+
+In particular, a _source-address-role-decoder_ has the following attributes:
+
+* _source-address_ - The IP address of the remote client.
+
+* _pattern_ - A regular expression that specifies the IP address to match.
+
+* _roles_ - The list of roles to assign if the source IP address matches the given address.
+
+Only one of _source-address_ and _pattern_ should be specified.
+
+For example, the following _source-address-role-decoder_ could be configured to specify
+that a user should be assigned the "Administrator" role when establishing a connection
+to the server from the 10.10.10.10 IP address:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+----
+
+Once a _source-address-role-decoder_ has been configured, it can be referenced from a _security-domain_:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/security-domain=exampleSD:add(..., role-decoder=decoder1)
+----
+
+It is also possible to assign permissions to an identity based on its roles using a
+link:Using_the_Elytron_Subsystem{outfilesuffix}#create-an-elytron-permission-mapper[simple permission mapper].
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+/subsystem=elytron/simple-permission-mapper=ipPermissionMapper:add(permission-mappings=[{roles=["Administrator"], permission-sets=[{permission-set=login-permission}]}])
+/subsystem=elytron/security-domain=exampleSD:add(..., role-decoder=decoder1, permission-mapper=ipPermissionMapper)
+----
+
+The above example configures a security domain with a source address role decoder that
+will assign the "Administrator" role when the IP address of the remote client matches
+the configured address and a simple permission mapper that only assigns the
+"LoginPermission" if the identity has the "Administrator" role. Thus, authentication
+will succeed if the IP address of the remote client matches the configured address.
+
+It is also possible to configure an _aggregate-role-decoder_. This consists of
+two or more _role-decoder_ elements where each element is a reference to a configured
+role decoder. Each role decoder will be applied and the returned value will be a union of
+the roles returned by each decoder.
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+/subsystem=elytron/source-address-role-decoder=decoder2:add(source-address="12.12.12.12", roles=["Users"])
+/subsystem=elytron/aggregate-role-decoder=aggregateDecoder:add(role-decoders=[decoder1, decoder2])
 ----
 
 [[create-an-elytron-permission-set]]

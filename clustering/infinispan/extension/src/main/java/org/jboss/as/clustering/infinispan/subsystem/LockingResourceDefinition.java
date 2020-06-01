@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -60,7 +61,7 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "LOCKING");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(15000L)) {
+        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(15))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);

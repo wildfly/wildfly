@@ -107,6 +107,7 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
     enum ColumnAttribute implements org.jboss.as.clustering.controller.Attribute {
         ID("id-column", "id", "VARCHAR"),
         DATA("data-column", "datum", "BINARY"),
+        SEGMENT("segment-column", "segment", "INTEGER"),
         TIMESTAMP("timestamp-column", "version", "BIGINT"),
         ;
         private final org.jboss.as.clustering.controller.Attribute name;
@@ -147,6 +148,12 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, ColumnAttribute.SEGMENT.getName())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ColumnAttribute.SEGMENT.getName())
+                    ;
+        }
         if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.CREATE_ON_START.getDefinition(), Attribute.DROP_ON_STOP.getDefinition())

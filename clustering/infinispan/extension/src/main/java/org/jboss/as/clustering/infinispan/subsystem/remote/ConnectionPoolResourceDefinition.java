@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.configuration.ExhaustedAction;
@@ -61,9 +62,9 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
                 return builder.setValidator(new EnumValidator<>(ExhaustedAction.class));
             }
         },
-        MAX_ACTIVE("max-active", ModelType.INT, new ModelNode(-1)),
-        MAX_WAIT("max-wait", ModelType.LONG, new ModelNode(-1L)),
-        MIN_EVICTABLE_IDLE_TIME("min-evictable-idle-time", ModelType.LONG, new ModelNode(1800000L)),
+        MAX_ACTIVE("max-active", ModelType.INT, null),
+        MAX_WAIT("max-wait", ModelType.LONG, null),
+        MIN_EVICTABLE_IDLE_TIME("min-evictable-idle-time", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(30))),
         MIN_IDLE("min-idle", ModelType.INT, new ModelNode(1)),
         ;
 

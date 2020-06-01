@@ -52,5 +52,8 @@
                 <include path="org.jboss.as.txn.integration"/>
             </imports>
         </module>
+
+        <!-- For the ContextPropagationAsyncHandler used with the context propagation feature pack -->
+        <module name="org.wildfly.reactive.dep.jts" services="import" optional="true"/>
     </dependencies>
 </module>

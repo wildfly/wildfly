@@ -6,9 +6,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Logger;
 
-import static java.util.logging.Level.SEVERE;
+import org.jboss.logging.Logger;
 
 @MessageDriven(
     activationConfig = {
@@ -37,12 +36,12 @@ public class JMSListener implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            logger.info("Message received (async): " + message.getBody(String.class));
+            logger.debug("Message received (async): " + message.getBody(String.class));
 
             latch.countDown();
 
         } catch (JMSException ex) {
-            logger.log(SEVERE, null, ex);
+            logger.error("Error onMessage", ex);
         }
     }
 }

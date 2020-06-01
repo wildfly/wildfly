@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>20.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-clustering</artifactId>
@@ -48,6 +48,7 @@
         <version.org.jboss.infinispan-wildfly>14.0.1.Final</version.org.jboss.infinispan-wildfly>
         <!-- Byteman configuration -->
         <version.org.jboss.byteman>4.0.6</version.org.jboss.byteman>
+        <version.org.infinispan.server>9.4.19.Final</version.org.infinispan.server>
     </properties>
 
     <dependencies>
@@ -135,7 +136,7 @@
                                 <configuration>
                                     <config-file>infinispan-server-provisioning.xml</config-file>
                                     <buildName>${basedir}/target/</buildName>
-                                    <server-name>infinispan-server-${version.org.infinispan}</server-name>
+                                    <server-name>infinispan-server</server-name>
                                 </configuration>
                             </execution>
                         </executions>
@@ -303,7 +304,7 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
+                                        <version.org.infinispan.server>${version.org.infinispan.server}</version.org.infinispan.server>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -361,7 +362,7 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Usual server JVM args plus additional Byteman args (-Djboss.modules.system.pkgs, -Xbootclasspath)-->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} ${surefire.byteman.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
+                                        <version.org.infinispan.server>${version.org.infinispan.server}</version.org.infinispan.server>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -489,7 +490,7 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
+                                        <version.org.infinispan.server>${version.org.infinispan.server}</version.org.infinispan.server>
                                     </systemPropertyVariables>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -538,8 +539,8 @@
                                         <exclude>org/jboss/as/test/clustering/cluster/web/NonHaWebSessionPersistenceTestCase.java</exclude>
                                         <!-- Needs jpa replaced with jpa-distributed;
                                              this is tested in the ts.surefire.clustering.all.jpa2lc execution -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/jpa2lc/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/jpa2lcCustomRegion/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/jpa/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/jpa/custom/*TestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -571,7 +572,7 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
+                                        <version.org.infinispan.server>${version.org.infinispan.server}</version.org.infinispan.server>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -665,7 +666,6 @@
                                             <model>standalone</model>
                                             <name>standalone-load-balancer.xml</name>
                                             <layers>
-                                                <layer>cloud-server</layer>
                                                 <layer>undertow-load-balancer</layer>
                                             </layers>
                                         </config>

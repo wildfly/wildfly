@@ -86,7 +86,7 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     // TODO: added option for System Exception would be thrown?
     public Vote prepare() throws WrongStateException, SystemException {
         eventLog.addEvent(eventLogName, EventLogEvent.PREPARE);
-        log.infof("[AT SERVICE] Durable participant prepare() - logged: %s", EventLogEvent.PREPARE);
+        log.debugf("[AT SERVICE] Durable participant prepare() - logged: %s", EventLogEvent.PREPARE);
 
         if(ServiceCommand.isPresent(ServiceCommand.VOTE_ROLLBACK, serviceCommands)) {
             log.trace("[AT SERVICE] Durable participant prepare(): " + Aborted.class.getSimpleName());

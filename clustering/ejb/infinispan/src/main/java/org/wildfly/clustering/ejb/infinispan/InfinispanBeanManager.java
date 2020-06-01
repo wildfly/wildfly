@@ -88,16 +88,15 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <T> the bean type
  */
 @Listener(primaryOnly = true)
-public class InfinispanBeanManager<I, T> implements BeanManager<I, T, TransactionBatch> {
+public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, TransactionBatch> {
 
-    private static final String GLOBAL_IDLE_TIMEOUT = WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.stateful.idle-timeout", null);
     private static final String IDLE_TIMEOUT_PROPERTY = "jboss.ejb.stateful.%s.idle-timeout";
 
     private final String name;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
     private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
-    private final BeanGroupFactory<I, T> groupFactory;
+    private final BeanGroupFactory<I, T, C> groupFactory;
     private final IdentifierFactory<I> identifierFactory;
     private final KeyAffinityService<BeanKey<I>> affinity;
     private final Registry<String, ?> registry;
@@ -114,7 +113,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     private volatile ExecutorService executor;
     private volatile org.wildfly.clustering.ee.Scheduler<I, ImmutableBeanEntry<I>> primaryOwnerScheduler;
 
-    public InfinispanBeanManager(InfinispanBeanManagerConfiguration<I, T> configuration, IdentifierFactory<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration) {
+    public InfinispanBeanManager(InfinispanBeanManagerConfiguration<I, T> configuration, IdentifierFactory<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, C>, BeanGroupFactory<I, T, C>> groupConfiguration) {
         this.name = configuration.getName();
         this.filter = configuration.getBeanFilter();
         this.groupFactory = groupConfiguration.getFactory();
@@ -148,7 +147,8 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
 
-        String idleTimeout = WildFlySecurityManager.getPropertyPrivileged(String.format(IDLE_TIMEOUT_PROPERTY, this.name), GLOBAL_IDLE_TIMEOUT);
+        String globalIdleTimeout = WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.stateful.idle-timeout", null);
+        String idleTimeout = WildFlySecurityManager.getPropertyPrivileged(String.format(IDLE_TIMEOUT_PROPERTY, this.name), globalIdleTimeout);
         if (idleTimeout != null) {
             Duration idleDuration = Duration.parse(idleTimeout);
             if (!idleDuration.isNegative()) {
@@ -220,7 +220,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     @Override
     public Bean<I, T> createBean(I id, I groupId, T bean) {
         InfinispanEjbLogger.ROOT_LOGGER.tracef("Creating bean %s associated with group %s", id, groupId);
-        BeanGroupEntry<I, T> groupEntry = (id == groupId) ? this.groupFactory.createValue(groupId, null) : this.groupFactory.findValue(groupId);
+        BeanGroupEntry<I, T, C> groupEntry = (id == groupId) ? this.groupFactory.createValue(groupId, null) : this.groupFactory.findValue(groupId);
         BeanGroup<I, T> group = this.groupFactory.createGroup(groupId, groupEntry);
         group.addBean(id, bean);
         group.releaseBean(id, this.properties.isPersistent() ? this.passivation.getPassivationListener() : null);

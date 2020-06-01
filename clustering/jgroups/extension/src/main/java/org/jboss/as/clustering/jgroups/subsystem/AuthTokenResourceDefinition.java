@@ -38,6 +38,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jgroups.auth.AuthToken;
 import org.wildfly.clustering.service.UnaryRequirement;
@@ -83,12 +84,15 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
     }
 
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        ProtocolResourceDefinition.addTransformations(version, builder);
+        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.SHARED_SECRET.getName())
+                    .end();
+        }
     }
 
-    private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
+    protected final UnaryOperator<ResourceDescriptor> configurator;
+    protected final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
     AuthTokenResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
         super(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
@@ -100,11 +104,10 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
-                .addAttributes(Attribute.class)
+                .addAttribute(Attribute.SHARED_SECRET, new CredentialReferenceWriteAttributeHandler(Attribute.SHARED_SECRET.getDefinition()))
                 .addCapabilities(Capability.class)
                 ;
         new SimpleResourceRegistration(descriptor, new SimpleResourceServiceHandler(this.serviceConfiguratorFactory)).register(registration);
-
         return registration;
     }
 }

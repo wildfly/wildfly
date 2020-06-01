@@ -46,7 +46,6 @@ public class SymlinkingUnitTestCase {
     @BeforeClass
     public static void beforeClass() throws IOException, InterruptedException {
         Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
-        logger.infof("beforeClass() call.");
         // We are going to check whether or not the war deployment actually exists.
         Assert.assertTrue(checkForDeployment());
         // Now create the symlink.
@@ -58,7 +57,6 @@ public class SymlinkingUnitTestCase {
         if (SystemUtils.IS_OS_WINDOWS) {
          // skip windows;
         } else {
-            logger.infof("afterClass() call.");
             // Delete the symlink
             symbolic.delete();
             controllerClient.close();
@@ -68,7 +66,6 @@ public class SymlinkingUnitTestCase {
 
     @After
     public void tearDown() throws IOException {
-        logger.infof("In the tearDown() call.");
 
         ModelNode removeSystemProperty = Util.createRemoveOperation(PathAddress.pathAddress(systemPropertyAddress()));
 
@@ -94,7 +91,6 @@ public class SymlinkingUnitTestCase {
         steps.add(removeOperation);
         steps.add(removeSystemProperty);
 
-        //logger.infof("Composite operation: %s", compositeOperation.toString());
         ModelNode compositeResult = controllerClient.execute(compositeOperation);
 
         Assert.assertEquals(ModelDescriptionConstants.SUCCESS, compositeResult.get(ModelDescriptionConstants.OUTCOME).asString());
@@ -103,7 +99,6 @@ public class SymlinkingUnitTestCase {
 
     @Test
     public void testEnabled() throws IOException {
-        //logger.infof("Testing enabled bit");
         // By default we should not be able to browse to the symlinked page.
         Assert.assertTrue(getURLcode("symbolic") == 404);
         setup(true);
@@ -115,7 +110,6 @@ public class SymlinkingUnitTestCase {
 
     @Test
     public void testDisabled() throws IOException {
-        logger.infof("Testing disabled bit.");
         // By default we should not be able to browse to the symlinked page.
         Assert.assertTrue(getURLcode("symbolic") == 404);
         setup(false);
@@ -126,8 +120,6 @@ public class SymlinkingUnitTestCase {
     }
 
     private void setup(boolean symlinkingEnabled) throws IOException {
-        logger.infof("Entered the setup call within %s & the boolean parameter is %s",
-                this.getClass().getName(), symlinkingEnabled);
         ModelNode addSysProperty = Util.createAddOperation(PathAddress.pathAddress(systemPropertyAddress()));
         addSysProperty.get(ModelDescriptionConstants.VALUE).set(Boolean.toString(symlinkingEnabled));
         ModelNode result = controllerClient.execute(addSysProperty);
@@ -158,14 +150,13 @@ public class SymlinkingUnitTestCase {
         try {
             String url = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/explodedDeployment/"
                     + htmlPage + ".html";
-            logger.infof("%s is the built URL.", url);
             HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
             code = urlConnection.getResponseCode();
-            logger.infof("Received response code of: " + code);
         } catch (Exception e) {
-            logger.infof("Exception of type: %s caught", e.getClass(), e);
+            logger.errorf(e, "Exception of type: %s caught", e.getClass());
+            Assert.fail("Failed to get the URL code: " + e.getLocalizedMessage());
         }
         return code;
     }
@@ -180,7 +171,6 @@ public class SymlinkingUnitTestCase {
     private static boolean checkForDeployment() {
         String warLocation = getWarLocation();
         warDeployment = new File(warLocation);
-        logger.infof("Checking to see if exploded deployment exists at path: " + warDeployment.getAbsolutePath());
         return warDeployment.exists();
     }
 
@@ -191,27 +181,24 @@ public class SymlinkingUnitTestCase {
     private static void createSymlink() throws IOException, InterruptedException {
         // TODO: navssurtani: once AS7 is on a minimum of Java 7 then we can change the approach used to create the symlink.
         File index = new File(warDeployment, "index.html");
-        logger.infof("Path to index file is: " + index.getAbsolutePath());
         Assert.assertTrue(index.exists());
         // Now set up the information to create the symlink.
         String toExecute;
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            logger.infof("Windows based OS detected.");
             toExecute = "mklink \\D " + index.getAbsolutePath() + " " + warDeployment.getAbsolutePath()
                     + "\\symbolic.html";
         } else {
-            logger.infof("UNIX based OS detected.");
             toExecute = "ln -s " + index.getAbsolutePath() + " " + warDeployment.getAbsolutePath() + "/symbolic.html";
         }
 
-        logger.infof("String to be executed is: " + toExecute);
+        logger.debugf("String to be executed is: %s", toExecute);
 
         Runtime.getRuntime().exec(toExecute).waitFor();
         symbolic = new File(warDeployment.getAbsolutePath(), "symbolic.html");
 
 
-        logger.infof("Absolute path of symbolic file is located at %s. Checking to see if the file really exists.",
+        logger.debugf("Absolute path of symbolic file is located at %s. Checking to see if the file really exists.",
                 symbolic.getAbsolutePath());
         Assert.assertTrue(symbolic.exists());
     }

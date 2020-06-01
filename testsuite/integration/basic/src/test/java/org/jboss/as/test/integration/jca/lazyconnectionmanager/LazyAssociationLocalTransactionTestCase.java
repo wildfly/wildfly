@@ -136,7 +136,7 @@ public class LazyAssociationLocalTransactionTestCase extends LazyAssociationAbst
             assertTrue(lc1.isManagedConnectionSet());
             assertFalse(lc2.isManagedConnectionSet());
 
-            logger.infof("testTwoConnectionsWithoutEnlistment: After associate");
+            logger.debug("testTwoConnectionsWithoutEnlistment: After associate");
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
             status = false;

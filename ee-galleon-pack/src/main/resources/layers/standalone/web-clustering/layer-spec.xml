@@ -3,6 +3,7 @@
     <dependencies>
         <layer name="web-server"/>
         <layer name="transactions"/>
+        <layer name="microprofile-metrics"/><!-- Infinispan runtime dependency -->
     </dependencies>
 
     <origin name="org.wildfly:wildfly-servlet-galleon-pack">

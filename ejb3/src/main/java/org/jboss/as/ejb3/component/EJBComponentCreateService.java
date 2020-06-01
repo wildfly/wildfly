@@ -110,6 +110,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final boolean securityRequired;
 
+    private final EJBComponentDescription componentDescription;
+
     /**
      * Construct a new instance.
      *
@@ -211,6 +213,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
         this.shutDownInterceptorFactory = ejbComponentDescription.getShutDownInterceptorFactory();
         this.securityRequired = ejbComponentDescription.isSecurityRequired();
+        this.componentDescription = ejbComponentDescription;
     }
 
     @Override
@@ -252,6 +255,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     ApplicationExceptions getApplicationExceptions() {
         return this.applicationExceptions;
+    }
+
+    EJBComponentDescription getComponentDescription() {
+        return componentDescription;
     }
 
     protected void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {

@@ -24,7 +24,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
@@ -61,17 +63,18 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        TABLE("binary-keyed-table", BinaryTableResourceDefinition.Attribute.values(), TableResourceDefinition.Attribute.values(), TableResourceDefinition.DeprecatedAttribute.values(), TableResourceDefinition.ColumnAttribute.values()),
+        TABLE("binary-keyed-table", EnumSet.allOf(BinaryTableResourceDefinition.Attribute.class), EnumSet.allOf(TableResourceDefinition.Attribute.class), EnumSet.allOf(TableResourceDefinition.DeprecatedAttribute.class), EnumSet.complementOf(EnumSet.of(TableResourceDefinition.ColumnAttribute.SEGMENT))),
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, org.jboss.as.clustering.controller.Attribute[]... attributeSets) {
+        @SafeVarargs
+        DeprecatedAttribute(String name, Set<? extends org.jboss.as.clustering.controller.Attribute>... attributeSets) {
             int size = 0;
-            for (org.jboss.as.clustering.controller.Attribute[] attributes : attributeSets) {
-                size += attributes.length;
+            for (Set<? extends org.jboss.as.clustering.controller.Attribute> attributes : attributeSets) {
+                size += attributes.size();
             }
             List<AttributeDefinition> definitions = new ArrayList<>(size);
-            for (org.jboss.as.clustering.controller.Attribute[] attributes : attributeSets) {
+            for (Set<? extends org.jboss.as.clustering.controller.Attribute> attributes : attributeSets) {
                 for (org.jboss.as.clustering.controller.Attribute attribute : attributes) {
                     definitions.add(attribute.getDefinition());
                 }

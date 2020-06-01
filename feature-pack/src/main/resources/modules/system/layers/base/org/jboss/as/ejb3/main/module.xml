@@ -109,5 +109,10 @@
 
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.transaction.client"/>
+        <!-- Those are needed for integration with hibernate validator -->
+        <module name="javax.enterprise.api" optional="true"/>
+        <module name="org.jboss.as.weld.common" optional="true"/>
+        <module name="org.hibernate.validator" optional="true"/>
+        <module name="org.hibernate.validator.cdi" optional="true"/>
     </dependencies>
 </module>

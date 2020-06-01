@@ -29,7 +29,6 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.hotrod.tx.HotRodBatcher;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
@@ -56,7 +55,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
  * @param <MC> the marshalling context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactory<S, SC, AL, BL, LC, MC extends Marshallability> implements SessionManagerFactory<SC, LC, TransactionBatch> {
+public class HotRodSessionManagerFactory<S, SC, AL, BL, MC, LC> implements SessionManagerFactory<SC, LC, TransactionBatch> {
 
     final Registrar<SessionExpirationListener> expirationRegistrar;
     final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
@@ -135,10 +134,10 @@ public class HotRodSessionManagerFactory<S, SC, AL, BL, LC, MC extends Marshalla
         }
     }
 
-    private static class HotRodMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, BL, V, C extends Marshallability, LC> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, C, LC> implements HotRodSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, C>> {
-        private final HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, C, LC> configuration;
+    private static class HotRodMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, BL, V, MC, LC> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements HotRodSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
+        private final HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration;
 
-        HotRodMarshalledValueSessionAttributesFactoryConfiguration(HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, C, LC> configuration) {
+        HotRodMarshalledValueSessionAttributesFactoryConfiguration(HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration) {
             super(configuration);
             this.configuration = configuration;
         }

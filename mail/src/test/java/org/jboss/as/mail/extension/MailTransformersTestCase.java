@@ -25,8 +25,10 @@ package org.jboss.as.mail.extension;
 import static org.jboss.as.mail.extension.MailServerDefinition.CREDENTIAL_REFERENCE;
 import static org.jboss.as.mail.extension.MailTransformers.MODEL_VERSION_EAP6X;
 import static org.jboss.as.mail.extension.MailTransformers.MODEL_VERSION_EAP70;
+import static org.jboss.as.mail.extension.MailTransformers.MODEL_VERSION_EAP71;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_4_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
+import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_1_0;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -35,6 +37,7 @@ import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -57,7 +60,12 @@ public class MailTransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("mail_3_0-transformers.xml");
+        return readResource("mail_4_0-transformers.xml");
+    }
+
+    @Test
+    public void testTransformerEAP710() throws Exception {
+        testTransformation(EAP_7_1_0, MODEL_VERSION_EAP71);
     }
 
     @Test
@@ -103,16 +111,53 @@ public class MailTransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testRejectingTransformersEAP_7_1_0() throws Exception {
+        PathAddress sessionAddress = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH);
+        testRejectingTransformers(EAP_7_1_0, MODEL_VERSION_EAP71, new FailedOperationTransformationConfig()
+                .addFailedAttribute(sessionAddress.append(PathElement.pathElement(MailSubsystemModel.MAIL_SESSION, "serverWithCredentialReference")).append(PathElement.pathElement(MailSubsystemModel.SERVER_TYPE, "imap")),
+                        FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(sessionAddress.append(PathElement.pathElement(MailSubsystemModel.MAIL_SESSION, "serverWithCredentialReference")).append(PathElement.pathElement(MailSubsystemModel.SERVER_TYPE, "smtp")),
+                        FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(sessionAddress.append(PathElement.pathElement(MailSubsystemModel.MAIL_SESSION, "serverWithCredentialReference")).append(PathElement.pathElement(MailSubsystemModel.SERVER_TYPE, "pop3")),
+                        FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(sessionAddress.append(PathElement.pathElement(MailSubsystemModel.MAIL_SESSION, "customWithCredentialReference")).append(PathElement.pathElement(MailSubsystemModel.CUSTOM, "pop3")),
+                        FailedOperationTransformationConfig.REJECTED_RESOURCE)
+        );
+    }
+
+    @Test
     public void testRejectingTransformersEAP_7_0_0() throws Exception {
-        testRejectingTransformers(EAP_7_0_0, MODEL_VERSION_EAP70);
+        PathAddress sessionAddress = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH).append(MailExtension.MAIL_SESSION_PATH);
+        testRejectingTransformers(EAP_7_0_0, MODEL_VERSION_EAP70, new FailedOperationTransformationConfig()
+                .addFailedAttribute(sessionAddress.append("server"),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                CREDENTIAL_REFERENCE
+                        )
+                ).addFailedAttribute(sessionAddress.append("custom"),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                CREDENTIAL_REFERENCE
+                        )
+                )
+        );
     }
 
     @Test
     public void testRejectingTransformersEAP_6_4_0() throws Exception {
-        testRejectingTransformers(EAP_6_4_0, MODEL_VERSION_EAP6X);
+        PathAddress sessionAddress = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH).append(MailExtension.MAIL_SESSION_PATH);
+        testRejectingTransformers(EAP_6_4_0, MODEL_VERSION_EAP6X, new FailedOperationTransformationConfig()
+                .addFailedAttribute(sessionAddress.append("server"),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                CREDENTIAL_REFERENCE
+                        )
+                ).addFailedAttribute(sessionAddress.append("custom"),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                CREDENTIAL_REFERENCE
+                        )
+                )
+        );
     }
 
-    private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion) throws Exception {
+    private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion, final FailedOperationTransformationConfig config) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, targetVersion)
@@ -124,19 +169,8 @@ public class MailTransformersTestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(targetVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("mail_3_0-reject.xml");
-        PathAddress sessionAddress = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH).append(MailExtension.MAIL_SESSION_PATH);
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, targetVersion, ops, new FailedOperationTransformationConfig()
-                        .addFailedAttribute(sessionAddress.append("server"),
-                                new FailedOperationTransformationConfig.NewAttributesConfig(
-                                        CREDENTIAL_REFERENCE
-                                )
-                        ).addFailedAttribute(sessionAddress.append("custom"),
-                            new FailedOperationTransformationConfig.NewAttributesConfig(
-                                        CREDENTIAL_REFERENCE
-                                )
-                        )
-                );
+        List<ModelNode> ops = builder.parseXmlResource("mail_4_0-reject.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, targetVersion, ops, config);
     }
 
     @Override

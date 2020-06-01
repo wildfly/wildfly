@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.util.regex.Pattern;
+
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
@@ -32,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
  * @author Radoslav Husar
  */
 public class NoNearCacheServiceConfigurator extends ComponentServiceConfigurator<NearCacheConfiguration> {
+    private static final Pattern WEB_DEPLOYMENT_PATTERN = Pattern.compile(".+\\.war");
 
     NoNearCacheServiceConfigurator(PathAddress address) {
         super(RemoteCacheContainerComponent.NEAR_CACHE, address);
@@ -39,6 +42,6 @@ public class NoNearCacheServiceConfigurator extends ComponentServiceConfigurator
 
     @Override
     public NearCacheConfiguration get() {
-        return new ConfigurationBuilder().nearCache().mode(NearCacheMode.DISABLED).create();
+        return new ConfigurationBuilder().nearCache().mode(NearCacheMode.INVALIDATED).maxEntries(-1).cacheNamePattern(WEB_DEPLOYMENT_PATTERN).create();
     }
 }

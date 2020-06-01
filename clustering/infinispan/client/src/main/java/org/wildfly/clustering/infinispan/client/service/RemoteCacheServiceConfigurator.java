@@ -61,6 +61,10 @@ public class RemoteCacheServiceConfigurator<K, V> extends SimpleServiceNameProvi
 
     private volatile SupplierDependency<RemoteCacheContainer> container;
 
+    public RemoteCacheServiceConfigurator(ServiceName name, String containerName, String cacheName, String configurationName) {
+        this(name, containerName, cacheName, configurationName, null);
+    }
+
     public RemoteCacheServiceConfigurator(ServiceName name, String containerName, String cacheName, String configurationName, Function<ClientListenerNotifier, NearCacheService<K, V>> nearCacheFactory) {
         super(name);
         this.containerName = containerName;

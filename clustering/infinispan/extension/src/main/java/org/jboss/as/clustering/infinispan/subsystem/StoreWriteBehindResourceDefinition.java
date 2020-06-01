@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -58,7 +60,12 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
@@ -69,29 +76,26 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(5000L), InfinispanModel.VERSION_4_0_0),
-        SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(25000L), InfinispanModel.VERSION_4_0_0),
+        FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(5)), InfinispanModel.VERSION_4_0_0),
+        SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(25)), InfinispanModel.VERSION_4_0_0),
         ;
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setDeprecated(deprecation.getVersion())
+                    .build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowExpression(true)
-                .setRequired(false)
-                .setDefaultValue(defaultValue)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-        ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -113,7 +117,7 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addAttributes(DeprecatedAttribute.class)
+                .addIgnoredAttributes(DeprecatedAttribute.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(StoreWriteBehindServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
