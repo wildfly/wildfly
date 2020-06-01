@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.jboss.as.controller.OperationContext;
 import org.wildfly.common.Assert;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -85,6 +86,27 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
                     + "!org.springframework.beans.factory.ObjectFactory;"
                     + "!com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;"
                     + "!org.apache.xalan.xsltc.trax.TemplatesImpl";
+
+    private static final OperationContext.AttachmentKey<FilterSpecClassResolverFilter> ATTACHMENT_KEY =
+            OperationContext.AttachmentKey.create(FilterSpecClassResolverFilter.class);
+
+    /**
+     * Gets a {@link FilterSpecClassResolverFilter#FilterSpecClassResolverFilter() default}
+     * {@code FilterSpecClassResolverFilter} that can be shared amongst steps executing
+     * with the same {@link OperationContext}. This is used in preference to a shared static
+     * default filter in order to allow different settings to be applied during a server reload.
+     *
+     * @param operationContext the operation context. Cannot be {@code null}
+     * @return the filter. Will not return {@code null}
+     */
+    static FilterSpecClassResolverFilter getFilterForOperationContext(OperationContext operationContext) {
+        FilterSpecClassResolverFilter result = operationContext.getAttachment(ATTACHMENT_KEY);
+        if (result == null) {
+            result = new FilterSpecClassResolverFilter();
+            operationContext.attach(ATTACHMENT_KEY, result);
+        }
+        return result;
+    }
 
     private final String filterSpec;
     private final List<String> parsedFilterSpecs;
