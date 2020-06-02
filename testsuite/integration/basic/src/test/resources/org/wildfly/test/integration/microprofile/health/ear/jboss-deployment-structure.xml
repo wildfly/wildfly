@@ -1,0 +1,7 @@
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="org.wildfly.naming" services="import"/>
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>

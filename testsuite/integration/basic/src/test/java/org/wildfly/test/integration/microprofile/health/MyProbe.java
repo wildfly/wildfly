@@ -22,8 +22,6 @@
 
 package org.wildfly.test.integration.microprofile.health;
 
-import java.util.Optional;
-
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -46,24 +44,12 @@ public class MyProbe implements HealthCheck {
     @ConfigProperty
     Provider<Boolean> propertyConfiguredByTheDeployment;
 
-    // Inject a property whose value is configured in a ConfigSource inside a war inside an ear.
-    // Those are not resolved.
-    @Inject
-    @ConfigProperty
-    Optional<Boolean> propertyConfiguredBySubDeployments;
-
     static boolean up = true;
 
     @Override
     public HealthCheckResponse call() {
 
         if (!propertyConfiguredByTheDeployment.get()) {
-            return HealthCheckResponse.named("myProbe")
-                    .down()
-                    .build();
-        }
-        Boolean propertySetBySubdeployment = propertyConfiguredBySubDeployments.orElse(false);
-        if (propertySetBySubdeployment) {
             return HealthCheckResponse.named("myProbe")
                     .down()
                     .build();

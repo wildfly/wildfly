@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.health.deployment;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -33,7 +35,6 @@ import org.jboss.modules.Module;
 import org.wildfly.extension.microprofile.health.HealthReporter;
 import org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition;
 import org.wildfly.extension.microprofile.health._private.MicroProfileHealthLogger;
-import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 /**
  *
@@ -56,13 +57,10 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
                     deploymentUnit.getName(),
                     WELD_CAPABILITY_NAME);
         }
-
         boolean isRootDeploymentUnit = deploymentUnit.getParent() == null;
         boolean hasWeld = weldCapability.isPartOfWeldDeployment(deploymentUnit);
         if (hasWeld && isRootDeploymentUnit) {
-            // Register extension for the parent deployment module only
             final HealthReporter healthReporter = (HealthReporter) phaseContext.getServiceRegistry().getService(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_SERVICE).getValue();
-
             weldCapability.registerExtensionInstance(new CDIExtension(healthReporter, module), deploymentUnit);
         }
 

@@ -37,7 +37,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -46,8 +49,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,37 +60,15 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public abstract class MicroProfileHealthTestBase {
 
-    public static final String JAR_ARCHIVE_NAME = "MicroProfileHealthTestCaseJar.jar";
-    public static final String WAR_ARCHIVE_NAME = "MicroProfileHealthTestCase.war";
-    public static final String EAR_ARCHIVE_NAME = "MicroProfileHealthTestCase.ear";
-
     abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException;
 
-    @Deployment(name = EAR_ARCHIVE_NAME, managed = false)
-    public static Archive<?> deployEar() {
-        JavaArchive jarArchive = ShrinkWrap.create(JavaArchive.class, JAR_ARCHIVE_NAME)
-                .addClass(HealthConfigSource.class)
+    @Deployment(name = "MicroProfileHealthTestCase", managed = false)
+    public static Archive<?> deploy() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthTestCase.war")
+                .addClasses(TestApplication.class, TestApplication.Resource.class, MyProbe.class, MyLiveProbe.class, HealthConfigSource.class)
                 .addAsServiceProvider(ConfigSource.class, HealthConfigSource.class)
-                .addAsResource(EmptyAsset.INSTANCE, "beans.xml");
-
-
-        WebArchive war = ShrinkWrap.create(WebArchive.class, WAR_ARCHIVE_NAME)
-                .addClasses(TestApplication.class, TestApplication.Resource.class,
-                        MyProbe.class, MyLiveProbe.class, HealthSubDeploymentConfigSource.class)
-                .addAsServiceProvider(ConfigSource.class, HealthSubDeploymentConfigSource.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        WebArchive testableArchive = Testable.archiveToTest(war);
-
-        EnterpriseArchive ear = ShrinkWrap
-                .create(EnterpriseArchive.class, EAR_ARCHIVE_NAME)
-                .addAsModule(testableArchive)
-                .addAsLibraries(jarArchive)
-                .addAsResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource(MicroProfileHealthTestBase.class.getPackage(), "application.xml", "application.xml")
-                .addManifest();
-
-        System.out.println(ear.toString(true));
-        return ear;
+        return war;
     }
 
     @ContainerResource
@@ -105,44 +84,40 @@ public abstract class MicroProfileHealthTestBase {
         checkGlobalOutcome(managementClient, "check-live", true, null);
 
         // deploy the archive
-        deployer.deploy(EAR_ARCHIVE_NAME);
+        deployer.deploy("MicroProfileHealthTestCase");
     }
 
     @Test
     @InSequence(2)
-    @OperateOnDeployment(EAR_ARCHIVE_NAME)
+    @OperateOnDeployment("MicroProfileHealthTestCase")
     public void testHealthCheckAfterDeployment(@ArquillianResource URL url) throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
 
-            probeHealth(url, client);
+            checkGlobalOutcome(managementClient, "check", true, "myProbe");
+            checkGlobalOutcome(managementClient, "check-live", true, "myLiveProbe");
+
+            HttpPost request = new HttpPost(url + "microprofile/myApp");
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("up", "false"));
+            request.setEntity(new UrlEncodedFormEntity(nvps));
+
+            CloseableHttpResponse response = client.execute(request);
+            assertEquals(200, response.getStatusLine().getStatusCode());
+
+            checkGlobalOutcome(managementClient, "check", false, "myProbe");
+            checkGlobalOutcome(managementClient, "check-live", false, "myLiveProbe");
         }
     }
 
     @Test
     @InSequence(3)
-    public void testHealthCheckBetweenDeployments() throws Exception {
+    public void testHealthCheckAfterUndeployment() throws Exception {
 
-        deployer.undeploy(EAR_ARCHIVE_NAME);
+        deployer.undeploy("MicroProfileHealthTestCase");
 
         checkGlobalOutcome(managementClient, "check", true, null);
         checkGlobalOutcome(managementClient, "check-live", true, null);
-
     }
 
-    private void probeHealth(URL url, CloseableHttpClient client) throws IOException {
-        checkGlobalOutcome(managementClient, "check", true, "myProbe");
-        checkGlobalOutcome(managementClient, "check-live", true, "myLiveProbe");
-
-        HttpPost request = new HttpPost(url + "/microprofile/myApp");
-        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-        nvps.add(new BasicNameValuePair("up", "false"));
-        request.setEntity(new UrlEncodedFormEntity(nvps));
-
-        CloseableHttpResponse response = client.execute(request);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-
-        checkGlobalOutcome(managementClient, "check", false, "myProbe");
-        checkGlobalOutcome(managementClient, "check-live", false, "myLiveProbe");
-    }
 
 }

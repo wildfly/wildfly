@@ -24,21 +24,27 @@ package org.wildfly.extension.microprofile.health.deployment;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.*;
+import javax.enterprise.inject.spi.AfterDeploymentValidation;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeShutdown;
+import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.util.AnnotationLiteral;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import io.smallrye.health.SmallRyeHealthReporter;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.health.*;
+import org.eclipse.microprofile.health.Health;
+import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.Liveness;
+import org.eclipse.microprofile.health.Readiness;
 import org.jboss.modules.Module;
 import org.wildfly.extension.microprofile.health.HealthReporter;
 
@@ -48,7 +54,7 @@ import org.wildfly.extension.microprofile.health.HealthReporter;
 public class CDIExtension implements Extension {
 
     private final HealthReporter reporter;
-    private final Module module;
+    private final Module parentModule;
 
     static final class HealthLiteral extends AnnotationLiteral<Health> implements Health {
 
@@ -66,9 +72,9 @@ public class CDIExtension implements Extension {
     private HealthCheck defaultReadinessCheck;
 
 
-    public CDIExtension(HealthReporter healthReporter, Module module) {
+    public CDIExtension(HealthReporter healthReporter, Module parentModule) {
         this.reporter = healthReporter;
-        this.module = module;
+        this.parentModule = parentModule;
     }
 
     /**
@@ -78,45 +84,37 @@ public class CDIExtension implements Extension {
     private void afterDeploymentValidation(@Observes final AfterDeploymentValidation avd,
                                            BeanManager eventBeanManager) {
         // Get the bean manager from which to resolve all healthchecks in the deployment.
-        BeanManager beanManager = getBeanManager(module, eventBeanManager);
+        BeanManager beanManager = CDI.current().getBeanManager();
         instance = beanManager.createInstance();
 
+
         // Register them to be called using this module classloader
-        addHealthChecks(HealthLiteral.INSTANCE, reporter::addHealthCheck, module, healthChecks);
-        addHealthChecks(Liveness.Literal.INSTANCE, reporter::addLivenessCheck, module, livenessChecks);
-        addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, module, readinessChecks);
+        addHealthChecks(HealthLiteral.INSTANCE, reporter::addHealthCheck, healthChecks);
+        addHealthChecks(Liveness.Literal.INSTANCE, reporter::addLivenessCheck, livenessChecks);
+        addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, readinessChecks);
+
         if (readinessChecks.isEmpty()) {
-            Config config = ConfigProvider.getConfig(module.getClassLoader());
+            Config config = ConfigProvider.getConfig(parentModule.getClassLoader());
             boolean disableDefaultprocedure = config.getOptionalValue("mp.health.disable-default-procedures", Boolean.class).orElse(false);
             if (!disableDefaultprocedure) {
                 // no readiness probe are present in the deployment. register a readiness check so that the deployment is considered ready
-                defaultReadinessCheck = new DefaultReadinessHealthCheck(module.getName());
-                reporter.addReadinessCheck(defaultReadinessCheck, module.getClassLoader());
+                defaultReadinessCheck = new DefaultReadinessHealthCheck(parentModule.getName());
+                reporter.addReadinessCheck(defaultReadinessCheck, parentModule.getClassLoader());
             }
-        }
-    }
-
-    private BeanManager getBeanManager(Module module, BeanManager eventBeanManager) {
-        return tryGetBeanManagerFromJndiLookup()
-                .orElseGet(() -> CDI.current().getBeanManager());
-    }
-
-    private Optional<BeanManager> tryGetBeanManagerFromJndiLookup() {
-        try {
-            BeanManager jndiBeanManager = InitialContext.doLookup("java:comp/BeanManager");
-            return Optional.of(jndiBeanManager);
-        } catch (NamingException e) {
-            return Optional.empty();
         }
     }
 
     private void addHealthChecks(AnnotationLiteral qualifier,
                                  BiConsumer<HealthCheck, ClassLoader> healthFunction,
-                                 Module module, List<HealthCheck> healthChecks) {
+                                 List<HealthCheck> healthChecks) {
         for (HealthCheck healthCheck : instance.select(HealthCheck.class, qualifier)) {
-            healthFunction.accept(healthCheck, module.getClassLoader());
-            healthChecks.add(healthCheck);
+            addHealthCheck(healthFunction, healthChecks, healthCheck);
         }
+    }
+
+    private void addHealthCheck(BiConsumer<HealthCheck, ClassLoader> healthFunction, List<HealthCheck> healthChecks, HealthCheck healthCheck) {
+        healthFunction.accept(healthCheck, parentModule.getClassLoader());
+        healthChecks.add(healthCheck);
     }
 
     /**
