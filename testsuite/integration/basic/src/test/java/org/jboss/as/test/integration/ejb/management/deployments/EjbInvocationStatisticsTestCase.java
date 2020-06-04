@@ -34,11 +34,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -51,7 +48,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
@@ -147,24 +143,26 @@ public class EjbInvocationStatisticsTestCase {
 
     @Test
     public void testSingletonWaitTime() throws Exception {
-        validateWaitTimeStatistic(SINGLETON, WaitTimeSingletonBean.class, WaitTimeInterface.class);
+        validateWaitTimeStatistic(SINGLETON, WaitTimeSingletonBean.class);
     }
 
-    /*
-      Invoke the singleton bean multiple times at once. The wait-time statistic should show a number greater than zero, because
-      the singleton uses a write lock.
-    */
-    private void validateWaitTimeStatistic(final String type, final Class<?> beanClass, final Class<?> businessInterface) throws Exception {
+    /**
+     * Invoke the singleton bean business method, which in turn calls an
+     * async method in the same bean. The wait-time statistic should show
+     * a number greater than zero, because the singleton uses a write lock.
+     *
+     * @param type type of bean (EJBManagementUtil.STATEFUL, STATELESS, SINGLETON, MESSAGE_DRIVEN)
+     * @param beanClass the bean class
+     * @throws Exception on errors
+     */
+    private void validateWaitTimeStatistic(final String type, final Class<?> beanClass) throws Exception {
         final String name = beanClass.getSimpleName();
-        final WaitTimeInterface bean = (WaitTimeInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + businessInterface.getName() + (STATEFUL.equals(type) ? "?stateful" : ""));
-        final int numOfInvocations = 3;
-        final List<Future<Long>> futures = new ArrayList<>(numOfInvocations);
-        for (int i = 0; i < numOfInvocations; i++) {
-            futures.add(bean.async(0, 0));
+        final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (STATEFUL.equals(type) ? "?stateful" : ""));
+
+        for (int i = 0; i < 3; i++) {
+            bean.doIt();
         }
-        for (Future<Long> f : futures) {
-            f.get(TimeoutUtil.adjust(10), TimeUnit.SECONDS);
-        }
+        bean.remove();
 
         // check the wait-time statistic
         final ModelNode address = componentAddress(EjbJarRuntimeResourcesTestCase.BASE_ADDRESS, type, name).toModelNode();
@@ -172,7 +170,7 @@ public class EjbInvocationStatisticsTestCase {
         {
             final ModelNode result = executeOperation(managementClient,
                     ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
-            assertTrue("Expecting wait-time attribute value > 0", result.get("wait-time").asLong() > 0L);
+            assertTrue("Expecting wait-time attribute value > 0, but got " + result.toString(), result.get("wait-time").asLong() > 0L);
         }
     }
 
