@@ -23,6 +23,8 @@ package org.jboss.as.ejb3.iiop;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InvalidClassException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,11 +49,13 @@ import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.ejb.iiop.EJBMetaDataImplIIOP;
 import org.jboss.ejb.iiop.HandleImplIIOP;
 import org.jboss.ejb.iiop.HomeHandleImplIIOP;
+import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.OutputStreamByteOutput;
+import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
 import org.jboss.metadata.ejb.jboss.IIOPMetaData;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
@@ -247,7 +251,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
         try {
             final RiverMarshallerFactory factory = new RiverMarshallerFactory();
             final MarshallingConfiguration configuration = new MarshallingConfiguration();
-            configuration.setClassResolver(ModularClassResolver.getInstance(serviceModuleLoaderInjectedValue.getValue()));
+            configuration.setClassResolver(new FilteringClassResolver(ModularClassResolver.getInstance(serviceModuleLoaderInjectedValue.getValue())));
             this.configuration = configuration;
             this.factory = factory;
             final TransactionManager jtsTransactionManager = transactionManagerInjectedValue.getValue().getTransactionManager();
@@ -582,5 +586,59 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
     public InjectedValue<TransactionManagerService> getTransactionManagerInjectedValue() {
         return transactionManagerInjectedValue;
+    }
+
+    // ModularClassResolver is final so we have to wrap it
+    private static final class FilteringClassResolver implements ClassResolver {
+        private final ClassResolver delegate;
+
+        private FilteringClassResolver(ClassResolver delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void annotateClass(Marshaller marshaller, Class<?> clazz) throws IOException {
+            delegate.annotateClass(marshaller, clazz);
+        }
+
+        @Override
+        public void annotateProxyClass(Marshaller marshaller, Class<?> proxyClass) throws IOException {
+            delegate.annotateProxyClass(marshaller, proxyClass);
+        }
+
+        @Override
+        public String getClassName(Class<?> clazz) throws IOException {
+            return delegate.getClassName(clazz);
+        }
+
+        @Override
+        public String[] getProxyInterfaces(Class<?> proxyClass) throws IOException {
+            return delegate.getProxyInterfaces(proxyClass);
+        }
+
+        @Override
+        public Class<?> resolveClass(Unmarshaller unmarshaller, String name, long serialVersionUID) throws IOException, ClassNotFoundException {
+            checkFilter(name);
+            return delegate.resolveClass(unmarshaller, name, serialVersionUID);
+        }
+
+        @Override
+        public Class<?> resolveProxyClass(Unmarshaller unmarshaller, String[] interfaces) throws IOException, ClassNotFoundException {
+            for (String name : interfaces) {
+                checkFilter(name);
+            }
+            return delegate.resolveProxyClass(unmarshaller, interfaces);
+        }
+
+        private void checkFilter(String className) throws InvalidClassException {
+            // We only resolve org.jboss.ejb.client.SessionId impls in its package.
+            // The SessionId abstract class is public but its constructor is package
+            // protected, so the only valid impls are in that package.
+            // The JBoss Marshalling 'Configuration' object instances that use this
+            // ClassResolver are only meant to marshal/unmarshal SessionId objects.
+            if (!className.startsWith("org.jboss.ejb.client.")) {
+                throw EjbLogger.REMOTE_LOGGER.cannotResolveFilteredClass(className);
+            }
+        }
     }
 }
