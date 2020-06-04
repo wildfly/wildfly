@@ -23,22 +23,48 @@
 package org.jboss.as.test.integration.ejb.management.deployments;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Resource;
+import javax.ejb.AccessTimeout;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
+import javax.ejb.LocalBean;
+import javax.ejb.Remote;
+import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
+import org.jboss.logging.Logger;
+
 @Singleton
 @TransactionManagement(TransactionManagementType.BEAN)
-public class WaitTimeSingletonBean implements WaitTimeInterface {
-    @Asynchronous
-    public Future<Long> async(int a, int b) {
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-        }
+@AccessTimeout(value = 1, unit = TimeUnit.SECONDS)
+@Remote(BusinessInterface.class)
+@LocalBean
+public class WaitTimeSingletonBean implements BusinessInterface {
+    private static final Logger logger = Logger.getLogger(WaitTimeSingletonBean.class);
 
-        return new AsyncResult<Long>(System.currentTimeMillis());
+    @Resource
+    private SessionContext sessionContext;
+
+    @Asynchronous
+    public Future<Long> async() {
+        return new AsyncResult<>(System.currentTimeMillis());
+    }
+
+    @Override
+    public void doIt() {
+        final WaitTimeSingletonBean bean = sessionContext.getBusinessObject(WaitTimeSingletonBean.class);
+        final Future<Long> future = bean.async();
+        try {
+            future.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            logger.logf(Logger.Level.INFO, "WaitTimeSingletonBean calling its own async method caused expected exception %s%n", e.getMessage());
+        }
+    }
+
+    @Override
+    public void remove() {
     }
 }
