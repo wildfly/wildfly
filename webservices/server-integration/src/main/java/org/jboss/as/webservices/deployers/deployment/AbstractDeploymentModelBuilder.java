@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.WELD_DEPLOYMENT;
 import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.CLASSLOADER_KEY;
@@ -30,6 +31,8 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_M
 import static org.jboss.as.webservices.util.WSAttachmentKeys.REJECTION_RULE_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
+
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -37,6 +40,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
@@ -54,6 +58,8 @@ import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.invocation.RejectionRule;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
+
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 /**
  * Base class for all deployment model builders.
@@ -175,7 +181,16 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
 
         return endpoint;
     }
-
+    protected void markWeldDeployment(DeploymentUnit unit, Endpoint ep) {
+        final CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            final WeldCapability weldCapabiltiy = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME,
+                    WeldCapability.class).get();
+            if (weldCapabiltiy.isWeldDeployment(unit)) {
+                ep.setProperty(WELD_DEPLOYMENT, true);
+            }
+        }
+    }
     /**
      * Creates new Web Service deployment.
      *

@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.invocation;
 
 import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.COMPONENT_VIEW_NAME;
+import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.WELD_DEPLOYMENT;
 import static org.jboss.as.webservices.util.ASHelper.getMSCService;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,6 +43,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointState;
+import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.security.SecurityDomainContext;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -85,13 +87,6 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
                     if (cv == null) {
                         throw WSLogger.ROOT_LOGGER.cannotFindComponentView(componentViewName);
                     }
-                    if (reference == null) {
-                        try {
-                            reference = cv.createInstance();
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
                     componentView = cv;
                 }
             }
@@ -129,21 +124,21 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
         // prepare invocation data
         final ComponentView componentView = getComponentView();
         Component component = componentView.getComponent();
-        // in case of @FactoryType annotation we don't need to go into EE interceptors
         final boolean forceTargetBean = (wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null);
-        if (forceTargetBean) {
-            this.reference = new ManagedReference() {
-                public void release() {
-                }
+        boolean isWeldDeployment =  endpoint.getProperty(WELD_DEPLOYMENT) == null ? false : (Boolean) endpoint.getProperty(WELD_DEPLOYMENT);
+        if (forceTargetBean || !isWeldDeployment && endpoint.getType() == EndpointType.JAXWS_JSE) {
+                this.reference = new ManagedReference() {
+                    public void release() {
+                    }
 
-                public Object getInstance() {
-                    return wsInvocation.getInvocationContext().getTargetBean();
+                    public Object getInstance() {
+                        return wsInvocation.getInvocationContext().getTargetBean();
+                    }
+                };
+                if (component instanceof WSComponent) {
+                    ((WSComponent) component).setReference(reference);
                 }
-            };
-            if (component instanceof WSComponent) {
-                ((WSComponent) component).setReference(reference);
             }
-        }
         final Method method = getComponentViewMethod(wsInvocation.getJavaMethod(), componentView.getViewMethods());
         final InterceptorContext context = new InterceptorContext();
         prepareForInvocation(context, wsInvocation);
@@ -154,9 +149,6 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
         // pull in any XTS transaction
         LocalTransactionContext.getCurrent().importProviderTransaction();
         context.setTransaction(ContextTransactionManager.getInstance().getTransaction());
-        if (forceTargetBean) {
-            context.putPrivateData(ManagedReference.class, reference);
-        }
         // invoke method
         final Object retObj = componentView.invoke(context);
         // set return value
