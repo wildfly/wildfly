@@ -37,7 +37,8 @@ import org.jboss.narayana.rest.bridge.inbound.InboundBridgeFilter;
 import org.jboss.narayana.rest.bridge.inbound.TransactionalExceptionMapper;
 import org.wildfly.extension.rts.jaxrs.ImportWildflyClientGlobalTransactionFilter;
 
-import javax.ejb.TransactionAttribute;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
 import javax.transaction.Transactional;
 import javax.ws.rs.Path;
 import java.util.List;
@@ -48,10 +49,9 @@ import java.util.List;
 public class InboundBridgeDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final DotName PATH_DOT_NAME = DotName.createSimple(Path.class.getName());
-
     private static final DotName TRANSACTIONAL_DOT_NAME = DotName.createSimple(Transactional.class.getName());
-
-    private static final DotName TRANSACTION_ATTRIBUTE_DOT_NAME = DotName.createSimple(TransactionAttribute.class.getName());
+    private static final DotName STATELESS_ATTRIBUTE_DOT_NAME = DotName.createSimple(Stateless.class.getName());
+    private static final DotName STATEFUL_ATTRIBUTE_DOT_NAME = DotName.createSimple(Stateful.class.getName());
 
     private static final String[] PROVIDERS = new String[] {
             InboundBridgeFilter.class.getName(),
@@ -92,7 +92,8 @@ public class InboundBridgeDeploymentProcessor implements DeploymentUnitProcessor
                 if (classInfo.annotations().get(TRANSACTIONAL_DOT_NAME) != null) {
                     return true;
                 }
-                if (classInfo.annotations().get(TRANSACTION_ATTRIBUTE_DOT_NAME) != null) {
+                if (classInfo.annotations().get(STATELESS_ATTRIBUTE_DOT_NAME) != null ||
+                    classInfo.annotations().get(STATEFUL_ATTRIBUTE_DOT_NAME) != null) {
                     return true;
                 }
             }
