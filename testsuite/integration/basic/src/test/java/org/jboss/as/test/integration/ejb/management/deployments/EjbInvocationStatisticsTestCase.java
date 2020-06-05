@@ -147,8 +147,9 @@ public class EjbInvocationStatisticsTestCase {
     }
 
     /**
-     * Invoke the singleton bean business method, which in turn calls an
-     * async method in the same bean. The wait-time statistic should show
+     * Invoke the singleton bean business method multiple times.
+     * The target bean has multiple timers that are competing for the same
+     * singleton bean instance. The wait-time statistic should show
      * a number greater than zero, because the singleton uses a write lock.
      *
      * @param type type of bean (EJBManagementUtil.STATEFUL, STATELESS, SINGLETON, MESSAGE_DRIVEN)
