@@ -198,6 +198,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     context.failed(new StartException(t));
                                 } finally {
                                     Thread.currentThread().setContextClassLoader(old);
+                                    pu.setAnnotationIndex(null);    // close reference to Annotation Index
                                     pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
                                     WritableServiceBasedNamingStore.popOwner();
 
@@ -364,13 +365,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                     pu.getScopedPersistenceUnitName(), properties, pu.getProperties());
             return persistenceProvider.createContainerEntityManagerFactory(pu, properties);
         } finally {
-            try {
-                persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
-            } finally {
-                pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
-                //This is needed if the datasource is restarted
-                //pu.setTempClassLoaderFactory(null);    // close reference to temp classloader factory (only needed during call to createEntityManagerFactory)
-            }
+            persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
         }
     }
 
