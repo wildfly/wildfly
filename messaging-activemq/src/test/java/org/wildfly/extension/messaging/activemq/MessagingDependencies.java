@@ -35,8 +35,16 @@ public class MessagingDependencies {
 
     private static final Map<ModelTestControllerVersion, String[]> ACTIVEMQ_DEPENDENCIES;
     static {
-        Map<ModelTestControllerVersion, String[]> map = new HashMap<ModelTestControllerVersion, String[]>();
-
+        Map<ModelTestControllerVersion, String[]> map = new HashMap<>();
+        map.put(ModelTestControllerVersion.EAP_7_3_0, new String[] {
+                "org.apache.activemq:artemis-commons:2.9.0.redhat-00005",
+                "org.apache.activemq:artemis-journal:2.9.0.redhat-00005",
+                "org.apache.activemq:artemis-server:2.9.0.redhat-00005",
+                "org.apache.activemq:artemis-jms-server:2.9.0.redhat-00005",
+                "org.apache.activemq:artemis-core-client:2.9.0.redhat-00005",
+                "org.apache.activemq:artemis-jms-client:2.9.0.redhat-00005",
+                "org.apache.activemq:artemis-ra:2.9.0.redhat-00005",
+        });
         map.put(ModelTestControllerVersion.EAP_7_2_0, new String[] {
                 "org.apache.activemq:artemis-commons:2.6.3.redhat-00014",
                 "org.apache.activemq:artemis-journal:2.6.3.redhat-00014",
