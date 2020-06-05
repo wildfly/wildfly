@@ -22,16 +22,18 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import java.util.concurrent.Future;
+import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.AccessTimeout;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.LocalBean;
 import javax.ejb.Remote;
-import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
@@ -39,32 +41,53 @@ import org.jboss.logging.Logger;
 
 @Singleton
 @TransactionManagement(TransactionManagementType.BEAN)
-@AccessTimeout(value = 1, unit = TimeUnit.SECONDS)
+@AccessTimeout(value = 10, unit = TimeUnit.SECONDS)
 @Remote(BusinessInterface.class)
-@LocalBean
 public class WaitTimeSingletonBean implements BusinessInterface {
     private static final Logger logger = Logger.getLogger(WaitTimeSingletonBean.class);
 
-    @Resource
-    private SessionContext sessionContext;
+    private final AtomicInteger timerNumbers = new AtomicInteger();
 
-    @Asynchronous
-    public Future<Long> async() {
-        return new AsyncResult<>(System.currentTimeMillis());
-    }
+    @Resource
+    private TimerService timerService;
 
     @Override
     public void doIt() {
-        final WaitTimeSingletonBean bean = sessionContext.getBusinessObject(WaitTimeSingletonBean.class);
-        final Future<Long> future = bean.async();
-        try {
-            future.get(5, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            logger.logf(Logger.Level.INFO, "WaitTimeSingletonBean calling its own async method caused expected exception %s%n", e.getMessage());
-        }
+        logger.info("Entering doIt method");
+        startTimer();
     }
 
     @Override
     public void remove() {
+        for (Timer t : timerService.getTimers()) {
+            try {
+                t.cancel();
+            } catch (Exception ignore) {
+            }
+        }
     }
+
+    @PostConstruct
+    private void postConstruct() {
+        startTimer();
+        logger.info("Finishing postConstruct method");
+    }
+
+    private void startTimer() {
+        final TimerConfig timerConfig = new TimerConfig("WaitTimeSingletonBean timer " + timerNumbers.getAndIncrement(), false);
+        timerService.createSingleActionTimer(1, timerConfig);
+    }
+
+    @Timeout
+    private void timeout(Timer timer) {
+        final Serializable info = timer.getInfo();
+        logger.info("Entering timeout method for " + info);
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            Thread.interrupted();
+        }
+        logger.info("Finishing timeout method for " + info);
+    }
+
 }
