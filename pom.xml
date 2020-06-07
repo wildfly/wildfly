@@ -35,7 +35,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>20.0.0.Final</version>
+    <version>21.0.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -143,9 +143,9 @@
         <servlet.dist.product.release.name>WildFly Servlet</servlet.dist.product.release.name>
         <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
         <servlet.dist.product.release.version>${ee.dist.product.release.version}</servlet.dist.product.release.version>
-        <product.docs.server.version>20</product.docs.server.version>
+        <product.docs.server.version>21</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
-        <verifier.product.release.version>20.0</verifier.product.release.version>
+        <verifier.product.release.version>21.0</verifier.product.release.version>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
