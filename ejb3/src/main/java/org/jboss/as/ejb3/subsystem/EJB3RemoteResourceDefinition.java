@@ -74,7 +74,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAlternatives(EJB3SubsystemModel.CONNECTORS)
-                    .setDeprecated(ModelVersion.create(7,0,0))
+                    .setDeprecated(ModelVersion.create(8,0,0))
                     .build();
 
     static final StringListAttributeDefinition CONNECTORS =

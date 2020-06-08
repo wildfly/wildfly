@@ -35,6 +35,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_4_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_5_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_6_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_7_0_0;
+import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_8_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EXECUTION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTORS;
@@ -95,14 +96,22 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         ModelVersion currentModel = subsystemRegistration.getCurrentSubsystemVersion();
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(currentModel);
 
-        registerTransformers_6_0_0(chainedBuilder.createBuilder(currentModel, VERSION_6_0_0.getVersion()));
+        registerTransformers_7_0_0(chainedBuilder.createBuilder(currentModel, VERSION_8_0_0.getVersion()));
+        registerTransformers_6_0_0(chainedBuilder.createBuilder(VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion()));
         registerTransformers_5_0_0(chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion()));
         registerTransformers_4_0_0(chainedBuilder.createBuilder(VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion()));
         registerTransformers_3_0_0(chainedBuilder.createBuilder(VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion()));
         registerTransformers_1_3_0(chainedBuilder.createBuilder(VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion()));
         registerTransformers_1_2_1(chainedBuilder.createBuilder(VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()));
 
-        chainedBuilder.buildAndRegister(subsystemRegistration,new ModelVersion[]{VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()});
+        chainedBuilder.buildAndRegister(subsystemRegistration,new ModelVersion[]{VERSION_8_0_0.getVersion(),
+                                                                                 VERSION_7_0_0.getVersion(),
+                                                                                 VERSION_6_0_0.getVersion(),
+                                                                                 VERSION_5_0_0.getVersion(),
+                                                                                 VERSION_4_0_0.getVersion(),
+                                                                                 VERSION_3_0_0.getVersion(),
+                                                                                 VERSION_1_3_0.getVersion(),
+                                                                                 VERSION_1_2_1.getVersion()});
     }
 
     /*
@@ -267,26 +276,28 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .end();
     }
 
-
     /*
      * Transformers for changes in model version 7.0.0
      */
     private static void registerTransformers_6_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
-
         // default stateful session timeout
         subsystemBuilder.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT)
                 .end();
+    }
 
-        // Replaced <remote connector-ref="<connector>"/> with <remote connectors="<list of connectors>"/>
-        // Both cannot be present. If connectors list > 1, reject; if connectors == 1, convert.
+    /*
+     * Transformers for changes in model version 8.0.0
+     */
+    private static void registerTransformers_7_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        // default stateful session timeout
         subsystemBuilder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH)
                 .getAttributeBuilder()
-                // to translate connectors to connector-ref
+                // to translate connectors to connector ref
                 .setDiscard(DISCARD_SINGLETON_LIST, EJB3RemoteResourceDefinition.CONNECTORS)
                 .addRejectCheck(REJECT_NON_SINGLETON_LIST, EJB3RemoteResourceDefinition.CONNECTORS)
-                .setValueConverter(CONVERT_CONNECTOR_REF, EJB3SubsystemModel.CONNECTOR_REF)
+                .setValueConverter(CONVERT_CONNECTOR_REF, EJB3RemoteResourceDefinition.CONNECTOR_REF)
                 .end();
     }
 
