@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -73,6 +74,7 @@ public class MPScriptTestCase {
     @Before
     public void check() {
         AssumeTestGroupUtil.assumeElytronProfileEnabled();
+        Assume.assumeTrue(String.format("Configuration file %s not found. Skipping these tests.", SCRIPT_FILE), Files.exists(SCRIPT_FILE));
     }
 
     @Test
