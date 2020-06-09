@@ -26,8 +26,10 @@ import javax.servlet.ServletContext;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import org.jboss.as.arquillian.api.ServerSetup;
 
 @RunWith(Arquillian.class)
+@ServerSetup(ConfigHttpPathTask.class)
 public class ResourceTracedTestCase {
     @Inject
     Tracer tracer;
@@ -42,7 +44,7 @@ public class ResourceTracedTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addClass(ResourceTracedTestCase.class);
-
+        war.addClass(ConfigHttpPathTask.class);
         war.addClass(MockTracerFactory.class);
         war.addPackage(MockTracer.class.getPackage());
         war.addAsServiceProvider(TracerFactory.class, MockTracerFactory.class);
@@ -72,6 +74,11 @@ public class ResourceTracedTestCase {
         performCall("opentracing/traced");
 
         Assert.assertEquals(1, mockTracer.finishedSpans().size());
+        //Expected trace if the http-path configuration is not set
+        Assert.assertNotEquals("GET:org.wildfly.test.integration.microprofile.opentracing.application.TracedEndpoint.get",
+                mockTracer.finishedSpans().get(0).operationName());
+        Assert.assertEquals("GET:/traced/",
+                mockTracer.finishedSpans().get(0).operationName());
         Assert.assertEquals(
                 (servletContext.getContextPath() + ".war").substring(1),
                 servletContext.getAttribute("smallrye.opentracing.serviceName")

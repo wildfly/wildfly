@@ -38,8 +38,7 @@ public class ResourceWithCDITestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        war.addClass(ResourceTracedTestCase.class);
-
+        war.addClass(ResourceWithCDITestCase.class);
         war.addClass(MockTracerFactory.class);
         war.addPackage(MockTracer.class.getPackage());
         war.addAsServiceProvider(TracerFactory.class, MockTracerFactory.class);
