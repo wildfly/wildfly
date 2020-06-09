@@ -22,23 +22,72 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import java.util.concurrent.Future;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
+import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.AccessTimeout;
+import javax.ejb.Remote;
 import javax.ejb.Singleton;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
+import org.jboss.logging.Logger;
+
 @Singleton
 @TransactionManagement(TransactionManagementType.BEAN)
-public class WaitTimeSingletonBean implements WaitTimeInterface {
-    @Asynchronous
-    public Future<Long> async(int a, int b) {
+@AccessTimeout(value = 10, unit = TimeUnit.SECONDS)
+@Remote(BusinessInterface.class)
+public class WaitTimeSingletonBean implements BusinessInterface {
+    private static final Logger logger = Logger.getLogger(WaitTimeSingletonBean.class);
+
+    private final AtomicInteger timerNumbers = new AtomicInteger();
+
+    @Resource
+    private TimerService timerService;
+
+    @Override
+    public void doIt() {
+        logger.info("Entering doIt method");
+        startTimer();
+    }
+
+    @Override
+    public void remove() {
+        for (Timer t : timerService.getTimers()) {
+            try {
+                t.cancel();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    @PostConstruct
+    private void postConstruct() {
+        startTimer();
+        logger.info("Finishing postConstruct method");
+    }
+
+    private void startTimer() {
+        final TimerConfig timerConfig = new TimerConfig("WaitTimeSingletonBean timer " + timerNumbers.getAndIncrement(), false);
+        timerService.createSingleActionTimer(1, timerConfig);
+    }
+
+    @Timeout
+    private void timeout(Timer timer) {
+        final Serializable info = timer.getInfo();
+        logger.info("Entering timeout method for " + info);
         try {
             Thread.sleep(50);
         } catch (InterruptedException e) {
+            Thread.interrupted();
         }
-
-        return new AsyncResult<Long>(System.currentTimeMillis());
+        logger.info("Finishing timeout method for " + info);
     }
+
 }
