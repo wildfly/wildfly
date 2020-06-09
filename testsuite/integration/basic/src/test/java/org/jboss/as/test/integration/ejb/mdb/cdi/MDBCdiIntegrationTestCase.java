@@ -36,6 +36,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -44,6 +45,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that the CDI request scope is active in MDB invocations.
@@ -91,10 +96,13 @@ public class MDBCdiIntegrationTestCase {
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb-cdi-integration-test.jar");
-        ejbJar.addClasses(CdiIntegrationMDB.class, RequestScopedCDIBean.class, JMSMessagingUtil.class, MDBCdiIntegrationTestCase.class, JmsQueueSetup.class)
+        ejbJar.addClasses(CdiIntegrationMDB.class, RequestScopedCDIBean.class, JMSMessagingUtil.class, MDBCdiIntegrationTestCase.class,
+                JmsQueueSetup.class, TimeoutUtil.class)
            .addPackage(JMSOperations.class.getPackage());
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        ejbJar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
         return ejbJar;
     }
 

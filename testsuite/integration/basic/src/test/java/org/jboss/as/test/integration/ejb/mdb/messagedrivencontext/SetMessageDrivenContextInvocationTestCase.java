@@ -36,12 +36,17 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that the {@link javax.ejb.MessageDrivenBean#setMessageDrivenContext(javax.ejb.MessageDrivenContext)}
@@ -90,8 +95,10 @@ public class SetMessageDrivenContextInvocationTestCase {
     public static Archive createDeployment() {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "set-message-driven-context-invocation-test.jar");
-        jar.addClasses(SimpleMDB.class, JMSMessagingUtil.class, JmsQueueSetup.class);
+        jar.addClasses(SimpleMDB.class, JMSMessagingUtil.class, JmsQueueSetup.class, TimeoutUtil.class);
         jar.addPackage(JMSOperations.class.getPackage());
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
         return jar;
     }
 

@@ -34,6 +34,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -42,6 +43,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * WFLY-2732 - test if MDB can access @DependsOn ejbs in @PostConstruct and @PreDestroy annotated methods.
@@ -75,10 +80,12 @@ public class MDBWhichDependsOnTestCase {
         jar.addClass(CallCounterSingleton.class);
         jar.addClass(MDBWhichDependsOnTestCase.class);
         jar.addClass(Constants.class);
-        jar.addClass(JMSMessagingUtil.class);
+        jar.addClasses(JMSMessagingUtil.class, TimeoutUtil.class);
         jar.addClasses(JmsQueueServerSetupTask.class, SetupModuleServerSetupTask.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, "
                 + Constants.TEST_MODULE_NAME_FULL + "\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
         return jar;
     }
 
@@ -87,12 +94,14 @@ public class MDBWhichDependsOnTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, Constants.DEPLOYMENT_JAR_NAME_MDB);
         jar.addPackage(JMSOperations.class.getPackage());
-        jar.addClass(JMSMessagingUtil.class);
+        jar.addClasses(JMSMessagingUtil.class, TimeoutUtil.class);
         jar.addClass(MDBWhichDependsOn.class);
         jar.addClass(Constants.class);
         jar.addClass(CallCounterProxy.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, "
                 + Constants.TEST_MODULE_NAME_FULL + "\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
         return jar;
     }
 

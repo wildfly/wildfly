@@ -48,6 +48,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
@@ -220,7 +221,7 @@ public class EjbInvocationStatisticsTestCase {
                 bean2.doIt();
 
                 // Eviction is asynchronous, so wait a bit for this to take effect
-                Thread.sleep(500);
+                Thread.sleep(TimeoutUtil.adjust(500));
 
                 result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
                 assertEquals(1L, result.get("cache-size").asLong());
