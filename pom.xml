@@ -158,7 +158,7 @@
             Build configuration.  Override JBoss Parent settings as necessary.
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
-        <maven.min.version>3.3.1</maven.min.version>
+        <maven.min.version>3.6.0</maven.min.version>
 
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
         <modular.jdk.args></modular.jdk.args>
