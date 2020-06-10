@@ -22,6 +22,18 @@
 
 package org.jboss.as.test.multinode.ejb.http;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import java.util.Arrays;
+import javax.naming.InitialContext;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -41,19 +53,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.naming.InitialContext;
-import java.util.Arrays;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
 /**
  * This test che
  *
@@ -63,8 +62,12 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 @ServerSetup(EjbOverHttpTestCase.EjbOverHttpTestCaseServerSetup.class)
 public class EjbOverHttpTestCase {
     private static final Logger log = Logger.getLogger(EjbOverHttpTestCase.class);
-    public static final String ARCHIVE_NAME_CLIENT = "ejboverhttp-test-client";
     public static final String ARCHIVE_NAME_SERVER = "ejboverhttp-test-server";
+    public static final String ARCHIVE_NAME_CLIENT = "ejboverhttp-test-client";
+    public static final int NO_EJB_RETURN_CODE = -1;
+
+    @ArquillianResource
+    private Deployer deployer;
 
     static class EjbOverHttpTestCaseServerSetup implements ServerSetupTask {
 
@@ -113,7 +116,7 @@ public class EjbOverHttpTestCase {
         log.trace("System properties:\n" + System.getProperties());
     }
 
-    @Deployment(name = "server")
+    @Deployment(name = "server", managed = false)
     @TargetsContainer("multinode-server")
     public static Archive<?> deployment0() {
         JavaArchive jar = createJar(ARCHIVE_NAME_SERVER);
@@ -123,7 +126,18 @@ public class EjbOverHttpTestCase {
     @Deployment(name = "client")
     @TargetsContainer("multinode-client")
     public static Archive<?> deployment1() {
-        JavaArchive jar = createJar(ARCHIVE_NAME_CLIENT);
+        JavaArchive clientJar = createClientJar();
+        return clientJar;
+    }
+
+    private static JavaArchive createJar(String archiveName) {
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, archiveName + ".jar");
+        jar.addClasses(StatelessBean.class, StatelessLocal.class, StatelessRemote.class);
+        return jar;
+    }
+
+    private static JavaArchive createClientJar() {
+        JavaArchive jar = createJar(EjbOverHttpTestCase.ARCHIVE_NAME_CLIENT);
         jar.addClasses(EjbOverHttpTestCase.class);
         jar.addAsManifestResource("META-INF/jboss-ejb-client-profile.xml", "jboss-ejb-client.xml")
                 .addAsManifestResource("ejb-http-wildfly-config.xml", "wildfly-config.xml")
@@ -135,20 +149,29 @@ public class EjbOverHttpTestCase {
         return jar;
     }
 
-    private static JavaArchive createJar(String archiveName) {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, archiveName + ".jar");
-        jar.addClasses(StatelessBean.class, StatelessLocal.class, StatelessRemote.class);
-        return jar;
-    }
-
     @Test
     @OperateOnDeployment("client")
     public void testBasicInvocation(@ArquillianResource InitialContext ctx) throws Exception {
+        deployer.deploy("server");
+
         StatelessRemote bean = (StatelessRemote) ctx.lookup("java:module/" + StatelessBean.class.getSimpleName() + "!"
                 + StatelessRemote.class.getName());
         Assert.assertNotNull(bean);
 
+        // initial discovery
         int methodCount = bean.remoteCall();
+        Assert.assertEquals(1, methodCount);
+
+        deployer.undeploy("server");
+
+        //  failed discovery after undeploying server deployment
+        int returnValue = bean.remoteCall();
+        Assert.assertEquals(NO_EJB_RETURN_CODE, returnValue);
+
+        deployer.deploy("server");
+
+        // rediscovery after redeployment
+        methodCount = bean.remoteCall();
         Assert.assertEquals(1, methodCount);
     }
 }

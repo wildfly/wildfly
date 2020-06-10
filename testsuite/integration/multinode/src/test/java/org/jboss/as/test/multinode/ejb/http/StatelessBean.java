@@ -25,6 +25,7 @@ package org.jboss.as.test.multinode.ejb.http;
 import org.jboss.logging.Logger;
 
 import javax.ejb.Local;
+import javax.ejb.NoSuchEJBException;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.naming.Context;
@@ -53,7 +54,11 @@ public class StatelessBean {
         log.trace("Calling Remote... " + jndiContext.getEnvironment());
         StatelessRemote stateless = (StatelessRemote) jndiContext.lookup("ejb:/" +EjbOverHttpTestCase.ARCHIVE_NAME_SERVER
                 + "//" + StatelessBean.class.getSimpleName() + "!" + StatelessRemote.class.getName());
-        return stateless.method();
+        try {
+            return stateless.method();
+        } catch (NoSuchEJBException e) {
+            return EjbOverHttpTestCase.NO_EJB_RETURN_CODE;
+        }
     }
 
     public int method() throws Exception {
