@@ -66,7 +66,7 @@ public class EJB3Extension implements Extension {
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(7, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = EJB3Model.VERSION_8_0_0.getVersion();
 
     private static final String RESOURCE_NAME = EJB3Extension.class.getPackage().getName() + ".LocalDescriptions";
 

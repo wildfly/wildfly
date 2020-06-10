@@ -92,14 +92,17 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         ModelVersion currentModel = subsystemRegistration.getCurrentSubsystemVersion();
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(currentModel);
 
-        registerTransformers_6_0_0(chainedBuilder.createBuilder(currentModel, VERSION_6_0_0.getVersion()));
+        registerTransformers_7_0_0(chainedBuilder.createBuilder(currentModel, VERSION_7_0_0.getVersion()));
+        registerTransformers_6_0_0(chainedBuilder.createBuilder(VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion()));
         registerTransformers_5_0_0(chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion()));
         registerTransformers_4_0_0(chainedBuilder.createBuilder(VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion()));
         registerTransformers_3_0_0(chainedBuilder.createBuilder(VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion()));
         registerTransformers_1_3_0(chainedBuilder.createBuilder(VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion()));
         registerTransformers_1_2_1(chainedBuilder.createBuilder(VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()));
 
-        chainedBuilder.buildAndRegister(subsystemRegistration,new ModelVersion[]{VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()});
+        chainedBuilder.buildAndRegister(subsystemRegistration,new ModelVersion[]{
+                currentModel, VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion(),
+                VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()});
     }
 
     /*
@@ -274,6 +277,14 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT)
                 .end();
     }
+
+    /*
+     * Transformers for changes in model version 8.0.0
+     */
+    private static void registerTransformers_7_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+
+    }
+
 
     /*
      * This transformer is used with the datastores in /subsystem=ejb3/service=timer
