@@ -40,6 +40,7 @@ import java.util.Properties;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
@@ -50,7 +51,7 @@ import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
-import org.jboss.as.remoting.AbstractOutboundConnectionService;
+import org.jboss.as.network.OutboundConnection;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -91,6 +92,7 @@ import org.xnio.OptionMap;
 public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProcessor {
 
     private static final String INTERNAL_REMOTING_PROFILE = "internal-remoting-profile";
+    private static final String OUTBOUND_CONNECTION_CAPABILITY_NAME = "org.wildfly.remoting.outbound-connection";
 
     private final boolean appclient;
 
@@ -190,13 +192,17 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                     profileServiceBuilder.addDependency(passByValue == Boolean.FALSE ? LocalTransportProvider.BY_REFERENCE_SERVICE_NAME : LocalTransportProvider.BY_VALUE_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
                 }
                 final Collection<EJBClientDescriptorMetaData.RemotingReceiverConfiguration> receiverConfigurations = ejbClientDescriptorMetaData.getRemotingReceiverConfigurations();
+                final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                 for (EJBClientDescriptorMetaData.RemotingReceiverConfiguration receiverConfiguration : receiverConfigurations) {
                     final String connectionRef = receiverConfiguration.getOutboundConnectionRef();
                     final long connectTimeout = receiverConfiguration.getConnectionTimeout();
                     final Properties channelCreationOptions = receiverConfiguration.getChannelCreationOptions();
                     final OptionMap optionMap = getOptionMapFromProperties(channelCreationOptions, EJBClientDescriptorMetaDataProcessor.class.getClassLoader());
-                    final InjectedValue<AbstractOutboundConnectionService> injector = new InjectedValue<>();
-                    profileServiceBuilder.addDependency(AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionRef), AbstractOutboundConnectionService.class, injector);
+
+                    final InjectedValue<OutboundConnection> injector = new InjectedValue<>();
+                    final ServiceName internalServiceName = support.getCapabilityServiceName(OUTBOUND_CONNECTION_CAPABILITY_NAME, connectionRef);
+                    profileServiceBuilder.addDependency(internalServiceName, OutboundConnection.class, injector);
+
                     final RemotingProfileService.ConnectionSpec connectionSpec = new RemotingProfileService.ConnectionSpec(connectionRef, injector, optionMap, connectTimeout);
                     map.put(connectionRef, connectionSpec);
                 }
