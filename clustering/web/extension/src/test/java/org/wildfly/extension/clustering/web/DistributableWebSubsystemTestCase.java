@@ -26,7 +26,6 @@ import java.util.EnumSet;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
-import org.jboss.dmr.ModelNode;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -48,12 +47,6 @@ public class DistributableWebSubsystemTestCase extends ClusteringSubsystemTest<D
 
     public DistributableWebSubsystemTestCase(DistributableWebSchema schema) {
         super(DistributableWebExtension.SUBSYSTEM_NAME, new DistributableWebExtension(), schema, DistributableWebSchema.CURRENT, "wildfly-distributable-web-%d_%d.xml", "schema/wildfly-distributable-web_%d_%d.xsd");
-    }
-
-    @Override
-    protected void validateModel(ModelNode model) {
-        System.out.println(model.toJSONString(false));
-        super.validateModel(model);
     }
 
     @Override

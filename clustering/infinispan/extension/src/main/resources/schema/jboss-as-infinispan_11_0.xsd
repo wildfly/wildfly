@@ -21,12 +21,12 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<xs:schema targetNamespace="urn:jboss:domain:infinispan:10.0"
+<xs:schema targetNamespace="urn:jboss:domain:infinispan:11.0"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns:tns="urn:jboss:domain:infinispan:10.0"
+           xmlns:tns="urn:jboss:domain:infinispan:11.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="10.0">
+           version="11.0">
 
     <xs:element name="subsystem" type="tns:subsystem">
         <xs:annotation>
@@ -61,9 +61,19 @@
                     <xs:documentation>Defines a thread pool used for asynchronous operations.</xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="blocking-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Defines a thread pool used for blocking operations.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="listener-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>Defines a thread pool used for asynchronous cache listener notifications.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="non-blocking-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Defines a thread pool used for non-blocking operations.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="persistence-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
@@ -181,12 +191,7 @@
                 </xs:annotation>
             </xs:element>
             <xs:choice minOccurs="0">
-                <xs:element name="binary-memory" type="tns:binary-memory">
-                    <xs:annotation>
-                        <xs:documentation>The cache memory configuration.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="object-memory" type="tns:memory">
+                <xs:element name="heap-memory" type="tns:heap-memory">
                     <xs:annotation>
                         <xs:documentation>The cache memory configuration.</xs:documentation>
                     </xs:annotation>
@@ -331,12 +336,12 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="binary-memory">
+    <xs:complexType name="heap-memory">
         <xs:complexContent>
             <xs:extension base="tns:memory">
-                <xs:attribute name="eviction-type" type="tns:eviction-type" default="COUNT">
+                <xs:attribute name="size-unit" type="tns:size-unit" fixed="ENTRIES">
                     <xs:annotation>
-                        <xs:documentation>Sets the cache eviction type.</xs:documentation>
+                        <xs:documentation>Describes the unit of measurement for the size attribute.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -345,10 +350,10 @@
 
     <xs:complexType name="off-heap-memory">
         <xs:complexContent>
-            <xs:extension base="tns:binary-memory">
-                <xs:attribute name="capacity" type="xs:int" default="1048576">
+            <xs:extension base="tns:memory">
+                <xs:attribute name="size-unit" type="tns:size-unit" default="ENTRIES">
                     <xs:annotation>
-                        <xs:documentation>Capability of the off-heap storage.</xs:documentation>
+                        <xs:documentation>Describes the unit of measurement for the size attribute.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -387,7 +392,7 @@
             <xs:extension base="tns:cache">
                 <xs:attribute name="remote-timeout" type="xs:long" default="10000">
                     <xs:annotation>
-                        <xs:documentation>In SYNC mode, the timeout (in ms) used to wait for an acknowledgment when making a remote call, after which the call is aborted and an exception is thrown.</xs:documentation>
+                        <xs:documentation>The timeout (in ms) used to wait for an acknowledgment when making a remote call, after which the call is aborted and an exception is thrown.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -1150,6 +1155,21 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="size-unit">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ENTRIES"/>
+            <xs:enumeration value="BYTES"/>
+            <xs:enumeration value="KB"/>
+            <xs:enumeration value="KiB"/>
+            <xs:enumeration value="MB"/>
+            <xs:enumeration value="MiB"/>
+            <xs:enumeration value="GB"/>
+            <xs:enumeration value="GiB"/>
+            <xs:enumeration value="GB"/>
+            <xs:enumeration value="GiB"/>
         </xs:restriction>
     </xs:simpleType>
 

@@ -26,8 +26,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.infinispan.client.hotrod.ProtocolVersion;
+import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.near.NearCacheService;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -75,9 +78,17 @@ public class RemoteCacheServiceConfigurator<K, V> extends SimpleServiceNameProvi
 
     @Override
     public RemoteCache<K, V> get() {
+        String templateName = (this.configurationName != null) ? this.configurationName : DefaultTemplate.DIST_SYNC.getTemplateName();
+        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<RemoteCacheConfigurationBuilder>() {
+            @Override
+            public void accept(RemoteCacheConfigurationBuilder builder) {
+                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE).templateName(templateName);
+            }
+        };
+        this.container.get().getConfiguration().addRemoteCache(this.cacheName, configurator);
         RemoteCacheContainer container = this.container.get();
         try (RemoteCacheContainer.NearCacheRegistration registration = (this.nearCacheFactory != null) ? container.registerNearCacheFactory(this.cacheName, this.nearCacheFactory) : null) {
-            RemoteCache<K, V> cache = (container.getConfiguration().version().compareTo(ProtocolVersion.PROTOCOL_VERSION_27) >= 0) ? container.administration().getOrCreateCache(this.cacheName, this.configurationName) : container.getCache(this.cacheName);
+            RemoteCache<K, V> cache = container.getCache(this.cacheName);
             cache.start();
             return cache;
         }
@@ -86,6 +97,7 @@ public class RemoteCacheServiceConfigurator<K, V> extends SimpleServiceNameProvi
     @Override
     public void accept(RemoteCache<K, V> cache) {
         cache.stop();
+        this.container.get().getConfiguration().removeRemoteCache(this.cacheName);
     }
 
     @Override

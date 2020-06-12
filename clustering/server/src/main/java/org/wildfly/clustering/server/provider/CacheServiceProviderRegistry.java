@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +46,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.Registration;
@@ -257,29 +259,31 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     @CacheEntryCreated
     @CacheEntryModified
-    public void modified(CacheEntryEvent<T, Set<Address>> event) {
-        if (event.isPre()) return;
-        Map.Entry<Listener, ExecutorService> entry = this.listeners.get(event.getKey());
-        if (entry != null) {
-            Listener listener = entry.getKey();
-            if (listener != null) {
-                ExecutorService executor = entry.getValue();
-                Set<Node> members = new TreeSet<>();
-                for (Address address : event.getValue()) {
-                    members.add(this.group.createNode(address));
-                }
-                try {
-                    executor.submit(() -> {
-                        try {
-                            listener.providersChanged(members);
-                        } catch (Throwable e) {
-                            ClusteringServerLogger.ROOT_LOGGER.serviceProviderRegistrationListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName(), this.cache.getName(), members);
-                        }
-                    });
-                } catch (RejectedExecutionException e) {
-                    // Executor was shutdown
+    public CompletionStage<Void> modified(CacheEntryEvent<T, Set<Address>> event) {
+        if (!event.isPre()) {
+            Map.Entry<Listener, ExecutorService> entry = this.listeners.get(event.getKey());
+            if (entry != null) {
+                Listener listener = entry.getKey();
+                if (listener != null) {
+                    ExecutorService executor = entry.getValue();
+                    try {
+                        executor.submit(() -> {
+                            Set<Node> members = new TreeSet<>();
+                            for (Address address : event.getValue()) {
+                                members.add(this.group.createNode(address));
+                            }
+                            try {
+                                listener.providersChanged(members);
+                            } catch (Throwable e) {
+                                ClusteringServerLogger.ROOT_LOGGER.serviceProviderRegistrationListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName(), this.cache.getName(), members);
+                            }
+                        });
+                    } catch (RejectedExecutionException e) {
+                        // Executor was shutdown
+                    }
                 }
             }
         }
+        return CompletableFutures.completedNull();
     }
 }

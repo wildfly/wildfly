@@ -24,7 +24,11 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,8 +42,12 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.util.concurrent.CompletableFutures;
+import org.jboss.as.clustering.context.DefaultExecutorService;
+import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
@@ -61,6 +69,7 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SpecificationProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Generic session manager implementation - independent of cache mapping strategy.
@@ -83,7 +92,6 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
-    private final Predicate<Object> filter = new SessionCreationMetaDataKeyFilter();
     private final Recordable<ImmutableSession> recorder;
     private final SC context;
     private final SpecificationProvider<S, SC, AL> provider;
@@ -91,6 +99,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
+    private volatile ExecutorService executor;
 
     public InfinispanSessionManager(SessionFactory<SC, MV, AV, LC> factory, InfinispanSessionManagerConfiguration<S, SC, AL> configuration) {
         this.factory = factory;
@@ -109,12 +118,13 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
 
     @Override
     public void start() {
+        this.executor = new DefaultExecutorService(this.getClass(), ExecutorServiceFactory.CACHED_THREAD);
         if (this.recorder != null) {
             this.recorder.reset();
         }
         this.identifierFactory.start();
         this.expirationRegistration = this.expirationRegistrar.register(this.expirationListener);
-        CacheEventFilter<Object, Object> filter = new PredicateKeyFilter<>(this.filter);
+        CacheEventFilter<Object, Object> filter = new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE);
         this.cache.addListener(this, filter, null);
         this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
         this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
@@ -128,6 +138,12 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         this.cache.removeListener(this.factory.getMetaDataFactory());
         this.cache.removeListener(this.factory.getAttributesFactory());
         this.identifierFactory.stop();
+        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
+        try {
+            this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
@@ -204,7 +220,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     private Set<String> getSessions(Flag... flags) {
         Locality locality = new CacheLocality(this.cache);
         try (Stream<Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
-            return keys.filter(this.filter.and(key -> locality.isLocal(key))).map(key -> key.getId()).collect(Collectors.toSet());
+            return keys.filter(SessionCreationMetaDataKeyFilter.INSTANCE.and(key -> locality.isLocal(key))).map(key -> key.getId()).collect(Collectors.toSet());
         }
     }
 
@@ -214,43 +230,70 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     }
 
     @CacheEntryActivated
-    public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
+    public CompletionStage<Void> activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (!event.isPre() && !this.properties.isPersistent()) {
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
-            Map.Entry<MV, AV> value = this.factory.tryValue(id);
-            if (value != null) {
-                ImmutableSession session = this.factory.createImmutableSession(id, value);
-                new ImmutableSessionActivationNotifier<>(this.provider, session, this.context).postActivate();
+            try (TransactionBatch batch = this.batcher.suspendBatch()) {
+                return CompletableFuture.runAsync(() -> {
+                    try (BatchContext context = this.batcher.resumeBatch(batch)) {
+                        Map.Entry<MV, AV> value = this.factory.tryValue(id);
+                        if (value != null) {
+                            ImmutableSession session = this.factory.createImmutableSession(id, value);
+                            new ImmutableSessionActivationNotifier<>(this.provider, session, this.context).postActivate();
+                        }
+                    }
+                }, this.executor);
+            } catch (RejectedExecutionException e) {
+                // Session manager is stopped
             }
         }
+        return CompletableFutures.completedNull();
     }
 
     @CacheEntryPassivated
-    public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
+    public CompletionStage<Void> passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre() && !this.properties.isPersistent()) {
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-            Map.Entry<MV, AV> value = this.factory.tryValue(id);
-            if (value != null) {
-                ImmutableSession session = this.factory.createImmutableSession(id, value);
-                new ImmutableSessionActivationNotifier<>(this.provider, session, this.context).prePassivate();
+            try (TransactionBatch batch = this.batcher.suspendBatch()) {
+                return CompletableFuture.runAsync(() -> {
+                    try (BatchContext context = this.batcher.resumeBatch(batch)) {
+                        Map.Entry<MV, AV> value = this.factory.tryValue(id);
+                        if (value != null) {
+                            ImmutableSession session = this.factory.createImmutableSession(id, value);
+                            new ImmutableSessionActivationNotifier<>(this.provider, session, this.context).prePassivate();
+                        }
+                    }
+                }, this.executor);
+            } catch (RejectedExecutionException e) {
+                // Session manager is stopped
             }
         }
+        return CompletableFutures.completedNull();
     }
 
     @CacheEntryRemoved
-    public void removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
+    public CompletionStage<Void> removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre()) {
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
             if (this.recorder != null) {
-                Map.Entry<MV, AV> value = this.factory.tryValue(id);
-                if (value != null) {
-                    ImmutableSession session = this.factory.createImmutableSession(id, value);
-                    this.recorder.record(session);
+                try (TransactionBatch batch = this.batcher.suspendBatch()) {
+                    return CompletableFuture.runAsync(() -> {
+                        try (BatchContext context = this.batcher.resumeBatch(batch)) {
+                            Map.Entry<MV, AV> value = this.factory.tryValue(id);
+                            if (value != null) {
+                                ImmutableSession session = this.factory.createImmutableSession(id, value);
+                                this.recorder.record(session);
+                            }
+                        }
+                    }, this.executor);
+                } catch (RejectedExecutionException e) {
+                    // Session manager is stopped
                 }
             }
         }
+        return CompletableFutures.completedNull();
     }
 }

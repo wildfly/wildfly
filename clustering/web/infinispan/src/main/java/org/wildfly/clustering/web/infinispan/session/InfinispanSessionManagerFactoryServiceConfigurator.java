@@ -30,7 +30,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.eviction.EvictionType;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.function.Consumers;
@@ -124,10 +123,9 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, L
 
         Integer size = this.factoryConfiguration.getMaxActiveSessions();
         EvictionStrategy strategy = (size != null) ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
-        builder.memory().evictionType(EvictionType.COUNT)
-                .evictionStrategy(strategy)
-                .size((size != null) ? size.longValue() : 0)
-                .storageType(StorageType.OBJECT)
+        builder.memory().storage(StorageType.HEAP)
+                .whenFull(strategy)
+                .maxCount((size != null) ? size.longValue() : 0)
                 ;
         if (strategy.isEnabled()) {
             // Only evict creation meta-data entries

@@ -19,50 +19,42 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:10.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:11.0">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
     <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" module="org.infinispan" statistics-enabled="true">
         <transport channel="maximal-channel" lock-timeout="120000"/>
-        <async-operations-thread-pool min-threads="11"
-                                      max-threads="12"
-                                      queue-length="13"
-                                      keepalive-time="14"/>
+        <blocking-thread-pool min-threads="11"
+                              max-threads="12"
+                              queue-length="13"
+                              keepalive-time="14"/>
         <listener-thread-pool min-threads="21"
                               max-threads="22"
                               queue-length="23"
                               keepalive-time="24"/>
-        <persistence-thread-pool min-threads="31"
-                                 max-threads="32"
-                                 queue-length="33"
-                                 keepalive-time="34"/>
-        <remote-command-thread-pool min-threads="41"
-                                    max-threads="42"
-                                    queue-length="43"
-                                    keepalive-time="44"/>
-        <transport-thread-pool min-threads="61"
-                               max-threads="62"
-                               queue-length="63"
-                               keepalive-time="64"/>
-        <expiration-thread-pool min-threads="71"
-                                keepalive-time="72"/>
+        <non-blocking-thread-pool min-threads="31"
+                              max-threads="32"
+                              queue-length="33"
+                              keepalive-time="34"/>
+        <expiration-thread-pool min-threads="41"
+                                keepalive-time="42"/>
         <local-cache name="local" module="org.infinispan" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <object-memory size="20000"/>
+            <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="false">
-                <write-behind modification-queue-size="2048" thread-pool-size="1"/>
+                <write-behind modification-queue-size="2048"/>
             </file-store>
         </local-cache>
         <invalidation-cache name="invalid" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <binary-memory size="20000" eviction-type="MEMORY"/>
+            <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="true">
-                <write-behind modification-queue-size="2048" thread-pool-size="1"/>
+                <write-behind modification-queue-size="2048"/>
                 <property name="valueSizeEstimate">100</property>
             </remote-store>
         </invalidation-cache>
@@ -72,10 +64,10 @@
         <replicated-cache name="repl" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <off-heap-memory size="20000" eviction-type="MEMORY" capacity="1024"/>
+            <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
-                <write-behind modification-queue-size="2048" thread-pool-size="1"/>
+                <write-behind modification-queue-size="2048"/>
                 <property name="location">${java.io.tmpdir}</property>
             </store>
             <partition-handling enabled="false"/>
@@ -84,10 +76,10 @@
         <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" consistent-hash-strategy="INTRA_CACHE" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <object-memory size="20000"/>
+            <heap-memory size="100"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <jdbc-store data-source="ExampleDS" dialect="MARIA_DB" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false" max-batch-size="100">
-                <write-behind modification-queue-size="2048" thread-pool-size="1"/>
+                <write-behind modification-queue-size="2048"/>
                 <table prefix="ispn_bucket" fetch-size="100" create-on-start="false" drop-on-stop="true">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
@@ -107,7 +99,7 @@
         </distributed-cache>
         <scattered-cache name="scattered" remote-timeout="35000" segments="2" consistent-hash-strategy="INTRA_CACHE" invalidation-batch-size="100" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
-            <object-memory size="20000"/>
+            <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <partition-handling enabled="true"/>
             <state-transfer timeout="60000" chunk-size="10000"/>

@@ -36,7 +36,6 @@ public enum RemoteCacheContainerComponent implements ResourceServiceNameFactory 
 
     CONNECTION_POOL(ConnectionPoolResourceDefinition.PATH),
     MODULE("module"),
-    NEAR_CACHE(NearCacheResourceDefinition.WILDCARD_PATH),
     SECURITY(SecurityResourceDefinition.PATH),
     TRANSACTION(RemoteTransactionResourceDefinition.PATH),
     ;

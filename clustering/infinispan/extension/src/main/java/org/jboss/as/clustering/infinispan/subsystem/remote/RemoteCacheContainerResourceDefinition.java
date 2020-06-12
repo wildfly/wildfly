@@ -140,6 +140,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
             parent.rejectChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
@@ -175,6 +176,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);

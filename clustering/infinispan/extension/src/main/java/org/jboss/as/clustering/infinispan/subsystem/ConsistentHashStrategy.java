@@ -32,6 +32,7 @@ import org.infinispan.distribution.ch.impl.TopologyAwareSyncConsistentHashFactor
  * Defines the consistent hash behavior for a distributed cache.
  * @author Paul Ferraro
  */
+@Deprecated
 public enum ConsistentHashStrategy {
     INTER_CACHE() {
         @Override

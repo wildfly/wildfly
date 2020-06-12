@@ -55,7 +55,6 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODIFICATION_QUEUE_SIZE("modification-queue-size", ModelType.INT, new ModelNode(1024)),
-        THREAD_POOL_SIZE("thread-pool-size", ModelType.INT, new ModelNode(1)),
         ;
         private final AttributeDefinition definition;
 
@@ -78,6 +77,7 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
         FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(5)), InfinispanModel.VERSION_4_0_0),
         SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(25)), InfinispanModel.VERSION_4_0_0),
+        THREAD_POOL_SIZE("thread-pool-size", ModelType.INT, new ModelNode(1), InfinispanModel.VERSION_13_0_0)
         ;
         private final AttributeDefinition definition;
 
@@ -86,7 +86,7 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .setDeprecated(deprecation.getVersion())
                     .build();
