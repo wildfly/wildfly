@@ -35,7 +35,6 @@ import static org.jboss.dmr.ModelType.LONG;
 import static org.wildfly.extension.messaging.activemq.jms.Validators.noDuplicateElements;
 
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
-import org.apache.activemq.artemis.core.config.impl.FileConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -104,8 +103,11 @@ public interface CommonAttributes {
             .addFlag(GAUGE_METRIC)
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#DEFAULT_BRIDGE_CONFIRMATION_WINDOW_SIZE
+     */
     SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = create("confirmation-window-size", INT)
-            .setDefaultValue(new ModelNode(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE))
+            .setDefaultValue(new ModelNode(1024 * 1024 * 10))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)

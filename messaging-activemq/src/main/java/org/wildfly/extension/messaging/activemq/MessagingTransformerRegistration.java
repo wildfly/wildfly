@@ -88,6 +88,15 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     }
 
     private static void registerTransformers_WF_21(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+        ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
+        bridge.getAttributeBuilder()
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE)
+                .end();
+        ResourceTransformationDescriptionBuilder clusterConnection = server.addChildResource(MessagingExtension.CLUSTER_CONNECTION_PATH);
+        clusterConnection.getAttributeBuilder()
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE)
+                .end();
     }
 
     private static void registerTransformers_WF_20(ResourceTransformationDescriptionBuilder subsystem) {
