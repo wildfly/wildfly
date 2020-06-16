@@ -236,7 +236,6 @@
         <version.org.wildfly.galleon-plugins>4.2.8.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.maven.plugins>2.0.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
-        <version.org.zanata.plugin>3.9.1</version.org.zanata.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
 
@@ -9316,24 +9315,6 @@
                             <revdate>${maven.build.timestamp}</revdate>
                             <organization>${project.organization.name}</organization>
                         </attributes>
-                    </configuration>
-                </plugin>
-                <!-- Zanata translations -->
-                <plugin>
-                    <groupId>org.zanata</groupId>
-                    <artifactId>zanata-maven-plugin</artifactId>
-                    <version>${version.org.zanata.plugin}</version>
-                    <configuration>
-                        <!-- Process sub-modules separately, sharing parent config -->
-                        <enableModules>true</enableModules>
-                        <projectConfig>${session.executionRootDirectory}/zanata.xml</projectConfig>
-                        <!-- Generated English i18n.properties are written here: -->
-                        <srcDir>target/classes</srcDir>
-                        <transDir>src/main/resources</transDir>
-                        <includes>**/*.i18n.properties,**/LocalDescriptions.properties</includes>
-                        <!-- In previous versions, 3.8.0 and lower, this defaulted to true -->
-                        <copyTrans>true</copyTrans>
-                        <deleteObsoleteModules>true</deleteObsoleteModules>
                     </configuration>
                 </plugin>
                 <plugin>
