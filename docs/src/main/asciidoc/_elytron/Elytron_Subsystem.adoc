@@ -137,6 +137,9 @@ using a ServiceLoader
 where the principal transformer is an aggregation of other principal
 transformers.
 
+|case-principal-transformer |A principal transformer definition where
+the principal is adjusted to upper or lower case.
+
 |chained-principal-transformer |A principal transformer definition where
 the principal transformer is a chaining of other principal transformers.
 
@@ -547,6 +550,7 @@ and openssl provider loaders.
         "authentication-configuration" => undefined,
         "authentication-context" => undefined,
         "caching-realm" => undefined,
+        "case-principal-transformer" => undefined,
         "certificate-authority-account" => undefined,
         "chained-principal-transformer" => undefined,
         "client-ssl-context" => undefined,
