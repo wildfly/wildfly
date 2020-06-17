@@ -28,6 +28,7 @@ import io.opentracing.contrib.jaxrs2.server.OperationNameProvider;
 import io.opentracing.contrib.jaxrs2.server.OperationNameProvider.ClassNameOperationName;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import java.util.Optional;
+import javax.inject.Inject;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.container.DynamicFeature;
@@ -44,9 +45,14 @@ public class TracerDynamicFeature implements DynamicFeature {
     @Context
     ServletContext servletContext;
 
+    @Inject
+    Config config;
+
     @Override
     public void configure(ResourceInfo resourceInfo, FeatureContext context) {
-        Config config = ConfigProvider.getConfig();
+        if(config == null) {
+            config = ConfigProvider.getConfig();
+        }
         Optional<String> skipPattern = config.getOptionalValue("mp.opentracing.server.skip-pattern", String.class);
         Optional<String> operationNameProvider = config.getOptionalValue("mp.opentracing.server.operation-name-provider", String.class);
         Tracer tracer;

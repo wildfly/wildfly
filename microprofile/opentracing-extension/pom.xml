@@ -85,6 +85,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-microprofile-config-smallrye</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
             <exclusions>
                 <exclusion>
