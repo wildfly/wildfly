@@ -125,7 +125,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
     public Map<String, SocketBinding> getSocketBindings() {
         Map<String, SocketBinding> bindings = new HashMap<>();
         SocketBinding binding = this.getSocketBinding();
-        for (String serviceName : Arrays.asList("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
+        for (String serviceName : Arrays.asList("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.client", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
             bindings.put(serviceName, binding);
         }
         bindings.put("jgroups.tp.diag.mcast_sock", this.diagnosticsSocketBinding.get());
