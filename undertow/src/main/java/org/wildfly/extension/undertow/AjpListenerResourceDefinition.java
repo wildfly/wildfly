@@ -60,7 +60,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     private AjpListenerResourceDefinition() {
-        super(UndertowExtension.AJP_LISTENER_PATH);
+        super(new Parameters(UndertowExtension.AJP_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER)));
     }
 
     @Override
