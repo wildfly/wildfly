@@ -55,7 +55,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.remoting.Attribute;
 import org.jboss.as.threads.ThreadsParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -620,7 +619,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeStartElement(EJB3SubsystemXMLElement.CHANNEL_CREATION_OPTIONS.getLocalName());
         for (final Property optionPropertyModelNode : node.asPropertyList()) {
             writer.writeStartElement(EJB3SubsystemXMLElement.OPTION.getLocalName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), optionPropertyModelNode.getName());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), optionPropertyModelNode.getName());
             final ModelNode propertyValueModelNode = optionPropertyModelNode.getValue();
             RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.marshallAsAttribute(propertyValueModelNode, writer);
             RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.marshallAsAttribute(propertyValueModelNode, writer);

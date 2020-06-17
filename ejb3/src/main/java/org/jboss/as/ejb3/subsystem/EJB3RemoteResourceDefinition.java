@@ -32,6 +32,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
@@ -42,6 +43,7 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfigura
  * User: Jaikiran Pai
  */
 public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
+    private static final String JBOSS_AS_REMOTING = "org.jboss.as.remoting";
 
     public static final String EJB_REMOTE_CAPABILITY_NAME = "org.wildfly.ejb.remote";
 
@@ -99,5 +101,10 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
         // register channel-creation-options as sub model for EJB remote service
         resourceRegistration.registerSubModel(new RemoteConnectorChannelCreationOptionResource());
+    }
+
+    @Override
+    public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(JBOSS_AS_REMOTING));
     }
 }

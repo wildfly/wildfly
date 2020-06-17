@@ -22,7 +22,11 @@
 
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.remoting.AbstractOutboundConnectionService;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import org.jboss.as.network.OutboundConnection;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -32,10 +36,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.discovery.ServiceURL;
 import org.xnio.OptionMap;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Service which contains the static configuration data found in an EJB Remoting profile, either in the subsystem or in a
@@ -87,11 +87,11 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
 
     public static final class ConnectionSpec {
         private final String connectionName;
-        private final InjectedValue<AbstractOutboundConnectionService> injector;
+        private final InjectedValue<OutboundConnection> injector;
         private final OptionMap connectOptions;
         private final long connectTimeout;
 
-        public ConnectionSpec(final String connectionName, final InjectedValue<AbstractOutboundConnectionService> injector, final OptionMap connectOptions, final long connectTimeout) {
+        public ConnectionSpec(final String connectionName, final InjectedValue<OutboundConnection> injector, final OptionMap connectOptions, final long connectTimeout) {
             this.connectionName = connectionName;
             this.injector = injector;
             this.connectOptions = connectOptions;
@@ -102,7 +102,7 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
             return connectionName;
         }
 
-        public InjectedValue<AbstractOutboundConnectionService> getInjector() {
+        public InjectedValue<OutboundConnection> getInjector() {
             return injector;
         }
 
