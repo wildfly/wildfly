@@ -35,12 +35,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
-import org.jboss.as.remoting.AbstractOutboundConnectionService;
+import org.jboss.as.network.OutboundConnection;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.ejb.client.EJBClientContext;
@@ -60,6 +61,7 @@ import org.xnio.Options;
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class RemotingProfileAdd extends AbstractAddStepHandler {
+    private static final String OUTBOUND_CONNECTION_CAPABILITY_NAME = "org.wildfly.remoting.outbound-connection";
 
     RemotingProfileAdd(AttributeDefinition... attributes) {
         super(attributes);
@@ -114,6 +116,7 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             // populating the map after the fact is cheating, but it works thanks to the MSC start service "fence"
             final ServiceBuilder<RemotingProfileService> builder = context.getServiceTarget().addService(profileServiceName, profileService);
             if (profileNode.hasDefined(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)) {
+                final CapabilityServiceSupport support = context.getCapabilityServiceSupport();
                 for (final Property receiverProperty : profileNode.get(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)
                         .asPropertyList()) {
                     final ModelNode receiverNode = receiverProperty.getValue();
@@ -123,10 +126,9 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                     final long timeout = RemotingEjbReceiverDefinition.CONNECT_TIMEOUT.resolveModelAttribute(context,
                             receiverNode).asLong();
 
-                    final ServiceName connectionDependencyService = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME
-                            .append(connectionRef);
-                    final InjectedValue<AbstractOutboundConnectionService> connectionInjector = new InjectedValue<AbstractOutboundConnectionService>();
-                    builder.addDependency(connectionDependencyService, AbstractOutboundConnectionService.class, connectionInjector);
+                    final ServiceName connectionDependencyService = support.getCapabilityServiceName(OUTBOUND_CONNECTION_CAPABILITY_NAME, connectionRef);
+                    final InjectedValue<OutboundConnection> connectionInjector = new InjectedValue<>();
+                    builder.addDependency(connectionDependencyService, OutboundConnection.class, connectionInjector);
 
                     final ModelNode channelCreationOptionsNode = receiverNode.get(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS);
                     OptionMap channelCreationOptions = createChannelOptionMap(context, channelCreationOptionsNode);
