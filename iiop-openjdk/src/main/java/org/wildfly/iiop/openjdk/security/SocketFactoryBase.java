@@ -37,9 +37,25 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.security.PrivilegedAction;
 
 public abstract class SocketFactoryBase implements ORBSocketFactory {
     protected ORB orb;
+    private static final boolean keepAlive;
+    static {
+        keepAlive = java.security.AccessController.doPrivileged(
+                new PrivilegedAction<Boolean>() {
+                    @Override
+                    public Boolean run () {
+                        String value =
+                                System.getProperty("com.sun.CORBA.transport.enableTcpKeepAlive");
+                        if (value != null)
+                            return new Boolean(!"false".equalsIgnoreCase(value));
+
+                        return Boolean.FALSE;
+                    }
+                });
+    }
 
     @Override
     public void setORB(ORB orb) {
@@ -74,11 +90,18 @@ public abstract class SocketFactoryBase implements ORBSocketFactory {
 
         // Disable Nagle's algorithm (i.e., always send immediately).
         socket.setTcpNoDelay(true);
+
+        if (keepAlive)
+            socket.setKeepAlive(true);
+
         return socket;
     }
 
     public void setAcceptedSocketOptions(Acceptor acceptor, ServerSocket serverSocket, Socket socket) throws SocketException {
         // Disable Nagle's algorithm (i.e., always send immediately).
         socket.setTcpNoDelay(true);
+
+        if (keepAlive)
+            socket.setKeepAlive(true);
     }
 }
