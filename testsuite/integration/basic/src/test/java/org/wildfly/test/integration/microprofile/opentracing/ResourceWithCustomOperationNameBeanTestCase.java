@@ -40,7 +40,7 @@ public class ResourceWithCustomOperationNameBeanTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        war.addClass(ResourceTracedTestCase.class);
+        war.addClass(ResourceWithCustomOperationNameBeanTestCase.class);
 
         war.addClass(MockTracerFactory.class);
         war.addPackage(MockTracer.class.getPackage());

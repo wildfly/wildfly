@@ -40,6 +40,7 @@
         <module name="org.wildfly.security.elytron"/>
 
         <module name="javax.enterprise.api" />
+        <module name="org.eclipse.microprofile.config.api"/>
         <module name="io.opentracing.opentracing-api"/>
         <module name="io.opentracing.opentracing-noop"/>
         <module name="io.opentracing.opentracing-util"/>

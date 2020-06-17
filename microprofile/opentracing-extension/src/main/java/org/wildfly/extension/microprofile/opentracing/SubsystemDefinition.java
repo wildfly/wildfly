@@ -49,10 +49,11 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
 
     private static final String OPENTRACING_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing";
     public static final String DEFAULT_TRACER_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing.default-tracer";
+    private static final String MICROPROFILE_CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
 
     private static final RuntimeCapability<Void> OPENTRACING_CAPABILITY = RuntimeCapability.Builder
             .of(OPENTRACING_CAPABILITY_NAME)
-            .addRequirements(WELD_CAPABILITY_NAME)
+            .addRequirements(WELD_CAPABILITY_NAME, MICROPROFILE_CONFIG_CAPABILITY_NAME)
             .build();
 
     public static final RuntimeCapability<Void> DEFAULT_TRACER_CAPABILITY = RuntimeCapability.Builder
@@ -67,9 +68,10 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
         "io.opentracing.contrib.opentracing-tracerresolver",
         "io.opentracing.opentracing-api",
         "io.opentracing.opentracing-util",
+        "org.eclipse.microprofile.config.api",
         "org.eclipse.microprofile.opentracing",
         "org.eclipse.microprofile.restclient",
-        "io.opentracing.contrib.opentracing-jaxrs2"
+        "io.opentracing.contrib.opentracing-jaxrs2",
     };
 
     static final String[] EXPORTED_MODULES = {
