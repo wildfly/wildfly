@@ -99,18 +99,19 @@ public class DataContainerFactory<K, V> extends AbstractNamedCacheComponentFacto
         long thresholdSize = memory.size();
         EvictionType type = memory.evictionType();
         DataContainerConfiguration config = this.configuration.module(DataContainerConfiguration.class);
+        Predicate<?> evictable = (config != null) ? config.evictable() : DataContainerConfiguration.EVICTABLE_PREDICATE.getDefaultValue();
 
         if (segmented) {
             int segments = clustering.hash().numSegments();
             if (offHeap) {
                 return new SegmentedBoundedOffHeapDataContainer(segments, thresholdSize, type);
             }
-            return (type == EvictionType.COUNT) ? new BoundedSegmentedDataContainer<>(segments, thresholdSize, new EvictableEntrySizeCalculator<>(config.evictable())) : new BoundedSegmentedDataContainer<>(segments, thresholdSize, type);
+            return (type == EvictionType.COUNT) ? new BoundedSegmentedDataContainer<>(segments, thresholdSize, new EvictableEntrySizeCalculator<>(evictable)) : new BoundedSegmentedDataContainer<>(segments, thresholdSize, type);
         }
         if (offHeap) {
             return new BoundedOffHeapDataContainer(thresholdSize, type);
         }
-        return (type == EvictionType.COUNT) ? new EvictableDataContainer<>(thresholdSize, new EvictableEntrySizeCalculator<>(config.evictable())) : DefaultDataContainer.boundedDataContainer(level, thresholdSize, type);
+        return (type == EvictionType.COUNT) ? new EvictableDataContainer<>(thresholdSize, new EvictableEntrySizeCalculator<>(evictable)) : DefaultDataContainer.boundedDataContainer(level, thresholdSize, type);
     }
 
     private OffHeapConcurrentMap createAndStartOffHeapConcurrentMap() {
