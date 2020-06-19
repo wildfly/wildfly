@@ -44,7 +44,6 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
-import org.jboss.as.security.deployment.JaccEarDeploymentProcessor;
 import org.jboss.as.security.deployment.SecurityDependencyProcessor;
 import org.jboss.as.security.deployment.SecurityEnablementProcessor;
 import org.jboss.as.security.logging.SecurityLogger;
@@ -221,8 +220,6 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             context.addStep(new AbstractDeploymentChainStep() {
                 @Override
                 protected void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JACC_POLICY,
-                            new JaccEarDeploymentProcessor());
                     processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SECURITY,
                             new SecurityDependencyProcessor());
                     processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.PARSE, 0x0080,

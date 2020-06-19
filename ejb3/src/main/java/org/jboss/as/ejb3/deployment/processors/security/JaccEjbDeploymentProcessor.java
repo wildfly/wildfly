@@ -24,9 +24,9 @@ package org.jboss.as.ejb3.deployment.processors.security;
 
 import javax.security.jacc.PolicyConfiguration;
 
+import org.jboss.as.ee.security.AbstractSecurityDeployer;
+import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.ejb3.deployment.EjbSecurityDeployer;
-import org.jboss.as.security.deployment.AbstractSecurityDeployer;
-import org.jboss.as.security.service.JaccService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;

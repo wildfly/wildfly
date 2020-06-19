@@ -63,6 +63,10 @@
             <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.spec.javax.security.jacc</groupId>
+            <artifactId>jboss-jacc-api_1.5_spec</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.3_spec</artifactId>
         </dependency>
