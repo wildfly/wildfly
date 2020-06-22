@@ -47,8 +47,6 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     public static final String WILDFLY_NAMING = "org.wildfly.naming";
     public static final String JBOSS_INVOCATION = "org.jboss.invocation";
     public static final String JSON_API = "javax.json.api";
-    public static final String JSON_BIND_API = "javax.json.bind.api";
-    public static final String ECLIPSE_YASSON = "org.eclipse.yasson";
     public static final String GLASSFISH_EL = "org.glassfish.javax.el";
 
     public static final SimpleAttributeDefinition EAR_SUBDEPLOYMENTS_ISOLATED =
@@ -122,8 +120,6 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
         resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(WILDFLY_NAMING),
              RuntimePackageDependency.required(JBOSS_INVOCATION),
              RuntimePackageDependency.optional(JSON_API),
-             RuntimePackageDependency.optional(JSON_BIND_API),
-             RuntimePackageDependency.optional(ECLIPSE_YASSON),
              RuntimePackageDependency.optional(GLASSFISH_EL));
     }
 }

@@ -1418,6 +1418,50 @@
                                                 <layer>datasources-web-server</layer>
                                                 <layer>jsonp</layer>
                                             </layers>
+                                            <excluded-layers>
+                                                <!-- Not strictly necessary but it will avoid the provisioning of
+                                                     JSON-B brought in by ee layer. We removes JSON-B to make the tests cleaner -->
+                                                <layer>jsonb</layer>
+                                            </excluded-layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with JSON-B layer -->
+                            <execution>
+                                <id>jsonb-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jsonb</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>jsonb</layer>
+                                            </layers>
                                         </config>
                                     </configurations>
                                 </configuration>
@@ -2079,6 +2123,33 @@
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/json/JSONB*TestCase.java</exclude>
                                     </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with Jsonb layer -->
+                            <execution>
+                                <id>jsonb-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jsonb</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jsonb</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jsonb</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jsonb</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jsonb</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jsonb/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jsonb</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/json/*TestCase.java</include>
+                                    </includes>
                                 </configuration>
                             </execution>
 
