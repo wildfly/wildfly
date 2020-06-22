@@ -1155,6 +1155,46 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+
+                            <!-- Provision a server with JBoss Diagnostic Reporting layer -->
+                            <execution>
+                                <id>jdr-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jdr</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>jdr</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <!-- Provision a cloud-profile server with legacy-security as well -->
                             <execution>
                                 <id>legacy-security-provisioning</id>
@@ -1558,6 +1598,33 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</include>
                                         <include>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with Jboss Diagnostic Reporting layer -->
+                            <execution>
+                                <id>jdr.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jdr</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jdr</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jdr</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jdr</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jdr</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jdr/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jdr</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/jdr/mgmt/*TestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>

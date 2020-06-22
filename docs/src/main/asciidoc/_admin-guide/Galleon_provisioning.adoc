@@ -130,6 +130,7 @@ Basic layers:
 * _ejb-lite_: Support for Jakarta Enterprise Beans Lite.
 * _ejb_: Support for Jakarta Enterprise Beans, excluding IIOP protocol.
 * _jaxrs_: Support for JAXRS. Depends on _web-server_ (defined in the WildFly servlet feature-pack).
+* _jdr_: Support for the JBoss Diagnostic Reporting (JDR) subsystem.
 * _jms-activemq_: Support for connections to a remote JMS broker.
 * _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
 * _jsf_: Support for Jakarta Server Faces. Depends on _web-server_ (defined in the WildFly servlet feature-pack) and optionally on _cdi_ and _bean-validation_
