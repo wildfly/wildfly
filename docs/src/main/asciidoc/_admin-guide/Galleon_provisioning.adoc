@@ -128,6 +128,7 @@ Basic layers:
 * _datasources_: Support for datasources.
 * _ee-security_: Support for EE Security. Depends on _cdi_.
 * _jaxrs_: Support for JAXRS. Depends on _web-server_ (defined in the WildFly servlet feature-pack).
+* _jdr_: Support for the JBoss Diagnostic Reporting (JDR) subsystem.
 * _jms-activemq_: Support for connections to a remote JMS broker.
 * _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
 * _microprofile-config_: Support for MicroProfile Config.
