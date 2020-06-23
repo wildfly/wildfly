@@ -31,10 +31,11 @@ import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.rules.TestRule;
 
 /**
  * Variation of {@link AbstractWebFailoverTestCase} using hotrod-based session manager.
@@ -44,6 +45,9 @@ import org.junit.Assert;
  * @author Paul Ferraro
  */
 public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailoverTestCase {
+
+    @ClassRule
+    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
 
     @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1)
     private ManagementClient client1;
@@ -57,15 +61,6 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
     public AbstractHotRodWebFailoverTestCase(String deploymentName) {
         super(deploymentName, CacheMode.LOCAL, TransactionMode.NON_TRANSACTIONAL);
         this.deploymentName = deploymentName;
-    }
-
-    @Override
-    public void beforeTestMethod() {
-        // Also start the Infinispan Server instance
-        NodeUtil.start(this.controller, INFINISPAN_SERVER_1);
-
-        NodeUtil.start(this.controller, this.nodes);
-        NodeUtil.deploy(this.deployer, this.deployments);
     }
 
     @Override

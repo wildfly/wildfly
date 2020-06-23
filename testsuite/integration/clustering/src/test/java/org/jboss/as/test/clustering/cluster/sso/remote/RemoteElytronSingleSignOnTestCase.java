@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,12 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.sso;
+package org.jboss.as.test.clustering.cluster.sso.remote;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.cluster.sso.ElytronSSOServerSetupTask;
+import org.jboss.as.test.clustering.cluster.sso.IdentityServerSetupTask;
+import org.jboss.as.test.clustering.cluster.sso.InfinispanServerSetupTask;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
@@ -36,7 +39,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ InfinispanServerSetupTask.class, RemoteElytronSingleSignOnTestCase.ServerSetupTask.class, ElytronSSOServerSetupTask.class, IdentityServerSetupTask.class })
-public class RemoteElytronSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
+public class RemoteElytronSingleSignOnTestCase extends AbstractRemoteSingleSignOnTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)

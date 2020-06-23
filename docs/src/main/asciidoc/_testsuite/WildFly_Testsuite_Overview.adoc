@@ -145,6 +145,7 @@ There are maven profiles that might come in handy for testing:
 * `ts.clustering.common.profile` prepares server configurations used by test execution profiles
 * `ts.clustering.cluster.ha.profile` runs tests against `standalone-ha.xml` profile
 * `ts.clustering.cluster.fullha.profile` runs tests which require `standalone-full-ha.xml` profile; e.g. tests requiring JMS subsystem
+* `ts.clustering.cluster.ha-infinispan-server.profile` runs tests against `standalone-ha.xml` profile with Infinispan Server provisioned via `@ClassRule`
 * `ts.clustering.single.profile` runs clustering tests that are using a non-HA server profile
 * `ts.clustering.byteman.profile` runs clustering tests that require installation of byteman rules
 
