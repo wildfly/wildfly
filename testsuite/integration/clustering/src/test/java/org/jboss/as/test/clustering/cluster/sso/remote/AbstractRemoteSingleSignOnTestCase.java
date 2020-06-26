@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.web.remote;
+package org.jboss.as.test.clustering.cluster.sso.remote;
 
-import org.jboss.as.test.clustering.cluster.web.AbstractSessionActivationTestCase;
+import org.jboss.as.test.clustering.cluster.sso.AbstractSingleSignOnTestCase;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
 
 /**
- * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public abstract class AbstractHotRodSessionActivationTestCase extends AbstractSessionActivationTestCase {
+public abstract class AbstractRemoteSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
 
     @ClassRule
     public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
-
-    protected AbstractHotRodSessionActivationTestCase(boolean transactional) {
-        super(transactional);
-    }
 
 }

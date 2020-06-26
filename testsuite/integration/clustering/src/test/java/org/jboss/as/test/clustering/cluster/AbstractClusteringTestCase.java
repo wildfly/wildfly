@@ -29,6 +29,11 @@ import java.util.stream.Stream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.infinispan.commons.test.skip.OS;
+import org.infinispan.commons.test.skip.SkipJunit;
+import org.infinispan.server.test.core.ServerRunMode;
+import org.infinispan.server.test.core.TestSystemPropertyNames;
+import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -37,8 +42,10 @@ import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
+import org.jgroups.util.Util;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.rules.TestRule;
 
 /**
  * Base implementation for every clustering test which guarantees a framework contract as follows:
@@ -88,7 +95,21 @@ public abstract class AbstractClusteringTestCase {
     public static final String[] FOUR_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
 
     // Infinispan Server
-    public static final String INFINISPAN_SERVER_1 = "infinispan-server-1";
+    public static final String INFINISPAN_SERVER_HOME = System.getProperty("infinispan.server.home");
+    public static final String INFINISPAN_SERVER_PROFILE = "infinispan-server.xml";
+    public static final String INFINISPAN_SERVER_PROTOCOL_VERSION = "3.0";
+    public static final String INFINISPAN_SERVER_ADDRESS = "127.0.0.1";
+    public static final int INFINISPAN_SERVER_PORT = 11222;
+
+    public static TestRule infinispanServerTestRule() {
+        // Disable on Windows until https://issues.redhat.com/browse/ISPN-12041 is fixed
+        return Util.checkForWindows() ? new SkipJunit(OS.WINDOWS) : InfinispanServerRuleBuilder
+                .config(INFINISPAN_SERVER_PROFILE)
+                .property(TestSystemPropertyNames.INFINISPAN_SERVER_HOME, INFINISPAN_SERVER_HOME)
+                .numServers(1)
+                .runMode(ServerRunMode.FORKED)
+                .build();
+    }
 
     // Undertow-based WildFly load-balancer
     public static final String LOAD_BALANCER_1 = "load-balancer-1";
