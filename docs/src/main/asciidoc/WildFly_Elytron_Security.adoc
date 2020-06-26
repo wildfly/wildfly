@@ -28,7 +28,7 @@ so there will be no need to learn a different security framework for
 host controllers in a domain compared to configuring a standalone
 server.
 
-The project covers these main areas: -
+The project covers these main areas:
 
 * Authentication
 * Authorization

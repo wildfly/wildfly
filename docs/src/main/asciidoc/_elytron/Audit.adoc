@@ -2,7 +2,7 @@
 = Audit
 
 WildFly Elytron supports audit using security event listeners - components
-which captures security events, like successful or unsucceful login attempts.
+which captures security events, like successful or unsuccessful login attempts.
 
 == File audit log
 
@@ -87,13 +87,13 @@ Using the following command will generate a syslog audit logging resource that c
 TCP, records audit events in a simple format, and uses RFC5424 to describe the audit event.
 
 [source,options="nowrap"]
----
+----
 /subsystem=elytron/syslog-audit-log=syslog-example:add(
     server-address=127.0.0.1,
     port=10857,
     host-name=localhost
 )
----
+----
 
 ==== Default Format and Reconnect Attempts with UDP and RFC3164
 
@@ -102,7 +102,7 @@ UDP, does not send any further messages to the syslog server if there is an erro
 records audit events in a simple format, and uses RFC3164 to describe the audit event.
 
 [source,options="nowrap"]
----
+----
 /subsystem=elytron/syslog-audit-log=syslog-example:add(
     server-address=127.0.0.1,
     port=10837,
@@ -110,7 +110,7 @@ records audit events in a simple format, and uses RFC3164 to describe the audit 
     transport=UDP,
     syslog-format=RFC3164
 )
----
+----
 
 ==== Full UDP Definition with RFC5424 Explicitly Set and 10 Reconnect Attempts
 
@@ -119,7 +119,7 @@ UDP, attempts to send messages 10 times if there is an error sending before no l
 records audit events in a simple format, and uses RFC5424 to describe the audit event.
 
 [source,options="nowrap"]
----
+----
 /subsystem=elytron/syslog-audit-log=syslog-example:add(
     server-address=127.0.0.1,
     port=10837,
@@ -128,7 +128,7 @@ records audit events in a simple format, and uses RFC5424 to describe the audit 
     syslog-format=RFC5424,
     reconnect-attempts=10
 )
----
+----
 
 ==== Full UDP Definition with Infinite Reconnect Attempts and JSON Format
 
@@ -137,7 +137,7 @@ UDP, always attempts to send messages despite previous failures sending messages
 events in a JSON format, and uses RFC5424 to describe the audit event.
 
 [source,options="nowrap"]
----
+----
 /subsystem=elytron/syslog-audit-log=syslog-example:add(
     server-address=127.0.0.1,
     port=10837,
@@ -146,4 +146,4 @@ events in a JSON format, and uses RFC5424 to describe the audit event.
     format=JSON,
     reconnect-attempts=-1
 )
----
+----

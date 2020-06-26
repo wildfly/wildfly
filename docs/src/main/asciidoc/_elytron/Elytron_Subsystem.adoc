@@ -503,7 +503,7 @@ sasl-authentication-factory is used based on the mechanism name. In this
 case, configured will match on JBOSS-LOCAL-USER and DIGEST-MD5. It also
 sets the wildfly.sasl.local-user.default-user to $local.
 
-|combined-providers |Is an aggregate provider that aggreates the elytron
+|combined-providers |Is an aggregate provider that aggregates the elytron
 and openssl provider loaders.
 
 |elytron |A provider loader
@@ -513,7 +513,7 @@ and openssl provider loaders.
 
 *Default WildFly Configuration*
 
-[source,java,options="nowrap"]
+[source,json,options="nowrap"]
 ----
 /subsystem=elytron:read-resource(recursive=true)
 {
@@ -864,7 +864,7 @@ core management authentication.
 
 *Default Configuration*
 
-[source,java,options="nowrap"]
+[source,json,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:read-resource()
 {
@@ -925,7 +925,7 @@ management-sasl-authentication
 ----
 
 [[reload-wildfly-for-the-changes-to-take-affect.]]
-==== Reload WildFly for the changes to take affect.
+==== Reload WildFly for the changes to take effect.
 
 [source,options="nowrap"]
 ----
@@ -1046,7 +1046,7 @@ _http-interface_ using a _sasl-authentication-factory_.
 
 *Example Configuration with Default Components*
 
-[source,java,options="nowrap"]
+[source,json,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:read-resource()
 {
