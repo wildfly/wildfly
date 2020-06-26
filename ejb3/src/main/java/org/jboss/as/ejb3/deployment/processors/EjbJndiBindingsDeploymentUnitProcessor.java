@@ -40,6 +40,7 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
+import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -254,7 +255,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             public void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
                 final InjectedValue<ManagedReferenceFactory> delegateInjection = new InjectedValue<>();
                 delegate.getResourceValue(resolutionContext, serviceBuilder, phaseContext, delegateInjection);
-                injector.inject(new ManagedReferenceFactory() {
+                injector.inject(new RemoteViewManagedReferenceFactory(moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient) {
                     @Override
                     public ManagedReference getReference() {
                         ControlPoint cp = controlPointInjectedValue.getValue();
