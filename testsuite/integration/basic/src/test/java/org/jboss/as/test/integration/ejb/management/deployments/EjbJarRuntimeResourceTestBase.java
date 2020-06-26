@@ -47,6 +47,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -112,6 +113,7 @@ public class EjbJarRuntimeResourceTestBase {
     public static Archive<?> getEJBJar() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
         jar.addPackage(EjbJarRuntimeResourcesTestCase.class.getPackage());
+        jar.addClass(TimeoutUtil.class);
         jar.addAsManifestResource(EjbJarRuntimeResourcesTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(EjbJarRuntimeResourcesTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return jar;
