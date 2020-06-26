@@ -32,6 +32,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -82,6 +83,7 @@ public class SecurityCommandsTestCase {
     public static void setup() throws Exception {
         // Create ctx, used to setup the test and do the final reload.
         CommandContextConfiguration.Builder configBuilder = new CommandContextConfiguration.Builder();
+        configBuilder.setConnectionTimeout(TimeoutUtil.adjust(5000)); // default from org.jboss.as.cli.impl.CliConfigImpl
         configBuilder.setConsoleOutput(consoleOutput).
                 setController("remote+http://" + TestSuiteEnvironment.getServerAddress()
                         + ":" + TestSuiteEnvironment.getServerPort());

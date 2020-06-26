@@ -37,6 +37,7 @@ import javax.ejb.TimerService;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 
 @Singleton
@@ -83,7 +84,7 @@ public class WaitTimeSingletonBean implements BusinessInterface {
         final Serializable info = timer.getInfo();
         logger.info("Entering timeout method for " + info);
         try {
-            Thread.sleep(50);
+            Thread.sleep(TimeoutUtil.adjust(50));
         } catch (InterruptedException e) {
             Thread.interrupted();
         }

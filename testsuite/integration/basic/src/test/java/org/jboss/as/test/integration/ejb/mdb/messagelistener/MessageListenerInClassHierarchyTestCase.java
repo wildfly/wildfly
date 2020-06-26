@@ -30,6 +30,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -42,6 +43,10 @@ import javax.ejb.EJB;
 import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
+
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that if a message listener interface is implemented by the base class of a message driven bean, then
@@ -91,8 +96,10 @@ public class MessageListenerInClassHierarchyTestCase {
     @Deployment
     public static Archive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "message-listener-in-class-hierarchy-test.jar");
-        jar.addClasses(ConcreteMDB.class, CommonBase.class, JMSMessagingUtil.class, JmsQueueSetup.class);
+        jar.addClasses(ConcreteMDB.class, CommonBase.class, JMSMessagingUtil.class, JmsQueueSetup.class, TimeoutUtil.class);
         jar.addPackage(JMSOperations.class.getPackage());
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
         return jar;
     }
 
