@@ -395,7 +395,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     }
 
     private static class AliasedHandler implements OperationStepHandler {
-        private String aliasedName;
+        private final String aliasedName;
 
         public AliasedHandler(String aliasedName) {
             this.aliasedName = aliasedName;
@@ -469,7 +469,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
      */
     private static class JdbcStoreValidationStep implements OperationStepHandler {
 
-        private static JdbcStoreValidationStep INSTANCE = new JdbcStoreValidationStep();
+        private static final JdbcStoreValidationStep INSTANCE = new JdbcStoreValidationStep();
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -487,7 +487,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         }
 
         @Override
-        protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
+        protected void validateUpdatedModel(final OperationContext context, final Resource model) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
@@ -514,7 +514,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
         @Override
         protected void finishModelStage(final OperationContext context, final ModelNode operation, String attributeName,
-                                        ModelNode newValue, ModelNode oldValue, final Resource model) throws OperationFailedException {
+                                        ModelNode newValue, ModelNode oldValue, final Resource model) {
 
             if (attributeName.equals(PROCESS_ID_SOCKET_BINDING.getName())) {
                 if (newValue.isDefined()) {
