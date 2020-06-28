@@ -45,7 +45,7 @@ based on the supplied name for authentication.
 
 * SecurityRealm
 
-One more more named SecurityRealms are associated with a SecurityDomain,
+One more named SecurityRealms are associated with a SecurityDomain,
 the SecurityRealms are the access to the underlying repository of
 identities and are used for obtaining credentials to allow
 authentication mechanisms to perform verification, for validation of
@@ -60,7 +60,7 @@ identities.
 
 Along with the SecurityRealm association is also a reference to a
 RoleDecoder, the RoleDecoder takes the raw AuthorizationIdentity
-returned from the SecurityRealm and converts it's attributes into roles.
+returned from the SecurityRealm and converts its attributes into roles.
 
 * RoleMapper
 
@@ -121,7 +121,7 @@ information about realm names a mechanism should present to a remote
 client plus additional NameRewriters and RealmMappers to use during the
 authentication process.
 
-The reason some of the components referenced by the SecurityDomain are
+The reason some components referenced by the SecurityDomain are
 duplicated is so that mechanism specific mappings can be applied.
 
 [[http-authentication]]
@@ -132,7 +132,7 @@ authentication using HTTP authentication mechanisms, in addition to
 being a policy it is also a factory for configured authentication
 mechanisms backed by a SecurityDomain.
 
-The HttpAuthenticationFactory references the following: -
+The HttpAuthenticationFactory references the following:
 
 * SecurityDomain
 
@@ -154,13 +154,13 @@ information about realm names a mechanism should present to a remote
 client plus additional NameRewriters and RealmMappers to use during the
 authentication process.
 
-The reason some of the components referenced by the SecurityDomain are
+The reason some components referenced by the SecurityDomain are
 duplicated is so that mechanism specific mappings can be applied.
 
 [[ssl-tls]]
 == SSL / TLS
 
-The SSLContext defined within Elytron is a javax.net.ssl.SSLContext
+The SSLContext defined within Elytron is a `javax.net.ssl.SSLContext`
 meaning it can be used by anything that uses an SSLContext directly.
 
 In addition to the usual configuration for an SSLContext it is possible
@@ -168,7 +168,7 @@ to configure additional items such as cipher suites and protocols and
 the SSLContext returned will wrap any engines created to set these
 values.
 
-The SSLContext within Elytron can also reference the following: -
+The SSLContext within Elytron can also reference the following:
 
 * KeyManagers
 
@@ -183,7 +183,7 @@ turn can also reference a KeyStore to load the certificates.
 * SecurityDomain
 
 This is optional, however if an SSLContext is configured to reference a
-SecurityDomain then verification of a clients certificate can be
+SecurityDomain then verification of a client's certificate can be
 performed as an authentication ensuring the appropriate permissions to
 Logon are assigned before even allowing the connection to be fully
 opened, additionally the SecurityIdentity can be established at the time

@@ -23,7 +23,7 @@ to use with a client for establishing a connection.
 When a connection is established, the client makes use of an
 authentication context, which gives rules that match which
 authentication configuration is used with an outbound connection. For
-example, you could have a rules that use one authentication
+example, you could have a rule that use one authentication
 configuration when connecting to _server1_ and another authentication
 configuration when connecting with _server2_. The authentication context
 is comprised of a set of authentication configurations and a set of
@@ -343,8 +343,8 @@ AuthenticationConfiguration commonConfig = AuthenticationConfiguration.captureCu
 ----
 
 Using _captureCurrent()_ will capture any previously established
-authentication context and use it as your new base configuration. A
-authentication context is established once its been activated by calling
+authentication context and use it as your new base configuration.
+An authentication context is established once it's been activated by calling
 _run()_. If _captureCurrent()_ is called and no context is currently
 active, it will try and use the default authentication if available. You
 can find more details about this in
@@ -441,7 +441,7 @@ file.
 
 To load a configuration file outside of the deployment, you can use the
 _parseAuthenticationClientConfiguration(URI)_ method. This method will
-return an _AuthentcationContext_ which you can then use in your client's
+return an _AuthenticationContext_ which you can then use in your client's
 code using the
 <<the-programmatic-approach,The
 Programmatic Approach>>.

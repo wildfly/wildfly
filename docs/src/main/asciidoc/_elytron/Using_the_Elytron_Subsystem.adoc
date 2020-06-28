@@ -2682,7 +2682,7 @@ Adding a security domain takes the general form:
 === Create an Elytron Authentication Factory
 
 An authentication factory is an authentication policy used for specific
-authentication mechanisms. Authenticaion factories are specifically
+authentication mechanisms. Authentication factories are specifically
 based on the authentication mechanism, for example
 _http-authentication-factory_ and +
 _sasl-authentication-factory_ and _kerberos-security-factory_.

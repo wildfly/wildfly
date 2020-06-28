@@ -5,9 +5,9 @@
 
 The primary responsibility of a security realm is the ability to load identities with associated attributes, these identities are then used within the authentication process for credential validation and subsequently wrapped to represent the `SecurityIdentity` instances using within applications for authorization.
 
-Generally a security realm operates in one of three modes, in the first mode on loading an identity from it's store the security realm also loads one or more credential representations from the store and holds these within the identity.  During authentication the credentials within the identity can be used to verify the connection attempt.  The reason multiple credentials are loaded is because specific types may be applicable to specific mechanisms so an appropriate credential representation can be selected at the time of authentication.
+Generally a security realm operates in one of three modes, in the first mode on loading an identity from its store the security realm also loads one or more credential representations from the store and holds these within the identity.  During authentication the credentials within the identity can be used to verify the connection attempt.  The reason multiple credentials are loaded is because specific types may be applicable to specific mechanisms so an appropriate credential representation can be selected at the time of authentication.
 
-In the second mode the identity is loaded as in the first mode however no credentials are loaded, in this mode evidence can be passed in to the identity for verification.  This mode is sometimes the only mode available where it is not possible to load the representation of a credential from it's store.
+In the second mode the identity is loaded as in the first mode however no credentials are loaded, in this mode evidence can be passed in to the identity for verification.  This mode is sometimes the only mode available where it is not possible to load the representation of a credential from its store.
 
 In the third mode evidence is passed to the security realm and used to construct the resulting identity, this mode is predominantly used with certificate and token based authentication mechanisms where the verified certificate or token can be used to construct the resulting identity.
 
