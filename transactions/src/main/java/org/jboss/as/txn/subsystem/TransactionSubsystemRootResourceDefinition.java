@@ -25,8 +25,11 @@ package org.jboss.as.txn.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -40,6 +43,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -51,6 +55,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
@@ -204,6 +209,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false)
             .setDeprecated(ModelVersion.create(3)).build();
+    // Use a separate AD for the :add op to advertise that use-hornetq-store and use-journal-store together is not optimal
+    static final SimpleAttributeDefinition USE_HORNETQ_STORE_PARAM = new SimpleAttributeDefinitionBuilder(USE_HORNETQ_STORE)
+            .addAlternatives(CommonAttributes.USE_JOURNAL_STORE).build();
     public static final SimpleAttributeDefinition HORNETQ_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
@@ -217,6 +225,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .addAlternatives(CommonAttributes.USE_JDBC_STORE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false).build();
+    // Use a separate AD for the :add op to advertise that use-hornetq-store and use-journal-store together is not optimal
+    static final SimpleAttributeDefinition USE_JOURNAL_STORE_PARAM = new SimpleAttributeDefinitionBuilder(USE_JOURNAL_STORE)
+            .addAlternatives(CommonAttributes.USE_HORNETQ_STORE).build();
     public static final SimpleAttributeDefinition JOURNAL_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.JOURNAL_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
@@ -288,13 +299,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     }
 
     // all attributes
-    static final AttributeDefinition[] attributes = new AttributeDefinition[] {
+    static final AttributeDefinition[] add_attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT, MAXIMUM_TIMEOUT,
-            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_JOURNAL_STORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
+            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
-            JOURNAL_STORE_ENABLE_ASYNC_IO
+            JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO
     };
 
     static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
@@ -306,8 +317,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         // Register all attributes except of the mutual ones
-        Set<AttributeDefinition> attributesWithoutMutuals = new HashSet<>(Arrays.asList(attributes));
-        attributesWithoutMutuals.remove(USE_JOURNAL_STORE);
+        Set<AttributeDefinition> attributesWithoutMutuals = new HashSet<>(Arrays.asList(add_attributes));
+        attributesWithoutMutuals.remove(USE_HORNETQ_STORE_PARAM);
+        attributesWithoutMutuals.remove(USE_JOURNAL_STORE_PARAM);
         attributesWithoutMutuals.remove(USE_JDBC_STORE);
 
         attributesWithoutMutuals.remove(STATISTICS_ENABLED);
@@ -318,6 +330,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(PROCESS_ID_UUID);
         attributesWithoutMutuals.remove(PROCESS_ID_SOCKET_BINDING);
         attributesWithoutMutuals.remove(PROCESS_ID_SOCKET_MAX_PORTS);
+
+        attributesWithoutMutuals.remove(ENABLE_STATISTICS);
+        attributesWithoutMutuals.remove(HORNETQ_STORE_ENABLE_ASYNC_IO);
 
 
         OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributesWithoutMutuals);
@@ -357,6 +372,26 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    protected void registerAddOperation(ManagementResourceRegistration registration, OperationStepHandler handler, OperationEntry.Flag... flags) {
+
+        // Sort the add params alphabetically to match what DefaultResourceAddDescriptionProvider does
+        SortedSet<AttributeDefinition> sorted = new TreeSet<>(Comparator.comparing(AttributeDefinition::getName));
+        for (AttributeDefinition ad : add_attributes) {
+            if (!ad.getImmutableFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+                sorted.add(ad);
+            }
+        }
+
+        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, getResourceDescriptionResolver())
+                        .withFlags(flags)
+                        .setParameters(sorted.toArray(new AttributeDefinition[add_attributes.length]))
+                        .setEntryType(OperationEntry.EntryType.PUBLIC)
+                        .build()
+                , handler);
     }
 
     private static class AliasedHandler implements OperationStepHandler {
