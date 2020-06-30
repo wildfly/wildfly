@@ -26,6 +26,10 @@ import static org.mockito.Mockito.*;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.configuration.cache.CacheMode;
@@ -38,6 +42,7 @@ import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.topology.CacheTopology;
+import org.infinispan.transaction.TransactionMode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,8 +63,17 @@ import org.wildfly.clustering.web.routing.RouteLocator;
 public class PrimaryOwnerRouteLocatorTestCase {
 
     @Parameters
-    public static Iterable<CacheMode> cacheModes() {
-        return Arrays.asList(CacheMode.DIST_SYNC, CacheMode.REPL_SYNC, CacheMode.SCATTERED_SYNC, CacheMode.INVALIDATION_SYNC, CacheMode.LOCAL);
+    public static Iterable<Map.Entry<CacheMode, TransactionMode>> parameters() {
+        List<Map.Entry<CacheMode, TransactionMode>> result = new LinkedList<>();
+        for (CacheMode mode : EnumSet.allOf(CacheMode.class)) {
+            if (mode.isSynchronous()) {
+                result.add(new AbstractMap.SimpleImmutableEntry<>(mode, TransactionMode.NON_TRANSACTIONAL));
+                if (!mode.isScattered()) {
+                    result.add(new AbstractMap.SimpleImmutableEntry<>(mode, TransactionMode.TRANSACTIONAL));
+                }
+            }
+        }
+        return result;
     }
 
     private final Address[] addresses = new Address[] { mock(Address.class), mock(Address.class), mock(Address.class) };
@@ -74,9 +88,10 @@ public class PrimaryOwnerRouteLocatorTestCase {
     private final KeyPartitioner partitioner = mock(KeyPartitioner.class);
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public PrimaryOwnerRouteLocatorTestCase(CacheMode mode) {
+    public PrimaryOwnerRouteLocatorTestCase(Map.Entry<CacheMode, TransactionMode> entry) {
+        CacheMode mode = entry.getKey();
         EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-        Configuration config = new ConfigurationBuilder().clustering().cacheMode(mode).build();
+        Configuration config = new ConfigurationBuilder().clustering().cacheMode(mode).transaction().transactionMode(entry.getValue()).build();
         when(this.cache.getCacheManager()).thenReturn(manager);
         when(manager.getAddress()).thenReturn(this.localAddress);
         when(this.cache.getCacheConfiguration()).thenReturn(config);
@@ -120,8 +135,14 @@ public class PrimaryOwnerRouteLocatorTestCase {
 
         switch (this.cache.getCacheConfiguration().clustering().cacheMode()) {
             case INVALIDATION_SYNC:
+                if (!this.cache.getCacheConfiguration().transaction().transactionMode().isTransactional()) {
+                    String result = locator.locate("session");
+                    Assert.assertEquals("local", result);
+                    break;
+                }
             case REPL_SYNC:
-            case DIST_SYNC: {
+            case DIST_SYNC:
+            case SCATTERED_SYNC: {
                 when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
                 String result = locator.locate("session");
                 Assert.assertEquals("0", result);

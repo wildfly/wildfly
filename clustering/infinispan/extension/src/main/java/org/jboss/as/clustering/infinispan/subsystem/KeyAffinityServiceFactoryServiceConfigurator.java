@@ -36,6 +36,7 @@ import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
@@ -80,8 +81,10 @@ public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServ
         return new KeyAffinityServiceFactory() {
             @Override
             public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
-                CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
-                return mode.needsStateTransfer() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
+                Configuration config = cache.getCacheConfiguration();
+                CacheMode mode = config.clustering().cacheMode();
+                // Non-transactional invalidation caches map all keys to a single segment - thus have no specific affinity
+                return mode.needsStateTransfer() || (mode.isInvalidation() && config.transaction().transactionMode().isTransactional()) ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
             }
         };
     }

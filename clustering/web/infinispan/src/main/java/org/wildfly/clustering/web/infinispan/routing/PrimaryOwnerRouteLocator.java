@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.Configuration;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
@@ -45,8 +46,10 @@ public class PrimaryOwnerRouteLocator implements RouteLocator {
     public PrimaryOwnerRouteLocator(PrimaryOwnerRouteLocatorConfiguration config) {
         this.registry = config.getRegistry();
         this.primaryOwnerLocator = new PrimaryOwnerLocator<>(config.getCache(), config.getMemberFactory(), this.registry.getGroup());
-        CacheMode mode = config.getCache().getCacheConfiguration().clustering().cacheMode();
-        this.preferPrimary = mode.isClustered() && !mode.isScattered();
+        Configuration configuration = config.getCache().getCacheConfiguration();
+        CacheMode mode = configuration.clustering().cacheMode();
+        // Non-transactional invalidation caches map all keys to a single segment - thus should use local affinity
+        this.preferPrimary = mode.needsStateTransfer() || (mode.isInvalidation() && configuration.transaction().transactionMode().isTransactional());
         this.localRoute = this.registry.getEntry(this.registry.getGroup().getLocalMember()).getKey();
     }
 
