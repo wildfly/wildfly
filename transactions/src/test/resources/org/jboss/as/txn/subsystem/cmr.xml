@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:transactions:5.0">
+    <core-environment>
+        <process-id>
+            <uuid/>
+        </process-id>
+    </core-environment>
+    <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+    <object-store relative-to="jboss.server.data.dir"/>
+    <commit-markable-resources>
+        <commit-markable-resource jndi-name="java:jboss/datasources/ExampleDS">
+            <xid-location batch-size="30" immediate-cleanup="true" name="xids42"/>
+        </commit-markable-resource>
+    </commit-markable-resources>
+</subsystem>
