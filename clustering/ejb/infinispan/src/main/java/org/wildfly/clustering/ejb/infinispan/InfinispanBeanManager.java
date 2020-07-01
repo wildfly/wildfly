@@ -43,6 +43,8 @@ import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.context.Flag;
+import org.infinispan.distribution.DistributionManager;
+import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
@@ -160,7 +162,10 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
         this.primaryOwnerScheduler = (this.scheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? this.scheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, this.scheduler, this.primaryOwnerLocator, InfinispanBeanKey::new)) : null;
 
         this.cache.addListener(this, new PredicateCacheEventFilter<>(this.filter), null);
-        if (this.scheduler != null) {
+
+        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
+        // If member owns any segments, schedule expiration for beans we own
+        if ((this.scheduler != null) && ((dist == null) || !dist.getWriteConsistentHash().getPrimarySegmentsForOwner(this.cache.getCacheManager().getAddress()).isEmpty())) {
             new ScheduleExpirationTask<>(this.cache, this.filter, this.scheduler, new SimpleLocality(false), new CacheLocality(this.cache)).run();
         }
     }
@@ -279,19 +284,13 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<BeanKey<I>, BeanEntry<I>> event) {
         if (this.scheduler != null) {
-            Locality newLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtEnd());
             try {
                 if (event.isPre()) {
                     this.rehashTopology.set(event.getNewTopologyId());
-                    Future<?> future = this.rehashFuture.getAndSet(null);
-                    if (future != null) {
-                        future.cancel(true);
-                    }
-                    this.executor.submit(new CancelExpirationTask<>(this.scheduler, newLocality));
+                    this.cancel(event.getCache(), event.getConsistentHashAtEnd());
                 } else {
                     this.rehashTopology.compareAndSet(event.getNewTopologyId(), 0);
-                    Locality oldLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtStart());
-                    this.rehashFuture.set(this.executor.submit(new ScheduleExpirationTask<>(this.cache, this.filter, this.scheduler, oldLocality, newLocality)));
+                    this.schedule(event.getCache(), event.getConsistentHashAtStart(), event.getConsistentHashAtEnd());
                 }
             } catch (RejectedExecutionException e) {
                 // Executor was shutdown
@@ -305,18 +304,41 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
             if (!event.isPre()) {
                 // If this topology change has no corresponding rehash event, we must reschedule expirations as primary ownership may have changed
                 if (this.rehashTopology.get() != event.getNewTopologyId()) {
-                    Future<?> future = this.rehashFuture.getAndSet(null);
-                    if (future != null) {
-                        future.cancel(true);
-                    }
-                    Cache<BeanKey<I>, BeanEntry<I>> cache = event.getCache();
-                    Locality oldLocality = new ConsistentHashLocality(cache, event.getReadConsistentHashAtStart());
-                    Locality newLocality = new ConsistentHashLocality(cache, event.getWriteConsistentHashAtEnd());
-                    try {
-                        this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask<>(cache, this.filter, this.scheduler, oldLocality, newLocality)));
-                    } catch (RejectedExecutionException e) {
-                        // Executor was shutdown
-                    }
+                    this.schedule(event.getCache(), event.getReadConsistentHashAtStart(), event.getWriteConsistentHashAtEnd());
+                }
+            }
+        }
+    }
+
+    private void cancel(Cache<BeanKey<I>, BeanEntry<I>> cache, ConsistentHash hash) {
+        boolean nonTransactionalInvalidation = cache.getCacheConfiguration().clustering().cacheMode().isInvalidation() && !this.properties.isTransactional();
+        // For non-transactional invalidation-caches, where all keys hash to a single member, retain local expiration scheduling
+        if (!nonTransactionalInvalidation) {
+            Future<?> future = this.rehashFuture.getAndSet(null);
+            if (future != null) {
+                future.cancel(true);
+            }
+            this.executor.submit(new CancelExpirationTask<>(this.scheduler, new ConsistentHashLocality(cache, hash)));
+        }
+    }
+
+    private void schedule(Cache<BeanKey<I>, BeanEntry<I>> cache, ConsistentHash startHash, ConsistentHash endHash) {
+        boolean nonTransactionalInvalidation = cache.getCacheConfiguration().clustering().cacheMode().isInvalidation() && !this.properties.isTransactional();
+        // Skip bean scheduling for non-transactional invalidation caches, if no members have left
+        if (!nonTransactionalInvalidation || !endHash.getMembers().containsAll(startHash.getMembers())) {
+            // Skip expiration rescheduling if we do not own any segments
+            if (!endHash.getPrimarySegmentsForOwner(cache.getCacheManager().getAddress()).isEmpty()) {
+                Future<?> future = this.rehashFuture.getAndSet(null);
+                if (future != null) {
+                    future.cancel(true);
+                }
+                // For non-transactional invalidation-caches, where all keys hash to a single member, always schedule
+                Locality oldLocality = !nonTransactionalInvalidation ? new ConsistentHashLocality(cache, startHash) : new SimpleLocality(false);
+                Locality newLocality = new ConsistentHashLocality(cache, endHash);
+                try {
+                    this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask<>(cache, this.filter, this.scheduler, oldLocality, newLocality)));
+                } catch (RejectedExecutionException e) {
+                    // Executor was shutdown
                 }
             }
         }
@@ -354,8 +376,8 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
 
         @Override
         public void run() {
-            // Iterate over beans in memory
-            try (Stream<Map.Entry<BeanKey<I>, BeanEntry<I>>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).entrySet().stream().filter(this.filter)) {
+            // Iterate over local beans, including any cache stores to include beans that may be passivated/invalidated
+            try (Stream<Map.Entry<BeanKey<I>, BeanEntry<I>>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).entrySet().stream().filter(this.filter)) {
                 Iterator<Map.Entry<BeanKey<I>, BeanEntry<I>>> entries = stream.iterator();
                 while (entries.hasNext()) {
                     if (Thread.currentThread().isInterrupted()) break;
