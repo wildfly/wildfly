@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ /*
+  ~  * JBoss, Home of Professional Open Source.
+  ~  * Copyright $year Red Hat, Inc., and individual contributors
+  ~  * as indicated by the @author tags.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *     http://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<feature-group-spec name="domain" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="domain-interfaces"/>
+
+    <feature spec="domain.socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <param name="default-interface" value="public" />
+        <feature-group name="domain-sockets"/>
+    </feature>
+
+    <feature spec="profile">
+        <param name="profile" value="default"/>
+        <feature-group name="domain-profile"/>
+    </feature>
+
+    <feature spec="domain.system-property">
+        <param name="system-property" value="java.net.preferIPv4Stack"/>
+        <param name="value" value="true"/>
+    </feature>
+    <feature-group name="access-control"/>
+    <feature-group name="domain-host-excludes"/>
+
+</feature-group-spec>
