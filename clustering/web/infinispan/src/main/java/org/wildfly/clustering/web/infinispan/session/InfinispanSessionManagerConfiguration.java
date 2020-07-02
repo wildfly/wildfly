@@ -54,4 +54,5 @@ public interface InfinispanSessionManagerConfiguration<S, C, AL, BL> {
     Recordable<ImmutableSession> getInactiveSessionRecorder();
     Registrar<SessionExpirationListener> getExpirationRegistar();
     SpecificationProvider<S, C, AL, BL> getSpecificationProvider();
+    Runnable getStartTask();
 }

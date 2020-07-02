@@ -101,6 +101,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC, LC> implements S
     final Cache<Key<String>, ?> cache;
     final org.wildfly.clustering.ee.Scheduler<String, ImmutableSessionMetaData> primaryOwnerScheduler;
     final SpecificationProvider<S, SC, AL, BL> provider;
+    final Runnable startTask;
 
     private final KeyAffinityServiceFactory affinityFactory;
     private final SessionFactory<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> factory;
@@ -128,9 +129,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC, LC> implements S
 
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         // If member owns any segments, schedule expiration for session we own
-        if ((dist == null) || !dist.getWriteConsistentHash().getPrimarySegmentsForOwner(this.cache.getCacheManager().getAddress()).isEmpty()) {
-            new ScheduleExpirationTask(this.cache, this.filter, this.expirationScheduler, new SimpleLocality(false), new CacheLocality(this.cache)).run();
-        }
+        this.startTask = (dist == null) || !dist.getWriteConsistentHash().getPrimarySegmentsForOwner(this.cache.getCacheManager().getAddress()).isEmpty() ? new ScheduleExpirationTask(this.cache, this.filter, this.expirationScheduler, new SimpleLocality(false), new CacheLocality(this.cache)) : null;
     }
 
     @Override
@@ -185,6 +184,11 @@ public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC, LC> implements S
             @Override
             public SpecificationProvider<S, SC, AL, BL> getSpecificationProvider() {
                 return InfinispanSessionManagerFactory.this.provider;
+            }
+
+            @Override
+            public Runnable getStartTask() {
+                return InfinispanSessionManagerFactory.this.startTask;
             }
         };
         return new InfinispanSessionManager<>(this.factory, config);

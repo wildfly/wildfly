@@ -89,6 +89,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
     private final Recordable<ImmutableSession> recorder;
     private final SC context;
     private final SpecificationProvider<S, SC, AL, BL> provider;
+    private final Runnable startTask;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
@@ -105,6 +106,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
         this.recorder = configuration.getInactiveSessionRecorder();
         this.context = configuration.getServletContext();
         this.provider = configuration.getSpecificationProvider();
+        this.startTask = configuration.getStartTask();
     }
 
     @Override
@@ -118,6 +120,9 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
         this.cache.addListener(this, filter, null);
         this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
         this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
+        if (this.startTask != null) {
+            this.startTask.run();
+        }
     }
 
     @Override
