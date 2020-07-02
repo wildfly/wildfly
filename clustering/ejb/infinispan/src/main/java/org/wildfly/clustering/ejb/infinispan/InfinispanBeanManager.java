@@ -87,7 +87,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-@Listener(primaryOnly = true)
+@Listener
 public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, TransactionBatch> {
 
     private static final String IDLE_TIMEOUT_PROPERTY = "jboss.ejb.stateful.%s.idle-timeout";

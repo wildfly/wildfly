@@ -74,7 +74,7 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-@Listener(primaryOnly = true)
+@Listener
 public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
 
     private final Registrar<SessionExpirationListener> expirationRegistrar;
@@ -214,7 +214,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (!event.isPre() && !this.properties.isPersistent()) {
+        if (!event.isPre() && !this.properties.isPersistent() && event.isOriginLocal()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
@@ -227,7 +227,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre() && !this.properties.isPersistent()) {
+        if (event.isPre() && !this.properties.isPersistent() && event.isOriginLocal()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
@@ -240,7 +240,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre()) {
+        if (event.isPre() && event.isOriginLocal()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
