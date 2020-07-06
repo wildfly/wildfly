@@ -19,7 +19,7 @@
   ~  */
   -->
 
-<feature-group-spec name="host" xmlns="urn:jboss:galleon:feature-group:1.0">
+<feature-group-spec name="servlet-host" xmlns="urn:jboss:galleon:feature-group:1.0">
 
     <origin name="org.wildfly.core:wildfly-core-galleon-pack">
         <feature-group name="host"/>

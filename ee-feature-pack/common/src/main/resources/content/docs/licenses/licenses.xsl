@@ -85,6 +85,15 @@
             <xsl:when test="$name = 'The JSoup MIT License'">
                 <xsl:text>the jsoup mit license.html</xsl:text>
             </xsl:when>
+            <xsl:when test="$name = 'GNU Lesser General Public License v2.1 or later'">
+                <xsl:text>gnu lesser general public license v2.1 or later.txt</xsl:text>
+            </xsl:when>
+            <xsl:when test="$name = 'GNU General Public License v2.0 only'">
+                <xsl:text>gnu general public license v2.0 only.html</xsl:text>
+            </xsl:when>
+            <xsl:when test="$name = ''">
+                <xsl:text>.html</xsl:text>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="concat(translate($name, $uppercase, $lowercase), '.txt')"/>
             </xsl:otherwise>

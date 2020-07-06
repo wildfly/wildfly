@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 
 <package-spec xmlns="urn:jboss:galleon:package:2.0" name="misc.domain">
+    <!-- We provide a package under this name as a compatibility thing for users of
+         the wildfly-servlet feature pack. But it's just an alias for the renamed servlet.misc.domain -->
     <dependencies>
         <package name="servlet.misc.domain"/>
-        <package name="misc.common"/>
-        <package name="domain"/>
     </dependencies>
 </package-spec>

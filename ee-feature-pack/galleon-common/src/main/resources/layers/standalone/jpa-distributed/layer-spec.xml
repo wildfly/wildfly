@@ -5,9 +5,7 @@
     </dependencies>
     <feature-group name="jpa"/>
 
-    <origin name="org.wildfly:wildfly-servlet-galleon-pack">
-        <feature-group name="private-interface"/>
-    </origin>
+    <feature-group name="private-interface"/>
 
     <feature-group name="jgroups-all"/>
     <feature-group name="infinispan-dist-hibernate"/>

@@ -24,9 +24,7 @@
     <feature-group name="health"/>
     <feature-group name="metrics" />
 
-    <origin name="org.wildfly:wildfly-servlet-galleon-pack">
-        <feature-group name="standalone-profile"/>
-    </origin>
+    <feature-group name="servlet-standalone-profile"/>
     <feature-group name="basic-ha-profile"/>
 
 </feature-group-spec>

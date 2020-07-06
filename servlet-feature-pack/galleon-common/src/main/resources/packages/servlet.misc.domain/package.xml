@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 
-<package-spec xmlns="urn:jboss:galleon:package:2.0" name="misc.domain">
+<package-spec xmlns="urn:jboss:galleon:package:2.0" name="servlet.misc.domain">
     <dependencies>
         <origin name="org.wildfly.core:wildfly-core-galleon-pack">
             <package name="misc.domain"/>
         </origin>
-        <package name="misc.common"/>
+        <package name="servlet.misc.common"/>
         <package name="domain"/>
     </dependencies>
 </package-spec>

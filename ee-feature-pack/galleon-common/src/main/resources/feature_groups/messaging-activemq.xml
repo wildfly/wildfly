@@ -78,10 +78,7 @@
             </feature>
         </feature>
     </feature>
-    <feature spec="subsystem.ejb3">
-        <param name="default-resource-adapter-name" value="${ejb.resource-adapter-name:activemq-ra.rar}"/>
-        <param name="default-mdb-instance-pool" value="mdb-strict-max-pool"/>
-    </feature>
+    <feature-group name="ejb3-mdb"/>
     <feature spec="subsystem.ee">
         <feature spec="subsystem.ee.service.default-bindings">
             <param name="jms-connection-factory" value="java:jboss/DefaultJMSConnectionFactory"/>

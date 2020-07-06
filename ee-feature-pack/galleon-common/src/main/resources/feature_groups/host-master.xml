@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature-group-spec name="host-master" xmlns="urn:jboss:galleon:feature-group:1.0">
-    <origin name="org.wildfly:wildfly-servlet-galleon-pack">
-        <feature-group name="host-master"/>
-    </origin>
+    <feature-group name="servlet-host-master"/>
     <feature spec="host">
         <param name="host" value="master"/>
         <feature spec="host.jvm">
