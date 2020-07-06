@@ -74,7 +74,7 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-@Listener
+@Listener(primaryOnly = true)
 public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
 
     private final Registrar<SessionExpirationListener> expirationRegistrar;
@@ -120,9 +120,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
         this.cache.addListener(this, filter, null);
         this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
         this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
-        if (this.startTask != null) {
-            this.startTask.run();
-        }
+        this.startTask.run();
     }
 
     @Override
@@ -219,7 +217,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (!event.isPre() && !this.properties.isPersistent() && event.isOriginLocal()) {
+        if (!event.isPre() && !this.properties.isPersistent()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
@@ -232,7 +230,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre() && !this.properties.isPersistent() && event.isOriginLocal()) {
+        if (event.isPre() && !this.properties.isPersistent()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
@@ -245,7 +243,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre() && event.isOriginLocal()) {
+        if (event.isPre()) {
             String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);

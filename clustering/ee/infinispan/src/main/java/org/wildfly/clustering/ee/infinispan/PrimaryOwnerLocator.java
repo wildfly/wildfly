@@ -26,8 +26,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.group.Group;
@@ -44,10 +42,7 @@ public class PrimaryOwnerLocator<K> implements Function<K, Node>, Predicate<K> {
     private final Group group;
 
     public PrimaryOwnerLocator(Cache<? extends K, ?> cache, NodeFactory<Address> memberFactory, Group group) {
-        Configuration config = cache.getCacheConfiguration();
-        CacheMode mode = config.clustering().cacheMode();
-        // Non-transactional invalidation caches map all keys to a single segment, thus keys should use local member
-        this.distribution = mode.needsStateTransfer() || (mode.isInvalidation() && config.transaction().transactionMode().isTransactional()) ? cache.getAdvancedCache().getDistributionManager() : null;
+        this.distribution = cache.getAdvancedCache().getDistributionManager();
         this.memberFactory = memberFactory;
         this.group = group;
     }

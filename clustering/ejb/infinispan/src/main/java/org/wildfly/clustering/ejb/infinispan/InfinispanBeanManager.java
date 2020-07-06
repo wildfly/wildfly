@@ -43,7 +43,6 @@ import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
@@ -163,9 +162,8 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
 
         this.cache.addListener(this, new PredicateCacheEventFilter<>(this.filter), null);
 
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         // If member owns any segments, schedule expiration for beans we own
-        if ((this.scheduler != null) && ((dist == null) || !dist.getWriteConsistentHash().getPrimarySegmentsForOwner(this.cache.getCacheManager().getAddress()).isEmpty())) {
+        if (this.scheduler != null) {
             new ScheduleExpirationTask<>(this.cache, this.filter, this.scheduler, new SimpleLocality(false), new CacheLocality(this.cache)).run();
         }
     }
@@ -210,18 +208,13 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
         org.infinispan.configuration.cache.Configuration config = this.cache.getCacheConfiguration();
         CacheMode mode = config.clustering().cacheMode();
         if (mode.isClustered()) {
-            // Non-transactional invalidation caches map all keys to a single segment - thus should use local affinity
-            Node node = (!mode.isInvalidation() || config.transaction().transactionMode().isTransactional()) ? this.locatePrimaryOwner(id) : this.registry.getGroup().getLocalMember();
+            Node node = this.primaryOwnerLocator.apply(new InfinispanBeanKey<>(id));
             Map.Entry<String, ?> entry = this.registry.getEntry(node);
             if (entry != null) {
                 return new NodeAffinity(entry.getKey());
             }
         }
         return Affinity.NONE;
-    }
-
-    Node locatePrimaryOwner(I id) {
-        return this.primaryOwnerLocator.apply(new InfinispanBeanKey<>(id));
     }
 
     @Override
@@ -313,36 +306,24 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     }
 
     private void cancel(Cache<BeanKey<I>, BeanEntry<I>> cache, ConsistentHash hash) {
-        boolean nonTransactionalInvalidation = cache.getCacheConfiguration().clustering().cacheMode().isInvalidation() && !this.properties.isTransactional();
-        // For non-transactional invalidation-caches, where all keys hash to a single member, retain local expiration scheduling
-        if (!nonTransactionalInvalidation) {
-            Future<?> future = this.rehashFuture.getAndSet(null);
-            if (future != null) {
-                future.cancel(true);
-            }
-            this.executor.submit(new CancelExpirationTask<>(this.scheduler, new ConsistentHashLocality(cache, hash)));
+        Future<?> future = this.rehashFuture.getAndSet(null);
+        if (future != null) {
+            future.cancel(true);
         }
+        this.executor.submit(new CancelExpirationTask<>(this.scheduler, new ConsistentHashLocality(cache, hash)));
     }
 
     private void schedule(Cache<BeanKey<I>, BeanEntry<I>> cache, ConsistentHash startHash, ConsistentHash endHash) {
-        boolean nonTransactionalInvalidation = cache.getCacheConfiguration().clustering().cacheMode().isInvalidation() && !this.properties.isTransactional();
-        // Skip bean scheduling for non-transactional invalidation caches, if no members have left
-        if (!nonTransactionalInvalidation || !endHash.getMembers().containsAll(startHash.getMembers())) {
-            // Skip expiration rescheduling if we do not own any segments
-            if (!endHash.getPrimarySegmentsForOwner(cache.getCacheManager().getAddress()).isEmpty()) {
-                Future<?> future = this.rehashFuture.getAndSet(null);
-                if (future != null) {
-                    future.cancel(true);
-                }
-                // For non-transactional invalidation-caches, where all keys hash to a single member, always schedule
-                Locality oldLocality = !nonTransactionalInvalidation ? new ConsistentHashLocality(cache, startHash) : new SimpleLocality(false);
-                Locality newLocality = new ConsistentHashLocality(cache, endHash);
-                try {
-                    this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask<>(cache, this.filter, this.scheduler, oldLocality, newLocality)));
-                } catch (RejectedExecutionException e) {
-                    // Executor was shutdown
-                }
-            }
+        Future<?> future = this.rehashFuture.getAndSet(null);
+        if (future != null) {
+            future.cancel(true);
+        }
+        Locality oldLocality = new ConsistentHashLocality(cache, startHash);
+        Locality newLocality = new ConsistentHashLocality(cache, endHash);
+        try {
+            this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask<>(cache, this.filter, this.scheduler, oldLocality, newLocality)));
+        } catch (RejectedExecutionException e) {
+            // Executor was shutdown
         }
     }
 

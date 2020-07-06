@@ -36,7 +36,6 @@ import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
@@ -127,9 +126,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC, LC> implements S
         this.primaryOwnerScheduler = new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), this.expirationScheduler, primaryOwnerLocator, Key::new);
         this.cache.addListener(this);
 
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        // If member owns any segments, schedule expiration for session we own
-        this.startTask = (dist == null) || !dist.getWriteConsistentHash().getPrimarySegmentsForOwner(this.cache.getCacheManager().getAddress()).isEmpty() ? new ScheduleExpirationTask(this.cache, this.filter, this.expirationScheduler, new SimpleLocality(false), new CacheLocality(this.cache)) : null;
+        this.startTask = new ScheduleExpirationTask(this.cache, this.filter, this.expirationScheduler, new SimpleLocality(false), new CacheLocality(this.cache));
     }
 
     @Override
@@ -247,36 +244,24 @@ public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC, LC> implements S
     }
 
     private void cancel(Cache<Key<String>, ?> cache, ConsistentHash hash) {
-        boolean nonTransactionalInvalidation = cache.getCacheConfiguration().clustering().cacheMode().isInvalidation() && !this.properties.isTransactional();
-        // For non-transactional invalidation-caches, where all keys hash to a single member, retain local expiration scheduling
-        if (!nonTransactionalInvalidation) {
-            Future<?> future = this.rehashFuture.getAndSet(null);
-            if (future != null) {
-                future.cancel(true);
-            }
-            this.executor.submit(new CancelExpirationTask(this.expirationScheduler, new ConsistentHashLocality(cache, hash)));
+        Future<?> future = this.rehashFuture.getAndSet(null);
+        if (future != null) {
+            future.cancel(true);
         }
+        this.executor.submit(new CancelExpirationTask(this.expirationScheduler, new ConsistentHashLocality(cache, hash)));
     }
 
     private void schedule(Cache<Key<String>, ?> cache, ConsistentHash startHash, ConsistentHash endHash) {
-        boolean nonTransactionalInvalidation = cache.getCacheConfiguration().clustering().cacheMode().isInvalidation() && !this.properties.isTransactional();
-        // Skip session scheduling for non-transactional invalidation caches, if no members have left
-        if (!nonTransactionalInvalidation || !endHash.getMembers().containsAll(startHash.getMembers())) {
-            // Skip expiration rescheduling if we do not own any segments
-            if (!endHash.getPrimarySegmentsForOwner(cache.getCacheManager().getAddress()).isEmpty()) {
-                Future<?> future = this.rehashFuture.getAndSet(null);
-                if (future != null) {
-                    future.cancel(true);
-                }
-                // For non-transactional invalidation-caches, where all keys hash to a single member, always schedule
-                Locality oldLocality = !nonTransactionalInvalidation ? new ConsistentHashLocality(cache, startHash) : new SimpleLocality(false);
-                Locality newLocality = new ConsistentHashLocality(cache, endHash);
-                try {
-                    this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask(cache, this.filter, this.expirationScheduler, oldLocality, newLocality)));
-                } catch (RejectedExecutionException e) {
-                    // Executor was shutdown
-                }
-            }
+        Future<?> future = this.rehashFuture.getAndSet(null);
+        if (future != null) {
+            future.cancel(true);
+        }
+        Locality oldLocality = new ConsistentHashLocality(cache, startHash);
+        Locality newLocality = new ConsistentHashLocality(cache, endHash);
+        try {
+            this.rehashFuture.compareAndSet(null, this.executor.submit(new ScheduleExpirationTask(cache, this.filter, this.expirationScheduler, oldLocality, newLocality)));
+        } catch (RejectedExecutionException e) {
+            // Executor was shutdown
         }
     }
 

@@ -138,6 +138,7 @@ public class RankedRouteLocatorTestCase {
                 Assert.assertEquals("2.0.local", result);
                 break;
             }
+            case INVALIDATION_SYNC:
             case REPL_SYNC: {
                 when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
                 String result = locator.locate("session");
