@@ -48,6 +48,7 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.Key;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
 import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
@@ -57,7 +58,6 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
@@ -123,7 +123,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC, LC> implements S
         this.expirationScheduler = new SessionExpirationScheduler<>(this.batcher, this.factory.getMetaDataFactory(), remover, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()));
         CommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         Function<Key<String>, Node> primaryOwnerLocator = new PrimaryOwnerLocator<>(this.cache, config.getMemberFactory(), dispatcherFactory.getGroup());
-        this.primaryOwnerScheduler = new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), this.expirationScheduler, primaryOwnerLocator, Key::new);
+        this.primaryOwnerScheduler = new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), this.expirationScheduler, primaryOwnerLocator, SessionCreationMetaDataKey::new);
         this.cache.addListener(this);
 
         this.startTask = new ScheduleExpirationTask(this.cache, this.filter, this.expirationScheduler, new SimpleLocality(false), new CacheLocality(this.cache));
@@ -306,7 +306,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, BL, MC, LC> implements S
                     Key<String> key = keys.next();
                     // If we are the new primary owner of this session then schedule expiration of this session locally
                     if (!this.oldLocality.isLocal(key) && this.newLocality.isLocal(key)) {
-                        this.scheduler.schedule(key.getValue());
+                        this.scheduler.schedule(key.getId());
                     }
                 }
             }

@@ -22,8 +22,10 @@
 
 package org.wildfly.clustering.web.infinispan;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertSame;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
@@ -35,8 +37,9 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
+import org.wildfly.clustering.ee.cache.Key;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
@@ -76,7 +79,7 @@ public class AffinityIdentityFactoryTestCase {
 
         Key<String> result = generator.getKey();
 
-        assertSame(expected, result.getValue());
+        assertSame(expected, result.getId());
     }
 
     @Test
@@ -85,7 +88,7 @@ public class AffinityIdentityFactoryTestCase {
         Address address = mock(Address.class);
 
         when(this.manager.getAddress()).thenReturn(address);
-        when(this.affinity.getKeyForAddress(address)).thenReturn(new Key<>(expected));
+        when(this.affinity.getKeyForAddress(address)).thenReturn(new GroupedKey<>(expected));
 
         String result = this.subject.createIdentifier();
 

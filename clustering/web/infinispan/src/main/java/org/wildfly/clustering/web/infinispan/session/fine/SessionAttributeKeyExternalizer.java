@@ -39,7 +39,7 @@ public class SessionAttributeKeyExternalizer implements Externalizer<SessionAttr
 
     @Override
     public void writeObject(ObjectOutput output, SessionAttributeKey key) throws IOException {
-        IDENTIFIER_SERIALIZER.write(output, key.getValue());
+        IDENTIFIER_SERIALIZER.write(output, key.getId());
         DefaultExternalizer.UUID.cast(UUID.class).writeObject(output, key.getAttributeId());
     }
 

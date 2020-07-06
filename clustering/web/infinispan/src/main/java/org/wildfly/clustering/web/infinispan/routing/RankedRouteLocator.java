@@ -30,8 +30,8 @@ import java.util.Map;
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;
@@ -43,7 +43,7 @@ public class RankedRouteLocator implements RouteLocator {
 
     private final NodeFactory<Address> factory;
     private final Registry<String, Void> registry;
-    private final Cache<Key<String>, ?> cache;
+    private final Cache<GroupedKey<String>, ?> cache;
     private final String localRoute;
     private final boolean preferPrimary;
     private final String delimiter;
@@ -61,7 +61,7 @@ public class RankedRouteLocator implements RouteLocator {
 
     @Override
     public String locate(String sessionId) {
-        DistributionInfo info = this.preferPrimary ? this.cache.getAdvancedCache().getDistributionManager().getCacheTopology().getDistribution(new Key<>(sessionId)) : null;
+        DistributionInfo info = this.preferPrimary ? this.cache.getAdvancedCache().getDistributionManager().getCacheTopology().getDistribution(new GroupedKey<>(sessionId)) : null;
         List<Address> addresses = (info != null) ? info.writeOwners() : Collections.emptyList();
         int size = Math.min(addresses.size(), this.maxRoutes);
         boolean localOwner = (info == null) || info.isWriteOwner();

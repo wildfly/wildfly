@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
-
-import org.wildfly.clustering.ee.infinispan.GroupedKey;
+package org.wildfly.clustering.ee.cache;
 
 /**
- * Cache key for the session creation meta data entry.
+ * A cache key for a given identifier
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataKey extends GroupedKey<String> {
-
-    public SessionCreationMetaDataKey(String id) {
-        super(id);
-    }
+public interface Key<I> {
+    I getId();
 }

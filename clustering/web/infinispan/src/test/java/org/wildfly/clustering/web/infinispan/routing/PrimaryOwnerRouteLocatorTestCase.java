@@ -45,9 +45,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;
@@ -125,15 +125,15 @@ public class PrimaryOwnerRouteLocatorTestCase {
             case REPL_SYNC:
             case DIST_SYNC:
             case SCATTERED_SYNC: {
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(0);
                 String result = locator.locate("session");
                 Assert.assertEquals("0", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(1);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(1);
                 result = locator.locate("session");
                 Assert.assertEquals("1", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(2);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(2);
                 result = locator.locate("session");
                 Assert.assertEquals("2", result);
                 break;

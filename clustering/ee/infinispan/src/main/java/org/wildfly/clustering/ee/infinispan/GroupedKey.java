@@ -20,51 +20,53 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.distribution;
+package org.wildfly.clustering.ee.infinispan;
 
 import java.util.Objects;
 
 import org.infinispan.distribution.group.Group;
+import org.wildfly.clustering.ee.cache.Key;
 
 /**
  * A cache key supporting group co-location.
  * @author Paul Ferraro
  */
-public class Key<K> {
-    private final K value;
+public class GroupedKey<K> implements Key<K> {
+    private final K id;
 
-    public Key(K value) {
-        this.value = value;
+    public GroupedKey(K id) {
+        this.id = id;
     }
 
     /**
      * Returns the value of this key.
      * @return the key value
      */
-    public K getValue() {
-        return this.value;
+    @Override
+    public K getId() {
+        return this.id;
     }
 
     @Group
     public String getGroup() {
-        return this.value.toString();
+        return this.id.toString();
     }
 
     @Override
     public boolean equals(Object object) {
         if ((object == null) || (object.getClass() != this.getClass())) return false;
         @SuppressWarnings("unchecked")
-        Key<K> key = (Key<K>) object;
-        return this.value.equals(key.value);
+        GroupedKey<K> key = (GroupedKey<K>) object;
+        return this.id.equals(key.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getClass(), this.value);
+        return Objects.hash(this.getClass(), this.id);
     }
 
     @Override
     public String toString() {
-        return String.format("%s(%s)", this.getClass().getSimpleName(), this.value.toString());
+        return String.format("%s(%s)", this.getClass().getSimpleName(), this.id.toString());
     }
 }
