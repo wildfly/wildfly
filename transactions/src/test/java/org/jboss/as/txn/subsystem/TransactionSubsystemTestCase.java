@@ -110,6 +110,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testCmr() throws Exception {
+        standardSubsystemTest("cmr.xml");
+    }
+
+    @Test
     public void testJdbcStoreMinimal() throws Exception {
         standardSubsystemTest("jdbc-store-minimal.xml");
     }

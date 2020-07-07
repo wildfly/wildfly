@@ -155,22 +155,9 @@ class TransactionSubsystem15Parser extends TransactionSubsystem14Parser {
                 case START_ELEMENT: {
                     switch (Element.forName(reader.getLocalName())) {
                         case CM_TABLE: {
-                            for (Attribute attribute : Attribute.values()) {
-                                switch (attribute) {
-                                    case NAME: {
-                                        addAttribute(reader, cmrOperation, CMResourceResourceDefinition.CM_TABLE_NAME);
-                                        break;
-                                    }
-                                    case CM_TABLE_BATCH_SIZE:
-                                        addAttribute(reader, cmrOperation, CMResourceResourceDefinition.CM_TABLE_BATCH_SIZE);
-                                        break;
-                                    case CM_TABLE_IMMEDIATE_CLEANUP:
-                                        addAttribute(reader, cmrOperation, CMResourceResourceDefinition.CM_TABLE_IMMEDIATE_CLEANUP);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
+                            addAttribute(reader, cmrOperation, CMResourceResourceDefinition.CM_TABLE_NAME);
+                            addAttribute(reader, cmrOperation, CMResourceResourceDefinition.CM_TABLE_BATCH_SIZE);
+                            addAttribute(reader, cmrOperation, CMResourceResourceDefinition.CM_TABLE_IMMEDIATE_CLEANUP);
                             break;
                         }
                     }
@@ -185,8 +172,6 @@ class TransactionSubsystem15Parser extends TransactionSubsystem14Parser {
 
         if (value != null) {
             attributeDefinition.parseAndSetParameter(value, operation, reader);
-        } else {
-            throw missingRequired(reader, attributeDefinition.getXmlName());
         }
     }
 
