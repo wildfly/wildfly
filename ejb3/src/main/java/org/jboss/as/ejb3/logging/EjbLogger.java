@@ -3222,4 +3222,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 520, value = "Legacy host does not support multiple values for attributes: %s")
     String multipleValuesNotSupported(Set<String> attributes);
+
+    @Message(id = 521, value = "Some classes referenced by annotation: %s in class: %s are missing.")
+    DeploymentUnitProcessingException missingClassInAnnotation(String anCls, String resCls);
 }
