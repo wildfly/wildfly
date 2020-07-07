@@ -416,4 +416,7 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 103, value = "The time zone id %s is invalid.")
     OperationFailedException invalidTimeZoneId(String zoneId);
+
+    @Message(id = 104, value = "Some classes referenced by annotation: %s in class: %s are missing.")
+    DeploymentUnitProcessingException missingClassInAnnotation(String anCls, String resCls);
 }
