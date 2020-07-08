@@ -104,11 +104,6 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC)
             .build();
 
-    private static final AttributeDefinition METHODS_ENTRY = ObjectTypeAttributeDefinition.Builder.of("complex", EXECUTION_TIME, INVOCATIONS, WAIT_TIME)
-            .setRequired(false)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
-
     private static final AttributeDefinition METHODS = ObjectMapAttributeDefinition.Builder.of(
             "methods",
             ObjectTypeAttributeDefinition.Builder.of("complex", EXECUTION_TIME, INVOCATIONS, WAIT_TIME)
