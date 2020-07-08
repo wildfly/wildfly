@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.group.Node;
@@ -55,8 +56,10 @@ public class RankedRouteLocator implements RouteLocator {
         this.registry = config.getRegistry();
         this.factory = config.getMemberFactory();
         this.localRoute = this.registry.getEntry(this.registry.getGroup().getLocalMember()).getKey();
-        CacheMode mode = config.getCache().getCacheConfiguration().clustering().cacheMode();
-        this.preferPrimary = mode.needsStateTransfer() && !mode.isScattered();
+        Configuration configuration = config.getCache().getCacheConfiguration();
+        CacheMode mode = configuration.clustering().cacheMode();
+        // Non-transactional invalidation caches map all keys to a single segment - thus should use local affinity
+        this.preferPrimary = mode.needsStateTransfer() || (mode.isInvalidation() && configuration.transaction().transactionMode().isTransactional());
         this.delimiter = config.getDelimiter();
         this.maxRoutes = config.getMaxRoutes();
     }
