@@ -45,7 +45,7 @@ public abstract class MarshalledValueSessionAttributesFactoryConfiguration<S, SC
     private final Marshaller<V, MarshalledValue<V, MC>> marshaller;
     private final HttpSessionActivationListenerProvider<S, SC, AL> provider;
 
-    protected MarshalledValueSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, SC, AL, ?, MC, LC> configuration) {
+    protected MarshalledValueSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration) {
         MarshalledValueFactory<MC> factory = configuration.getMarshalledValueFactory();
         this.immutability = configuration.getImmutability();
         this.marshaller = new MarshalledValueMarshaller<>(factory);
