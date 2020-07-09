@@ -223,9 +223,9 @@
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>${full.maven.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${full.maven.version}</version>
                                     <excluded-packages>
                                         <name>docs</name>
                                         <name>docs.licenses.merge</name>
