@@ -54,6 +54,10 @@
     <config name="host-coordinator.xml" model="host"/>
     <config name="host-worker.xml" model="host"/>
 
+    <plugins>
+        <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
+    </plugins>
+
     <generate-feature-specs>
         <extensions>
             <standalone>

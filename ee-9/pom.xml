@@ -42,7 +42,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>build</module>
+        <!--<module>build</module>-->
         <module>dist</module>
         <module>feature-pack</module>
     </modules>

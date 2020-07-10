@@ -179,6 +179,8 @@
                             <release-name>${ee.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <task-properties>
+                                <jakarta.transform.artifacts>true</jakarta.transform.artifacts>
+                                <jakarta.transform.modules>false</jakarta.transform.modules>
                                 <product.release.version>${ee.dist.product.release.version}</product.release.version>
                             </task-properties>
                         </configuration>
@@ -214,6 +216,12 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-galleon-plugins</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- module and copy artifact dependencies -->
