@@ -133,6 +133,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
 
     private static final String LEGACY_SECURITY_CAPABILITY_NAME = "org.wildfly.legacy-security";
+    private static final String LEGACY_JACC_CAPABILITY_NAME = "org.wildfly.legacy-security.jacc";
+    private static final String ELYTRON_JACC_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
     private static final String LEGACY_JAAS_CONTEXT_ROOT = "java:/jaas/";
 
     private final String defaultServer;
@@ -481,7 +483,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
 
         // adding JACC service
-        //if(securityEnabled) {
+        final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
+        final boolean legacyJacc = !elytronJacc && capabilitySupport.hasCapability(LEGACY_JACC_CAPABILITY_NAME);
+        if(legacyJacc || elytronJacc) {
             WarJACCDeployer deployer = new WarJACCDeployer();
             JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
             if (jaccService != null) {
@@ -493,11 +497,12 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                     jaccBuilder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
                             jaccService.getParentPolicyInjector());
                 }
+                jaccBuilder.addDependency(capabilitySupport.getCapabilityServiceName(elytronJacc ? ELYTRON_JACC_CAPABILITY_NAME : LEGACY_JACC_CAPABILITY_NAME));
                 // add dependency to web deployment service
                 jaccBuilder.requires(deploymentServiceName);
                 jaccBuilder.setInitialMode(Mode.PASSIVE).install();
             }
-        //}
+        }
 
         // Process the web related mgmt information
         final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);

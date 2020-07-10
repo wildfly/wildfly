@@ -26,12 +26,14 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 
 import javax.security.jacc.PolicyConfiguration;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.security.AbstractSecurityDeployer;
 import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbSecurityDeployer;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -51,6 +53,12 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
 
+    private final String jaccCapabilityName;
+
+    public JaccEjbDeploymentProcessor(final String jaccCapabilityName) {
+        this.jaccCapabilityName = jaccCapabilityName;
+    }
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -58,10 +66,6 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-//        boolean securityEnabled = deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED);
-//        if(!securityEnabled) {
-//            return;
-//        }
         AbstractSecurityDeployer<?> deployer = null;
         deployer = new EjbSecurityDeployer();
         JaccService<?> service = deployer.deploy(deploymentUnit);
@@ -76,6 +80,8 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
                 builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
                         service.getParentPolicyInjector());
             }
+            CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            builder.addDependencies(capabilitySupport.getCapabilityServiceName(jaccCapabilityName));
             builder.setInitialMode(Mode.ACTIVE).install();
         }
     }
