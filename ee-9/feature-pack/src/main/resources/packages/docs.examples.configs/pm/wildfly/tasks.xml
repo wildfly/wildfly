@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+    <example-configs>
+        <config model="standalone" name="standalone-genericjms.xml">
+            <feature-group name="standalone-genericjms"/>
+        </config>
+        <config model="standalone" name="standalone-jts.xml">
+            <feature-group name="standalone-jts"/>
+        </config>
+        <config model="standalone" name="standalone-minimalistic.xml">
+            <feature-group name="standalone-minimalistic"/>
+        </config>
+        <config model="standalone" name="standalone-rts.xml">
+            <feature-group name="standalone-rts"/>
+        </config>
+        <config model="standalone" name="standalone-xts.xml">
+            <feature-group name="standalone-xts"/>
+        </config>
+        <config model="standalone" name="standalone-activemq-colocated.xml">
+            <feature-group name="standalone-activemq-colocated"/>
+        </config>
+    </example-configs>
+</tasks>

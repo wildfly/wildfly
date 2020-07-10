@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ee-9-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>21.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-ee-9-dist</artifactId>
+    <name>WildFly: EE 9 Full Distribution</name>
+    <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+            <type>zip</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${server.output.dir.prefix}-${server.output.dir.version}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>server-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <install-dir>${basedir}/target/${project.build.finalName}</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </plugin-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                    <included-packages>
+                                        <name>docs.examples.configs</name>
+                                    </included-packages>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>verifications-configuration</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${basedir}/target/verifier</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/verifier</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>ts.copy-widfly-for-validation</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <inherited>true</inherited>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/xml-validation</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/${project.build.finalName}</directory>
+                                    <includes>
+                                        <include>docs/**/*.xml</include>
+                                        <include>docs/**/*.xsd</include>
+                                        <include>standalone/**/*.xml</include>
+                                        <include>domain/**/*.xml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-verifier-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Parameters to test cases. -->
+                    <systemPropertyVariables combine.children="append">
+                        <jboss.dist>${basedir}/target/xml-validation</jboss.dist>
+                        <jboss.actual.dist>${basedir}/target/${project.build.finalName}</jboss.actual.dist>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.galleon-plugins</groupId>
+                        <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>wildfly-generate-all-artifacts-list</id>
+                                <goals>
+                                    <goal>generate-all-artifacts-list</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <fpGroupId>${project.groupId}</fpGroupId>
+                                    <fpArtifactId>wildfly-ee-galleon-pack</fpArtifactId>
+                                    <fpVersion>${project.version}</fpVersion>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.wildfly.core</groupId>
+                                <artifactId>wildfly-core-galleon-pack</artifactId>
+                                <version>${version.org.wildfly.core}</version>
+                                <type>txt</type>
+                                <classifier>artifact-list</classifier>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>assemble</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>assembly.xml</descriptor>
+                                    </descriptors>
+                                    <recompressZippedFiles>true</recompressZippedFiles>
+                                    <finalName>${project.build.finalName}</finalName>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <workDirectory>${project.build.directory}/assembly/work</workDirectory>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>assemble-src</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>assembly-src.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>${project.build.finalName}</finalName>
+                                    <appendAssemblyId>true</appendAssemblyId>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <workDirectory>${project.build.directory}/assembly-src/work</workDirectory>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

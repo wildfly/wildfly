@@ -69,6 +69,7 @@
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
         <module>ee-security</module>
+        <module>ee-9</module>
         <module>ejb3</module>
         <module>galleon-pack</module>
         <module>iiop-openjdk</module>
@@ -985,6 +986,34 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-security</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-9-build</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-9-dist</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
             </dependency>
 
             <dependency>
