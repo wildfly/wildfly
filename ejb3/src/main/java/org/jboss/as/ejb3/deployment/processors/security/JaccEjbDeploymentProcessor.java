@@ -22,10 +22,15 @@
 
 package org.jboss.as.ejb3.deployment.processors.security;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+
 import javax.security.jacc.PolicyConfiguration;
 
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.security.AbstractSecurityDeployer;
 import org.jboss.as.ee.security.JaccService;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbSecurityDeployer;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,6 +54,10 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (deploymentContainsEjbs(deploymentUnit) == false) {
+            return;
+        }
+
 //        boolean securityEnabled = deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED);
 //        if(!securityEnabled) {
 //            return;
@@ -69,6 +78,17 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
             }
             builder.setInitialMode(Mode.ACTIVE).install();
         }
+    }
+
+    private static boolean deploymentContainsEjbs(final DeploymentUnit deploymentUnit) {
+        final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(EE_MODULE_CONFIGURATION);
+        for (ComponentConfiguration current : moduleConfiguration.getComponentConfigurations()) {
+            if (current.getComponentDescription() instanceof EJBComponentDescription) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
