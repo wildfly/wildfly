@@ -36,6 +36,7 @@
             <exports>
                 <include-set>
                     <path name="org/jboss/security/auth/callback" />
+                    <path name="org/jboss/security/auth/message/config" />
                     <path name="org/jboss/security/jacc" />
                 </include-set>
             </exports>
