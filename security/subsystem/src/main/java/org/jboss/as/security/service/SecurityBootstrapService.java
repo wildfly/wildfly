@@ -27,6 +27,7 @@ import java.security.Policy;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.security.jacc.PolicyConfigurationFactory;
 import javax.security.jacc.PolicyContext;
 
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -149,6 +150,9 @@ public class SecurityBootstrapService implements Service<Void> {
 
             //Register a module classloader locator
             ClassLoaderLocatorFactory.set(new ModuleClassLoaderLocator(moduleLoaderValue.getValue()));
+
+            // Ensure the JACC PolicyConfigurationFactory is initialised during Bootstrap.
+            PolicyConfigurationFactory.getPolicyConfigurationFactory();
         } catch (Exception e) {
             throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);
         }

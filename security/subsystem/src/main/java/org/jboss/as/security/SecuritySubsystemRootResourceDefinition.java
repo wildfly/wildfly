@@ -21,6 +21,8 @@
  */
 package org.jboss.as.security;
 
+import java.security.Policy;
+
 import javax.security.auth.login.Configuration;
 import javax.transaction.TransactionManager;
 
@@ -38,6 +40,7 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -89,6 +92,9 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
     private static final RuntimeCapability<Void> SUBJECT_FACTORY_CAP = RuntimeCapability.Builder.of("org.wildfly.legacy-security.subject-factory")
             .setServiceType(SubjectFactory.class)
             .build();
+    private static final RuntimeCapability<Void> JACC_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.legacy-security.jacc")
+            .setServiceType(Policy.class)
+            .build();
 
     private static final SensitiveTargetAccessConstraintDefinition MISC_SECURITY_SENSITIVITY = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SecurityExtension.SUBSYSTEM_NAME, "misc-security", false, true, true));
@@ -109,7 +115,15 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
         super(new Parameters(SecurityExtension.PATH_SUBSYSTEM,
                 SecurityExtension.getResourceDescriptionResolver(SecurityExtension.SUBSYSTEM_NAME))
                 .setAddHandler(SecuritySubsystemAdd.INSTANCE)
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler() {
+
+                    @Override
+                    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation,
+                            Resource resource) throws OperationFailedException {
+                        super.recordCapabilitiesAndRequirements(context, operation, resource);
+                        context.deregisterCapability(JACC_CAPABILITY.getName());
+                    }
+                })
                 .setCapabilities(SECURITY_SUBSYSTEM, SERVER_SECURITY_MANAGER, SUBJECT_FACTORY_CAP));
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
@@ -151,6 +165,15 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
         }
 
         @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource)
+                throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+            if (INITIALIZE_JACC.resolveModelAttribute(context, resource.getModel()).asBoolean()) {
+                context.registerCapability(JACC_CAPABILITY);
+            }
+        }
+
+        @Override
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             SecurityLogger.ROOT_LOGGER.activatingSecuritySubsystem();
 
@@ -161,9 +184,13 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             final ServiceTarget target = context.getServiceTarget();
             ModelNode initializeJaccNode = SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC.resolveModelAttribute(context,model);
             final SecurityBootstrapService bootstrapService = new SecurityBootstrapService(initializeJaccNode.asBoolean());
-            target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
+            ServiceBuilder<Void> builder = target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, bootstrapService.getServiceModuleLoaderInjectedValue())
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+            if (initializeJaccNode.asBoolean()) {
+                builder.addAliases(context.getCapabilityServiceName(JACC_CAPABILITY.getName(), Policy.class));
+            }
+            builder.install();
 
             // add service to bind SecurityDomainJndiInjectable to JNDI
             final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
