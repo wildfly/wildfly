@@ -27,9 +27,7 @@ import static org.mockito.Mockito.*;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.configuration.cache.CacheMode;
@@ -42,15 +40,14 @@ import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.topology.CacheTopology;
-import org.infinispan.transaction.TransactionMode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;
@@ -63,17 +60,8 @@ import org.wildfly.clustering.web.routing.RouteLocator;
 public class PrimaryOwnerRouteLocatorTestCase {
 
     @Parameters
-    public static Iterable<Map.Entry<CacheMode, TransactionMode>> parameters() {
-        List<Map.Entry<CacheMode, TransactionMode>> result = new LinkedList<>();
-        for (CacheMode mode : EnumSet.allOf(CacheMode.class)) {
-            if (mode.isSynchronous()) {
-                result.add(new AbstractMap.SimpleImmutableEntry<>(mode, TransactionMode.NON_TRANSACTIONAL));
-                if (!mode.isScattered()) {
-                    result.add(new AbstractMap.SimpleImmutableEntry<>(mode, TransactionMode.TRANSACTIONAL));
-                }
-            }
-        }
-        return result;
+    public static Iterable<CacheMode> parameters() {
+        return EnumSet.allOf(CacheMode.class).stream().filter(CacheMode::isSynchronous).collect(Collectors.toList());
     }
 
     private final Address[] addresses = new Address[] { mock(Address.class), mock(Address.class), mock(Address.class) };
@@ -88,10 +76,9 @@ public class PrimaryOwnerRouteLocatorTestCase {
     private final KeyPartitioner partitioner = mock(KeyPartitioner.class);
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public PrimaryOwnerRouteLocatorTestCase(Map.Entry<CacheMode, TransactionMode> entry) {
-        CacheMode mode = entry.getKey();
+    public PrimaryOwnerRouteLocatorTestCase(CacheMode mode) {
         EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-        Configuration config = new ConfigurationBuilder().clustering().cacheMode(mode).transaction().transactionMode(entry.getValue()).build();
+        Configuration config = new ConfigurationBuilder().clustering().cacheMode(mode).build();
         when(this.cache.getCacheManager()).thenReturn(manager);
         when(manager.getAddress()).thenReturn(this.localAddress);
         when(this.cache.getCacheConfiguration()).thenReturn(config);
@@ -135,23 +122,18 @@ public class PrimaryOwnerRouteLocatorTestCase {
 
         switch (this.cache.getCacheConfiguration().clustering().cacheMode()) {
             case INVALIDATION_SYNC:
-                if (!this.cache.getCacheConfiguration().transaction().transactionMode().isTransactional()) {
-                    String result = locator.locate("session");
-                    Assert.assertEquals("local", result);
-                    break;
-                }
             case REPL_SYNC:
             case DIST_SYNC:
             case SCATTERED_SYNC: {
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(0);
                 String result = locator.locate("session");
                 Assert.assertEquals("0", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(1);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(1);
                 result = locator.locate("session");
                 Assert.assertEquals("1", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(2);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(2);
                 result = locator.locate("session");
                 Assert.assertEquals("2", result);
                 break;

@@ -38,6 +38,7 @@
     <dependencies>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.logging"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.cache"/>
@@ -46,5 +47,6 @@
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

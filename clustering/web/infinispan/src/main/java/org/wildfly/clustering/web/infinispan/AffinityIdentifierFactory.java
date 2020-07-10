@@ -25,8 +25,9 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.wildfly.clustering.ee.cache.Key;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
@@ -48,12 +49,12 @@ public class AffinityIdentifierFactory<K> implements IdentifierFactory<K>, KeyGe
 
     @Override
     public K createIdentifier() {
-        return this.affinity.getKeyForAddress(this.manager.getAddress()).getValue();
+        return this.affinity.getKeyForAddress(this.manager.getAddress()).getId();
     }
 
     @Override
     public Key<K> getKey() {
-        return new Key<>(this.factory.createIdentifier());
+        return new GroupedKey<>(this.factory.createIdentifier());
     }
 
     @Override

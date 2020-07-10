@@ -44,10 +44,10 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.Key;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
@@ -74,7 +74,7 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-@Listener
+@Listener(primaryOnly = true)
 public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
 
     private final Registrar<SessionExpirationListener> expirationRegistrar;
@@ -120,9 +120,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
         this.cache.addListener(this, filter, null);
         this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
         this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
-        if (this.startTask != null) {
-            this.startTask.run();
-        }
+        this.startTask.run();
     }
 
     @Override
@@ -208,7 +206,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
     private Set<String> getSessions(Flag... flags) {
         Locality locality = new CacheLocality(this.cache);
         try (Stream<Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
-            return keys.filter(this.filter.and(key -> locality.isLocal(key))).map(key -> key.getValue()).collect(Collectors.toSet());
+            return keys.filter(this.filter.and(key -> locality.isLocal(key))).map(key -> key.getId()).collect(Collectors.toSet());
         }
     }
 
@@ -219,8 +217,8 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (!event.isPre() && !this.properties.isPersistent() && event.isOriginLocal()) {
-            String id = event.getKey().getValue();
+        if (!event.isPre() && !this.properties.isPersistent()) {
+            String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
             if (value != null) {
@@ -232,8 +230,8 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre() && !this.properties.isPersistent() && event.isOriginLocal()) {
-            String id = event.getKey().getValue();
+        if (event.isPre() && !this.properties.isPersistent()) {
+            String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
             if (value != null) {
@@ -245,8 +243,8 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre() && event.isOriginLocal()) {
-            String id = event.getKey().getValue();
+        if (event.isPre()) {
+            String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
             if (value != null) {
