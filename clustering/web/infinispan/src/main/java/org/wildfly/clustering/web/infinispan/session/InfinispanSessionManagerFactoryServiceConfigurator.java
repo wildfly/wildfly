@@ -70,15 +70,14 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @param <MC> the marshalling context type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC, LC> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>>, Consumer<ConfigurationBuilder> {
+public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>>, Consumer<ConfigurationBuilder> {
 
     private final InfinispanSessionManagementConfiguration configuration;
-    private final SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration;
+    private final SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration;
 
     private volatile ServiceConfigurator configurationConfigurator;
     private volatile ServiceConfigurator cacheConfigurator;
@@ -89,7 +88,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, M
     @SuppressWarnings("rawtypes")
     private volatile Supplier<Cache> cache;
 
-    public InfinispanSessionManagerFactoryServiceConfigurator(InfinispanSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration) {
+    public InfinispanSessionManagerFactoryServiceConfigurator(InfinispanSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration) {
         super(ServiceName.JBOSS.append("clustering", "web", factoryConfiguration.getDeploymentName()));
         this.configuration = configuration;
         this.factoryConfiguration = factoryConfiguration;
@@ -215,7 +214,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, M
     }
 
     @Override
-    public SpecificationProvider<S, SC, AL, BL> getSpecificationProvider() {
+    public SpecificationProvider<S, SC, AL> getSpecificationProvider() {
         return this.factoryConfiguration.getSpecificationProvider();
     }
 }

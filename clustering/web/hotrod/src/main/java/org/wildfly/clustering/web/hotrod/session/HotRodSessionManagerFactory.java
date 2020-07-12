@@ -50,12 +50,11 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @param <LC> the local context type
  * @param <MC> the marshalling context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactory<S, SC, AL, BL, MC, LC> implements SessionManagerFactory<SC, LC, TransactionBatch> {
+public class HotRodSessionManagerFactory<S, SC, AL, MC, LC> implements SessionManagerFactory<SC, LC, TransactionBatch> {
 
     final Registrar<SessionExpirationListener> expirationRegistrar;
     final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
@@ -63,7 +62,7 @@ public class HotRodSessionManagerFactory<S, SC, AL, BL, MC, LC> implements Sessi
     final Duration transactionTimeout;
     private final SessionFactory<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> sessionFactory;
 
-    public HotRodSessionManagerFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> config) {
+    public HotRodSessionManagerFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> config) {
         SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(config);
         this.sessionFactory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         ExpiredSessionRemover<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> remover = new ExpiredSessionRemover<>(this.sessionFactory);
@@ -119,7 +118,7 @@ public class HotRodSessionManagerFactory<S, SC, AL, BL, MC, LC> implements Sessi
         this.expirationScheduler.close();
     }
 
-    private SessionAttributesFactory<SC, ?> createSessionAttributesFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration) {
+    private SessionAttributesFactory<SC, ?> createSessionAttributesFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration) {
         switch (configuration.getAttributePersistenceStrategy()) {
             case FINE: {
                 return new FineSessionAttributesFactory<>(new HotRodMarshalledValueSessionAttributesFactoryConfiguration<>(configuration));
@@ -134,10 +133,10 @@ public class HotRodSessionManagerFactory<S, SC, AL, BL, MC, LC> implements Sessi
         }
     }
 
-    private static class HotRodMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, BL, V, MC, LC> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements HotRodSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
-        private final HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration;
+    private static class HotRodMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements HotRodSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
+        private final HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration;
 
-        HotRodMarshalledValueSessionAttributesFactoryConfiguration(HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration) {
+        HotRodMarshalledValueSessionAttributesFactoryConfiguration(HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration) {
             super(configuration);
             this.configuration = configuration;
         }

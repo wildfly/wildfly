@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
@@ -226,6 +227,12 @@ public class DistributableSession implements io.undertow.server.session.Session 
         // Invoke listeners outside of the context of the batch associated with this session
         this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         try (BatchContext context = this.resumeBatch()) {
+            // Trigger attribute listeners
+            ImmutableSessionAttributes attributes = session.getAttributes();
+            for (String name : attributes.getAttributeNames()) {
+                Object value = attributes.getAttribute(name);
+                this.manager.getSessionListeners().attributeRemoved(this, name, value);
+            }
             session.invalidate();
             if (exchange != null) {
                 String id = session.getId();

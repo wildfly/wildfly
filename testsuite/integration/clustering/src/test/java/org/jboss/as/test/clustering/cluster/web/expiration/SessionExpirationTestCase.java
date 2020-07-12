@@ -280,7 +280,7 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // This should trigger session destroyed event and valueUnbound binding event
+            // This should trigger session destroyed event, attribute removed event, and valueUnbound binding event
             response = client.execute(new HttpGet(SessionOperationServlet.createInvalidateURI(baseURL1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -376,7 +376,7 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
             // Trigger timeout of sessionId
             Thread.sleep(2000);
 
-            // Timeout should trigger session destroyed event and valueUnbound binding event
+            // Timeout should trigger session destroyed event, attribute removed event, and valueUnbound binding event
             response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL2, "a")));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -386,7 +386,7 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
                 Assert.assertTrue(response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS));
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES));
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES));
-                Assert.assertFalse(response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES));
+                Assert.assertTrue(response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES));
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES));
                 Assert.assertTrue(response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES));
                 Assert.assertEquals(sessionId, response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());

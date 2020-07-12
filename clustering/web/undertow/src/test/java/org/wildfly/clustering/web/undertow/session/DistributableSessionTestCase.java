@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSessionActivationListener;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
@@ -622,9 +623,12 @@ public class DistributableSessionTestCase {
         Batcher<Batch> batcher = mock(Batcher.class);
         BatchContext context = mock(BatchContext.class);
         SessionListener listener = mock(SessionListener.class);
+        SessionAttributes attributes = mock(SessionAttributes.class);
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
         String sessionId = "session";
+        String attributeName = "attribute";
+        Object attributeValue = mock(HttpSessionActivationListener.class);
 
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         when(this.session.getId()).thenReturn(sessionId);
@@ -632,12 +636,16 @@ public class DistributableSessionTestCase {
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.batch.getState()).thenReturn(Batch.State.ACTIVE);
+        when(this.session.getAttributes()).thenReturn(attributes);
+        when(attributes.getAttributeNames()).thenReturn(Collections.singleton("attribute"));
+        when(attributes.getAttribute(attributeName)).thenReturn(attributeValue);
 
         this.adapter.invalidate(exchange);
 
         verify(this.session).invalidate();
         verify(this.config).clearSession(exchange, sessionId);
         verify(listener).sessionDestroyed(this.adapter, exchange, SessionDestroyedReason.INVALIDATED);
+        verify(listener).attributeRemoved(this.adapter, attributeName, attributeValue);
         verify(this.batch).close();
         verify(context).close();
         verify(this.closeTask).accept(exchange);

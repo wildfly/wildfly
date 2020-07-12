@@ -29,7 +29,6 @@ import java.util.ServiceLoader;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionBindingListener;
 
 import org.jboss.modules.Module;
 import org.wildfly.clustering.ee.CompositeIterable;
@@ -50,7 +49,7 @@ import org.wildfly.clustering.web.undertow.session.DistributableSessionManagerFa
 /**
  * @author Paul Ferraro
  */
-public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener, MarshallingContext, LocalSessionContext> {
+public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, MarshallingContext, LocalSessionContext> {
 
     private final Integer maxActiveSessions;
     private final MarshallingContext context;
@@ -89,7 +88,7 @@ public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConf
     }
 
     @Override
-    public SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener> getSpecificationProvider() {
+    public SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> getSpecificationProvider() {
         return UndertowSpecificationProvider.INSTANCE;
     }
 }

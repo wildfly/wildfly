@@ -25,6 +25,7 @@ package org.wildfly.clustering.web.undertow.session;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 import io.undertow.server.session.Session;
@@ -56,6 +57,12 @@ public class UndertowSessionExpirationListener implements SessionExpirationListe
             this.listeners.sessionDestroyed(undertowSession, null, SessionListener.SessionDestroyedReason.TIMEOUT);
         } finally {
             batcher.resumeBatch(batch);
+        }
+        // Trigger attribute listeners
+        ImmutableSessionAttributes attributes = session.getAttributes();
+        for (String name : attributes.getAttributeNames()) {
+            Object value = attributes.getAttribute(name);
+            manager.getSessionListeners().attributeRemoved(undertowSession, name, value);
         }
     }
 }

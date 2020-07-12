@@ -27,10 +27,9 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @param <MC> the marshalling context type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> extends HotRodSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, HotRodSessionMetaDataFactoryConfiguration {
+public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends HotRodSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, HotRodSessionMetaDataFactoryConfiguration {
 }
