@@ -23,15 +23,12 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
-
-import static org.jboss.as.ejb3.subsystem.MdbDeliveryGroupResourceDefinition.getDeliveryGroupServiceName;
 
 /**
  * Adds a mdb delivery group.
@@ -52,10 +49,11 @@ public class MdbDeliveryGroupAdd extends AbstractAddStepHandler {
     }
 
     protected void installServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final String groupName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement()
-                .getValue();
         final boolean active = MdbDeliveryGroupResourceDefinition.ACTIVE.resolveModelAttribute(context, model).asBoolean();
-        context.getServiceTarget().addService(getDeliveryGroupServiceName(groupName), Service.NULL)
-                .setInitialMode(active? ServiceController.Mode.ACTIVE: ServiceController.Mode.NEVER).install();
+
+        CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
+        serviceTarget.addCapability(MdbDeliveryGroupResourceDefinition.MDB_DELIVERY_GROUP_CAPABILITY, Service.NULL)
+                .setInitialMode(active? ServiceController.Mode.ACTIVE: ServiceController.Mode.NEVER)
+                .install();
     }
 }

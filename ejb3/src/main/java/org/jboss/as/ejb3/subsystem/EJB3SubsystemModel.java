@@ -148,6 +148,9 @@ public interface EJB3SubsystemModel {
     PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);
     PathElement FILE_DATA_STORE_PATH = PathElement.pathElement(FILE_DATA_STORE);
     PathElement DATABASE_DATA_STORE_PATH = PathElement.pathElement(DATABASE_DATA_STORE);
+    PathElement MDB_DELIVERY_GROUP_PATH = PathElement.pathElement(MDB_DELIVERY_GROUP);
+    PathElement STRICT_MAX_BEAN_INSTANCE_POOL_PATH = PathElement.pathElement(STRICT_MAX_BEAN_INSTANCE_POOL);
+    PathElement REMOTING_PROFILE_PATH = PathElement.pathElement(REMOTING_PROFILE);
 
     String BASE_EJB_THREAD_POOL_NAME = "ejb3";
     ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append(BASE_EJB_THREAD_POOL_NAME);

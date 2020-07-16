@@ -28,6 +28,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -42,6 +43,13 @@ import org.jboss.dmr.ModelType;
  * {@link org.jboss.as.controller.ResourceDefinition} for the file data store
  */
 public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
+
+    // TODO: place this common capability in a superclass
+    public static final String TIMER_PERSISTENCE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service.timer-persistence-service";
+    public static final RuntimeCapability<Void> TIMER_PERSISTENCE_CAPABILITY =
+            RuntimeCapability.Builder.of(TIMER_PERSISTENCE_CAPABILITY_NAME, true, TimerPersistence.class)
+                    .setAllowMultipleRegistrations(true)
+                    .build();
 
     public static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PATH, ModelType.STRING, false)
@@ -59,13 +67,15 @@ public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
     private final PathManager pathManager;
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { PATH, RELATIVE_TO };
-    private static final FileDataStoreAdd ADD_HANDER = new FileDataStoreAdd(ATTRIBUTES);
+    private static final FileDataStoreAdd ADD_HANDLER = new FileDataStoreAdd(ATTRIBUTES);
 
     public FileDataStoreResourceDefinition(final PathManager pathManager) {
-        super(EJB3SubsystemModel.FILE_DATA_STORE_PATH,
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.FILE_DATA_STORE),
-                ADD_HANDER, new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, ADD_HANDER),
-                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.FILE_DATA_STORE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.FILE_DATA_STORE))
+                .setAddHandler(ADD_HANDLER)
+                .setRemoveHandler(new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, ADD_HANDLER))
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setCapabilities(TIMER_PERSISTENCE_CAPABILITY));
         this.pathManager = pathManager;
     }
 

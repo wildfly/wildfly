@@ -60,7 +60,8 @@ class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Void> {
     private void applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
 
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        final ServiceName serviceName = StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
+
+        ServiceName serviceName = context.getCapabilityServiceName(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, poolName, StrictMaxPoolConfigService.class);
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> sc = registry.getService(serviceName);
         if (sc != null) {

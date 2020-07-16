@@ -56,18 +56,29 @@ import java.util.List;
  *
  */
 public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
-    private static final String JBOSS_AS_REMOTING = "org.jboss.as.remoting";
 
-    public static final String CONNECTOR_CAPABILITY_NAME = "org.wildfly.remoting.connector";
+    private static final String JBOSS_AS_REMOTING = "org.jboss.as.remoting";
+    // todo: add in connector capability reference when connector resources are converted to use capabilities (WFCORE-5055)
+    protected static final String CONNECTOR_CAPABILITY_NAME = "org.wildfly.remoting.connector";
+    protected static final String INFINISPAN_CACHE_CONTAINER_CAPABILITY_NAME = "org.wildfly.clustering.infinispan.cache-container";
+    protected static final String REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME = "org.wildfly.transactions.remote-transaction-service";
+    protected static final String REMOTING_ENDPOINT_CAPABILITY_NAME = "org.wildfly.remoting.endpoint";
+    protected static final String THREAD_POOL_CAPABILITY_NAME = "org.wildfly.threads.executor.ejb3";
+
     public static final String EJB_REMOTE_CAPABILITY_NAME = "org.wildfly.ejb.remote";
 
-    static final RuntimeCapability<Void> EJB_REMOTE_CAPABILITY = RuntimeCapability.Builder.of(EJB_REMOTE_CAPABILITY_NAME).setServiceType(Void.class).build();
+    static final RuntimeCapability<Void> EJB_REMOTE_CAPABILITY = RuntimeCapability.Builder.of(EJB_REMOTE_CAPABILITY_NAME)
+            .setServiceType(Void.class)
+            .addRequirements(REMOTING_ENDPOINT_CAPABILITY_NAME)
+            .build();
 
     static final SimpleAttributeDefinition CLIENT_MAPPINGS_CLUSTER_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
+                    // TODO: replace this with a Requirement reference when the ejb-spi module for clustering is available
+                    .setCapabilityReference(INFINISPAN_CACHE_CONTAINER_CAPABILITY_NAME, EJB_REMOTE_CAPABILITY)
                     .build();
 
     @Deprecated
@@ -92,6 +103,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setCapabilityReference(THREAD_POOL_CAPABILITY_NAME, EJB_REMOTE_CAPABILITY)
                     .build();
 
     static final SimpleAttributeDefinition EXECUTE_IN_WORKER =
