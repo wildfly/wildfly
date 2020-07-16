@@ -100,7 +100,7 @@
         </dependency>
         <dependency>
             <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-open-api</artifactId>
+            <artifactId>smallrye-open-api-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
@@ -171,6 +171,10 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron</artifactId>
         </dependency>
 
         <dependency>

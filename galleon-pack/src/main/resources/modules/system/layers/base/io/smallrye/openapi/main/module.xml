@@ -28,7 +28,8 @@
     </properties>
 
     <resources>
-        <artifact name="${io.smallrye:smallrye-open-api}"/>
+        <artifact name="${io.smallrye:smallrye-open-api-core}"/>
+        <artifact name="${io.smallrye:smallrye-open-api-jaxrs}"/>
     </resources>
 
     <dependencies>
