@@ -37,7 +37,7 @@ public class ComponentStartupCountdownHandler implements HttpHandler {
     private final HttpHandler wrappedHandler;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private volatile HttpHandler startupFailedHandler = ResponseCodeHandler.HANDLE_500;
+    private final HttpHandler startupFailedHandler = ResponseCodeHandler.HANDLE_500;
 
     public ComponentStartupCountdownHandler(final HttpHandler handler, StartupCountdown countdown) {
         this.wrappedHandler = handler;

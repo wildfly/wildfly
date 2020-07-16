@@ -52,7 +52,7 @@ import java.net.URL;
 @RunAsClient
 public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
 
-    public static EnterpriseArchive deployment() {
+    public static EnterpriseArchive deployment(boolean includeInOrder) {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "TestEar.ear");
 
         JavaArchive ejb1 = ShrinkWrap.create(JavaArchive.class, "ejb1.jar");
@@ -71,6 +71,15 @@ public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
         ear.addAsModule(ejb1);
         ear.addAsModule(ejb2);
         ear.addAsModule(war);
+        if (includeInOrder) {
+            ear.setApplicationXML(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<application>" +
+                    "<initialize-in-order>true</initialize-in-order>" +
+                    "<module><web><web-uri>test.war</web-uri><context-root>test</context-root></web></module>" +
+                    "<module><ejb>ejb1.jar</ejb></module>" +
+                    "<module><ejb>ejb2.jar</ejb></module>" +
+                    "</application>"));
+        }
 
         return ear;
     }
@@ -83,27 +92,45 @@ public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
         return ja;
     }
 
-    private static File earFile;
+    private static File unorderedEarFile;
+    private static File inOrderEarFile;
 
     @BeforeClass
     public static void before() throws Exception {
-        EnterpriseArchive ear = deployment();
-        String tempDir = TestSuiteEnvironment.getTmpDir();
-        earFile = new File(tempDir + File.separator + "TestEar.ear");
-        new ZipExporterImpl(ear).exportTo(earFile, true);
+        unorderedEarFile = exportEar(false, "TestEar.ear");
+        inOrderEarFile = exportEar(true, "TestEarInOrder.ear");
 
         AbstractCliTestBase.initCLI();
     }
 
+    private static File exportEar(boolean inOrder, String name) {
+        EnterpriseArchive ear = deployment(inOrder);
+        String tempDir = TestSuiteEnvironment.getTmpDir();
+        File earFile = new File(tempDir + File.separator + name);
+        new ZipExporterImpl(ear).exportTo(earFile, true);
+        return earFile;
+    }
+
     @AfterClass
     public static void after() throws Exception {
-        earFile.delete();
+        unorderedEarFile.delete();
+        inOrderEarFile.delete();
         AbstractCliTestBase.closeCLI();
     }
 
     @Test
     @SuppressWarnings({"unchecked"})
     public void testEjbInAnotherModuleShouldFail() throws Exception {
+        testEjbInAnotherModuleShouldFail(unorderedEarFile);
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void testInOrderDeploymentEjbInAnotherModuleShouldFail() throws Exception {
+        testEjbInAnotherModuleShouldFail(inOrderEarFile);
+    }
+
+    private void testEjbInAnotherModuleShouldFail(File earFile) throws Exception {
         try {
             cli.sendLine("deploy --url=" + earFile.toURI().toURL().toExternalForm() + " --name=" + earFile.getName() + " --headers={rollback-on-runtime-failure=false}");
 
@@ -123,6 +150,15 @@ public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
 
     @Test
     public void testWebModuleShouldFail(@ArquillianResource URL url) throws Exception {
+        testWebModuleShouldFail(url, unorderedEarFile);
+    }
+
+    @Test
+    public void testInOrderDeploymentWebModuleShouldFail(@ArquillianResource URL url) throws Exception {
+        testWebModuleShouldFail(url, inOrderEarFile);
+    }
+
+    private void testWebModuleShouldFail(URL url, File earFile) throws Exception {
         try {
             cli.sendLine("deploy --url=" + earFile.toURI().toURL().toExternalForm() + " --name=" + earFile.getName() + " --headers={rollback-on-runtime-failure=false}");
 

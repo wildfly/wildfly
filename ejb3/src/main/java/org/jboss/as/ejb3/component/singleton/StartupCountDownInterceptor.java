@@ -25,9 +25,6 @@ public class StartupCountDownInterceptor implements Interceptor {
       Object proceed = context.proceed();
       countdown.countDown();
       return proceed;
-    } catch (Exception e) {
-      // do not decrease countdown
-      throw e;
     } finally {
       StartupCountdown.restore(frame);
     }
