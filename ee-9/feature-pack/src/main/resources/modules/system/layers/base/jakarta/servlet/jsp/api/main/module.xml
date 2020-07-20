@@ -29,6 +29,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.servlet.jsp:jboss-jsp-api_2.3_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.servlet.jsp:jboss-jsp-api_2.3_spec}"/>-->
+        <artifact name="${jakarta.servlet.jsp:jakarta.servlet.jsp-api}"/>
     </resources>
 </module>

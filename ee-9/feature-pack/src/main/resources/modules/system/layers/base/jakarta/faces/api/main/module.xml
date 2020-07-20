@@ -36,6 +36,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.faces:jboss-jsf-api_2.3_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.faces:jboss-jsf-api_2.3_spec}"/>-->
+        <artifact name="${jakarta.faces:jakarta.faces-api}"/>
     </resources>
 </module>

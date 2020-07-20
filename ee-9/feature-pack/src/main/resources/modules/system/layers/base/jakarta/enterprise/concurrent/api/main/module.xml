@@ -28,7 +28,8 @@
     </dependencies>
     
     <resources>
-        <artifact name="${org.jboss.spec.javax.enterprise.concurrent:jboss-concurrency-api_1.0_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.enterprise.concurrent:jboss-concurrency-api_1.0_spec}"/>-->
+        <artifact name="${jakarta.enterprise.concurrent:jakarta.enterprise.concurrent-api}"/>
     </resources>
     
 </module>

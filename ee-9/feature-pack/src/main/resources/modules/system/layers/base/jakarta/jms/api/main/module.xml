@@ -28,6 +28,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec}"/>-->
+        <artifact name="${jakarta.jms:jakarta.jms-api}"/>
     </resources>
 </module>

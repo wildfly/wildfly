@@ -24,6 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.6" name="jakarta.interceptor.api">
     <resources>
-        <artifact name="${org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec}"/>-->
+        <artifact name="${jakarta.interceptor:jakarta.interceptor-api}"/>
     </resources>
 </module>

@@ -24,7 +24,8 @@
 
 <module xmlns="urn:jboss:module:1.5" name="jakarta.batch.api">
     <resources>
-        <artifact name="${org.jboss.spec.javax.batch:jboss-batch-api_1.0_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.batch:jboss-batch-api_1.0_spec}"/>-->
+        <artifact name="${jakarta.batch:jakarta.batch-api}"/>
     </resources>
     <dependencies>
         <module name="javax.api"/>

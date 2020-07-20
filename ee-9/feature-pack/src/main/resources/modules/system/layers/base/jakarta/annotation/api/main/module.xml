@@ -24,7 +24,8 @@
 
 <module xmlns="urn:jboss:module:1.7" name="jakarta.annotation.api">
     <resources>
-        <artifact name="${org.jboss.spec.javax.annotation:jboss-annotations-api_1.3_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.annotation:jboss-annotations-api_1.3_spec}"/>-->
+        <artifact name="${jakarta.annotation:jakarta.annotation-api}"/>
     </resources>
 
 </module>

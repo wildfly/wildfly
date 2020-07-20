@@ -28,6 +28,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.5_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.5_spec}"/>-->
+        <artifact name="${jakarta.authorization:jakarta.authorization-api}"/>
     </resources>
 </module>

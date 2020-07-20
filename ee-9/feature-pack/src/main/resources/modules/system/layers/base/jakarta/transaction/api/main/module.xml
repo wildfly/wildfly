@@ -24,9 +24,14 @@
 
 <module xmlns="urn:jboss:module:1.5" name="jakarta.transaction.api">
     <resources>
-        <artifact name="${org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec}">
+        <!--<artifact name="${org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec}">
             <filter>
                 <exclude path="javax/transaction/xa"/>
+            </filter>
+        </artifact>-->
+        <artifact name="${jakarta.transaction:jakarta.transaction-api}">
+            <filter>
+                <exclude path="jakarta/transaction/xa"/>
             </filter>
         </artifact>
     </resources>

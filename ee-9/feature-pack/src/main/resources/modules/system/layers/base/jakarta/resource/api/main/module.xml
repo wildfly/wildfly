@@ -33,6 +33,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec}"/>-->
+        <artifact name="${jakarta.resource:jakarta.resource-api}"/>
     </resources>
 </module>

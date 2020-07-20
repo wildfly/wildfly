@@ -33,6 +33,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec}"/>
+        <!--<artifact name="${org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec}"/>-->
+        <artifact name="${jakarta.xml.bind:jakarta.xml.bind-api}"/>
     </resources>
 </module>
