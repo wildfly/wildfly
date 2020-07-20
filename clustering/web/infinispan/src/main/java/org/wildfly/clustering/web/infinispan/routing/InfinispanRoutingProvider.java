@@ -22,13 +22,14 @@
 
 package org.wildfly.clustering.web.infinispan.routing;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
+import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
@@ -53,21 +54,23 @@ public class InfinispanRoutingProvider implements RoutingProvider {
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route) {
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route) {
         String containerName = this.config.getContainerName();
         String cacheName = this.config.getCacheName();
 
-        List<CapabilityServiceConfigurator> builders = new LinkedList<>();
+        CapabilityServiceConfigurator localRouteConfigurator = new LocalRouteServiceConfigurator(serverName, route);
+        CapabilityServiceConfigurator registryEntryConfigurator = new RouteRegistryEntryProviderServiceConfigurator(containerName, serverName);
+        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, cacheName, this.config);
+        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName);
 
-        builders.add(new LocalRouteServiceConfigurator(serverName, route));
-        builders.add(new RouteRegistryEntryProviderServiceConfigurator(containerName, serverName));
-        builders.add(new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, cacheName, this.config));
-        builders.add(new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName));
+        List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
+        configurators.add(Arrays.asList(localRouteConfigurator, registryEntryConfigurator, configurationConfigurator, cacheConfigurator));
+
         ServiceNameRegistry<ClusteringCacheRequirement> registry = requirement -> ServiceNameFactory.parseServiceName(requirement.resolve(containerName, serverName));
         for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
-            builders.addAll(provider.getServiceConfigurators(registry, containerName, serverName));
+            configurators.add(provider.getServiceConfigurators(registry, containerName, serverName));
         }
 
-        return builders;
+        return new CompositeIterable<>(configurators);
     }
 }

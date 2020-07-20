@@ -23,12 +23,13 @@
 package org.wildfly.clustering.server.registry;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
+import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.server.IdentityCacheRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
@@ -45,12 +46,19 @@ public class IdentityRegistryFactoryServiceConfiguratorProvider extends Identity
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName) {
-        Collection<CapabilityServiceConfigurator> builders = super.getServiceConfigurators(registry, containerName, aliasCacheName, targetCacheName);
-        List<CapabilityServiceConfigurator> result = new ArrayList<>(builders.size() + 2);
-        result.addAll(builders);
-        result.add(new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), ClusteringCacheRequirement.REGISTRY, containerName, targetCacheName));
-        result.add(new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY_ENTRY), ClusteringCacheRequirement.REGISTRY_ENTRY, containerName, targetCacheName));
-        return result;
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName) {
+        Iterable<CapabilityServiceConfigurator> configurators = super.getServiceConfigurators(registry, containerName, aliasCacheName, targetCacheName);
+        ServiceName registryServiceName = registry.getServiceName(ClusteringCacheRequirement.REGISTRY);
+        ServiceName registryEntryServiceName = registry.getServiceName(ClusteringCacheRequirement.REGISTRY_ENTRY);
+        if ((registryServiceName == null) && (registryEntryServiceName == null)) return configurators;
+
+        List<CapabilityServiceConfigurator> registryConfigurators = new ArrayList<>(2);
+        if (registryServiceName != null) {
+            registryConfigurators.add(new IdentityCapabilityServiceConfigurator<>(registryServiceName, ClusteringCacheRequirement.REGISTRY, containerName, targetCacheName));
+        }
+        if (registryEntryServiceName != null) {
+            registryConfigurators.add(new IdentityCapabilityServiceConfigurator<>(registryEntryServiceName, ClusteringCacheRequirement.REGISTRY_ENTRY, containerName, targetCacheName));
+        }
+        return new CompositeIterable<>(configurators, registryConfigurators);
     }
 }

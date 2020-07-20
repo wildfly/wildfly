@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.spi;
 
-import java.util.Collection;
-
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameRegistry;
 
@@ -31,5 +29,5 @@ import org.wildfly.clustering.service.ServiceNameRegistry;
  * @author Paul Ferraro
  */
 public interface IdentityGroupServiceConfiguratorProvider {
-    Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group, String targetGroup);
+    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group, String targetGroup);
 }
