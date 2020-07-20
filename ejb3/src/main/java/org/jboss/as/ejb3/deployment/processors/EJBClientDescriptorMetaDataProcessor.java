@@ -225,6 +225,9 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             final long invocationTimeout = ejbClientDescriptorMetaData.getInvocationTimeout();
             service.setInvocationTimeout(invocationTimeout);
 
+            final int defaultCompression = ejbClientDescriptorMetaData.getDefaultCompression();
+            service.setDefaultCompression(defaultCompression);
+
             // clusters
             final Collection<EJBClientDescriptorMetaData.ClusterConfig> clusterConfigs = ejbClientDescriptorMetaData.getClusterConfigs();
             if (!clusterConfigs.isEmpty()) {
