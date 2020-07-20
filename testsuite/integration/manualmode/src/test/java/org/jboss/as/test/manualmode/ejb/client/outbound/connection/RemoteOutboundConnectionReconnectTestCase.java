@@ -22,13 +22,10 @@
 
 package org.jboss.as.test.manualmode.ejb.client.outbound.connection;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Properties;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -104,12 +101,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
     public static Archive<?> createContainer2Deployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SERVER_ONE_MODULE_NAME + ".jar");
         ejbJar.addClasses(EchoOnServerOne.class, RemoteEcho.class, IndependentBean.class);
-        ejbJar.addAsManifestResource(EchoOnServerOne.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "basedir"
-                        , Arrays.asList("target", "jbossas-with-remote-outbound-connection", "standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write", "basedir"
-                                , Arrays.asList("target", "jbossas-with-remote-outbound-connection", "standalone", "data", "ejb-xa-recovery", "-"))
-                ), "permissions.xml");
+        ejbJar.addAsManifestResource(EchoOnServerOne.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return ejbJar;
     }
 
