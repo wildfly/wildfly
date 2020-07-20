@@ -23,12 +23,15 @@
 package org.wildfly.clustering.web.infinispan.routing;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
@@ -46,6 +49,7 @@ import org.wildfly.clustering.web.routing.RoutingProvider;
  * @author Paul Ferraro
  */
 public class InfinispanRoutingProvider implements RoutingProvider {
+    static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
 
     private final InfinispanRoutingConfiguration config;
 
@@ -66,7 +70,12 @@ public class InfinispanRoutingProvider implements RoutingProvider {
         List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
         configurators.add(Arrays.asList(localRouteConfigurator, registryEntryConfigurator, configurationConfigurator, cacheConfigurator));
 
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = requirement -> ServiceNameFactory.parseServiceName(requirement.resolve(containerName, serverName));
+        ServiceNameRegistry<ClusteringCacheRequirement> registry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
+            @Override
+            public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
+                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, serverName) : null;
+            }
+        };
         for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
             configurators.add(provider.getServiceConfigurators(registry, containerName, serverName));
         }

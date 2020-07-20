@@ -25,7 +25,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
-import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -52,7 +51,6 @@ public class EJBRemoteConnectorService implements Service<Void> {
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<>();
-    private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfoInjectedValue = new InjectedValue<>();
     private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
     private final InjectedValue<RemotingTransactionService> remotingTransactionServiceInjectedValue = new InjectedValue<>();
     private volatile Registration registration;
@@ -104,10 +102,6 @@ public class EJBRemoteConnectorService implements Service<Void> {
 
     public InjectedValue<Endpoint> getEndpointInjector() {
         return endpointValue;
-    }
-
-    public InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> getRemotingConnectorInfoInjectedValue() {
-        return remotingConnectorInfoInjectedValue;
     }
 
     public InjectedValue<RemotingTransactionService> getRemotingTransactionServiceInjector() {

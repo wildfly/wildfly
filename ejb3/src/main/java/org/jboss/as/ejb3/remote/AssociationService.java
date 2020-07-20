@@ -22,13 +22,20 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.network.ClientMapping;
+import org.jboss.as.remoting.RemotingConnectorBindingInfoService.RemotingConnectorInfo;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.client.Affinity;
@@ -37,12 +44,14 @@ import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.server.Association;
 import org.jboss.ejb.server.ListenerHandle;
 import org.jboss.ejb.server.ModuleAvailabilityListener;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.discovery.AttributeValue;
@@ -62,7 +71,7 @@ public final class AssociationService implements Service<AssociationService> {
 
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjector = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Registry> clientMappingsRegistryInjector = new InjectedValue<>();
+    private final List<Map.Entry<Value<RemotingConnectorInfo>, Value<Registry>>> clientMappingsRegistries = new LinkedList<>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
 
@@ -72,16 +81,18 @@ public final class AssociationService implements Service<AssociationService> {
 
     private final MutableDiscoveryProvider mutableDiscoveryProvider = new MutableDiscoveryProvider();
 
-    private AssociationImpl value;
-    private ListenerHandle moduleAvailabilityListener;
+    private volatile AssociationImpl value;
+    private volatile ListenerHandle moduleAvailabilityListener;
 
     @Override
     public void start(final StartContext context) throws StartException {
         // todo suspendController
         //noinspection unchecked
-        // Registry can be null if remote EJBs are not supported
-        Registry<String, List<ClientMapping>> clientMappingsRegistry = this.clientMappingsRegistryInjector.getOptionalValue();
-        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), clientMappingsRegistry);
+        List<Map.Entry<RemotingConnectorInfo, Registry<String, List<ClientMapping>>>> clientMappingsRegistries = this.clientMappingsRegistries.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.clientMappingsRegistries.size());
+        for (Map.Entry<Value<RemotingConnectorInfo>, Value<Registry>> entry : this.clientMappingsRegistries) {
+            clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().getValue(), entry.getValue().getValue()));
+        }
+        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), clientMappingsRegistries);
 
         String ourNodeName = serverEnvironmentServiceInjector.getValue().getNodeName();
 
@@ -112,8 +123,8 @@ public final class AssociationService implements Service<AssociationService> {
                         ServiceURL.Builder b = new ServiceURL.Builder();
                         b.setUri(Affinity.LOCAL.getUri()).setAbstractType("ejb").setAbstractTypeAuthority("jboss");
                         b.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(ourNodeName));
-                        if (clientMappingsRegistry != null) {
-                            Group group = clientMappingsRegistry.getGroup();
+                        for (Map.Entry<RemotingConnectorInfo, Registry<String, List<ClientMapping>>> entry : clientMappingsRegistries) {
+                            Group group = entry.getValue().getGroup();
                             if (!group.isSingleton()) {
                                 b.addAttribute(EJBClientContext.FILTER_ATTR_CLUSTER, AttributeValue.fromString(group.getName()));
                             }
@@ -174,8 +185,11 @@ public final class AssociationService implements Service<AssociationService> {
         return deploymentRepositoryInjector;
     }
 
-    public InjectedValue<Registry> getClientMappingsRegistryInjector() {
-        return clientMappingsRegistryInjector;
+    public Map.Entry<Injector<RemotingConnectorInfo>, Injector<Registry>> addConnectorInjectors(String connectorName) {
+        InjectedValue<RemotingConnectorInfo> info = new InjectedValue<>();
+        InjectedValue<Registry> registry = new InjectedValue<>();
+        this.clientMappingsRegistries.add(new AbstractMap.SimpleImmutableEntry<>(info, registry));
+        return new AbstractMap.SimpleImmutableEntry<>(info, registry);
     }
 
     public InjectedValue<SuspendController> getSuspendControllerInjector() {
@@ -191,16 +205,11 @@ public final class AssociationService implements Service<AssociationService> {
     }
 
     void setExecutor(Executor executor) {
-        if(value != null) {
-            value.setExecutor(executor);
-        }
+        this.value.setExecutor(executor);
     }
 
     void sendTopologyUpdateIfLastNodeToLeave() {
-        if(value != null) {
-            value.sendTopologyUpdateIfLastNodeToLeave();
-        }
+        this.value.sendTopologyUpdateIfLastNodeToLeave();
     }
-
 }
 

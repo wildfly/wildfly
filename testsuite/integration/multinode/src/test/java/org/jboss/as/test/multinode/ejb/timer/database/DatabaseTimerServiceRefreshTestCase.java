@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.multinode.ejb.timer.database;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.multinode.ejb.timer.database.DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.getRemoteContext;
 import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.CLIENT1;
@@ -40,6 +40,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.Serializable;
 import java.net.SocketPermission;
 import java.security.SecurityPermission;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
@@ -53,7 +54,11 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -69,6 +74,9 @@ public class DatabaseTimerServiceRefreshTestCase {
     private static final String ARCHIVE_NAME = "testTimerServiceRefresh";
     private static Server server;
     private static final long TIMER_DELAY = TimeUnit.MINUTES.toMillis(20);
+
+    static final PathAddress ADDR_DATA_SOURCE = PathAddress.pathAddress().append(SUBSYSTEM, "datasources").append("data-source", "MyNewDs");
+    static final PathAddress ADDR_DATA_STORE = PathAddress.pathAddress().append(SUBSYSTEM, "ejb3").append(ModelDescriptionConstants.SERVICE, "timer-service").append("database-data-store", "dbstore");
 
     @AfterClass
     public static void afterClass() {
@@ -87,59 +95,58 @@ public class DatabaseTimerServiceRefreshTestCase {
                 server = Server.createTcpServer().start();
             }
 
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "datasources");
-            address.add("data-source", "MyNewDs");
-            address.protect();
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
+            ModelNode steps = compositeOp.get(STEPS);
 
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set("add");
-            operation.get(OP_ADDR).set(address);
+            // add a datasource at /subsystem=datasources/data-source=MyNewDs with appropriate attributes
+            final ModelNode addDataSource = Util.createAddOperation(ADDR_DATA_SOURCE);
+            addDataSource.get("name").set("MyNewDs");
+            addDataSource.get("jndi-name").set("java:jboss/datasources/TimeDs");
+            addDataSource.get("enabled").set(true);
+            addDataSource.get("driver-name").set("h2");
+            addDataSource.get("pool-name").set("MyNewDs_Pool");
+            addDataSource.get("connection-url").set("jdbc:h2:" + server.getURL() + "/mem:testdb;DB_CLOSE_DELAY=-1");
+            addDataSource.get("user-name").set("sa");
+            addDataSource.get("password").set("sa");
 
-            operation.get("name").set("MyNewDs");
-            operation.get("jndi-name").set("java:jboss/datasources/TimeDs");
-            operation.get("enabled").set(true);
+            steps.add(addDataSource);
 
+            // add a datastore at /subsystem=ejb3/service=timerservice/database-data-store=dbstore with appropriate attributes
+            final ModelNode addDataStore = Util.createAddOperation(ADDR_DATA_STORE);
+            addDataStore.get("datasource-jndi-name").set("java:jboss/datasources/TimeDs");
+            addDataStore.get("database").set("postgresql");
+            addDataStore.get("refresh-interval").set(TimeUnit.MINUTES.toMillis(30));
+            addDataStore.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
-            operation.get("driver-name").set("h2");
-            operation.get("pool-name").set("MyNewDs_Pool");
-
-            operation.get("connection-url").set("jdbc:h2:" + server.getURL() + "/mem:testdb;DB_CLOSE_DELAY=-1");
-            operation.get("user-name").set("sa");
-            operation.get("password").set("sa");
-
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), operation);
-
-            ModelNode op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
-            op.get(OP_ADDR).add("service", "timer-service");
-            op.get(OP_ADDR).add("database-data-store", "dbstore");
-            op.get("datasource-jndi-name").set("java:jboss/datasources/TimeDs");
-            op.get("database").set("postgresql");
-            op.get("refresh-interval").set(TimeUnit.MINUTES.toMillis(30));
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+            steps.add(addDataStore);
+            Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            ModelNode op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
-            op.get(OP_ADDR).add("service", "timer-service");
-            op.get(OP_ADDR).add("database-data-store", "dbstore");
-            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
-            op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add(SUBSYSTEM, "datasources");
-            op.get(OP_ADDR).add("data-source", "MyNewDs");
-            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
+            ModelNode steps = compositeOp.get(STEPS);
+
+            final ModelNode removeDataStore = Util.createRemoveOperation(ADDR_DATA_STORE);
+            removeDataStore.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            removeDataStore.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+
+            steps.add(removeDataStore);
+
+            final ModelNode removeDataSource = Util.createRemoveOperation(ADDR_DATA_SOURCE);
+            removeDataSource.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            removeDataSource.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+
+            steps.add(removeDataSource);
+
+            Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
     }
 

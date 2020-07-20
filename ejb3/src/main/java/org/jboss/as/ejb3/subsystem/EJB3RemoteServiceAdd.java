@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 
@@ -39,18 +42,21 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
-import org.jboss.as.ejb3.remote.ClientMappingsRegistryServiceConfigurator;
-import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
+import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.service.FunctionSupplierDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.GroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
@@ -69,8 +75,27 @@ import org.xnio.Options;
  */
 public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
+    private final ClientMappingsRegistryProvider provider;
+
     EJB3RemoteServiceAdd(AttributeDefinition... attributes) {
         super(attributes);
+        Iterator<ClientMappingsRegistryProvider> providers = ServiceLoader.load(ClientMappingsRegistryProvider.class, ClientMappingsRegistryProvider.class.getClassLoader()).iterator();
+        this.provider = providers.hasNext() ? providers.next() : null;
+    }
+
+    /**
+     * Override populateModel() to handle case of deprecated attribute connector-ref
+     * - if connector-ref is present, use it to initialise connectors
+     * - if connector-ref is not present and connectors is not present, throw an exception
+     */
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        if (operation.hasDefined(EJB3RemoteResourceDefinition.CONNECTOR_REF.getName())) {
+            ModelNode connectorRef = operation.remove(EJB3RemoteResourceDefinition.CONNECTOR_REF.getName());
+            operation.get(EJB3RemoteResourceDefinition.CONNECTORS.getName()).set(new ModelNode().add(connectorRef));
+        }
+        super.populateModel(operation, model);
     }
 
     @Override
@@ -80,18 +105,28 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
     void installRuntimeServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final String clientMappingsClusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model).asString();
-        final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
-        final ServiceName remotingServerInfoServiceName = RemotingConnectorBindingInfoService.serviceName(connectorName);
+        final List<ModelNode> connectorNameNodes = EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, model).asList();
         final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final boolean executeInWorker = EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget target = context.getServiceTarget();
-        // Install the client-mapping service for the remoting connector
-        new EJBRemotingConnectorClientMappingsEntryProviderService(clientMappingsClusterName, remotingServerInfoServiceName).configure(context).build(target)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install();
 
-        new ClientMappingsRegistryServiceConfigurator(clientMappingsClusterName).configure(context).build(target).install();
+        // for each connector specified, we need to set up a client-mappings cache
+        for (ModelNode connectorNameNode : connectorNameNodes) {
+            String connectorName = connectorNameNode.asString();
+
+            // Install the client-mapping service for the remoting connector
+            ServiceConfigurator clientMappingsEntryProviderConfigurator = new EJBRemotingConnectorClientMappingsEntryProviderService(clientMappingsClusterName, connectorName).configure(context);
+            clientMappingsEntryProviderConfigurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+
+            if (this.provider != null) {
+                // Install the registry for the remoting connector's client mappings
+                SupplierDependency<Map.Entry<String, List<ClientMapping>>> registryEntryDependency = new ServiceSupplierDependency<>(clientMappingsEntryProviderConfigurator.getServiceName());
+                for (CapabilityServiceConfigurator configurator : this.provider.getServiceConfigurators(clientMappingsClusterName, connectorName, new FunctionSupplierDependency<>(registryEntryDependency, Map.Entry::getValue))) {
+                    configurator.configure(context).build(target).install();
+                }
+            }
+        }
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
         PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
@@ -122,7 +157,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 // add dependency on the Remoting subsystem endpoint
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector())
                 // add rest of the dependencies
-                .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, ejbRemoteConnectorService.getRemotingConnectorInfoInjectedValue())
                 .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
                 .addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
                 .setInitialMode(ServiceController.Mode.LAZY);
