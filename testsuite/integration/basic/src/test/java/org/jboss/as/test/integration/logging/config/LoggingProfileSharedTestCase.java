@@ -143,7 +143,7 @@ public class LoggingProfileSharedTestCase extends AbstractConfigTestCase {
                 "<jboss-deployment-structure>\n" +
                         "   <deployment>\n" +
                         "       <dependencies>\n" +
-                        "           <module name=\"deployment." + EJB_DEPLOYMENT_NAME + "\" />\n" +
+                        "           <module name=\"deployment." + EJB_DEPLOYMENT_NAME + "\" meta-inf=\"import\" />\n" +
                         "       </dependencies>\n" +
                         "   </deployment>\n" +
                         "</jboss-deployment-structure>");
