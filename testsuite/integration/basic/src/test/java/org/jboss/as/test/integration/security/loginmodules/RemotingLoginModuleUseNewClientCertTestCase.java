@@ -32,6 +32,8 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
@@ -44,6 +46,7 @@ import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
 import org.jboss.as.test.integration.security.common.ejb3.Hello;
 import org.jboss.as.test.integration.security.common.ejb3.HelloBean;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -70,19 +73,14 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
@@ -107,7 +105,7 @@ import static org.junit.Assert.fail;
 })
 @RunAsClient
 public class RemotingLoginModuleUseNewClientCertTestCase {
-    private static Logger LOGGER = Logger.getLogger(RemotingLoginModuleUseNewClientCertTestCase.class);
+    static final Logger LOGGER = Logger.getLogger(RemotingLoginModuleUseNewClientCertTestCase.class);
 
     private static final String TEST_NAME = "remoting-lm-uncc-test";
 
@@ -130,10 +128,13 @@ public class RemotingLoginModuleUseNewClientCertTestCase {
 
     private static final int REMOTING_PORT_TEST = 14447;
 
-    private static final PathAddress ADDR_SOCKET_BINDING = PathAddress.pathAddress()
+    static final PathAddress ADDR_SOCKET_BINDING = PathAddress.pathAddress()
             .append(SOCKET_BINDING_GROUP, "standard-sockets").append(SOCKET_BINDING, TEST_NAME);
-    private static final PathAddress ADDR_REMOTING_CONNECTOR = PathAddress.pathAddress().append(SUBSYSTEM, "remoting")
+    static final PathAddress ADDR_REMOTING_CONNECTOR = PathAddress.pathAddress().append(SUBSYSTEM, "remoting")
             .append("connector", TEST_NAME);
+    static final PathAddress ADDR_REMOTE_SERVICE = PathAddress.pathAddress(
+            PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3"),
+            PathElement.pathElement(ModelDescriptionConstants.SERVICE, ModelDescriptionConstants.REMOTE));
 
     @ArquillianResource
     private ManagementClient mgmtClient;
@@ -334,48 +335,56 @@ public class RemotingLoginModuleUseNewClientCertTestCase {
      */
     static class RemotingSetup implements ServerSetupTask {
 
+        @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            final List<ModelNode> updates = new LinkedList<ModelNode>();
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
+            ModelNode steps = compositeOp.get(STEPS);
+
             LOGGER.trace("Adding new socket binding and remoting connector");
             // /socket-binding-group=standard-sockets/socket-binding=remoting-xxx:add(port=14447)
             ModelNode socketBindingModelNode = Util.createAddOperation(ADDR_SOCKET_BINDING);
             socketBindingModelNode.get(PORT).set(REMOTING_PORT_TEST);
-            socketBindingModelNode.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(socketBindingModelNode);
+            steps.add(socketBindingModelNode);
+
+            // /subsystem=remoting/connector=remoting-xx:add(security-realm=xx, socket-binding=yy)
+            final ModelNode remotingConnectorModelNode = Util.createAddOperation(ADDR_REMOTING_CONNECTOR);
+            remotingConnectorModelNode.get("security-realm").set(TEST_NAME);
+            remotingConnectorModelNode.get("socket-binding").set(TEST_NAME);
+            steps.add(remotingConnectorModelNode);
+
+            ModelNode connectorAddOperation = Util.createOperation("list-add", ADDR_REMOTE_SERVICE);
+            connectorAddOperation.get(ModelDescriptionConstants.NAME).set("connectors");
+            connectorAddOperation.get(ModelDescriptionConstants.VALUE).set(TEST_NAME);
+            steps.add(connectorAddOperation);
+
+            Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            ModelNode connectorRemoveOperation = Util.createOperation("list-remove", ADDR_REMOTE_SERVICE);
+            connectorRemoveOperation.get(ModelDescriptionConstants.NAME).set("connectors");
+            connectorRemoveOperation.get(ModelDescriptionConstants.VALUE).set(TEST_NAME);
+
+            Utils.applyUpdates(Collections.singletonList(connectorRemoveOperation), managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
 
             final ModelNode compositeOp = new ModelNode();
             compositeOp.get(OP).set(COMPOSITE);
             compositeOp.get(OP_ADDR).setEmptyList();
             ModelNode steps = compositeOp.get(STEPS);
 
-            // /subsystem=remoting/connector=remoting-xx:add(security-realm=xx, socket-binding=yy)
-            final ModelNode remotingConnectorModelNode = Util.createAddOperation(ADDR_REMOTING_CONNECTOR);
-            remotingConnectorModelNode.get("security-realm").set(TEST_NAME);
-            remotingConnectorModelNode.get("socket-binding").set(TEST_NAME);
-            remotingConnectorModelNode.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            steps.add(remotingConnectorModelNode);
-
-            updates.add(compositeOp);
-            Utils.applyUpdates(updates, managementClient.getControllerClient());
-
-        }
-
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
-
             // /subsystem=remoting/connector=remoting-xx:remove()
-            ModelNode op = Util.createRemoveOperation(ADDR_REMOTING_CONNECTOR);
-            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
+            steps.add(Util.createRemoveOperation(ADDR_REMOTING_CONNECTOR));
 
             // /socket-binding-group=standard-sockets/socket-binding=remoting-xxx:remove()
-            op = Util.createRemoveOperation(ADDR_SOCKET_BINDING);
-            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
+            steps.add(Util.createRemoveOperation(ADDR_SOCKET_BINDING));
 
-            Utils.applyUpdates(updates, managementClient.getControllerClient());
+            Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
     }
 

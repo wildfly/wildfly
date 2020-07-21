@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,7 +23,6 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,54 +40,45 @@ import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.msc.service.ServiceName;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.CompositeIterable;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameRegistry;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 
 /**
- * Creates client mapping services.
  * @author Paul Ferraro
  */
-public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServiceConfiguratorProvider, IdentityCacheServiceConfiguratorProvider, Consumer<ConfigurationBuilder> {
-    static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_ENTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
-
-    private final Class<? extends CacheServiceConfiguratorProvider> providerClass;
-
-    ClientMappingsCacheServiceConfiguratorProvider(Class<? extends CacheServiceConfiguratorProvider> providerClass) {
-        this.providerClass = providerClass;
-    }
+@MetaInfServices(ClientMappingsRegistryProvider.class)
+public class InfinispanClientMappingsRegistryProvider implements ClientMappingsRegistryProvider, Consumer<ConfigurationBuilder> {
+    static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName) {
-        if (aliasCacheName != null) return Collections.emptySet();
-        String cacheName = BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME;
-        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, aliasCacheName, this);
-        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName);
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String containerName, String connectorName, SupplierDependency<List<ClientMapping>> clientMappings) {
+        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, connectorName), containerName, connectorName, null, this);
+        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, connectorName), containerName, connectorName);
+        CapabilityServiceConfigurator registryEntryConfigurator = new ClientMappingsRegistryEntryServiceConfigurator(containerName, connectorName, clientMappings);
         List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
-        configurators.add(Arrays.asList(configurationConfigurator, cacheConfigurator));
+        configurators.add(Arrays.asList(configurationConfigurator, cacheConfigurator, registryEntryConfigurator));
         ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
             @Override
             public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
-                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, cacheName) : null;
+                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, connectorName) : null;
             }
         };
-        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            configurators.add(provider.getServiceConfigurators(routingRegistry, containerName, cacheName));
+        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
+            configurators.add(provider.getServiceConfigurators(routingRegistry, containerName, connectorName));
         }
         return new CompositeIterable<>(configurators);
-    }
-
-    @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
-        return this.getServiceConfigurators(registry, containerName, cacheName);
     }
 
     @Override
