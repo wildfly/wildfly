@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -41,7 +40,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 public class IdentitySingletonServiceBuilderFactoryBuilderProvider implements IdentityCacheServiceConfiguratorProvider {
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
         return Collections.singleton(new IdentityLegacyCapabilityServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY), SingletonServiceBuilderFactory.class, ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, containerName, targetCacheName));
     }
 
