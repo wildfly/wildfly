@@ -37,6 +37,10 @@ import org.junit.BeforeClass;
 public class MixedDomainDeployment700TestCase extends MixedDomainDeploymentTest {
     @BeforeClass
     public static void beforeClass() {
+        // Temp workaround for WFLY-13684. This job is intermittently failing on CI
+        // but it seems to only fail on Linux, so leave it running on Windows
+        Assume.assumeTrue("WFLY-13684", TestSuiteEnvironment.isWindows());
+
         // WFLY-12649 -- embedded broker doesn't start correctly on an EAP 7.0.0 server running on OpenJ9
         Assume.assumeFalse(TestSuiteEnvironment.isJ9Jvm());
 
