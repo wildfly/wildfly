@@ -380,15 +380,21 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see HornetQClient#DEFAULT_ACK_BATCH_SIZE
+     */
     public static final AttributeDefinition TRANSACTION_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("transaction-batch-size", INT)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE))
+            .setDefaultValue(new ModelNode().set(1024 * 1024))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see HornetQClient#DEFAULT_USE_GLOBAL_POOLS
+     */
     public static final AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
