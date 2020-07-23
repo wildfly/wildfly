@@ -16,7 +16,6 @@
 
 package org.wildfly.extension.vertx.deployment;
 
-import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -25,19 +24,13 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.logging.Logger;
 
 /**
- * An example deployment unit processor that does nothing. To add more deployment
- * processors copy this class, and add to the {@link AbstractDeploymentChainStep}
- * {@link org.wildfly.extension.vertx.extension.SubsystemAdd#performBoottime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)}
  *
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
-public class VertxSubsystemDeploymentProcessor implements DeploymentUnitProcessor {
+public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
 
-    Logger log = Logger.getLogger(VertxSubsystemDeploymentProcessor.class);
+    Logger log = Logger.getLogger(VertxDependenciesProcessor.class);
 
-    /**
-     * See {@link Phase} for a description of the different phases
-     */
     public static final Phase PHASE = Phase.DEPENDENCIES;
 
     /**
@@ -50,6 +43,7 @@ public class VertxSubsystemDeploymentProcessor implements DeploymentUnitProcesso
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         log.info("Deploy");
+        //TODO add dependencies of this module into the deployment
     }
 
     @Override

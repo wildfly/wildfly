@@ -13,7 +13,8 @@
   -->
 <module xmlns="urn:jboss:module:1.0" name="org.wildfly.extension.vertx">
     <resources>
-        <resource-root path="wildfly-vertx.jar"/>
+        <resource-root path="@project.artifactId@-@project.version@.jar"/>
+        <resource-root path="vertx-core-@version.vertx@.jar" />
     </resources>
 
     <dependencies>
@@ -24,6 +25,10 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
+
         <module name="org.jboss.vfs"/>
+        <module name="io.netty" />
+        <module name="com.fasterxml.jackson.core.jackson-databind" />
+        <module name="org.infinispan" />
     </dependencies>
 </module>

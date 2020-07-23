@@ -18,7 +18,6 @@
             attributeFormDefault="unqualified"
             version="1.0">
 
-    <!-- The subsystem root element -->
     <xs:element name="subsystem" type="subsystemType"/>
 
     <xs:complexType name="subsystemType">
@@ -28,11 +27,8 @@
     </xs:complexType>
 
     <xs:complexType name="vertxType">
-        <xs:all minOccurs="0" maxOccurs="1">
-            <xs:element name="event-loop-pool-size" type="xs:integer" minOccurs="0" maxOccurs="1" />
-            <xs:element name="ha-enabled" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
-        </xs:all>
-        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="jndi-name" type="xs:string" use="required" />
+        <xs:attribute name="vertx-options-file" type="xs:string" />
     </xs:complexType>
 </xs:schema>

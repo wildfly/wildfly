@@ -16,5 +16,51 @@
 
 package org.wildfly.extension.vertx;
 
+import io.vertx.core.Vertx;
+
+import java.util.UUID;
+
 public class VertxProxy {
+    private Vertx vertx;
+    private String name;
+    private String jndiName;
+    private String vertxOptionsFile;
+
+    public String getVertxOptionsFile() {
+        return vertxOptionsFile;
+    }
+
+    public VertxProxy setVertxOptionsFile(String vertxOptionsFile) {
+        this.vertxOptionsFile = vertxOptionsFile;
+        return this;
+    }
+
+    public Vertx getVertx() {
+        return vertx;
+    }
+
+    public VertxProxy setVertx(Vertx vertx) {
+        this.vertx = vertx;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public VertxProxy setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getJndiName() {
+        return jndiName;
+    }
+
+    public VertxProxy setJndiName(String jndiName) {
+        this.jndiName = jndiName;
+        return this;
+    }
+
+
 }

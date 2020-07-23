@@ -33,12 +33,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
 public class VertxSubsystemExtension implements Extension {
-
     public static final String EXTENSION_NAME = "org.wildfly.extension.vertx";
-
-    /**
-     * The name of our subsystem within the model.
-     */
     public static final String SUBSYSTEM_NAME = "vertx";
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
@@ -62,7 +57,7 @@ public class VertxSubsystemExtension implements Extension {
     public void initialize(ExtensionContext context) {
         VERTX_LOGGER.debug("Activating WildFly Vertx Extension.");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new VertxSubsystemRootResourceDefinition());
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new VertxSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(VertxSubsystemParser_1_0::new);
     }

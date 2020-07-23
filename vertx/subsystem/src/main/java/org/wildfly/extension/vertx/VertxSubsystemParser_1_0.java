@@ -16,13 +16,19 @@
 
 package org.wildfly.extension.vertx;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 /**
- * The subsystem parser, which uses stax to read and write to and from xml
+ * Parser used to parse the Vertx Subsystem.
+ *
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
 public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
@@ -33,9 +39,13 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
 
     private static final PersistentResourceXMLDescription xmlDescription;
     static {
+        final List<AttributeDefinition> rootAttrList = VertxAttributes.getSimpleAttributes();
+        AttributeDefinition[] rootAttrs = rootAttrList.toArray(new AttributeDefinition[0]);
         xmlDescription = builder(VertxSubsystemExtension.SUBSYSTEM_PATH, NAMESPACE)
-                .addAttributes(VertxAttributes.EVENT_LOOP_POOL_SIZE,
-                        VertxAttributes.HA_ENABLED)
+                .addChild(
+                        builder(VertxDefinition.INSTANCE.getPathElement())
+                        .addAttributes(rootAttrs)
+                )
                 .build();
     }
 
