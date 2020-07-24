@@ -153,7 +153,14 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
     }
 
     private Collection<Class<?>> getRemoteBusinessInterfaces(final DeploymentUnit deploymentUnit, final Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
-        final Remote remoteViewAnnotation = sessionBeanClass.getAnnotation(Remote.class);
+        final Remote remoteViewAnnotation;
+        try {
+            remoteViewAnnotation = sessionBeanClass.getAnnotation(Remote.class);
+        } catch (ArrayStoreException e) {
+            // https://bugs.openjdk.java.net/browse/JDK-7183985
+            // Class.findAnnotation() has a bug under JDK < 11 which throws ArrayStoreException
+            throw EjbLogger.ROOT_LOGGER.missingClassInAnnotation(Remote.class.getSimpleName(), sessionBeanClass.getName());
+        }
         if (remoteViewAnnotation == null) {
             Collection<Class<?>> interfaces = getBusinessInterfacesFromInterfaceAnnotations(sessionBeanClass, Remote.class);
             if (!interfaces.isEmpty()) {
@@ -175,7 +182,14 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
     }
 
     private Collection<Class<?>> getLocalBusinessInterfaces(final DeploymentUnit deploymentUnit, final Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
-        final Local localViewAnnotation = sessionBeanClass.getAnnotation(Local.class);
+        final Local localViewAnnotation;
+        try {
+            localViewAnnotation = sessionBeanClass.getAnnotation(Local.class);
+        } catch (ArrayStoreException e) {
+            // https://bugs.openjdk.java.net/browse/JDK-7183985
+            // Class.findAnnotation() has a bug under JDK < 11 which throws ArrayStoreException
+            throw EjbLogger.ROOT_LOGGER.missingClassInAnnotation(Local.class.getSimpleName(), sessionBeanClass.getName());
+        }
         if (localViewAnnotation == null) {
             Collection<Class<?>> interfaces = getBusinessInterfacesFromInterfaceAnnotations(sessionBeanClass, Local.class);
             if (!interfaces.isEmpty()) {
@@ -197,12 +211,18 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         return Arrays.asList(localViews);
     }
 
-    private static Collection<Class<?>> getBusinessInterfacesFromInterfaceAnnotations(Class<?> sessionBeanClass, Class<? extends Annotation> annotation) {
+    private static Collection<Class<?>> getBusinessInterfacesFromInterfaceAnnotations(Class<?> sessionBeanClass, Class<? extends Annotation> annotation) throws DeploymentUnitProcessingException {
         final Set<Class<?>> potentialBusinessInterfaces = getPotentialBusinessInterfaces(sessionBeanClass);
         final Set<Class<?>> businessInterfaces = new HashSet<Class<?>>();
         for (Class<?> iface : potentialBusinessInterfaces) {
-            if (iface.getAnnotation(annotation) != null) {
-                businessInterfaces.add(iface);
+            try {
+                if (iface.getAnnotation(annotation) != null) {
+                    businessInterfaces.add(iface);
+                }
+            } catch (ArrayStoreException e) {
+                // https://bugs.openjdk.java.net/browse/JDK-7183985
+                // Class.findAnnotation() has a bug under JDK < 11 which throws ArrayStoreException
+                throw EjbLogger.ROOT_LOGGER.missingClassInAnnotation(annotation.getSimpleName(), iface.getName());
             }
         }
         return businessInterfaces;
