@@ -52,6 +52,13 @@
       </dependency>
 
       <dependency>
+          <groupId>org.picketbox</groupId>
+          <artifactId>picketbox</artifactId>
+          <scope>provided</scope>
+          <optional>true</optional>
+      </dependency>
+
+      <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-ee</artifactId>
       </dependency>
@@ -69,16 +76,17 @@
       <dependency>
          <groupId>org.wildfly.core</groupId>
          <artifactId>wildfly-server</artifactId>
+         <exclusions>
+             <exclusion>
+                 <groupId>org.picketbox</groupId>
+                 <artifactId>picketbox</artifactId>
+             </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-web-common</artifactId>
-      </dependency>
-
-      <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-security</artifactId>
       </dependency>
 
       <dependency>
