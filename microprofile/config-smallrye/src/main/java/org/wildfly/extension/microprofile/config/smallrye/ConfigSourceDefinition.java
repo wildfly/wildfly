@@ -61,6 +61,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition ORDINAL = SimpleAttributeDefinitionBuilder.create("ordinal", ModelType.INT)
             .setDefaultValue(new ModelNode(100))
+            .setAllowExpression(true)
             .setRequired(false)
             .setRestartAllServices()
             .build();
@@ -109,11 +110,6 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
         super(MicroProfileConfigExtension.CONFIG_SOURCE_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PATH.getKey()),
                 new AbstractAddStepHandler(ATTRIBUTES) {
-                    @Override
-                    protected boolean requiresRuntime(OperationContext context) {
-                        return true;
-                    }
-
                     @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
                         super.performRuntime(context, operation, model);

@@ -55,7 +55,8 @@ public class MicroProfileConfigExtension implements Extension {
     private static final String RESOURCE_NAME = MicroProfileConfigExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_0_0;
+    protected static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_1_0;
 
     private static final MicroProfileConfigSubsystemParser_1_0 CURRENT_PARSER = new MicroProfileConfigSubsystemParser_1_0();
 

@@ -5,7 +5,7 @@
         <property name="bar" value="yes" />
     </config-source>
     <config-source name="mySecondConfigSource"
-                   ordinal="201" />
+                   ordinal="${mySecondConfigSource.ordinal:201}" />
     <config-source name="configSourceFromClass">
         <class name="foo.bar.MyConfigSource" module="foo.bar" />
     </config-source>
