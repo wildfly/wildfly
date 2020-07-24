@@ -76,6 +76,12 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.picketbox</groupId>
+            <artifactId>picketbox</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
@@ -102,6 +108,12 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

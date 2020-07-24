@@ -61,13 +61,15 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
     private final ClassLoader classLoader;
     private final JobXmlResolver jobXmlResolver;
     private final String deploymentName;
+    private final boolean legacySecurityPresent;
     private SecurityAwareBatchEnvironment batchEnvironment = null;
     private volatile ControlPoint controlPoint;
 
-    public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName) {
+    public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName, final boolean legacySecurityPresent) {
         this.classLoader = classLoader;
         this.jobXmlResolver = jobXmlResolver;
         this.deploymentName = deploymentName;
+        this.legacySecurityPresent = legacySecurityPresent;
     }
 
     @Override
@@ -224,8 +226,13 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
             // If the TCCL is null, use the deployments ModuleClassLoader
             final ClassLoaderContextHandle classLoaderContextHandle = (tccl == null ? new ClassLoaderContextHandle(classLoader) : new ClassLoaderContextHandle(tccl));
             // Class loader handle must be first so the TCCL is set before the other handles execute
-            return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(),
-                    new SecurityContextHandle(), artifactFactory.createContextHandle(), new ConcurrentContextHandle());
+            if (legacySecurityPresent) {
+                return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(),
+                        new SecurityContextHandle(), artifactFactory.createContextHandle(), new ConcurrentContextHandle());
+            } else {
+                return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(),
+                         artifactFactory.createContextHandle(), new ConcurrentContextHandle());
+            }
         }
     }
 }
