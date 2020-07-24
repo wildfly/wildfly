@@ -42,8 +42,7 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        log.info("Deploy");
-        //TODO add dependencies of this module into the deployment
+        log.debug("Deploy");
     }
 
     @Override

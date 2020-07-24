@@ -20,8 +20,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
