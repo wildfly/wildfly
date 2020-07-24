@@ -69,11 +69,6 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH.getKey()),
                 new AbstractAddStepHandler(ATTRIBUTES) {
                     @Override
-                    protected boolean requiresRuntime(OperationContext context) {
-                        return true;
-                    }
-
-                    @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
                         super.performRuntime(context, operation, model);
                         String name = context.getCurrentAddressValue();

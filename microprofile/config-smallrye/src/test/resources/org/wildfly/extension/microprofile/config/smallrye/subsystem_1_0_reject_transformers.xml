@@ -1,0 +1,4 @@
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+    <config-source name="my-config-source-with-ordinal-expression"
+                   ordinal="${my.ordinal:201}" />
+</subsystem>
