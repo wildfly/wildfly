@@ -313,6 +313,7 @@
         <version.jakarta.security.enterprise>1.0.2</version.jakarta.security.enterprise>
         <version.jakarta.validation>2.0.2</version.jakarta.validation>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
+        <version.jakarta.jws.jakarta.jws-api>2.1.0</version.jakarta.jws.jakarta.jws-api>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.3.GA</version.jboss.jaxbintros>
         <version.joda-time>2.9.7</version.joda-time>
@@ -2029,6 +2030,12 @@
                 <groupId>javax.jws</groupId>
                 <artifactId>jsr181-api</artifactId>
                 <version>${version.javax.jws.jsr181-api}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>jakarta.jws</groupId>
+                <artifactId>jakarta.jws-api</artifactId>
+                <version>${version.jakarta.jws.jakarta.jws-api}</version>
             </dependency>
 
             <dependency>
