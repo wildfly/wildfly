@@ -160,8 +160,8 @@
             <artifactId>wildfly-client-properties</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.jws</groupId>
-            <artifactId>jsr181-api</artifactId>
+            <groupId>jakarta.jws</groupId>
+            <artifactId>jakarta.jws-api</artifactId>
             <scope>test</scope>
         </dependency>
        
