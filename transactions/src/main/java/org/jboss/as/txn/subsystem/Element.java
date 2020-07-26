@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -51,7 +51,9 @@ enum Element {
     JDBC_ACTION_STORE(CommonAttributes.ACTION_STORE),
     CM_RESPOURCE(CommonAttributes.CM_RESOURCE),
     CM_RESOURCES(CommonAttributes.CM_RESOURCES),
-    CM_TABLE(CommonAttributes.CM_LOCATION)
+    CM_TABLE(CommonAttributes.CM_LOCATION),
+    CLIENT(CommonAttributes.CLIENT)
+
     ;
 
     private final String name;

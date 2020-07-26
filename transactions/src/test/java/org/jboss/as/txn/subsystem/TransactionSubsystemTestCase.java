@@ -71,7 +71,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_5_0.xsd";
+        return "schema/wildfly-txn_6_0.xsd";
     }
 
     @Override
@@ -141,6 +141,21 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testParser_EAP_7_2() throws Exception {
+        standardSubsystemTest("full-5.0.0.xml");
+    }
+
+    @Test
+    public void testParser_EAP_7_3() throws Exception {
+        standardSubsystemTest("full-5.1.0.xml");
+    }
+
+    @Test
+    public void testParser_EAP_7_4() throws Exception {
+        standardSubsystemTest("full.xml");
+    }
+
+    @Test
     public void testTxStats() throws Exception {
         // Parse the subsystem xml and install into the first controller
         final String subsystemXml = getSubsystemXml();
@@ -197,7 +212,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        String subsystemXml = readResource(String.format("full-%s.xml", modelVersion));
+        String subsystemXml = readResource("full.xml");
 
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
