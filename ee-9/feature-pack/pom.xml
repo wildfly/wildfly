@@ -183,6 +183,8 @@
                                 <jakarta.transform.modules>false</jakarta.transform.modules>
                                 <product.release.version>${ee.dist.product.release.version}</product.release.version>
                             </task-properties>
+                            <jakarta-transform>true</jakarta-transform>
+                            <!--<jakarta-transform-verbose>true</jakarta-transform-verbose>-->
                         </configuration>
                     </execution>
                 </executions>
