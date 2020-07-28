@@ -810,8 +810,8 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/jpa2lc/*TestCase.java</include>
-                                        <include>org/jboss/as/test/clustering/cluster/jpa2lcCustomRegion/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/cluster/jpa/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/cluster/jpa/custom/*TestCase.java</include>
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -986,8 +986,7 @@
                                                 <layer>jpa</layer>
                                             </excluded-layers>
                                             <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
+                                                <layer>jaxrs-server</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>jpa-distributed</layer>
                                             </layers>
@@ -1038,7 +1037,7 @@
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
                                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                                        <module.path>${jboss.dist}/modules</module.path>
+                                        <module.path>${project.build.directory}/wildfly-jpa-dist/modules</module.path>
                                     </system-properties>
                                 </configuration>
                             </execution>
