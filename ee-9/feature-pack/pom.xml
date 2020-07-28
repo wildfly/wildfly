@@ -258,6 +258,19 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>transformer</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+
         <!-- EE 9 API - Core -->
 
         <dependency>

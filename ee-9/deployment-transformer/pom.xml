@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat, Inc., and individual contributors
@@ -29,7 +28,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <artifactId>wildfly-ee-9-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -37,15 +36,25 @@
         <version>21.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ee-9-parent</artifactId>
-    <description>Parent for EE 9 related modules</description>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
 
-    <modules>
-        <!--<module>build</module>-->
-        <module>deployment-transformer</module>
-        <module>dist</module>
-        <module>feature-pack</module>
-    </modules>
+    <name>WildFly: EE 9 Deployment Transformer</name>
+    <description>Deployment transformation integration</description>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>transformer</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
 
 </project>
