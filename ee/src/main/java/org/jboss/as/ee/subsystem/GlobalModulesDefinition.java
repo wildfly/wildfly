@@ -23,6 +23,7 @@
 package org.jboss.as.ee.subsystem;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
@@ -36,8 +37,10 @@ import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleIdentifier;
@@ -101,8 +104,36 @@ public class GlobalModulesDefinition {
                     .setAttributeMarshaller(VALUE_TYPE_MARSHALLER)
                     .build();
 
+    private static final ParameterCorrector DUPLICATE_CORRECTOR = new ParameterCorrector() {
+
+        @Override
+        public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
+
+            ModelNode result = null;
+            if (newValue.isDefined()) {
+                LinkedHashSet<ModelNode> elementSet = new LinkedHashSet<>();
+
+                for (ModelNode element : newValue.asList()) {
+                    if (!elementSet.add(element)) {
+                        // Leave this at debug for now. WFCORE-5070 may add a formalized i18n log message in WFLYCTL
+                        EeLogger.ROOT_LOGGER.debugf("Removing duplicate entry %s from %s attribute %s", element.toString(), GLOBAL_MODULES);
+                    }
+                }
+
+                if (!elementSet.isEmpty()) {
+                    result = new ModelNode();
+                    for (ModelNode element : elementSet) {
+                        result.add(element);
+                    }
+                }
+            }
+            return result == null ? newValue : result;
+        }
+    };
+
     public static final AttributeDefinition INSTANCE = ObjectListAttributeDefinition.Builder.of(GLOBAL_MODULES, VALUE_TYPE_AD)
         .setRequired(false)
+        .setCorrector(DUPLICATE_CORRECTOR)
         .build();
 
     public static List<GlobalModule> createModuleList(final OperationContext context, final ModelNode globalMods) throws OperationFailedException {
