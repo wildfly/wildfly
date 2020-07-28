@@ -81,7 +81,7 @@ public class ExpressionSubstitutionInContainerTestCase {
         jar.addAsManifestResource(new StringAsset(
                         "Manifest-Version: 1.0\n" +
                                 "Class-Path: \n" +  // there has to be a spacer - otherwise you meet "java.io.IOException: invalid header field"
-                                "Dependencies: org.jboss.as.controller-client, org.jboss.as.controller, org.jboss.dmr, org.jboss.remoting3 \n"),
+                                "Dependencies: org.jboss.as.controller-client, org.jboss.as.controller, org.jboss.dmr, org.jboss.remoting \n"),
                 "MANIFEST.MF");
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 // Needed by the StatelessBean#addSystemProperty()

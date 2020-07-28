@@ -54,7 +54,7 @@ abstract class StatefulTimeoutTestBase2 extends StatefulTimeoutTestBase1 {
         jar.addPackage(StatefulTimeoutTestBase1.class.getPackage());
 
         jar.addClasses(ModelNode.class, PathAddress.class, ManagementOperations.class, MgmtOperationException.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.remoting3, org.jboss.as.controller\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.remoting, org.jboss.as.controller\n"), "MANIFEST.MF");
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),

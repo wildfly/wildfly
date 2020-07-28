@@ -77,7 +77,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         return createDefaultWar(DEPLOYMENT_NAME, DeploymentDescriptorTestCase.class.getPackage(), "test-chunk.xml")
                 .addClasses(CountingItemReader.class, CountingItemWriter.class)
                 .addClass(Operations.class)
-                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting3\n"), "META-INF/MANIFEST.MF")
+                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting\n"), "META-INF/MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new RemotingPermission("createEndpoint"),
                         new RemotingPermission("connect"),

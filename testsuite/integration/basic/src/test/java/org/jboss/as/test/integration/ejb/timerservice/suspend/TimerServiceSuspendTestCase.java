@@ -59,7 +59,7 @@ public class TimerServiceSuspendTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testTimerServiceSimple.war");
         war.addPackage(TimerServiceSuspendTestCase.class.getPackage());
-        war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller-client, org.jboss.remoting3\n"), "MANIFEST.MF");
+        war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller-client, org.jboss.remoting\n"), "MANIFEST.MF");
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),
