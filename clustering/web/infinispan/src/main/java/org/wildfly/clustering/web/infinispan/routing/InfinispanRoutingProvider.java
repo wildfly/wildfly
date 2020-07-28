@@ -64,8 +64,8 @@ public class InfinispanRoutingProvider implements RoutingProvider {
 
         CapabilityServiceConfigurator localRouteConfigurator = new LocalRouteServiceConfigurator(serverName, route);
         CapabilityServiceConfigurator registryEntryConfigurator = new RouteRegistryEntryProviderServiceConfigurator(containerName, serverName);
-        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, cacheName, this.config);
-        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName);
+        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, serverName), containerName, serverName, cacheName, this.config);
+        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, serverName), containerName, serverName);
 
         List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
         configurators.add(Arrays.asList(localRouteConfigurator, registryEntryConfigurator, configurationConfigurator, cacheConfigurator));
