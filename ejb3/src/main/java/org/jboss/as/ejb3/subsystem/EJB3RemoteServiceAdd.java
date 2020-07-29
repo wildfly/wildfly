@@ -34,9 +34,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
@@ -57,10 +54,6 @@ import org.wildfly.clustering.service.FunctionSupplierDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.GroupServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider;
 import org.wildfly.transaction.client.provider.remoting.RemotingTransactionService;
 import org.xnio.Option;
 import org.xnio.OptionMap;
@@ -128,24 +121,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             }
         }
 
-        // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
-        PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
-        Resource infinispanResource = safeGetResource(context, infinispanPath);
-        if (infinispanResource == null || !infinispanResource.hasChild(PathElement.pathElement("cache-container", clientMappingsClusterName))) {
-            // Install services that would normally be installed by this container/cache
-            CapabilityServiceSupport support = context.getCapabilityServiceSupport();
-            for (GroupServiceConfiguratorProvider provider : ServiceLoader.load(LocalGroupServiceConfiguratorProvider.class, LocalGroupServiceConfiguratorProvider.class.getClassLoader())) {
-                for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(requirement -> requirement.getServiceName(support, clientMappingsClusterName), clientMappingsClusterName)) {
-                    configurator.configure(support).build(target).install();
-                }
-            }
-            for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(LocalCacheServiceConfiguratorProvider.class, LocalCacheServiceConfiguratorProvider.class.getClassLoader())) {
-                for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(requirement -> requirement.getServiceName(support, clientMappingsClusterName, null), clientMappingsClusterName, null)) {
-                    configurator.configure(support).build(target).install();
-                }
-            }
-        }
-
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
@@ -177,7 +152,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 final String name = optionProperty.getName();
                 final ModelNode propValueModel = optionProperty.getValue();
                 final String type = RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.resolveModelAttribute(context,propValueModel).asString();
-                final String optionClassName = this.getClassNameForChannelOptionType(type);
+                final String optionClassName = getClassNameForChannelOptionType(type);
                 final String fullyQualifiedOptionName = optionClassName + "." + name;
                 final Option option = Option.fromString(fullyQualifiedOptionName, loader);
                 final String value = RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.resolveModelAttribute(context, propValueModel).asString();
@@ -188,7 +163,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         return OptionMap.EMPTY;
     }
 
-    private String getClassNameForChannelOptionType(final String optionType) {
+    private static String getClassNameForChannelOptionType(final String optionType) {
         if ("remoting".equals(optionType)) {
             return RemotingOptions.class.getName();
         }
@@ -196,14 +171,5 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             return Options.class.getName();
         }
         throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(optionType);
-    }
-
-    private static Resource safeGetResource(OperationContext context, PathElement path) {
-        try {
-            return context.readResourceFromRoot(PathAddress.pathAddress(path), false);
-        } catch (RuntimeException e) {
-            // No such resource
-            return null;
-        }
     }
 }
