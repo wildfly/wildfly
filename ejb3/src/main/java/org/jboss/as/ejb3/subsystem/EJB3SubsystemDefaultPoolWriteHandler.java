@@ -27,38 +27,98 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ValueInjectionService;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
+
 /**
  * User: jpai
  */
 public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-    public static final EJB3SubsystemDefaultPoolWriteHandler MDB_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(StrictMaxPoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL);
+    private static final String STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME = "org.wildfly.ejb3.pool-config";
+    private static final String DEFAULT_SLSB_POOL_CONFIG_CAPABILITY_NAME = "org.wildfly.ejb3.pool-config.slsb-default";
+    private static final String DEFAULT_MDB_POOL_CONFIG_CAPABILITY_NAME = "org.wildfly.ejb3.pool-config.mdb-default";
+    private static final String DEFAULT_ENTITY_POOL_CONFIG_CAPABILITY_NAME = "org.wildfly.ejb3.pool-config.entity-default";
 
     public static final EJB3SubsystemDefaultPoolWriteHandler SLSB_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(StrictMaxPoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL);
+            new EJB3SubsystemDefaultPoolWriteHandler(DEFAULT_SLSB_POOL_CONFIG_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL);
+
+    public static final EJB3SubsystemDefaultPoolWriteHandler MDB_POOL =
+            new EJB3SubsystemDefaultPoolWriteHandler(DEFAULT_MDB_POOL_CONFIG_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL);
 
     public static final EJB3SubsystemDefaultPoolWriteHandler ENTITY_BEAN_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(StrictMaxPoolConfigService.DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME,
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
+            new EJB3SubsystemDefaultPoolWriteHandler(DEFAULT_ENTITY_POOL_CONFIG_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
 
-    private final ServiceName poolConfigServiceName;
+    private final String poolConfigCapabilityName;
     private final AttributeDefinition poolAttribute;
 
-    public EJB3SubsystemDefaultPoolWriteHandler(ServiceName poolConfigServiceName, AttributeDefinition poolAttribute) {
+    public EJB3SubsystemDefaultPoolWriteHandler(String defaultPoolConfigCapabilityName, AttributeDefinition poolAttribute) {
         super(poolAttribute);
-        this.poolConfigServiceName = poolConfigServiceName;
+        this.poolConfigCapabilityName = defaultPoolConfigCapabilityName;
         this.poolAttribute = poolAttribute;
+    }
+
+    /*
+     * Update the conditional capabilities for the default bean instance pools if the attribute values have changed
+     * This write handler is registered with the EJB3SubsystemRootResource
+     */
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attributeDefinition, ModelNode newValue, ModelNode oldValue) {
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        ModelNode model = resource.getModel();
+
+        // de-register the default bean instance pool capability requirement on the default bean instance pool that supports it
+        if (poolAttribute.getName().equals(DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(DEFAULT_SLSB_INSTANCE_POOL)) {
+
+            // NOTE: the new value may contain an expression, so we need to resolve it first
+            ModelNode resolvedNewValue = new ModelNode();
+            try {
+                resolvedNewValue = context.resolveExpressions(newValue);
+
+                // register the new requirement
+                String newSLSBRequirementName = RuntimeCapability.buildDynamicCapabilityName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, resolvedNewValue.asString());
+                context.registerAdditionalCapabilityRequirement(newSLSBRequirementName, DEFAULT_SLSB_POOL_CONFIG_CAPABILITY_NAME, DEFAULT_SLSB_INSTANCE_POOL);
+            } catch(OperationFailedException ofe) {
+                // if the new value cannot be resolved, deregister the old value only (in the finally clause)
+                EjbLogger.ROOT_LOGGER.defaultPoolExpressionCouldNotBeResolved(DEFAULT_SLSB_INSTANCE_POOL, model.get(DEFAULT_SLSB_INSTANCE_POOL).asString());
+
+            } finally {
+                // de-register the old requirement
+                String oldSLSBRequirementName = RuntimeCapability.buildDynamicCapabilityName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, oldValue.asString());
+                context.deregisterCapabilityRequirement(oldSLSBRequirementName, DEFAULT_SLSB_POOL_CONFIG_CAPABILITY_NAME, DEFAULT_SLSB_INSTANCE_POOL);
+            }
+        }
+
+        if (poolAttribute.getName().equals(DEFAULT_MDB_INSTANCE_POOL) || model.hasDefined(DEFAULT_MDB_INSTANCE_POOL)) {
+
+            // NOTE: the new value may contain an expression, so we need to resolve it first
+            ModelNode resolvedNewValue = new ModelNode();
+            try {
+                resolvedNewValue = context.resolveExpressions(newValue);
+
+                // register the new requirement
+                String newMDBRequirementName = RuntimeCapability.buildDynamicCapabilityName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, resolvedNewValue.asString());
+                context.registerAdditionalCapabilityRequirement(newMDBRequirementName, DEFAULT_MDB_POOL_CONFIG_CAPABILITY_NAME, DEFAULT_MDB_INSTANCE_POOL);
+            } catch(OperationFailedException ofe) {
+                // if the new value cannot be resolved, deregister the old value only (in the finally clause)
+                EjbLogger.ROOT_LOGGER.defaultPoolExpressionCouldNotBeResolved(DEFAULT_MDB_INSTANCE_POOL, model.get(DEFAULT_MDB_INSTANCE_POOL).asString());
+            } finally {
+                // de-register the old requirement
+                String oldMDBRequirementName = RuntimeCapability.buildDynamicCapabilityName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, oldValue.asString());
+                context.deregisterCapabilityRequirement(oldMDBRequirementName, DEFAULT_MDB_POOL_CONFIG_CAPABILITY_NAME, DEFAULT_MDB_INSTANCE_POOL);
+            }
+        }
+        super.recordCapabilitiesAndRequirements(context, attributeDefinition, newValue, oldValue);
     }
 
     @Override
@@ -82,6 +142,8 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
 
         final ModelNode poolName = poolAttribute.resolveModelAttribute(context, model);
 
+        ServiceName poolConfigServiceName = context.getCapabilityServiceName(this.poolConfigCapabilityName, PoolConfig.class);
+
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         ServiceController<?> existingDefaultPoolConfigService = serviceRegistry.getService(poolConfigServiceName);
         // if a default MDB pool is already installed, then remove it first
@@ -92,10 +154,10 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
         if (poolName.isDefined()) {
             // now install default pool config service which points to an existing pool config service
             final ValueInjectionService<PoolConfig> newDefaultPoolConfigService = new ValueInjectionService<PoolConfig>();
-            ServiceController<?> newController =
-                context.getServiceTarget().addService(poolConfigServiceName, newDefaultPoolConfigService)
-                    .addDependency(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName.asString()),
-                            PoolConfig.class, newDefaultPoolConfigService.getInjector())
+
+            ServiceName poolConfigDependencyServiceName = context.getCapabilityServiceName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, PoolConfig.class, poolName.asString());
+            ServiceController<?> newController = context.getServiceTarget().addService(poolConfigServiceName, newDefaultPoolConfigService)
+                    .addDependency(poolConfigDependencyServiceName, PoolConfig.class, newDefaultPoolConfigService.getInjector())
                     .install();
         }
 

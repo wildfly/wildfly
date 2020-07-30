@@ -61,6 +61,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.coordinator.TxControl;
+import org.wildfly.transaction.client.provider.remoting.RemotingTransactionService;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the root resource of the transaction subsystem.
@@ -82,6 +83,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final RuntimeCapability<Void> TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class)
                     .build();
+
+    public static final RuntimeCapability<Void> REMOTE_TRANSACTION_SERVICE_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.transactions.remote-transaction-service", RemotingTransactionService.class)
+                    .build();
+
     static final RuntimeCapability<Void> XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions.xa-resource-recovery-registry", XAResourceRecoveryRegistry.class)
                     .build();

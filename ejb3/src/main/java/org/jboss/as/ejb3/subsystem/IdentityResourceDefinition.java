@@ -28,11 +28,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -49,7 +49,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -67,19 +66,17 @@ import org.wildfly.security.auth.server.ServerAuthenticationContext;
  */
 public class IdentityResourceDefinition extends SimpleResourceDefinition {
 
-    public static final String IDENTITY_CAPABILITY = "org.wildfly.ejb3.identity";
+    private static final String SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.security.security-domain";
 
-    static final RuntimeCapability<Void> IDENTITY_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(IDENTITY_CAPABILITY, Consumer.class)
+    public static final String IDENTITY_CAPABILITY_NAME = "org.wildfly.ejb3.identity";
+    static final RuntimeCapability<Void> IDENTITY_CAPABILITY = RuntimeCapability.Builder.of(IDENTITY_CAPABILITY_NAME, Function.class)
             .build();
-
-    private static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
 
     public static final StringListAttributeDefinition OUTFLOW_SECURITY_DOMAINS = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.OUTFLOW_SECURITY_DOMAINS)
             .setRequired(false)
             .setMinSize(1)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, IDENTITY_CAPABILITY, false)
+            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY_NAME, IDENTITY_CAPABILITY_NAME, false)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();
 
@@ -90,15 +87,12 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
     private static List<String> outflowSecurityDomains = Collections.synchronizedList(new ArrayList<>());
 
     private IdentityResourceDefinition() {
-        this(new Parameters(EJB3SubsystemModel.IDENTITY_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IDENTITY))
-                .setCapabilities(IDENTITY_RUNTIME_CAPABILITY), new AddHandler());
-    }
-
-    private IdentityResourceDefinition(Parameters parameters, AbstractAddStepHandler add) {
-        super(parameters
-                .setAddHandler(add)
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler(IDENTITY_RUNTIME_CAPABILITY))
-                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES));
+        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.IDENTITY_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IDENTITY))
+                .setAddHandler(new AddHandler())
+                // .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler(IDENTITY_CAPABILITY))
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setCapabilities(IDENTITY_CAPABILITY));
     }
 
     @Override
@@ -113,7 +107,7 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
     private static class AddHandler extends AbstractAddStepHandler {
 
         private AddHandler() {
-            super(IDENTITY_RUNTIME_CAPABILITY, OUTFLOW_SECURITY_DOMAINS);
+            super(IDENTITY_CAPABILITY, OUTFLOW_SECURITY_DOMAINS);
         }
 
         @Override
@@ -125,15 +119,12 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             IdentityService identityService = new IdentityService();
-            ServiceBuilder<Function<SecurityIdentity, Set<SecurityIdentity>>> serviceBuilder = context.getServiceTarget()
-                    .addService(IDENTITY_RUNTIME_CAPABILITY.getCapabilityServiceName(), identityService)
-                    .setInitialMode(Mode.ACTIVE);
+
+            CapabilityServiceBuilder<Function<SecurityIdentity, Set<SecurityIdentity>>> capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(IDENTITY_CAPABILITY, identityService);
             for (String outflowSecurityDomain : outflowSecurityDomains) {
-                serviceBuilder.addDependency(context.getCapabilityServiceName(
-                                SECURITY_DOMAIN_CAPABILITY, outflowSecurityDomain, SecurityDomain.class),
-                        SecurityDomain.class, identityService.createOutflowSecurityDomainInjector());
+                capabilityServiceBuilder.addCapabilityRequirement(SECURITY_DOMAIN_CAPABILITY_NAME, SecurityDomain.class, identityService.createOutflowSecurityDomainInjector(), outflowSecurityDomain);
             }
-            serviceBuilder.install();
+            capabilityServiceBuilder.setInitialMode(Mode.ACTIVE).install();
         }
     }
 

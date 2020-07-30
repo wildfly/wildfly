@@ -39,8 +39,26 @@ public class LegacyConfigAdjuster640 extends LegacyConfigAdjuster700 {
     protected List<ModelNode> adjustForVersion(DomainClient client, PathAddress profileAddress) throws Exception {
         List<ModelNode> result = super.adjustForVersion(client, profileAddress);
 
-        configureCDI10(profileAddress, result);
-        removeBV(client, profileAddress, result);
+        switch(profileAddress.getElement(0).getValue()) {
+            case "full-ha":
+                configureCDI10(profileAddress, result);
+                removeBV(client, profileAddress, result);
+                break;
+            case "ha":
+                configureCDI10(profileAddress, result);
+                removeBV(client, profileAddress, result);
+                break;
+            case "full":
+                configureCDI10(profileAddress, result);
+                removeBV(client, profileAddress, result);
+                configureInfinispan(profileAddress, result);
+                break;
+            default:
+                configureCDI10(profileAddress, result);
+                removeBV(client, profileAddress, result);
+                configureInfinispan(profileAddress, result);
+                break;
+        }
 
         // DO NOT INTRODUCE NEW ADJUSTMENTS HERE WITHOUT SOME SORT OF PUBLIC DISCUSSION.
         // CAREFULLY DOCUMENT IN THIS CLASS WHY ANY ADJUSTMENT IS NEEDED AND IS THE BEST APPROACH.
@@ -106,4 +124,44 @@ public class LegacyConfigAdjuster640 extends LegacyConfigAdjuster700 {
         ops.add(Util.createRemoveOperation(PathAddress.pathAddress("extension", "org.wildfly.extension.bean-validation")));
 
     }
+
+    /**
+     * EAP 6.4 does not include an "ejb" cache container in its default anf full configuration:
+     *  <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
+     *     <local-cache name="passivation">
+     *        <locking isolation="REPEATABLE_READ"/>
+     *        <transaction mode="BATCH"/>
+     *        <file-store passivation="true" purge="false"/>
+     *     </local-cache>
+     *  </cache-container>
+     *
+     *  The ejb3 remote connector has a capability dependency on this so we need to add it here to the default and full profiles.
+     */
+    private void configureInfinispan(PathAddress profileAddress, List<ModelNode> ops) {
+
+        PathAddress subsystem = profileAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"));
+
+        ModelNode addEjbCacheContainer = Util.createAddOperation(subsystem.append("cache-container", "ejb"));
+        addEjbCacheContainer.get("aliases").setEmptyList().add("sfsb");
+        addEjbCacheContainer.get("default-cache").set("passivation");
+        addEjbCacheContainer.get("module").set("org.wildfly.clustering.ejb.infinispan");
+        ops.add(addEjbCacheContainer);
+
+        ModelNode addPassivationCache = Util.createAddOperation(subsystem.append("cache-container", "ejb").append("local-cache", "passivation"));
+        ops.add(addPassivationCache);
+
+        ModelNode addLockingElement = Util.createAddOperation(subsystem.append("cache-container", "ejb").append("local-cache", "passivation").append("locking", "LOCKING"));
+        addLockingElement.get("isolation").set("REPEATABLE_READ");
+        ops.add(addLockingElement);
+
+        ModelNode addTransactionElement = Util.createAddOperation(subsystem.append("cache-container", "ejb").append("local-cache", "passivation").append("transaction", "TRANSACTION"));
+        addTransactionElement.get("mode").set("BATCH");
+        ops.add(addTransactionElement);
+
+        ModelNode fileStoreElement = Util.createAddOperation(subsystem.append("cache-container", "ejb").append("local-cache", "passivation").append("file-store", "FILE_STORE"));
+        fileStoreElement.get("passivation").set("true");
+        fileStoreElement.get("purge").set("false");
+        ops.add(fileStoreElement);
+    }
+
 }

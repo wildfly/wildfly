@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.subsystem;
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.util.Timer;
+import java.util.concurrent.Executor;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -61,7 +62,8 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
 
         final String defaultDataStore = TimerServiceResourceDefinition.DEFAULT_DATA_STORE.resolveModelAttribute(context, model).asString();
         final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
-        final ServiceName threadPoolServiceName = EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName);
+
+        final ServiceName threadPoolServiceName = context.getCapabilityServiceName(TimerServiceResourceDefinition.THREAD_POOL_CAPABILITY_NAME, threadPoolName, Executor.class);
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -74,9 +76,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.getServiceTarget().addService(TimerServiceDeploymentProcessor.TIMER_SERVICE_NAME, new TimerValueService())
-                .install();
-
+        context.getCapabilityServiceTarget().addCapability(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY, new TimerValueService()).install();
     }
 
     private static final class TimerValueService implements Service<Timer> {

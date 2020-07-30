@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.component;
 
-import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY;
+import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY_NAME;
 
 import java.lang.reflect.Method;
 import java.rmi.Remote;
@@ -104,7 +104,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.invocation.AccessCheckingInterceptor;
 import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -127,6 +126,12 @@ import org.wildfly.security.authz.Roles;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class EJBComponentDescription extends ComponentDescription {
+
+    // references to external capabilities
+    private static String REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME = "org.wildfly.transactions.remote-transaction-service";
+    private static String TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME = "org.wildfly.transactions.global-default-local-provider";
+    private static String TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME = "org.wildfly.transactions.transaction-synchronization-registry";
+    private static String LEGACY_SECURITY_SERVER_MANAGER_CAPABILITY_NAME = "org.wildfly.legacy-security.server-security-manager";
 
     /**
      * EJB 3.1 FR 13.3.1, the default transaction management type is container-managed transaction demarcation.
@@ -554,7 +559,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
                 if (this.hasRemoteView((EJBComponentDescription) description)) {
                     // add a dependency on local transaction service
-                    componentConfiguration.getCreateDependencies().add((sb, cs) -> sb.requires(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE));
+                    componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                        @Override
+                        public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
+                            CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+                            // add dependency on the remote transaction service
+                            serviceBuilder.requires(support.getCapabilityServiceName(REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME));
+                        }
+                    });
                 }
             }
 
@@ -591,9 +603,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
                         CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                         // add dependency on the local transaction provider
-                        serviceBuilder.requires(support.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
+                        serviceBuilder.requires(support.getCapabilityServiceName(TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME));
                         // add dependency on TransactionSynchronizationRegistry
-                        serviceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry"), TransactionSynchronizationRegistry.class, ejbComponentCreateService.getTransactionSynchronizationRegistryInjector());
+                        serviceBuilder.addDependency(support.getCapabilityServiceName(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME), TransactionSynchronizationRegistry.class, ejbComponentCreateService.getTransactionSynchronizationRegistryInjector());
                     }
                 });
 
@@ -632,7 +644,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
                         @Override
                         public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
-                            serviceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"), ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
+                            serviceBuilder.addDependency(support.getCapabilityServiceName(LEGACY_SECURITY_SERVER_MANAGER_CAPABILITY_NAME), ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
                         }
                     });
                 }
@@ -949,11 +961,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
                         final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                         if (securityDomainName != null && ! securityDomainName.isEmpty()) {
-                            serviceBuilder.addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, securityDomainName),
+                            serviceBuilder.addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, securityDomainName),
                                     ApplicationSecurityDomain.class, ejbComponentCreateService.getApplicationSecurityDomainInjector());
                         }
                         if (SecurityDomainDependencyConfigurator.this.ejbComponentDescription.isOutflowSecurityDomainsConfigured()) {
-                            serviceBuilder.addDependency(support.getCapabilityServiceName(IDENTITY_CAPABILITY), Function.class, ejbComponentCreateService.getIdentityOutflowFunctionInjector());
+                            serviceBuilder.addDependency(support.getCapabilityServiceName(IDENTITY_CAPABILITY_NAME), Function.class, ejbComponentCreateService.getIdentityOutflowFunctionInjector());
                         }
                     } else {
                         if (securityDomainName != null && !securityDomainName.isEmpty()) {

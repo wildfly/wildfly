@@ -28,6 +28,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -37,10 +38,17 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for the databse data store resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for the database data store resource.
  *
  */
 public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinition {
+
+    // TODO: place this common capability in a superclass
+    public static final String TIMER_PERSISTENCE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service.timer-persistence-service";
+    public static final RuntimeCapability<Void> TIMER_PERSISTENCE_CAPABILITY =
+            RuntimeCapability.Builder.of(TIMER_PERSISTENCE_CAPABILITY_NAME, true, TimerPersistence.class)
+                    .setAllowMultipleRegistrations(true)
+                    .build();
 
     public static final SimpleAttributeDefinition DATASOURCE_JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DATASOURCE_JNDI_NAME, ModelType.STRING, false)
@@ -63,7 +71,6 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
                     .setValidator(new StringLengthValidator(0))
                     .build();
 
-
     public static final SimpleAttributeDefinition REFRESH_INTERVAL =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.REFRESH_INTERVAL, ModelType.INT, true)
                     .setAllowExpression(true)
@@ -84,9 +91,10 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
     public static final DatabaseDataStoreResourceDefinition INSTANCE = new DatabaseDataStoreResourceDefinition();
 
     private DatabaseDataStoreResourceDefinition() {
-        super(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH,
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.DATABASE_DATA_STORE),
-                ADD_HANDLER, new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, ADD_HANDLER));
+        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.DATABASE_DATA_STORE))
+                .setAddHandler(ADD_HANDLER)
+                .setRemoveHandler(new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, ADD_HANDLER))
+                .setCapabilities(TIMER_PERSISTENCE_CAPABILITY));
     }
 
     @Override

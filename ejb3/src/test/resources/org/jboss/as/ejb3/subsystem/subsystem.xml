@@ -41,7 +41,7 @@
             <database-data-store name="database-data-store" datasource-jndi-name="${prop.timer-service-database:java:global/DataSource}" database="hsql" partition="mypartition" allow-execution="true" refresh-interval="100"/>
         </data-stores>
     </timer-service>
-    <remote connectors="remoting-connector http-remoting-connector" thread-pool-name="default" cluster="ejb" execute-in-worker="false">
+    <remote connectors="http-remoting-connector" thread-pool-name="default" cluster="ejb" execute-in-worker="false">
         <channel-creation-options>
             <option name="READ_TIMEOUT" value="${prop.remoting-connector.read.timeout:20}" type="xnio"/>
             <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>

@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.subsystem;
 
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -59,6 +61,13 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return ADDITIONAL_INITIALIZATION;
+    }
+
+    @Override
+    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
+        Set<PathAddress> ignoredChildren = new HashSet<PathAddress>();
+       // ignoredChildren.add(PathAddress.pathAddress(PathElement.pathElement("subsystem", "ejb3"), PathElement.pathElement("passivation-store", "infinispan")));
+        return ignoredChildren;
     }
 
     @Override

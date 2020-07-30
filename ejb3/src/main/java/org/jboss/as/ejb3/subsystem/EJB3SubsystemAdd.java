@@ -35,6 +35,11 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BE
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_POOL_CONFIG_CAPABILITY;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_POOL_CONFIG_CAPABILITY_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_POOL_CONFIG_CAPABILITY;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_POOL_CONFIG_CAPABILITY_NAME;
+import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -50,6 +55,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.clustering.SingletonBarrierService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -213,6 +219,45 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 EjbLogger.ROOT_LOGGER.remappingCacheAttributes(context.getCurrentAddress().toCLIStyleString(), defClustered, model.get(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE));
             }
         }
+    }
+
+    /*
+     * Conditional registration of capabilities for default bean instance pools (which may or may not be defined)
+     */
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        ModelNode model = resource.getModel();
+
+        // register the capability we are exporting as well as its capability requirement on the strict-max-pool that supports it
+        if (model.hasDefined(DEFAULT_SLSB_INSTANCE_POOL)) {
+            context.registerCapability(DEFAULT_SLSB_POOL_CONFIG_CAPABILITY);
+
+            try {
+                // need to resolve the attribute value before using it
+                String resolvedDefaultSLSBPoolName = context.resolveExpressions(model.get(DEFAULT_SLSB_INSTANCE_POOL)).asString();
+                String defaultSLSBPoolRequirementName = RuntimeCapability.buildDynamicCapabilityName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, resolvedDefaultSLSBPoolName);
+
+                context.registerAdditionalCapabilityRequirement(defaultSLSBPoolRequirementName, DEFAULT_SLSB_POOL_CONFIG_CAPABILITY_NAME, DEFAULT_SLSB_INSTANCE_POOL);
+            } catch (OperationFailedException ofe) {
+                EjbLogger.ROOT_LOGGER.defaultPoolExpressionCouldNotBeResolved(DEFAULT_SLSB_INSTANCE_POOL, model.get(DEFAULT_SLSB_INSTANCE_POOL).asString());
+            }
+        }
+
+        if (model.hasDefined(DEFAULT_MDB_INSTANCE_POOL)) {
+            context.registerCapability(DEFAULT_MDB_POOL_CONFIG_CAPABILITY);
+
+            try {
+                // need to resolve the attribute value before using it
+                String resolvedDefaultMDBPoolName = context.resolveExpressions(model.get(DEFAULT_MDB_INSTANCE_POOL)).asString();
+                String defaultMDBPoolRequirementName = RuntimeCapability.buildDynamicCapabilityName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, resolvedDefaultMDBPoolName);
+
+                context.registerAdditionalCapabilityRequirement(defaultMDBPoolRequirementName, DEFAULT_MDB_POOL_CONFIG_CAPABILITY_NAME, DEFAULT_MDB_INSTANCE_POOL);
+            } catch(OperationFailedException ofe) {
+                EjbLogger.ROOT_LOGGER.defaultPoolExpressionCouldNotBeResolved(DEFAULT_MDB_INSTANCE_POOL, model.get(DEFAULT_MDB_INSTANCE_POOL).asString());
+            }
+        }
+
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
     }
 
     @Override
@@ -490,7 +535,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final EJBClientConfiguratorService clientConfiguratorService = new EJBClientConfiguratorService();
         final ServiceBuilder<EJBClientConfiguratorService> configuratorBuilder = serviceTarget.addService(EJBClientConfiguratorService.SERVICE_NAME, clientConfiguratorService);
-        if(context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY, EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR.getName(), null)) {
+        if(context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY, EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR_CAPABILITY.getName(), null)) {
             ServiceName serviceName = context.getCapabilityServiceName(REMOTING_ENDPOINT_CAPABILITY, Endpoint.class);
             configuratorBuilder.addDependency(serviceName, Endpoint.class, clientConfiguratorService.getEndpointInjector());
         }

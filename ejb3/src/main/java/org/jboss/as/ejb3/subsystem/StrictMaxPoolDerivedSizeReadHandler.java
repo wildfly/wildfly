@@ -43,7 +43,8 @@ public class StrictMaxPoolDerivedSizeReadHandler extends AbstractRuntimeOnlyHand
     @Override
     protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        final ServiceName serviceName = StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
+
+        ServiceName serviceName = context.getCapabilityServiceName(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, poolName, StrictMaxPoolConfigService.class);
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> sc = registry.getService(serviceName);
         if (sc != null) {

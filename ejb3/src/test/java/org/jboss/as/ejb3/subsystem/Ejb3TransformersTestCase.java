@@ -223,10 +223,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
      */
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.global-default-local-provider",
-                buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"),
-                "org.wildfly.remoting.connector.http-remoting-connector",
-                "org.wildfly.remoting.connector.remoting-connector");
+        return AdditionalInitialization.MANAGEMENT;
     }
 
     /**
@@ -277,12 +274,26 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         }
     }
 
+    protected AdditionalInitialization createAdditionalInitializationForRejectionTests() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.global-default-local-provider",
+                buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"),
+                buildDynamicCapabilityName("org.wildfly.remoting.connector", "http-remoting-connector"),
+                buildDynamicCapabilityName("org.wildfly.remoting.connector", "remoting-connector"),
+                buildDynamicCapabilityName("org.wildfly.clustering.infinispan.cache-container", "not-ejb"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.timer-service.timer-persistence-service", "file-data-store"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.mdb-delivery-group", "1"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.mdb-delivery-group", "2"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.mdb-delivery-group", "3"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.pool-config", "pool"),
+                "org.wildfly.remoting.endpoint");
+    }
+
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String... mavenResourceURLs) throws Exception {
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
+        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitializationForRejectionTests());
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controller, model)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitializationForRejectionTests(), controller, model)
                 .addMavenResourceURL(mavenResourceURLs)
                 .dontPersistXml();
 

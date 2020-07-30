@@ -29,7 +29,6 @@ import java.util.Map;
 import org.jboss.as.network.OutboundConnection;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -45,8 +44,6 @@ import org.xnio.OptionMap;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class RemotingProfileService implements Service<RemotingProfileService> {
-
-    public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "profile");
 
     /**
      * There URLs are used to allow discovery to find these connections.

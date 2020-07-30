@@ -31,6 +31,7 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -43,11 +44,8 @@ import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.as.remoting.RemotingServices;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
@@ -72,6 +70,7 @@ import org.xnio.Options;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:rachmato@redhat.com">Richard Achmatowicz</a>
  */
 public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
@@ -151,19 +150,19 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(channelCreationOptions,
                 FilterSpecClassResolverFilter.getFilterForOperationContext(context));
-        ServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY)
+        CapabilityServiceBuilder<?> builder = (CapabilityServiceBuilder<?>) context.getCapabilityServiceTarget()
+                .addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY)
                 .setInstance(ejbRemoteConnectorService)
-                .addAliases(EJBRemoteConnectorService.SERVICE_NAME)
-                // add dependency on the Remoting subsystem endpoint
-                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector())
-                // add rest of the dependencies
-                .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
-                .addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
-                .setInitialMode(ServiceController.Mode.LAZY);
+                .addCapabilityRequirement(EJB3RemoteResourceDefinition.REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
         if (!executeInWorker) {
-            builder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
+            builder.addCapabilityRequirement(EJB3RemoteResourceDefinition.THREAD_POOL_CAPABILITY_NAME, ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
         }
-        builder.install();
+        // add rest of the dependencies
+        builder.addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
+                .addCapabilityRequirement(EJB3RemoteResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
+                .addAliases(EJBRemoteConnectorService.SERVICE_NAME)
+                .setInitialMode(ServiceController.Mode.LAZY)
+                .install();
     }
 
     private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {

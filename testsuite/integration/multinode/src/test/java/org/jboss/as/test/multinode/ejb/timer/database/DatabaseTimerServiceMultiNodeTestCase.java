@@ -21,12 +21,10 @@
  */
 package org.jboss.as.test.multinode.ejb.timer.database;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.multinode.ejb.timer.database.DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.getRemoteContext;
@@ -50,7 +48,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.FileUtils;
@@ -83,7 +80,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
     private static final int TIMER_DELAY = 400;
 
     static final PathAddress ADDR_DATA_SOURCE = PathAddress.pathAddress().append(SUBSYSTEM, "datasources").append("data-source", "MyNewDs");
-    static final PathAddress ADDR_DATA_STORE = PathAddress.pathAddress().append(SUBSYSTEM, "ejb3").append(ModelDescriptionConstants.SERVICE, "timer-service").append("database-data-store", "dbstore");
+    static final PathAddress ADDR_DATA_STORE = PathAddress.pathAddress().append(SUBSYSTEM, "ejb3").append(SERVICE, "timer-service").append("database-data-store", "dbstore");
 
     @AfterClass
     public static void afterClass() {
@@ -93,6 +90,10 @@ public class DatabaseTimerServiceMultiNodeTestCase {
     }
 
     static class DatabaseTimerServiceTestCaseServerSetup implements ServerSetupTask {
+
+        private static final PathAddress ADDR_DATA_SOURCE = PathAddress.pathAddress().append(SUBSYSTEM, "datasources").append("data-source", "MyNewDs");
+        private static final PathAddress ADDR_TIMER_SERVICE = PathAddress.pathAddress().append(SUBSYSTEM, "ejb3").append("service", "timer-service");
+        private static final PathAddress ADDR_DATABASE_DATA_STORE = ADDR_TIMER_SERVICE.append("database-data-store", "dbstore");
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
@@ -107,27 +108,24 @@ public class DatabaseTimerServiceMultiNodeTestCase {
             compositeOp.get(OP_ADDR).setEmptyList();
             ModelNode steps = compositeOp.get(STEPS);
 
-            // add a datasource at /subsystem=datasources/data-source=MyNewDs with appropriate attributes
-            final ModelNode addDataSource = Util.createAddOperation(ADDR_DATA_SOURCE);
-            addDataSource.get("name").set("MyNewDs");
-            addDataSource.get("jndi-name").set("java:jboss/datasources/TimeDs");
-            addDataSource.get("enabled").set(true);
-            addDataSource.get("driver-name").set("h2");
-            addDataSource.get("pool-name").set("MyNewDs_Pool");
-            addDataSource.get("connection-url").set("jdbc:h2:" + server.getURL() + "/mem:testdb;DB_CLOSE_DELAY=-1");
-            addDataSource.get("user-name").set("sa");
-            addDataSource.get("password").set("sa");
+            // /subsystem=datasources/data-source=MyNewDs:add(name=MyNewDs,jndi-name=java:jboss/datasources/TimeDs, enabled=true)
+            ModelNode datasourceAddModelNode = Util.createAddOperation(ADDR_DATA_SOURCE);
+            datasourceAddModelNode.get("name").set("MyNewDs");
+            datasourceAddModelNode.get("jndi-name").set("java:jboss/datasources/TimeDs");
+            datasourceAddModelNode.get("enabled").set(true);
+            datasourceAddModelNode.get("driver-name").set("h2");
+            datasourceAddModelNode.get("pool-name").set("MyNewDs_Pool");
+            datasourceAddModelNode.get("connection-url").set("jdbc:h2:" + server.getURL() + "/mem:testdb;DB_CLOSE_DELAY=-1");
+            datasourceAddModelNode.get("user-name").set("sa");
+            datasourceAddModelNode.get("password").set("sa");
+            steps.add(datasourceAddModelNode);
 
-            steps.add(addDataSource);
-
-            // add a datastore at /subsystem=ejb3/service=timerservice/database-data-store=dbstore with appropriate attributes
-            final ModelNode addDataStore = Util.createAddOperation(ADDR_DATA_STORE);
-            addDataStore.get("datasource-jndi-name").set("java:jboss/datasources/TimeDs");
-            addDataStore.get("database").set("postgresql");
-            addDataStore.get("refresh-interval").set(100);
-            addDataStore.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-
-            steps.add(addDataStore);
+            // /subsystem=ejb3/remoting-profile=test-profile/remoting-ejb-receiver=test-receiver:add(outbound-connection-ref=remote-ejb-connection)
+            ModelNode databaseDataStoreAddModelNode = Util.createAddOperation(ADDR_DATABASE_DATA_STORE);
+            databaseDataStoreAddModelNode.get("datasource-jndi-name").set("java:jboss/datasources/TimeDs");
+            databaseDataStoreAddModelNode.get("database").set("postgresql");
+            databaseDataStoreAddModelNode.get("refresh-interval").set(100);
+            steps.add(databaseDataStoreAddModelNode);
 
             Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
             ServerReload.reloadIfRequired(managementClient);
@@ -141,17 +139,13 @@ public class DatabaseTimerServiceMultiNodeTestCase {
             compositeOp.get(OP_ADDR).setEmptyList();
             ModelNode steps = compositeOp.get(STEPS);
 
-            final ModelNode removeDataStore = Util.createRemoveOperation(ADDR_DATA_STORE);
-            removeDataStore.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            removeDataStore.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            ModelNode databaseDataStoreRemoveModelNode = Util.createRemoveOperation(ADDR_DATABASE_DATA_STORE);
+            // omitting op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false)
+            steps.add(databaseDataStoreRemoveModelNode);
 
-            steps.add(removeDataStore);
-
-            final ModelNode removeDataSource = Util.createRemoveOperation(ADDR_DATA_SOURCE);
-            removeDataSource.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            removeDataSource.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-
-            steps.add(removeDataSource);
+            ModelNode datasourceRemoveModelNode = Util.createRemoveOperation(ADDR_DATA_SOURCE);
+            // omitting op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false)
+            steps.add(datasourceRemoveModelNode);
 
             Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
             ServerReload.reloadIfRequired(managementClient);

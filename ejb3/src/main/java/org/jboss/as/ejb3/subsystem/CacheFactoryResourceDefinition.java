@@ -34,9 +34,17 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
 
 /**
+ * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
+ * The CacheFactory resource instances defined here produce bean caches which are either:
+ * - distributed and have passivation-enabled
+ * - non distributed and do not have passivation-enabled
+ * For passivation enabled CacheFactoryBuilders, the PassivationStoreResourceDefinition must define a supporting passivation store.
+ *
  * @author Paul Ferraro
  */
 public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
+
+    // capabilities not required as although we install CacheFactoryBuilder services, these do not depend on any defined clustering resources
 
     public static final StringListAttributeDefinition ALIASES = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.ALIASES)
             .setXmlName(EJB3SubsystemXMLAttribute.ALIASES.getLocalName())

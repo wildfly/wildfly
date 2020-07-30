@@ -114,7 +114,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
             ServiceName serviceName = deploymentUnit.getServiceName().append(EJBSecurityDomainService.SERVICE_NAME);
             final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(serviceName, ejbSecurityDomainService)
-                    .addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, knownSecurityDomainName),
+                    .addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, knownSecurityDomainName),
                             ApplicationSecurityDomain.class, ejbSecurityDomainService.getApplicationSecurityDomainInjector());
             builder.install();
 

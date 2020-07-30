@@ -3225,4 +3225,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 521, value = "Some classes referenced by annotation: %s in class: %s are missing.")
     DeploymentUnitProcessingException missingClassInAnnotation(String anCls, String resCls);
+
+    @LogMessage(level = WARN)
+    @Message(id = 522, value = "The default pool name %s could not be resolved from its value: %s")
+    void defaultPoolExpressionCouldNotBeResolved(String defaultPoolName, String defaultPoolValue);
 }

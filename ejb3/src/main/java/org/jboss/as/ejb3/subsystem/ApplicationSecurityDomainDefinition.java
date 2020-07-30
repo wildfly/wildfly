@@ -30,6 +30,7 @@ import java.util.function.Function;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -55,7 +56,6 @@ import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationS
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
@@ -71,19 +71,18 @@ import org.wildfly.security.auth.server.SecurityDomain;
  */
 public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinition {
 
-    public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.ejb3.application-security-domain";
+    private static final String SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.security.security-domain";
+    private static final String JACC_POLICY_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
 
-    static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY, true, ApplicationSecurityDomain.class)
+    public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.ejb3.application-security-domain";
+    static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_CAPABILITY = RuntimeCapability
+            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, true, ApplicationSecurityDomain.class)
             .build();
-
-    private static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
-    private static final String JACC_POLICY_CAPABILITY = "org.wildfly.security.jacc-policy";
 
     static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.SECURITY_DOMAIN, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, APPLICATION_SECURITY_DOMAIN_CAPABILITY, true)
+            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY_NAME, APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, true)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();
 
@@ -105,7 +104,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
     private ApplicationSecurityDomainDefinition() {
         this(new Parameters(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN))
-                .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
+                .setCapabilities(APPLICATION_SECURITY_DOMAIN_CAPABILITY)
                 .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(EJB3Extension.SUBSYSTEM_NAME, EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, false, false, false)),
                         new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(EJB3Extension.SUBSYSTEM_NAME, EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN)))
                 , new AddHandler());
@@ -150,23 +149,17 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             String securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
             boolean enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
-            RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
-            ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
+
             ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService(enableJacc);
 
-            ServiceBuilder<ApplicationSecurityDomain> serviceBuilder = context.getServiceTarget().addService(serviceName, applicationSecurityDomainService)
-                    .setInitialMode(Mode.LAZY);
-            serviceBuilder.addDependency(context.getCapabilityServiceName(
-                            SECURITY_DOMAIN_CAPABILITY, securityDomain, SecurityDomain.class),
-                    SecurityDomain.class, applicationSecurityDomainService.getSecurityDomainInjector());
-
+            CapabilityServiceBuilder<ApplicationSecurityDomain> capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(APPLICATION_SECURITY_DOMAIN_CAPABILITY, applicationSecurityDomainService);
+            capabilityServiceBuilder.addCapabilityRequirement(SECURITY_DOMAIN_CAPABILITY_NAME, SecurityDomain.class, applicationSecurityDomainService.getSecurityDomainInjector(), securityDomain);
             if (model.hasDefined(ENABLE_JACC.getName())) {
                 if (ENABLE_JACC.resolveModelAttribute(context, model).asBoolean()) {
-                    serviceBuilder.requires(context.getCapabilityServiceName(JACC_POLICY_CAPABILITY, Policy.class));
+                    capabilityServiceBuilder.requires(context.getCapabilityServiceName(JACC_POLICY_CAPABILITY_NAME, Policy.class));
                 }
             }
-
-            serviceBuilder.install();
+            capabilityServiceBuilder.setInitialMode(Mode.LAZY).install();
         }
     }
 
@@ -193,8 +186,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
         @Override
         protected ServiceName serviceName(String name) {
-            RuntimeCapability<?> dynamicCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(name);
-            return dynamicCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
+            return APPLICATION_SECURITY_DOMAIN_CAPABILITY.getCapabilityServiceName(ApplicationSecurityDomain.class, name);
         }
     }
 
@@ -204,8 +196,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             if (context.isDefaultRequiresRuntime()) {
                 context.addStep((ctx, op) -> {
-                    RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
-                    ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
+                    ServiceName serviceName = APPLICATION_SECURITY_DOMAIN_CAPABILITY.getCapabilityServiceName(ApplicationSecurityDomain.class, context.getCurrentAddressValue());
                     ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     ServiceController<?> controller = serviceRegistry.getRequiredService(serviceName);
 

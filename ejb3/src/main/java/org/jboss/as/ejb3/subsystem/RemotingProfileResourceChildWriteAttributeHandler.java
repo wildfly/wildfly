@@ -26,9 +26,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
-import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -44,19 +42,12 @@ public class RemotingProfileResourceChildWriteAttributeHandler extends RestartPa
     }
 
     @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel)
-            throws OperationFailedException {
+    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
         RemotingProfileResourceDefinition.ADD_HANDLER.installServices(context, parentAddress, parentModel);
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        String profileName = null;
-        for (final PathElement element : parentAddress) {
-            if (element.getKey().equals(EJB3SubsystemModel.REMOTING_PROFILE)) {
-                profileName = element.getValue();
-            }
-        }
-        return RemotingProfileService.BASE_SERVICE_NAME.append(profileName);
+        return RemotingProfileResourceDefinition.REMOTING_PROFILE_CAPABILITY.getCapabilityServiceName(parentAddress);
     }
 }
