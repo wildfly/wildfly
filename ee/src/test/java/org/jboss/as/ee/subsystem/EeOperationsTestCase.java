@@ -31,6 +31,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.common.cpu.ProcessorInfo;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -141,6 +143,64 @@ public class EeOperationsTestCase extends AbstractSubsystemBaseTest {
                 .build().getOperation();
 
         executeForSuccess(kernelServices, op);
+    }
+
+    @Test
+    public void testAddExistingGlobalModule() throws Exception {
+        // Boot the container
+        final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
+        final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME);
+
+        addModule(kernelServices, address, "test.module.one", null);
+        addModule(kernelServices, address, "test.module.one", null);
+
+        ModelNode res = executeForSuccess(kernelServices, Operations.createReadAttributeOperation(address, GlobalModulesDefinition.GLOBAL_MODULES));
+
+        assertEquals(1, res.get(ClientConstants.RESULT).asList().size());
+    }
+
+    @Test
+    public void testAddUniqueGlobalModule() throws Exception {
+        // Boot the container
+        final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
+        final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME);
+
+        addModule(kernelServices, address, "test.module.one", null);
+        addModule(kernelServices, address, "test.module.two", null);
+
+        ModelNode res = executeForSuccess(kernelServices, Operations.createReadAttributeOperation(address, GlobalModulesDefinition.GLOBAL_MODULES));
+
+        assertEquals(2, res.get(ClientConstants.RESULT).asList().size());
+    }
+
+    @Test
+    public void testAddExistingGlobalModuleWithDifferentSlot() throws Exception {
+        // Boot the container
+        final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
+        final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME);
+
+        addModule(kernelServices, address, "test.module.one", "main");
+        addModule(kernelServices, address, "test.module.one", "foo");
+
+        ModelNode res = executeForSuccess(kernelServices, Operations.createReadAttributeOperation(address, GlobalModulesDefinition.GLOBAL_MODULES));
+
+        assertEquals(2, res.get(ClientConstants.RESULT).asList().size());
+    }
+
+    private void addModule(KernelServices kernelServices, ModelNode address, String moduleName, String slotName) {
+        ModelNode module = new ModelNode();
+        module.get(ClientConstants.NAME).set(moduleName);
+        if (slotName != null) {
+            module.get(GlobalModulesDefinition.SLOT).set(slotName);
+        }
+        executeForSuccess(kernelServices, listAddOp(address, module));
+    }
+
+    private ModelNode listAddOp(ModelNode address, ModelNode list) {
+        ModelNode op = Operations.createOperation("list-add", address);
+        op.get(ClientConstants.NAME).set(GlobalModulesDefinition.GLOBAL_MODULES);
+        op.get(ClientConstants.VALUE).set(list);
+        return op;
     }
 
     private ModelNode executeForSuccess(final KernelServices kernelServices, final ModelNode op) {
