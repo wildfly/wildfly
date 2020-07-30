@@ -151,6 +151,8 @@
         <galleon.fork.embedded>true</galleon.fork.embedded>
         <galleon.log.time>true</galleon.log.time>
 
+        <jdk.min.version>11</jdk.min.version>
+
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
