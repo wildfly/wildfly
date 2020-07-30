@@ -111,7 +111,7 @@ public class SwitchIdentityTestCase {
                 CurrentUserCredential.class, ServerSecurityInterceptor.class, ClientSecurityInterceptor.class);
         jar.addAsManifestResource(SwitchIdentityTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(org.jboss.as.test.integration.ejb.container.interceptor.security.api.ClientSecurityInterceptor.class.getPackage(), "permissions.xml", "permissions.xml");
-        jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.remoting3", "org.jboss.as.domain-management",
+        jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.remoting", "org.jboss.as.domain-management",
                 "org.jboss.as.controller", "org.jboss.as.core-security"), "jboss-deployment-structure.xml");
         return jar;
     }
