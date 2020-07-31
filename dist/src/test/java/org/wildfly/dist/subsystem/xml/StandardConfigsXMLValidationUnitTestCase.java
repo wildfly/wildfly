@@ -212,6 +212,8 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         result = result.replace("${jboss.domain.master.protocol:remote+http}", "remote+http");
         result = result.replace("${jboss.domain.master.port:9999}", "9999");
         result = result.replace("${jboss.domain.master.port:9990}", "9990");
+        result = result.replace("${jboss.mail.server.host:localhost}", "localhost");
+        result = result.replace("${jboss.mail.server.port:25}", "25");
         result = result.replace("${jboss.messaging.group.port:9876}", "9876");
         result = result.replace("${jboss.socket.binding.port-offset:0}", "0");
         result = result.replace("${jboss.http.port:8080}", "8080");
@@ -228,6 +230,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         result = result.replace("${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
         result = result.replace("${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}", "UP");
         result = result.replace("${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}", "UP");
+
         return result;
     }
 }
