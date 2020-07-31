@@ -77,7 +77,6 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
@@ -172,15 +171,7 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
             }
         }
 
-        // Workaround for https://github.com/smallrye/smallrye-open-api/issues/404
-        ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(AnnotationScanner.class);
-        try {
-            builder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, indexView));
-        } finally {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
-        }
-
+        builder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, AnnotationScanner.class.getClassLoader(), indexView));
         builder.readerModel(OpenApiProcessor.modelFromReader(config, this.module.getClassLoader()));
         builder.filter(OpenApiProcessor.getFilter(config, this.module.getClassLoader()));
         OpenAPI model = builder.build();

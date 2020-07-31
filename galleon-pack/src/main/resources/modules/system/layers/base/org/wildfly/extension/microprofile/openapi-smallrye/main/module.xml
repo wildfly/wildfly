@@ -64,6 +64,5 @@
 
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.extension.undertow"/>
-        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>
