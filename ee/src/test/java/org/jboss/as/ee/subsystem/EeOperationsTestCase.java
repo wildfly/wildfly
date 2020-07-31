@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.wildfly.common.cpu.ProcessorInfo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -151,8 +152,8 @@ public class EeOperationsTestCase extends AbstractSubsystemBaseTest {
         final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
         final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME);
 
-        addModule(kernelServices, address, "test.module.one", null);
-        addModule(kernelServices, address, "test.module.one", null);
+        addModule(kernelServices, address, moduleNode("test.module.one", null));
+        addModule(kernelServices, address, moduleNode("test.module.one", null));
 
         ModelNode res = executeForSuccess(kernelServices, Operations.createReadAttributeOperation(address, GlobalModulesDefinition.GLOBAL_MODULES));
 
@@ -165,8 +166,8 @@ public class EeOperationsTestCase extends AbstractSubsystemBaseTest {
         final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
         final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME);
 
-        addModule(kernelServices, address, "test.module.one", null);
-        addModule(kernelServices, address, "test.module.two", null);
+        addModule(kernelServices, address, moduleNode("test.module.one", null));
+        addModule(kernelServices, address, moduleNode("test.module.two", null));
 
         ModelNode res = executeForSuccess(kernelServices, Operations.createReadAttributeOperation(address, GlobalModulesDefinition.GLOBAL_MODULES));
 
@@ -179,21 +180,43 @@ public class EeOperationsTestCase extends AbstractSubsystemBaseTest {
         final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
         final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME);
 
-        addModule(kernelServices, address, "test.module.one", "main");
-        addModule(kernelServices, address, "test.module.one", "foo");
+        addModule(kernelServices, address, moduleNode("test.module.one", "main"));
+        addModule(kernelServices, address, moduleNode("test.module.one", "foo"));
 
         ModelNode res = executeForSuccess(kernelServices, Operations.createReadAttributeOperation(address, GlobalModulesDefinition.GLOBAL_MODULES));
 
         assertEquals(2, res.get(ClientConstants.RESULT).asList().size());
     }
 
-    private void addModule(KernelServices kernelServices, ModelNode address, String moduleName, String slotName) {
+    @Test
+    public void testAddExistingGlobalModuleWithMetaInf() throws Exception {
+        // Boot the container
+        final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
+        final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME);
+
+        ModelNode module = moduleNode("test.module.one", "main");
+        addModule(kernelServices, address, module);
+        module.get(GlobalModulesDefinition.META_INF).set(true);
+        addModule(kernelServices, address, module);
+
+        ModelNode res = executeForSuccess(kernelServices, Operations.createReadAttributeOperation(address, GlobalModulesDefinition.GLOBAL_MODULES));
+
+        assertEquals(1, res.get(ClientConstants.RESULT).asList().size());
+        ModelNode actualModule = res.get(ClientConstants.RESULT).asList().get(0);
+        assertTrue(actualModule.get(GlobalModulesDefinition.META_INF).asBoolean());
+    }
+
+    private void addModule(KernelServices kernelServices, ModelNode address, ModelNode module) {
+        executeForSuccess(kernelServices, listAddOp(address, module));
+    }
+
+    private ModelNode moduleNode(String moduleName, String slotName) {
         ModelNode module = new ModelNode();
         module.get(ClientConstants.NAME).set(moduleName);
         if (slotName != null) {
             module.get(GlobalModulesDefinition.SLOT).set(slotName);
         }
-        executeForSuccess(kernelServices, listAddOp(address, module));
+        return module;
     }
 
     private ModelNode listAddOp(ModelNode address, ModelNode list) {

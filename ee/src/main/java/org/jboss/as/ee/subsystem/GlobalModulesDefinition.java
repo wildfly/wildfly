@@ -23,6 +23,7 @@
 package org.jboss.as.ee.subsystem;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -111,16 +112,25 @@ public class GlobalModulesDefinition {
 
             ModelNode result = null;
             if (newValue.isDefined()) {
-                LinkedHashSet<ModelNode> elementSet = new LinkedHashSet<>();
+                ArrayList<ModelNode> elementSet = new ArrayList<>();
+                LinkedHashSet<String> identifierSet = new LinkedHashSet<>();
 
-                for (ModelNode element : newValue.asList()) {
-                    if (!elementSet.add(element)) {
+                List<ModelNode> asList = newValue.asList();
+                for (int i = asList.size() -1; i >= 0; i--) {
+                    ModelNode element = asList.get(i);
+                    ModelNode name = element.get(GlobalModulesDefinition.NAME);
+                    ModelNode slot = element.get(GlobalModulesDefinition.SLOT);
+
+                    if (!identifierSet.add(name + ":" + slot)) {
                         // Leave this at debug for now. WFCORE-5070 may add a formalized i18n log message in WFLYCTL
                         EeLogger.ROOT_LOGGER.debugf("Removing duplicate entry %s from %s attribute %s", element.toString(), GLOBAL_MODULES);
+                    } else {
+                        elementSet.add(element);
                     }
                 }
 
                 if (!elementSet.isEmpty()) {
+                    Collections.reverse(elementSet);
                     result = new ModelNode();
                     for (ModelNode element : elementSet) {
                         result.add(element);
