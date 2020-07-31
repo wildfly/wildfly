@@ -576,8 +576,10 @@ public class PersistenceUnitServiceHandler {
             ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                // Get the CDI-enabled ValidatorFactory
-                validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+                if (capabilitySupport.hasCapability("org.wildfly.bean-validation")) {
+                    // Get the CDI-enabled ValidatorFactory
+                    validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+                }
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
