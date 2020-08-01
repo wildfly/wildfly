@@ -22,11 +22,8 @@
 
 package org.wildfly.extension.microprofile.config.smallrye.deployment;
 
-import io.smallrye.config.SmallRyeConfigBuilder;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -40,12 +37,7 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final AttachmentKey<Config> CONFIG = AttachmentKey.create(Config.class);
 
-    private final Iterable<ConfigSourceProvider> providers;
-    private final Iterable<ConfigSource> sources;
-
-    public SubsystemDeploymentProcessor(Iterable<ConfigSourceProvider> providers, Iterable<ConfigSource> sources) {
-        this.providers = providers;
-        this.sources = sources;
+    public SubsystemDeploymentProcessor() {
     }
 
     @Override
@@ -53,26 +45,8 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
-        SmallRyeConfigBuilder builder = new SmallRyeConfigBuilder();
-        builder.forClassLoader(module.getClassLoader())
-                .addDefaultSources()
-                .addDiscoveredSources()
-                .addDiscoveredConverters();
-
-        ClassLoader loader = module.getClassLoader();
-        for (ConfigSourceProvider provider : this.providers) {
-            for (ConfigSource source : provider.getConfigSources(loader)) {
-                builder.withSources(source);
-            }
-        }
-        for (ConfigSource source : this.sources) {
-            builder.withSources(source);
-        }
-
-        Config config = builder.build();
+        Config config = ConfigProviderResolver.instance().getConfig(module.getClassLoader());
         deploymentUnit.putAttachment(CONFIG, config);
-
-        ConfigProviderResolver.instance().registerConfig(config, module.getClassLoader());
     }
 
     @Override
