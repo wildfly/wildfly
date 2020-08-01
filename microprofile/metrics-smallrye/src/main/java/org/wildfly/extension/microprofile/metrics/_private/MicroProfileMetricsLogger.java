@@ -33,7 +33,6 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.msc.service.StartException;
 
 /**
  * Log messages for WildFly microprofile-metrics-smallrye Extension.
@@ -56,7 +55,7 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
 
 
     @Message(id = 2, value = "Failed to initialize metrics from JMX MBeans")
-    StartException failedInitializeJMXRegistrar(@Cause IOException e);
+    IllegalArgumentException failedInitializeJMXRegistrar(@Cause IOException e);
 
     @Message(id = 3, value = "Unable to read attribute %s on %s: %s.")
     IllegalStateException unableToReadAttribute(String attributeName, PathAddress address, String error);
