@@ -285,7 +285,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                 buildDynamicCapabilityName("org.wildfly.ejb3.mdb-delivery-group", "2"),
                 buildDynamicCapabilityName("org.wildfly.ejb3.mdb-delivery-group", "3"),
                 buildDynamicCapabilityName("org.wildfly.ejb3.pool-config", "pool"),
-                "org.wildfly.remoting.endpoint");
+                "org.wildfly.remoting.endpoint", "org.wildfly.security.jacc-policy");
     }
 
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String... mavenResourceURLs) throws Exception {

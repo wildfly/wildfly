@@ -31,6 +31,7 @@ import java.util.function.Function;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -49,6 +50,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
@@ -92,6 +94,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
     static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_JACC, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
+            .setCapabilityReference(new BooleanCapabilityReferenceRecorder(EJB3SubsystemModel.ENABLE_JACC, JACC_POLICY_CAPABILITY_NAME))
             .setMinSize(1)
             .setRestartAllServices()
             .build();
@@ -226,5 +229,63 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             }
             return null;
         };
+    }
+
+    private static class BooleanCapabilityReferenceRecorder implements CapabilityReferenceRecorder {
+
+        private final String attributeName;
+        private final String requirementName;
+
+        BooleanCapabilityReferenceRecorder(final String attributeName, final String requirementName) {
+            this.attributeName = attributeName;
+            this.requirementName = requirementName;
+        }
+
+        @Override
+        public void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... attributeValues) {
+            assert attributeValues != null && attributeValues.length == 1;
+            boolean attributeValue = Boolean.parseBoolean(attributeValues[0]);
+            if (attributeValue) {
+                context.registerAdditionalCapabilityRequirement(requirementName, getDependentName(context), attributeName);
+            }
+        }
+
+        @Override
+        public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... attributeValues) {
+            assert attributeValues != null && attributeValues.length == 1;
+            boolean attributeValue = Boolean.parseBoolean(attributeValues[0]);
+            if (attributeValue) {
+                context.deregisterCapabilityRequirement(requirementName, getDependentName(context), attributeName);
+            }
+        }
+
+        String getDependentName(OperationContext context) {
+            RuntimeCapability<?> cap = getDependentCapability(context);
+            return getDependentName(cap, context);
+        }
+
+        RuntimeCapability<?> getDependentCapability(OperationContext context) {
+            ImmutableManagementResourceRegistration mrr = context.getResourceRegistration();
+            Set<RuntimeCapability> capabilities = mrr.getCapabilities();
+            assert capabilities != null && capabilities.size() == 1;
+            return capabilities.iterator().next();
+        }
+
+        final String getDependentName(RuntimeCapability<?> cap, OperationContext context) {
+            if (cap.isDynamicallyNamed()) {
+                return cap.fromBaseCapability(context.getCurrentAddress()).getName();
+            }
+            return cap.getName();
+        }
+
+        @Override
+        public String getBaseDependentName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getBaseRequirementName() {
+            return requirementName;
+        }
     }
 }
