@@ -528,6 +528,71 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Test against EE 9 dist -->
+        <profile>
+            <id>ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <!-- Override to drop the jboss-maven-dist plugin option -->
+                                    <plugin-options combine.self="override">
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!--Re-enable the default surefire execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>test</phase>
+                                <configuration>
+                                    <excludes>
+                                        <!-- Requires legacy security -->
+                                        <exclude>org/jboss/as/test/smoke/mgmt/resourceadapter/ResourceAdapterOperationsUnitTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/configproperty/ConfigPropertyTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/earpackage/EarPackagedDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiactivation/MultipleActivationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectactivation/MultipleObjectActivationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectpartialactivation/MultipleObjectPartialActivationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/raconnection/RaTestConnectionTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/webservices/WSTestCase.java</exclude>
+                                        <!-- Requires messaging -->
+                                        <exclude>org/jboss/as/test/smoke/jms/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/jms/**/*Test.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/messaging/ArtemisMessagingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/messaging/client/**/*TestCase.java</exclude>
+                                        <!-- FIXME Why do these fail? -->
+                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/afterresourcecreation/AfterResourceCreationDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/redeployment/ReDeploymentTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>

@@ -9601,6 +9601,39 @@
         </profile>
 
         <profile>
+            <id>ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+                <!-- No separate web dist -->
+                <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-ee-9-galleon-pack</testsuite.ee.galleon.pack.artifactId>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Disable the surefire tests (at least the default ones) for all modules except for
+                             those where this profile turns them on.  This profile is meant to be an
+                             entirely alternative testsuite execution so there's no point running the normal
+                             tests, which get plenty of exercise elsewhere. -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>layers.profile</id>
             <activation>
                 <property>

@@ -687,5 +687,42 @@
             </build>
         </profile>
 
+        <!-- Test against EE 9 dist -->
+        <profile>
+            <id>ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!--Re-enable the default surefire execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>test</phase>
+                                <configuration>
+                                    <excludes>
+                                        <!-- requires legacy-security -->
+                                        <exclude>org/jboss/as/test/integration/web/security/WebSecurity*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/web/security/external/WebSecurity*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/web/security/form/WebSecuritySimpleRoleMappingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/web/security/jaspi/WebSecurity*TestCase.java</exclude>
+                                        <!-- TODO rework these to handle EE 9 -->
+                                        <exclude>org/jboss/as/test/integration/web/annotationsmodule/WebModuleDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/web/jsp/taglib/external/ExternalTagLibTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 </project>
