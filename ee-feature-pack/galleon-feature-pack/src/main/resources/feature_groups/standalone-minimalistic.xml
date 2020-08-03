@@ -18,15 +18,6 @@
         </feature>
     </feature>
 
-    <!--<origin name="org.wildfly:wildfly-servlet-galleon-pack">
-        <feature-group name="security-realms">
-            <exclude feature-id="core-service.management.security-realm:security-realm=ApplicationRealm"/>
-            <exclude spec="core-service.management.security-realm.authorization.properties" />
-            <include feature-id="core-service.management.security-realm:core-service=management,security-realm=ManagementRealm">
-                <unset param="map-groups-to-roles"/>
-            </include>
-        </feature-group>
-    </origin>-->
     <feature-group name="servlet-security-realms">
         <exclude feature-id="core-service.management.security-realm:security-realm=ApplicationRealm"/>
         <exclude spec="core-service.management.security-realm.authorization.properties" />

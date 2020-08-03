@@ -5,9 +5,6 @@
         <layer name="transactions"/>
     </dependencies>
 
-    <!--<origin name="org.wildfly:wildfly-servlet-galleon-pack">
-        <feature-group name="private-interface"/>
-    </origin>-->
     <feature-group name="private-interface"/>
 
     <feature-group name="jgroups-all"/>
