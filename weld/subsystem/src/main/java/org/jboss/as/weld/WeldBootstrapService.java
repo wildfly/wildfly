@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -38,8 +39,13 @@ import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
 import org.jboss.msc.Service;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.weld.Container;
 import org.jboss.weld.ContainerState;
@@ -61,7 +67,31 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class WeldBootstrapService implements Service {
 
+    /**
+     * The service name that external services depend on
+     */
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldBootstrapService");
+    /**
+     * The actual service name the bootstrap service is installed under.
+     *
+     * The reasons for this dual service name setup is kinda complex, and relates to https://issues.redhat.com/browse/JBEAP-18634
+     * Because Weld cannot be restarted if an attempt is made to restart the service then we need to bail out and restart
+     * the whole deployment.
+     *
+     * If we just do a check in the start method that looks like:
+     * if (restartRequired) {
+     *     doRestart();
+     *     return;
+     * }
+     * Then the service startup will technically complete successfully, and dependent services can still start before
+     * the restart actually takes effect (as MSC is directional, it keep starting services that have all their dependencies
+     * met before it start to take services down).
+     *
+     * To get around this we use two different service names, with the service that other services depend on only being
+     * installed at the end of the start() method. This means that in the case of a restart this will not be installed,
+     * so no dependent services will be started as they are missing their dependency.
+     */
+    public static final ServiceName INTERNAL_SERVICE_NAME = ServiceName.of("WeldBootstrapServiceInternal");
 
     private final WeldBootstrap bootstrap;
     private final WeldDeployment deployment;
@@ -75,16 +105,19 @@ public class WeldBootstrapService implements Service {
     private final Supplier<ExecutorService> serverExecutorSupplier;
     private final Supplier<SecurityServices> securityServicesSupplier;
     private final Supplier<TransactionServices> weldTransactionServicesSupplier;
-
+    private final ServiceName deploymentServiceName;
+    private final ServiceName weldBootstrapServiceName;
     private volatile boolean started;
+    private volatile ServiceController<?> controller;
+    private final AtomicBoolean runOnce = new AtomicBoolean();
 
     public WeldBootstrapService(final WeldDeployment deployment, final Environment environment, final String deploymentName,
                                 final Consumer<WeldBootstrapService> weldBootstrapServiceConsumer,
                                 final Supplier<ExecutorServices> executorServicesSupplier,
                                 final Supplier<ExecutorService> serverExecutorSupplier,
                                 final Supplier<SecurityServices> securityServicesSupplier,
-                                final Supplier<TransactionServices> weldTransactionServicesSupplier
-    ) {
+                                final Supplier<TransactionServices> weldTransactionServicesSupplier,
+                                ServiceName deploymentServiceName, ServiceName weldBootstrapServiceName) {
         this.deployment = deployment;
         this.environment = environment;
         this.deploymentName = deploymentName;
@@ -93,6 +126,8 @@ public class WeldBootstrapService implements Service {
         this.serverExecutorSupplier = serverExecutorSupplier;
         this.securityServicesSupplier = securityServicesSupplier;
         this.weldTransactionServicesSupplier = weldTransactionServicesSupplier;
+        this.deploymentServiceName = deploymentServiceName;
+        this.weldBootstrapServiceName = weldBootstrapServiceName;
         this.bootstrap = new WeldBootstrap();
         Map<String, BeanDeploymentArchive> bdas = new HashMap<String, BeanDeploymentArchive>();
         BeanDeploymentArchiveImpl rootBeanDeploymentArchive = null;
@@ -115,6 +150,21 @@ public class WeldBootstrapService implements Service {
      * @throws IllegalStateException if the container is already running
      */
     public synchronized void start(final StartContext context) {
+
+        if (!runOnce.compareAndSet(false,true)) {
+            ServiceController<?> controller = context.getController().getServiceContainer().getService(deploymentServiceName);
+            controller.addListener(new LifecycleListener() {
+                @Override
+                public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                    if (event == LifecycleEvent.DOWN) {
+                        controller.setMode(ServiceController.Mode.ACTIVE);
+                        controller.removeListener(this);
+                    }
+                }
+            });
+            controller.setMode(ServiceController.Mode.NEVER);
+            return;
+        }
         if (started) {
             throw WeldLogger.ROOT_LOGGER.alreadyRunning("WeldContainer");
         }
@@ -145,6 +195,24 @@ public class WeldBootstrapService implements Service {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
         weldBootstrapServiceConsumer.accept(this);
+
+        //this is the actual service that clients depend on
+        //we install it here so that if a restart needs to happen all our dependants won't be able to start
+        final ServiceBuilder<?> weldBootstrapServiceBuilder = context.getChildTarget().addService(weldBootstrapServiceName);
+        Consumer<WeldBootstrapService> provider = weldBootstrapServiceBuilder.provides(weldBootstrapServiceName);
+        weldBootstrapServiceBuilder.setInstance(new Service() {
+            @Override
+            public void start(StartContext context) throws StartException {
+                provider.accept(WeldBootstrapService.this);
+            }
+
+            @Override
+            public void stop(StopContext context) {
+                context.getController().setMode(ServiceController.Mode.REMOVE);
+            }
+        });
+        weldBootstrapServiceBuilder.install();
+        controller = context.getController();
     }
 
     /**
@@ -169,7 +237,7 @@ public class WeldBootstrapService implements Service {
                             WeldProvider.containerShutDown(container);
                             container.setState(ContainerState.SHUTDOWN);
                             container.cleanup();
-                            setStarted(false);
+                            startServiceShutdown();
                         } finally {
                             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                             ModuleGroupSingletonProvider.removeClassLoader(deployment.getModule().getClassLoader());
@@ -191,7 +259,7 @@ public class WeldBootstrapService implements Service {
     /**
      * Gets the {@link BeanManager} for a given bean deployment archive id.
      *
-     * @throws IllegalStateException if the container is not running
+     * @throws IllegalStateException    if the container is not running
      * @throws IllegalArgumentException if the bean deployment archive id is not found
      */
     public BeanManagerImpl getBeanManager(String beanArchiveId) {
@@ -236,8 +304,41 @@ public class WeldBootstrapService implements Service {
         return started;
     }
 
-    void setStarted(boolean started) {
-        this.started = started;
+    void startServiceShutdown() {
+        //the start service has been shutdown, which means either we are being shutdown/undeployed
+        //or we are going to need to bounce the whole deployment
+        this.started = false;
+        if (controller.getServiceContainer().isShutdown()) {
+            //container is being shutdown, no action required
+            return;
+        }
+        ServiceController<?> deploymentController = controller.getServiceContainer().getService(deploymentServiceName);
+        if (deploymentController.getMode() != ServiceController.Mode.ACTIVE) {
+            //deployment is not active, no action required
+            return;
+        }
+        //add a listener to tentatively 'bounce' this service
+        //if the service does actually restart then this will trigger a full deployment restart
+        //we do it this way as we don't have visibility into MSC in the general sense
+        //so we don't really know if this service is supposed to go away
+        controller.addListener(new LifecycleListener() {
+            @Override
+            public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                if (controller.getServiceContainer().isShutdown()) {
+                    return;
+                }
+                if (deploymentController.getMode() != ServiceController.Mode.ACTIVE) {
+                    return;
+                }
+                if (event == LifecycleEvent.DOWN) {
+                    controller.setMode(ServiceController.Mode.ACTIVE);
+                    controller.removeListener(this);
+                }
+            }
+        });
+        if (controller.getMode() == ServiceController.Mode.ACTIVE) {
+            controller.setMode(ServiceController.Mode.NEVER);
+        }
     }
 
     WeldDeployment getDeployment() {
@@ -251,5 +352,4 @@ public class WeldBootstrapService implements Service {
     WeldBootstrap getBootstrap() {
         return bootstrap;
     }
-
 }
