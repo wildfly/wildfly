@@ -56,34 +56,6 @@
         <replacement placeholder="UDP-MULTICAST-FLOW-CONTROL"/>
         <replacement placeholder="TCP-MULTICAST-FLOW-CONTROL"/>
     </supplement>
-    <supplement name="s3-ping">
-        <replacement placeholder="TCP-DISCOVERY">
-            <protocol type="S3_PING">
-                <property name="access_key">
-                    ${jboss.jgroups.s3_ping.access_key}
-                </property>
-                <property name="secret_access_key">
-                    ${jboss.jgroups.s3_ping.secret_access_key}
-                </property>
-                <property name="location">
-                    ${jboss.jgroups.s3_ping.bucket}
-                </property>
-            </protocol>
-        </replacement>
-        <replacement placeholder="UDP-DISCOVERY">
-            <protocol type="S3_PING">
-                <property name="access_key">
-                    ${jboss.jgroups.s3_ping.access_key}
-                </property>
-                <property name="secret_access_key">
-                    ${jboss.jgroups.s3_ping.secret_access_key}
-                </property>
-                <property name="location">
-                    ${jboss.jgroups.s3_ping.bucket}
-                </property>
-            </protocol>
-        </replacement>
-    </supplement>
     <supplement name="azure-ping">
         <replacement placeholder="TCP-DISCOVERY">
             <protocol type="azure.AZURE_PING">
@@ -134,7 +106,6 @@
             </protocol>
         </replacement>
     </supplement>
-    <supplement name="ec2" includes="no-multicast s3-ping"/>
     <supplement name="azure" includes="no-multicast azure-ping"/>
     <supplement name="gossip" includes="no-multicast gossip-discovery"/>
     <socket-binding name="jgroups-tcp" interface="private" port="7600"/>

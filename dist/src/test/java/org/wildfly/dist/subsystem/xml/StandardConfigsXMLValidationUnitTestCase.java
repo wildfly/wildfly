@@ -44,10 +44,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 /**
- * A XSDValidationUnitTestCase.
- *
  * @author Brian Stansberry
- * @version $Revision: 1.1 $
  */
 public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidationUnitTest {
     private static Source[] SCHEMAS;
@@ -117,22 +114,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-microprofile-ha.xml");
     }
 
-    //TODO Leave commented out until domain-jts.xml is definitely removed from the configuration
-//    @Test
-//    public void testDomainJTS() throws Exception {
-//        parseXml("docs/examples/configs/domain-jts.xml");
-//    }
-//
-    @Test
-    public void testStandaloneEC2HA() throws Exception {
-        parseXml("docs/examples/configs/standalone-ec2-ha.xml");
-    }
-
-    @Test
-    public void testStandaloneEC2FullHA() throws Exception {
-        parseXml("docs/examples/configs/standalone-ec2-full-ha.xml");
-
-    }
     @Test
     public void testStandaloneGossipHA() throws Exception {
         parseXml("docs/examples/configs/standalone-gossip-ha.xml");

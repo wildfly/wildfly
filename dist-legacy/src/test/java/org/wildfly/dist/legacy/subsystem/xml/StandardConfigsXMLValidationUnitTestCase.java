@@ -107,22 +107,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-full.xml");
     }
 
-    //TODO Leave commented out until domain-jts.xml is definitely removed from the configuration
-//    @Test
-//    public void testDomainJTS() throws Exception {
-//        parseXml("docs/examples/configs/domain-jts.xml");
-//    }
-//
-    @Test
-    public void testStandaloneEC2HA() throws Exception {
-        parseXml("docs/examples/configs/standalone-ec2-ha.xml");
-    }
-
-    @Test
-    public void testStandaloneEC2FullHA() throws Exception {
-        parseXml("docs/examples/configs/standalone-ec2-full-ha.xml");
-
-    }
     @Test
     public void testStandaloneGossipHA() throws Exception {
         parseXml("docs/examples/configs/standalone-gossip-ha.xml");

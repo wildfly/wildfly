@@ -56,27 +56,6 @@
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/examples/subsystems-activemq-colocated.xml"
                 output-file="docs/examples/configs/standalone-activemq-colocated.xml"/>
-        <standalone
-                template="configuration/standalone/template.xml"
-                subsystems="configuration/standalone/subsystems-full-ha.xml"
-                output-file="docs/examples/configs/standalone-ec2-full-ha.xml">
-                <property name="jgroups.supplement" value="ec2" />
-                <property name="mod_cluster.supplement" value="no-multicast" />
-       </standalone>
-        <standalone
-                template="configuration/standalone/template.xml"
-                subsystems="configuration/standalone/subsystems-ha.xml"
-                output-file="docs/examples/configs/standalone-ec2-ha.xml">
-            <property name="jgroups.supplement" value="ec2" />
-            <property name="mod_cluster.supplement" value="no-multicast" />
-        </standalone>
-        <domain
-                template="configuration/domain/template.xml"
-                subsystems="configuration/domain/subsystems.xml"
-                output-file="docs/examples/configs/domain-ec2.xml">
-            <property name="jgroups.supplement" value="ec2" />
-            <property name="mod_cluster.supplement" value="no-multicast" />
-        </domain>
         <!-- azure.AZURE_PING -->
         <standalone
                 template="configuration/standalone/template.xml"
