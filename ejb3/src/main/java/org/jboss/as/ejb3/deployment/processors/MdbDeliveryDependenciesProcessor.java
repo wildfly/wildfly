@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
@@ -30,7 +31,6 @@ import org.jboss.as.ejb3.component.messagedriven.MdbDeliveryControllerService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.subsystem.MdbDeliveryGroupResourceDefinition;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -43,6 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
+import static org.jboss.as.ejb3.subsystem.MdbDeliveryGroupResourceDefinition.MDB_DELIVERY_GROUP_CAPABILITY_NAME;
 
 /**
  * MdbDeliveryDependencies DUP, creates an MdbDeliveryControllerService to enable/disable delivery according to that MDBs
@@ -52,6 +53,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CL
  */
 public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor {
 
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -59,6 +61,9 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
         if (moduleConfiguration == null) {
             return;
         }
+        // support for using capabilities to resolve service names
+        CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         boolean clusteredSingletonFound = false;
         for (final ComponentConfiguration configuration : moduleConfiguration.getComponentConfigurations()) {
@@ -67,10 +72,8 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                 final MessageDrivenComponentDescription mdbDescription = (MessageDrivenComponentDescription) description;
                 if (mdbDescription.isDeliveryControlled()) {
                     final MdbDeliveryControllerService mdbDeliveryControllerService = new MdbDeliveryControllerService();
-                    final ServiceBuilder<MdbDeliveryControllerService> builder = serviceTarget
-                            .addService(mdbDescription.getDeliveryControllerName(), mdbDeliveryControllerService)
-                            .addDependency(description.getCreateServiceName(), MessageDrivenComponent.class,
-                                    mdbDeliveryControllerService.getMdbComponent())
+                    final ServiceBuilder<MdbDeliveryControllerService> builder = serviceTarget.addService(mdbDescription.getDeliveryControllerName(), mdbDeliveryControllerService)
+                            .addDependency(description.getCreateServiceName(), MessageDrivenComponent.class, mdbDeliveryControllerService.getMdbComponent())
                             .setInitialMode(Mode.PASSIVE);
                     if (mdbDescription.isClusteredSingleton()) {
                         clusteredSingletonFound = true;
@@ -79,12 +82,11 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                     }
                     if (mdbDescription.getDeliveryGroups() != null) {
                         for (String deliveryGroup : mdbDescription.getDeliveryGroups()) {
-                            final ServiceName deliveyGroupServiceName = MdbDeliveryGroupResourceDefinition
-                                    .getDeliveryGroupServiceName(deliveryGroup);
-                            if (phaseContext.getServiceRegistry().getService(deliveyGroupServiceName) == null) {
+                            final ServiceName deliveryGroupServiceName = capabilityServiceSupport.getCapabilityServiceName(MDB_DELIVERY_GROUP_CAPABILITY_NAME, deliveryGroup);
+                            if (phaseContext.getServiceRegistry().getService(deliveryGroupServiceName) == null) {
                                 throw EjbLogger.DEPLOYMENT_LOGGER.missingMdbDeliveryGroup(deliveryGroup);
                             }
-                            builder.addDependency(deliveyGroupServiceName);
+                            builder.addDependency(deliveryGroupServiceName);
                         }
                     }
                     builder.install();

@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.mdb.objectmessage.unit;
 
 import java.util.Arrays;
+import java.util.PropertyPermission;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -41,6 +42,7 @@ import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.as.test.integration.ejb.mdb.objectmessage.MDBAcceptingObjectMessage;
 import org.jboss.as.test.integration.ejb.mdb.objectmessage.MDBAcceptingObjectMessageOfArrayType;
 import org.jboss.as.test.integration.ejb.mdb.objectmessage.SimpleMessageInEarLibJar;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -49,6 +51,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that a MDB can get hold of the underlying Object from a {@link ObjectMessage} without any classloading issues.
@@ -121,7 +125,8 @@ public class ObjectMessageTestCase {
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
-        ejbJar.addClasses(MDBAcceptingObjectMessageOfArrayType.class, JMSMessagingUtil.class, ObjectMessageTestCase.class, MDBAcceptingObjectMessage.class);
+        ejbJar.addClasses(MDBAcceptingObjectMessageOfArrayType.class, JMSMessagingUtil.class, ObjectMessageTestCase.class,
+                MDBAcceptingObjectMessage.class, TimeoutUtil.class);
 
         final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, "util.jar");
         libJar.addClasses(SimpleMessageInEarLibJar.class);
@@ -133,6 +138,8 @@ public class ObjectMessageTestCase {
         ear.addAsLibraries(libJar);
 
         ear.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
+        ear.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
         return ear;
     }
 

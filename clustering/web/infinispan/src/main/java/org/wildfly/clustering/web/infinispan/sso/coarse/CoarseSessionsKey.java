@@ -22,12 +22,12 @@
 
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 
 /**
  * @author Paul Ferraro
  */
-public class CoarseSessionsKey extends Key<String> {
+public class CoarseSessionsKey extends GroupedKey<String> {
 
     public CoarseSessionsKey(String id) {
         super(id);

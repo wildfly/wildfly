@@ -30,12 +30,14 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.modcluster.container.Connector;
 import org.junit.Test;
 import org.wildfly.extension.undertow.AjpListenerService;
+import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.HttpListenerService;
 import org.wildfly.extension.undertow.HttpsListenerService;
 import org.wildfly.extension.undertow.ListenerService;
@@ -48,9 +50,9 @@ public class UndertowConnectorTestCase {
     @Test
     public void getType() {
         OptionMap options = OptionMap.builder().getMap();
-        assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService("", "", options, OptionMap.EMPTY)).getType());
-        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "", options, OptionMap.EMPTY, false, false, false)).getType());
-        assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("", "", options, null, OptionMap.EMPTY, false)).getType());
+        assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService(PathAddress.pathAddress(Constants.AJP_LISTENER, "dummy"), "", options, OptionMap.EMPTY)).getType());
+        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService(PathAddress.pathAddress(Constants.HTTP_LISTENER, "dummy"), "" , options, OptionMap.EMPTY, false, false, false)).getType());
+        assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService(PathAddress.pathAddress(Constants.HTTPS_LISTENER, "dummy"), "", options, null, OptionMap.EMPTY, false)).getType());
     }
 
     @Test

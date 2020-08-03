@@ -51,7 +51,6 @@ import org.jboss.jandex.DotName;
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 public class WSLibraryFilterProcessor implements DeploymentUnitProcessor {
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
@@ -66,6 +65,12 @@ public class WSLibraryFilterProcessor implements DeploymentUnitProcessor {
                 AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
                 if (resourceRoots != null) {
                     for (ResourceRoot root : resourceRoots) {
+                        if (root.getRoot().getChild("META-INF/services/javax.xml.datatype.DatatypeFactory").exists()
+                                || root.getRoot().getChild("META-INF/services/javax.xml.parsers.DocumentBuilderFactory").exists()
+                                || root.getRoot().getChild("META-INF/services/javax.xml.parsers.SAXParserFactory").exists()
+                                || root.getRoot().getChild("META-INF/services/javax.xml.validation.SchemaFactory").exists()) {
+                            WSLogger.ROOT_LOGGER.warningLibraryInDeployment("JAXP Implementation", root.getRootName());
+                        }
                         if (hasClassesFromPackage(root.getAttachment(ANNOTATION_INDEX), "org.apache.cxf")) {
                             throw WSLogger.ROOT_LOGGER.invalidLibraryInDeployment("Apache CXF", root.getRootName());
                         }

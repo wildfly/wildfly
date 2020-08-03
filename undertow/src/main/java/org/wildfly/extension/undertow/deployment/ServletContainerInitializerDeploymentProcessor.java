@@ -148,20 +148,26 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         // Process HandlesTypes for ServletContainerInitializer
         Map<Class<?>, Set<ServletContainerInitializer>> typesMap = new HashMap<Class<?>, Set<ServletContainerInitializer>>();
         for (ServletContainerInitializer service : scis) {
-            if (service.getClass().isAnnotationPresent(HandlesTypes.class)) {
-                HandlesTypes handlesTypesAnnotation = service.getClass().getAnnotation(HandlesTypes.class);
-                Class<?>[] typesArray = handlesTypesAnnotation.value();
-                if (typesArray != null) {
-                    for (Class<?> type : typesArray) {
-                        Set<ServletContainerInitializer> servicesSet = typesMap.get(type);
-                        if (servicesSet == null) {
-                            servicesSet = new HashSet<ServletContainerInitializer>();
-                            typesMap.put(type, servicesSet);
+            try {
+                if (service.getClass().isAnnotationPresent(HandlesTypes.class)) {
+                    HandlesTypes handlesTypesAnnotation = service.getClass().getAnnotation(HandlesTypes.class);
+                    Class<?>[] typesArray = handlesTypesAnnotation.value();
+                    if (typesArray != null) {
+                        for (Class<?> type : typesArray) {
+                            Set<ServletContainerInitializer> servicesSet = typesMap.get(type);
+                            if (servicesSet == null) {
+                                servicesSet = new HashSet<ServletContainerInitializer>();
+                                typesMap.put(type, servicesSet);
+                            }
+                            servicesSet.add(service);
+                            handlesTypes.put(service, new HashSet<Class<?>>());
                         }
-                        servicesSet.add(service);
-                        handlesTypes.put(service, new HashSet<Class<?>>());
                     }
                 }
+            } catch (ArrayStoreException e) {
+                // https://bugs.openjdk.java.net/browse/JDK-7183985
+                // Class.findAnnotation() has a bug under JDK < 11 which throws ArrayStoreException
+                throw UndertowLogger.ROOT_LOGGER.missingClassInAnnotation(HandlesTypes.class.getSimpleName(), service.getClass().getName());
             }
         }
         Class<?>[] typesArray = typesMap.keySet().toArray(new Class<?>[0]);

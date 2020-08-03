@@ -25,10 +25,9 @@ package org.wildfly.clustering.web.infinispan.routing;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.infinispan.configuration.cache.CacheMode;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.web.routing.RouteLocator;
 
@@ -37,7 +36,7 @@ import org.wildfly.clustering.web.routing.RouteLocator;
  */
 public class PrimaryOwnerRouteLocator implements RouteLocator {
 
-    private final Function<Key<String>, Node> primaryOwnerLocator;
+    private final Function<GroupedKey<String>, Node> primaryOwnerLocator;
     private final Registry<String, Void> registry;
     private final boolean preferPrimary;
     private final String localRoute;
@@ -45,14 +44,13 @@ public class PrimaryOwnerRouteLocator implements RouteLocator {
     public PrimaryOwnerRouteLocator(PrimaryOwnerRouteLocatorConfiguration config) {
         this.registry = config.getRegistry();
         this.primaryOwnerLocator = new PrimaryOwnerLocator<>(config.getCache(), config.getMemberFactory(), this.registry.getGroup());
-        CacheMode mode = config.getCache().getCacheConfiguration().clustering().cacheMode();
-        this.preferPrimary = mode.isClustered() && !mode.isScattered();
+        this.preferPrimary = config.getCache().getCacheConfiguration().clustering().cacheMode().isClustered();
         this.localRoute = this.registry.getEntry(this.registry.getGroup().getLocalMember()).getKey();
     }
 
     @Override
     public String locate(String sessionId) {
-        Node primaryMember = this.preferPrimary ? this.primaryOwnerLocator.apply(new Key<>(sessionId)) : null;
+        Node primaryMember = this.preferPrimary ? this.primaryOwnerLocator.apply(new GroupedKey<>(sessionId)) : null;
         Map.Entry<String, Void> entry = (primaryMember != null) ? this.registry.getEntry(primaryMember) : null;
         return (entry != null) ? entry.getKey() : this.localRoute;
     }

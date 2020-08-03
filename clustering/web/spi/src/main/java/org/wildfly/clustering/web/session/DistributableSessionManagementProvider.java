@@ -40,13 +40,12 @@ public interface DistributableSessionManagementProvider {
      * @param <S> the HttpSession specification type
      * @param <SC> the ServletContext specification type
      * @param <AL> the HttpSessionAttributeListener specification type
-     * @param <BL> the HttpSessionBindingListener specification type
      * @param <MC> the marshalling context type
      * @param <LC> the local context type
      * @param configuration the configuration of the session manager factory
      * @return a service configurator
      */
-    <S, SC, AL, BL, MC, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> configuration);
+    <S, SC, AL, MC, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration);
 
     /**
      * Returns a {@link CapabilityServiceConfigurator} used to configure a service providing a {@link org.wildfly.clustering.web.routing.RouteLocator}.

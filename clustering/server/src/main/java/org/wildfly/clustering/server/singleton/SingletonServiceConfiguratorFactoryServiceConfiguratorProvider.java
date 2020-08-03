@@ -22,12 +22,12 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.CacheRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.service.ServiceNameRegistry;
@@ -44,14 +44,14 @@ public class SingletonServiceConfiguratorFactoryServiceConfiguratorProvider exte
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
-        Collection<CapabilityServiceConfigurator> configurators = super.getServiceConfigurators(registry, containerName, cacheName);
-        // Add configurator for deprecated capability
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
+        Iterable<CapabilityServiceConfigurator> configurators = super.getServiceConfigurators(registry, containerName, cacheName);
         @SuppressWarnings("deprecation")
-        CapabilityServiceConfigurator deprecatedConfigurator = new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY), ClusteringCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, containerName, cacheName);
-        List<CapabilityServiceConfigurator> result = new ArrayList<>(configurators.size() + 1);
-        result.addAll(configurators);
-        result.add(deprecatedConfigurator);
-        return result;
+        ServiceName name = registry.getServiceName(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY);
+        if (name == null) return configurators;
+
+        // Add configurator for deprecated capability
+        CapabilityServiceConfigurator deprecatedConfigurator = new IdentityCapabilityServiceConfigurator<>(name, ClusteringCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, containerName, cacheName);
+        return new CompositeIterable<>(configurators, Collections.singleton(deprecatedConfigurator));
     }
 }

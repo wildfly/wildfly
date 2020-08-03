@@ -38,8 +38,8 @@ import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
@@ -165,13 +165,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @CacheEntriesEvicted
-    public void evicted(CacheEntriesEvictedEvent<Key<String>, ?> event) {
+    public void evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
         if (!event.isPre()) {
             Set<SessionAttributeNamesKey> keys = new HashSet<>();
-            for (Key<String> key : event.getEntries().keySet()) {
+            for (GroupedKey<String> key : event.getEntries().keySet()) {
                 // Workaround for ISPN-8324
                 if (key instanceof SessionCreationMetaDataKey) {
-                    keys.add(new SessionAttributeNamesKey(key.getValue()));
+                    keys.add(new SessionAttributeNamesKey(key.getId()));
                 }
             }
             if (!keys.isEmpty()) {
@@ -179,7 +179,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
                 for (Map.Entry<SessionAttributeNamesKey, Map<String, UUID>> entry : this.namesCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).getAll(keys).entrySet()) {
                     Map<String, UUID> names = entry.getValue();
                     if (names != null) {
-                        String sessionId = entry.getKey().getValue();
+                        String sessionId = entry.getKey().getId();
                         for (UUID attributeId : names.values()) {
                             cache.evict(new SessionAttributeKey(sessionId, attributeId));
                         }

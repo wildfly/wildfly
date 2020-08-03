@@ -21,13 +21,13 @@
  */
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 
 /**
  * Cache key for session attributes.
  * @author Paul Ferraro
  */
-public class SessionAttributesKey extends Key<String> {
+public class SessionAttributesKey extends GroupedKey<String> {
 
     public SessionAttributesKey(String id) {
         super(id);

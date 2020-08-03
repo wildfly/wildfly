@@ -40,6 +40,8 @@ import org.jboss.dmr.ModelType;
 @Deprecated
 public class FilePassivationStoreResourceDefinition extends LegacyPassivationStoreResourceDefinition {
 
+    // this actually has a dependency on a cache factory using default cache container and cache name "passivation"
+    // but no attributes to set requirements for !?
     @Deprecated
     public static final SimpleAttributeDefinition MAX_SIZE = MAX_SIZE_BUILDER.build();
     @Deprecated
@@ -79,6 +81,7 @@ public class FilePassivationStoreResourceDefinition extends LegacyPassivationSto
             .setDeprecated(DEPRECATED_VERSION)
             .build()
     ;
+
 
     private static final AttributeDefinition[] ATTRIBUTES = { IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, RELATIVE_TO, GROUPS_PATH, SESSIONS_PATH, SUBDIRECTORY_COUNT };
 

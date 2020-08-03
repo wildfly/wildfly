@@ -11,6 +11,7 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
 import org.jboss.as.txn.service.internal.tsr.TransactionSynchronizationRegistryWrapper;
 import org.jboss.tm.XAResourceRecovery;
@@ -29,6 +30,7 @@ public class TestWildFlyTSR {
     @Test
     public void test() throws NotSupportedException, SystemException, SecurityException, IllegalStateException, RollbackException, HeuristicMixedException, HeuristicRollbackException {
         jtaPropertyManager.getJTAEnvironmentBean().setTransactionManagerClassName("com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple");
+        arjPropertyManager.getObjectStoreEnvironmentBean().setObjectStoreDir(System.getProperty("ObjectStoreEnvironmentBean.objectStoreDir"));
         final TransactionSynchronizationRegistry tsr =
             new TransactionSynchronizationRegistryWrapper();
         final JBossLocalTransactionProvider.Builder builder = JBossLocalTransactionProvider.builder();

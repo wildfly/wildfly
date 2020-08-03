@@ -1,7 +1,7 @@
 [[Custom_Components]]
 = Custom Components
 
-WildFly Elytron subsystem allows to add custom implementation of different
+WildFly Elytron subsystem allows adding custom implementation of different
 components in form of WildFly modules into the WildFly instance and use them
 by the same way as built-in Elytron subsystem components.
 For example, you can create custom security event listener to develop custom

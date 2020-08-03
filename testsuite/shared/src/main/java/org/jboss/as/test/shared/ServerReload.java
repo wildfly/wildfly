@@ -194,12 +194,13 @@ public class ServerReload {
     }
 
     private static void waitForLiveServerToReload(int timeout, String serverAddress, int serverPort) {
+        int adjustedTimeout = TimeoutUtil.adjust(timeout);
         long start = System.currentTimeMillis();
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
         operation.get(NAME).set("server-state");
-        while (System.currentTimeMillis() - start < timeout) {
+        while (System.currentTimeMillis() - start < adjustedTimeout) {
             //do the sleep before we check, as the attribute state may not change instantly
             //also reload generally takes longer than 100ms anyway
             try {
@@ -212,6 +213,8 @@ public class ServerReload {
                 try {
                     ModelNode result = liveClient.execute(operation);
                     if ("running" .equals(result.get(RESULT).asString())) {
+                        log.debugf("Server %s:%d was reloaded in %d milliseconds",
+                                serverAddress, serverPort, System.currentTimeMillis() - start);
                         return;
                     }
                 } catch (IOException e) {
@@ -223,7 +226,8 @@ public class ServerReload {
                 throw new RuntimeException(e);
             }
         }
-        fail("Live Server did not reload in the imparted time.");
+        fail("Live Server did not reload in the imparted time of " +
+                adjustedTimeout + "(" + timeout + ") milliseconds");
     }
 
     /**

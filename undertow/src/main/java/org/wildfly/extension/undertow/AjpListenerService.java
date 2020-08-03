@@ -29,6 +29,7 @@ import io.undertow.UndertowOptions;
 import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.ajp.AjpOpenListener;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.msc.service.StartContext;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
@@ -46,9 +47,11 @@ public class AjpListenerService extends ListenerService {
 
     private volatile AcceptingChannel<StreamConnection> server;
     private final String scheme;
+    private final PathAddress address;
 
-    public AjpListenerService(String name, final String scheme, OptionMap listenerOptions, OptionMap socketOptions) {
-        super(name, listenerOptions, socketOptions, false);
+    public AjpListenerService(final PathAddress address, final String scheme, OptionMap listenerOptions, OptionMap socketOptions) {
+        super(address.getLastElement().getValue(), listenerOptions, socketOptions, false);
+        this.address = address;
         this.scheme = scheme;
     }
 

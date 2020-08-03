@@ -23,10 +23,12 @@
 package org.jboss.as.test.integration.messaging.jms.context;
 
 import static javax.jms.DeliveryMode.NON_PERSISTENT;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.PropertyPermission;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -41,6 +43,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.BeanManagedMessageConsumer;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.RequestScopedMDB;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -73,7 +76,10 @@ public class ScopedInjectedJMSContextTestCase {
         return ShrinkWrap.create(JavaArchive.class, "ScopedInjectedJMSContextTestCase.jar")
                 .addClass(BeanManagedMessageConsumer.class)
                 .addClass(RequestScopedMDB.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addClass(TimeoutUtil.class)
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                    new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
     }
 
     /**
@@ -110,7 +116,7 @@ public class ScopedInjectedJMSContextTestCase {
                     .setDeliveryMode(NON_PERSISTENT)
                     .send(queueForRequestScope, text);
             JMSConsumer consumer = context.createConsumer(tempQueue);
-            String reply = consumer.receiveBody(String.class, 1000);
+            String reply = consumer.receiveBody(String.class, TimeoutUtil.adjust(1000));
             assertNotNull(reply);
 
             JMSConsumer consumerInMDB = RequestScopedMDB.consumer;

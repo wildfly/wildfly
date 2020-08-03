@@ -40,6 +40,7 @@ import javax.jms.JMSDestinationDefinitions;
 import javax.jms.JMSRuntimeException;
 import javax.transaction.UserTransaction;
 
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 
 /**
@@ -72,14 +73,14 @@ public class BeanManagedMessageConsumer {
         transaction.begin();
 
         JMSConsumer consumer = context.createConsumer(destination);
-        String text = consumer.receiveBody(String.class, 1000);
+        String text = consumer.receiveBody(String.class, TimeoutUtil.adjust(1000));
         assertNotNull(text);
         assertEquals(expectedText, text);
 
         transaction.commit();
 
         try {
-            consumer.receiveBody(String.class, 1000);
+            consumer.receiveBody(String.class, TimeoutUtil.adjust(1000));
             Assert.fail("call must fail as the injected JMSContext is closed when the transaction is committed");
         } catch (JMSRuntimeException e) {
             // exception is expected

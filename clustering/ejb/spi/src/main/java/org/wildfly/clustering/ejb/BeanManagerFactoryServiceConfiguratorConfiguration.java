@@ -27,7 +27,6 @@ package org.wildfly.clustering.ejb;
  */
 public interface BeanManagerFactoryServiceConfiguratorConfiguration extends BeanPassivationConfiguration {
     String DEFAULT_CONTAINER_NAME = "ejb";
-    String CLIENT_MAPPINGS_CACHE_NAME = "client-mappings";
 
     String getContainerName();
     String getCacheName();

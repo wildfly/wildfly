@@ -31,12 +31,11 @@ import org.wildfly.clustering.web.WebDeploymentConfiguration;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @param <MC> the marshalling context type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> extends WebDeploymentConfiguration {
+public interface SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends WebDeploymentConfiguration {
 
     Integer getMaxActiveSessions();
 
@@ -46,5 +45,5 @@ public interface SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> exten
 
     Immutability getImmutability();
 
-    SpecificationProvider<S, SC, AL, BL> getSpecificationProvider();
+    SpecificationProvider<S, SC, AL> getSpecificationProvider();
 }

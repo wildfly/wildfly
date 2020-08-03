@@ -53,6 +53,7 @@ import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.ServerSnapshot;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -218,7 +219,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
         Pattern successPattern = Pattern.compile(regex);
 
         // we'll be actively waiting for a given INTERVAL for the record to appear
-        final long INTERVAL = 5000;
+        final long INTERVAL = TimeoutUtil.adjust(5000);
         long startTime = System.currentTimeMillis();
         String line;
         search_for_log:

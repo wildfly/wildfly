@@ -94,6 +94,10 @@ public class WeldSecurityServices implements Service, SecurityServices {
 
     @Override
     public org.jboss.weld.security.spi.SecurityContext getSecurityContext() {
+        if (securityManagerSupplier == null) {
+            return SecurityServices.super.getSecurityContext();
+        }
+
         SecurityContext ctx;
         if (WildFlySecurityManager.isChecking()) {
             ctx = AccessController.doPrivileged((PrivilegedAction<SecurityContext>) () -> SecurityContextAssociation.getSecurityContext());

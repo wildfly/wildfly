@@ -34,6 +34,6 @@ import org.wildfly.clustering.web.WebDeploymentRequirement;
 public class RouteLocatorServiceNameProvider extends SimpleServiceNameProvider {
 
     public RouteLocatorServiceNameProvider(WebDeploymentConfiguration configuration) {
-        super(ServiceNameFactory.parseServiceName(WebDeploymentRequirement.ROUTE_LOCATOR.resolve(configuration.getDeploymentName())));
+        super(ServiceNameFactory.parseServiceName(WebDeploymentRequirement.ROUTE_LOCATOR.getName()).append(configuration.getDeploymentName()));
     }
 }

@@ -76,6 +76,13 @@ public class Capabilities {
     static final String HTTP_LISTENER_REGISTRY_CAPABILITY_NAME = "org.wildfly.remoting.http-listener-registry";
 
     /**
+     * The capability for the Http Upgrade Registry
+     *
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/undertow/http-upgrade-registry/capability.adoc">documentation</a>
+     */
+    static final String HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME = "org.wildfly.undertow.listener.http-upgrade-registry";
+
+    /**
      * The capability for the SocketBinding capability
      *
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/network/socket-binding/capability.adoc">documentation</a>

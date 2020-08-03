@@ -201,7 +201,7 @@ Basic layers:
 * _remoting_: Support for inbound and outbound JBoss Remoting connections.
 * _request-controller_: Support for request management.
 * _secure-management_: Support for remote access to management interfaces secured using Elytron.
-* _security-management_: Support for security manager.
+* _security-manager_: Support for security manager.
 
 Aggregation layers:
 

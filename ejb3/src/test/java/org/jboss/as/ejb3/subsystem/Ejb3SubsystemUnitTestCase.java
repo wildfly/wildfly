@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.subsystem;
 
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -62,13 +64,20 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
+    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
+        Set<PathAddress> ignoredChildren = new HashSet<PathAddress>();
+       // ignoredChildren.add(PathAddress.pathAddress(PathElement.pathElement("subsystem", "ejb3"), PathElement.pathElement("passivation-store", "infinispan")));
+        return ignoredChildren;
+    }
+
+    @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_7_0.xsd";
+        return "schema/wildfly-ejb3_8_0.xsd";
     }
 
     @Override

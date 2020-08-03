@@ -54,21 +54,20 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @param <MC> the marshalling context type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
+public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
 
     private final HotRodSessionManagementConfiguration configuration;
-    private final SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration;
+    private final SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration;
 
     private volatile ServiceConfigurator cacheConfigurator;
     @SuppressWarnings("rawtypes")
     private volatile SupplierDependency<RemoteCache> cache;
 
-    public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration) {
+    public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration) {
         super(ServiceName.JBOSS.append("clustering", "web", factoryConfiguration.getDeploymentName()));
         this.configuration = configuration;
         this.factoryConfiguration = factoryConfiguration;
@@ -148,7 +147,7 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC, L
     }
 
     @Override
-    public SpecificationProvider<S, SC, AL, BL> getSpecificationProvider() {
+    public SpecificationProvider<S, SC, AL> getSpecificationProvider() {
         return this.factoryConfiguration.getSpecificationProvider();
     }
 }

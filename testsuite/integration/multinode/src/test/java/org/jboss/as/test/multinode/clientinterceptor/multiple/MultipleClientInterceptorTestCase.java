@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.multinode.clientinterceptor.multiple;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.fail;
 import java.security.SecurityPermission;
@@ -83,11 +82,7 @@ public class MultipleClientInterceptorTestCase {
         jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
         jar.addAsManifestResource(
                 createPermissionsXmlAsset(
-                        new SecurityPermission("putProviderProperty.WildFlyElytron"),createFilePermission("read,write",
-                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write",
-                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-"))),
-
+                        new SecurityPermission("putProviderProperty.WildFlyElytron")),
                 "permissions.xml");
         return jar;
     }

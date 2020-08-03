@@ -44,14 +44,13 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.Key;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionBindingNotifier;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
@@ -68,14 +67,13 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @param <MV> the meta-data value type
  * @param <AV> the attributes value type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
 @Listener(primaryOnly = true)
-public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
+public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
 
     private final Registrar<SessionExpirationListener> expirationRegistrar;
     private final SessionExpirationListener expirationListener;
@@ -88,12 +86,13 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
     private final Predicate<Object> filter = new SessionCreationMetaDataKeyFilter();
     private final Recordable<ImmutableSession> recorder;
     private final SC context;
-    private final SpecificationProvider<S, SC, AL, BL> provider;
+    private final SpecificationProvider<S, SC, AL> provider;
+    private final Runnable startTask;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
 
-    public InfinispanSessionManager(SessionFactory<SC, MV, AV, LC> factory, InfinispanSessionManagerConfiguration<S, SC, AL, BL> configuration) {
+    public InfinispanSessionManager(SessionFactory<SC, MV, AV, LC> factory, InfinispanSessionManagerConfiguration<S, SC, AL> configuration) {
         this.factory = factory;
         this.cache = configuration.getCache();
         this.properties = configuration.getProperties();
@@ -105,6 +104,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
         this.recorder = configuration.getInactiveSessionRecorder();
         this.context = configuration.getServletContext();
         this.provider = configuration.getSpecificationProvider();
+        this.startTask = configuration.getStartTask();
     }
 
     @Override
@@ -118,6 +118,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
         this.cache.addListener(this, filter, null);
         this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
         this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
+        this.startTask.run();
     }
 
     @Override
@@ -203,7 +204,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
     private Set<String> getSessions(Flag... flags) {
         Locality locality = new CacheLocality(this.cache);
         try (Stream<Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
-            return keys.filter(this.filter.and(key -> locality.isLocal(key))).map(key -> key.getValue()).collect(Collectors.toSet());
+            return keys.filter(this.filter.and(key -> locality.isLocal(key))).map(key -> key.getId()).collect(Collectors.toSet());
         }
     }
 
@@ -215,7 +216,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (!event.isPre() && !this.properties.isPersistent()) {
-            String id = event.getKey().getValue();
+            String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
             if (value != null) {
@@ -228,7 +229,7 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre() && !this.properties.isPersistent()) {
-            String id = event.getKey().getValue();
+            String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
             Map.Entry<MV, AV> value = this.factory.tryValue(id);
             if (value != null) {
@@ -241,15 +242,12 @@ public class InfinispanSessionManager<S, SC, AL, BL, MV, AV, LC> implements Sess
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre()) {
-            String id = event.getKey().getValue();
+            String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-            Map.Entry<MV, AV> value = this.factory.tryValue(id);
-            if (value != null) {
-                ImmutableSession session = this.factory.createImmutableSession(id, value);
-
-                new ImmutableSessionBindingNotifier<>(this.provider, session, this.context).unbound();
-
-                if (this.recorder != null) {
+            if (this.recorder != null) {
+                Map.Entry<MV, AV> value = this.factory.tryValue(id);
+                if (value != null) {
+                    ImmutableSession session = this.factory.createImmutableSession(id, value);
                     this.recorder.record(session);
                 }
             }

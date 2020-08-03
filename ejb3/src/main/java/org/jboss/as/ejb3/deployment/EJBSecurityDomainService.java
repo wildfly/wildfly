@@ -76,7 +76,7 @@ public class EJBSecurityDomainService implements Service<Void> {
 
         ApplicationSecurityDomain applicationSecurityDomain = this.applicationSecurityDomain.getOptionalValue();
         if (applicationSecurityDomain != null) {
-            BiFunction<String, ClassLoader, Registration> securityFunction = applicationSecurityDomain != null ? applicationSecurityDomain.getSecurityFunction() : null;
+            BiFunction<String, ClassLoader, Registration> securityFunction = applicationSecurityDomain.getSecurityFunction();
             if (securityFunction != null) {
                 Registration registration = securityFunction.apply(deploymentName, classLoader);
                 cleanUpTask = registration::cancel;

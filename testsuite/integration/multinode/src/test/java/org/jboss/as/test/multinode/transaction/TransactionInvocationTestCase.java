@@ -22,19 +22,6 @@
 
 package org.jboss.as.test.multinode.transaction;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
-import java.io.IOException;
-import java.util.Arrays;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -44,6 +31,15 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import java.io.IOException;
 
 /**
  * A simple EJB Remoting transaction context propagation in JTS style from one AS7 server to another.
@@ -72,11 +68,7 @@ public class TransactionInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, CLIENT_DEPLOYMENT + ".jar");
         jar.addClasses(ClientEjb.class, TransactionalRemote.class, TransactionInvocationTestCase.class,
                 TransactionalStatefulRemote.class);
-        jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "jbossas.multinode.client",
-                        Arrays.asList("standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write", "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-"))
-                ), "permissions.xml");
+        jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
         return jar;
     }
 

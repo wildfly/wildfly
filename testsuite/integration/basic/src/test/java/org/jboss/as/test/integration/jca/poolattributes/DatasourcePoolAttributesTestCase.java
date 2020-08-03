@@ -109,7 +109,7 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
                 "org.jboss.dmr," +
                 "org.jboss.staxmapper," +
                 // Needed for RemotingPermission class if security manager is enabled
-                (System.getProperty("security.manager") == null ? "" : "org.jboss.remoting3,") +
+                (System.getProperty("security.manager") == null ? "" : "org.jboss.remoting,") +
                 "org.jboss.ironjacamar.api," +
                 "org.jboss.ironjacamar.impl," +
                 "org.jboss.ironjacamar.jdbcadapters\n"), "MANIFEST.MF");

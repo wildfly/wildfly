@@ -22,13 +22,13 @@
 
 package org.wildfly.clustering.ejb.infinispan.group;
 
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupKey;
-import org.wildfly.clustering.ejb.infinispan.Key;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanGroupKey<I> extends Key<I> implements BeanGroupKey<I> {
+public class InfinispanBeanGroupKey<I> extends GroupedKey<I> implements BeanGroupKey<I> {
 
     public InfinispanBeanGroupKey(I id) {
         super(id);

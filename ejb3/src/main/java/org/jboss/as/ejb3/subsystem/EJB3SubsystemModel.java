@@ -43,6 +43,7 @@ public interface EJB3SubsystemModel {
     String IIOP = "iiop";
 
     String CONNECTOR_REF = "connector-ref";
+    String CONNECTORS = "connectors";
     String IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE = "in-vm-remote-interface-invocation-pass-by-value";
 
     String DATASOURCE_JNDI_NAME = "datasource-jndi-name";
@@ -147,6 +148,9 @@ public interface EJB3SubsystemModel {
     PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);
     PathElement FILE_DATA_STORE_PATH = PathElement.pathElement(FILE_DATA_STORE);
     PathElement DATABASE_DATA_STORE_PATH = PathElement.pathElement(DATABASE_DATA_STORE);
+    PathElement MDB_DELIVERY_GROUP_PATH = PathElement.pathElement(MDB_DELIVERY_GROUP);
+    PathElement STRICT_MAX_BEAN_INSTANCE_POOL_PATH = PathElement.pathElement(STRICT_MAX_BEAN_INSTANCE_POOL);
+    PathElement REMOTING_PROFILE_PATH = PathElement.pathElement(REMOTING_PROFILE);
 
     String BASE_EJB_THREAD_POOL_NAME = "ejb3";
     ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append(BASE_EJB_THREAD_POOL_NAME);

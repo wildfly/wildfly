@@ -80,7 +80,7 @@ public class CoarseSessionsFactory<D, S> implements SessionsFactory<Map<D, S>, D
         Cache cache = this.cache;
         try (Stream<Map.Entry<?, ?>> stream = cache.entrySet().stream()) {
             Map.Entry<CoarseSessionsKey, Map<D, S>> entry = stream.filter(this.filter).map(this.filter).filter(filter).findAny().orElse(null);
-            return (entry != null) ? new AbstractMap.SimpleImmutableEntry<>(entry.getKey().getValue(), entry.getValue()) : null;
+            return (entry != null) ? new AbstractMap.SimpleImmutableEntry<>(entry.getKey().getId(), entry.getValue()) : null;
         }
     }
 

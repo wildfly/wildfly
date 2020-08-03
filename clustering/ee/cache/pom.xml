@@ -44,6 +44,12 @@
         This module contains code that is common to the wildfly-clustering-ee-hotrod and wildfly-clustering-ee-infinispan modules.
     </description>
 
+    <properties>
+        <jdk.max.version>9</jdk.max.version>
+        <!-- This property otherwise causes the java8-test execution to crash -->
+        <modular.jdk.args></modular.jdk.args>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>

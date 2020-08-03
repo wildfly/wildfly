@@ -22,8 +22,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +29,6 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.Provider;
-import java.util.Arrays;
 import java.util.Properties;
 
 import javax.ejb.NoSuchEJBException;
@@ -46,9 +43,11 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
@@ -190,12 +189,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         final JavaArchive ejbClientJar = ShrinkWrap.create(JavaArchive.class, OUTBOUND_CONNECTION_MODULE_NAME + ".jar");
         ejbClientJar.addClass(WhoAmI.class)
                 .addClass(IntermediateWhoAmI.class)
-                .addAsManifestResource(IntermediateWhoAmI.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "basedir"
-                         , Arrays.asList("target", OUTBOUND_CONNECTION_SERVER, "standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write", "basedir"
-                                , Arrays.asList("target", OUTBOUND_CONNECTION_SERVER, "standalone", "data", "ejb-xa-recovery", "-"))
-                ), "permissions.xml");
+                .addAsManifestResource(IntermediateWhoAmI.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return ejbClientJar;
     }
 
@@ -243,6 +237,10 @@ public class ElytronRemoteOutboundConnectionTestCase {
                     "default-authentication-context"));
             clientReloadRequired = true;
         }
+
+        applyUpdate(clientSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
+        executeBlockingReloadClientServer(clientSideMCC);
+
         removeIfExists(clientSideMCC, getConnectionAddress(REMOTE_OUTBOUND_CONNECTION), !clientReloadRequired);
         removeIfExists(clientSideMCC, getAuthenticationContextAddress(DEFAULT_AUTH_CONTEXT), !clientReloadRequired);
         removeIfExists(clientSideMCC, getServerSSLContextAddress(DEFAULT_SERVER_SSL_CONTEXT), !clientReloadRequired);
@@ -285,6 +283,9 @@ public class ElytronRemoteOutboundConnectionTestCase {
         compositeBuilder.addStep(update);
 
         applyUpdate(serverSideMCC, compositeBuilder.build().getOperation());
+
+        applyUpdate(serverSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
+        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
 
         removeIfExists(serverSideMCC, getConnectorAddress(CONNECTOR));
         removeIfExists(serverSideMCC, getHttpConnectorAddress(CONNECTOR));
@@ -1165,11 +1166,25 @@ public class ElytronRemoteOutboundConnectionTestCase {
         if (serverSSLContextName != null && !serverSSLContextName.isEmpty()) {
             addConnectorOp.get(SSL_CONTEXT).set(serverSSLContextName);
         }
-        return addConnectorOp;
+
+        return Operations.CompositeOperationBuilder.create()
+            .addStep(addConnectorOp)
+            .addStep(getEjbConnectorOp("list-add", connectorName))
+            .build().getOperation();
     }
 
     private static ModelNode getAddConnectorOp(String connectorName, String socketBindingName, String factoryName) {
         return getAddConnectorOp(connectorName, socketBindingName, factoryName, "");
+    }
+
+    private static ModelNode getEjbConnectorOp(String operationName, String connectorName) {
+        ModelNode operation = Util.createOperation(operationName, PathAddress.pathAddress(
+                PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3"),
+                PathElement.pathElement(ModelDescriptionConstants.SERVICE, ModelDescriptionConstants.REMOTE)
+                ));
+        operation.get(ModelDescriptionConstants.NAME).set("connectors");
+        operation.get(ModelDescriptionConstants.VALUE).set(connectorName);
+        return operation;
     }
 
     private static PathAddress getOutboundSocketBindingAddress(String socketBindingName) {
@@ -1188,7 +1203,11 @@ public class ElytronRemoteOutboundConnectionTestCase {
         ModelNode addHttpConnectorOp = Util.createAddOperation(getHttpConnectorAddress(connectorName));
         addHttpConnectorOp.get("connector-ref").set(connectorRef);
         addHttpConnectorOp.get(SASL_AUTHENTICATION_FACTORY).set(factoryName);
-        return addHttpConnectorOp;
+
+        return Operations.CompositeOperationBuilder.create()
+                .addStep(addHttpConnectorOp)
+                .addStep(getEjbConnectorOp("list-add", connectorName))
+                .build().getOperation();
     }
 
     private static ModelNode getAddOutboundSocketBindingOp(String socketBindingName, String host, int port) {
@@ -1347,6 +1366,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
         applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, BARE_REMOTING_PORT));
         applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY));
+        executeBlockingReloadServerSide(serverSideMCC);
     }
 
     private static void configureServerSideForInboundSSLRemoting(ModelControllerClient serverSideMCC) {
@@ -1361,6 +1381,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddTrustManagerOp(SERVER_TRUST_MANAGER, SERVER_TRUST_STORE));
         applyUpdate(serverSideMCC, getAddServerSSLContextOp(SERVER_SSL_CONTEXT, SERVER_KEY_MANAGER, SERVER_TRUST_MANAGER));
         applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, SERVER_SSL_CONTEXT));
+        executeBlockingReloadServerSide(serverSideMCC);
     }
 
     private static void configureServerSideForInboundHttpRemoting(ModelControllerClient serverSideMCC) {
@@ -1408,6 +1429,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
         applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, BARE_REMOTING_PORT));
         applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY));
+        executeBlockingReloadServerSide(serverSideMCC);
     }
 
     private static ModelControllerClient getInboundConnectionServerMCC() {

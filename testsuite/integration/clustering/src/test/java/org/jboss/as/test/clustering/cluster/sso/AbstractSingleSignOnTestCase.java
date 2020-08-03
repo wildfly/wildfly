@@ -25,7 +25,6 @@ import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
@@ -38,15 +37,6 @@ import org.junit.Test;
 public abstract class AbstractSingleSignOnTestCase extends AbstractClusteringTestCase {
 
     private static Logger log = Logger.getLogger(AbstractSingleSignOnTestCase.class);
-
-    @Override
-    public void beforeTestMethod() throws Exception {
-        // Also start the Infinispan Server instance
-        NodeUtil.start(this.controller, INFINISPAN_SERVER_1);
-
-        NodeUtil.start(this.controller, this.nodes);
-        NodeUtil.deploy(this.deployer, this.deployments);
-    }
 
     /**
      * Test single sign-on across two web apps using form based auth

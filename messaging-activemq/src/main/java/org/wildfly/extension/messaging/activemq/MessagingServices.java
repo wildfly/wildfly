@@ -41,7 +41,6 @@ public class MessagingServices {
      * The service name is "jboss.messaging-activemq"
      */
     static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
-    static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
     public static final ServiceName ACTIVEMQ_CLIENT_THREAD_POOL = JBOSS_MESSAGING_ACTIVEMQ.append("client-thread-pool");
 
     // Cached by MessagingSubsystemAdd at the beginning of runtime processing

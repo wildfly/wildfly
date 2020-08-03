@@ -26,6 +26,6 @@ package org.wildfly.clustering.web.session;
  * Provides servlet specification behavior for a container-agnostic distributed session manager.
  * @author Paul Ferraro
  */
-public interface SpecificationProvider<S, C, AL, BL> extends HttpSessionActivationListenerProvider<S, C, AL>, HttpSessionBindingListenerProvider<S, C, BL> {
+public interface SpecificationProvider<S, C, AL> extends HttpSessionActivationListenerProvider<S, C, AL> {
 
 }

@@ -87,7 +87,7 @@ public class SubsystemConfigSourceTask implements ServerSetupTask {
 
 
     // Contains list of created config sources --- this is used during tearDown
-    private LinkedList<String> registeredConfigSources = new LinkedList<>();
+    private final LinkedList<String> registeredConfigSources = new LinkedList<>();
 
     /* Default ordinal values, https://github.com/eclipse/microprofile-config#design
         - System.getProperties() (ordinal=400)

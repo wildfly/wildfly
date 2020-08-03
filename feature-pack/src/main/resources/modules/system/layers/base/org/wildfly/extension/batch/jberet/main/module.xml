@@ -54,7 +54,8 @@
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.weld.spi" />
-        <module name="org.picketbox"/>
+        <!-- Only used if the capability "org.wildfly.legacy-security" is available -->
+        <module name="org.picketbox" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.common"/>

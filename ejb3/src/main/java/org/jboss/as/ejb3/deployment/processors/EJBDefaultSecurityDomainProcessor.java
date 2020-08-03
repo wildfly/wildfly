@@ -96,7 +96,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         final ServiceName defaultElytronDomainServiceName;
         if (defaultDomainMapping != null) {
             defaultElytronDomainServiceName = support
-                    .getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, defaultSecurityDomain)
+                    .getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, defaultSecurityDomain)
                     .append(Constants.SECURITY_DOMAIN);
         } else {
             defaultElytronDomainServiceName = null;
@@ -144,7 +144,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                 final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
 
                 ServiceName applicationSecurityDomainServiceName = support.getCapabilityServiceName(
-                        ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, selectedElytronDomainName);
+                        ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, selectedElytronDomainName);
                 elytronDomainServiceName = applicationSecurityDomainServiceName.append(Constants.SECURITY_DOMAIN);
 
                 final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(ejbSecurityDomainServiceName, ejbSecurityDomainService)
@@ -171,8 +171,10 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             // We will use the defined Elytron domain for all EJBs and ignore individual configuration.
             // Bean level activation remains dependent on configuration of bean - i.e. does it actually need security?
             final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
+
             final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(ejbSecurityDomainServiceName, ejbSecurityDomainService)
                     .addDependency(elytronDomainServiceName, SecurityDomain.class, ejbSecurityDomainService.getSecurityDomainInjector());
+
             builder.install();
 
             for (ComponentDescription componentDescription : componentDescriptions) {

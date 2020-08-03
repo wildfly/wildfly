@@ -9,7 +9,7 @@ of each
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:ejb3:7.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:8.0">
   <session-bean>
     <stateless>
       <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -46,7 +46,7 @@ of each
       <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
     </data-stores>
   </timer-service>
-  <remote connector-ref="remoting-connector" thread-pool-name="default"/>
+  <remote connectors="remoting-connector" thread-pool-name="default"/>
   <thread-pools>
     <thread-pool name="default">
       <max-threads count="10"/>
@@ -170,8 +170,8 @@ information is saved to.
 [[remote]]
 == <remote>
 
-This is used to enable remote EJB invocations. It specifies the remoting
-connector to use (as defined in the remoting subsystem configuration),
+This is used to enable remote EJB invocations. It specifies a space-separated list of remoting
+connectors to use (as defined in the remoting subsystem configuration),
 and the thread pool to use for remote invocations.
 
 [[thread-pools]]
