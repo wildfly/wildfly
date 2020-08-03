@@ -43,6 +43,7 @@ public class EJBClientDescriptorMetaData {
     private long invocationTimeout;
     private String deploymentNodeSelector;
     private String profile;
+    private int defaultCompression;
 
     private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
     private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
@@ -146,7 +147,13 @@ public class EJBClientDescriptorMetaData {
         this.profile = profile;
     }
 
+    public int getDefaultCompression() {
+        return defaultCompression;
+    }
 
+    public void setDefaultCompression(int defaultCompression) {
+        this.defaultCompression = defaultCompression;
+    }
 
     public class ClusterConfig extends CommonConnectionConfig {
 

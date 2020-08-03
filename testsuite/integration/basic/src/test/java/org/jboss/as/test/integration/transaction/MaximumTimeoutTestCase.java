@@ -97,7 +97,7 @@ public class MaximumTimeoutTestCase {
         return ShrinkWrap.create(JavaArchive.class)
                 .addClasses(MaximumTimeoutTestCase.class, MaximumTimeoutTestCase.TimeoutSetup.class)
                 .addPackage(TestXAResource.class.getPackage())
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.remoting3\n"), "MANIFEST.MF")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.remoting\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
                     // ManagementClient needs the following permissions and a dependency on 'org.jboss.remoting3' module
                     new RemotingPermission("createEndpoint"),

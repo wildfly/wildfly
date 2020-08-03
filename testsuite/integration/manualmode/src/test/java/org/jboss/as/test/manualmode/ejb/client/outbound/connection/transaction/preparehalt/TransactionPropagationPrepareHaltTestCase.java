@@ -100,11 +100,7 @@ public class TransactionPropagationPrepareHaltTestCase {
             .addPackage(TestXAResource.class.getPackage())
             .addAsManifestResource(EchoOnServerOne.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
             .addAsManifestResource(createPermissionsXmlAsset(
-                new RuntimePermission("exitVM", "none"),
-                createFilePermission("read,write", "basedir",
-                    Arrays.asList("target", "jbossas-with-remote-outbound-connection", "standalone", "data", "ejb-xa-recovery")),
-                createFilePermission("read,write", "basedir",
-                    Arrays.asList("target", "jbossas-with-remote-outbound-connection", "standalone", "data", "ejb-xa-recovery", "-"))
+                new RuntimePermission("exitVM", "none")
                 ), "permissions.xml")
             .addAsManifestResource(new StringAsset("Dependencies: org.jboss.jts\n"), "MANIFEST.MF");
         return jar;
@@ -118,8 +114,9 @@ public class TransactionPropagationPrepareHaltTestCase {
             .addPackages(true, TestXAResource.class.getPackage())
             .addAsManifestResource(createPermissionsXmlAsset(
                 new PropertyPermission("jboss.server.data.dir", "read"),
-                createFilePermission("read,write", "basedir", Arrays.asList("target", "wildfly", "standalone", "data")),
-                createFilePermission("read,write", "basedir", Arrays.asList("target", "wildfly", "standalone", "data", "-"))
+                // PersistentTestXAResource requires the following permissions
+                createFilePermission("read", "basedir", Arrays.asList("target", "wildfly", "standalone", "data")),
+                createFilePermission("read,write", "basedir", Arrays.asList("target", "wildfly", "standalone", "data", "PersistentTestXAResource"))
             ), "permissions.xml")
             .addAsManifestResource(new StringAsset("Dependencies: org.jboss.jts\n"), "MANIFEST.MF");
         return jar;

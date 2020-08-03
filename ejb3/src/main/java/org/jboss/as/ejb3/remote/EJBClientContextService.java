@@ -86,6 +86,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     private List<EJBClientCluster> clientClusters = null;
     private AuthenticationContext clustersAuthenticationContext = null;
     private List<EJBClientInterceptor> clientInterceptors = null;
+    private int defaultCompression = -1;
 
     public EJBClientContextService(final boolean makeGlobal) {
         this.makeGlobal = makeGlobal;
@@ -103,6 +104,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
         configuratorServiceInjector.getValue().accept(builder);
 
         builder.setInvocationTimeout(invocationTimeout);
+        builder.setDefaultCompression(defaultCompression);
 
         final EJBTransportProvider localTransport = localProviderInjector.getOptionalValue();
         if (localTransport != null) {
@@ -242,6 +244,10 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
     public void setInvocationTimeout(final long invocationTimeout) {
         this.invocationTimeout = invocationTimeout;
+    }
+
+    public void setDefaultCompression(int defaultCompression) {
+        this.defaultCompression = defaultCompression;
     }
 
     public void setDeploymentNodeSelector(final DeploymentNodeSelector deploymentNodeSelector) {

@@ -37,6 +37,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_6_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_7_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EXECUTION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.EXECUTE_IN_WORKER;
@@ -44,6 +45,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REFRESH_INTERVAL;
 import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.DERIVE_SIZE;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -92,14 +94,17 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         ModelVersion currentModel = subsystemRegistration.getCurrentSubsystemVersion();
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(currentModel);
 
-        registerTransformers_6_0_0(chainedBuilder.createBuilder(currentModel, VERSION_6_0_0.getVersion()));
+        registerTransformers_7_0_0(chainedBuilder.createBuilder(currentModel, VERSION_7_0_0.getVersion()));
+        registerTransformers_6_0_0(chainedBuilder.createBuilder(VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion()));
         registerTransformers_5_0_0(chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion()));
         registerTransformers_4_0_0(chainedBuilder.createBuilder(VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion()));
         registerTransformers_3_0_0(chainedBuilder.createBuilder(VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion()));
         registerTransformers_1_3_0(chainedBuilder.createBuilder(VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion()));
         registerTransformers_1_2_1(chainedBuilder.createBuilder(VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()));
 
-        chainedBuilder.buildAndRegister(subsystemRegistration,new ModelVersion[]{VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()});
+        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[] {
+                VERSION_7_0_0.getVersion(), VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion(),
+                VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(), VERSION_1_3_0.getVersion(), VERSION_1_2_1.getVersion()});
     }
 
     /*
@@ -264,16 +269,34 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .end();
     }
 
+
     /*
      * Transformers for changes in model version 7.0.0
      */
     private static void registerTransformers_6_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+
         // default stateful session timeout
         subsystemBuilder.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT)
                 .end();
+
     }
+
+    /*
+     * Transformers for changes in model version 8.0.0
+     */
+    private static void registerTransformers_7_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        // Replaced <remote connector-ref="<connector>"/> with <remote connectors="<list of connectors>"/>
+        // Both cannot be present. If connectors list > 1, reject; if connectors == 1, convert.
+        subsystemBuilder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH).getAttributeBuilder()
+                // to translate connectors to connector-ref
+                .setDiscard(DISCARD_SINGLETON_LIST, EJB3RemoteResourceDefinition.CONNECTORS)
+                .addRejectCheck(REJECT_NON_SINGLETON_LIST, EJB3RemoteResourceDefinition.CONNECTORS)
+                .setValueConverter(CONVERT_CONNECTOR_REF, EJB3SubsystemModel.CONNECTOR_REF)
+                .end();
+    }
+
 
     /*
      * This transformer is used with the datastores in /subsystem=ejb3/service=timer
@@ -413,6 +436,47 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
             return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
     }
+
+    /*
+     * Checks for a non-singleton list and rejects if found
+     */
+    private static final RejectAttributeChecker REJECT_NON_SINGLETON_LIST = new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return attributeValue.isDefined() && attributeValue.asList().size() > 1;
+        }
+
+        @Override
+        public String getRejectionLogMessageId() {
+            return getRejectionLogMessage(Collections.<String, ModelNode>emptyMap());
+        }
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return EjbLogger.REMOTE_LOGGER.multipleValuesNotSupported(attributes.keySet());
+        }
+    };
+
+    /*
+     * Checks for a singleton list and discards if found
+     */
+    private static final DiscardAttributeChecker DISCARD_SINGLETON_LIST = new DiscardAttributeChecker.DefaultDiscardAttributeChecker(false, true) {
+        @Override
+        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return !attributeValue.isDefined() || attributeValue.asList().size() == 1;
+        }
+    };
+
+    /*
+     * Converts a singleton list from CONNECTORS to CONNECTOR_REF
+     */
+    private static final AttributeConverter CONVERT_CONNECTOR_REF = new AttributeConverter.DefaultAttributeConverter() {
+        @Override
+        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+            if (model.hasDefined(CONNECTORS)) {
+                attributeValue.set(model.get(CONNECTORS).asList().get(0).asString());
+            }
+        }
+    };
 }
-
-

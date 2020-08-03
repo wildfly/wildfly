@@ -74,7 +74,7 @@ public class EEConcurrentManagementTestCase {
     public static Archive<?> deploy() {
         return ShrinkWrap.create(JavaArchive.class, EEConcurrentManagementTestCase.class.getSimpleName() + ".jar")
                 .addClasses(EEConcurrentManagementTestCase.class)
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.as.ee, org.jboss.remoting3\n"), "MANIFEST.MF")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.as.ee, org.jboss.remoting\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new RemotingPermission("createEndpoint"),
                         new RemotingPermission("connect"),

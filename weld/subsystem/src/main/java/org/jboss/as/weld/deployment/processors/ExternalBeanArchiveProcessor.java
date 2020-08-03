@@ -199,6 +199,14 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                             continue;
                         }
 
+                        /*
+                         * check if the dependency processes META-INF, if it doesn't we don't want to pick up beans
+                         * See https://docs.wildfly.org/17/Developer_Guide.html#CDI_Reference
+                         */
+                        if (!dep.getImportFilter().accept("META-INF")) {
+                            continue;
+                        }
+
                         WeldLogger.DEPLOYMENT_LOGGER.debugf("Found external beans.xml: %s", beansXmlUrl.toString());
                         final BeansXml beansXml = parseBeansXml(beansXmlUrl, parser, deploymentUnit);
 

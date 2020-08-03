@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.remote;
+
+package org.wildfly.clustering.ejb;
 
 import java.util.List;
 
-import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
- * Builds a service providing client mappings for a remote EJB connector.
  * @author Paul Ferraro
  */
-public class ClientMappingsRegistryServiceConfigurator extends IdentityCapabilityServiceConfigurator<Registry<String, List<ClientMapping>>> {
+public interface ClientMappingsRegistryProvider {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remoting", "connector", "client-mappings");
-
-    public ClientMappingsRegistryServiceConfigurator(String clientMappingsClusterName) {
-        super(SERVICE_NAME, ClusteringCacheRequirement.REGISTRY, clientMappingsClusterName, BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME);
-    }
+    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String containerName, String connectorName, SupplierDependency<List<ClientMapping>> clientMappings);
 }

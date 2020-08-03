@@ -45,6 +45,7 @@ import org.wildfly.extension.undertow.deployment.DeploymentRootExplodedMountProc
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
 import org.wildfly.extension.undertow.deployment.ExternalTldParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
+import org.wildfly.extension.undertow.deployment.SecurityDomainResolvingProcessor;
 import org.wildfly.extension.undertow.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.SharedSessionManagerDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.TldParsingDeploymentProcessor;
@@ -148,7 +149,8 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
 
-                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new UndertowDeploymentProcessor(defaultVirtualHost, defaultContainer, defaultServer, defaultSecurityDomain, knownSecurityDomain));
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WEB_RESOLVE_SECURITY_DOMAIN, new SecurityDomainResolvingProcessor(defaultSecurityDomain, knownSecurityDomain));
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new UndertowDeploymentProcessor(defaultVirtualHost, defaultContainer, defaultServer, knownSecurityDomain));
 
             }
         }, OperationContext.Stage.RUNTIME);

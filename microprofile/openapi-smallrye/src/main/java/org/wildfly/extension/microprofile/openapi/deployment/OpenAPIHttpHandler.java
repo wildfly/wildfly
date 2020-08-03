@@ -42,8 +42,8 @@ import javax.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.resteasy.util.AcceptParser;
 
+import io.smallrye.openapi.runtime.io.Format;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
-import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;

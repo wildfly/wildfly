@@ -35,10 +35,16 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BE
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_POOL_CONFIG_CAPABILITY;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_POOL_CONFIG_CAPABILITY_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_POOL_CONFIG_CAPABILITY;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_POOL_CONFIG_CAPABILITY_NAME;
+import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -47,10 +53,10 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.clustering.SingletonBarrierService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -125,11 +131,12 @@ import org.jboss.as.ejb3.interceptor.server.ServerInterceptorCache;
 import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
-import org.jboss.as.ejb3.remote.ClientMappingsRegistryServiceConfigurator;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
+import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
+import org.jboss.as.remoting.RemotingConnectorBindingInfoService.RemotingConnectorInfo;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.ServerEnvironment;
@@ -143,6 +150,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -154,6 +162,7 @@ import org.omg.PortableServer.POA;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.service.SingletonPolicy;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.transaction.client.LocalTransactionContext;
@@ -216,9 +225,48 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
+    /*
+     * Conditional registration of capabilities for default bean instance pools (which may or may not be defined)
+     */
     @Override
-    protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        ModelNode model = resource.getModel();
 
+        // register the capability we are exporting as well as its capability requirement on the strict-max-pool that supports it
+        if (model.hasDefined(DEFAULT_SLSB_INSTANCE_POOL)) {
+            context.registerCapability(DEFAULT_SLSB_POOL_CONFIG_CAPABILITY);
+
+            try {
+                // need to resolve the attribute value before using it
+                String resolvedDefaultSLSBPoolName = context.resolveExpressions(model.get(DEFAULT_SLSB_INSTANCE_POOL)).asString();
+                String defaultSLSBPoolRequirementName = RuntimeCapability.buildDynamicCapabilityName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, resolvedDefaultSLSBPoolName);
+
+                context.registerAdditionalCapabilityRequirement(defaultSLSBPoolRequirementName, DEFAULT_SLSB_POOL_CONFIG_CAPABILITY_NAME, DEFAULT_SLSB_INSTANCE_POOL);
+            } catch (OperationFailedException ofe) {
+                EjbLogger.ROOT_LOGGER.defaultPoolExpressionCouldNotBeResolved(DEFAULT_SLSB_INSTANCE_POOL, model.get(DEFAULT_SLSB_INSTANCE_POOL).asString());
+            }
+        }
+
+        if (model.hasDefined(DEFAULT_MDB_INSTANCE_POOL)) {
+            context.registerCapability(DEFAULT_MDB_POOL_CONFIG_CAPABILITY);
+
+            try {
+                // need to resolve the attribute value before using it
+                String resolvedDefaultMDBPoolName = context.resolveExpressions(model.get(DEFAULT_MDB_INSTANCE_POOL)).asString();
+                String defaultMDBPoolRequirementName = RuntimeCapability.buildDynamicCapabilityName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, resolvedDefaultMDBPoolName);
+
+                context.registerAdditionalCapabilityRequirement(defaultMDBPoolRequirementName, DEFAULT_MDB_POOL_CONFIG_CAPABILITY_NAME, DEFAULT_MDB_INSTANCE_POOL);
+            } catch(OperationFailedException ofe) {
+                EjbLogger.ROOT_LOGGER.defaultPoolExpressionCouldNotBeResolved(DEFAULT_MDB_INSTANCE_POOL, model.get(DEFAULT_MDB_INSTANCE_POOL).asString());
+            }
+        }
+
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+    }
+
+    @Override
+    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        final ModelNode model = resource.getModel();
         // Install the server association service
         final AssociationService associationService = new AssociationService();
         final ServiceName suspendControllerServiceName = context.getCapabilityServiceName("org.wildfly.server.suspend-controller", SuspendController.class);
@@ -228,8 +276,18 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
                 .setInitialMode(ServiceController.Mode.LAZY);
 
-        if (context.readResource(PathAddress.EMPTY_ADDRESS, false).hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
-            associationServiceBuilder.addDependency(ClientMappingsRegistryServiceConfigurator.SERVICE_NAME, Registry.class, associationService.getClientMappingsRegistryInjector());
+        if (resource.hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
+            ModelNode remoteModel = resource.getChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH).getModel();
+            String clusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, remoteModel).asString();
+
+            // For each connector
+            for (ModelNode connector : EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, remoteModel).asList()) {
+                String connectorName = connector.asString();
+
+                Map.Entry<Injector<RemotingConnectorInfo>, Injector<Registry>> entry = associationService.addConnectorInjectors(connectorName);
+                associationServiceBuilder.addDependency(RemotingConnectorBindingInfoService.serviceName(connectorName), RemotingConnectorInfo.class, entry.getKey());
+                associationServiceBuilder.addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(context, clusterName, connectorName), Registry.class, entry.getValue());
+            }
         }
         associationServiceBuilder.install();
 
@@ -487,7 +545,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final EJBClientConfiguratorService clientConfiguratorService = new EJBClientConfiguratorService();
         final ServiceBuilder<EJBClientConfiguratorService> configuratorBuilder = serviceTarget.addService(EJBClientConfiguratorService.SERVICE_NAME, clientConfiguratorService);
-        if(context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY, EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR.getName(), null)) {
+        if(context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY, EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR_CAPABILITY.getName(), null)) {
             ServiceName serviceName = context.getCapabilityServiceName(REMOTING_ENDPOINT_CAPABILITY, Endpoint.class);
             configuratorBuilder.addDependency(serviceName, Endpoint.class, clientConfiguratorService.getEndpointInjector());
         }

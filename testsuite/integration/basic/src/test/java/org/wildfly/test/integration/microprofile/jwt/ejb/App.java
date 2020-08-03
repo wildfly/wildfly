@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.test.integration.microprofile.jwt.ejb;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
-/**
- * @author Paul Ferraro
- */
-@MetaInfServices({ DistributedCacheServiceConfiguratorProvider.class, IdentityCacheServiceConfiguratorProvider.class })
-public class DistributedClientMappingsCacheServiceConfiguratorProvider extends ClientMappingsCacheServiceConfiguratorProvider implements DistributedCacheServiceConfiguratorProvider {
+import org.eclipse.microprofile.auth.LoginConfig;
 
-    public DistributedClientMappingsCacheServiceConfiguratorProvider() {
-        super(DistributedCacheServiceConfiguratorProvider.class);
-    }
-}
+@ApplicationPath("/rest")
+@LoginConfig(authMethod="MP-JWT", realmName="MP JWT Realm")
+public class App extends Application {}

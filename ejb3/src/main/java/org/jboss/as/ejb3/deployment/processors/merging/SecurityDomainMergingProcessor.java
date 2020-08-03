@@ -66,7 +66,7 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
             if (ROOT_LOGGER.isDebugEnabled()) {
                 ROOT_LOGGER.debug("EJB " + description.getEJBName() + " is part of security domain " + securityDomain.getClassLevelAnnotations().get(0));
             }
-            description.setSecurityDomain(securityDomain.getClassLevelAnnotations().get(0));
+            description.setDefinedSecurityDomain(securityDomain.getClassLevelAnnotations().get(0));
         }
     }
 
@@ -95,9 +95,9 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
             }
         }
         if (securityDomain != null)
-            description.setSecurityDomain(securityDomain);
+            description.setDefinedSecurityDomain(securityDomain);
         else if (globalSecurityDomain != null)
-            description.setSecurityDomain(globalSecurityDomain);
+            description.setDefinedSecurityDomain(globalSecurityDomain);
     }
 
     /**

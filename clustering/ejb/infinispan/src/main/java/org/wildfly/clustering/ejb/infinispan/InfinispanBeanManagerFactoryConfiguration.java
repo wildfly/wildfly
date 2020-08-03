@@ -28,9 +28,8 @@ import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
-import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.group.Group;
 
 /**
  * @author Paul Ferraro
@@ -42,7 +41,6 @@ public interface InfinispanBeanManagerFactoryConfiguration {
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();
     MarshallingConfigurationRepository getMarshallingConfigurationRepository();
     BeanPassivationConfiguration getPassivationConfiguration();
-    NodeFactory<Address> getNodeFactory();
-    Registry<String, ?> getRegistry();
+    Group<Address> getGroup();
     CommandDispatcherFactory getCommandDispatcherFactory();
 }

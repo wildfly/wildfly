@@ -114,7 +114,7 @@ public class MDBTestCase {
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClass(JmsQueueSetup.class);
         ejbJar.addAsManifestResource(MDBTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting3\n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting\n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),

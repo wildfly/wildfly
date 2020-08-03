@@ -34,6 +34,8 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
+import java.util.concurrent.Executor;
+
 /**
  * A {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
  * remote service, in the EJB subsystem
@@ -51,7 +53,9 @@ public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final String threadPoolName = EJB3AsyncResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
-        final ServiceName threadPoolServiceName = EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName);
+
+        final ServiceName threadPoolServiceName = context.getCapabilityServiceName(EJB3AsyncResourceDefinition.THREAD_POOL_CAPABILITY_NAME, threadPoolName, Executor.class);
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 ROOT_LOGGER.debug("Adding EJB @Asynchronous support");

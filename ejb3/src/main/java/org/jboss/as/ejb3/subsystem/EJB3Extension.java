@@ -62,10 +62,11 @@ public class EJB3Extension implements Extension {
     public static final String NAMESPACE_5_0 = EJB3SubsystemNamespace.EJB3_5_0.getUriString();
     public static final String NAMESPACE_6_0 = EJB3SubsystemNamespace.EJB3_6_0.getUriString();
     public static final String NAMESPACE_7_0 = EJB3SubsystemNamespace.EJB3_7_0.getUriString();
+    public static final String NAMESPACE_8_0 = EJB3SubsystemNamespace.EJB3_8_0.getUriString();
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(7, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = EJB3Model.VERSION_8_0_0.getVersion();
 
     private static final String RESOURCE_NAME = EJB3Extension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -117,5 +118,6 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_5_0, EJB3Subsystem50Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_6_0, EJB3Subsystem60Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_7_0, EJB3Subsystem70Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_8_0, EJB3Subsystem80Parser::new);
     }
 }

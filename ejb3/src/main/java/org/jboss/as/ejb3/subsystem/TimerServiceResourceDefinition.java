@@ -28,11 +28,15 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelType;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the timer-service resource.
@@ -41,9 +45,19 @@ import org.jboss.dmr.ModelType;
  */
 public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
+    // this is an unregistered copy of the capability defined and registered in /subsystem=ejb3/thread-pool=*
+    // needed due to the unorthodox way in which the thread pools are defined in ejb3 subsystem
+    protected static final String THREAD_POOL_CAPABILITY_NAME = ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class).getName();
+    protected static final String DATASTORE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service.timer-persistence-service";
+
+    public static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
+    public static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY =
+            RuntimeCapability.Builder.of(TIMER_SERVICE_CAPABILITY_NAME, java.util.Timer.class).build();
+
     static final SimpleAttributeDefinition THREAD_POOL_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setCapabilityReference(THREAD_POOL_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_DATA_STORE =
@@ -51,6 +65,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     //.setDefaultValue(new ModelNode("default-file-store")) //for backward compatibility!
+                    .setCapabilityReference(DATASTORE_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
                     .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME, DEFAULT_DATA_STORE };
@@ -58,13 +73,14 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     private final PathManager pathManager;
 
     public TimerServiceResourceDefinition(final PathManager pathManager) {
-        super(EJB3SubsystemModel.TIMER_SERVICE_PATH,
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.TIMER_SERVICE),
-                TimerServiceAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
-                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.TIMER_SERVICE))
+                .setAddHandler(TimerServiceAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setCapabilities(TIMER_SERVICE_CAPABILITY));
         this.pathManager = pathManager;
     }
-
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
