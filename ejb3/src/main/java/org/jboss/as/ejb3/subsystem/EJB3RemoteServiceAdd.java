@@ -130,7 +130,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 .setInstance(ejbRemoteConnectorService)
                 .addCapabilityRequirement(EJB3RemoteResourceDefinition.REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
         if (!executeInWorker) {
-            builder.addCapabilityRequirement(EJB3RemoteResourceDefinition.THREAD_POOL_CAPABILITY_NAME, ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
+            builder.addCapabilityRequirement(EJB3RemoteResourceDefinition.THREAD_POOL_CAPABILITY_NAME, ExecutorService.class, ejbRemoteConnectorService.getExecutorService(), threadPoolName);
         }
         // add rest of the dependencies
         builder.addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
