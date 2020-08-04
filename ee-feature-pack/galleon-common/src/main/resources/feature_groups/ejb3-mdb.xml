@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="ejb3-mdb" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.ejb3">
+        <param name="default-resource-adapter-name" value="${ejb.resource-adapter-name:activemq-ra.rar}"/>
+        <param name="default-mdb-instance-pool" value="mdb-strict-max-pool"/>
+    </feature>
+</feature-group-spec>

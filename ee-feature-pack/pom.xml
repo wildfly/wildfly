@@ -37,7 +37,7 @@
         <version>21.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-servlet-feature-pack-parent</artifactId>
+    <artifactId>wildfly-ee-feature-pack-parent</artifactId>
     <description>Parent for various legacy and Galleon feature pack modules</description>
     <packaging>pom</packaging>
 
@@ -46,8 +46,8 @@
         <module>ee-8-api</module>
         <module>galleon-common</module>
         <module>galleon-feature-pack</module>
-        <module>galleon-pruned</module>
         <module>legacy-feature-pack</module>
+        <module>pruned</module>
     </modules>
 
 </project>
