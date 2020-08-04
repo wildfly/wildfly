@@ -163,6 +163,11 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("docs/examples/configs/standalone-genericjms.xml");
     }
 
+    @Test
+    public void testStandaloneActiveMQEmbedded() throws Exception {
+        parseXml("docs/examples/configs/standalone-activemq-embedded.xml");
+    }
+
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
         final File xmlFile = getXmlFile(xmlName);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

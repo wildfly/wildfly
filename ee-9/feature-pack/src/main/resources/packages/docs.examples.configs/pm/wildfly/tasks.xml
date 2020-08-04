@@ -20,5 +20,9 @@
         <config model="standalone" name="standalone-activemq-colocated.xml">
             <feature-group name="standalone-activemq-colocated"/>
         </config>
+        <config model="standalone" name="standalone-activemq-embedded.xml">
+            <feature-group name="standalone-full-x-messaging"/>
+            <feature-group name="messaging-activemq-embedded"/>
+        </config>
     </example-configs>
 </tasks>
