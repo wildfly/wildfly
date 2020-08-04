@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+
+<package-spec xmlns="urn:jboss:galleon:package:2.0" name="servlet.misc.standalone">
+    <dependencies>
+        <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+            <package name="misc.standalone"/>
+        </origin>
+        <package name="servlet.misc.common"/>
+    </dependencies>
+</package-spec>

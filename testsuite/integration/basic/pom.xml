@@ -1362,9 +1362,7 @@
                                         <!-- NonTransactionalEmTestCase is currently the only test that does not need EJB -->
                                         <include>org/jboss/as/test/integration/jpa/**/NonTransactionalEmTestCase.java</include>
                                         <!-- WebJPATestCase is currently the only test that does not need EJB -->
-                                        <!-- But it fails, possibly due to WFLY-13726
                                         <include>org/jboss/as/test/integration/jpa/**/WebJPATestCase.java</include>
-                                        -->
                                     </includes>
                                 </configuration>
                             </execution>

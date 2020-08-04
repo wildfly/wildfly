@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<feature-group-spec name="standalone-azure-ha" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="server-root">
+        <param name="server-root" value="/" />
+    </feature>
+    <feature-group name="interfaces"/>
+    <feature spec="interface">
+        <param name="interface" value="private"/>
+        <param name="inet-address" value="${jboss.bind.address.private:127.0.0.1}"/>
+    </feature>
+
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <param name="port-offset" value="${jboss.socket.binding.port-offset:0}"/>
+        <param name="default-interface" value="public"/>
+        <feature-group name="standalone-sockets"/>
+        <feature-group name="ha-sockets"/>
+    </feature>
+
+    <feature-group name="servlet-security-realms"/>
+
+    <feature-group name="management-audit"/>
+    <feature-group name="management-interfaces"/>
+    <feature-group name="access-control"/>
+
+    <feature-group name="servlet-standalone-profile"/>
+    <feature-group name="basic-ha-profile">
+        <feature spec="subsystem.modcluster">
+            <feature spec="subsystem.modcluster.proxy">
+                <param name="proxy" value="default"/>
+                <unset param="advertise-socket"/>
+                <param name="advertise" value="false"/>
+                <param name="proxies" value=""/>
+            </feature>
+        </feature>
+        <exclude feature-id="subsystem.jgroups.stack:stack=tcp"/>
+        <exclude feature-id="subsystem.jgroups.stack:stack=udp"/>
+        <feature spec="subsystem.jgroups">
+            <feature spec="subsystem.jgroups.stack">
+                <param name="stack" value="tcp"/>
+                <feature spec="subsystem.jgroups.stack.transport">
+                    <param name="transport" value="TCP"/>
+                    <param name="socket-binding" value="jgroups-tcp"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="azure.AZURE_PING"/>
+                    <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;}"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="MERGE3"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK">
+                    <param name="socket-binding" value="jgroups-tcp-fd"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="FD_ALL"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="VERIFY_SUSPECT"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="pbcast.NAKACK2"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="UNICAST3"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="pbcast.STABLE"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="pbcast.GMS"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="FRAG3"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.jgroups.stack">
+                <param name="stack" value="udp"/>
+                <feature spec="subsystem.jgroups.stack.transport">
+                    <param name="transport" value="UDP"/>
+                    <param name="socket-binding" value="jgroups-udp"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="azure.AZURE_PING"/>
+                    <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;}"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="MERGE3"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK">
+                    <param name="socket-binding" value="jgroups-udp-fd"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="FD_ALL"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="VERIFY_SUSPECT"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="pbcast.NAKACK2"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="UNICAST3"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="pbcast.STABLE"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="pbcast.GMS"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="UFC"/>
+                </feature>
+                <feature spec="subsystem.jgroups.stack.protocol">
+                    <param name="protocol" value="FRAG3"/>
+                </feature>
+            </feature>
+        </feature>
+    </feature-group>
+    <feature-group name="health"/>
+    <feature-group name="metrics" />
+</feature-group-spec>
