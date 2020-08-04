@@ -77,6 +77,19 @@
         <version.jakarta.websocket.jakarta-websocket-api>2.0.0-M1</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.0.0-M1</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0-RC3</version.jakarta.xml.bind.jakarta-xml-bind-api>
+        <version.org.eclipse.yasson>2.0.0-M2</version.org.eclipse.yasson>
+        <version.org.glassfish.jakarta.el>4.0.0-RC1</version.org.glassfish.jakarta.el>
+        <!-- Not available on maven central yet
+        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0-RC2</version.org.glassfish.jakarta.enterprise.concurrent>
+        -->
+        <version.org.glassfish.jakarta.json>2.0.0-RC2</version.org.glassfish.jakarta.json>
+        <version.org.hibernate.validator>7.0.0.Alpha3</version.org.hibernate.validator>
+        <version.org.jboss.weld.weld>4.0.0.Alpha2</version.org.jboss.weld.weld>
+        <!-- TODO in the main pom this is a different version from the rest of weld. Why? -->
+        <!-- It's just a test dep so don't override it for now
+        <version.org.jboss.weld.se.weld-se-core>${version.org.jboss.weld.weld}</version.org.jboss.weld.se.weld-se-core>
+        -->
+        <version.org.jboss.weld.weld-api>4.0.Alpha1</version.org.jboss.weld.weld-api>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
@@ -690,6 +703,183 @@
             <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!-- EE 9 Impls -->
+
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <version>${version.org.eclipse.yasson}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <!-- This seems to require an explicit exclusion for yasson 1.0.4 -->
+                <exclusion>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>jakarta.json</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+            <version>${version.org.glassfish.jakarta.el}</version>
+        </dependency>
+
+        <!-- TODO EE 9 glassfish 6 M1 version not yet on maven cental
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.enterprise.concurrent</artifactId>
+            <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.enterprise.concurrent</groupId>
+                    <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>-->
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <version>${version.org.glassfish.jakarta.json}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.json</groupId>
+                    <artifactId>jakarta.json-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${version.org.hibernate.validator}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.validation</groupId>
+                    <artifactId>jakarta.validation-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.logging</groupId>
+                    <artifactId>jboss-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator-cdi</artifactId>
+            <version>${version.org.hibernate.validator}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-api</artifactId>
+            <version>${version.org.jboss.weld.weld-api}</version>
+            <exclusions>
+                <!-- TODO remove this exclusion once this depends on Jakarta CDI -->
+                <!-- superseded by jakarta.enterprise:jakarta.enterprise.cdi-api -->
+                <exclusion>
+                    <groupId>javax.enterprise</groupId>
+                    <artifactId>cdi-api</artifactId>
+                </exclusion>
+                <!-- TODO remove this exclusion once this depends on Jakarta Inject -->
+                <!-- superseded by jakarta.inject:jakarta.inject-api -->
+                <exclusion>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core-impl</artifactId>
+            <version>${version.org.jboss.weld.weld}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-ejb</artifactId>
+            <version>${version.org.jboss.weld.weld}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-jsf</artifactId>
+            <version>${version.org.jboss.weld.weld}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-jta</artifactId>
+            <version>${version.org.jboss.weld.weld}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-spi</artifactId>
+            <version>${version.org.jboss.weld.weld-api}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-web</artifactId>
+            <version>${version.org.jboss.weld.weld}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld.probe</groupId>
+            <artifactId>weld-probe-core</artifactId>
+            <version>${version.org.jboss.weld.weld}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!--<dependency>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se-core</artifactId>
+            <version>${version.org.jboss.weld.se.weld-se-core}</version>
+            <scope>test</scope>
+        </dependency>-->
 
     </dependencies>
 
