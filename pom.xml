@@ -1625,7 +1625,6 @@
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
                 <version>${version.com.nimbus.jose-jwt}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
