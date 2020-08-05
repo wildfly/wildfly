@@ -45,6 +45,7 @@
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.infinispan.spi"/>
+        <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.spi"/>
