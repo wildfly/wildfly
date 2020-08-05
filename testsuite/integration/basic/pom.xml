@@ -1193,7 +1193,7 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>jpa</layer>
-                                                <layer>datasources-web-server</layer>
+                                                <layer>jaxrs-server</layer>
                                                 <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
