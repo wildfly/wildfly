@@ -70,12 +70,12 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
             securityManager = new SimpleSecurityManager((SimpleSecurityManager) ejbComponent.getSecurityManager());
         }
         final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
-        String securityDomain =  securityMetaData.getSecurityDomain();
-        if (securityDomain == null) {
-            securityDomain = DEFAULT_DOMAIN;
+        String securityDomainName =  securityMetaData.getSecurityDomainName();
+        if (securityDomainName == null) {
+            securityDomainName = DEFAULT_DOMAIN;
         }
         if (ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.trace("Using security domain: " + securityDomain + " for EJB " + ejbComponent.getComponentName());
+            ROOT_LOGGER.trace("Using security domain: " + securityDomainName + " for EJB " + ejbComponent.getComponentName());
         }
         final String runAs = securityMetaData.getRunAs();
         // TODO - We should do something with DeclaredRoles although it never has much meaning in JBoss AS
@@ -89,7 +89,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
                 extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
         }
         SecurityContextInterceptorHolder holder = new SecurityContextInterceptorHolder();
-        holder.setSecurityManager(securityManager).setSecurityDomain(securityDomain)
+        holder.setSecurityManager(securityManager).setSecurityDomain(securityDomainName)
         .setRunAs(runAs).setRunAsPrincipal(runAsPrincipal).setPolicyContextID(this.policyContextID)
         .setExtraRoles(extraRoles).setPrincipalVsRolesMap(principalVsRolesMap)
         .setSkipAuthentication(securityRequired == false);

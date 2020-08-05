@@ -27,7 +27,6 @@ import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_APPLICATION
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS;
 import static org.wildfly.extension.undertow.Capabilities.REF_HTTP_AUTHENTICATION_FACTORY;
 import static org.wildfly.extension.undertow.Capabilities.REF_JACC_POLICY;
-
 import static org.wildfly.extension.undertow.Capabilities.REF_SECURITY_DOMAIN;
 import static org.wildfly.security.http.HttpConstants.BASIC_NAME;
 import static org.wildfly.security.http.HttpConstants.CLIENT_CERT_NAME;
@@ -91,7 +90,6 @@ import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.sso.elytron.NonDistributableSingleSignOnManagementProvider;
 import org.wildfly.extension.undertow.sso.elytron.SingleSignOnIdentifierFactory;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
-
 import org.wildfly.security.auth.server.MechanismConfiguration;
 import org.wildfly.security.auth.server.MechanismConfigurationSelector;
 import org.wildfly.security.auth.server.MechanismRealmConfiguration;
@@ -279,18 +277,20 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             String securityDomainName = context.getCurrentAddressValue();
 
             ServiceName applicationSecurityDomainName = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
+            ServiceName securityDomainServiceName = applicationSecurityDomainName.append(Constants.SECURITY_DOMAIN);
 
             ServiceBuilder<?> serviceBuilder = target
                     .addService(applicationSecurityDomainName)
                     .setInitialMode(Mode.LAZY);
 
-            final Function<String, HttpAuthenticationFactory> factoryFunction;
+            final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier;
+            final Supplier<SecurityDomain> securityDomainSupplier;
             if (httpServerMechanismFactory != null) {
-                Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier = serviceBuilder.requires(context.getCapabilityServiceName(REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, httpServerMechanismFactory));
-                factoryFunction = (s) -> httpAuthenticationFactorySupplier.get();
+                httpAuthenticationFactorySupplier = serviceBuilder.requires(context.getCapabilityServiceName(REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, httpServerMechanismFactory));
+                securityDomainSupplier = null;
             } else {
-                Supplier<SecurityDomain> securityDomainSupplier = serviceBuilder.requires(context.getCapabilityServiceName(REF_SECURITY_DOMAIN, SecurityDomain.class, securityDomain));
-                factoryFunction = toHttpAuthenticationFactoryFunction(securityDomainSupplier);
+                securityDomainSupplier = serviceBuilder.requires(context.getCapabilityServiceName(REF_SECURITY_DOMAIN, SecurityDomain.class, securityDomain));
+                httpAuthenticationFactorySupplier = null;
             }
 
             if (enableJacc) {
@@ -338,8 +338,11 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 transformerSupplier = () -> null;
             }
 
-            Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> valueConsumer = serviceBuilder.provides(applicationSecurityDomainName);
-            ApplicationSecurityDomainService service = new ApplicationSecurityDomainService(overrideDeploymentConfig, enableJacc, enableJaspi, integratedJaspi, factoryFunction, transformerSupplier, valueConsumer);
+            Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer = serviceBuilder.provides(applicationSecurityDomainName);
+            Consumer<SecurityDomain> securityDomainConsumer = serviceBuilder.provides(securityDomainServiceName);
+            ApplicationSecurityDomainService service = new ApplicationSecurityDomainService(overrideDeploymentConfig,
+                    enableJacc, enableJaspi, integratedJaspi, httpAuthenticationFactorySupplier, securityDomainSupplier,
+                    transformerSupplier, deploymentConsumer, securityDomainConsumer);
             serviceBuilder.setInstance(service);
             serviceBuilder.install();
 
@@ -349,10 +352,10 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
     }
 
-    private static Function<String, HttpAuthenticationFactory> toHttpAuthenticationFactoryFunction(final Supplier<SecurityDomain> securityDomainSupplier) {
+    private static HttpAuthenticationFactory toHttpAuthenticationFactory(final SecurityDomain securityDomain, final String realmName) {
         final HttpServerAuthenticationMechanismFactory mechanismFactory = new FilterServerMechanismFactory(new ServerMechanismFactoryImpl(), SERVLET_MECHANISM);
-        return (realmName) -> HttpAuthenticationFactory.builder().setFactory(mechanismFactory)
-                .setSecurityDomain(securityDomainSupplier.get())
+        return HttpAuthenticationFactory.builder().setFactory(mechanismFactory)
+                .setSecurityDomain(securityDomain)
                 .setMechanismConfigurationSelector(
                         MechanismConfigurationSelector.constantSelector(realmName == null ? MechanismConfiguration.EMPTY
                                 : MechanismConfiguration.builder()
@@ -406,10 +409,12 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
     private static class ApplicationSecurityDomainService implements Service, BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> {
 
-        private final Function<String, HttpAuthenticationFactory> factoryFunction;
+        private final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier;
+        private final Supplier<SecurityDomain> securityDomainSupplier;
         private final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier;
 
-        private final Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> valueConsumer;
+        private final Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer;
+        private final Consumer<SecurityDomain> securityDomainConsumer;
 
         private final boolean overrideDeploymentConfig;
         private final Set<RegistrationImpl> registrations = new HashSet<>();
@@ -417,21 +422,34 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         private final boolean enableJaspi;
         private final boolean integratedJaspi;
 
+        private volatile HttpAuthenticationFactory httpAuthenticationFactory;
+        private volatile SecurityDomain securityDomain;
+
         private ApplicationSecurityDomainService(final boolean overrideDeploymentConfig, boolean enableJacc, boolean enableJaspi, boolean integratedJaspi,
-                Function<String, HttpAuthenticationFactory> factoryFunction, Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier,
-                Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> valueConsumer) {
+                final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier, final Supplier<SecurityDomain> securityDomainSupplier,
+                Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier,
+                Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer, Consumer<SecurityDomain> securityDomainConsumer) {
             this.overrideDeploymentConfig = overrideDeploymentConfig;
             this.enableJacc = enableJacc;
             this.enableJaspi = enableJaspi;
             this.integratedJaspi = integratedJaspi;
-            this.factoryFunction = factoryFunction;
+            this.httpAuthenticationFactorySupplier = httpAuthenticationFactorySupplier;
+            this.securityDomainSupplier = securityDomainSupplier;
             this.singleSignOnTransformerSupplier = singleSignOnTransformerSupplier;
-            this.valueConsumer = valueConsumer;
+            this.deploymentConsumer = deploymentConsumer;
+            this.securityDomainConsumer = securityDomainConsumer;
         }
 
         @Override
         public void start(StartContext context) throws StartException {
-            valueConsumer.accept(this);
+            deploymentConsumer.accept(this);
+            if (httpAuthenticationFactorySupplier != null) {
+                httpAuthenticationFactory = httpAuthenticationFactorySupplier.get();
+                securityDomain = httpAuthenticationFactory.getSecurityDomain();
+            } else {
+                securityDomain = securityDomainSupplier.get();
+            }
+            securityDomainConsumer.accept(securityDomain);
         }
 
         @Override
@@ -439,8 +457,11 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         @Override
         public Registration apply(DeploymentInfo deploymentInfo, Function<String, RunAsIdentityMetaData> runAsMapper) {
+            HttpAuthenticationFactory httpAuthenticationFactory = this.httpAuthenticationFactory != null
+                    ? this.httpAuthenticationFactory
+                    : toHttpAuthenticationFactory(securityDomain, getRealmName(deploymentInfo));
             AuthenticationManager.Builder builder = AuthenticationManager.builder()
-                    .setHttpAuthenticationFactory(factoryFunction.apply(getRealmName(deploymentInfo)))
+                    .setHttpAuthenticationFactory(httpAuthenticationFactory)
                     .setOverrideDeploymentConfig(overrideDeploymentConfig)
                     .setHttpAuthenticationFactoryTransformer(singleSignOnTransformerSupplier.get())
                     .setRunAsMapper(runAsMapper)

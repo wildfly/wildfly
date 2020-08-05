@@ -97,7 +97,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
         final SessionBeanMetaData data = description.getDescriptorData();
-        final boolean isSecurityDomainKnown = description.isSecurityDomainKnown();
+        final boolean elytronSecurityDomain = description.getSecurityDomainServiceName() != null;
         if (data != null) {
             if (data instanceof SessionBean31MetaData) {
                 final SessionBean31MetaData sessionBeanData = (SessionBean31MetaData) data;
@@ -141,12 +141,12 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
 
                             if (componentMethod != null) {
                                 if (componentDescription.getAsynchronousClasses().contains(componentMethod.getDeclaringClass().getName())) {
-                                    addAsyncInterceptor(configuration, method, isSecurityDomainKnown);
+                                    addAsyncInterceptor(configuration, method, elytronSecurityDomain);
                                     configuration.addAsyncMethod(method);
                                 } else {
                                     MethodIdentifier id = MethodIdentifier.getIdentifierForMethod(method);
                                     if (componentDescription.getAsynchronousMethods().contains(id)) {
-                                        addAsyncInterceptor(configuration, method, isSecurityDomainKnown);
+                                        addAsyncInterceptor(configuration, method, elytronSecurityDomain);
                                         configuration.addAsyncMethod(method);
                                     }
                                 }

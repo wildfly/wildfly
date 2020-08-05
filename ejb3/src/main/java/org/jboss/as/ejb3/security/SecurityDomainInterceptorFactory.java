@@ -50,7 +50,7 @@ public class SecurityDomainInterceptorFactory extends ComponentInterceptorFactor
         final EJBComponent ejbComponent = (EJBComponent) component;
         final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
 
-        String securityDomainName =  securityMetaData.getSecurityDomain();
+        String securityDomainName =  securityMetaData.getSecurityDomainName();
         if (securityDomainName == null) {
             securityDomainName = DEFAULT_DOMAIN;
         }
