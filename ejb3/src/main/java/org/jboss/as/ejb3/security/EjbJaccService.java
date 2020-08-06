@@ -28,7 +28,7 @@ import java.util.Map.Entry;
 import javax.security.jacc.PolicyConfiguration;
 import javax.security.jacc.PolicyContextException;
 
-import org.jboss.as.security.service.JaccService;
+import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.server.deployment.AttachmentList;
 
 /**

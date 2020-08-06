@@ -58,8 +58,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -130,6 +130,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
+
+    private static final String LEGACY_JACC_CAPABILITY_NAME = "org.wildfly.legacy-security.jacc";
+    private static final String ELYTRON_JACC_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
 
     private final String defaultServer;
     private final String defaultHost;
@@ -463,7 +466,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
         // adding JACC service
-        if(legacySecurityInstalled(deploymentUnit)) {
+        final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
+        final boolean legacyJacc = !elytronJacc && legacySecurityInstalled(deploymentUnit);
+        if(legacyJacc || elytronJacc) {
             WarJACCDeployer deployer = new WarJACCDeployer();
             JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
             if (jaccService != null) {
@@ -475,6 +480,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                     jaccBuilder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
                             jaccService.getParentPolicyInjector());
                 }
+                jaccBuilder.addDependency(capabilitySupport.getCapabilityServiceName(elytronJacc ? ELYTRON_JACC_CAPABILITY_NAME : LEGACY_JACC_CAPABILITY_NAME));
                 // add dependency to web deployment service
                 jaccBuilder.requires(deploymentServiceName);
                 jaccBuilder.setInitialMode(Mode.PASSIVE).install();

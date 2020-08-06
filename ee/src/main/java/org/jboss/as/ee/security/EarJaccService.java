@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.service;
+package org.jboss.as.ee.security;
 
 import javax.security.jacc.PolicyConfiguration;
 import javax.security.jacc.PolicyContextException;

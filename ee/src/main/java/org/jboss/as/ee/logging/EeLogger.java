@@ -49,6 +49,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -1159,4 +1160,12 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 123, value = "Global directory %s cannot be added, because global directory %s is already defined.")
     OperationFailedException oneGlobalDirectory(String newGlobalDirectory, String existingGlobalDirectory);
+
+    @LogMessage(level = Level.WARN)
+    @Message(id = 124, value = "Error deleting JACC Policy")
+    void errorDeletingJACCPolicy(@Cause Throwable t);
+
+    @Message(id = 125, value = "Unable to start the %s service")
+    StartException unableToStartException(String service, @Cause Throwable t);
+
 }

@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.service;
+package org.jboss.as.ee.security;
 
-import static org.jboss.as.security.service.SecurityBootstrapService.JACC_MODULE;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.security.Policy;
 
@@ -30,8 +31,6 @@ import javax.security.jacc.PolicyConfiguration;
 import javax.security.jacc.PolicyConfigurationFactory;
 import javax.security.jacc.PolicyContextException;
 
-import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -49,7 +48,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public abstract class JaccService<T> implements Service<PolicyConfiguration> {
 
-    public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("jacc");
+    private static final String JACC_MODULE = "org.jboss.as.security.jacc-module";
+
+    public static final ServiceName SERVICE_NAME = ServiceName.of("jacc");
 
     private final String contextId;
 
@@ -62,8 +63,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
     private final InjectedValue<PolicyConfiguration> parentPolicy = new InjectedValue<PolicyConfiguration>();
 
     public JaccService(final String contextId, T metaData, Boolean standalone) {
-        if (contextId == null)
-            throw SecurityLogger.ROOT_LOGGER.nullArgument("JACC Context Id");
+        checkNotNullParam(contextId, contextId);
         this.contextId = contextId;
         this.metaData = metaData;
         this.standalone = standalone;
@@ -85,7 +85,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 if (metaData != null) {
                     createPermissions(metaData, policyConfiguration);
                 } else {
-                    SecurityLogger.ROOT_LOGGER.debugf("Cannot create permissions with 'null' metaData for id=%s", contextId);
+                    ROOT_LOGGER.debugf("Cannot create permissions with 'null' metaData for id=%s", contextId);
                 }
                 if (!standalone) {
                     PolicyConfiguration parent = parentPolicy.getValue();
@@ -95,7 +95,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                         policyConfiguration.commit();
                         parent.commit();
                     } else {
-                        SecurityLogger.ROOT_LOGGER.debugf("Could not retrieve parent policy for policy %s", contextId);
+                        ROOT_LOGGER.debugf("Could not retrieve parent policy for policy %s", contextId);
                     }
                 } else {
                     policyConfiguration.commit();
@@ -104,7 +104,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 Policy.getPolicy().refresh();
             }
         } catch (Exception e) {
-            throw SecurityLogger.ROOT_LOGGER.unableToStartException("JaccService", e);
+            throw ROOT_LOGGER.unableToStartException("JaccService", e);
         }
     }
 
@@ -139,7 +139,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 policyConfiguration.delete();
             }
         } catch (Exception e) {
-            SecurityLogger.ROOT_LOGGER.errorDeletingJACCPolicy(e);
+            ROOT_LOGGER.errorDeletingJACCPolicy(e);
         }
         policyConfiguration = null;
     }
