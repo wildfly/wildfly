@@ -31,6 +31,7 @@ import java.util.function.Function;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -49,6 +50,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
@@ -92,7 +94,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
     static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_JACC, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
-            //.setCapabilityReference(new BooleanCapabilityReferenceRecorder(EJB3SubsystemModel.ENABLE_JACC, JACC_POLICY_CAPABILITY_NAME))
+            .setCapabilityReference(new BooleanCapabilityReferenceRecorder(EJB3SubsystemModel.ENABLE_JACC, JACC_POLICY_CAPABILITY_NAME))
             .setMinSize(1)
             .setRestartAllServices()
             .build();
@@ -120,26 +122,8 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         knownApplicationSecurityDomains.clear();
         ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute: ATTRIBUTES) {
-            if (attribute != ENABLE_JACC) {
-                resourceRegistration.registerReadWriteAttribute(attribute, null, handler);
-            }
+            resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
         }
-        resourceRegistration.registerReadWriteAttribute(ENABLE_JACC, null, new ReloadRequiredWriteAttributeHandler(ENABLE_JACC) {
-            @Override
-            protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attributeDefinition, ModelNode newValue, ModelNode oldValue) {
-                super.recordCapabilitiesAndRequirements(context, attributeDefinition, newValue, oldValue);
-
-                // We can't process expressions
-                if (newValue.getType() != ModelType.EXPRESSION) {
-                    final String dependentName = APPLICATION_SECURITY_DOMAIN_CAPABILITY.getDynamicName(context.getCurrentAddressValue());
-                    if (Boolean.parseBoolean(newValue.asString())) {
-                        context.registerAdditionalCapabilityRequirement(JACC_POLICY_CAPABILITY_NAME, dependentName, ENABLE_JACC.getName());
-                    } else {
-                        context.deregisterCapabilityRequirement(JACC_POLICY_CAPABILITY_NAME, dependentName, ENABLE_JACC.getName());
-                    }
-                }
-            }
-        });
         if (resourceRegistration.getProcessType().isServer()) {
             resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
         }
@@ -162,18 +146,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             }
 
             knownApplicationSecurityDomains.add(new ApplicationSecurityDomainConfig(context.getCurrentAddressValue(), enableJacc));
-        }
-
-        @Override
-        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-            super.recordCapabilitiesAndRequirements(context, operation, resource);
-            ModelNode enableJacc = resource.getModel().get(ENABLE_JACC.getName());
-            if (enableJacc.getType() != ModelType.EXPRESSION) {
-                if (Boolean.parseBoolean(enableJacc.asString())) {
-                    context.registerAdditionalCapabilityRequirement(JACC_POLICY_CAPABILITY_NAME,
-                            APPLICATION_SECURITY_DOMAIN_CAPABILITY.getDynamicName(context.getCurrentAddressValue()), ENABLE_JACC.getName());
-                }
-            }
         }
 
         @Override
@@ -213,12 +185,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
                 }
             }
 
-        }
-
-        @Override
-        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-            super.recordCapabilitiesAndRequirements(context, operation, resource);
-            context.deregisterCapabilityRequirement(JACC_POLICY_CAPABILITY_NAME, APPLICATION_SECURITY_DOMAIN_CAPABILITY.getDynamicName(context.getCurrentAddressValue()), ENABLE_JACC.getName());
         }
 
         @Override
@@ -263,5 +229,63 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             }
             return null;
         };
+    }
+
+    private static class BooleanCapabilityReferenceRecorder implements CapabilityReferenceRecorder {
+
+        private final String attributeName;
+        private final String requirementName;
+
+        BooleanCapabilityReferenceRecorder(final String attributeName, final String requirementName) {
+            this.attributeName = attributeName;
+            this.requirementName = requirementName;
+        }
+
+        @Override
+        public void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... attributeValues) {
+            assert attributeValues != null && attributeValues.length == 1;
+            boolean attributeValue = Boolean.parseBoolean(attributeValues[0]);
+            if (attributeValue) {
+                context.registerAdditionalCapabilityRequirement(requirementName, getDependentName(context), attributeName);
+            }
+        }
+
+        @Override
+        public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... attributeValues) {
+            assert attributeValues != null && attributeValues.length == 1;
+            boolean attributeValue = Boolean.parseBoolean(attributeValues[0]);
+            if (attributeValue) {
+                context.deregisterCapabilityRequirement(requirementName, getDependentName(context), attributeName);
+            }
+        }
+
+        String getDependentName(OperationContext context) {
+            RuntimeCapability<?> cap = getDependentCapability(context);
+            return getDependentName(cap, context);
+        }
+
+        RuntimeCapability<?> getDependentCapability(OperationContext context) {
+            ImmutableManagementResourceRegistration mrr = context.getResourceRegistration();
+            Set<RuntimeCapability> capabilities = mrr.getCapabilities();
+            assert capabilities != null && capabilities.size() == 1;
+            return capabilities.iterator().next();
+        }
+
+        final String getDependentName(RuntimeCapability<?> cap, OperationContext context) {
+            if (cap.isDynamicallyNamed()) {
+                return cap.fromBaseCapability(context.getCurrentAddress()).getName();
+            }
+            return cap.getName();
+        }
+
+        @Override
+        public String getBaseDependentName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getBaseRequirementName() {
+            return requirementName;
+        }
     }
 }
