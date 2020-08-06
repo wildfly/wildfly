@@ -49,4 +49,8 @@
             </feature>
         </feature>
     </feature>
+
+    <packages>
+        <package name="org.jboss.as.security-integration" />
+    </packages>
 </feature-group-spec>

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,30 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.service;
+package org.wildfly.test.integration.microprofile.jwt.ejb;
 
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyContextException;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
-import org.jboss.metadata.ear.spec.EarMetaData;
+import org.eclipse.microprofile.auth.LoginConfig;
 
-/**
- * A service that creates JACC permissions for an ear deployment
- *
- * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
- * @author Scott.Stark@jboss.org
- * @author Anil.Saldhana@jboss.org
- */
-public class EarJaccService extends JaccService<EarMetaData> {
-
-    public EarJaccService(String contextId, EarMetaData metaData, Boolean standalone) {
-        super(contextId, metaData, standalone);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void createPermissions(EarMetaData metaData, PolicyConfiguration policyConfiguration) throws PolicyContextException {
-        // nothing to do
-    }
-
-}
+@ApplicationPath("/rest")
+@LoginConfig(authMethod="MP-JWT", realmName="MP JWT Realm")
+public class App extends Application {}

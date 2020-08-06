@@ -20,9 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.deployment;
+package org.jboss.as.ee.security;
 
-import org.jboss.as.security.service.JaccService;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 

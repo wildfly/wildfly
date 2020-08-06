@@ -50,6 +50,8 @@ public class LayersTestCase {
         // No patching modules in layers
         "org.jboss.as.patching",
         "org.jboss.as.patching.cli",
+        // Brought in with the security layer, but optionally dependend upon by Elytron
+        "org.jboss.as.security-integration",
         // Not currently used internally
         "org.wildfly.event.logger"
     };

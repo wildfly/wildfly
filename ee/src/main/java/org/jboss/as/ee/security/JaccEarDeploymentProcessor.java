@@ -20,13 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.deployment;
+package org.jboss.as.ee.security;
 
 import javax.security.jacc.PolicyConfiguration;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.security.service.JaccService;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -42,6 +43,12 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
+
+    private final String jaccCapabilityName;
+
+    public JaccEarDeploymentProcessor(final String jaccCapabilityName) {
+        this.jaccCapabilityName = jaccCapabilityName;
+    }
 
     /**
      * {@inheritDoc}
@@ -63,6 +70,8 @@ public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
                     builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
                             service.getParentPolicyInjector());
                 }
+                CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+                builder.addDependencies(capabilitySupport.getCapabilityServiceName(jaccCapabilityName));
                 builder.setInitialMode(Mode.ACTIVE).install();
             }
         }

@@ -43,6 +43,7 @@
 
     <modules>
         <module>api</module>
+        <module>integration</module>
         <module>subsystem</module>
     </modules>
 

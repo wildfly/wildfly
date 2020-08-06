@@ -24,7 +24,7 @@ package org.wildfly.test.integration.microprofile.jwt;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
+import static org.wildfly.test.microprofile.jwt.TokenUtil.generateJWT;
 
 import java.net.URL;
 
@@ -42,6 +42,8 @@ import org.junit.Test;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public abstract class BaseCase {
+
+    private static final String KEY_LOCATION = "src/test/resources/jwt/private.pem";
 
     private static final String ROOT_PATH = "/rest/Sample/";
     private static final String SUBSCRIPTION = "subscription";
@@ -72,7 +74,7 @@ public abstract class BaseCase {
 
     @Test
     public void testAuthorized() throws Exception {
-        String jwtToken = generateJWT(PRINCIPAL_NAME, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
+        String jwtToken = generateJWT(KEY_LOCATION, PRINCIPAL_NAME, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
 
         HttpGet httpGet = new HttpGet(deploymentUrl.toString() + ROOT_PATH + SUBSCRIPTION);
         httpGet.addHeader(AUTHORIZATION, BEARER + " " + jwtToken);
