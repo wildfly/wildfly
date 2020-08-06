@@ -88,13 +88,8 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
     }
 
     public MessageContext getMessageContext() throws IllegalStateException {
-        final InterceptorContext invocation = CurrentInvocationContext.get();
-        final MessageContext context = invocation.getPrivateData(MessageContext.class);
-        if (context == null) {
-            throw EjbLogger.ROOT_LOGGER.cannotCall("getMessageContext()", "MessageContext");
-
-        }
-        return context;
+        // JAX-RPC is not supported
+        throw EjbLogger.ROOT_LOGGER.cannotCall("getMessageContext()", "MessageContext");
     }
 
     public boolean wasCancelCalled() throws IllegalStateException {

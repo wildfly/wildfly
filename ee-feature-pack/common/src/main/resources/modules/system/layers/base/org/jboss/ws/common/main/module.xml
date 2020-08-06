@@ -45,6 +45,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.jboss.jaxbintros"/>
-        <module name="javax.xml.rpc.api"/>
+        <!-- Not supported and the API is not provided in an EE 9 server -->
+        <module name="javax.xml.rpc.api" optional="true"/>
     </dependencies>
 </module>
