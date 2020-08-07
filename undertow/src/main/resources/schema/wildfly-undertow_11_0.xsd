@@ -729,14 +729,14 @@
             <xs:element name="host" type="reverse-proxy-hostType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="connections-per-thread" use="optional" type="xs:integer"/>
-        <xs:attribute name="session-cookie-names" use="optional" type="xs:string"/>
-        <xs:attribute name="problem-server-retry" use="optional" type="xs:integer"/>
-        <xs:attribute name="max-request-time" use="optional" type="xs:integer"/>
-        <xs:attribute name="request-queue-size" use="optional" type="xs:integer"/>
-        <xs:attribute name="cached-connections-per-thread" use="optional" type="xs:integer"/>
-        <xs:attribute name="connection-idle-timeout" use="optional" type="xs:integer"/>
-        <xs:attribute name="max-retries" type="xs:int" use="optional" />
+        <xs:attribute name="connections-per-thread" use="optional" type="xs:integer" default="40"/>
+        <xs:attribute name="session-cookie-names" use="optional" type="xs:string" default="JSESSIONID"/>
+        <xs:attribute name="problem-server-retry" use="optional" type="xs:integer" default="30"/>
+        <xs:attribute name="max-request-time" use="optional" type="xs:integer" default="-1"/>
+        <xs:attribute name="request-queue-size" use="optional" type="xs:integer" default="10"/>
+        <xs:attribute name="cached-connections-per-thread" use="optional" type="xs:integer" default="5"/>
+        <xs:attribute name="connection-idle-timeout" use="optional" type="xs:integer" default="60000"/>
+        <xs:attribute name="max-retries" type="xs:int" use="optional" default="1"/>
     </xs:complexType>
 
     <xs:complexType name="reverse-proxy-hostType">
