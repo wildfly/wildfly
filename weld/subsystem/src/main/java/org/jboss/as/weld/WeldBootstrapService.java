@@ -381,6 +381,7 @@ public class WeldBootstrapService implements Service {
             if (!controller.compareAndSetMode(ServiceController.Mode.ACTIVE, ServiceController.Mode.NEVER)) {
                 controller.removeListener(listener);
                 attemptingBounce.complete(false);
+                listenerDone.complete(false);
             } else {
                 attemptingBounce.complete(true);
             }
