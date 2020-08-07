@@ -39,7 +39,7 @@
     <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
     <packaging>jar</packaging>
 
-    <name>WildFly: Clustering integration with JBoss Marshalling</name>
+    <name>WildFly: Marshalling for WildFly clustering: JBoss Marshalling integration</name>
     <description>
         Adapts implementations of wildfly-clustering-marshalling-api to JBoss marshalling.
         Also contains wildfly-clustering-marshalling-spi implementations that use JBoss marshalling.
@@ -59,14 +59,23 @@
             <artifactId>jboss-marshalling</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-marshalling-api</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

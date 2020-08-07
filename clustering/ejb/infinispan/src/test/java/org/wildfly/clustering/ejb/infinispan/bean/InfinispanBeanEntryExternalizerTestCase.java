@@ -38,9 +38,9 @@ import org.wildfly.clustering.marshalling.ExternalizerTester;
 public class InfinispanBeanEntryExternalizerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>("StatefulBean", new UUIDSessionID(UUID.randomUUID()));
-        new ExternalizerTester<>(new InfinispanBeanEntryExternalizer(), InfinispanBeanEntryExternalizerTestCase::assertEquals).test(entry);
+        new ExternalizerTester<>(new InfinispanBeanEntryExternalizer()).test(entry, InfinispanBeanEntryExternalizerTestCase::assertEquals);
     }
 
     static void assertEquals(InfinispanBeanEntry<SessionID> entry1, InfinispanBeanEntry<SessionID> entry2) {

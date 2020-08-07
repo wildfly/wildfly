@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling.jboss;
+
+import org.wildfly.clustering.marshalling.AbstractPrimitivesTestCase;
 
 /**
- * Indicates that the current class definition of an object differs from that of the serialized object
- * preventing deserialization.
  * @author Paul Ferraro
  */
-public class InvalidSerializedFormException extends Exception {
+public class JBossMarshallingPrimitivesTestCase extends AbstractPrimitivesTestCase {
 
-    private static final long serialVersionUID = 9102105032200405794L;
-
-    public InvalidSerializedFormException(String message) {
-        super(message);
-    }
-
-    public InvalidSerializedFormException(Throwable cause) {
-        super(cause);
-    }
-
-    public InvalidSerializedFormException(String message, Throwable cause) {
-        super(message, cause);
+    public JBossMarshallingPrimitivesTestCase() {
+        super(new JBossMarshallingTesterFactory());
     }
 }

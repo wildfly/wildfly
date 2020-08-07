@@ -40,7 +40,7 @@ import org.wildfly.clustering.marshalling.ExternalizerTester;
 public class InfinispanBeanKeySerializerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         InfinispanBeanKey<SessionID> key = new InfinispanBeanKey<>(new UUIDSessionID(UUID.randomUUID()));
 
         new ExternalizerTester<>(new InfinispanBeanKeyExternalizer()).test(key);

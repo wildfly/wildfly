@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,35 +22,14 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.AbstractTimeTestCase;
 
 /**
- * Factory for creating a {@link SimpleMarshalledValue}.
  * @author Paul Ferraro
  */
-public class SimpleMarshalledValueFactory implements MarshalledValueFactory<MarshallingContext> {
-    protected final MarshallingContext context;
+public class JBossMarshallingTimeUnitTest extends AbstractTimeTestCase {
 
-    public SimpleMarshalledValueFactory(MarshallingContextFactory factory, MarshallingConfigurationRepository repository, ClassLoader loader) {
-        this(factory.createMarshallingContext(repository, loader));
-    }
-
-    public SimpleMarshalledValueFactory(MarshallingContext context) {
-        this.context = context;
-    }
-
-    @Override
-    public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) {
-        return new SimpleMarshalledValue<>(object, this.context);
-    }
-
-    @Override
-    public MarshallingContext getMarshallingContext() {
-        return this.context;
-    }
-
-    @Override
-    public boolean isMarshallable(Object object) {
-        return this.context.isMarshallable(object);
+    public JBossMarshallingTimeUnitTest() {
+        super(new JBossMarshallingTesterFactory());
     }
 }

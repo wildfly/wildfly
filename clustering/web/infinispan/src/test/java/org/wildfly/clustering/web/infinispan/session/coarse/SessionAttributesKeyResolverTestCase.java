@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKey
 public class SessionAttributesKeyResolverTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         SessionAttributesKey key = new SessionAttributesKey("ABC123");
         new ExternalizerTester<>(new SessionAttributesKeyExternalizer()).test(key);
         new KeyFormatTester<>(new SessionAttributesKeyFormat()).test(key);

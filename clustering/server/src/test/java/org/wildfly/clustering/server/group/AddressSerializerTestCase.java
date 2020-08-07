@@ -41,7 +41,7 @@ import org.wildfly.clustering.server.group.AddressSerializer.UUIDExternalizer;
  */
 public class AddressSerializerTestCase {
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         new ExternalizerTester<>(new UUIDExternalizer()).test(UUID.randomUUID());
 
         Random random = new Random();

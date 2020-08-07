@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,30 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 
 /**
- * A specialized ByteArrayOutputStream that exposes the internal buffer.
  * @author Paul Ferraro
  */
-public final class ByteBufferOutputStream extends ByteArrayOutputStream {
+public class ByteBufferInputStream extends ByteArrayInputStream {
 
-    public ByteBufferOutputStream() {
-        super();
-    }
-
-    public ByteBufferOutputStream(int size) {
-        super(size);
-    }
-
-    /**
-     * Returns the internal buffer of this output stream.
-     * @return the internal byte buffer.
-     */
-    public ByteBuffer getBuffer() {
-        return ByteBuffer.wrap(this.buf, 0, this.count);
+    public ByteBufferInputStream(ByteBuffer buffer) {
+        super(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset());
     }
 }
