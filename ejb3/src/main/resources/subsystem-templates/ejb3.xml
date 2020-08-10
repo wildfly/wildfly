@@ -30,7 +30,7 @@
                <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
            </data-stores>
        </timer-service>
-       <remote connectors="http-remoting-connector" thread-pool-name="default">
+       <remote cluster="ejb" connectors="http-remoting-connector" thread-pool-name="default">
            <channel-creation-options>
                <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
            </channel-creation-options>
