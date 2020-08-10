@@ -281,6 +281,55 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Test against ee-9 -->
+        <profile>
+            <id>ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the standard test executions. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ws-integration-default.surefire</id>
+                                <configuration>
+                                    <excludes>
+                                        <!-- missing [jboss.security.security-domain.other] -->
+                                        <exclude>org/jboss/as/test/integration/ws/SimpleWebserviceEndpointTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/anonymouspojos/Usecase*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/basic/EarLibTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/basic/PojoEndpointTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/cdi/interceptor/CdiInterceptorTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/context/as1605/BothPojoAndEjbInWarTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/injection/ejb/basic/InjectionTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/schemalocations/SchemaLocationsRewriteTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsa/Test*AddressingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsrm/ReliableServiceTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsse/sign/SignTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsse/signencrypt/SignEncrypt*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/*TestCase.java</exclude>
+                                        <!-- Other security issues -->
+                                        <exclude>org/jboss/as/test/integration/ws/authentication/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/authentication/policy/*TestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
