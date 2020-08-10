@@ -78,7 +78,7 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        if (System.getProperty("elytron") == null) {
+        if (System.getProperty("elytron") == null && System.getProperty("ts.ee9") == null) {
             // elytron profile is not enabled, use legacy setup
             final ModelNode compositeOp = new ModelNode();
             compositeOp.get(OP).set(COMPOSITE);
