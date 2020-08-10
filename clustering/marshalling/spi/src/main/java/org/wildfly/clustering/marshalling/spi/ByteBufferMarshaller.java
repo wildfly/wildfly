@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling;
+package org.wildfly.clustering.marshalling.spi;
 
 import java.io.IOException;
-import java.util.EnumSet;
-
-import org.junit.Assert;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.OptionalInt;
 
 /**
- * Tester for an {@link Externalizer} of an enum.
+ * Marshals an object to and from a {@link ByteBuffer}.
  * @author Paul Ferraro
  */
-public class EnumExternalizerTester<E extends Enum<E>> extends ExternalizerTester<E> {
+public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 
-    private final Class<E> targetClass;
+    Object readFrom(InputStream input) throws IOException;
 
-    public EnumExternalizerTester(Externalizer<E> externalizer) {
-        super(externalizer, Assert::assertSame);
-        this.targetClass = externalizer.getTargetClass();
+    void writeTo(OutputStream output, Object object) throws IOException;
+
+    @Override
+    default Object read(ByteBuffer buffer) throws IOException {
+        try (InputStream input = new ByteBufferInputStream(buffer)) {
+            return this.readFrom(input);
+        }
     }
 
-    public void test() throws ClassNotFoundException, IOException {
-        for (E value : EnumSet.allOf(this.targetClass)) {
-            this.test(value);
+    @Override
+    default ByteBuffer write(Object object) throws IOException {
+        try (ByteBufferOutputStream output = new ByteBufferOutputStream(this.size(object))) {
+            this.writeTo(output, object);
+            return output.getBuffer();
         }
+    }
+
+    default OptionalInt size(Object object) {
+        return OptionalInt.empty();
     }
 }

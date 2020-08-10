@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.web.hotrod.session.fine;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -33,7 +34,6 @@ import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.hotrod.RemoteCacheMutatorFactory;
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributeActivationNotifier;
@@ -89,7 +89,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
                     try {
                         this.marshaller.read(value);
                         continue;
-                    } catch (InvalidSerializedFormException e) {
+                    } catch (IOException e) {
                         Logger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, nameEntry.getKey());
                     }
                 } else {

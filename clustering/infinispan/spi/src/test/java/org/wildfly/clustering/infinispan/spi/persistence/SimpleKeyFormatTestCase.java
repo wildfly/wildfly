@@ -45,6 +45,6 @@ public class SimpleKeyFormatTestCase {
         when(formatter.apply(object)).thenReturn(result);
         when(parser.apply(result)).thenReturn(object);
 
-        new KeyFormatTester<>(format, Assert::assertSame).test(object);
+        new KeyFormatTester<>(format).test(object, Assert::assertSame);
     }
 }

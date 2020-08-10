@@ -20,22 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
+ * Externalizer for a {@link ByteBufferMarshalledValue}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class SimpleMarshalledValueExternalizer<T> implements Externalizer<SimpleMarshalledValue<T>> {
+public class ByteBufferMarshalledValueExternalizer implements Externalizer<ByteBufferMarshalledValue<Object>> {
 
     static ByteBuffer readBuffer(ObjectInput input) throws IOException {
         int size = IndexSerializer.VARIABLE.readInt(input);
@@ -55,18 +53,18 @@ public class SimpleMarshalledValueExternalizer<T> implements Externalizer<Simple
     }
 
     @Override
-    public SimpleMarshalledValue<T> readObject(ObjectInput input) throws IOException {
-        return new SimpleMarshalledValue<>(readBuffer(input));
+    public ByteBufferMarshalledValue<Object> readObject(ObjectInput input) throws IOException {
+        return new ByteBufferMarshalledValue<>(readBuffer(input));
     }
 
     @Override
-    public void writeObject(ObjectOutput output, SimpleMarshalledValue<T> object) throws IOException {
+    public void writeObject(ObjectOutput output, ByteBufferMarshalledValue<Object> object) throws IOException {
         writeBuffer(output, object.getBuffer());
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Class<SimpleMarshalledValue<T>> getTargetClass() {
-        return (Class<SimpleMarshalledValue<T>>) (Class<?>) SimpleMarshalledValue.class;
+    public Class<ByteBufferMarshalledValue<Object>> getTargetClass() {
+        return (Class<ByteBufferMarshalledValue<Object>>) (Class<?>) ByteBufferMarshalledValue.class;
     }
 }

@@ -35,8 +35,8 @@ import org.wildfly.clustering.marshalling.ExternalizerTester;
 public class AuthenticationEntryExternalizerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new AuthenticationEntryExternalizer<>(), AuthenticationEntryExternalizerTestCase::assertEquals).test(new AuthenticationEntry<>("username"));
+    public void test() throws IOException {
+        new ExternalizerTester<>(new AuthenticationEntryExternalizer<String, Object>()).test(new AuthenticationEntry<>("username"), AuthenticationEntryExternalizerTestCase::assertEquals);
     }
 
     static void assertEquals(AuthenticationEntry<String, Object> entry1, AuthenticationEntry<String, Object> entry2) {

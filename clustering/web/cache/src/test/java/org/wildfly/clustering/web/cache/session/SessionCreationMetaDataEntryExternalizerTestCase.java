@@ -37,12 +37,12 @@ import org.wildfly.clustering.marshalling.ExternalizerTester;
 public class SessionCreationMetaDataEntryExternalizerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(Instant.now());
         metaData.setMaxInactiveInterval(Duration.ofMinutes(10));
         SessionCreationMetaDataEntry<Object> entry = new SessionCreationMetaDataEntry<>(metaData);
 
-        new ExternalizerTester<>(new SessionCreationMetaDataEntryExternalizer(), SessionCreationMetaDataEntryExternalizerTestCase::assertEquals).test(entry);
+        new ExternalizerTester<>(new SessionCreationMetaDataEntryExternalizer()).test(entry, SessionCreationMetaDataEntryExternalizerTestCase::assertEquals);
     }
 
     static void assertEquals(SessionCreationMetaDataEntry<Object> entry1, SessionCreationMetaDataEntry<Object> entry2) {
