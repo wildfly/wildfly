@@ -23,15 +23,18 @@
 package org.wildfly.clustering.infinispan.spi.persistence;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+
+import java.util.function.BiConsumer;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
+import org.junit.Assert;
+import org.wildfly.clustering.marshalling.Tester;
 
 /**
  * Tester for a {@link TwoWayKey2StringMapper}.
  * @author Paul Ferraro
  */
-public class KeyMapperTester {
+public class KeyMapperTester implements Tester<Object> {
 
     private final TwoWayKey2StringMapper mapper;
 
@@ -39,13 +42,19 @@ public class KeyMapperTester {
         this.mapper = mapper;
     }
 
+    @Override
     public void test(Object key) {
+        this.test(key, Assert::assertEquals);
+    }
+
+    @Override
+    public void test(Object key, BiConsumer<Object, Object> assertion) {
         assertTrue(this.mapper.isSupportedType(key.getClass()));
 
         String mapping = this.mapper.getStringMapping(key);
 
         Object result = this.mapper.getKeyMapping(mapping);
 
-        assertEquals(key, result);
+        assertion.accept(key, result);
     }
 }

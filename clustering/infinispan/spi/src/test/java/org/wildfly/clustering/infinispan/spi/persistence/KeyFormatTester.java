@@ -27,34 +27,33 @@ import static org.junit.Assert.assertTrue;
 import java.util.function.BiConsumer;
 
 import org.junit.Assert;
+import org.wildfly.clustering.marshalling.Tester;
 
 /**
  * Tester for a {@link KeyFormat}.
  * @author Paul Ferraro
  */
-public class KeyFormatTester<K> {
+public class KeyFormatTester<K> implements Tester<K> {
 
     private final KeyFormat<K> format;
-    private final BiConsumer<K, K> assertion;
 
     public KeyFormatTester(KeyFormat<K> format) {
-        this(format, Assert::assertEquals);
-    }
-
-    public KeyFormatTester(KeyFormat<K> format, BiConsumer<K, K> assertion) {
         this.format = format;
-        this.assertion = assertion;
     }
 
-    public void test(K subject) {
+    @Override
+    public void test(K key) {
+        this.test(key, Assert::assertEquals);
+    }
+
+    @Override
+    public void test(K subject, BiConsumer<K, K> assertion) {
         assertTrue(this.format.getTargetClass().isInstance(subject));
 
         String formatted = this.format.format(subject);
 
         K result = this.format.parse(formatted);
 
-        assertTrue(this.format.getTargetClass().isInstance(result));
-
-        this.assertion.accept(subject, result);
+        assertion.accept(subject, result);
     }
 }

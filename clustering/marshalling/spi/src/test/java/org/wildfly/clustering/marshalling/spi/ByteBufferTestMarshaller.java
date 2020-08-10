@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,12 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.marshalling.jboss;
+
+package org.wildfly.clustering.marshalling.spi;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import org.wildfly.clustering.marshalling.TestMarshaller;
 
 /**
- * Factory for creating a marshalling context.
+ * A {@link ByteBufferMarshaller} based {@link TestMarshaller}.
  * @author Paul Ferraro
  */
-public interface MarshallingContextFactory {
-    MarshallingContext createMarshallingContext(MarshallingConfigurationRepository repository, ClassLoader loader);
+public class ByteBufferTestMarshaller<T> implements TestMarshaller<T> {
+
+    private final ByteBufferMarshaller marshaller;
+
+    public ByteBufferTestMarshaller(ByteBufferMarshaller marshaller) {
+        this.marshaller = marshaller;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public T read(ByteBuffer buffer) throws IOException {
+        return (T) this.marshaller.read(buffer);
+    }
+
+    @Override
+    public ByteBuffer write(T object) throws IOException {
+        return this.marshaller.write(object);
+    }
 }

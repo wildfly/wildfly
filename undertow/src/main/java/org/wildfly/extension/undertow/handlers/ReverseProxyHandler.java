@@ -53,6 +53,7 @@ public class ReverseProxyHandler extends Handler {
             .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(30))
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -73,7 +74,7 @@ public class ReverseProxyHandler extends Handler {
             .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
-            .setMeasurementUnit(MeasurementUnit.SECONDS)
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -95,8 +96,8 @@ public class ReverseProxyHandler extends Handler {
     public static final AttributeDefinition CONNECTION_IDLE_TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.CONNECTION_IDLE_TIMEOUT, ModelType.INT)
             .setRequired(false)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(60L))
-            .setMeasurementUnit(MeasurementUnit.SECONDS)
+            .setDefaultValue(new ModelNode(60000))
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -153,7 +154,13 @@ public class ReverseProxyHandler extends Handler {
             lb.addSessionCookieName(id);
         }
 
-        ProxyHandler handler = new ProxyHandler(lb, maxTime, ResponseCodeHandler.HANDLE_404, false, false, maxRetries);
-        return handler;
+        return ProxyHandler.builder()
+                .setProxyClient(lb)
+                .setMaxRequestTime(maxTime)
+                .setNext(ResponseCodeHandler.HANDLE_404)
+                .setRewriteHostHeader(false)
+                .setReuseXForwarded(false)
+                .setMaxConnectionRetries(maxRetries)
+                .build();
     }
 }

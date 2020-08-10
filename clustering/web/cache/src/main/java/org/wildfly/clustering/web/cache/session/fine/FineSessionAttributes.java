@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.cache.session.fine;
 
+import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Collections;
 import java.util.Map;
@@ -38,7 +39,6 @@ import org.wildfly.clustering.ee.cache.function.ConcurrentMapPutFunction;
 import org.wildfly.clustering.ee.cache.function.ConcurrentMapRemoveFunction;
 import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapPutFunction;
 import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapRemoveFunction;
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
@@ -109,7 +109,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         }
 
         K key = this.keyFactory.apply(attributeId);
-        V value = this.marshaller.write(attribute);
+        V value = this.write(attribute);
 
         if (this.properties.isPersistent()) {
             this.notifier.prePassivate(attribute);
@@ -180,7 +180,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
             Optional<Object> optional = entry.getValue();
             if (optional.isPresent()) {
                 K key = entry.getKey();
-                V value = this.marshaller.write(optional.get());
+                V value = this.write(optional.get());
                 this.mutatorFactory.createMutator(key, value).mutate();
             }
         }
@@ -191,10 +191,18 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         this.names = (names != null) ? Collections.unmodifiableMap(names) : Collections.emptyMap();
     }
 
+    private V write(Object value) {
+        try {
+            return this.marshaller.write(value);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private Object read(V value) {
         try {
             return this.marshaller.read(value);
-        } catch (InvalidSerializedFormException e) {
+        } catch (IOException e) {
             // This should not happen here, since attributes were pre-activated during session construction
             throw new IllegalStateException(e);
         }

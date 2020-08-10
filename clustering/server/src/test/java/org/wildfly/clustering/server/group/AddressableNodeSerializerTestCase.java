@@ -41,10 +41,10 @@ import org.wildfly.clustering.server.group.AddressableNodeSerializer.Addressable
 public class AddressableNodeSerializerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         AddressableNode node = new AddressableNode(UUID.randomUUID(), "node1", new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE));
-        new ExternalizerTester<>(new AddressableNodeExternalizer(), AddressableNodeSerializerTestCase::assertEquals).test(node);
-        new KeyFormatTester<>(new AddressableNodeKeyFormat(), AddressableNodeSerializerTestCase::assertEquals).test(node);
+        new ExternalizerTester<>(new AddressableNodeExternalizer()).test(node, AddressableNodeSerializerTestCase::assertEquals);
+        new KeyFormatTester<>(new AddressableNodeKeyFormat()).test(node, AddressableNodeSerializerTestCase::assertEquals);
     }
 
     static void assertEquals(AddressableNode node1, AddressableNode node2) {

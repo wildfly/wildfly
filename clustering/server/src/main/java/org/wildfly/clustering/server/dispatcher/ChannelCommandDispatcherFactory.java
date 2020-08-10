@@ -22,8 +22,8 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.List;
@@ -44,10 +44,8 @@ import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.jboss.as.clustering.logging.ClusteringLogger;
-import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.ModuleLoader;
 import org.jgroups.Address;
 import org.jgroups.Event;
@@ -72,13 +70,12 @@ import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.server.group.AddressableNode;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
@@ -122,14 +119,14 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final AtomicReference<View> view = new AtomicReference<>();
-    private final MarshallingContext marshallingContext;
+    private final ByteBufferMarshaller marshaller;
     private final MessageDispatcher dispatcher;
     private final Duration timeout;
     private final ModuleLoader loader;
 
     @SuppressWarnings("resource")
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
-        this.marshallingContext = config.getMarshallingContext();
+        this.marshaller = config.getMarshaller();
         this.timeout = config.getTimeout();
         this.loader = config.getModuleLoader();
         JChannel channel = config.getChannel();
@@ -196,33 +193,30 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         }
     }
 
-    private ExceptionSupplier<Object, Exception> read(Message message) throws IOException, ClassNotFoundException {
-        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
-            int version = IndexSerializer.VARIABLE.readInt(input);
-            try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
-                unmarshaller.start(Marshalling.createByteInput(input));
-                Object clientId = unmarshaller.readObject();
-                CommandDispatcherContext<?, ?> context = this.contexts.get(clientId);
-                if (context == null) return NO_SUCH_SERVICE_SUPPLIER;
-                Object commandContext = context.getCommandContext();
-                Contextualizer contextualizer = context.getContextualizer();
-                @SuppressWarnings("unchecked")
-                MarshalledValue<Command<Object, Object>, Object> value = (MarshalledValue<Command<Object, Object>, Object>) unmarshaller.readObject();
-                Command<Object, Object> command = value.get(context.getMarshalledValueFactory().getMarshallingContext());
-                ExceptionSupplier<Object, Exception> commandExecutionTask = new ExceptionSupplier<Object, Exception>() {
-                    @Override
-                    public Object get() throws Exception {
-                        return context.getMarshalledValueFactory().createMarshalledValue(command.execute(commandContext));
-                    }
-                };
-                ServiceExecutor executor = this.executor;
-                return new ExceptionSupplier<Object, Exception>() {
-                    @Override
-                    public Object get() throws Exception {
-                        return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE);
-                    }
-                };
-            }
+    private ExceptionSupplier<Object, Exception> read(Message message) throws IOException {
+        try (InputStream input = new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength())) {
+            @SuppressWarnings("unchecked")
+            Map.Entry<Object, MarshalledValue<Command<Object, Object>, Object>> entry = (Map.Entry<Object, MarshalledValue<Command<Object, Object>, Object>>) this.marshaller.readFrom(input);
+            Object clientId = entry.getKey();
+            CommandDispatcherContext<?, ?> context = this.contexts.get(clientId);
+            if (context == null) return NO_SUCH_SERVICE_SUPPLIER;
+            Object commandContext = context.getCommandContext();
+            Contextualizer contextualizer = context.getContextualizer();
+            MarshalledValue<Command<Object, Object>, Object> value = entry.getValue();
+            Command<Object, Object> command = value.get(context.getMarshalledValueFactory().getMarshallingContext());
+            ExceptionSupplier<Object, Exception> commandExecutionTask = new ExceptionSupplier<Object, Exception>() {
+                @Override
+                public Object get() throws Exception {
+                    return context.getMarshalledValueFactory().createMarshalledValue(command.execute(commandContext));
+                }
+            };
+            ServiceExecutor executor = this.executor;
+            return new ExceptionSupplier<Object, Exception>() {
+                @Override
+                public Object get() throws Exception {
+                    return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE);
+                }
+            };
         }
     }
 
@@ -245,10 +239,10 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 return moduleLoader;
             }
         };
-        MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, marshallingConfigurationContext), loader);
-        MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
+        ByteBufferMarshaller dispatcherMarshaller = new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, marshallingConfigurationContext), loader);
+        MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(dispatcherMarshaller);
         Contextualizer contextualizer = new DefaultContextualizer();
-        CommandDispatcherContext<C, MarshallingContext> context = new CommandDispatcherContext<C, MarshallingContext>() {
+        CommandDispatcherContext<C, ByteBufferMarshaller> context = new CommandDispatcherContext<C, ByteBufferMarshaller>() {
             @Override
             public C getCommandContext() {
                 return commandContext;
@@ -260,16 +254,16 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             }
 
             @Override
-            public MarshalledValueFactory<MarshallingContext> getMarshalledValueFactory() {
+            public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
                 return factory;
             }
         };
         if (this.contexts.putIfAbsent(id, context) != null) {
             throw ClusteringServerLogger.ROOT_LOGGER.commandDispatcherAlreadyExists(id);
         }
-        CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id, factory);
+        CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshaller, id, factory);
         CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), commandContext);
-        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, marshallingContext, this, this.timeout, localDispatcher, () -> {
+        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, dispatcherMarshaller, this, this.timeout, localDispatcher, () -> {
             localDispatcher.close();
             this.contexts.remove(id);
         });
