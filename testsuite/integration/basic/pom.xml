@@ -1539,8 +1539,9 @@
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/BeanManagedTransactionsTestCase.java</exclude><!-- use of @Test(expected = EJBException.class) ??? -->
                                         <exclude>org/jboss/as/test/integration/jsf/beanvalidation/cdi/BeanValidationCdiIntegrationTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/doctype/DoctypeDeclTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/jsf23.JSF23SanityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/jsf23/JSF23SanityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/managedbean/gc/GCPreDestroyTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/testurl/ForbiddenUrlTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
                                         <exclude>org/jboss/as/test/integration/weld/ejb/SessionObjectReferenceTestCase.java</exclude>
