@@ -1,0 +1,93 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+name: Wildfly BOMs CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  build-all:
+    name: Compile (no tests) with JDK 8
+    runs-on: ubuntu-latest
+    steps:
+    - uses: n1hility/cancel-previous-runs@v2
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+            m2-
+    - uses: actions/checkout@v2
+      with:
+        repository: wildfly/wildfly
+        path: wildfly
+    - uses: actions/checkout@v2
+      with:
+        path: boms
+    - name: Set up JDK8
+      uses: AdoptOpenJDK/install-jdk@v1
+      with:
+        version: 8
+        impl: hotspot
+    - name: Build Wildfly
+      run: |
+        ls -l
+        cd wildfly
+        mvn -U -B -fae -DskipTests clean install
+    - name: Build BOMs
+      run: |
+        ls -l
+        cd boms 
+        mvn -U -B -fae -DskipTests clean install
+    - name: Tar Maven Repo
+      shell: bash
+      run: tar -czf maven-repo.tgz -C ~ .m2/repository
+    - name: Persist Maven Repo
+      uses: actions/upload-artifact@v1
+      with:
+        name: maven-repo
+        path: maven-repo.tgz
+    - uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: surefire-reports-build
+        path: '**/surefire-reports/*'
+  test-matrix:
+    name: ${{ matrix.module }} - JDK${{ matrix.jdk }} - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: build-all
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [client, jakartaee8, microprofile]
+        jdk: [8, 11]
+        os: [ubuntu-20.04, windows-latest]
+    steps:
+    - uses: n1hility/cancel-previous-runs@v2
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v2
+    - name: Download Maven Repo
+      uses: actions/download-artifact@v1
+      with:
+        name: maven-repo
+        path: .
+    - name: Extract Maven Repo
+      shell: bash
+      run: tar -xzf maven-repo.tgz -C ~
+    - name: Set up JDK ${{ matrix.java }}
+      uses: AdoptOpenJDK/install-jdk@v1
+      with:
+        version: ${{ matrix.jdk }}
+        impl: hotspot
+    - name: Run Tests
+      run: mvn -U -B -fae test '-DfailIfNotTests=true' -pl ${{ matrix.module }}
+    - uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: surefire-reports-${{ matrix.module }}-JDK${{ matrix.jdk }}-${{ matrix.os }}
+        path: '**/surefire-reports/*.txt'
+
