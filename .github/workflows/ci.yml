@@ -5,7 +5,8 @@ name: Wildfly BOMs CI
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-
+    branches:
+      - master
 jobs:
   build-all:
     name: Compile (no tests) with JDK 8
