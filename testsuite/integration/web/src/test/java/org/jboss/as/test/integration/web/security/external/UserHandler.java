@@ -18,7 +18,7 @@ public class UserHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         String user = exchange.getRequestHeaders().getFirst("User");
-        if(user != null) {
+        if(user != null && (user.equals(Credentials.GOOD_USER_NAME) || user.equals(Credentials.BAD_USER_NAME))) {
             exchange.putAttachment(ExternalAuthenticationMechanism.EXTERNAL_PRINCIPAL, user);
             exchange.putAttachment(HttpServerExchange.REMOTE_USER, user);
             exchange.putAttachment(ExternalAuthenticationMechanism.EXTERNAL_AUTHENTICATION_TYPE, "user-header");

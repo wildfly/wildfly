@@ -38,13 +38,6 @@ public class ExternalAuthSecurityDomainSetup extends AbstractSecurityDomainSetup
     protected static final String WEB_SECURITY_DOMAIN = "web-tests";
     private CLIWrapper cli;
 
-    protected static final String BAD_USER_NAME = "marcus";
-    protected static final String BAD_USER_PASSWORD = "marcus";
-    private static final String BAD_USER_ROLE = "notallowed";
-
-    private static final String GOOD_USER_NAME = "anil";
-    private static final String GOOD_USER_PASSWORD = "anil";
-    private static final String GOOD_USER_ROLE = "gooduser";
     private PropertyFileBasedDomain ps;
     private UndertowDomainMapper domainMapper;
 
@@ -105,8 +98,9 @@ public class ExternalAuthSecurityDomainSetup extends AbstractSecurityDomainSetup
 
     private void setupElytronBasedSecurityDomain() throws Exception {
         ps = PropertyFileBasedDomain.builder()
-                .withUser(BAD_USER_NAME, BAD_USER_PASSWORD, BAD_USER_ROLE)
-                .withUser(GOOD_USER_NAME, GOOD_USER_PASSWORD, GOOD_USER_ROLE)
+                .withUser(Credentials.BAD_USER_NAME, Credentials.NOT_USED_PASSWORD, Credentials.BAD_USER_ROLE)
+                .withUser(Credentials.GOOD_USER_NAME, Credentials.NOT_USED_PASSWORD, Credentials.CORRECT_ROLE)
+                .withUser(Credentials.AUTHORIZED_WITHOUT_AUTHENTICATION_USER_NAME, Credentials.NOT_USED_PASSWORD, Credentials.CORRECT_ROLE)
                 .withName(WEB_SECURITY_DOMAIN).build();
         ps.create(cli);
         domainMapper = UndertowDomainMapper.builder().withName(WEB_SECURITY_DOMAIN).build();
