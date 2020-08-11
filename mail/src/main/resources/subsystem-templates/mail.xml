@@ -8,6 +8,6 @@
        </mail-session>
    </subsystem>
    <outbound-socket-binding name="mail-smtp">
-       <remote-destination host="localhost" port="25"/>
+       <remote-destination host="${jboss.mail.server.host:localhost}" port="${jboss.mail.server.port:25}"/>
    </outbound-socket-binding>
 </config>

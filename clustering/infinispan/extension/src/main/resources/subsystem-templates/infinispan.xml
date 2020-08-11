@@ -14,13 +14,13 @@
                 <local-cache name="sso"/>
                 <local-cache name="routing"/>
             </cache-container>
-            <cache-container name="server" default-cache="default" module="org.wildfly.clustering.server">
-                <local-cache name="default"/>
-            </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
+            </cache-container>
+            <cache-container name="server" default-cache="default" module="org.wildfly.clustering.server">
+                <local-cache name="default"/>
             </cache-container>
             <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
@@ -50,12 +50,6 @@
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
-                <transport lock-timeout="60000"/>
-                <replicated-cache name="default">
-                    <transaction mode="BATCH"/>
-                </replicated-cache>
-            </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="dist" module="org.wildfly.clustering.ejb.infinispan">
                 <transport lock-timeout="60000"/>
                 <distributed-cache name="dist">
@@ -63,6 +57,12 @@
                     <transaction mode="BATCH"/>
                     <file-store/>
                 </distributed-cache>
+            </cache-container>
+            <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
+                <transport lock-timeout="60000"/>
+                <replicated-cache name="default">
+                    <transaction mode="BATCH"/>
+                </replicated-cache>
             </cache-container>
             <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <transport lock-timeout="60000"/>
