@@ -37,6 +37,7 @@
     <properties>
         <servlet.layers.install.dir>${project.build.directory}/servlet-layers-results</servlet.layers.install.dir>
         <layers.install.dir>${project.build.directory}/layers-results</layers.install.dir>
+        <layers.delete.installations>true</layers.delete.installations>
     </properties>
     
     <build>
@@ -2314,7 +2315,7 @@
                                 <layers.install.root>${layers.install.dir}</layers.install.root>
                                 <jbossas.version>${project.parent.version}</jbossas.version>
                                 <cleanup.tmp>${cleanup.tmp}</cleanup.tmp>
-                                <layers.delete.installations>true</layers.delete.installations>
+                                <layers.delete.installations>${layers.delete.installations}</layers.delete.installations>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
