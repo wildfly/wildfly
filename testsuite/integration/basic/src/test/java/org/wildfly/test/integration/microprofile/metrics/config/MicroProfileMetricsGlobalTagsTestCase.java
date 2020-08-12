@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getPrometheusMetrics;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getPrometheusMetrics;
 
 import java.net.URL;
 import java.util.UUID;
