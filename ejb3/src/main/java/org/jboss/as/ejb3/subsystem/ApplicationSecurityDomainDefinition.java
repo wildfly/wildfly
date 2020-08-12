@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.security.Policy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -76,7 +75,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
     public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.ejb3.application-security-domain";
     public static final String CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS = "org.wildfly.ejb3.application-security-domain.known-deployments";
     private static final String SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.security.security-domain";
-    private static final String JACC_POLICY_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
 
     static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_CAPABILITY = RuntimeCapability
             .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, true, ApplicationSecurityDomain.class)
@@ -95,7 +93,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
     static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_JACC, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
-            //.setCapabilityReference(new BooleanCapabilityReferenceRecorder(EJB3SubsystemModel.ENABLE_JACC, JACC_POLICY_CAPABILITY_NAME))
             .setMinSize(1)
             .setRestartAllServices()
             .build();
@@ -125,26 +122,8 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         knownApplicationSecurityDomains.clear();
         ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute: ATTRIBUTES) {
-            if (attribute != ENABLE_JACC) {
-                resourceRegistration.registerReadWriteAttribute(attribute, null, handler);
-            }
+            resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
         }
-        resourceRegistration.registerReadWriteAttribute(ENABLE_JACC, null, new ReloadRequiredWriteAttributeHandler(ENABLE_JACC) {
-            @Override
-            protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attributeDefinition, ModelNode newValue, ModelNode oldValue) {
-                super.recordCapabilitiesAndRequirements(context, attributeDefinition, newValue, oldValue);
-
-                // We can't process expressions
-                if (newValue.getType() != ModelType.EXPRESSION) {
-                    final String dependentName = APPLICATION_SECURITY_DOMAIN_CAPABILITY.getDynamicName(context.getCurrentAddressValue());
-                    if (Boolean.parseBoolean(newValue.asString())) {
-                        context.registerAdditionalCapabilityRequirement(JACC_POLICY_CAPABILITY_NAME, dependentName, ENABLE_JACC.getName());
-                    } else {
-                        context.deregisterCapabilityRequirement(JACC_POLICY_CAPABILITY_NAME, dependentName, ENABLE_JACC.getName());
-                    }
-                }
-            }
-        });
         if (resourceRegistration.getProcessType().isServer()) {
             resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
         }
@@ -164,14 +143,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
                     .of(CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, true, knownDeployments).build()
                     .fromBaseCapability(context.getCurrentAddressValue()));
             context.attach(KNOWN_DEPLOYMENTS_KEY, knownDeployments);
-
-            ModelNode enableJacc = resource.getModel().get(ENABLE_JACC.getName());
-            if (enableJacc.getType() != ModelType.EXPRESSION) {
-                if (Boolean.parseBoolean(enableJacc.asString())) {
-                    context.registerAdditionalCapabilityRequirement(JACC_POLICY_CAPABILITY_NAME,
-                            APPLICATION_SECURITY_DOMAIN_CAPABILITY.getDynamicName(context.getCurrentAddressValue()), ENABLE_JACC.getName());
-                }
-            }
         }
 
         @Override
@@ -208,12 +179,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             ApplicationSecurityDomainService service = new ApplicationSecurityDomainService(enableJacc, securityDomainSupplier, applicationSecurityDomainConsumer, securityDomainConsumer);
             serviceBuilder.setInstance(service);
 
-            if (model.hasDefined(ENABLE_JACC.getName())) {
-                if (ENABLE_JACC.resolveModelAttribute(context, model).asBoolean()) {
-                    serviceBuilder.requires(context.getCapabilityServiceName(JACC_POLICY_CAPABILITY_NAME, Policy.class));
-                }
-            }
-
             serviceBuilder.install();
 
             KnownDeploymentsApi knownDeploymentsApi = context.getAttachment(KNOWN_DEPLOYMENTS_KEY);
@@ -240,12 +205,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
                 }
             }
 
-        }
-
-        @Override
-        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-            super.recordCapabilitiesAndRequirements(context, operation, resource);
-            context.deregisterCapabilityRequirement(JACC_POLICY_CAPABILITY_NAME, APPLICATION_SECURITY_DOMAIN_CAPABILITY.getDynamicName(context.getCurrentAddressValue()), ENABLE_JACC.getName());
         }
 
         @Override
