@@ -67,7 +67,7 @@ public interface JSFLogger extends BasicLogger {
     void managedBeanNoDefaultConstructor(String managedBean);
 
     @LogMessage(level = ERROR)
-    @Message(id = 4, value = "Failed to parse %s, managed beans defined in this file will not be available")
+    @Message(id = 4, value = "Failed to parse %s, JSF artifacts defined in this file will not be available")
     void managedBeansConfigParseFailed(VirtualFile facesConfig);
 
     @LogMessage(level = WARN)
@@ -103,9 +103,9 @@ public interface JSFLogger extends BasicLogger {
     @Message(id = 14, value = "Default JSF implementation slot '%s' is invalid")
     DeploymentUnitProcessingException invalidDefaultJSFImpl(String defaultJsfVersion);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 15, value = "Failed to parse %s, phase listeners defined in this file will not be available")
-    void phaseListenersConfigParseFailed(VirtualFile facesConfig);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 15, value = "Failed to parse %s, phase listeners defined in this file will not be available")
+//    void phaseListenersConfigParseFailed(VirtualFile facesConfig);
 
     @Message(id = 16, value = "Failed to inject JSF from slot %s")
     DeploymentUnitProcessingException jsfInjectionFailed(String slotName, @Cause Throwable cause);
@@ -117,4 +117,8 @@ public interface JSFLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 18, value = "JSF 1.2 classes not detected. Using org.jboss.as.jsf.injection.weld.WeldApplicationFactory.")
     void loadingJsf2x();
+
+    @LogMessage(level = INFO)
+    @Message(id = 19, value = "JSF artifact %s with class %s has no default constructor so it will not be considered for injection")
+    void jsfArtifactNoDefaultConstructor(String type, String className);
 }
