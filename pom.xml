@@ -266,7 +266,7 @@
         <version.com.google.code.gson>2.8.6</version.com.google.code.gson>
         <version.com.google.guava>25.0-jre</version.com.google.guava>
         <version.com.h2database>1.4.197</version.com.h2database>
-        <version.com.microsoft.azure>8.6.4</version.com.microsoft.azure>
+        <version.com.microsoft.azure>8.6.5</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>8.11</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
