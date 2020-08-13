@@ -21,8 +21,7 @@
  */
 package org.jboss.as.jdr.util;
 
-import org.jboss.as.jdr.commands.JdrEnvironment;
-import org.jboss.vfs.VirtualFile;
+import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
@@ -34,7 +33,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
-import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
+import org.jboss.as.jdr.commands.JdrEnvironment;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * Abstracts the zipfile used for packaging the JDR Report.
@@ -46,6 +46,7 @@ public class JdrZipFile {
     JdrEnvironment env;
     String name;
     String baseName;
+    String productDirName;
 
     public JdrZipFile(JdrEnvironment env) throws Exception {
         this.env = env;
@@ -87,7 +88,8 @@ public class JdrZipFile {
         byte [] buffer = new byte[1024];
 
         try {
-            String entryName = this.baseName + "/" + path;
+            // WFLY-13728 - File Path Separators must be / for ZipEntry even on Windows
+            String entryName = this.baseName + "/" + path.replace("\\","/");
             ZipEntry ze = new ZipEntry(entryName);
             zos.putNextEntry(ze);
             int bytesRead = is.read(buffer);
@@ -138,9 +140,7 @@ public class JdrZipFile {
     public void add(String content, String path) throws Exception {
         StringBuilder name = new StringBuilder("sos_strings/");
 
-        name.append(this.env.getProductName().replace(" ", "_").toLowerCase());
-        name.append("-");
-        name.append(this.env.getProductVersion().split("\\.")[0]);
+        name.append(getProductDirName());
         name.append("/");
         name.append(path);
 
@@ -159,13 +159,17 @@ public class JdrZipFile {
     public void addAsString(InputStream stream, String path) throws Exception {
         StringBuilder name = new StringBuilder("sos_strings/");
 
-        name.append(this.env.getProductName().replace(" ", "_").toLowerCase());
-        name.append("-");
-        name.append(this.env.getProductVersion().split("\\.")[0]);
+        name.append(getProductDirName());
         name.append("/");
         name.append(path);
 
         this.add(stream, name.toString());
+    }
+
+    public String getProductDirName() {
+        if(this.productDirName == null)
+            this.productDirName = String.format("%s-%s", this.env.getProductName().replace(" ", "_").toLowerCase(), this.env.getProductVersion().split("\\.")[0]);
+        return this.productDirName;
     }
 
     /**

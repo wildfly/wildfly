@@ -21,47 +21,99 @@
  */
 package org.jboss.as.jdr;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+
 import org.jboss.as.jdr.commands.JdrEnvironment;
 import org.jboss.as.jdr.util.JdrZipFile;
 import org.jboss.as.jdr.util.PatternSanitizer;
 import org.jboss.as.jdr.util.XMLSanitizer;
 import org.jboss.as.jdr.vfs.Filters;
+import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.Assert.*;
 
 public class JdrTestCase {
 
     @Test
     public void testJdrZipName() throws Exception {
+
+        // create a test-files dir to store the test JDR
+        File testFilesDir = new File("target/test-files");
+        testFilesDir.mkdirs();
+
         JdrEnvironment env = new JdrEnvironment();
+        env.setOutputDirectory(testFilesDir.getAbsolutePath());
         env.setJbossHome("/foo/bar/baz");
+        env.setServerName("localhost");
         env.setHostControllerName("host");
-        env.setOutputDirectory("target");
-        String name;
-        JdrZipFile zf = new JdrZipFile(env);
+        env.setProductName("wildfly");
+        env.setProductVersion("20");
+        env.setZip(new JdrZipFile(new JdrEnvironment(env)));
+
+        JdrZipFile jzf = env.getZip();
+        File jdrZipFile = new File(jzf.name());
         try {
-            name = zf.name();
-            zf.close();
-        }
-        finally {
-            safeClose(zf);
-            File f = new File(zf.name());
-            f.delete();
+            jzf.add("test1", "test1\\sub1\\sub2\\test1.txt");
+            jzf.add("test2", "test2/sub1/sub2/test2.txt");
+        } finally {
+            jzf.close();
         }
 
-        assertTrue(name.endsWith(".zip"));
-        assertTrue(name.contains("host"));
-        assertTrue(name.startsWith("target"));
+        // Make sure the JDR zip got created
+        assertTrue(jdrZipFile.exists());
+        assertTrue(jzf.name().endsWith(".zip"));
+        assertTrue(jzf.name().contains("host"));
+
+        List<Closeable> mounts = null;
+        try {
+            VirtualFile jdrReport = VFS.getChild(jzf.name());
+            mounts = recursiveMount(jdrReport);
+            VirtualFile root = jdrReport.getChildren().get(0);
+            String dir = "";
+            for(String path : new String[] { "sos_strings" , jzf.getProductDirName(), "test1", "sub1", "sub2" }) {
+                dir = dir + "/" + path;
+                assertTrue(root.getChild(dir).isDirectory());
+            }
+            dir = "";
+            for(String path : new String[] { "sos_strings" , jzf.getProductDirName(), "test2", "sub1", "sub2" }) {
+                dir = dir + "/" + path;
+                assertTrue(root.getChild(dir).isDirectory());
+            }
+            assertTrue(root.getChild("sos_strings/" + jzf.getProductDirName() + "/test1/sub1/sub2/test1.txt").isFile());
+            assertTrue(root.getChild("sos_strings/" + jzf.getProductDirName() + "/test2/sub1/sub2/test2.txt").isFile());
+        } finally {
+            if(mounts != null) VFSUtils.safeClose(mounts);
+            // Clean up the test JDR zip file
+            jdrZipFile.delete();
+        }
     }
+
+    public static List<Closeable> recursiveMount(VirtualFile file) throws IOException {
+        TempFileProvider provider = TempFileProvider.create("test", Executors.newSingleThreadScheduledExecutor());
+        ArrayList<Closeable> mounts = new ArrayList<Closeable>();
+
+        if (!file.isDirectory() && file.getName().matches("^.*\\.([EeWwJj][Aa][Rr]|[Zz][Ii][Pp])$")) { mounts.add(VFS.mountZip(file, file, provider)); }
+
+        if (file.isDirectory()) { for (VirtualFile child : file.getChildren()) { mounts.addAll(recursiveMount(child)); } }
+
+        return mounts;
+    }
+
 
     @Test
     public void testBlackListFilter() {
