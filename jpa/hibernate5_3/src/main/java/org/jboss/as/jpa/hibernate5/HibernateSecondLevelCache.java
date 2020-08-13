@@ -20,6 +20,7 @@ package org.jboss.as.jpa.hibernate5;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.COLLECTION_CACHE_RESOURCE_PROP;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_ENTITY_RESOURCE;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_QUERY_RESOURCE;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_TIMESTAMPS_RESOURCE;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.ENTITY_CACHE_RESOURCE_PROP;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.IMMUTABLE_ENTITY_CACHE_RESOURCE_PROP;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.INFINISPAN_CONFIG_RESOURCE_PROP;
@@ -97,7 +98,7 @@ public class HibernateSecondLevelCache {
         }
         if (Boolean.parseBoolean(properties.getProperty(AvailableSettings.USE_QUERY_CACHE))) {
             caches.add(properties.getProperty(QUERY_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
-            caches.add(properties.getProperty(TIMESTAMPS_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
+            caches.add(properties.getProperty(TIMESTAMPS_CACHE_RESOURCE_PROP, DEF_TIMESTAMPS_RESOURCE));
         }
 
         int length = INFINISPAN_CONFIG_RESOURCE_PROP.length();
