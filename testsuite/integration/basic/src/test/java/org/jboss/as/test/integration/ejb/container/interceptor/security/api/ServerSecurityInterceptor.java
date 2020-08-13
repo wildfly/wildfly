@@ -33,7 +33,6 @@ import javax.resource.spi.IllegalStateException;
 import org.jboss.as.core.security.api.UserPrincipal;
 import org.jboss.as.security.api.ConnectionSecurityContext;
 import org.jboss.as.security.api.ContextStateCache;
-import org.jboss.as.test.integration.ejb.container.interceptor.security.CurrentUserCredential;
 import org.jboss.logging.Logger;
 import org.jboss.security.SimplePrincipal;
 
