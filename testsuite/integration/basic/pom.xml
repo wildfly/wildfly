@@ -2861,6 +2861,24 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
+                            <execution>
+                                <id>copy-module-files</id>
+                                <goals>
+                                    <goal>testResources</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/modules</directory>
+                                            <includes>
+                                                <include>**/module.xml</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -2892,6 +2910,31 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-module</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/org/jboss/test/testDriver/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/ClassloadingDataSource.class</include>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/ClassloadingDriver.class</include>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/TestConnection.class</include>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/ClassloadingXADataSource.class</include>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/TestXAConnection.class</include>
+                                        <include>**/META-INF/services/java.sql.Driver</include>
+                                    </includes>
+                                    <finalName>testDriver</finalName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-jar-maven-plugin</artifactId>
                         <version>${version.org.wildfly.jar.plugin}</version>
@@ -2902,14 +2945,15 @@
                                 <goals>
                                     <goal>package</goal>
                                 </goals>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <configuration>
                                     <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
                                     <hollowJar>true</hollowJar>
                                     <record-state>false</record-state>
                                     <log-time>${galleon.log.time}</log-time>
-                                    <!-- content that is installed in wildfly home -->
-<!--                                    <extraServerContent>${wildfly.dir}</extraServerContent>-->
+                                    <extraServerContent>
+                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                    </extraServerContent>
                                     <offline>true</offline>
                                     <plugin-options>
                                         <jboss-maven-dist/>
@@ -2937,14 +2981,15 @@
                                 <goals>
                                     <goal>package</goal>
                                 </goals>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <configuration>
                                     <output-file-name>test-wildfly-legacy-security.jar</output-file-name>
                                     <hollowJar>true</hollowJar>
                                     <record-state>false</record-state>
                                     <log-time>${galleon.log.time}</log-time>
-                                    <!-- content that is installed in wildfly home -->
-<!--                                    <extraServerContent>${wildfly.dir}</extraServerContent>-->
+                                    <extraServerContent>
+                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                    </extraServerContent>
                                     <offline>true</offline>
                                     <plugin-options>
                                         <jboss-maven-dist/>
@@ -2973,14 +3018,15 @@
                                 <goals>
                                     <goal>package</goal>
                                 </goals>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <configuration>
                                     <output-file-name>test-wildfly-jpa.jar</output-file-name>
                                     <hollowJar>true</hollowJar>
                                     <record-state>false</record-state>
                                     <log-time>${galleon.log.time}</log-time>
-                                    <!-- content that is installed in wildfly home -->
-<!--                                    <extraServerContent>${wildfly.dir}</extraServerContent>-->
+                                    <extraServerContent>
+                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                    </extraServerContent>
                                     <offline>true</offline>
                                     <plugin-options>
                                         <jboss-maven-dist/>
