@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
+import org.wildfly.clustering.ee.cache.Key;
+
 /**
  * The cache key used to store a bean.
  * A cache instance will store bean instances for multiple types, so we distinguish them via a string representation of the type..
@@ -29,6 +31,5 @@ package org.wildfly.clustering.ejb.infinispan;
  *
  * @param <I> the bean identifier type
  */
-public interface BeanKey<I> {
-    I getId();
+public interface BeanKey<I> extends Key<I> {
 }

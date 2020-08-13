@@ -27,8 +27,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.jgroups.Address;
-import org.jgroups.protocols.relay.SiteMaster;
-import org.jgroups.protocols.relay.SiteUUID;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.IpAddressUUID;
 import org.jgroups.util.UUID;
@@ -63,22 +61,6 @@ public enum AddressSerializer implements Serializer<Address> {
         @SuppressWarnings("unchecked")
         public UUIDExternalizer() {
             super((Class<Address>) (Class<?>) UUID.class, INSTANCE);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SiteUUIDExternalizer extends SerializerExternalizer<Address> {
-        @SuppressWarnings("unchecked")
-        public SiteUUIDExternalizer() {
-            super((Class<Address>) (Class<?>) SiteUUID.class, INSTANCE);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SiteMasterExternalizer extends SerializerExternalizer<Address> {
-        @SuppressWarnings("unchecked")
-        public SiteMasterExternalizer() {
-            super((Class<Address>) (Class<?>) SiteMaster.class, INSTANCE);
         }
     }
 

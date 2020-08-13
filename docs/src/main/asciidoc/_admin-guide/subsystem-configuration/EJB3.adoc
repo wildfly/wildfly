@@ -9,12 +9,12 @@ of each
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:ejb3:6.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:8.0">
   <session-bean>
     <stateless>
       <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
     </stateless>
-    <stateful default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered"/>
+    <stateful default-session-timeout="600000" default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered"/>
     <singleton default-access-timeout="5000"/>
   </session-bean>
   <mdb>
@@ -46,7 +46,7 @@ of each
       <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
     </data-stores>
   </timer-service>
-  <remote connector-ref="remoting-connector" thread-pool-name="default"/>
+  <remote connectors="remoting-connector" thread-pool-name="default"/>
   <thread-pools>
     <thread-pool name="default">
       <max-threads count="10"/>
@@ -77,6 +77,12 @@ themselves are configured in the `<pools>` element.
 === <stateful>
 
 This element is used to configure Stateful Session Beans.
+
+* `default-session-timeout` This optional attribute specifies the default
+amount of time in milliseconds a stateful session bean can remain idle
+before it is eligible for removal by the container.
+It can be overridden via `ejb-jar.xml` deployment descriptor or via
+`javax.ejb.StatefulTimeout` annotation.
 
 * `default-access-timeout` This attribute specifies the default time
 concurrent invocations on the same bean instance will wait to acquire
@@ -164,8 +170,8 @@ information is saved to.
 [[remote]]
 == <remote>
 
-This is used to enable remote EJB invocations. It specifies the remoting
-connector to use (as defined in the remoting subsystem configuration),
+This is used to enable remote EJB invocations. It specifies a space-separated list of remoting
+connectors to use (as defined in the remoting subsystem configuration),
 and the thread pool to use for remote invocations.
 
 [[thread-pools]]

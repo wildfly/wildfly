@@ -42,10 +42,11 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
     private AuditResourceDefinition() {
         super(SecurityExtension.PATH_AUDIT_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUDIT),
-                AuditResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                new AuditResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(PROVIDER_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.PROVIDER_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.PROVIDER_MODULE));
     }
@@ -57,20 +58,14 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
     }
 
     static class AuditResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
-        static final AuditResourceDefinitionAdd INSTANCE = new AuditResourceDefinitionAdd();
 
         @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            super.updateModel(context, operation);
+            if (operation.hasDefined(PROVIDER_MODULES.getName())) {
+                context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
+            }
         }
-
-        @Override
-               protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-                   super.updateModel(context, operation);
-                   if (operation.hasDefined(PROVIDER_MODULES.getName())) {
-                       context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
-                   }
-               }
     }
 
 }

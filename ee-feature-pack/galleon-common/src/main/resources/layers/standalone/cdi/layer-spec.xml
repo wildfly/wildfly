@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="cdi">
+    <dependencies>
+        <layer name="base-server"/>
+        <layer name="bean-validation" optional="true"/>
+    </dependencies>
+    <feature spec="subsystem.weld"/>
+</layer-spec>

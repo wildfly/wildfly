@@ -27,6 +27,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefiniti
 import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.Attribute.FETCH_SIZE;
 import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute.DATA;
 import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute.ID;
+import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute.SEGMENT;
 import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute.TIMESTAMP;
 
 import java.util.AbstractMap;
@@ -88,6 +89,8 @@ public class TableServiceConfigurator extends ComponentServiceConfigurator<Table
                 .idColumnType(this.columns.get(ID).getValue())
                 .dataColumnName(this.columns.get(DATA).getKey())
                 .dataColumnType(this.columns.get(DATA).getValue())
+                .segmentColumnName(this.columns.get(SEGMENT).getKey())
+                .segmentColumnType(this.columns.get(SEGMENT).getValue())
                 .timestampColumnName(this.columns.get(TIMESTAMP).getKey())
                 .timestampColumnType(this.columns.get(TIMESTAMP).getValue())
                 .fetchSize(this.fetchSize)

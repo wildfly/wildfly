@@ -160,7 +160,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
             builder.setCustomResourceTransformer(transformer);
         } else {
             for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
-                pool.buildTransformation(version, builder);
+                pool.buildTransformation(builder, version);
             }
         }
 

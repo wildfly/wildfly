@@ -81,21 +81,6 @@ public class JMXPropertyEditorsTestCase {
 
     private MBeanServerConnection connection;
     private JMXConnector connector;
-    private static final String USER_SYS_PROP;
-    static {
-        String osName = System.getProperty("os.name");
-        if ( osName.contains( "Windows" ) ) {
-            if (System.getenv().containsKey("USERNAME")) {
-                USER_SYS_PROP = "USERNAME";
-            } else {
-                USER_SYS_PROP = "USER";
-            }
-        } else if ( osName.contains( "SunOS" ) ) {
-            USER_SYS_PROP = "LOGNAME";
-        } else {
-            USER_SYS_PROP = "USER";
-        }
-    }
 
     @Before
     public void initialize() throws Exception {
@@ -186,7 +171,7 @@ public class JMXPropertyEditorsTestCase {
                 .addAttribute("ObjectInteger", "10")
                 .addAttribute("ObjectLong", "10")
                 .addAttribute("ObjectShort", "10")
-                .addAttribute("Properties", "prop1=ugabuga\nprop2=HAHA\nenv=${env." + USER_SYS_PROP + "}")
+                .addAttribute("Properties", "prop1=ugabuga\nprop2=HAHA\nenv=${env.TEST_PROP}")
                 .addAttribute("Short", "1")
                 .addAttribute("ShortArray", "1,20")
                 .addAttribute("StringArray", "1,20")
@@ -365,7 +350,7 @@ public class JMXPropertyEditorsTestCase {
         Properties props = new Properties();
         props.put("prop1", "ugabuga");
         props.put("prop2", "HAHA");
-        props.put("env", System.getenv(USER_SYS_PROP));
+        props.put("env", System.getenv("TEST_PROP"));
 
         performTest("Properties", props, (o1, o2) -> {
             Properties p1 = (Properties) o1;

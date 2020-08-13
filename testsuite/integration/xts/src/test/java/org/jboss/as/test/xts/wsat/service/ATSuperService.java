@@ -64,7 +64,7 @@ public abstract class ATSuperService implements AT {
      */
     public void invokeWithCallName(String callName, ServiceCommand[] serviceCommands) throws TestApplicationException {
 
-        log.infof("[AT SERVICE] web method invoke(%s) with eventLog %s", callName, eventLog);
+        log.debugf("[AT SERVICE] web method invoke(%s) with eventLog %s", callName, eventLog);
         eventLog.foundEventLogName(callName);
         UserTransaction userTransaction;
 

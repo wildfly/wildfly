@@ -24,15 +24,12 @@ package org.wildfly.extension.microprofile.metrics;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.CLIENT_FACTORY_CAPABILITY;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.MANAGEMENT_EXECUTOR;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE;
-import static org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger.LOGGER;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import io.smallrye.metrics.MetricRegistries;
-import io.smallrye.metrics.setup.JmxRegistrar;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.ModelControllerClientFactory;
@@ -40,7 +37,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
@@ -54,7 +50,6 @@ public class MetricsCollectorService implements Service<MetricCollector> {
     private final String globalPrefix;
 
     private MetricCollector metricCollector;
-    private JmxRegistrar jmxRegistrar;
     private LocalModelControllerClient modelControllerClient;
 
     static void install(OperationContext context, List<String> exposedSubsystems, String prefix) {
@@ -74,14 +69,7 @@ public class MetricsCollectorService implements Service<MetricCollector> {
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        jmxRegistrar = new JmxRegistrar();
-        try {
-            jmxRegistrar.init();
-        } catch (IOException e) {
-            throw LOGGER.failedInitializeJMXRegistrar(e);
-        }
-
+    public void start(StartContext context) {
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
 
         this.metricCollector = new MetricCollector(modelControllerClient, exposedSubsystems, globalPrefix);
@@ -98,8 +86,6 @@ public class MetricsCollectorService implements Service<MetricCollector> {
         }
 
         modelControllerClient.close();
-
-        jmxRegistrar = null;
     }
 
     @Override

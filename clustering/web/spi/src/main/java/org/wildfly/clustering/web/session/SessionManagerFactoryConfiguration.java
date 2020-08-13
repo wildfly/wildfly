@@ -22,24 +22,28 @@
 package org.wildfly.clustering.web.session;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 
 /**
  * Encapsulates the configuration of a session manager.
+ * @param <S> the HttpSession specification type
+ * @param <SC> the ServletContext specification type
+ * @param <AL> the HttpSessionAttributeListener specification type
+ * @param <MC> the marshalling context type
+ * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<C extends Marshallability, L> extends WebDeploymentConfiguration {
+public interface SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends WebDeploymentConfiguration {
 
     Integer getMaxActiveSessions();
 
-    MarshalledValueFactory<C> getMarshalledValueFactory();
+    MarshalledValueFactory<MC> getMarshalledValueFactory();
 
-    C getMarshallingContext();
-
-    LocalContextFactory<L> getLocalContextFactory();
+    LocalContextFactory<LC> getLocalContextFactory();
 
     Immutability getImmutability();
+
+    SpecificationProvider<S, SC, AL> getSpecificationProvider();
 }

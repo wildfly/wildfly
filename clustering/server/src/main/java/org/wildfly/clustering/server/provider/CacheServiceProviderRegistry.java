@@ -67,8 +67,8 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.spi.group.Group;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -94,7 +94,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         this.group = config.getGroup();
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
-        this.dispatcher = config.getCommandDispatcherFactory().createCommandDispatcher(config.getId(), this.listeners.keySet());
+        this.dispatcher = config.getCommandDispatcherFactory().createCommandDispatcher(config.getId(), this.listeners.keySet(), WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()));
         this.cache.addListener(this);
         this.groupRegistration = this.group.register(this);
         this.invoker = new RetryingInvoker(this.cache);
@@ -273,7 +273,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                         try {
                             listener.providersChanged(members);
                         } catch (Throwable e) {
-                            ClusteringServerLogger.ROOT_LOGGER.serviceProviderRegistrationListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), this.cache.getName(), members);
+                            ClusteringServerLogger.ROOT_LOGGER.serviceProviderRegistrationListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName(), this.cache.getName(), members);
                         }
                     });
                 } catch (RejectedExecutionException e) {

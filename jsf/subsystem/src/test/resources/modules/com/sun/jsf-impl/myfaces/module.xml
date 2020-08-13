@@ -29,7 +29,16 @@
 
     <dependencies>
         <module name="javax.faces.api" slot="myfaces"/>
-        <module name="javaee.api"/>
+        <module name="javax.annotation.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.servlet.jsp.api"/>
+        <module name="javax.websocket.api" />
+        <module name="javax.validation.api"/>
+        <module name="javax.json.api"/>
+        <module name="javax.ejb.api"/>
+        <module name="javax.xml.bind.api"/>
+        <module name="org.glassfish.jakarta.el"/>
+        <module name="javax.api"/>
         <module name="javax.servlet.jstl.api"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.apache.xalan" services="import"/>

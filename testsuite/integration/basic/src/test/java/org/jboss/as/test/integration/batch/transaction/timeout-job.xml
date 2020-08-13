@@ -25,6 +25,9 @@
 <job id="timeout-job" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
      version="1.0">
     <step id="jobStep">
+        <properties>
+            <property name="javax.transaction.global.timeout" value="1"/>
+        </properties>
         <chunk item-count="20" retry-count="1">
             <reader ref="transactedReader">
                 <properties>
@@ -33,8 +36,8 @@
             </reader>
             <writer ref="transactedWriter"/>
         </chunk>
-        <properties>
-            <property name="javax.transaction.global.timeout" value="1"/>
-        </properties>
+        <partition>
+            <plan partitions="2"/>
+        </partition>
     </step>
 </job>

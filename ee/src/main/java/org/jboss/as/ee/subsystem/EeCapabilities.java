@@ -34,4 +34,9 @@ public final class EeCapabilities {
             .Builder.of(EE_GLOBAL_DIRECTORY_CAPABILITY_NAME, true, GlobalDirectoryService.class)
             .addRequirements(PATH_MANAGER_CAPABILITY)
             .build();
+
+    public static final String LEGACY_JACC_CAPABILITY = "org.wildfly.legacy-security.jacc";
+
+    public static final String ELYTRON_JACC_CAPABILITY = "org.wildfly.security.jacc-policy";
+
 }

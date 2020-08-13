@@ -43,21 +43,14 @@ import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
+ * Configure, build and install CacheFactoryBuilders to support SFSB usage.
+ *
  * @author Paul Ferraro
  */
 public class CacheFactoryAdd extends AbstractAddStepHandler {
 
-    private final AttributeDefinition[] attributes;
-
     CacheFactoryAdd(AttributeDefinition... attributes) {
-        this.attributes = attributes;
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr: this.attributes) {
-            attr.validateAndSet(operation, model);
-        }
+        super(attributes);
     }
 
     @Override
@@ -70,8 +63,11 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
         final Collection<String> unwrappedAliasValues = CacheFactoryResourceDefinition.ALIASES.unwrap(context,model);
         final Set<String> aliases = unwrappedAliasValues != null ? new HashSet<>(unwrappedAliasValues) : Collections.<String>emptySet();
         ServiceTarget target = context.getServiceTarget();
-        ServiceConfigurator configurator = (passivationStore != null) ? new IdentityServiceConfigurator<>(new CacheFactoryBuilderServiceNameProvider(name).getServiceName(), new DistributableCacheFactoryBuilderServiceNameProvider(passivationStore).getServiceName()) : new SimpleCacheFactoryBuilderServiceConfigurator<>(name);
+        // set up the CacheFactoryBuilder service
+        ServiceConfigurator configurator = (passivationStore != null) ? new IdentityServiceConfigurator<>(new CacheFactoryBuilderServiceNameProvider(name).getServiceName(),
+                new DistributableCacheFactoryBuilderServiceNameProvider(passivationStore).getServiceName()) : new SimpleCacheFactoryBuilderServiceConfigurator<>(name);
         ServiceBuilder<?> builder = configurator.build(target);
+        // set up aliases to the CacheFactoryBuilder service
         for (String alias: aliases) {
             new IdentityServiceConfigurator<>(new CacheFactoryBuilderServiceNameProvider(alias).getServiceName(), configurator.getServiceName()).build(target).install();
         }

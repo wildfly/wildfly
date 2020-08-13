@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.wildfly.extension.messaging.activemq.jms;
 
-
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +32,6 @@ import org.apache.activemq.artemis.api.jms.JMSFactoryType;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -42,9 +39,9 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.BinderServiceUtil;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
@@ -93,8 +90,12 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
             final String dgname = discoveryGroupName.asString();
             final String key = "discovery" + dgname;
-            PathAddress dgAddress = context.getCurrentAddress().getParent().append(DISCOVERY_GROUP, dgname);
-            ModelNode discoveryGroupModel = context.readResourceFromRoot(dgAddress).getModel();
+            ModelNode discoveryGroupModel;
+            try {
+                discoveryGroupModel = context.readResourceFromRoot(context.getCurrentAddress().getParent().append(JGROUPS_DISCOVERY_GROUP, dgname)).getModel();
+            } catch (Resource.NoSuchResourceException ex) {
+                discoveryGroupModel = new ModelNode();
+            }
             if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
                 ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
                 ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
@@ -137,7 +138,12 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
     }
 
     static DiscoveryGroupConfiguration getDiscoveryGroup(final OperationContext context, final String name) throws OperationFailedException {
-        Resource discoveryGroup = context.readResourceFromRoot(context.getCurrentAddress().getParent().append(PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP, name)), true);
+        Resource discoveryGroup;
+        try {
+            discoveryGroup = context.readResourceFromRoot(context.getCurrentAddress().getParent().append(PathElement.pathElement(CommonAttributes.JGROUPS_DISCOVERY_GROUP, name)), true);
+        } catch (Resource.NoSuchResourceException ex) {
+            discoveryGroup = context.readResourceFromRoot(context.getCurrentAddress().getParent().append(PathElement.pathElement(CommonAttributes.SOCKET_DISCOVERY_GROUP, name)), true);
+        }
         if (discoveryGroup != null) {
             final long refreshTimeout = DiscoveryGroupDefinition.REFRESH_TIMEOUT.resolveModelAttribute(context, discoveryGroup.getModel()).asLong();
             final long initialWaitTimeout = DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT.resolveModelAttribute(context, discoveryGroup.getModel()).asLong();

@@ -63,6 +63,7 @@ import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.Module;
+import org.wildfly.microprofile.opentracing.smallrye.TracingCDIExtension;
 import org.wildfly.microprofile.opentracing.smallrye.TracingLogger;
 import org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory;
 
@@ -173,9 +174,9 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
         DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
         Tracer tracer = null;
         ClassLoader initialCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        final ModuleClassLoader moduleCL = module.getClassLoader();
         try {
-            final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-            final ModuleClassLoader moduleCL = module.getClassLoader();
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(moduleCL);
             //Looking for GlobalTracer
             Class globalTracerClass = moduleCL.loadClass("io.opentracing.util.GlobalTracer");
@@ -210,6 +211,7 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
                 tracer = WildFlyTracerFactory.getTracer(tracerConfigurationName, serviceName);
             }
         }
+        TracingCDIExtension.registerApplicationTracer(moduleCL, tracer);
         deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(SMALLRYE_OPENTRACING_SERVICE_NAME, serviceName));
         deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(SMALLRYE_OPENTRACING_TRACER, tracer));
         deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(SMALLRYE_OPENTRACING_TRACER_MANAGED, true));

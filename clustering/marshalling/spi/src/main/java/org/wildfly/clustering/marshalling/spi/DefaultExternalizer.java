@@ -30,11 +30,15 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.Year;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -71,17 +75,22 @@ import org.wildfly.clustering.marshalling.spi.net.InetSocketAddressExternalizer;
 import org.wildfly.clustering.marshalling.spi.net.URLExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.DurationExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.InstantExternalizer;
-import org.wildfly.clustering.marshalling.spi.time.LocalDateTimeExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.MonthDayExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.PeriodExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.YearMonthExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.BitSetExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CalendarExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CopyOnWriteCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.DateExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.EnumMapExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.EnumSetExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.HashMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.MapEntryExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.OptionalDoubleExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.OptionalIntExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.OptionalLongExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SingletonCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SingletonMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SortedMapExternalizer;
@@ -93,6 +102,7 @@ import org.wildfly.clustering.marshalling.spi.util.UUIDExternalizer;
  * @author Paul Ferraro
  */
 public enum DefaultExternalizer implements Externalizer<Object> {
+    MARSHALLED_VALUE(new ByteBufferMarshalledValueExternalizer()),
     // java.net
     INET_ADDRESS(new InetAddressExternalizer<>(InetAddress.class, OptionalInt.empty())),
     INET4_ADDRESS(new InetAddressExternalizer<>(Inet4Address.class, OptionalInt.of(4))),
@@ -105,8 +115,8 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     DURATION(new DurationExternalizer()),
     INSTANT(new InstantExternalizer()),
     LOCAL_DATE(new LongExternalizer<>(LocalDate.class, LocalDate::ofEpochDay, LocalDate::toEpochDay)),
-    LOCAL_DATE_TIME(new LocalDateTimeExternalizer()),
     LOCAL_TIME(new LongExternalizer<>(LocalTime.class, LocalTime::ofNanoOfDay, LocalTime::toNanoOfDay)),
+    LOCAL_DATE_TIME(new BinaryExternalizer<>(LocalDateTime.class, LOCAL_DATE.cast(LocalDate.class), LOCAL_TIME.cast(LocalTime.class), LocalDateTime::toLocalDate, LocalDateTime::toLocalTime, LocalDateTime::of)),
     MONTH(new EnumExternalizer<>(Month.class)),
     MONTH_DAY(new MonthDayExternalizer()),
     PERIOD(new PeriodExternalizer()),
@@ -114,6 +124,10 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     YEAR_MONTH(new YearMonthExternalizer()),
     ZONE_ID(new StringExternalizer<>(ZoneId.class, ZoneId::of, ZoneId::getId)),
     ZONE_OFFSET(new StringExternalizer<>(ZoneOffset.class, ZoneOffset::of, ZoneOffset::getId)),
+    // offset java.time
+    OFFSET_DATE_TIME(new BinaryExternalizer<>(OffsetDateTime.class, LOCAL_DATE_TIME.cast(LocalDateTime.class), ZONE_OFFSET.cast(ZoneOffset.class), OffsetDateTime::toLocalDateTime, OffsetDateTime::getOffset, OffsetDateTime::of)),
+    OFFSET_TIME(new BinaryExternalizer<>(OffsetTime.class, LOCAL_TIME.cast(LocalTime.class), ZONE_OFFSET.cast(ZoneOffset.class), OffsetTime::toLocalTime, OffsetTime::getOffset, OffsetTime::of)),
+    ZONED_DATE_TIME(new BinaryExternalizer<>(ZonedDateTime.class, LOCAL_DATE_TIME.cast(LocalDateTime.class), ZONE_ID.cast(ZoneId.class), ZonedDateTime::toLocalDateTime, ZonedDateTime::getZone, ZonedDateTime::of)),
     // java.util
     ARRAY_DEQUE(new CollectionExternalizer<>(ArrayDeque.class, ArrayDeque::new)),
     ARRAY_LIST(new CollectionExternalizer<>(ArrayList.class, ArrayList::new)),
@@ -121,6 +135,7 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     ATOMIC_INTEGER(new IntExternalizer<>(AtomicInteger.class, AtomicInteger::new, AtomicInteger::get)),
     ATOMIC_LONG(new LongExternalizer<>(AtomicLong.class, AtomicLong::new, AtomicLong::get)),
     ATOMIC_REFERENCE(new ObjectExternalizer<>(AtomicReference.class, AtomicReference::new, AtomicReference::get)),
+    BIT_SET(new BitSetExternalizer()),
     CALENDAR(new CalendarExternalizer()),
     CONCURRENT_HASH_MAP(new HashMapExternalizer<>(ConcurrentHashMap.class, ConcurrentHashMap::new)),
     CONCURRENT_HASH_SET(new CollectionExternalizer<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
@@ -142,6 +157,8 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     EMPTY_SET(new ValueExternalizer<>(Collections.emptySet())),
     EMPTY_SORTED_MAP(new ValueExternalizer<>(Collections.emptySortedMap())),
     EMPTY_SORTED_SET(new ValueExternalizer<>(Collections.emptySortedSet())),
+    ENUM_MAP(new EnumMapExternalizer<>()),
+    ENUM_SET(new EnumSetExternalizer<>()),
     HASH_MAP(new HashMapExternalizer<>(HashMap.class, HashMap::new)),
     HASH_SET(new CollectionExternalizer<>(HashSet.class, HashSet::new)),
     LINKED_HASH_MAP(new LinkedHashMapExternalizer()),
@@ -151,6 +168,9 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     NATURAL_ORDER_COMPARATOR(new ValueExternalizer<>(Comparator.naturalOrder())),
     @SuppressWarnings("unchecked")
     OPTIONAL(new ObjectExternalizer<>(Optional.class, Optional::ofNullable, optional -> optional.orElse(null))),
+    OPTIONAL_DOUBLE(new OptionalDoubleExternalizer()),
+    OPTIONAL_INT(new OptionalIntExternalizer()),
+    OPTIONAL_LONG(new OptionalLongExternalizer()),
     REVERSE_ORDER_COMPARATOR(new ValueExternalizer<>(Collections.reverseOrder())),
     SIMPLE_ENTRY(new MapEntryExternalizer<>(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry::new)),
     SIMPLE_IMMUTABLE_ENTRY(new MapEntryExternalizer<>(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry::new)),

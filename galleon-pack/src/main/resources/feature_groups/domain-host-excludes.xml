@@ -33,4 +33,24 @@
         <param name="host-release" value="WildFly14.0"/>
         <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.microprofile.fault-tolerance-smallrye&quot;,&quot;org.wildfly.extension.microprofile.jwt-smallrye&quot;,&quot;org.wildfly.extension.microprofile.metrics-smallrye&quot;,&quot;org.wildfly.extension.microprofile.openapi-smallrye&quot;]"/>
     </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly15.0"/>
+        <param name="host-release" value="WildFly15.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.microprofile.fault-tolerance-smallrye&quot;,&quot;org.wildfly.extension.microprofile.jwt-smallrye&quot;,&quot;org.wildfly.extension.microprofile.openapi-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly16.0"/>
+        <param name="host-release" value="WildFly16.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.microprofile.fault-tolerance-smallrye&quot;,&quot;org.wildfly.extension.microprofile.jwt-smallrye&quot;,&quot;org.wildfly.extension.microprofile.openapi-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly17.0"/>
+        <param name="host-release" value="WildFly17.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.microprofile.fault-tolerance-smallrye&quot;,&quot;org.wildfly.extension.microprofile.jwt-smallrye&quot;,&quot;org.wildfly.extension.microprofile.openapi-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly18.0"/>
+        <param name="host-release" value="WildFly18.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.microprofile.fault-tolerance-smallrye&quot;,&quot;org.wildfly.extension.microprofile.jwt-smallrye&quot;,&quot;org.wildfly.extension.microprofile.openapi-smallrye&quot;]"/>
+    </feature>
 </feature-group-spec>

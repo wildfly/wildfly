@@ -78,6 +78,16 @@ class DefaultComponentViewConfigurator extends AbstractComponentConfigurator imp
                 }
             }
 
+            Class<?> markupClass;
+            try {
+                if (view.getMarkupClassName() != null) {
+                    markupClass = module.getClassLoader().loadClass(view.getMarkupClassName());
+                    proxyConfiguration.addAdditionalInterface(markupClass);
+                }
+            } catch (ClassNotFoundException e) {
+                throw EeLogger.ROOT_LOGGER.cannotLoadViewClass(e, view.getMarkupClassName(), configuration);
+            }
+
             //we define it in the modules class loader to prevent permgen leaks
             if (viewClass.isInterface()) {
                 proxyConfiguration.setSuperClass(Object.class);

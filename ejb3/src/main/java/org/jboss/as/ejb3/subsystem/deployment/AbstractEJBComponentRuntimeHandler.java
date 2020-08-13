@@ -23,8 +23,12 @@
 package org.jboss.as.ejb3.subsystem.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.ASYNC_METHODS;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.BUSINESS_LOCAL;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.BUSINESS_REMOTE;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.COMPONENT_CLASS_NAME;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.DECLARED_ROLES;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.JNDI_NAMES;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_AVAILABLE_COUNT;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CREATE_COUNT;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CURRENT_SIZE;
@@ -33,13 +37,17 @@ import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourc
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_REMOVE_COUNT;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.RUN_AS_ROLE;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.SECURITY_DOMAIN;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.TIMEOUT_METHOD;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.TRANSACTION_TYPE;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.ejb.TransactionManagementType;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -47,11 +55,17 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.dmr.ModelNode;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -102,22 +116,54 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
 
     protected void executeReadAttribute(final String attributeName, final OperationContext context, final T component, final PathAddress address) {
         final boolean hasPool = componentType.hasPool();
+        final ModelNode result = context.getResult();
+        final EJBComponentDescription componentDescription = component.getComponentDescription();
         if (COMPONENT_CLASS_NAME.getName().equals(attributeName)) {
-            context.getResult().set(component.getComponentClass().getName());
+            result.set(component.getComponentClass().getName());
+        } else if (JNDI_NAMES.getName().equals(attributeName)) {
+            for (ViewDescription view : componentDescription.getViews()) {
+                for (String binding : view.getBindingNames()) {
+                    result.add(binding);
+                }
+            }
+        } else if (BUSINESS_LOCAL.getName().equals(attributeName)) {
+            for (final ViewDescription view : componentDescription.getViews()) {
+                final EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
+                if (!ejbViewDescription.isEjb2xView() && ejbViewDescription.getMethodIntf() == MethodIntf.LOCAL) {
+                    result.add(ejbViewDescription.getViewClassName());
+                }
+            }
+        } else if (BUSINESS_REMOTE.getName().equals(attributeName)) {
+            for (final ViewDescription view : componentDescription.getViews()) {
+                final EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
+                if (!ejbViewDescription.isEjb2xView() && ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
+                    result.add(ejbViewDescription.getViewClassName());
+                }
+            }
+        } else if (TIMEOUT_METHOD.getName().equals(attributeName)) {
+            final Method timeoutMethod = component.getTimeoutMethod();
+            if (timeoutMethod != null) {
+                result.set(timeoutMethod.toString());
+            }
+        } else if (ASYNC_METHODS.getName().equals(attributeName)) {
+            final SessionBeanComponentDescription sessionBeanComponentDescription = (SessionBeanComponentDescription) componentDescription;
+            final Set<MethodIdentifier> asynchronousMethods = sessionBeanComponentDescription.getAsynchronousMethods();
+            for (MethodIdentifier m : asynchronousMethods) {
+                result.add(m.getReturnType() + ' ' + m.getName() + '(' + String.join(", ", m.getParameterTypes()) + ')');
+            }
+        } else if (TRANSACTION_TYPE.getName().equals(attributeName)) {
+            result.set(component.isBeanManagedTransaction() ? TransactionManagementType.BEAN.name() : TransactionManagementType.CONTAINER.name());
         } else if (SECURITY_DOMAIN.getName().equals(attributeName)) {
-            final ModelNode result = context.getResult();
             EJBSecurityMetaData md = component.getSecurityMetaData();
-            if (md != null && md.getSecurityDomain() != null) {
-                result.set(md.getSecurityDomain());
+            if (md != null && md.getSecurityDomainName() != null) {
+                result.set(md.getSecurityDomainName());
             }
         } else if (RUN_AS_ROLE.getName().equals(attributeName)) {
-            final ModelNode result = context.getResult();
             EJBSecurityMetaData md = component.getSecurityMetaData();
             if (md != null && md.getRunAs() != null) {
                 result.set(md.getRunAs());
             }
         } else if (DECLARED_ROLES.getName().equals(attributeName)) {
-            final ModelNode result = context.getResult();
             EJBSecurityMetaData md = component.getSecurityMetaData();
             if (md != null) {
                 result.setEmptyList();
@@ -129,40 +175,34 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
                 }
             }
         } else if (componentType.hasTimer() && TimerAttributeDefinition.INSTANCE.getName().equals(attributeName)) {
-            TimerAttributeDefinition.addTimers(component, context.getResult());
+            TimerAttributeDefinition.addTimers(component, result);
         } else if (hasPool && POOL_AVAILABLE_COUNT.getName().equals(attributeName)) {
             final Pool<?> pool = componentType.getPool(component);
-            final ModelNode result = context.getResult();
             if (pool != null) {
                 result.set(pool.getAvailableCount());
             }
         } else if (hasPool && POOL_CREATE_COUNT.getName().equals(attributeName)) {
             final Pool<?> pool = componentType.getPool(component);
-            final ModelNode result = context.getResult();
             if (pool != null) {
                 result.set(pool.getCreateCount());
             }
         } else if (hasPool && POOL_NAME.getName().equals(attributeName)) {
             final String poolName = componentType.pooledComponent(component).getPoolName();
-            final ModelNode result = context.getResult();
             if (poolName != null) {
                 result.set(poolName);
             }
         } else if (hasPool && POOL_REMOVE_COUNT.getName().equals(attributeName)) {
             final Pool<?> pool = componentType.getPool(component);
-            final ModelNode result = context.getResult();
             if (pool != null) {
                 result.set(pool.getRemoveCount());
             }
         } else if (hasPool && POOL_CURRENT_SIZE.getName().equals(attributeName)) {
             final Pool<?> pool = componentType.getPool(component);
-            final ModelNode result = context.getResult();
             if (pool != null) {
                 result.set(pool.getCurrentSize());
             }
         } else if (hasPool && POOL_MAX_SIZE.getName().equals(attributeName)) {
             final Pool<?> pool = componentType.getPool(component);
-            final ModelNode result = context.getResult();
             if (pool != null) {
                 result.set(pool.getMaxSize());
             }

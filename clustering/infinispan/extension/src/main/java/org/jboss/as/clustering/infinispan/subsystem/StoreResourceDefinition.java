@@ -88,19 +88,13 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        FETCH_STATE("fetch-state", true),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        FETCH_STATE("fetch-state", ModelType.BOOLEAN, ModelNode.TRUE),
         MAX_BATCH_SIZE("max-batch-size", ModelType.INT, new ModelNode(100)),
-        PASSIVATION("passivation", true),
-        PRELOAD("preload", false),
-        PURGE("purge", true),
-        SHARED("shared", false),
-        SINGLETON("singleton", false) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion());
-            }
-        },
+        PASSIVATION("passivation", ModelType.BOOLEAN, ModelNode.TRUE),
+        PRELOAD("preload", ModelType.BOOLEAN, ModelNode.FALSE),
+        PURGE("purge", ModelType.BOOLEAN, ModelNode.TRUE),
+        SHARED("shared", ModelType.BOOLEAN, ModelNode.FALSE),
         PROPERTIES("properties"),
         ;
         private final AttributeDefinition definition;
@@ -110,12 +104,12 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    ).build();
+                    .build();
         }
 
         Attribute(String name) {
@@ -129,10 +123,27 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
+    }
+
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        SINGLETON("singleton", ModelType.BOOLEAN, ModelNode.FALSE, InfinispanModel.VERSION_5_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setDeprecated(deprecation.getVersion())
+                    .build();
+        }
 
         @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder;
+        public AttributeDefinition getDefinition() {
+            return this.definition;
         }
     }
 
@@ -217,7 +228,8 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
 
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
-                .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addAttributes(Attribute.class)
+                .addIgnoredAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;

@@ -252,7 +252,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
                         .setInitialMode(ServiceController.Mode.ACTIVE).install();
                 // ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default",
                 // InetSocketAddress.createUnresolved("localhost",8080));
-                target.addService(HttpListenerAdd.REGISTRY_SERVICE_NAME, new HttpListenerRegistryService())
+                target.addService(ServiceName.parse(Capabilities.REF_HTTP_LISTENER_REGISTRY), new HttpListenerRegistryService())
                         .setInitialMode(ServiceController.Mode.ACTIVE).install();
                 SecurityRealmService srs = new SecurityRealmService("UndertowRealm", false);
                 final ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "temp");

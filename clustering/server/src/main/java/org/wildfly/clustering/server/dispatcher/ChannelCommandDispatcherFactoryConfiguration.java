@@ -23,9 +23,10 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.time.Duration;
 
+import org.jboss.modules.ModuleLoader;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
  * Configuration for a {@link ChannelCommandDispatcherFactory}.
@@ -34,6 +35,7 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 public interface ChannelCommandDispatcherFactoryConfiguration {
     ChannelFactory getChannelFactory();
     JChannel getChannel();
-    MarshallingContext getMarshallingContext();
+    ByteBufferMarshaller getMarshaller();
     Duration getTimeout();
+    ModuleLoader getModuleLoader();
 }

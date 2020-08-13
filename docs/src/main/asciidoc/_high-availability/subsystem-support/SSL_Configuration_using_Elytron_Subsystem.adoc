@@ -3,7 +3,7 @@
 
 [abstract]
 
-This document provides information how to configure mod_cluster
+This section provides information how to configure mod_cluster
 subsystem to protect communication between mod_cluster and load balancer
 using SSL/TLS using link:WildFly_Elytron_Security{outfilesuffix}#Elytron_Subsystem[Elytron Subsystem].
 
@@ -34,7 +34,7 @@ command:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=elytron/key-store=default-trust-store:add(type=JKS, relative-to=jboss.server.config.dir, path=application.truststore, credential-reference={clear-text=password})
+/subsystem=elytron/key-store=default-trust-store:add(type=JKS, relative-to=jboss.server.config.dir, path=application.truststore, credential-reference={clear-text=password})
 ----
 
 In order to successfully execute the command above you must have a
@@ -58,7 +58,7 @@ command:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=elytron/trust-managers=default-trust-manager:add(algorithm=PKIX, key-store=default-trust-store)
+/subsystem=elytron/trust-manager=default-trust-manager:add(algorithm=PKIX, key-store=default-trust-store)
 ----
 
 Here we are setting the *default-trust-store* as the source of the
@@ -73,7 +73,7 @@ SSL/TLS:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=elytron/client-ssl-context=modcluster-client-ssl-context:add(trust-managers=default-trust-manager)
+/subsystem=elytron/client-ssl-context=modcluster-client:add(trust-manager=default-trust-manager)
 ----
 
 Now that the Client `ssl-context` is defined you can configure
@@ -81,14 +81,14 @@ mod_cluster subsystem as follows:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=modcluster/mod-cluster-config=configuration:write-attribute(name=ssl-context, value=modcluster-client-ssl-context)
+/subsystem=modcluster/proxy=default:write-attribute(name=ssl-context, value=modcluster-client)
 ----
 
 Once you execute the last command above, reload the server:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] reload
+reload
 ----
 
 [[using-a-certificate-revocation-list]]
@@ -100,7 +100,7 @@ in Elytron subsystem as follows:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=elytron/trust-managers=default-trust-manager:write-attribute(name=certificate-revocation-list.path, value=intermediate.crl.pem)
+/subsystem=elytron/trust-manager=default-trust-manager:write-attribute(name=certificate-revocation-list.path, value=intermediate.crl.pem)
 ----
 
 To use a CRL your trust store must contain the certificate chain in
@@ -113,5 +113,5 @@ embedded in your certificates. For that, you need to configure a
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/trust-managers=default-trust-manager:write-attribute(name=certificate-revocation-list)
+/subsystem=elytron/trust-manager=default-trust-manager:write-attribute(name=certificate-revocation-list)
 ----

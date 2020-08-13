@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.infinispan.sso.AuthenticationKeyResolver.Authe
 public class AuthenticationKeyResolverTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         AuthenticationKey key = new AuthenticationKey("ABC123");
         new ExternalizerTester<>(new AuthenticationKeyExternalizer()).test(key);
         new KeyFormatTester<>(new AuthenticationKeyFormat()).test(key);

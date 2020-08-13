@@ -90,6 +90,7 @@
     </proxy>
     <proxy name="with-legacy-ssl-configuration"
            listener="default">
+        <simple-load-provider factor="50"/>
         <ssl ca-certificate-file="${modcluster.ca-certificate-file:/home/rhusar/client-keystore.jks}"
              ca-revocation-url="${modcluster.ca-revocation-url:/home/rhusar/revocations}"
              certificate-key-file="${modcluster.certificate-key-file:/home/rhusar/client-keystore.jks}"

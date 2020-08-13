@@ -21,19 +21,27 @@
  */
 package org.jboss.as.test.integration.ejb.management.deployments;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.MODULE_NAME;
+import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.componentAddress;
+import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.execute;
+import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.executeOperation;
+import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.getEJBJar;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.SINGLETON;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATEFUL;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATELESS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -49,18 +57,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.SINGLETON;
-import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATEFUL;
-import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATELESS;
-import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.MODULE_NAME;
-import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.componentAddress;
-import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.execute;
-import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.executeOperation;
-import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.getEJBJar;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests whether the invocation statistics actually make sense.
@@ -147,32 +143,28 @@ public class EjbInvocationStatisticsTestCase {
     }
 
     @Test
-    @InSequence(1) // this needs to run after testSingleton because testSingleton doesn't expect any previously made invocations
     public void testSingletonWaitTime() throws Exception {
-        validateWaitTimeStatistic(SINGLETON, ManagedSingletonBean.class);
+        validateWaitTimeStatistic(SINGLETON, WaitTimeSingletonBean.class);
     }
 
-    /*
-      Invoke the singleton bean multiple times at once. The wait-time statistic should show a number greater than zero, because
-      the singleton uses a write lock.
-    */
+    /**
+     * Invoke the singleton bean business method multiple times.
+     * The target bean has multiple timers that are competing for the same
+     * singleton bean instance. The wait-time statistic should show
+     * a number greater than zero, because the singleton uses a write lock.
+     *
+     * @param type type of bean (EJBManagementUtil.STATEFUL, STATELESS, SINGLETON, MESSAGE_DRIVEN)
+     * @param beanClass the bean class
+     * @throws Exception on errors
+     */
     private void validateWaitTimeStatistic(final String type, final Class<?> beanClass) throws Exception {
         final String name = beanClass.getSimpleName();
         final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (STATEFUL.equals(type) ? "?stateful" : ""));
-        final Runnable invocationRunnable = new Runnable() {
-            @Override
-            public void run() {
-                bean.doIt();
-            }
-        };
 
-        // perform 4 invocations at once
-        ExecutorService threadPool = Executors.newFixedThreadPool(4);
-        for(int i=0; i<4; i++) {
-            threadPool.submit(invocationRunnable);
+        for (int i = 0; i < 3; i++) {
+            bean.doIt();
         }
-        threadPool.shutdown();
-        threadPool.awaitTermination(TimeoutUtil.adjust(25), TimeUnit.SECONDS);
+        bean.remove();
 
         // check the wait-time statistic
         final ModelNode address = componentAddress(EjbJarRuntimeResourcesTestCase.BASE_ADDRESS, type, name).toModelNode();
@@ -180,7 +172,7 @@ public class EjbInvocationStatisticsTestCase {
         {
             final ModelNode result = executeOperation(managementClient,
                     ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
-            assertTrue(result.get("wait-time").asLong() > 0L);
+            assertTrue("Expecting wait-time attribute value > 0, but got " + result.toString(), result.get("wait-time").asLong() > 0L);
         }
     }
 
@@ -229,7 +221,7 @@ public class EjbInvocationStatisticsTestCase {
                 bean2.doIt();
 
                 // Eviction is asynchronous, so wait a bit for this to take effect
-                Thread.sleep(500);
+                Thread.sleep(TimeoutUtil.adjust(500));
 
                 result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
                 assertEquals(1L, result.get("cache-size").asLong());

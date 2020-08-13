@@ -43,10 +43,12 @@ public enum EJB3SubsystemXMLAttribute {
     @Deprecated CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
     @Deprecated CLUSTERED_CACHE_REF("clustered-cache-ref"),
     CONNECT_TIMEOUT("connect-timeout"),
-    CONNECTOR_REF("connector-ref"),
+    @Deprecated CONNECTOR_REF("connector-ref"),
+    CONNECTORS("connectors"),
     CORE_THREADS("core-threads"),
 
     DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
+    DEFAULT_SESSION_TIMEOUT("default-session-timeout"),
     DEFAULT_DATA_STORE("default-data-store"),
     DATABASE("database"),
     DATASOURCE_JNDI_NAME("datasource-jndi-name"),

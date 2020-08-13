@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.remote.http;
 
+import java.util.function.Function;
+
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.msc.service.Service;
@@ -42,10 +44,16 @@ public class EJB3RemoteHTTPService implements Service<EJB3RemoteHTTPService> {
     private final InjectedValue<PathHandler> pathHandlerInjectedValue = new InjectedValue<>();
     private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
     private final InjectedValue<LocalTransactionContext> localTransactionContextInjectedValue = new InjectedValue<>();
+    private final Function<String, Boolean> classResolverFilter;
+
+    public EJB3RemoteHTTPService(final Function<String, Boolean> classResolverFilter) {
+        this.classResolverFilter = classResolverFilter;
+    }
 
     @Override
     public void start(StartContext context) throws StartException {
-        EjbHttpService service = new EjbHttpService(associationServiceInjectedValue.getValue().getAssociation(), null, localTransactionContextInjectedValue.getValue());
+        EjbHttpService service = new EjbHttpService(associationServiceInjectedValue.getValue().getAssociation(),
+                null, localTransactionContextInjectedValue.getValue(), classResolverFilter);
         pathHandlerInjectedValue.getValue().addPrefixPath("/ejb", service.createHttpHandler());
     }
 

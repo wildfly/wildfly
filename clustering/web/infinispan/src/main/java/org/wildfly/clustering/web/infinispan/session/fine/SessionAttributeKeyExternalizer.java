@@ -30,20 +30,22 @@ import java.util.UUID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.web.cache.SessionIdentifierSerializer;
 
 @MetaInfServices(Externalizer.class)
 public class SessionAttributeKeyExternalizer implements Externalizer<SessionAttributeKey> {
+    private static final Serializer<String> IDENTIFIER_SERIALIZER = SessionIdentifierSerializer.INSTANCE;
 
     @Override
     public void writeObject(ObjectOutput output, SessionAttributeKey key) throws IOException {
-        SessionIdentifierSerializer.INSTANCE.write(output, key.getValue());
+        IDENTIFIER_SERIALIZER.write(output, key.getId());
         DefaultExternalizer.UUID.cast(UUID.class).writeObject(output, key.getAttributeId());
     }
 
     @Override
     public SessionAttributeKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        String sessionId = SessionIdentifierSerializer.INSTANCE.read(input);
+        String sessionId = IDENTIFIER_SERIALIZER.read(input);
         UUID attributeId = DefaultExternalizer.UUID.cast(UUID.class).readObject(input);
         return new SessionAttributeKey(sessionId, attributeId);
     }

@@ -47,6 +47,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -77,6 +78,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(WSTrustTestCaseSecuritySetupTask.class)
+@FixMethodOrder
 public class WSTrustTestCase {
     private static final String STS_DEP = "jaxws-samples-wsse-policy-trust-sts";
     private static final String SERVER_DEP = "jaxws-samples-wsse-policy-trust";

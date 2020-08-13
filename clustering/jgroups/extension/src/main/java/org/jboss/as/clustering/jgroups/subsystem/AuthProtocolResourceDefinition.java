@@ -48,6 +48,10 @@ public class AuthProtocolResourceDefinition extends ProtocolResourceDefinition {
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         ProtocolResourceDefinition.addTransformations(version, builder);
+
+        PlainAuthTokenResourceDefinition.buildTransformation(version, builder);
+        DigestAuthTokenResourceDefinition.buildTransformation(version, builder);
+        CipherAuthTokenResourceDefinition.buildTransformation(version, builder);
     }
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

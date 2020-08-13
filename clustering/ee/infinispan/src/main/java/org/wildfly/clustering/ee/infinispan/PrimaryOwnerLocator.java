@@ -23,6 +23,7 @@
 package org.wildfly.clustering.ee.infinispan;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
@@ -35,10 +36,14 @@ import org.wildfly.clustering.spi.NodeFactory;
  * Function that returns the primary owner of a given cache key.
  * @author Paul Ferraro
  */
-public class PrimaryOwnerLocator<K> implements Function<K, Node> {
+public class PrimaryOwnerLocator<K> implements Function<K, Node>, Predicate<K> {
     private final DistributionManager distribution;
     private final NodeFactory<Address> memberFactory;
     private final Group group;
+
+    public PrimaryOwnerLocator(Cache<? extends K, ?> cache, org.wildfly.clustering.spi.group.Group<Address> group) {
+        this(cache, group, group);
+    }
 
     public PrimaryOwnerLocator(Cache<? extends K, ?> cache, NodeFactory<Address> memberFactory, Group group) {
         this.distribution = cache.getAdvancedCache().getDistributionManager();
@@ -51,5 +56,10 @@ public class PrimaryOwnerLocator<K> implements Function<K, Node> {
         Address address = (this.distribution != null) ? this.distribution.getCacheTopology().getDistribution(key).primary() : null;
         Node node = (address != null) ? this.memberFactory.createNode(address) : null;
         return (node != null) ? node : this.group.getLocalMember();
+    }
+
+    @Override
+    public boolean test(K key) {
+        return (this.distribution != null) ? this.distribution.getCacheTopology().getDistribution(key).isPrimary() : true;
     }
 }

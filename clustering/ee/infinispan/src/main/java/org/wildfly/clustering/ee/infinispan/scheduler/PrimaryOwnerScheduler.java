@@ -29,12 +29,11 @@ import java.util.function.Function;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.cache.retry.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.logging.Logger;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
@@ -48,8 +47,8 @@ public class PrimaryOwnerScheduler<I, K, M> implements org.wildfly.clustering.ee
     private final Function<I, K> keyFactory;
     private final CommandDispatcher<Scheduler<I, M>> dispatcher;
 
-    public <C extends Marshallability, L> PrimaryOwnerScheduler(CommandDispatcherFactory dispatcherFactory, String name, Scheduler<I, M> scheduler, Function<K, Node> primaryOwnerLocator, Function<I, K> keyFactory) {
-        this.dispatcher = dispatcherFactory.createCommandDispatcher(name, scheduler);
+    public <C, L> PrimaryOwnerScheduler(CommandDispatcherFactory dispatcherFactory, String name, Scheduler<I, M> scheduler, Function<K, Node> primaryOwnerLocator, Function<I, K> keyFactory) {
+        this.dispatcher = dispatcherFactory.createCommandDispatcher(name, scheduler, this.getClass().getClassLoader());
         this.primaryOwnerLocator = primaryOwnerLocator;
         this.keyFactory = keyFactory;
     }

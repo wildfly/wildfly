@@ -56,12 +56,11 @@ public class CommonDeploymentService implements Service<CommonDeployment> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        ROOT_LOGGER.debugf("Started CommonDeployment %s");
-
+        ROOT_LOGGER.debugf("Started CommonDeployment %s", context.getController().getName());
     }
 
     @Override
     public void stop(StopContext context) {
-        ROOT_LOGGER.debugf("Stopped CommonDeployment %s");
+        ROOT_LOGGER.debugf("Stopped CommonDeployment %s", context.getController().getName());
     }
 }

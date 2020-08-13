@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceBuilder;
@@ -76,7 +77,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String container = properties.getProperty(CONTAINER);
         String cacheType = properties.getProperty(CACHE_TYPE);
         // TODO Figure out how to access CapabilityServiceSupport from here
-        ServiceName containerServiceName = ServiceName.parse(InfinispanRequirement.CONTAINER.resolve(container));
+        ServiceName containerServiceName = ServiceNameFactory.parseServiceName(InfinispanRequirement.CONTAINER.getName()).append(container);
 
         // need a private cache for non-jpa application use
         String name = properties.getProperty(NAME, UUID.randomUUID().toString());
@@ -88,8 +89,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
             // If using a private cache, addCacheDependencies(...) is never triggered
             String[] caches = properties.getProperty(CACHES).split("\\s+");
             for (String cache : caches) {
-                ServiceName dependencyName = ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(container, cache));
-                builder.requires(dependencyName);
+                builder.requires(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(container, cache));
             }
         }
 

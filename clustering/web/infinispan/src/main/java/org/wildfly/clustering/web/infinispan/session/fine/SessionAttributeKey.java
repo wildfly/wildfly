@@ -25,13 +25,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 
 /**
  * Cache key for session attributes.
  * @author Paul Ferraro
  */
-public class SessionAttributeKey extends Key<String> {
+public class SessionAttributeKey extends GroupedKey<String> {
 
     private final UUID attributeId;
 
@@ -50,7 +50,7 @@ public class SessionAttributeKey extends Key<String> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getClass(), this.getValue(), this.attributeId);
+        return Objects.hash(this.getClass(), this.getId(), this.attributeId);
     }
 
     @Override
@@ -60,6 +60,6 @@ public class SessionAttributeKey extends Key<String> {
 
     @Override
     public String toString() {
-        return String.format("%s(%s[%s])", SessionAttributeKey.class.getSimpleName(), this.getValue(), this.attributeId);
+        return String.format("%s(%s[%s])", SessionAttributeKey.class.getSimpleName(), this.getId(), this.attributeId);
     }
 }

@@ -1,0 +1,18 @@
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <module name="deployment.library-jar">
+        <resources>
+            <resource-root path="library.jar"/>
+            <resource-root path="library2.jar"/>
+        </resources>
+        <dependencies>
+            <module name="javaee.api" export="true"/>
+            <module name="javax.api" export="true"/>
+            <module name="javax.servlet.api" export="true"/>
+        </dependencies>
+    </module>
+    <sub-deployment name="web.war">
+        <dependencies>
+            <module name="deployment.library-jar" annotations="true" meta-inf="export"/>
+        </dependencies>
+    </sub-deployment>
+</jboss-deployment-structure>

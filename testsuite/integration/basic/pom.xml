@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta2-SNAPSHOT</version>
+        <version>21.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -137,6 +137,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <scope>test</scope>
@@ -181,6 +186,11 @@
         <dependency>
             <groupId>org.eclipse.microprofile.health</groupId>
             <artifactId>microprofile-health-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.jwt</groupId>
+            <artifactId>microprofile-jwt-auth-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -394,6 +404,188 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <runOrder>alphabetical</runOrder>
+                    <environmentVariables>
+                        <!-- dummy env property for MicroProfile Config testing -->
+                        <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                        <TEST_PROP>JMXPropertyEditorsTestCase-WFLY-12899</TEST_PROP>
+                    </environmentVariables>
+                    <systemPropertyVariables combine.children="append">
+                        <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
+                        <!-- Narayana transaction data storage for transaction started at client side -->
+                        <ObjectStoreEnvironmentBean.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.objectStoreDir>
+                        <ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>
+                    </systemPropertyVariables>
+                </configuration>
+                <executions>
+                    <!-- A subset of the available tests that are appropriate for use with a 'cloud-server' type
+                         slimmed installation or a full installation running the standalone-microprofile.xml tests -->
+                    <execution>
+                        <id>microprofile.surefire</id>
+                        <!-- At this level this execution is disabled. It gets turned on in profiles -->
+                        <phase>none</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <environmentVariables>
+                                <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                            </environmentVariables>
+                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                            <includes>
+                                <include>org/jboss/as/test/integration/beanvalidation/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/beanvalidation/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/bc/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/bc/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/deployment/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/deployment/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/jaxb/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/jaxb/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/jaxrs/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/jaxrs/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/jca/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/json/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/json/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/jsp/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/jsp/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/logging/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/logging/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/management/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/management/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/messaging/mgmt/ExternalConnectionFactoryManagementTestCase.java</include>
+                                <include>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</include>
+                                <include>org/jboss/as/test/integration/microprofile/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/microprofile/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/security/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/security/**/*Test.java</include>
+                                <include>org/jboss/as/test/integration/weld/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/integration/weld/**/*Test.java</include>
+                            </includes>
+                            <excludes>
+                                <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
+                                <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
+                                <!-- requires webservices picketlink federation -->
+                                <exclude>org/jboss/as/test/integration/security/xacml/**/*TestCase.java</exclude>
+                                <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
+                                <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
+                                <!-- no ejb -->
+                                <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/xacml/EjbXACMLAuthorizationModuleTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/jacc/context/PolicyContextTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
+
+                                <!-- no console -->
+                                <exclude>org/jboss/as/test/integration/management/console/**/*</exclude>
+                                <!-- no jts -->
+                                <exclude>org/jboss/as/test/integration/management/cli/objectstore/TransactionObjectStoreTestCase.java</exclude>
+                                <!-- requires welcome page -->
+                                <exclude>org/jboss/as/test/integration/management/api/SocketsAndInterfacesTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/management/api/web/ListenerTestCase.java</exclude>
+                                <!-- requires https-server-->
+                                <exclude>org/jboss/as/test/integration/management/cli/SecurityCommandsTestCase.java</exclude>
+                                <!-- requires legacy security -->
+                                <exclude>org/jboss/as/test/integration/management/api/ClientCompatibilityUnitTestCase.java</exclude>
+                                <!-- requires some subsystem not present -->
+                                <exclude>org/jboss/as/test/integration/management/api/SimpleSubsystemsTestCase.java</exclude>
+                                <!-- requires ejb and remoting3 (deprecated) -->
+                                <exclude>org/jboss/as/test/integration/management/api/expression/ExpressionSubstitutionInContainerTestCase.java</exclude>
+                                <!-- requires ejb -->
+                                <exclude>org/jboss/as/test/integration/jca/deployment/EjbDeploymentTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/statistics/xa/XaDataSourcePoolStatisticsTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/tracer/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/management/cli/RemoveEJBSubsystemTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatefulEJBRemoteHomeRuntimeNameTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatelessEJBRemoteHomeRuntimeNameTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/management/deploy/runtime/TimerEJBRuntimeNameTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatelessEJBRuntimeNameTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatefulEJBRuntimeNameTestCase.java</exclude>
+                                <!-- no full jms -->
+                                <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/beanvalidation/BeanValidationTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/SubDeploymentOperationsTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/classloading/ear/subdeployments/SubDeploymentAvailableInClassPathTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/classloading/war/WarChildFirstClassLoadingTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/classloading/war/WarInEarChildFirstClassLoadingTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/subdirectory/SubDirectoryModuleDeploymentTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/dependencies/InterDeploymentDependenciesTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/dependencies/ear/InterDeploymentDependenciesEarTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/deploymentoverlay/**/*</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/jcedeployment/JCETestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/moduleslisting/DeploymentModulesListTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/structure/ear/EarJBossDeploymentStructureTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/structure/jar/JarJBossDeploymentStructureTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/structure/war/WarJBossDeploymentStructureTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/structure/parsing/JBossDeploymentStructure11ParsingTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/deployment/xml/datasource/DeployedXmlJpaDataSourceTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jaxrs/integration/ejb/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jaxrs/packaging/ear/*TestCase.java</exclude>
+                                <!-- JCA TBD -->
+                                <exclude>org/jboss/as/test/integration/jca/ear/*TestCase.java</exclude>
+                                <!-- No legacy security -->
+                                <exclude>org/jboss/as/test/integration/jca/anno/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/basic/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</exclude>
+                                <!-- TODO why does this one need legacy security? Its name implies it should just be elytron -->
+                                <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithSecurityDomainTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/management/**/security/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/aselytron/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/auditing/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/auditing/*Test.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/cli/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
+                                <exclude>org/jboss/as/test/integration/weld/builtin/**/*TestCase.java</exclude>
+                                <!-- no sar subsystem -->
+                                <exclude>org/jboss/as/test/integration/deployment/classloading/sar/SarClassLoadingTestCase.java</exclude>
+                                <!-- requires javaee.api -->
+                                <exclude>org/jboss/as/test/integration/weld/multideployment/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/weld/multideployment/*Test.java</exclude>
+                                <!-- requires ejb -->
+                                <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/weld/ejb/**/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/weld/ejb/**/*Test.java</exclude>
+                                <exclude>org/jboss/as/test/integration/weld/jndi/WeldJndiLookupTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/weld/modules/PortableExtensionInExternalModuleTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/weld/deployment/enterprise/EnterpriseBeanDiscoveryTest.java</exclude>
+                                <exclude>org/jboss/as/test/integration/weld/extensions/ExtensionsInEarDiscoveredTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/jaxrs/cfg/ResteasyAttributeTestCase.java</exclude>
+                                <exclude>org/jboss/as/test/integration/logging/config/*TestCase</exclude>
+                                <!-- requires web-services-->
+                                <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
     <profiles>
 
         <profile>
@@ -470,19 +662,8 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <runOrder>alphabetical</runOrder>
-                            <environmentVariables>
-                                <!-- dummy env property for MicroProfile Config testing -->
-                                <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
-                            </environmentVariables>
-                            <systemPropertyVariables combine.children="append">
-                                <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
-                                <!-- Narayana transaction data storage for transaction started at client side -->
-                                <ObjectStoreEnvironmentBean.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.objectStoreDir>
-                                <ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>
-                            </systemPropertyVariables>
-                        </configuration>
+                        <!-- General configuration is inherited from the surefire plugin declaration outside this profile-->
+                        <!-- Here we just have executions -->
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
@@ -808,6 +989,69 @@
             </build>
         </profile>
 
+        <!-- Test against standalone-microprofile config -->
+        <profile>
+            <id>standalone.microprofile.profile</id>
+            <activation>
+                <property>
+                    <name>ts.standalone.microprofile</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the standard test executions. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-full.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-web.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-ldap.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Run a subset of tests against the standalone-microprofile config -->
+                            <!-- This uses the 'microprofile.surefire' execution whose main configuration is declared outside this profile -->
+                            <execution>
+                                <id>microprofile.surefire</id>
+                                <!-- Turn on the execution configured outside this profile -->
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                    <excludes combine.children="append">
+                                        <!-- OpenAPI barfs on a war that excludes subsystems it requires -->
+                                        <exclude>org/jboss/as/test/integration/deployment/excludesubsystem/ExcludeEESubsystemTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Test against slimmed servers provisioned by Galleon -->
         <profile>
             <id>layers.profile</id>
@@ -858,7 +1102,7 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -896,7 +1140,7 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -916,6 +1160,47 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+
+                            <!-- Provision a server with jpa -->
+                            <execution>
+                                <id>jpa-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jpa</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>jpa</layer>
+                                                <layer>jaxrs-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
                     <plugin>
@@ -944,138 +1229,21 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- Tests against the install without legacy security -->
+                            <!-- Tests against the cloud-server install without legacy security -->
                             <execution>
-                                <id>cloud-profile-layers.surefire</id>
+                                <!-- We reuse the microprofile.surefire execution used for testing standalone-microprofile.xml
+                                     as the set of tests we want is the same -->
+                                <id>microprofile.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
-                                    </environmentVariables>
                                     <systemPropertyVariables>
                                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                                         <!-- Override the standard module path that points at the shared module set from dist -->
                                         <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/beanvalidation/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/beanvalidation/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/bc/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/bc/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/deployment/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/deployment/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/jaxb/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jaxb/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/jaxrs/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jaxrs/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/json/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/json/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/jsp/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jsp/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/logging/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/logging/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/management/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/management/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/messaging/mgmt/ExternalConnectionFactoryManagementTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/microprofile/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/microprofile/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/security/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/weld/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/weld/**/*Test.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
-                                        <!-- requires webservices picketlink federation -->
-                                        <exclude>org/jboss/as/test/integration/security/xacml/**/*TestCase.java</exclude>
-                                        <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
-                                        <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
-                                        <!-- no ejb -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/xacml/EjbXACMLAuthorizationModuleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/jacc/context/PolicyContextTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
-                                        
-                                        <!-- no console -->
-                                        <exclude>org/jboss/as/test/integration/management/console/**/*</exclude>
-                                        <!-- no jts -->
-                                        <exclude>org/jboss/as/test/integration/management/cli/objectstore/TransactionObjectStoreTestCase.java</exclude>
-                                        <!-- requires welcome page -->
-                                        <exclude>org/jboss/as/test/integration/management/api/SocketsAndInterfacesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/api/web/ListenerTestCase.java</exclude>
-                                        <!-- requires https-server-->
-                                        <exclude>org/jboss/as/test/integration/management/cli/SecurityCommandsTestCase.java</exclude>
-                                        <!-- requires legacy security -->
-                                        <exclude>org/jboss/as/test/integration/management/api/ClientCompatibilityUnitTestCase.java</exclude>
-                                        <!-- requires some subsystem not present -->
-                                        <exclude>org/jboss/as/test/integration/management/api/SimpleSubsystemsTestCase.java</exclude>
-                                        <!-- requires ejb and remoting3 (deprecated) -->
-                                        <exclude>org/jboss/as/test/integration/management/api/expression/ExpressionSubstitutionInContainerTestCase.java</exclude>
-                                        <!-- requires ejb -->
-                                        <exclude>org/jboss/as/test/integration/management/cli/RemoveEJBSubsystemTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatefulEJBRemoteHomeRuntimeNameTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatelessEJBRemoteHomeRuntimeNameTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/TimerEJBRuntimeNameTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatelessEJBRuntimeNameTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/StatefulEJBRuntimeNameTestCase.java</exclude>
-                                        <!-- no full jms -->
-                                        <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/beanvalidation/BeanValidationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/SubDeploymentOperationsTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/classloading/ear/subdeployments/SubDeploymentAvailableInClassPathTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/classloading/war/WarChildFirstClassLoadingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/classloading/war/WarInEarChildFirstClassLoadingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/subdirectory/SubDirectoryModuleDeploymentTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/dependencies/InterDeploymentDependenciesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/dependencies/ear/InterDeploymentDependenciesEarTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/deploymentoverlay/**/*</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/jcedeployment/JCETestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/moduleslisting/DeploymentModulesListTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/structure/ear/EarJBossDeploymentStructureTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/structure/jar/JarJBossDeploymentStructureTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/structure/war/WarJBossDeploymentStructureTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/structure/parsing/JBossDeploymentStructure11ParsingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/deployment/xml/datasource/DeployedXmlJpaDataSourceTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jaxrs/integration/ejb/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jaxrs/packaging/ear/*TestCase.java</exclude>
-                                        <!-- No legacy security -->
-                                        <exclude>org/jboss/as/test/integration/management/**/security/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/aselytron/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/auditing/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/auditing/*Test.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/cli/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/builtin/**/*TestCase.java</exclude>
-                                        <!-- no sar subsystem -->
-                                        <exclude>org/jboss/as/test/integration/deployment/classloading/sar/SarClassLoadingTestCase.java</exclude>
-                                        <!-- requires javaee.api -->
-                                        <exclude>org/jboss/as/test/integration/weld/multideployment/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/multideployment/*Test.java</exclude>
-                                        <!-- requires ejb -->
-                                        <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/ejb/**/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/ejb/**/*Test.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/jndi/WeldJndiLookupTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/modules/PortableExtensionInExternalModuleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/deployment/enterprise/EnterpriseBeanDiscoveryTest.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/extensions/ExtensionsInEarDiscoveredTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jaxrs/cfg/ResteasyAttributeTestCase.java</exclude>
-                                        <!-- requires web-services-->
-                                        <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
                             <!-- Tests against the install with legacy security -->
@@ -1100,6 +1268,18 @@
                                     </environmentVariables>
                                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
+                                        <include>org/jboss/as/test/integration/jca/anno/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/basic/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</include>
                                         <include>org/jboss/as/test/integration/management/api/security/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/security/aselytron/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/security/auditing/*TestCase.java</include>
@@ -1116,14 +1296,77 @@
                                         <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
                                         <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                         <!-- no ejb -->
+                                        <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
+                                        <!-- truststore setting used in LDAPs testing was affected by some other test - need a separate execution -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
+
+                            <!-- truststore setting used in LDAPs testing was affected by some other test - need an extra run -->
+                            <execution>
+                                <id>legacy-security-layers-ldap.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-security</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with jpa -->
+                            <execution>
+                                <id>jpa-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jpa</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jpa</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jpa</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jpa</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jpa</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jpa/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jpa</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/weld/jpa/*TestCase.java</include>
+                                        <!-- NonTransactionalEmTestCase is currently the only test that does not need EJB -->
+                                        <include>org/jboss/as/test/integration/jpa/**/NonTransactionalEmTestCase.java</include>
+                                        <!-- WebJPATestCase is currently the only test that does not need EJB -->
+                                        <include>org/jboss/as/test/integration/jpa/**/WebJPATestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
                 </plugins>

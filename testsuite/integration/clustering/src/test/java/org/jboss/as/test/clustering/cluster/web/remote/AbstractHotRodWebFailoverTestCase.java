@@ -31,10 +31,11 @@ import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.rules.TestRule;
 
 /**
  * Variation of {@link AbstractWebFailoverTestCase} using hotrod-based session manager.
@@ -44,6 +45,9 @@ import org.junit.Assert;
  * @author Paul Ferraro
  */
 public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailoverTestCase {
+
+    @ClassRule
+    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
 
     @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1)
     private ManagementClient client1;
@@ -60,16 +64,7 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
     }
 
     @Override
-    public void beforeTestMethod() {
-        // Also start the Infinispan Server instance
-        NodeUtil.start(this.controller, INFINISPAN_SERVER_1);
-
-        NodeUtil.start(this.controller, this.nodes);
-        NodeUtil.deploy(this.deployer, this.deployments);
-    }
-
-    @Override
-    protected void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
+    public void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
         super.testGracefulSimpleFailover(baseURL1, baseURL2, baseURL3);
 
         String readResource = String.format("/subsystem=infinispan/remote-cache-container=web/remote-cache=%s:read-resource(include-runtime=true, recursive=true)", this.deploymentName);
@@ -78,17 +73,14 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
         ModelNode result = execute(this.client1, readResource);
         Assert.assertNotEquals(0L, result.get("hits").asLong());
         Assert.assertNotEquals(0L, result.get("writes").asLong());
-        Assert.assertNotEquals(0L, result.get("near-cache-size").asLong());
 
         result = execute(this.client2, readResource);
         Assert.assertEquals(0L, result.get("hits").asLong());
         Assert.assertEquals(0L, result.get("writes").asLong());
-        Assert.assertEquals(0L, result.get("near-cache-size").asLong());
 
         result = execute(this.client3, readResource);
         Assert.assertNotEquals(0L, result.get("hits").asLong());
         Assert.assertNotEquals(0L, result.get("writes").asLong());
-        Assert.assertNotEquals(0L, result.get("near-cache-size").asLong());
 
         execute(this.client1, resetStatistics);
         execute(this.client2, resetStatistics);

@@ -125,7 +125,11 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
         final HashSet<URL> existing = new HashSet<URL>();
 
+        // build a set of all deployment unit names, used later on to skip processing of some dependencies
+        final Set<String> depUnitNames = new HashSet<>();
+        final String prefix = "deployment.";
         for (DeploymentUnit deployment : deploymentUnits) {
+            depUnitNames.add(prefix + deployment.getName());
             try {
                 final ExplicitBeanArchiveMetadataContainer weldDeploymentMetadata = deployment.getAttachment(ExplicitBeanArchiveMetadataContainer.ATTACHMENT_KEY);
                 if (weldDeploymentMetadata != null) {
@@ -162,6 +166,14 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                 return;
             }
             for (DependencySpec dep : module.getDependencies()) {
+                if (!(dep instanceof ModuleDependencySpec)) {
+                    continue;
+                }
+                if (depUnitNames.contains(((ModuleDependencySpec) dep).getName())) {
+                    // dep.getName() returns something like deployment.123abc.ear
+                    // we want to skip processing this as it will be (or already was) processed as another dep. unit
+                    continue;
+                }
                 final Module dependency = loadModuleDependency(dep);
                 if (dependency == null) {
                     continue;
@@ -184,6 +196,14 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                          * Workaround for resteasy-cdi bundling beans.xml
                          */
                         if (beansXmlUrl.toString().contains("resteasy-cdi")) {
+                            continue;
+                        }
+
+                        /*
+                         * check if the dependency processes META-INF, if it doesn't we don't want to pick up beans
+                         * See https://docs.wildfly.org/17/Developer_Guide.html#CDI_Reference
+                         */
+                        if (!dep.getImportFilter().accept("META-INF")) {
                             continue;
                         }
 

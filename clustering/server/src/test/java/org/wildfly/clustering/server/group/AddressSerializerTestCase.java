@@ -27,8 +27,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Random;
 
-import org.jgroups.protocols.relay.SiteMaster;
-import org.jgroups.protocols.relay.SiteUUID;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.IpAddressUUID;
 import org.jgroups.util.UUID;
@@ -36,8 +34,6 @@ import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
 import org.wildfly.clustering.server.group.AddressSerializer.IpAddressExternalizer;
 import org.wildfly.clustering.server.group.AddressSerializer.IpAddressUUIDExternalizer;
-import org.wildfly.clustering.server.group.AddressSerializer.SiteMasterExternalizer;
-import org.wildfly.clustering.server.group.AddressSerializer.SiteUUIDExternalizer;
 import org.wildfly.clustering.server.group.AddressSerializer.UUIDExternalizer;
 
 /**
@@ -45,10 +41,8 @@ import org.wildfly.clustering.server.group.AddressSerializer.UUIDExternalizer;
  */
 public class AddressSerializerTestCase {
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         new ExternalizerTester<>(new UUIDExternalizer()).test(UUID.randomUUID());
-        new ExternalizerTester<>(new SiteUUIDExternalizer()).test(new SiteUUID(UUID.randomUUID(), "name", "site"));
-        new ExternalizerTester<>(new SiteMasterExternalizer()).test(new SiteMaster("test"));
 
         Random random = new Random();
         InetAddress address = InetAddress.getLoopbackAddress();

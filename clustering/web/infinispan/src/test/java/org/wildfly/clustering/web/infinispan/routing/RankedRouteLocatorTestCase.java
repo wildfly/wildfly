@@ -27,6 +27,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.stream.Collectors;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.configuration.cache.CacheMode;
@@ -44,9 +46,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;
@@ -59,7 +61,7 @@ public class RankedRouteLocatorTestCase {
 
     @Parameters
     public static Iterable<CacheMode> cacheModes() {
-        return Arrays.asList(CacheMode.DIST_SYNC, CacheMode.REPL_SYNC, CacheMode.SCATTERED_SYNC, CacheMode.INVALIDATION_SYNC, CacheMode.LOCAL);
+        return EnumSet.allOf(CacheMode.class).stream().filter(CacheMode::isSynchronous).collect(Collectors.toList());
     }
 
     private final Address[] addresses = new Address[] { mock(Address.class), mock(Address.class), mock(Address.class) };
@@ -88,13 +90,13 @@ public class RankedRouteLocatorTestCase {
         when(hash.isReplicated()).thenReturn(mode.isReplicated());
         // Segment 0, local is not an owner
         when(hash.locatePrimaryOwnerForSegment(0)).thenReturn(this.addresses[0]);
-        when(hash.locateOwnersForSegment(0)).thenReturn(mode.isDistributed() ? Arrays.asList(this.addresses).subList(0, 2) : Arrays.asList(this.addresses[0], this.addresses[1], this.addresses[2]));
+        when(hash.locateOwnersForSegment(0)).thenReturn(mode.isDistributed() || mode.isScattered() ? Arrays.asList(this.addresses).subList(0, 2) : Arrays.asList(this.addresses[0], this.addresses[1], this.addresses[2]));
         // Segment 1, local is primary owner
         when(hash.locatePrimaryOwnerForSegment(1)).thenReturn(this.addresses[1]);
-        when(hash.locateOwnersForSegment(1)).thenReturn(mode.isDistributed() ? Arrays.asList(this.addresses).subList(1, 3) : Arrays.asList(this.addresses[1], this.addresses[2], this.addresses[0]));
+        when(hash.locateOwnersForSegment(1)).thenReturn(mode.isDistributed() || mode.isScattered() ? Arrays.asList(this.addresses).subList(1, 3) : Arrays.asList(this.addresses[1], this.addresses[2], this.addresses[0]));
         // Segment 2, local is a backup owner
         when(hash.locatePrimaryOwnerForSegment(2)).thenReturn(this.addresses[2]);
-        when(hash.locateOwnersForSegment(2)).thenReturn(mode.isDistributed() ? Arrays.asList(this.addresses[2], this.addresses[0]) : Arrays.asList(this.addresses[2], this.addresses[0], this.addresses[1]));
+        when(hash.locateOwnersForSegment(2)).thenReturn(mode.isDistributed() || mode.isScattered() ? Arrays.asList(this.addresses[2], this.addresses[0]) : Arrays.asList(this.addresses[2], this.addresses[0], this.addresses[1]));
         CacheTopology topology = new CacheTopology(1, 1, hash, null, CacheTopology.Phase.NO_REBALANCE, hash.getMembers(), null);
         LocalizedCacheTopology localizedTopology = new LocalizedCacheTopology(mode, topology, this.partitioner, manager.getAddress(), true);
         when(this.dist.getCacheTopology()).thenReturn(localizedTopology);
@@ -121,30 +123,32 @@ public class RankedRouteLocatorTestCase {
         RouteLocator locator = new RankedRouteLocator(config);
 
         switch (this.cache.getCacheConfiguration().clustering().cacheMode()) {
+            case SCATTERED_SYNC:
             case DIST_SYNC: {
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(0);
                 String result = locator.locate("session");
                 Assert.assertEquals("0.1.local", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(1);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(1);
                 result = locator.locate("session");
                 Assert.assertEquals("1.2.local", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(2);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(2);
                 result = locator.locate("session");
                 Assert.assertEquals("2.0.local", result);
                 break;
             }
+            case INVALIDATION_SYNC:
             case REPL_SYNC: {
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(0);
                 String result = locator.locate("session");
                 Assert.assertEquals("0.1.2", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(1);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(1);
                 result = locator.locate("session");
                 Assert.assertEquals("1.2.0", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(2);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(2);
                 result = locator.locate("session");
                 Assert.assertEquals("2.0.1", result);
                 break;

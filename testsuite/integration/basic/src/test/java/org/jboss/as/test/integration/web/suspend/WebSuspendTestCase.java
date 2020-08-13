@@ -70,7 +70,7 @@ public class WebSuspendTestCase {
         war.addPackage(WebSuspendTestCase.class.getPackage());
         war.addPackage(HttpRequest.class.getPackage());
         war.addClass(TestSuiteEnvironment.class);
-        war.addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting3\n"), "META-INF/MANIFEST.MF");
+        war.addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting\n"), "META-INF/MANIFEST.MF");
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new PropertyPermission("management.address", "read"),
                 new PropertyPermission("jboss.http.port", "read"),

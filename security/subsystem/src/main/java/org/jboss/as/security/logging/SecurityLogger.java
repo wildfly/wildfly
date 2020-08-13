@@ -77,9 +77,9 @@ public interface SecurityLogger extends BasicLogger {
     * Logs a message indicating that there was an exception while trying to delete the JACC Policy
     * @param t the underlying exception
     */
-   @LogMessage(level = Level.WARN)
-   @Message(id = 3, value = "Error deleting JACC Policy")
-   void errorDeletingJACCPolicy(@Cause Throwable t);
+   // @LogMessage(level = Level.WARN)
+   // @Message(id = 3, value = "Error deleting JACC Policy")
+   // void errorDeletingJACCPolicy(@Cause Throwable t);
 
     /**
      * Creates an exception indicating the inability to get the {@link org.jboss.modules.ModuleClassLoader}

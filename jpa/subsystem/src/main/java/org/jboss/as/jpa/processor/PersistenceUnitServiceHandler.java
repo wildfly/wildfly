@@ -576,8 +576,10 @@ public class PersistenceUnitServiceHandler {
             ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                // Get the CDI-enabled ValidatorFactory
-                validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+                if (capabilitySupport.hasCapability("org.wildfly.bean-validation")) {
+                    // Get the CDI-enabled ValidatorFactory
+                    validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+                }
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
@@ -1044,7 +1046,7 @@ public class PersistenceUnitServiceHandler {
                     final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, phaseContext.getDeploymentUnit(), provider, platform);
                     final boolean twoPhaseBootStrapCapable = (adaptor instanceof TwoPhaseBootstrapCapable) && Configuration.allowTwoPhaseBootstrap(pu);
                     // only add the next phase dependency, if the persistence unit service is starting early.
-                    if( Configuration.needClassFileTransformer(pu)) {
+                    if( Configuration.needClassFileTransformer(pu) && !Configuration.allowApplicationDefinedDatasource(pu)) {
                         // wait until the persistence unit service is started before starting the next deployment phase
                         phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, twoPhaseBootStrapCapable ? puServiceName.append(FIRST_PHASE) : puServiceName);
                     }

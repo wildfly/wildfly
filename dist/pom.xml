@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta2-SNAPSHOT</version>
+        <version>21.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-dist</artifactId>
@@ -95,7 +95,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <transitive>true</transitive>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>${ee.maven.groupId}</groupId>
                                     <artifactId>wildfly-ee-galleon-pack</artifactId>
                                     <version>${ee.maven.version}</version>
                                     <included-packages>
@@ -103,7 +103,7 @@
                                     </included-packages>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>${full.maven.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${full.maven.version}</version>
                                 </feature-pack>
@@ -198,7 +198,7 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <offline>true</offline>
-                                    <fpGroupId>${project.groupId}</fpGroupId>
+                                    <fpGroupId>${full.maven.groupId}</fpGroupId>
                                     <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
                                     <fpVersion>${full.maven.version}</fpVersion>
                                 </configuration>

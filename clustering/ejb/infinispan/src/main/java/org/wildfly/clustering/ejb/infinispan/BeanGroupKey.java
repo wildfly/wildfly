@@ -22,9 +22,10 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
+import org.wildfly.clustering.ee.cache.Key;
+
 /**
  * @author Paul Ferraro
  */
-public interface BeanGroupKey<I> {
-    I getId();
+public interface BeanGroupKey<I> extends Key<I> {
 }

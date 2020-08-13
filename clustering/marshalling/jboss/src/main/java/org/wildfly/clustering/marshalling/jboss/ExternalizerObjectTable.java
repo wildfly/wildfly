@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -41,6 +42,7 @@ import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.IntSerializer;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
@@ -53,15 +55,24 @@ public class ExternalizerObjectTable implements ObjectTable {
     private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
     private final IntSerializer indexSerializer;
 
-    public ExternalizerObjectTable(ClassLoader loader) {
+    public ExternalizerObjectTable(ClassLoader... loader) {
         this(loadExternalizers(loader));
     }
 
-    private static List<Externalizer<Object>> loadExternalizers(ClassLoader loader) {
-        List<Externalizer<Object>> loadedExternalizers = new LinkedList<>();
-        for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
-            loadedExternalizers.add(externalizer);
-        }
+    private static List<Externalizer<Object>> loadExternalizers(ClassLoader... loaders) {
+        List<Externalizer<Object>> loadedExternalizers = WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<Externalizer<Object>>>() {
+            @Override
+            public List<Externalizer<Object>> run() {
+                List<Externalizer<Object>> externalizers = new LinkedList<>();
+                for (ClassLoader loader : loaders) {
+                    for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
+                        externalizers.add(externalizer);
+                    }
+                }
+                return externalizers;
+            }
+        });
+
         Set<DefaultExternalizer> defaultExternalizers = EnumSet.allOf(DefaultExternalizer.class);
         List<Externalizer<Object>> result = new ArrayList<>(defaultExternalizers.size() + loadedExternalizers.size());
         result.addAll(defaultExternalizers);

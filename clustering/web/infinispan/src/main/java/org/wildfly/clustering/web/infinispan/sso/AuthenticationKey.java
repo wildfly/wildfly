@@ -22,13 +22,13 @@
 
 package org.wildfly.clustering.web.infinispan.sso;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 
 /**
  * Cache key for the authentication cache entry.
  * @author Paul Ferraro
  */
-public class AuthenticationKey extends Key<String> {
+public class AuthenticationKey extends GroupedKey<String> {
 
     public AuthenticationKey(String id) {
         super(id);

@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jpa-distributed">
+    <dependencies>
+        <layer name="datasources"/>
+    </dependencies>
+    <feature-group name="jpa"/>
+
+    <feature-group name="private-interface"/>
+
+    <feature-group name="jgroups-all"/>
+    <feature-group name="infinispan-dist-hibernate"/>
+</layer-spec>

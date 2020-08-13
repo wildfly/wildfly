@@ -41,14 +41,11 @@ import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter2;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,7 +54,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(CustomBootstrapContextTestCase.CustomBootstrapDeploymentTestCaseSetup.class)
-public class CustomBootstrapContextTestCase extends JcaMgmtBase {
+public class CustomBootstrapContextTestCase {
 
     public static String ctx = "customContext";
     public static String wm = "customWM";
@@ -112,16 +109,16 @@ public class CustomBootstrapContextTestCase extends JcaMgmtBase {
         ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, "bootstrap_archive_ij.rar");
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(CustomBootstrapContextTestCase.class,
-                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, JcaMgmtServerSetupTask.class, JcaMgmtBase.class);
+                JcaMgmtServerSetupTask.class, JcaMgmtBase.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(CustomBootstrapContextTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(CustomBootstrapContextTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,org.jboss.as.connector \n"),
+                                "Dependencies: org.jboss.as.connector \n"),
                         "MANIFEST.MF");
         return raa;
     }

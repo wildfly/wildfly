@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import java.net.URISyntaxException;
 import java.util.Hashtable;
 import java.util.PropertyPermission;
 
@@ -46,7 +47,7 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessTransaction
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingletonRemote;
-import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
+import org.jboss.as.test.integration.transactions.RemoteLookups;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -115,13 +116,13 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
     @Before
     public void setUp() {
         try {
-            checkerNode0 = TransactionTestLookupUtil.lookupEjbStateless(
+            checkerNode0 = RemoteLookups.lookupEjbStateless(
                     TESTSUITE_NODE0, node0Port, MODULE_NAME,
                     TransactionCheckerSingleton.class, TransactionCheckerSingletonRemote.class);
-            checkerNode1 = TransactionTestLookupUtil.lookupEjbStateless(
+            checkerNode1 = RemoteLookups.lookupEjbStateless(
                     TESTSUITE_NODE1, node1Port, MODULE_NAME,
                     TransactionCheckerSingleton.class, TransactionCheckerSingletonRemote.class);
-        } catch (NamingException e) {
+        } catch (NamingException | URISyntaxException e) {
             new IllegalStateException(String.format("Cannot find singleton for checking "
                     + "transaction state at '%s:%s'", TESTSUITE_NODE0, node0Port));
         }
@@ -376,7 +377,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
             try {
                 result = bean.increment();
                 Assert.fail("Expected a NoSuchEJBException as transaction affinity needs to be maintained");
-            } catch (NoSuchEJBException expected) {
+            } catch (NoSuchEJBException | AssertionError expected) {
                 // expected as the deployment was removed from the node
             }
         } finally {

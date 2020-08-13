@@ -36,6 +36,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -43,9 +44,6 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.jaxrs.JaxrsAttribute;
 import org.jboss.as.jaxrs.JaxrsConstants;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
-import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -56,10 +54,7 @@ import org.jboss.resteasy.plugins.providers.StringTextStar;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -74,7 +69,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ResteasyAttributeTestCase.AttributeTestCaseDeploymentSetup.class)
-public class ResteasyAttributeTestCase extends ContainerResourceMgmtTestBase {
+public class ResteasyAttributeTestCase {
 
     private static ModelControllerClient modelControllerClient;
     private static final Map<AttributeDefinition, ModelNode> expectedValues = new HashMap<AttributeDefinition, ModelNode>();
@@ -109,11 +104,11 @@ public class ResteasyAttributeTestCase extends ContainerResourceMgmtTestBase {
     private static final ModelNode VALUE_EXPRESSION_RESOURCE = new ModelNode(new ValueExpression("${rest.test.dummy:java:global/jaxrsnoap/" + EJB_Resource1.class.getSimpleName() + "}"));
     private static final ModelNode VALUE_EXPRESSION_PROVIDER = new ModelNode(new ValueExpression("${rest.test.dummy:" + StringTextStar.class.getName() + "}"));
 
-    static class AttributeTestCaseDeploymentSetup extends AbstractMgmtServerSetupTask {
+    static class AttributeTestCaseDeploymentSetup implements ServerSetupTask {
 
         @Override
-        public void doSetup(final ManagementClient managementClient) throws Exception {
-            modelControllerClient = getModelControllerClient();
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            modelControllerClient = managementClient.getControllerClient();
             setAttributeValues();
         }
 
@@ -132,13 +127,6 @@ public class ResteasyAttributeTestCase extends ContainerResourceMgmtTestBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
         war.addClasses(ResteasyAttributeResource.class);
         war.addClasses(EJB_Resource1.class, EJB_Resource2.class);
-        war.addClass(JaxrsAttribute.class);
-        war.addClasses(XMLElementReader.class, XMLElementWriter.class);
-        war.addPackage(MgmtOperationException.class.getPackage());
-        war.addPackage(AttributeTestCaseDeploymentSetup.class.getPackage());
-        war.addPackage(AbstractMgmtServerSetupTask.class.getPackage());
-        war.addPackage(ContainerResourceMgmtTestBase.class.getPackage());
-        war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.jaxrs, org.jboss.as.controller, org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
 
         // Put "resteasy.media.type.param.mapping" in web.xml to verify that it overrides value set in Wildfly management model.
         war.addAsWebInfResource(WebXml.get(

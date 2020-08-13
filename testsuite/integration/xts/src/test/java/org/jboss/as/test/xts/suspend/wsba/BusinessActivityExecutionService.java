@@ -62,7 +62,7 @@ public class BusinessActivityExecutionService implements ExecutorService {
 
     @Override
     public void init(String activationServiceUrl, String remoteServiceUrl) {
-        LOGGER.infof("initialising with activationServiceUrl=%s and remoteServiceUrl=%s", activationServiceUrl,
+        LOGGER.debugf("initialising with activationServiceUrl=%s and remoteServiceUrl=%s", activationServiceUrl,
                 remoteServiceUrl);
 
         if (!wasInitialised) {
@@ -82,42 +82,42 @@ public class BusinessActivityExecutionService implements ExecutorService {
     @Override
     public void begin() throws Exception {
         assert currentActivity == null : "Business activity already started";
-        LOGGER.infof("trying to begin transaction on %s", XTSPropertyManager.getWSCEnvironmentBean().getCoordinatorURL11());
+        LOGGER.debugf("trying to begin transaction on %s", XTSPropertyManager.getWSCEnvironmentBean().getCoordinatorURL11());
 
         UserBusinessActivity.getUserBusinessActivity().begin();
         currentActivity = BusinessActivityManager.getBusinessActivityManager().suspend();
 
-        LOGGER.infof("started business activity %s", currentActivity);
+        LOGGER.debugf("started business activity %s", currentActivity);
     }
 
     @Override
     public void commit() throws Exception {
         assert currentActivity != null : "No active business activity";
-        LOGGER.infof("trying to close business activity %s", currentActivity);
+        LOGGER.debugf("trying to close business activity %s", currentActivity);
 
         BusinessActivityManager.getBusinessActivityManager().resume(currentActivity);
         UserBusinessActivity.getUserBusinessActivity().close();
         currentActivity = null;
 
-        LOGGER.infof("closed business activity");
+        LOGGER.debugf("closed business activity");
     }
 
     @Override
     public void rollback() throws Exception {
         assert currentActivity != null : "No active business activity";
-        LOGGER.infof("trying to cancel business activity %s", currentActivity);
+        LOGGER.debugf("trying to cancel business activity %s", currentActivity);
 
         BusinessActivityManager.getBusinessActivityManager().resume(currentActivity);
         UserBusinessActivity.getUserBusinessActivity().cancel();
         currentActivity = null;
 
-        LOGGER.infof("canceled business activity");
+        LOGGER.debugf("canceled business activity");
     }
 
     @Override
     public void enlistParticipant() throws Exception {
         assert currentActivity != null : "No active business activity";
-        LOGGER.infof("trying to enlist participant to the business activity %s", currentActivity);
+        LOGGER.debugf("trying to enlist participant to the business activity %s", currentActivity);
 
         BusinessActivityManager.getBusinessActivityManager().resume(currentActivity);
         BusinessActivityParticipant businessActivityParticipant = new BusinessActivityParticipant(new Uid().stringForm());
@@ -127,20 +127,20 @@ public class BusinessActivityExecutionService implements ExecutorService {
         participantManager.completed();
         currentActivity = BusinessActivityManager.getBusinessActivityManager().suspend();
 
-        LOGGER.infof("enlisted participant %s", businessActivityParticipant);
+        LOGGER.debugf("enlisted participant %s", businessActivityParticipant);
     }
 
     @Override
     public void execute() throws Exception {
         assert remoteService != null : "Remote service was not initialised";
         assert currentActivity != null : "No active business activity";
-        LOGGER.infof("trying to execute remote service in business activity %s", currentActivity);
+        LOGGER.debugf("trying to execute remote service in business activity %s", currentActivity);
 
         BusinessActivityManager.getBusinessActivityManager().resume(currentActivity);
         remoteService.execute();
         currentActivity = BusinessActivityManager.getBusinessActivityManager().suspend();
 
-        LOGGER.infof("executed remote service");
+        LOGGER.debugf("executed remote service");
     }
 
     @Override

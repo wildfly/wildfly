@@ -28,31 +28,29 @@ import java.util.Map;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class InfinispanBeanGroupEntryExternalizer<I, T> implements Externalizer<InfinispanBeanGroupEntry<I, T>> {
-
-    private final Externalizer<SimpleMarshalledValue<Map<I, T>>> externalizer = new SimpleMarshalledValueExternalizer<>();
+public class InfinispanBeanGroupEntryExternalizer<I, T, C> implements Externalizer<InfinispanBeanGroupEntry<I, T, C>> {
 
     @Override
-    public void writeObject(ObjectOutput output, InfinispanBeanGroupEntry<I, T> entry) throws IOException {
-        SimpleMarshalledValue<Map<I, T>> value = (SimpleMarshalledValue<Map<I, T>>) entry.getBeans();
-        this.externalizer.writeObject(output, value);
+    public void writeObject(ObjectOutput output, InfinispanBeanGroupEntry<I, T, C> entry) throws IOException {
+        DefaultExternalizer.MARSHALLED_VALUE.cast(MarshalledValue.class).writeObject(output, entry.getBeans());
     }
 
     @Override
-    public InfinispanBeanGroupEntry<I, T> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new InfinispanBeanGroupEntry<>(this.externalizer.readObject(input));
+    public InfinispanBeanGroupEntry<I, T, C> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        MarshalledValue<Map<I, T>, C> value = DefaultExternalizer.MARSHALLED_VALUE.cast(MarshalledValue.class).readObject(input);
+        return new InfinispanBeanGroupEntry<>(value);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Class<InfinispanBeanGroupEntry<I, T>> getTargetClass() {
-        return (Class<InfinispanBeanGroupEntry<I, T>>) (Class<?>) InfinispanBeanGroupEntry.class;
+    public Class<InfinispanBeanGroupEntry<I, T, C>> getTargetClass() {
+        return (Class<InfinispanBeanGroupEntry<I, T, C>>) (Class<?>) InfinispanBeanGroupEntry.class;
     }
 }

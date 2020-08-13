@@ -48,6 +48,7 @@ import org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.spi.ResourceInjectionResolver;
 import org.jboss.as.weld.util.ResourceInjectionUtilities;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
@@ -86,9 +87,12 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     private final boolean warModule;
 
     private final List<ResourceInjectionResolver> resourceResolvers;
+    private final PropertyReplacer propertyReplacer;
 
-    public WeldResourceInjectionServices(final ServiceRegistry serviceRegistry, final EEModuleDescription moduleDescription, Module module, boolean warModule) {
+    public WeldResourceInjectionServices(final ServiceRegistry serviceRegistry, final EEModuleDescription moduleDescription,
+                                         final PropertyReplacer propertyReplacer, Module module, boolean warModule) {
         super(serviceRegistry, moduleDescription, module);
+        this.propertyReplacer = propertyReplacer;
         this.warModule = warModule;
         try {
             this.context = new InitialContext();
@@ -162,12 +166,12 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         String mappedName = resource.mappedName();
         String lookup = resource.lookup();
         if (!lookup.isEmpty()) {
-            return lookup;
+            return propertyReplacer.replaceProperties(lookup);
         }
         if (!mappedName.isEmpty()) {
-            return mappedName;
+            return propertyReplacer.replaceProperties(mappedName);
         }
-        String proposedName = ResourceInjectionUtilities.getResourceName(injectionPoint);
+        String proposedName = ResourceInjectionUtilities.getResourceName(injectionPoint, propertyReplacer);
         return getEJBResourceName(injectionPoint, proposedName);
     }
 

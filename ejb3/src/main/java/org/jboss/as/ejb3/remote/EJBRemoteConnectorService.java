@@ -23,8 +23,8 @@ package org.jboss.as.ejb3.remote;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 
-import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -51,18 +51,16 @@ public class EJBRemoteConnectorService implements Service<Void> {
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<>();
-    private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfoInjectedValue = new InjectedValue<>();
     private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
     private final InjectedValue<RemotingTransactionService> remotingTransactionServiceInjectedValue = new InjectedValue<>();
     private volatile Registration registration;
     private final OptionMap channelCreationOptions;
+    private final Function<String, Boolean> classResolverFilter;
 
-    public EJBRemoteConnectorService() {
-        this(OptionMap.EMPTY);
-    }
-
-    public EJBRemoteConnectorService(final OptionMap channelCreationOptions) {
+    public EJBRemoteConnectorService(final OptionMap channelCreationOptions,
+                                     final Function<String, Boolean> classResolverFilter) {
         this.channelCreationOptions = channelCreationOptions;
+        this.classResolverFilter = classResolverFilter;
     }
 
     @Override
@@ -75,7 +73,8 @@ public class EJBRemoteConnectorService implements Service<Void> {
         }
         RemoteEJBService remoteEJBService = RemoteEJBService.create(
             associationService.getAssociation(),
-            remotingTransactionServiceInjectedValue.getValue()
+            remotingTransactionServiceInjectedValue.getValue(),
+            classResolverFilter
         );
         remoteEJBService.serverUp();
 
@@ -103,10 +102,6 @@ public class EJBRemoteConnectorService implements Service<Void> {
 
     public InjectedValue<Endpoint> getEndpointInjector() {
         return endpointValue;
-    }
-
-    public InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> getRemotingConnectorInfoInjectedValue() {
-        return remotingConnectorInfoInjectedValue;
     }
 
     public InjectedValue<RemotingTransactionService> getRemotingTransactionServiceInjector() {

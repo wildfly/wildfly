@@ -21,6 +21,9 @@
  */
 package org.jboss.as.security;
 
+import java.util.Arrays;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -31,9 +34,9 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author Jason T. Greene
  */
-public abstract class SecurityDomainReloadAddHandler extends RestartParentResourceAddHandler {
-    protected SecurityDomainReloadAddHandler() {
-        super(Constants.SECURITY_DOMAIN);
+public class SecurityDomainReloadAddHandler extends RestartParentResourceAddHandler {
+    protected SecurityDomainReloadAddHandler(AttributeDefinition... attributes) {
+        super(Constants.SECURITY_DOMAIN, null, Arrays.asList(attributes));
     }
 
     @Override

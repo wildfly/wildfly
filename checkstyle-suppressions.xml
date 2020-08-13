@@ -24,6 +24,6 @@
         "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
 
 <suppressions>
-    <!-- Ignore files pulled down from zanata -->
+    <!-- Ignore internationalized text files -->
     <suppress files="LocalDescriptions_.+\.properties|.*\.i18n_.+\.properties" checks=".*"/>
 </suppressions>

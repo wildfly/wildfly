@@ -87,6 +87,35 @@ public class OpenAPIFormatTestCase {
                     }
                 }
             }
+
+            // Validate return type honors Accept header
+            request.setHeader("Accept", "application/json");
+            try (CloseableHttpResponse response = client.execute(request)) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                List<String> urls = validateContent(response);
+                // Ensure relative urls are valid
+                for (String url : urls) {
+                    try (CloseableHttpResponse r = client.execute(new HttpGet(baseURL.toURI().resolve(url + "/test/echo/foo")))) {
+                        Assert.assertEquals(HttpServletResponse.SC_OK, r.getStatusLine().getStatusCode());
+                        Assert.assertEquals("foo", EntityUtils.toString(r.getEntity()));
+                    }
+                }
+            }
+
+            // Validate return type honors complex, but unambiguous Accept header
+            request.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9,application/json;q=0.99, application/yaml;q=0.98");
+            try (CloseableHttpResponse response = client.execute(request)) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                List<String> urls = validateContent(response);
+                // Ensure relative urls are valid
+                for (String url : urls) {
+                    try (CloseableHttpResponse r = client.execute(new HttpGet(baseURL.toURI().resolve(url + "/test/echo/foo")))) {
+                        Assert.assertEquals(HttpServletResponse.SC_OK, r.getStatusLine().getStatusCode());
+                        Assert.assertEquals("foo", EntityUtils.toString(r.getEntity()));
+                    }
+                }
+            }
+
             // Ensure format parameter is still read when Accept header is not sufficiently specific
             request.setHeader("Accept", MediaType.WILDCARD + ", " + new MediaType(MediaType.APPLICATION_JSON_TYPE.getType(), MediaType.MEDIA_TYPE_WILDCARD).toString());
             try (CloseableHttpResponse response = client.execute(request)) {

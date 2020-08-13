@@ -23,7 +23,6 @@
 package org.wildfly.extension.microprofile.faulttolerance;
 
 import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -42,9 +41,5 @@ public interface MicroProfileFaultToleranceLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating MicroProfile Fault Tolerance subsystem.")
     void activatingSubsystem();
-
-    @LogMessage(level = WARN)
-    @Message(id = 2, value = "Hystrix was already configured! Skipping configuration from deployment '%s'.")
-    void hystrixAlreadyConfigured(String deploymentName);
 
 }

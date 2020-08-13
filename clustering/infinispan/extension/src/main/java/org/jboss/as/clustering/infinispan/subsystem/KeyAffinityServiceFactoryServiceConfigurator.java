@@ -35,7 +35,6 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
-import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
@@ -80,8 +79,7 @@ public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServ
         return new KeyAffinityServiceFactory() {
             @Override
             public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
-                CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
-                return mode.isDistributed() || mode.isReplicated() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
+                return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
             }
         };
     }

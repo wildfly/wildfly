@@ -59,7 +59,7 @@ public class ManagedMDB implements MessageListener {
     }
 
     @Timeout
-    @Schedule(second="15", persistent = false)
+    @Schedule(second="15", persistent = false, info = "timer1")
     public void timeout(final Timer timer) {
         // no-op
     }

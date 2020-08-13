@@ -179,6 +179,8 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ALLOW_UNESCAPED_CHARACTERS_IN_URL))
                 .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, "console-access-log")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(subsystemAddress.append(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN).append(UndertowExtension.PATH_SSO),
+                        FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
 
@@ -197,6 +199,8 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                          new FailedOperationTransformationConfig.NewAttributesConfig(
                                  ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD
                          ))
+                .addFailedAttribute(subsystemAddress.append(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN).append(UndertowExtension.PATH_SSO),
+                        FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
 
@@ -251,6 +255,13 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                 TransformedOperation transformedOperation = mainServices.transformOperation(targetVersion, op.clone());
                 ModelNode transformed = transformedOperation.getTransformedOperation().get(Constants.MAX_POST_SIZE);
                 Assert.assertEquals(Constants.MAX_POST_SIZE + " should be transformed for value 0.", Long.MAX_VALUE, transformed.asLong());
+            }
+            PathAddress address = PathAddress.pathAddress(op.get("address"));
+            if (address.getLastElement().getKey().equals(Constants.REVERSE_PROXY) && !op.get(Constants.CONNECTION_IDLE_TIMEOUT).isDefined()) {
+                TransformedOperation transformedOperation = mainServices.transformOperation(targetVersion, op.clone());
+                ModelNode transformed = transformedOperation.getTransformedOperation().get(Constants.CONNECTION_IDLE_TIMEOUT);
+                Assert.assertEquals(Constants.CONNECTION_IDLE_TIMEOUT + " should be transformed to the new default value.",
+                        ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT.getDefaultValue().asInt(), transformed.asInt());
             }
         }
     }

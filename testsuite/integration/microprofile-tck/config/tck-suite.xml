@@ -2,13 +2,13 @@
 
 <suite name="microprofile-config-TCK" verbose="2" configfailurepolicy="continue" >
 
-    <test name="microprofile-config 1.2 TCK">
+    <test name="microprofile-config TCK">
         <packages>
             <package name="org.eclipse.microprofile.config.tck.*">
             </package>
         </packages>
         <classes>
-            <!-- TCK and spec dispute: https://github.com/eclipse/microprofile-config/pull/407 -->
+            <!-- TCK and spec challenge: https://github.com/eclipse/microprofile-config/issues/446 -->            
             <class name="org.eclipse.microprofile.config.tck.ConfigProviderTest">
                 <methods>
                     <exclude name="testEnvironmentConfigSource"/>

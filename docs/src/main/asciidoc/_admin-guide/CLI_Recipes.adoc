@@ -645,3 +645,26 @@ from the factory, the factory will stay associated to the security domain. Witho
 factory is no more active on the security-domain. Type _help security disable-http-auth-http-server_
 for a complete description of the command.
 
+[[mp-cli-script]]
+== Evolving standard configurations with support for Microprofile
+
+The CLI script _JBOSS_HOME/docs/examples/enable-microprofile.cli_ can be applied to a default standalone configuration
+to add support for Microprofile.
+
+Impact on updated configuration:
+
+* Addition of Microprofile subsystems. 
+* Removal of _security_ subsystem.
+* Removal of _ManagementRealm_.
+* Elytron security used for management and application entry points.
+ 
+By default the script updates _standalone.xml_ configuration. 
+Thanks to the _config=<config name>_ system property, the script can be applied to another standalone configuration.
+
+NB: this script has to be applied _offline_ with no server running. 
+
+* To update _standalone.xml_ server configuration:
+** _./bin/jboss-cli.sh --file=docs/examples/enable-microprofile.cli_
+* To update other standalone server configurations:
+** _./bin/jboss-cli.sh --file=docs/examples/enable-microprofile.cli 
+-Dconfig=<standalone-full.xml|standalone-ha.xml|standalone-full-ha.xml>_

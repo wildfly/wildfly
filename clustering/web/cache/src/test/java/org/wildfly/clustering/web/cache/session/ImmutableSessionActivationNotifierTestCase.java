@@ -24,89 +24,90 @@ package org.wildfly.clustering.web.cache.session;
 
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
-import java.util.TreeSet;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionEvent;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
 /**
  * @author Paul Ferraro
  */
 public class ImmutableSessionActivationNotifierTestCase {
-    private final ImmutableSession session = mock(ImmutableSession.class);
-    private final ServletContext context = mock(ServletContext.class);
-    private final SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier(this.session, this.context);
-
-    private final HttpSessionActivationListener listener1 = mock(HttpSessionActivationListener.class);
-    private final HttpSessionActivationListener listener2 = mock(HttpSessionActivationListener.class);
-
-    @Before
-    public void init() {
-        Object object1 = new Object();
-        Object object2 = new Object();
-
-        ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
-        when(this.session.getAttributes()).thenReturn(attributes);
-        when(attributes.getAttributeNames()).thenReturn(new TreeSet<>(Arrays.asList("non-listener1", "non-listener2", "listener1", "listener2")));
-        when(attributes.getAttribute("non-listener1")).thenReturn(object1);
-        when(attributes.getAttribute("non-listener2")).thenReturn(object2);
-        when(attributes.getAttribute("listener1")).thenReturn(this.listener1);
-        when(attributes.getAttribute("listener2")).thenReturn(this.listener2);
+    interface Session {
     }
+    interface Context {
+    }
+    interface Listener {
+    }
+
+    private final HttpSessionActivationListenerProvider<Session, Context, Listener> provider = mock(HttpSessionActivationListenerProvider.class);
+    private final ImmutableSession session = mock(ImmutableSession.class);
+    private final Context context = mock(Context.class);
+    private final SessionAttributesFilter filter = mock(SessionAttributesFilter.class);
+    private final Listener listener1 = mock(Listener.class);
+    private final Listener listener2 = mock(Listener.class);
+
+    private final SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.provider, this.session, this.context, this.filter);
 
     @After
     public void destroy() {
-        Mockito.reset(this.session, this.context, this.listener1, this.listener2);
+        Mockito.reset(this.session, this.provider);
     }
 
     @Test
     public void prePassivate() {
-        String sessionId = "abc";
-        when(this.session.getId()).thenReturn(sessionId);
+        Map<String, Listener> listeners = new TreeMap<>();
+        listeners.put("listener1", this.listener1);
+        listeners.put("listener2", this.listener2);
 
-        ArgumentCaptor<HttpSessionEvent> capturedEvent = ArgumentCaptor.forClass(HttpSessionEvent.class);
+        when(this.provider.getHttpSessionActivationListenerClass()).thenReturn(Listener.class);
+        when(this.filter.getAttributes(Listener.class)).thenReturn(listeners);
+
+        Session session = mock(Session.class);
+        Consumer<Session> notifier1 = mock(Consumer.class);
+        Consumer<Session> notifier2 = mock(Consumer.class);
+
+        when(this.provider.createHttpSession(same(this.session), same(this.context))).thenReturn(session);
+        when(this.provider.prePassivateNotifier(same(this.listener1))).thenReturn(notifier1);
+        when(this.provider.prePassivateNotifier(same(this.listener2))).thenReturn(notifier2);
 
         this.notifier.prePassivate();
 
-        verify(this.listener1, Mockito.never()).sessionDidActivate(capturedEvent.capture());
-        verify(this.listener1, Mockito.never()).sessionDidActivate(capturedEvent.capture());
-        verify(this.listener1, Mockito.times(1)).sessionWillPassivate(capturedEvent.capture());
-        verify(this.listener2, Mockito.times(1)).sessionWillPassivate(capturedEvent.capture());
+        verify(this.provider, never()).postActivateNotifier(this.listener1);
+        verify(this.provider, never()).postActivateNotifier(this.listener2);
 
-        for (HttpSessionEvent event : capturedEvent.getAllValues()) {
-            Assert.assertSame(this.context, event.getSession().getServletContext());
-            Assert.assertSame(sessionId, event.getSession().getId());
-        }
+        verify(notifier1).accept(session);
+        verify(notifier2).accept(session);
     }
 
     @Test
     public void postActivate() {
-        String sessionId = "abc";
-        when(this.session.getId()).thenReturn(sessionId);
+        Map<String, Listener> listeners = new TreeMap<>();
+        listeners.put("listener1", this.listener1);
+        listeners.put("listener2", this.listener2);
 
-        ArgumentCaptor<HttpSessionEvent> capturedEvent = ArgumentCaptor.forClass(HttpSessionEvent.class);
+        when(this.provider.getHttpSessionActivationListenerClass()).thenReturn(Listener.class);
+        when(this.filter.getAttributes(Listener.class)).thenReturn(listeners);
+
+        Session session = mock(Session.class);
+        Consumer<Session> notifier1 = mock(Consumer.class);
+        Consumer<Session> notifier2 = mock(Consumer.class);
+
+        when(this.provider.createHttpSession(same(this.session), same(this.context))).thenReturn(session);
+        when(this.provider.postActivateNotifier(same(this.listener1))).thenReturn(notifier1);
+        when(this.provider.postActivateNotifier(same(this.listener2))).thenReturn(notifier2);
 
         this.notifier.postActivate();
 
-        verify(this.listener1, Mockito.times(1)).sessionDidActivate(capturedEvent.capture());
-        verify(this.listener2, Mockito.times(1)).sessionDidActivate(capturedEvent.capture());
-        verify(this.listener1, Mockito.never()).sessionWillPassivate(capturedEvent.capture());
-        verify(this.listener1, Mockito.never()).sessionWillPassivate(capturedEvent.capture());
+        verify(this.provider, never()).prePassivateNotifier(this.listener1);
+        verify(this.provider, never()).prePassivateNotifier(this.listener2);
 
-        for (HttpSessionEvent event : capturedEvent.getAllValues()) {
-            Assert.assertSame(this.context, event.getSession().getServletContext());
-            Assert.assertSame(sessionId, event.getSession().getId());
-        }
+        verify(notifier1).accept(session);
+        verify(notifier2).accept(session);
     }
 }

@@ -36,6 +36,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -49,6 +50,7 @@ import org.junit.runner.RunWith;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.FilePermission;
+import java.util.PropertyPermission;
 
 /**
  * Tests MDB deployments
@@ -108,15 +110,16 @@ public class MDBTestCase {
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDBTestCase.jar");
-        ejbJar.addClasses(DDBasedMDB.class, BMTSLSB.class, JMSMessagingUtil.class, AnnoBasedMDB.class);
+        ejbJar.addClasses(DDBasedMDB.class, BMTSLSB.class, JMSMessagingUtil.class, AnnoBasedMDB.class, TimeoutUtil.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClass(JmsQueueSetup.class);
         ejbJar.addAsManifestResource(MDBTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting3\n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting\n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),
-                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read"),
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")
         ), "permissions.xml");
 
         return ejbJar;

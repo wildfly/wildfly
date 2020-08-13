@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
+
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -31,18 +34,19 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
+import org.jboss.as.security.Constants;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.security.SecurityMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 import java.util.Collection;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 
 /**
  * A {@link DeploymentUnitProcessor} which looks for {@link EJBComponentDescription}s in the deployment
@@ -81,48 +85,106 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             defaultSecurityDomain = eeModuleDescription.getDefaultSecurityDomain();
         }
 
-        String knownSecurityDomainName = null;
-        String defaultKnownSecurityDomainName = null;
-        for (ComponentDescription componentDescription : componentDescriptions) {
-            if (componentDescription instanceof EJBComponentDescription) {
-                EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
-                ejbComponentDescription.setDefaultSecurityDomain(defaultSecurityDomain);
-                ejbComponentDescription.setKnownSecurityDomainFunction(knownSecurityDomain);
-                ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+        final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+        // If we have a ServiceName for a security domain it should be used for all components.
+        ServiceName elytronDomainServiceName = securityMetaData != null ? securityMetaData.getSecurityDomain() : null;
 
-                // Ensure the EJB components within a deployment are associated with at most one Elytron security domain
-                if (ejbComponentDescription.isSecurityDomainKnown()) {
-                    if (ejbComponentDescription.isExplicitSecurityDomainConfigured()) {
-                        if (knownSecurityDomainName == null) {
-                            knownSecurityDomainName = ejbComponentDescription.getSecurityDomain();
-                        } else if (! knownSecurityDomainName.equals(ejbComponentDescription.getSecurityDomain())) {
+        final ServiceName ejbSecurityDomainServiceName = deploymentUnit.getServiceName().append(EJBSecurityDomainService.SERVICE_NAME);
+
+        final ApplicationSecurityDomainConfig defaultDomainMapping = knownSecurityDomain.apply(defaultSecurityDomain);
+        final ServiceName defaultElytronDomainServiceName;
+        if (defaultDomainMapping != null) {
+            defaultElytronDomainServiceName = support
+                    .getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, defaultSecurityDomain)
+                    .append(Constants.SECURITY_DOMAIN);
+        } else {
+            defaultElytronDomainServiceName = null;
+        }
+
+        ApplicationSecurityDomainConfig selectedElytronDomainConfig = null;
+        if (elytronDomainServiceName == null) {
+            String selectedElytronDomainName = null;
+            boolean legacyDomainDefined  = false;
+
+            for (ComponentDescription componentDescription : componentDescriptions) {
+                if (componentDescription instanceof EJBComponentDescription) {
+                    EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
+                    ejbComponentDescription.setDefaultSecurityDomain(defaultSecurityDomain);
+
+                    // Ensure the EJB components within a deployment are associated with at most one Elytron security domain
+
+                    String definedSecurityDomain = ejbComponentDescription.getDefinedSecurityDomain();
+                    ApplicationSecurityDomainConfig definedDomainMapping = definedSecurityDomain != null ? knownSecurityDomain.apply(definedSecurityDomain) : null;
+
+                    if (definedDomainMapping != null) {
+                        if (selectedElytronDomainName == null) {
+                            selectedElytronDomainName = definedSecurityDomain;
+                            selectedElytronDomainConfig = definedDomainMapping;
+                        } else if (selectedElytronDomainName.equals(definedSecurityDomain) == false) {
                             throw EjbLogger.ROOT_LOGGER.multipleSecurityDomainsDetected();
                         }
-                    } else {
-                        defaultKnownSecurityDomainName = ejbComponentDescription.getSecurityDomain();
+
+                        ejbComponentDescription.setRequiresJacc(definedDomainMapping.isEnableJacc());
+                    } else if (definedSecurityDomain != null) {
+                        legacyDomainDefined = true;
                     }
                 }
             }
-        }
-        if (knownSecurityDomainName == null) {
-            knownSecurityDomainName = defaultKnownSecurityDomainName;
-        }
 
-        // If this EJB deployment is associated with an Elytron security domain, set up the security domain mapping
-        if (knownSecurityDomainName != null && ! knownSecurityDomainName.isEmpty()) {
+            // Only apply a default domain to the whole deployment if no legacy domain was defined.
+            if (!legacyDomainDefined && selectedElytronDomainName == null && defaultDomainMapping != null) {
+                selectedElytronDomainName = defaultSecurityDomain;
+                selectedElytronDomainConfig = defaultDomainMapping;
+                elytronDomainServiceName = defaultElytronDomainServiceName;
+            }
+
+            // If this EJB deployment is associated with an Elytron security domain, set up the security domain mapping
+            if (selectedElytronDomainConfig != null) {
+                final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
+
+                ServiceName applicationSecurityDomainServiceName = support.getCapabilityServiceName(
+                        ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, selectedElytronDomainName);
+                elytronDomainServiceName = applicationSecurityDomainServiceName.append(Constants.SECURITY_DOMAIN);
+
+                final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(ejbSecurityDomainServiceName, ejbSecurityDomainService)
+                        .addDependency(applicationSecurityDomainServiceName, ApplicationSecurityDomain.class, ejbSecurityDomainService.getApplicationSecurityDomainInjector());
+                builder.install();
+
+                for(final ComponentDescription componentDescription : componentDescriptions) {
+                    if (componentDescription instanceof EJBComponentDescription) {
+                        EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
+                        String definedSecurityDomain = ejbComponentDescription.getDefinedSecurityDomain();
+                        // The component may have had a legacy SecurityDomain defined.
+                        if (definedSecurityDomain == null || selectedElytronDomainName.equals(definedSecurityDomain)) {
+                            ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+                            ejbComponentDescription.setSecurityDomainServiceName(elytronDomainServiceName);
+                            ejbComponentDescription.setRequiresJacc(selectedElytronDomainConfig.isEnableJacc());
+                            ejbComponentDescription.getConfigurators().add((context, description, configuration) ->
+                                            configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName))
+                            );
+                        }
+                    }
+                }
+            }
+        } else {
+            // We will use the defined Elytron domain for all EJBs and ignore individual configuration.
+            // Bean level activation remains dependent on configuration of bean - i.e. does it actually need security?
             final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
-            final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
-            ServiceName serviceName = deploymentUnit.getServiceName().append(EJBSecurityDomainService.SERVICE_NAME);
-            final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(serviceName, ejbSecurityDomainService)
-                    .addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, knownSecurityDomainName),
-                            ApplicationSecurityDomain.class, ejbSecurityDomainService.getApplicationSecurityDomainInjector());
+
+            final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(ejbSecurityDomainServiceName, ejbSecurityDomainService)
+                    .addDependency(elytronDomainServiceName, SecurityDomain.class, ejbSecurityDomainService.getSecurityDomainInjector());
+
             builder.install();
 
-            for(final ComponentDescription componentDescription : componentDescriptions) {
+            for (ComponentDescription componentDescription : componentDescriptions) {
                 if (componentDescription instanceof EJBComponentDescription) {
-                    componentDescription.getConfigurators().add((context, description, configuration) ->
-                                    configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(serviceName))
-                    );
+                    EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
+                    ejbComponentDescription.setSecurityDomainServiceName(elytronDomainServiceName);
+                    ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+                    componentDescription.getConfigurators()
+                            .add((context, description, configuration) -> configuration.getCreateDependencies()
+                                    .add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName)));
                 }
             }
         }

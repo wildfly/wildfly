@@ -30,6 +30,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -3204,4 +3205,28 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 515, value = "[EJB3.2 spec, section 4.9.2] Singleton session beans are not allowed to implement 'javax.ejb.SessionBean' interface. This interface on bean '%s' is going to be ignored and should be removed.")
     void singletonCantImplementSessionBean(String className);
+
+    @LogMessage(level = INFO)
+    @Message(id = 516, value = "IIOP bindings for session bean named '%s' in deployment unit '%s' are as follows: %s")
+    void iiopBindings(final String componentName, final String moduleName, final String name);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 517, value = "[EJB3.2 spec, section 4.1] Spec violation for class %s. Session EJBs should have only one of the following types : Stateful, Stateless, Singleton.")
+    void typeSpecViolation(String className);
+
+    @Message(id = 518, value = "Exception resolving class %s for unmarshalling; it has either been blacklisted or not whitelisted")
+    InvalidClassException cannotResolveFilteredClass(String clazz);
+
+    @Message(id = 519, value = "Invalid unmarshalling filter specfication %s; specifications must describe class or package name matching patterns")
+    IllegalArgumentException invalidFilterSpec(String spec);
+
+    @Message(id = 520, value = "Legacy host does not support multiple values for attributes: %s")
+    String multipleValuesNotSupported(Set<String> attributes);
+
+    @Message(id = 521, value = "Some classes referenced by annotation: %s in class: %s are missing.")
+    DeploymentUnitProcessingException missingClassInAnnotation(String anCls, String resCls);
+
+    @LogMessage(level = WARN)
+    @Message(id = 522, value = "The default pool name %s could not be resolved from its value: %s")
+    void defaultPoolExpressionCouldNotBeResolved(String defaultPoolName, String defaultPoolValue);
 }

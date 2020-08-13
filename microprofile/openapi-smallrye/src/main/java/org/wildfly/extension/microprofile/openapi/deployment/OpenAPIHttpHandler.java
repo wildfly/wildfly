@@ -23,11 +23,13 @@
 package org.wildfly.extension.microprofile.openapi.deployment;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -40,8 +42,8 @@ import javax.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.resteasy.util.AcceptParser;
 
+import io.smallrye.openapi.runtime.io.Format;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
-import io.smallrye.openapi.runtime.io.OpenApiSerializer.Format;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
@@ -101,10 +103,10 @@ public class OpenAPIHttpHandler implements HttpHandler {
                         compatibleTypes.add(acceptedType);
                     }
                 }
-                if (compatibleTypes.isEmpty()) {
+                if (!compatibleTypes.isEmpty()) {
+                    preferredTypes = compatibleTypes;
                     break;
                 }
-                preferredTypes = compatibleTypes;
             }
 
             // Determine preferred charset
@@ -115,16 +117,16 @@ public class OpenAPIHttpHandler implements HttpHandler {
                 return;
             }
 
-            // Use format preferred by Accept header, otherwise read query parameter
+            // Use format preferred by Accept header if unambiguous, otherwise determine format from query parameter
             Format format = (preferredTypes.size() == 1) ? ACCEPTED_TYPES.get(preferredTypes.get(0)) : parseFormatParameter(exchange);
 
-            String result = OpenApiSerializer.serialize(this.model, format);
+            byte[] result = OpenApiSerializer.serialize(this.model, format).getBytes(charset);
 
             responseHeaders.put(Headers.CONTENT_TYPE, format.getMimeType());
-            responseHeaders.put(Headers.CONTENT_LENGTH, result.length());
+            responseHeaders.put(Headers.CONTENT_LENGTH, result.length);
 
             if (requestMethod.equals(Methods.GET)) {
-                exchange.getResponseSender().send(result, charset);
+                exchange.getResponseSender().send(ByteBuffer.wrap(result));
             }
         } else if (requestMethod.equals(Methods.OPTIONS)) {
             responseHeaders.put(Headers.ALLOW, ALLOW_METHODS);
@@ -132,6 +134,15 @@ public class OpenAPIHttpHandler implements HttpHandler {
             exchange.setStatusCode(StatusCodes.METHOD_NOT_ALLOWED);
         }
     }
+
+    private static final Comparator<MediaType> MEDIA_TYPE_SORTER = new Comparator<MediaType>() {
+        @Override
+        public int compare(MediaType type1, MediaType type2) {
+            float quality1 = Float.parseFloat(type1.getParameters().getOrDefault("q", "1"));
+            float quality2 = Float.parseFloat(type2.getParameters().getOrDefault("q", "1"));
+            return Float.compare(quality1, quality2);
+        }
+    };
 
     private static List<MediaType> parseAcceptedTypes(HttpServerExchange exchange) {
         String headerValue = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
@@ -142,6 +153,8 @@ public class OpenAPIHttpHandler implements HttpHandler {
         for (String value : values) {
             types.add(MediaType.valueOf(value));
         }
+        // Sort media types by quality
+        Collections.sort(types, MEDIA_TYPE_SORTER);
         return types;
     }
 

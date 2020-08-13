@@ -25,7 +25,6 @@ package org.jboss.as.test.clustering.cluster.web.remote;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.as.test.clustering.ClusterTestUtil;
-import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
@@ -33,6 +32,8 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.ClassRule;
+import org.junit.rules.TestRule;
 
 /**
  * Variation of {@link AbstractWebFailoverTestCase} using invalidation cache with HotRod-based store implementation referencing
@@ -41,6 +42,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @author Radoslav Husar
  */
 public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
+
+    @ClassRule
+    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
 
     static Archive<?> getDeployment(String deploymentName, String deploymentDescriptor) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, deploymentName);
@@ -53,15 +57,6 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
 
     public AbstractHotRodPersistenceWebFailoverTestCase(String deploymentName) {
         super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.TRANSACTIONAL);
-    }
-
-    @Override
-    public void beforeTestMethod() {
-        // Also start the Infinispan Server instance
-        NodeUtil.start(this.controller, INFINISPAN_SERVER_1);
-
-        NodeUtil.start(this.controller, this.nodes);
-        NodeUtil.deploy(this.deployer, this.deployments);
     }
 
     public static class ServerSetupTask extends CLIServerSetupTask {

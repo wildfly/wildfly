@@ -76,7 +76,7 @@ public class JaxrsTransformers implements ExtensionTransformerRegistration {
     }
 
     private static void checkAttribute(AttributeTransformationDescriptionBuilder builder, AttributeDefinition attribute) {
-        builder.setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(attribute.getDefaultValue()), attribute)
+        builder.setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, attribute)
                .addRejectCheck(RejectAttributeChecker.DEFINED, attribute);
     }
 }

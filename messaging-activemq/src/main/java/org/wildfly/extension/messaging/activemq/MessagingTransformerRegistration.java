@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.security.CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.UNDEFINED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
@@ -41,7 +42,7 @@ import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -69,6 +70,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        registerTransformers_WF_20(builder.createBuilder(MessagingExtension.VERSION_10_0_0, MessagingExtension.VERSION_9_0_0));
         registerTransformers_WF_19(builder.createBuilder(MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_8_0_0));
         registerTransformers_WF_18(builder.createBuilder(MessagingExtension.VERSION_8_0_0, MessagingExtension.VERSION_7_0_0));
         registerTransformers_WF_17(builder.createBuilder(MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_6_0_0));
@@ -81,7 +83,31 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0,
             MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_4_0_0, MessagingExtension.VERSION_5_0_0,
             MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_8_0_0,
-            MessagingExtension.VERSION_9_0_0});
+            MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_10_0_0});
+    }
+
+    private static void registerTransformers_WF_20(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+        server.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, ServerDefinition.CREDENTIAL_REFERENCE.getName())
+                .end();
+        ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
+        bridge.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, BridgeDefinition.CREDENTIAL_REFERENCE.getName())
+                .end();
+
+        ResourceTransformationDescriptionBuilder jmsBridge = subsystem.addChildResource(MessagingExtension.JMS_BRIDGE_PATH);
+        jmsBridge.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE.getName())
+                .end();
+        jmsBridge.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE.getName())
+                .end();
+
+        ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        pooledConnectionFactory.getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE)
+                .end();
     }
 
     private static void registerTransformers_WF_19(ResourceTransformationDescriptionBuilder subsystem) {
@@ -120,17 +146,13 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         rejectDefinedAttributeWithDefaultValue(queue, QueueDefinition.ROUTING_TYPE);
 
         ResourceTransformationDescriptionBuilder jmsBridge = subsystem.addChildResource(MessagingExtension.JMS_BRIDGE_PATH);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.QUALITY_OF_SERVICE);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.FAILURE_RETRY_INTERVAL);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_RETRIES);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_BATCH_SIZE);
-        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_BATCH_TIME);
+        jmsBridge.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, JMSBridgeDefinition.QUALITY_OF_SERVICE, JMSBridgeDefinition.FAILURE_RETRY_INTERVAL, JMSBridgeDefinition.MAX_RETRIES, JMSBridgeDefinition.MAX_BATCH_SIZE, JMSBridgeDefinition.MAX_BATCH_TIME);
     }
 
     private static void registerTransformers_WF_15(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10976 - journal-pool-files default value is 10.
-        defaultValueAttributeConverter(server, ServerDefinition.JOURNAL_POOL_FILES);
+        server.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, ServerDefinition.JOURNAL_POOL_FILES);
         rejectDefinedAttributeWithDefaultValue(server,
                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                 ServerDefinition.DISK_SCAN_PERIOD,
@@ -150,7 +172,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
 
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10165 - journal-jdbc-network-timeout default value is 20 seconds.
-        defaultValueAttributeConverter(server, ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT);
+        server.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT);
 
         rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
                 ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
@@ -255,17 +277,15 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
         rejectDefinedAttributeWithDefaultValue(connectionFactory, ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                 ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST);
-        defaultValueAttributeConverter(connectionFactory, CommonAttributes.CALL_FAILOVER_TIMEOUT);
+        connectionFactory.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, CommonAttributes.CALL_FAILOVER_TIMEOUT);
         ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
         // reject rebalance-connections introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS);
         // reject statistics-enabled introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED);
         // reject max-pool-size whose default value has been changed in  management version 2.0.0
-        defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE);
-        defaultValueAttributeConverter(pooledConnectionFactory, CommonAttributes.CALL_FAILOVER_TIMEOUT);
         // reject min-pool-size whose default value has been changed in  management version 2.0.0
-        defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
+        pooledConnectionFactory.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE, CommonAttributes.CALL_FAILOVER_TIMEOUT, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
                 ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                 ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
@@ -276,14 +296,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
      * Reject the attributes if they are defined or discard them if they are undefined or set to their default value.
      */
     private static void rejectDefinedAttributeWithDefaultValue(ResourceTransformationDescriptionBuilder builder, AttributeDefinition... attrs) {
-        for (AttributeDefinition attr : attrs) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(attr.getDefaultValue()), attr)
-                    .addRejectCheck(DEFINED, attr);
-        }
-    }
-
-    private static void defaultValueAttributeConverter(ResourceTransformationDescriptionBuilder builder, AttributeDefinition attr) {
-        builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attr), attr).end();
+        builder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, attrs)
+                .addRejectCheck(DEFINED, attrs);
     }
 }

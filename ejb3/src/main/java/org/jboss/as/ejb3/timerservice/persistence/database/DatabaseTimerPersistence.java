@@ -168,17 +168,15 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         extractDialects();
         investigateDialect();
         checkDatabase();
+        refreshTask = new RefreshTask();
         if (refreshInterval > 0) {
-            refreshTask = new RefreshTask();
             timerInjectedValue.getValue().schedule(refreshTask, refreshInterval, refreshInterval);
         }
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
-        if (refreshTask != null) {
-            refreshTask.cancel();
-        }
+        refreshTask.cancel();
         knownTimerIds.clear();
         managedReference.release();
         managedReference = null;
@@ -533,6 +531,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         return this;
     }
 
+    public void refreshTimers() {
+        refreshTask.run();
+    }
+
     private Holder timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService) throws SQLException {
         boolean calendarTimer = resultSet.getBoolean(24);
         final String nodeName = resultSet.getString(25);
@@ -829,12 +831,12 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                 try {
                                     String id = resultSet.getString(1);
                                     if (!existing.remove(id)) {
-                                        synchronized (DatabaseTimerPersistence.this) {
-                                            knownTimerIds.get(timedObjectId).add(id);
-                                        }
                                         final Holder holder = timerFromResult(resultSet, timerService);
                                         if(holder != null) {
-                                            listener.timerAdded(holder.timer);
+                                            synchronized (DatabaseTimerPersistence.this) {
+                                                knownTimerIds.get(timedObjectId).add(id);
+                                                listener.timerAdded(holder.timer);
+                                            }
                                         }
                                     } else {
                                         final Holder holder = timerFromResult(resultSet, listener.getTimerService());
@@ -844,12 +846,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                             // remove and add -> the probable cause is db glitch
                                             EnumSet<TimerState> valid = EnumSet.of(TimerState.IN_TIMEOUT, TimerState.RETRY_TIMEOUT, TimerState.CREATED, TimerState.ACTIVE);
                                             boolean validDBTimer = valid.contains(holder.timer.getState());
-                                            boolean validMemoryTimer = !valid.contains(oldTimer.getState());
+                                            boolean validMemoryTimer = oldTimer != null && !valid.contains(oldTimer.getState());
                                             // if timers memory - db are in non intersect subsets of valid/invalid states. we put them in sync
                                             if (validMemoryTimer && validDBTimer) {
                                                 synchronized (DatabaseTimerPersistence.this) {
-                                                    Set<String> timers = knownTimerIds.get(timedObjectId);
-                                                    timers.remove(oldTimer.getId());
+                                                    knownTimerIds.get(timedObjectId).add(holder.timer.getId());
                                                     listener.timerSync(oldTimer, holder.timer);
                                                 }
 

@@ -168,7 +168,18 @@ public class LayeredDistributionTestCase {
 
         // set layers.conf
         Path layersConf = AS_PATH.resolve("modules").resolve("layers.conf");
-        Files.write(layersConf, Collections.singleton("layers=test"));
+        if (layersConf.toFile().exists()) {
+            for (String line : Files.readAllLines(layersConf)) {
+                if (line.startsWith("layers=")) {
+                    if (!line.equals("layers=test") && !line.startsWith("layers=test,")) {
+                        Files.write(layersConf, Collections.singleton(line.replace("layers=", "layers=test,")));
+                    } // else we've picked up a file perhaps from a previous test that already is configured; just use it
+                    break;
+                }
+            }
+        } else {
+            Files.write(layersConf, Collections.singleton("layers=test"));
+        }
     }
 
     private void buildProductModule(String layer) throws Exception {

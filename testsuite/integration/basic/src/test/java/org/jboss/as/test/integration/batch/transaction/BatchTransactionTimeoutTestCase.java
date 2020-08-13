@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.integration.batch.transaction;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import javax.batch.runtime.JobExecution;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -34,21 +42,20 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.batch.runtime.JobExecution;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.assertEquals;
-
 /**
  * Test for JBERET-231/JBEAP-4811.
  * When a batch job fails due to transaction timeout, another job should be able to run on the same thread.
+ * <p>
+ * {@link ThreadBatchSetup} configures jberet to have {@code max-threads} 3.
+ * The test job, {@code timeout-job.xml}, contains a step with 2 partitions.
+ * The test starts the job twice: first with a {@code job.timeout} value to trigger transaction timeout
+ * and job execution failure; second time without causing transaction timeout.
+ * <p>
+ * The first job execution is expected to fail due to transaction timeout.
+ * The second job execution should complete successfully.
  */
 @RunWith(Arquillian.class)
-@ServerSetup(SingleThreadedBatchSetup.class)
+@ServerSetup(ThreadBatchSetup.class)
 public class BatchTransactionTimeoutTestCase extends AbstractBatchTestCase {
 
     @Deployment

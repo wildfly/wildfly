@@ -27,7 +27,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
+
+import javax.transaction.TransactionManager;
 
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
@@ -71,8 +75,13 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public boolean removeWithVersion(K key, long version) {
-        return this.cache.removeWithVersion(key, version);
+    public boolean isTransactional() {
+        return this.cache.isTransactional();
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return this.cache.getTransactionManager();
     }
 
     @Override
@@ -96,6 +105,102 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
         }
     }
 
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleUnit) {
+        return this.cache.compute(key, remappingFunction, lifespan, lifespanUnit, maxIdleTime, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public CompletableFuture<V> computeAsync(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.computeAsync(key, remappingFunction, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
+        return this.cache.computeIfAbsent(key, mappingFunction, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public CompletableFuture<V> computeIfAbsentAsync(K key, Function<? super K, ? extends V> mappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.computeIfAbsentAsync(key, mappingFunction, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleUnit) {
+        return this.cache.computeIfPresent(key, remappingFunction, lifespan, lifespanUnit, maxIdleTime, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleUnit) {
+        return this.cache.merge(key, value, remappingFunction, lifespan, lifespanUnit, maxIdleTime, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public CompletableFuture<V> mergeAsync(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleUnit) {
+        return this.cache.mergeAsync(key, value, remappingFunction, lifespan, lifespanUnit, maxIdleTime, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public CompletableFuture<V> computeIfPresentAsync(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.computeIfPresentAsync(key, remappingFunction, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public V put(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.put(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public CompletableFuture<V> putAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.putAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public V putIfAbsent(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.putIfAbsent(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public CompletableFuture<V> putIfAbsentAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.putIfAbsentAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public V replace(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.replace(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public boolean replace(K key, V oldValue, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.replace(key, oldValue, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public CompletableFuture<V> replaceAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.replaceAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    // Default impl throws UnsupportedOperationException
+    @Override
+    public CompletableFuture<Boolean> replaceAsync(K key, V oldValue, V newValue, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.replaceAsync(key, oldValue, newValue, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
     @Override
     public V remove(Object key) {
         return this.cache.remove(key);
@@ -107,8 +212,8 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public boolean replace(K key, V oldValue, V value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
-        return this.cache.replace(key, oldValue, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
+    public boolean removeWithVersion(K key, long version) {
+        return this.cache.removeWithVersion(key, version);
     }
 
     @Override
@@ -203,13 +308,13 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
-        this.cache.putAll(map, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
+    public void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleUnit) {
+        this.cache.putAll(map, lifespan, lifespanUnit, maxIdleTime, maxIdleUnit);
     }
 
     @Override
     public CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
-        return this.putAllAsync(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+        return this.cache.putAllAsync(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
     }
 
     @Override
@@ -230,18 +335,6 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     @Override
     public RemoteCacheManager getRemoteCacheManager() {
         return this.manager;
-    }
-
-    @Deprecated
-    @Override
-    public Map<K, V> getBulk() {
-        return this.cache.getBulk();
-    }
-
-    @Deprecated
-    @Override
-    public Map<K, V> getBulk(int size) {
-        return this.cache.getBulk(size);
     }
 
     @Override
@@ -269,6 +362,7 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
         this.cache.removeClientListener(listener);
     }
 
+    @Deprecated
     @Override
     public Set<Object> getListeners() {
         return this.cache.getListeners();
@@ -310,21 +404,6 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public V put(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.put(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public V putIfAbsent(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.putIfAbsent(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public V replace(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.replace(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
     public CompletableFuture<Void> clearAsync() {
         return this.cache.clearAsync();
     }
@@ -335,28 +414,18 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public CompletableFuture<V> putAsync(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.putAsync(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public CompletableFuture<V> putIfAbsentAsync(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.putIfAbsentAsync(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public CompletableFuture<V> removeAsync(Object arg0) {
-        return this.cache.removeAsync(arg0);
-    }
-
-    @Override
-    public CompletableFuture<V> replaceAsync(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.replaceAsync(arg0, arg1, arg2, arg3, arg4, arg5);
+    public CompletableFuture<V> removeAsync(Object key) {
+        return this.cache.removeAsync(key);
     }
 
     @Override
     public int size() {
         return this.cache.size();
+    }
+
+    @Override
+    public CompletableFuture<Long> sizeAsync() {
+        return this.cache.sizeAsync();
     }
 
     @Override

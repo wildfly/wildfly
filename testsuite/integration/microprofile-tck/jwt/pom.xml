@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ-mp</artifactId>
-        <version>19.0.0.Beta2-SNAPSHOT</version>
+        <version>21.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-jwt</artifactId>
@@ -144,7 +144,7 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${full.maven.groupId}</groupId>
                                             <artifactId>wildfly-galleon-pack</artifactId>
                                             <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -154,7 +154,9 @@
                                     <configurations>
                                         <config>
                                             <model>standalone</model>
-                                            <name>standalone.xml</name>
+                                            <!-- Call the file standalone-microprofile.xml as that is what
+                                                 arquillian.xml says to use for testing in the default maven profile-->
+                                            <name>standalone-microprofile.xml</name>
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>microprofile-jwt</layer>

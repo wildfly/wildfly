@@ -41,6 +41,7 @@ public class FilePassivationStoreAdd extends PassivationStoreAdd {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws IllegalArgumentException, OperationFailedException {
         int initialMaxSize = FilePassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
         String containerName = PassivationStoreResourceDefinition.CACHE_CONTAINER.getDefaultValue().asString();
+        // despite being called file passivation store, this sets up a cache factory based on the default cache container and cache name "passivation"
         this.install(context, operation, initialMaxSize, containerName, "passivation");
     }
 }

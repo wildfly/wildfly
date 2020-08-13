@@ -47,6 +47,7 @@ public class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(TRUST_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.TRUST_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.TRUST_MODULE));
     }
@@ -58,9 +59,6 @@ public class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
     }
 
     static class IdentityTrustResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        }
 
         @Override
         protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {

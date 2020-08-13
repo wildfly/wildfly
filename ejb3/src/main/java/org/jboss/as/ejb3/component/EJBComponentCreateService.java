@@ -49,7 +49,6 @@ import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
-import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -102,13 +101,16 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
-    private final InjectedValue<ApplicationSecurityDomain> applicationSecurityDomain = new InjectedValue<>();
+    private final InjectedValue<SecurityDomain> securityDomain = new InjectedValue<>();
     private final InjectedValue<Function> identityOutflowFunction = new InjectedValue<>();
     private final InjectedValue<EJBSuspendHandlerService> ejbSuspendHandler = new InjectedValue<>();
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
+    private final boolean jaccRequired;
     private final boolean securityRequired;
+
+    private final EJBComponentDescription componentDescription;
 
     /**
      * Construct a new instance.
@@ -211,6 +213,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
         this.shutDownInterceptorFactory = ejbComponentDescription.getShutDownInterceptorFactory();
         this.securityRequired = ejbComponentDescription.isSecurityRequired();
+        this.jaccRequired = ejbComponentDescription.requiresJacc();
+        this.componentDescription = ejbComponentDescription;
     }
 
     @Override
@@ -252,6 +256,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     ApplicationExceptions getApplicationExceptions() {
         return this.applicationExceptions;
+    }
+
+    EJBComponentDescription getComponentDescription() {
+        return componentDescription;
     }
 
     protected void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {
@@ -373,22 +381,16 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return exceptionLoggingEnabled.getValue();
     }
 
-    Injector<ApplicationSecurityDomain> getApplicationSecurityDomainInjector() {
-        return applicationSecurityDomain;
-    }
-
-    public ApplicationSecurityDomain getApplicationSecurityDomain() {
-        return applicationSecurityDomain.getOptionalValue();
+    Injector<SecurityDomain> getSecurityDomainInjector() {
+        return securityDomain;
     }
 
     public SecurityDomain getSecurityDomain() {
-        ApplicationSecurityDomain applicationSecurityDomain = getApplicationSecurityDomain();
-        return applicationSecurityDomain != null ? applicationSecurityDomain.getSecurityDomain() : null;
+        return securityDomain.getOptionalValue();
     }
 
     public boolean isEnableJacc() {
-        ApplicationSecurityDomain applicationSecurityDomain = getApplicationSecurityDomain();
-        return applicationSecurityDomain != null ? applicationSecurityDomain.isEnableJacc() : false;
+        return jaccRequired;
     }
 
     Injector<Function> getIdentityOutflowFunctionInjector() {

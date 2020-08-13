@@ -27,11 +27,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.infinispan.Cache;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.Key;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.sso.CompositeSSOManager;
@@ -52,11 +51,11 @@ public class InfinispanSSOManagerFactory<A, D, S> implements SSOManagerFactory<A
     }
 
     @Override
-    public <L, C extends Marshallability> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<L, C> configuration) {
+    public <C, L> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<C, L> configuration) {
         Cache<Key<String>, ?> cache = this.configuration.getCache();
         CacheProperties properties = new InfinispanCacheProperties(cache.getCacheConfiguration());
         SessionsFactory<Map<D, S>, D, S> sessionsFactory = new CoarseSessionsFactory<>(this.configuration.getCache(), properties);
-        SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new InfinispanSSOFactory<>(this.configuration.getCache(), properties, new MarshalledValueMarshaller<>(configuration.getMarshalledValueFactory(), configuration.getMarshallingContext()), configuration.getLocalContextFactory(), sessionsFactory);
+        SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new InfinispanSSOFactory<>(this.configuration.getCache(), properties, new MarshalledValueMarshaller<>(configuration.getMarshalledValueFactory()), configuration.getLocalContextFactory(), sessionsFactory);
         IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), cache, this.configuration.getKeyAffinityServiceFactory());
         Batcher<TransactionBatch> batcher = new InfinispanBatcher(cache);
         return new CompositeSSOManager<>(factory, idFactory, batcher);

@@ -114,7 +114,9 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this.definition = this.apply(createBuilder(name, type)).build();
+            this.definition = this.apply(createBuilder(name, type))
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
@@ -153,13 +155,16 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
-            this.definition = this.apply(createBuilder(name, type)).setDeprecated(deprecation.getVersion()).build();
+            this.definition = this.apply(createBuilder(name, type))
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
         }
 
         DeprecatedAttribute(String name, InfinispanModel deprecation) {
             this.definition = new PropertiesAttributeDefinition.Builder(name)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
         }
 
@@ -262,7 +267,6 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setRequired(false)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 ;
     }
 
@@ -331,7 +335,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
 
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)
-                .addAttributes(DeprecatedAttribute.class)
+                .addIgnoredAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)

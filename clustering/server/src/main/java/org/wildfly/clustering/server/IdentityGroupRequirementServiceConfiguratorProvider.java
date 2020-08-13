@@ -23,7 +23,6 @@
 package org.wildfly.clustering.server;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
@@ -33,6 +32,7 @@ import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
@@ -55,8 +55,11 @@ public class IdentityGroupRequirementServiceConfiguratorProvider implements Iden
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group, String targetGroup) {
-        CapabilityServiceConfigurator configurator = new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(this.requirement), this.requirement, targetGroup);
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group, String targetGroup) {
+        ServiceName name = registry.getServiceName(this.requirement);
+        if (name == null) return Collections.emptySet();
+
+        CapabilityServiceConfigurator configurator = new IdentityCapabilityServiceConfigurator<>(name, this.requirement, targetGroup);
         if ((this.jndiNameFactory == null) || JndiNameFactory.DEFAULT_LOCAL_NAME.equals(targetGroup)) {
             return Collections.singleton(configurator);
         }

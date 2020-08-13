@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta2-SNAPSHOT</version>
+        <version>21.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-health</artifactId>
@@ -136,7 +136,7 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -146,7 +146,9 @@
                                     <configurations>
                                         <config>
                                             <model>standalone</model>
-                                            <name>standalone.xml</name>
+                                            <!-- Call the file standalone-microprofile.xml as that is what
+                                                 arquillian.xml says to use for testing in the default maven profile-->
+                                            <name>standalone-microprofile.xml</name>
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                                 <layer>observability</layer>

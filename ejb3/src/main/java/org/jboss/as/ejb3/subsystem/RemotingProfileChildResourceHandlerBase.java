@@ -26,52 +26,44 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RestartParentResourceHandlerBase;
-import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 public abstract class RemotingProfileChildResourceHandlerBase extends RestartParentResourceHandlerBase {
+
      protected RemotingProfileChildResourceHandlerBase() {
-        super(EJB3SubsystemModel.REMOTING_PROFILE);
+         super(EJB3SubsystemModel.REMOTING_PROFILE);
     }
 
     @Override
-    protected void recreateParentService(final OperationContext context, final PathAddress parentAddress,
-            final ModelNode parentModel) throws OperationFailedException {
-        switch(context.getCurrentStage()){
+    protected void recreateParentService(final OperationContext context, final PathAddress parentAddress, final ModelNode parentModel) throws OperationFailedException {
+
+        switch(context.getCurrentStage()) {
             case RUNTIME:
                 // service installation in another step: when interruption is thrown then it is handled by RollbackHandler
                 // declared in RestartParentResourceHandlerBase
                 context.addStep(new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        RemotingProfileAdd.INSTANCE.installServices(context, parentAddress, parentModel);
+                        RemotingProfileResourceDefinition.ADD_HANDLER.installServices(context, parentAddress, parentModel);
                     }
                 }, OperationContext.Stage.RUNTIME);
             break;
             case DONE:
                 // executed from RollbackHandler - service is being installed using correct configuration
-                RemotingProfileAdd.INSTANCE.installServices(context, parentAddress, parentModel);
+                RemotingProfileResourceDefinition.ADD_HANDLER.installServices(context, parentAddress, parentModel);
                 break;
         }
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        String profileName = null;
-        for (final PathElement element : parentAddress) {
-            if (element.getKey().equals(EJB3SubsystemModel.REMOTING_PROFILE)) {
-                profileName = element.getValue();
-            }
-        }
-        return RemotingProfileService.BASE_SERVICE_NAME.append(profileName);
+       return RemotingProfileResourceDefinition.REMOTING_PROFILE_CAPABILITY.getCapabilityServiceName(parentAddress);
     }
 
     @Override
-    protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel)
-            throws OperationFailedException {
+    protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
         super.removeServices(context, parentService, parentModel);
     }
 }

@@ -45,15 +45,15 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.spi.group.Group;
 
 /**
  * MessageDispatcher-based command dispatcher.
  * @author Paul Ferraro
  *
- * @param <C> command execution context
+ * @param <CC> command execution context
  */
-public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
+public class ChannelCommandDispatcher<CC, MC> implements CommandDispatcher<CC> {
 
     private static final RspFilter FILTER = new RspFilter() {
         @Override
@@ -68,17 +68,19 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     };
 
     private final MessageDispatcher dispatcher;
-    private final CommandMarshaller<C> marshaller;
+    private final CommandMarshaller<CC> marshaller;
+    private final MC context;
     private final Group<Address> group;
     private final Duration timeout;
-    private final CommandDispatcher<C> localDispatcher;
+    private final CommandDispatcher<CC> localDispatcher;
     private final Runnable closeTask;
     private final Address localAddress;
     private final RequestOptions options;
 
-    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, Group<Address> group, Duration timeout, CommandDispatcher<C> localDispatcher, Runnable closeTask) {
+    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<CC> marshaller, MC context, Group<Address> group, Duration timeout, CommandDispatcher<CC> localDispatcher, Runnable closeTask) {
         this.dispatcher = dispatcher;
         this.marshaller = marshaller;
+        this.context = context;
         this.group = group;
         this.timeout = timeout;
         this.localDispatcher = localDispatcher;
@@ -88,7 +90,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
-    public C getContext() {
+    public CC getContext() {
         return this.localDispatcher.getContext();
     }
 
@@ -98,19 +100,19 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
-    public <R> CompletionStage<R> executeOnMember(Command<R, ? super C> command, Node member) throws CommandDispatcherException {
+    public <R> CompletionStage<R> executeOnMember(Command<R, ? super CC> command, Node member) throws CommandDispatcherException {
         // Bypass MessageDispatcher if target node is local
         Address address = this.group.getAddress(member);
         if (this.localAddress.equals(address)) {
             return this.localDispatcher.executeOnMember(command, member);
         }
         Buffer buffer = this.createBuffer(command);
-        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options);
+        ServiceRequest<R, MC> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options, this.context);
         return request.send(buffer);
     }
 
     @Override
-    public <R> Map<Node, CompletionStage<R>> executeOnGroup(Command<R, ? super C> command, Node... excludedMembers) throws CommandDispatcherException {
+    public <R> Map<Node, CompletionStage<R>> executeOnGroup(Command<R, ? super CC> command, Node... excludedMembers) throws CommandDispatcherException {
         Set<Node> excluded = (excludedMembers != null) ? new HashSet<>(Arrays.asList(excludedMembers)) : Collections.emptySet();
         Map<Node, CompletionStage<R>> results = new ConcurrentHashMap<>();
         Buffer buffer = this.createBuffer(command);
@@ -121,7 +123,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
                     results.put(member, this.localDispatcher.executeOnMember(command, member));
                 } else {
                     try {
-                        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options);
+                        ServiceRequest<R, MC> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options, this.context);
                         CompletionStage<R> future = request.send(buffer);
                         results.put(member, future);
                         future.whenComplete(new PruneCancellationTask<>(results, member));
@@ -138,7 +140,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         return results;
     }
 
-    private <R> Buffer createBuffer(Command<R, ? super C> command) {
+    private <R> Buffer createBuffer(Command<R, ? super CC> command) {
         try {
             ByteBuffer buffer = this.marshaller.marshal(command);
             return new Buffer(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset());

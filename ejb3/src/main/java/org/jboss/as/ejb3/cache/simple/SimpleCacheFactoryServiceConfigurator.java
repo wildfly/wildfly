@@ -45,19 +45,18 @@ import org.wildfly.clustering.service.SupplierDependency;
 /**
  * Service that provides a simple {@link CacheFactory}.
  *
- * @author Paul Ferraro
- *
  * @param <K> the cache key type
  * @param <V> the cache value type
+ * @author Paul Ferraro
  */
 public class SimpleCacheFactoryServiceConfigurator<K, V extends Identifiable<K>> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, CacheFactory<K, V> {
 
-    private final StatefulTimeoutInfo timeout;
+    private final StatefulComponentDescription componentDescription;
     private final SupplierDependency<ServerEnvironment> environment = new ServiceSupplierDependency<>(ServerEnvironmentService.SERVICE_NAME);
 
     public SimpleCacheFactoryServiceConfigurator(ServiceName name, StatefulComponentDescription description) {
         super(name);
-        this.timeout = description.getStatefulTimeout();
+        this.componentDescription = description;
     }
 
     @Override
@@ -71,6 +70,7 @@ public class SimpleCacheFactoryServiceConfigurator<K, V extends Identifiable<K>>
 
     @Override
     public Cache<K, V> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
-        return new SimpleCache<>(factory, identifierFactory, this.timeout, this.environment.get());
+        final StatefulTimeoutInfo timeout = this.componentDescription.getStatefulTimeout();
+        return new SimpleCache<>(factory, identifierFactory, this.componentDescription.getStatefulTimeout(), this.environment.get());
     }
 }

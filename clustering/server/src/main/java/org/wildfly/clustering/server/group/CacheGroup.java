@@ -35,6 +35,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.distribution.DistributionManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
@@ -42,7 +43,6 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
-import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
 import org.jboss.as.clustering.context.DefaultExecutorService;
@@ -53,6 +53,7 @@ import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.spi.group.Group;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -98,7 +99,7 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
     public String getName() {
         GlobalConfiguration global = this.cache.getCacheManager().getCacheManagerConfiguration();
         TransportConfiguration transport = global.transport();
-        return transport.transport() != null ? transport.clusterName() : global.globalJmxStatistics().cacheManagerName();
+        return transport.transport() != null ? transport.clusterName() : global.cacheManagerName();
     }
 
     @Override
@@ -111,9 +112,9 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
         if (this.isSingleton()) {
             return new SingletonMembership(this.getLocalMember());
         }
-        Transport transport = this.cache.getCacheManager().getTransport();
+        EmbeddedCacheManager manager = this.cache.getCacheManager();
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? new CacheMembership(transport.getAddress(), dist.getCacheTopology(), this) : new CacheMembership(transport, this);
+        return (dist != null) ? new CacheMembership(manager.getAddress(), dist.getCacheTopology(), this) : new CacheMembership(manager, this);
     }
 
     @Override

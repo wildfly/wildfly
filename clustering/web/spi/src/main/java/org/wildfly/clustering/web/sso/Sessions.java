@@ -26,6 +26,8 @@ import java.util.Set;
 /**
  * Represents the sessions per deployment for which a given user is authenticated.
  * @author Paul Ferraro
+ * @param <D> deployment identifier type
+ * @param <S> session identifier type
  */
 public interface Sessions<D, S> {
     /**

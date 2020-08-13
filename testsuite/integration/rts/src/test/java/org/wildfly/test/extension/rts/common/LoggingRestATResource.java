@@ -46,7 +46,7 @@ import java.util.List;
  *
  */
 @Path(LoggingRestATResource.BASE_URL_SEGMENT)
-public final class LoggingRestATResource {
+public class LoggingRestATResource {
 
     public static final String BASE_URL_SEGMENT = "logging-rest-at-participant";
 

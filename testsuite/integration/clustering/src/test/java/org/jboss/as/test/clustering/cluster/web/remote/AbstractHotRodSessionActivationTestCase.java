@@ -22,24 +22,21 @@
 
 package org.jboss.as.test.clustering.cluster.web.remote;
 
-import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractSessionActivationTestCase;
+import org.junit.ClassRule;
+import org.junit.rules.TestRule;
 
 /**
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public abstract class AbstractHotRodSessionActivationTestCase extends AbstractSessionActivationTestCase {
+
+    @ClassRule
+    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
 
     protected AbstractHotRodSessionActivationTestCase(boolean transactional) {
         super(transactional);
     }
 
-    @Override
-    public void beforeTestMethod() {
-        // Also start the Infinispan Server instance
-        NodeUtil.start(this.controller, INFINISPAN_SERVER_1);
-
-        NodeUtil.start(this.controller, this.nodes);
-        NodeUtil.deploy(this.deployer, this.deployments);
-    }
 }

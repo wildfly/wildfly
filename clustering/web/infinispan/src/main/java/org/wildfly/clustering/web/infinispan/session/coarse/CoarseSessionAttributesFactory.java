@@ -22,13 +22,11 @@
 
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletContext;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -39,9 +37,8 @@ import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
@@ -53,6 +50,7 @@ import org.wildfly.clustering.web.cache.session.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
+import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
@@ -61,47 +59,52 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(sync = false)
-public class CoarseSessionAttributesFactory<V> implements SessionAttributesFactory<Map.Entry<Map<String, Object>, V>> {
+public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 
     private final Cache<SessionAttributesKey, V> cache;
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final CacheProperties properties;
     private final Immutability immutability;
     private final MutatorFactory<SessionAttributesKey, V> mutatorFactory;
+    private final HttpSessionActivationListenerProvider<S, C, L> provider;
 
-    public CoarseSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration) {
+    public CoarseSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration) {
         this.cache = configuration.getCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
         this.mutatorFactory = new InfinispanMutatorFactory<>(this.cache, this.properties);
+        this.provider = configuration.getHttpSessionActivationListenerProvider();
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, V> createValue(String id, Void context) {
+    public Map<String, Object> createValue(String id, Void context) {
         Map<String, Object> attributes = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
-        V value = this.marshaller.write(attributes);
-        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
-        return new SimpleImmutableEntry<>(attributes, value);
+        try {
+            V value = this.marshaller.write(attributes);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
+            return attributes;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, V> findValue(String id) {
+    public Map<String, Object> findValue(String id) {
         return this.getValue(id, true);
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, V> tryValue(String id) {
+    public Map<String, Object> tryValue(String id) {
         return this.getValue(id, false);
     }
 
-    private Map.Entry<Map<String, Object>, V> getValue(String id, boolean purgeIfInvalid) {
+    private Map<String, Object> getValue(String id, boolean purgeIfInvalid) {
         V value = this.cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
-                Map<String, Object> attributes = this.marshaller.read(value);
-                return new SimpleImmutableEntry<>(attributes, value);
-            } catch (InvalidSerializedFormException e) {
+                return this.marshaller.read(value);
+            } catch (IOException e) {
                 InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
                 if (purgeIfInvalid) {
                     this.purge(id);
@@ -127,26 +130,30 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry, ImmutableSessionMetaData metaData, ServletContext context) {
-        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, entry);
-        SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier(new CompositeImmutableSession(id, metaData, attributes), context);
-        Mutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? Mutator.PASSIVE : this.mutatorFactory.createMutator(new SessionAttributesKey(id), entry.getValue());
-        return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller, this.immutability, this.properties, notifier);
+    public SessionAttributes createSessionAttributes(String id, Map<String, Object> values, ImmutableSessionMetaData metaData, C context) {
+        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, values);
+        SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
+        try {
+            Mutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? Mutator.PASSIVE : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(values));
+            return new CoarseSessionAttributes(values, mutator, this.marshaller, this.immutability, this.properties, notifier);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry) {
-        return new CoarseImmutableSessionAttributes(entry.getKey());
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, Object> values) {
+        return new CoarseImmutableSessionAttributes(values);
     }
 
     @CacheEntriesEvicted
-    public void evicted(CacheEntriesEvictedEvent<Key<String>, ?> event) {
+    public void evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
         if (!event.isPre()) {
             Cache<SessionAttributesKey, V> cache = this.cache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
-            for (Key<String> key : event.getEntries().keySet()) {
+            for (GroupedKey<String> key : event.getEntries().keySet()) {
                 // Workaround for ISPN-8324
                 if (key instanceof SessionCreationMetaDataKey) {
-                    cache.evict(new SessionAttributesKey(key.getValue()));
+                    cache.evict(new SessionAttributesKey(key.getId()));
                 }
             }
         }

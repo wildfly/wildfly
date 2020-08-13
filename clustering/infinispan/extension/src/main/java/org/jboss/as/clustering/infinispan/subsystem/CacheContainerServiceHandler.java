@@ -43,11 +43,7 @@ import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -76,24 +72,6 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
-
-        // Handle case where ejb subsystem has already installed services for this cache-container
-        // This can happen if the ejb cache-container is added to a running server
-        if (context.getProcessType().isServer() && !context.isBooting() && name.equals("ejb")) {
-            PathElement ejbPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
-            Resource ejbResource = safeGetResource(context, ejbPath);
-            if (ejbResource != null && ejbResource.hasChild(PathElement.pathElement("service", "remote"))) {
-                // Following restart, these services will be installed by this handler, rather than the ejb remote handler
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                        context.reloadRequired();
-                        context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
-                    }
-                }, OperationContext.Stage.RUNTIME);
-                return;
-            }
-        }
 
         ServiceTarget target = context.getServiceTarget();
 
@@ -165,15 +143,6 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
             context.removeService(capability.getServiceName(address));
         }
 
-        this.containerRegistry.remove(CacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(address));
-    }
-
-    private static Resource safeGetResource(OperationContext context, PathElement path) {
-        try {
-            return context.readResourceFromRoot(PathAddress.pathAddress(path), false);
-        } catch (RuntimeException e) {
-            // No such resource
-            return null;
-        }
+        context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.containerRegistry.remove(CacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(address))).getServiceName());
     }
 }

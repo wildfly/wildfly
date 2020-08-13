@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ejb.infinispan.BeanKey;
-import org.wildfly.clustering.ejb.infinispan.Key;
 
 /**
  * The cache key for a bean.
@@ -31,7 +31,7 @@ import org.wildfly.clustering.ejb.infinispan.Key;
  *
  * @param <I> the bean identifier type
  */
-public class InfinispanBeanKey<I> extends Key<I> implements BeanKey<I> {
+public class InfinispanBeanKey<I> extends GroupedKey<I> implements BeanKey<I> {
 
     public InfinispanBeanKey(I id) {
         super(id);

@@ -60,6 +60,6 @@ public class SessionAttributeKey extends Key<String> {
 
     @Override
     public String toString() {
-        return String.format("%s(%s[%d])", SessionAttributeKey.class.getSimpleName(), this.getId(), this.attributeId);
+        return String.format("%s(%s[%s])", SessionAttributeKey.class.getSimpleName(), this.getId(), this.attributeId);
     }
 }

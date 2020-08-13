@@ -34,15 +34,10 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
-import org.jboss.as.test.integration.jca.JcaTestsUtil;
-import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,14 +54,7 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
 
     @Deployment
     public static Archive<?> deploytRar() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        jar.addClass(JcaMgmtBase.class).addClass(WorkManagerThreadsCheckTestCase.class)
-                .addClass(ContainerResourceMgmtTestBase.class).addClass(ManagementOperations.class)
-                .addClass(MgmtOperationException.class).addClass(JcaTestsUtil.class).addClass(AbstractMgmtTestBase.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector,"
-                + "org.jboss.as.controller,org.jboss.dmr,org.jboss.as.cli,org.jboss.staxmapper,"
-                + "org.jboss.ironjacamar.impl\n"), "MANIFEST.MF");
-        return jar;
+        return ShrinkWrap.create(JavaArchive.class, "dummy.jar");
     }
 
     @Test

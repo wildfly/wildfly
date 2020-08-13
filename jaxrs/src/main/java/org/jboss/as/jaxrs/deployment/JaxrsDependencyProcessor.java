@@ -42,8 +42,10 @@ import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_DATATYPE_JSR31
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JAXB_API;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JAXRS_API;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JSON_API;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.MP_REST_CLIENT;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_ATOM;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_CDI;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_CLIENT_MICROPROFILE;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_CRYPTO;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_JACKSON2;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_JAXB;
@@ -88,6 +90,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR_11, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXRS, true, deploymentBundlesClientBuilder);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_CLIENT_MICROPROFILE, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXB, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JACKSON2, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JSON_P_PROVIDER, true, false);
@@ -100,6 +103,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CRYPTO, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JDK8, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JSR310, true, false);
+        addDependency(moduleSpecification, moduleLoader, MP_REST_CLIENT, true, false);
 
         final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {

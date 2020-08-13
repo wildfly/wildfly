@@ -46,9 +46,9 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -69,7 +69,7 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
             public MarshallingConfiguration apply(MarshallingConfigurationContext context) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(context.getModuleLoader()));
-                config.setClassTable(new DynamicClassTable(context.getModule().getClassLoader()));
+                config.setClassTable(new DynamicClassTable(context.getClassLoader()));
                 return config;
             }
         },
@@ -78,8 +78,8 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
             public MarshallingConfiguration apply(MarshallingConfigurationContext context) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(context.getModuleLoader()));
-                config.setClassTable(new DynamicClassTable(context.getModule().getClassLoader()));
-                config.setObjectTable(new ExternalizerObjectTable(context.getModule().getClassLoader()));
+                config.setClassTable(new DynamicClassTable(context.getClassLoader()));
+                config.setObjectTable(new ExternalizerObjectTable(context.getClassLoader()));
                 return config;
             }
         },
@@ -128,8 +128,8 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     }
 
     @Override
-    public Module getModule() {
-        return this.module.get();
+    public ClassLoader getClassLoader() {
+        return this.module.get().getClassLoader();
     }
 
     @Override
@@ -143,8 +143,8 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     }
 
     @Override
-    public MarshallingContext getMarshallingContext() {
-        return new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this), this.getModule().getClassLoader());
+    public ByteBufferMarshaller getMarshaller() {
+        return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this), this.getClassLoader());
     }
 
     @Override

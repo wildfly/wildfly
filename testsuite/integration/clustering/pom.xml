@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta2-SNAPSHOT</version>
+        <version>21.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-clustering</artifactId>
@@ -44,13 +44,16 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>5400</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
-        <!-- Needs to kept inline with what the infinispan-server-feature-pack requires -->
-        <version.org.jboss.infinispan-wildfly>14.0.1.Final</version.org.jboss.infinispan-wildfly>
-        <!-- Byteman configuration -->
         <version.org.jboss.byteman>4.0.6</version.org.jboss.byteman>
+        <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
+        <!-- TODO This manages the infinispan server driver version which needs to be >11 to support FORKED mode -->
+        <!-- TODO synchronize with Infinispan 11 upgrade -->
+        <version.org.infinispan.server.driver>11.0.0.Final</version.org.infinispan.server.driver>
+        <ts.surefire.clustering.ha.additionalExcludes>nothing-by-default</ts.surefire.clustering.ha.additionalExcludes>
     </properties>
 
     <dependencies>
+        <!-- Test classes dependencies -->
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
@@ -66,21 +69,69 @@
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Used for the infinispan-server-feature-pack -->
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-feature-pack</artifactId>
-            <version>${version.org.jboss.infinispan-wildfly}</version>
-            <type>zip</type>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.faces</groupId>
+            <artifactId>jboss-jsf-api_2.3_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.jms</groupId>
+            <artifactId>jboss-jms-api_2.0_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Runtime dependency for test variants in org.jboss.as.test.clustering.cluster.ejb.remote.*TestCase -->
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
+        </dependency>
+        <!-- Driver used for Infinispan Server tests -->
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-server-testdriver-junit4</artifactId>
+            <version>${version.org.infinispan.server.driver}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>*</artifactId>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-server-runtime</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- ARQ extension for Byteman -->
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-client-rest</artifactId>
+            <version>${version.org.infinispan.server.driver}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons</artifactId>
+            <version>${version.org.infinispan.server.driver}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-client-hotrod</artifactId>
+            <version>${version.org.infinispan.server.driver}</version>
+        </dependency>
+        <!-- Arquillian extension for Byteman -->
         <dependency>
             <groupId>org.jboss.arquillian.extension</groupId>
             <artifactId>arquillian-extension-byteman</artifactId>
@@ -112,8 +163,37 @@
     </dependencies>
 
     <profiles>
+        <!-- Skip the default 'test' surefire goal if using -Dts.noClustering -->
         <profile>
-            <id>clustering.integration.tests.profile</id>
+            <id>ts.clustering.integration.tests.skip.profile</id>
+            <activation>
+                <property>
+                    <name>ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+                            <!-- Disable default-test surefire execution which would fail otherwise. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Common step to prepare servers in use by all non-Galleon tests -->
+        <profile>
+            <id>ts.clustering.common.profile</id>
             <activation>
                 <property>
                     <name>!ts.noClustering</name>
@@ -121,21 +201,22 @@
             </activation>
             <build>
                 <plugins>
-                    <!-- Configure an Infinispan server -->
+                    <!-- Download, unpack, and locally cache infinispan-server distribution -->
+                    <!-- This works around the fact that infinispan server distribution zip is no longer published in maven -->
                     <plugin>
-                        <groupId>org.wildfly.build</groupId>
-                        <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <version>1.3.0</version>
                         <executions>
                             <execution>
-                                <id>provision-infinispan-server</id>
-                                <phase>test-compile</phase>
+                                <id>ts.config-as.configure-infinispan-server</id>
+                                <phase>generate-test-resources</phase>
                                 <goals>
-                                    <goal>build</goal>
+                                    <goal>wget</goal>
                                 </goals>
                                 <configuration>
-                                    <config-file>infinispan-server-provisioning.xml</config-file>
-                                    <buildName>${basedir}/target/</buildName>
-                                    <server-name>infinispan-server-${version.org.infinispan}</server-name>
+                                    <url>https://downloads.jboss.org/infinispan/${version.org.infinispan.server}/infinispan-server-${version.org.infinispan.server}.zip</url>
+                                    <unpack>true</unpack>
                                 </configuration>
                             </execution>
                         </executions>
@@ -247,9 +328,36 @@
                                     </target>
                                 </configuration>
                             </execution>
+                            <!--
+                            <execution>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <unzip src="${project.build.directory}/infinispan-server-${version.org.infinispan.server}.zip" dest="${project.build.directory}"/>
+                                        <chmod file="${project.build.directory}/infinispan-server-${version.org.infinispan.server}/bin/*.sh" perm="ugo+rx"/>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            -->
                         </executions>
                     </plugin>
-                    <!-- Surefire test executions -->
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Run cluster tests with standalone-ha.xml profile -->
+        <profile>
+            <id>ts.clustering.cluster.ha.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -265,7 +373,7 @@
                             </execution>
                             <!-- Multi-node clustering tests -->
                             <execution>
-                                <id>ts.surefire.clustering.all</id>
+                                <id>ts.surefire.clustering.ha</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -279,17 +387,169 @@
                                     </includes>
                                     <!-- Skip byteman tests -->
                                     <excludes>
+                                        <!-- These are run with full-ha server profile by ts.clustering.cluster.fullha.profile maven profile -->
+                                        <exclude>${test-group}/**/ejb/stateful/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/group/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/jms/*TestCase.java</exclude>
+                                        <!-- These are run by ts.clustering.cluster.ha-infinispan-server.profile -->
+                                        <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/sso/remote/*TestCase.java</exclude>
+                                        <!-- These are run by ts.clustering.cluster.byteman.profile -->
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
+                                        <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
                                     </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- required by arquilian.xml -->
+                                        <!-- required by arquillian.xml -->
                                         <wildfly1>wildfly-1</wildfly1>
                                         <wildfly2>wildfly-2</wildfly2>
                                         <wildfly3>wildfly-3</wildfly3>
                                         <wildfly4>wildfly-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquilian.xml -->
+                                        <!-- end required by arquillian.xml -->
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Run cluster tests with standalone-ha.xml profile with Infinispan Server provisioned -->
+        <profile>
+            <id>ts.clustering.cluster.ha-infinispan-server.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${version.surefire.plugin}</version>
+                        <executions combine.children="append">
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Multi-node clustering tests -->
+                            <execution>
+                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Workaround for @ClassRule Infinispan Server -->
+                                    <reuseForks>false</reuseForks>
+                                    <!-- Fix test order to speed up execution by grouping tests that run against same group of containers -->
+                                    <runOrder>alphabetical</runOrder>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>${test-group}/**/web/remote/*TestCase.java</include>
+                                        <include>${test-group}/**/sso/remote/*TestCase.java</include>
+                                    </includes>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <!-- required by arquillian.xml -->
+                                        <wildfly1>wildfly-1</wildfly1>
+                                        <wildfly2>wildfly-2</wildfly2>
+                                        <wildfly3>wildfly-3</wildfly3>
+                                        <wildfly4>wildfly-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
+                                        <!-- end required by arquillian.xml -->
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Run cluster tests with standalone-full-ha.xml profile -->
+        <profile>
+            <id>ts.clustering.cluster.fullha.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${version.surefire.plugin}</version>
+                        <executions combine.children="append">
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Multi-node clustering tests -->
+                            <execution>
+                                <id>ts.surefire.clustering.fullha</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Fix test order to speed up execution by grouping tests that run against same group of containers -->
+                                    <runOrder>alphabetical</runOrder>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>${test-group}/**/ejb/stateful/*TestCase.java</include>
+                                        <include>${test-group}/**/group/*TestCase.java</include>
+                                        <include>${test-group}/**/jms/*TestCase.java</include>
+                                    </includes>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <!-- required by arquillian.xml -->
+                                        <wildfly1>wildfly-1</wildfly1>
+                                        <wildfly2>wildfly-2</wildfly2>
+                                        <wildfly3>wildfly-3</wildfly3>
+                                        <wildfly4>wildfly-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
+                                        <!-- end required by arquillian.xml -->
                                         <node0>${node0}</node0>
                                         <node1>${node1}</node1>
                                         <node2>${node2}</node2>
@@ -303,14 +563,42 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
+                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
-                            <!-- Single node clustering tests. TODO: move from clustering TS. -->
+        <!-- Run clustering single node tests -->
+        <profile>
+            <id>ts.clustering.single.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${version.surefire.plugin}</version>
+                        <executions combine.children="append">
+                            <!-- Disable default-test execution. -->
                             <execution>
-                                <id>ts.surefire.clustering.single-node</id>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Single node clustering tests. -->
+                            <execution>
+                                <id>ts.surefire.clustering.single</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -326,11 +614,31 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
+        <!-- Run byteman tests -->
+        <profile>
+            <id>ts.clustering.byteman.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${version.surefire.plugin}</version>
+                        <executions>
                             <!-- Multi-node clustering tests (based on Byteman) for EJB tests -->
                             <!-- Byteman extension doesn't work with JDK 11, because tools.jar was removed: https://github.com/arquillian/arquillian-extension-byteman/issues/25 -->
                             <execution>
-                                <id>ts.surefire.clustering.all-ejb-byteman</id>
+                                <id>ts.surefire.clustering.byteman</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -361,7 +669,7 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Usual server JVM args plus additional Byteman args (-Djboss.modules.system.pkgs, -Xbootclasspath)-->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} ${surefire.byteman.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
+                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -370,63 +678,10 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Disable single node and byteman tests surefire executions when using -Dtest=... -->
+
+        <!-- Selectively disable executions for clustering tests that do not work on IBM JDK -->
         <profile>
-            <id>ts.clustering.disable-executions-single-test</id>
-            <activation>
-                <property>
-                    <name>test</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.surefire.clustering.single-node</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>ts.surefire.clustering.all-ejb-byteman</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <!-- Enable using -Dts.noClustering. -->
-        <profile>
-            <id>ts.clustering.do-nothing.profile</id>
-            <activation>
-                <property>
-                    <name>ts.noClustering</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-                            <!-- Disable default-test surefire execution which would fail otherwise. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <!-- Selectively disable executions for clustering tests that do not work on IBM JDK -->
-            <id>ts.clustering.ibm-exclusions</id>
+            <id>ts.clustering.ibm-exclusions.profile</id>
             <activation>
                 <property>
                     <name>java.vendor</name>
@@ -440,8 +695,142 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.surefire.clustering.all-ejb-byteman</id>
+                                <id>ts.surefire.clustering.byteman</id>
                                 <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Shared plugin configuration used by ts.clustering.layers.profile and standalone.microprofile.profile -->
+        <profile>
+            <id>ts.clustering.shared.mp.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- A set of tests that can run against a slimmed cloud profile or the standalone-microprofile-ha.xml config -->
+                            <execution>
+                                <id>ts.surefire.clustering.microprofile</id>
+                                <!-- Disabled by default; other profiles turn it on -->
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Fix test order to speed up execution by grouping tests that run against same group of containers -->
+                                    <runOrder>alphabetical</runOrder>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                    </systemPropertyVariables>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>${test-group}/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Skip byteman tests -->
+                                        <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
+                                        <!-- Uses TopologyChangeListener EJB -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/affinity/RankedAffinityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/cdi/CdiFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/singleton/SingletonPartitionTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/CoarseImmutableWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/CoarseWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/ConcurrentCoarseWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/ConcurrentFineWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/FineImmutableWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/FineWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/ReplicationForNegotiationAuthenticatorTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/context/InvalidateConversationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/persistence/*DatabasePersistenceWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/remote/*HotRodPersistenceWebFailoverTestCase.java</exclude>
+                                        <!-- Uses ClusterTopologyRetriever EJB -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/dispatcher/CommandDispatcherTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/group/GroupListenerTestCase.java</exclude>
+                                        <!-- Uses ServiceProviderRetriever EJB -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/provider/ServiceProviderRegistrationTestCase.java</exclude>
+                                        <!-- Uses RegistryRetriever EJB -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/registry/RegistryTestCase.java</exclude>
+                                        <!-- EJB tests -->
+                                        <exclude>**/ejb/**/*TestCase.java</exclude>
+                                        <exclude>**/ejb2/**/*TestCase.java</exclude>
+                                        <!-- Needs JSF -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/jsf/*TestCase.java</exclude>
+                                        <!-- Needs embedded JMS -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/jms/*TestCase.java</exclude>
+                                        <!-- Needs ha-singleton -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/singleton/*TestCase.java</exclude>
+                                        <!-- Tests legacy security; there are *Elytron* variants that we do execute -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/sso/ReplicatedSingleSignOnTestCase.java</exclude>
+                                        <!-- TODO these require infinispan server provisioning -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/remote/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/sso/remote/*TestCase.java</exclude>
+                                        <!-- TODO test setup requires legacy security but it would be better if it could handle elytron as well -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/authentication/*TestCase.java</exclude>
+                                        <!-- Runs against a non-HA standalone.xml, which isn't what this profile provisions.
+                                             TODO provisioning and testing this may be something to do. -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/NonHaWebSessionPersistenceTestCase.java</exclude>
+                                        <!-- Needs jpa replaced with jpa-distributed;
+                                             this is tested in the ts.surefire.clustering.all.jpa2lc execution -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/jpa/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/jpa/custom/*TestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.all.jpa2lc</id>
+                                <!-- Disabled by default; other profiles turn it on -->
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/cluster/jpa/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/cluster/jpa/custom/*TestCase.java</include>
+                                    </includes>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                    </systemPropertyVariables>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -500,7 +889,7 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -533,7 +922,6 @@
                                             <model>standalone</model>
                                             <name>standalone-load-balancer.xml</name>
                                             <layers>
-                                                <layer>cloud-server</layer>
                                                 <layer>undertow-load-balancer</layer>
                                             </layers>
                                         </config>
@@ -574,9 +962,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${full.maven.groupId}</groupId>
                                             <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -591,15 +979,14 @@
                                     <configurations>
                                         <!-- Provision the configuration that the ts.surefire.clustering.all.jpa2lc
                                              surefire execution tests. -->
-                                      <config>
+                                        <config>
                                             <model>standalone</model>
                                             <name>standalone-full-ha.xml</name>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
                                             </excluded-layers>
                                             <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
+                                                <layer>jaxrs-server</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>jpa-distributed</layer>
                                             </layers>
@@ -650,7 +1037,7 @@
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
                                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                                        <module.path>${jboss.dist}/modules</module.path>
+                                        <module.path>${project.build.directory}/wildfly-jpa-dist/modules</module.path>
                                     </system-properties>
                                 </configuration>
                             </execution>
@@ -700,61 +1087,43 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.all-ejb-byteman</id>
+                                <id>ts.surefire.clustering.ha</id>
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.single-node</id>
+                                <id>ts.surefire.clustering.fullha</id>
                                 <phase>none</phase>
                             </execution>
-                            <!-- Run the main ts.surefire.clustering.all execution but exclude incompatible tests -->
                             <execution>
-                                <id>ts.surefire.clustering.all</id>
+                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.byteman</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single</id>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Run the ts.surefire.clustering.microprofile execution but exclude incompatible tests -->
+                            <execution>
+                                <id>ts.surefire.clustering.microprofile</id>
+                                <!-- Turn on the execution that is configured outside this profile -->
+                                <phase>test</phase>
                                 <configuration>
-                                    <excludes combine-children="append">
-                                        <!-- Uses TopologyChangeListener EJB -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/affinity/RankedAffinityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/cdi/CdiFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/singleton/SingletonPartitionTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/CoarseImmutableWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/CoarseWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/ConcurrentCoarseWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/ConcurrentFineWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/FineImmutableWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/FineWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/ReplicationForNegotiationAuthenticatorTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/context/InvalidateConversationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/persistence/*DatabasePersistenceWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/remote/*HotRodPersistenceWebFailoverTestCase.java</exclude>
-                                        <!-- Uses ClusterTopologyRetriever EJB -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/dispatcher/CommandDispatcherTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/group/GroupListenerTestCase.java</exclude>
-                                        <!-- Uses ServiceProviderRetriever EJB -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/provider/ServiceProviderRegistrationTestCase.java</exclude>
-                                        <!-- Uses RegistryRetriever EJB -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/registry/RegistryTestCase.java</exclude>
-                                        <!-- EJB tests -->
-                                        <exclude>**/ejb/**/*TestCase.java</exclude>
-                                        <exclude>**/ejb2/**/*TestCase.java</exclude>
-                                        <!-- Needs JSF -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/jsf/*TestCase.java</exclude>
-                                        <!-- Needs embedded JMS -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/jms/*TestCase.java</exclude>
-                                        <!-- Needs ha-singleton -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/singleton/*TestCase.java</exclude>
-                                        <!-- Tests legacy security; there are *Elytron* variants that we do execute -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/sso/RemoteSingleSignOnTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/sso/ReplicatedSingleSignOnTestCase.java</exclude>
-                                        <!-- TODO test setup requires legacy security but it would be better if it could handle elytron as well -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/authentication/*TestCase.java</exclude>
-                                        <!-- TODO Needs layer exclude support to replace jpa with jpa-distributed;
-                                             then we could provision a set of servers with that and run -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/jpa2lc/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/jpa2lcCustomRegion/*TestCase.java</exclude>
-                                        <!-- Runs against a non-HA standalone.xml, which isn't what this profile provisions.
-                                             TODO provisioning and testing this may be something to do. -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/NonHaWebSessionPersistenceTestCase.java</exclude>
-                                    </excludes>
+                                    <systemPropertyVariables>
+                                        <!-- Override the standard module path that points at the shared module set from dist.
+                                        Have all the servers use wildfly-1 for the modules -->
+                                        <module.path>${project.build.directory}/wildfly-1/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <!-- required by arquillian.xml -->
+                                        <wildfly1>wildfly-1</wildfly1>
+                                        <wildfly2>wildfly-2</wildfly2>
+                                        <wildfly3>wildfly-3</wildfly3>
+                                        <wildfly4>wildfly-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
+                                        <!-- end required by arquillian.xml -->
+                                    </systemPropertyVariables>
                                 </configuration>
                             </execution>
                             <execution>
@@ -764,37 +1133,18 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/jpa2lc/*TestCase.java</include>
-                                        <include>org/jboss/as/test/clustering/cluster/jpa2lcCustomRegion/*TestCase.java</include>
-                                    </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <!-- Override the standard module path that points at the shared module set from dist.
                                         Have all the servers use wildfly-jpa-dist-1 for the modules -->
                                         <module.path>${project.build.directory}/wildfly-jpa-dist-1/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <!-- required by arquilian.xml -->
+                                        <!-- required by arquillian.xml -->
                                         <wildfly1>wildfly-jpa-dist-1</wildfly1>
                                         <wildfly2>wildfly-jpa-dist-2</wildfly2>
                                         <wildfly3>wildfly-jpa-dist-3</wildfly3>
                                         <wildfly4>wildfly-jpa-dist-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-jpa-dist-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquilian.xml -->
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
-                                        <arquillian.xml>arquillian.xml</arquillian.xml>
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
+                                        <!-- end required by arquillian.xml -->
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -803,5 +1153,144 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Test against standalone-microprofile-ha.xml instead of standalone-full-ha.xml -->
+        <profile>
+            <id>standalone.microprofile.profile</id>
+            <activation>
+                <property>
+                    <name>ts.standalone.microprofile</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Update server profile with shared configuration changes.
+                         Override the default ts.config-as.configure-wildfly execution
+                         to run the clustering-mp.cli script -->
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly</id>
+                                <configuration>
+                                    <scripts>
+                                        <script>clustering-mp.cli</script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Copy 4 containers based on the shared configuration and one load balancer profile -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <!-- Turn off the standard execution -->
+                            <execution>
+                                <id>ts.config-as.clustering</id>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>ts.config-as.clustering.mp-dist</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <target name="build-clustering"/>
+                                            <property name="wildfly1" value="wildfly-mp-dist-1"/>
+                                            <property name="wildfly2" value="wildfly-mp-dist-2"/>
+                                            <property name="wildfly3" value="wildfly-mp-dist-3"/>
+                                            <property name="wildfly4" value="wildfly-mp-dist-4"/>
+                                            <property name="wildfly-load-balancer1" value="wildfly-mp-dist-load-balancer-1"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the test executions that are not compatible with this profile. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.ha</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.fullha</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.byteman</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single</id>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Tests against the standalone-microprofile-ha.xml config -->
+                            <execution>
+                                <id>ts.surefire.clustering.microprofile</id>
+                                <!-- Turn on the execution that is configured outside this profile -->
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <!-- required by arquillian.xml -->
+                                        <wildfly1>wildfly-mp-dist-1</wildfly1>
+                                        <wildfly2>wildfly-mp-dist-2</wildfly2>
+                                        <wildfly3>wildfly-mp-dist-3</wildfly3>
+                                        <wildfly4>wildfly-mp-dist-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-mp-dist-load-balancer-1</wildfly-load-balancer1>
+                                        <jboss.server.config.file.name>standalone-microprofile-ha.xml</jboss.server.config.file.name>
+                                        <!-- end required by arquillian.xml -->
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.all.jpa2lc</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <!-- required by arquillian.xml -->
+                                        <wildfly1>wildfly-mp-dist-1</wildfly1>
+                                        <wildfly2>wildfly-mp-dist-2</wildfly2>
+                                        <wildfly3>wildfly-mp-dist-3</wildfly3>
+                                        <wildfly4>wildfly-mp-dist-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-mp-dist-load-balancer-1</wildfly-load-balancer1>
+                                        <jboss.server.config.file.name>standalone-microprofile-ha.xml</jboss.server.config.file.name>
+                                        <!-- end required by arquillian.xml -->
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 </project>

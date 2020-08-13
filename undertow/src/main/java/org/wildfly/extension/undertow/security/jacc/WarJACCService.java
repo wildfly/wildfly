@@ -39,7 +39,7 @@ import javax.security.jacc.WebResourcePermission;
 import javax.security.jacc.WebRoleRefPermission;
 import javax.security.jacc.WebUserDataPermission;
 
-import org.jboss.as.security.service.JaccService;
+import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;

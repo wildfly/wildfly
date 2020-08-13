@@ -107,6 +107,16 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-full.xml");
     }
 
+    @Test
+    public void testStandaloneMicroProfile() throws Exception {
+        parseXml("standalone/configuration/standalone-microprofile.xml");
+    }
+
+    @Test
+    public void testStandaloneMicroProfileHA() throws Exception {
+        parseXml("standalone/configuration/standalone-microprofile-ha.xml");
+    }
+
     //TODO Leave commented out until domain-jts.xml is definitely removed from the configuration
 //    @Test
 //    public void testDomainJTS() throws Exception {
@@ -164,15 +174,16 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
+        final File xmlFile = getXmlFile(xmlName);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        schemaFactory.setErrorHandler(new ErrorHandlerImpl());
+        schemaFactory.setErrorHandler(new ErrorHandlerImpl(xmlFile.toPath()));
         schemaFactory.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
         Schema schema = schemaFactory.newSchema(SCHEMAS);
         Validator validator = schema.newValidator();
-        validator.setErrorHandler(new ErrorHandlerImpl());
+        validator.setErrorHandler(new ErrorHandlerImpl(xmlFile.toPath()));
         validator.setFeature("http://apache.org/xml/features/validation/schema", true);
         validator.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
-        validator.validate(new StreamSource(getXmlFile(xmlName)));
+        validator.validate(new StreamSource(xmlFile));
     }
 
     private File getXmlFile(String xmlName) throws IOException {
@@ -187,6 +198,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
             List<String> lines = Files.readAllLines(target.toPath(), StandardCharsets.UTF_8);
             for (String line : lines) {
                 writer.write(fixExpressions(line));
+                writer.newLine();
             }
         }
         return tmp;
@@ -200,6 +212,8 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         result = result.replace("${jboss.domain.master.protocol:remote+http}", "remote+http");
         result = result.replace("${jboss.domain.master.port:9999}", "9999");
         result = result.replace("${jboss.domain.master.port:9990}", "9990");
+        result = result.replace("${jboss.mail.server.host:localhost}", "localhost");
+        result = result.replace("${jboss.mail.server.port:25}", "25");
         result = result.replace("${jboss.messaging.group.port:9876}", "9876");
         result = result.replace("${jboss.socket.binding.port-offset:0}", "0");
         result = result.replace("${jboss.http.port:8080}", "8080");
@@ -216,6 +230,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         result = result.replace("${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
         result = result.replace("${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}", "UP");
         result = result.replace("${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}", "UP");
+
         return result;
     }
 }

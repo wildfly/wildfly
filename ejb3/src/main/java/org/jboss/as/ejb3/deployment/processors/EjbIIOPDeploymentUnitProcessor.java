@@ -91,17 +91,14 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             return;
         }
 
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit)) {
             return;
         }
-
 
         // a bean-name -> IIOPMetaData map, reflecting the assembly descriptor IIOP configuration.
         Map<String, IIOPMetaData> iiopMetaDataMap = new HashMap<String, IIOPMetaData>();
@@ -116,6 +113,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         }
 
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (moduleDescription != null) {
             for (final ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {

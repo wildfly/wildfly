@@ -28,13 +28,13 @@ import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -43,36 +43,32 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class ApplicationSecurityDomainService implements Service<ApplicationSecurityDomainService.ApplicationSecurityDomain> {
+public class ApplicationSecurityDomainService implements Service {
 
-    private final InjectedValue<SecurityDomain> securityDomainInjector = new InjectedValue<>();
+    private final Supplier<SecurityDomain> securityDomainSupplier;
+    private final Consumer<ApplicationSecurityDomainService.ApplicationSecurityDomain> applicationSecurityDomainConsumer;
+    private final Consumer<SecurityDomain> securityDomainConsumer;
     private final Set<RegistrationImpl> registrations = new HashSet<>();
     private final boolean enableJacc;
 
-    private ApplicationSecurityDomain applicationSecurityDomain;
-
-    public ApplicationSecurityDomainService(boolean enableJacc) {
+    public ApplicationSecurityDomainService(boolean enableJacc,
+            Supplier<SecurityDomain> securityDomainSupplier, Consumer<ApplicationSecurityDomainService.ApplicationSecurityDomain> applicationSecurityDomainConsumer,
+            Consumer<SecurityDomain> securityDomainConsumer) {
         this.enableJacc = enableJacc;
+        this.securityDomainSupplier = securityDomainSupplier;
+        this.applicationSecurityDomainConsumer = applicationSecurityDomainConsumer;
+        this.securityDomainConsumer = securityDomainConsumer;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        applicationSecurityDomain = new ApplicationSecurityDomain(securityDomainInjector.getValue(), enableJacc);
+        SecurityDomain securityDomain = securityDomainSupplier.get();
+        applicationSecurityDomainConsumer.accept(new ApplicationSecurityDomain(securityDomain, enableJacc));
+        securityDomainConsumer.accept(securityDomain);
     }
 
     @Override
-    public void stop(StopContext context) {
-        applicationSecurityDomain = null;
-    }
-
-    @Override
-    public ApplicationSecurityDomain getValue() throws IllegalStateException, IllegalArgumentException {
-        return applicationSecurityDomain;
-    }
-
-    Injector<SecurityDomain> getSecurityDomainInjector() {
-        return securityDomainInjector;
-    }
+    public void stop(StopContext context) {}
 
     public String[] getDeployments() {
         synchronized(registrations) {

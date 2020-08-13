@@ -45,6 +45,6 @@ public class SubsystemBaseParsingTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-agroal_1_0.xsd";
+        return "schema/wildfly-agroal_2_0.xsd";
     }
 }

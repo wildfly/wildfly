@@ -104,6 +104,7 @@ public class SessionOperationServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
+        req.getServletContext().log(req.getRequestURL().append('?').append(req.getQueryString()).toString());
         String operation = getRequiredParameter(req, OPERATION);
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID, session.getId());
@@ -142,11 +143,14 @@ public class SessionOperationServlet extends HttpServlet {
             throw new ServletException("Unrecognized operation: " + operation);
         }
 
+        String requestedSessionId = req.getRequestedSessionId();
+        String targetSessionId = (requestedSessionId != null) ? requestedSessionId : session.getId();
+
         setHeader(resp, CREATED_SESSIONS, RecordingWebListener.createdSessions);
         setHeader(resp, DESTROYED_SESSIONS, RecordingWebListener.destroyedSessions);
-        setHeader(resp, ADDED_ATTRIBUTES, RecordingWebListener.addedAttributes.get(session.getId()));
-        setHeader(resp, REPLACED_ATTRIBUTES, RecordingWebListener.replacedAttributes.get(session.getId()));
-        setHeader(resp, REMOVED_ATTRIBUTES, RecordingWebListener.removedAttributes.get(session.getId()));
+        setHeader(resp, ADDED_ATTRIBUTES, RecordingWebListener.addedAttributes.get(targetSessionId));
+        setHeader(resp, REPLACED_ATTRIBUTES, RecordingWebListener.replacedAttributes.get(targetSessionId));
+        setHeader(resp, REMOVED_ATTRIBUTES, RecordingWebListener.removedAttributes.get(targetSessionId));
         setHeader(resp, BOUND_ATTRIBUTES, SessionAttributeValue.boundAttributes);
         setHeader(resp, UNBOUND_ATTRIBUTES, SessionAttributeValue.unboundAttributes);
     }

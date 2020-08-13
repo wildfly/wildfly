@@ -107,7 +107,7 @@ public class InflowJarTestCase extends AbstractModuleDeploymentTestCase {
                 "ra.xml")
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: javax.inject.api,org.jboss.as.connector,org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),
+                                "Dependencies: javax.inject.api,org.jboss.as.connector,org.jboss.as.controller-client,org.jboss.dmr\n"),
                         "MANIFEST.MF");
 
         return raa;

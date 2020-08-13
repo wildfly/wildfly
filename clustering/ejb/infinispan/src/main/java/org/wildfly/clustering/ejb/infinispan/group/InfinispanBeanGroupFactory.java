@@ -52,7 +52,6 @@ import org.wildfly.clustering.ejb.infinispan.BeanKey;
 import org.wildfly.clustering.ejb.infinispan.PassivationConfiguration;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 
 /**
@@ -64,25 +63,23 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
  * @param <T> the bean type
  */
 @Listener
-public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> {
+public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, T, C> {
 
-    private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache;
-    private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> findCache;
+    private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> cache;
+    private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> findCache;
     private final Cache<BeanKey<I>, BeanEntry<I>> beanCache;
     private final Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter;
-    private final MarshalledValueFactory<MarshallingContext> factory;
-    private final MarshallingContext context;
+    private final MarshalledValueFactory<C> factory;
     private final AtomicInteger passiveCount = new AtomicInteger();
     private final PassivationListener<T> passivationListener;
-    private final MutatorFactory<BeanGroupKey<I>, BeanGroupEntry<I, T>> mutatorFactory;
+    private final MutatorFactory<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> mutatorFactory;
 
-    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context, CacheProperties properties, PassivationConfiguration<T> passivation) {
+    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter, MarshalledValueFactory<C> factory, CacheProperties properties, PassivationConfiguration<T> passivation) {
         this.cache = cache;
         this.findCache = properties.isLockOnRead() ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
         this.beanCache = beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_LISTENER_NOTIFICATION);
         this.beanFilter = beanFilter;
         this.factory = factory;
-        this.context = context;
         this.passivationListener = !properties.isPersistent() ? passivation.getPassivationListener() : null;
         this.cache.addListener(this, new BeanGroupFilter(), null);
         this.mutatorFactory = new InfinispanMutatorFactory<>(cache, properties);
@@ -104,19 +101,19 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
     }
 
     @Override
-    public BeanGroupEntry<I, T> createValue(I id, Void context) {
-        BeanGroupEntry<I, T> entry = new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(new ConcurrentHashMap<>()));
+    public BeanGroupEntry<I, T, C> createValue(I id, Void context) {
+        BeanGroupEntry<I, T, C> entry = new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(new ConcurrentHashMap<>()));
         this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.createKey(id), entry);
         return entry;
     }
 
     @Override
-    public BeanGroupEntry<I, T> findValue(I id) {
+    public BeanGroupEntry<I, T, C> findValue(I id) {
         return this.findCache.get(this.createKey(id));
     }
 
     @Override
-    public BeanGroupEntry<I, T> tryValue(I id) {
+    public BeanGroupEntry<I, T, C> tryValue(I id) {
         return this.findCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).get(this.createKey(id));
     }
 
@@ -127,12 +124,12 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
     }
 
     @Override
-    public BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry) {
+    public BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T, C> entry) {
         return this.createGroup(id, entry, this.mutatorFactory.createMutator(this.createKey(id), entry));
     }
 
-    private BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry, Mutator mutator) {
-        return new InfinispanBeanGroup<>(id, entry, this.context, mutator, this);
+    private BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T, C> entry, Mutator mutator) {
+        return new InfinispanBeanGroup<>(id, entry, this.factory.getMarshallingContext(), mutator, this);
     }
 
     @Override
@@ -141,10 +138,10 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
     }
 
     @CacheEntryPassivated
-    public void passivated(CacheEntryPassivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T>> event) {
+    public void passivated(CacheEntryPassivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> event) {
         if (event.isPre()) {
-            BeanGroupEntry<I, T> entry = event.getValue();
-            try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, this.context, Mutator.PASSIVE, this)) {
+            BeanGroupEntry<I, T, C> entry = event.getValue();
+            try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, this.factory.getMarshallingContext(), Mutator.PASSIVE, this)) {
                 Set<I> beans = group.getBeans();
                 List<I> notified = new ArrayList<>(beans.size());
                 try {
@@ -177,10 +174,10 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
     }
 
     @CacheEntryActivated
-    public void activated(CacheEntryActivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T>> event) {
+    public void activated(CacheEntryActivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> event) {
         if (!event.isPre()) {
-            BeanGroupEntry<I, T> entry = event.getValue();
-            try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, this.context, Mutator.PASSIVE, this)) {
+            BeanGroupEntry<I, T, C> entry = event.getValue();
+            try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, this.factory.getMarshallingContext(), Mutator.PASSIVE, this)) {
                 for (I beanId : group.getBeans()) {
                     BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
                     BeanEntry<I> beanEntry = this.beanCache.get(beanKey);

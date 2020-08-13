@@ -22,8 +22,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +29,9 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.Provider;
-import java.util.Arrays;
 import java.util.Properties;
+
+import javax.ejb.NoSuchEJBException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -44,9 +43,11 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
@@ -131,6 +132,11 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private static final String OVERRIDING_USERNAME = "ejbRemoteTestsOverriding";
     private static final String OVERRIDING_PASSWORD = "ejbRemoteTestsPasswordOverriding";
 
+    private static final String AGGREGATE_ROLE_DECODER = "aggregateRoleDecoder";
+    private static final String DECODER_1 = "decoder1";
+    private static final String DECODER_2 = "decoder2";
+    private static final String IP_PERMISSION_MAPPER = "ipPermissionMapper";
+
     private static final String KEY_STORE_KEYPASS = SecurityTestConstants.KEYSTORE_PASSWORD;
     private static final File WORKDIR = new File(new File("").getAbsoluteFile().getAbsolutePath() + File.separatorChar + "target"
             + File.separatorChar + RESOURCE_PREFIX);
@@ -183,12 +189,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         final JavaArchive ejbClientJar = ShrinkWrap.create(JavaArchive.class, OUTBOUND_CONNECTION_MODULE_NAME + ".jar");
         ejbClientJar.addClass(WhoAmI.class)
                 .addClass(IntermediateWhoAmI.class)
-                .addAsManifestResource(IntermediateWhoAmI.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "basedir"
-                         , Arrays.asList("target", OUTBOUND_CONNECTION_SERVER, "standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write", "basedir"
-                                , Arrays.asList("target", OUTBOUND_CONNECTION_SERVER, "standalone", "data", "ejb-xa-recovery", "-"))
-                ), "permissions.xml");
+                .addAsManifestResource(IntermediateWhoAmI.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return ejbClientJar;
     }
 
@@ -236,6 +237,10 @@ public class ElytronRemoteOutboundConnectionTestCase {
                     "default-authentication-context"));
             clientReloadRequired = true;
         }
+
+        applyUpdate(clientSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
+        executeBlockingReloadClientServer(clientSideMCC);
+
         removeIfExists(clientSideMCC, getConnectionAddress(REMOTE_OUTBOUND_CONNECTION), !clientReloadRequired);
         removeIfExists(clientSideMCC, getAuthenticationContextAddress(DEFAULT_AUTH_CONTEXT), !clientReloadRequired);
         removeIfExists(clientSideMCC, getServerSSLContextAddress(DEFAULT_SERVER_SSL_CONTEXT), !clientReloadRequired);
@@ -279,6 +284,9 @@ public class ElytronRemoteOutboundConnectionTestCase {
 
         applyUpdate(serverSideMCC, compositeBuilder.build().getOperation());
 
+        applyUpdate(serverSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
+        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
+
         removeIfExists(serverSideMCC, getConnectorAddress(CONNECTOR));
         removeIfExists(serverSideMCC, getHttpConnectorAddress(CONNECTOR));
         removeIfExists(serverSideMCC, getServerSSLContextAddress(SERVER_SSL_CONTEXT), false);
@@ -291,7 +299,10 @@ public class ElytronRemoteOutboundConnectionTestCase {
         removeIfExists(serverSideMCC, getSaslAuthenticationFactoryAddress(AUTHENTICATION_FACTORY));
         removeIfExists(serverSideMCC, getElytronSecurityDomainAddress(SECURITY_DOMAIN));
         removeIfExists(serverSideMCC, getPropertiesRealmAddress(PROPERTIES_REALM));
-
+        removeIfExists(serverSideMCC, getElytronAggregateRoleDecoderAddress(AGGREGATE_ROLE_DECODER));
+        removeIfExists(serverSideMCC, getElytronSourceAddressRoleDecoderAddress(DECODER_1));
+        removeIfExists(serverSideMCC, getElytronSourceAddressRoleDecoderAddress(DECODER_2));
+        removeIfExists(serverSideMCC, getElytronPermissionMapperAddress(IP_PERMISSION_MAPPER));
 
         //noinspection deprecation
         ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
@@ -315,6 +326,14 @@ public class ElytronRemoteOutboundConnectionTestCase {
         }
 
         cleanFile(WORKDIR);
+    }
+
+    private static String getIPAddress() throws IllegalStateException {
+        try {
+            return InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
@@ -839,6 +858,162 @@ public class ElytronRemoteOutboundConnectionTestCase {
         Assert.assertEquals(OVERRIDING_USERNAME, callIntermediateWhoAmI());
     }
 
+    /**
+     * Test a remote outbound connection with a source address role decoder configured on the
+     * server-side server where the IP address configured on the role decoder matches the
+     * IP address of the client-side server.
+     */
+    @Test
+    public void testElytronWithBareRemotingWithSourceAddressRoleDecoderMatch() {
+        //==================================
+        // Server-side server setup
+        //==================================
+        configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(serverSideMCC);
+        //==================================
+        // Client-side server setup
+        //==================================
+        applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
+                BARE_REMOTING_PORT));
+        applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, BARE_REMOTING_PROTOCOL, PROPERTIES_REALM,
+                DEFAULT_USERNAME, DEFAULT_PASSWORD));
+        applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
+        applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
+        applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
+        executeBlockingReloadClientServer(clientSideMCC);
+
+        deployer.deploy(EJB_SERVER_DEPLOYMENT);
+        deployer.deploy(EJB_CLIENT_DEPLOYMENT);
+        Assert.assertEquals(DEFAULT_USERNAME, callIntermediateWhoAmI(true));
+    }
+
+    /**
+     * Test a remote outbound connection with a source address role decoder configured on the
+     * server-side server where the IP address configured on the role decoder matches the
+     * IP address of the client-side server but the permission mapper does not match.
+     */
+    @Test
+    public void testElytronWithBareRemotingWithSourceAddressRoleDecoderMatchAndPermissionMapperMismatch() {
+        //==================================
+        // Server-side server setup
+        //==================================
+        configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(serverSideMCC);
+        //==================================
+        // Client-side server setup
+        //==================================
+        applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
+                BARE_REMOTING_PORT));
+        applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, BARE_REMOTING_PROTOCOL, PROPERTIES_REALM,
+                "alice", "password1"));
+        applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
+        applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
+        applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
+        executeBlockingReloadClientServer(clientSideMCC);
+
+        deployer.deploy(EJB_SERVER_DEPLOYMENT);
+        deployer.deploy(EJB_CLIENT_DEPLOYMENT);
+        try {
+            callIntermediateWhoAmI(true);
+            Assert.fail("Expected NoSuchEJBException not thrown");
+        } catch (NoSuchEJBException expected) {
+        }
+    }
+
+    /**
+     * Test a remote outbound connection with a source address role decoder configured on the
+     * server-side server where the IP address configured on the role decoder does not match the
+     * IP address of the client-side server.
+     */
+    @Test
+    public void testElytronWithBareRemotingWithSourceAddressRoleDecoderMismatch() {
+        //==================================
+        // Server-side server setup
+        //==================================
+        configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(serverSideMCC, "999.999.999.999");
+        //==================================
+        // Client-side server setup
+        //==================================
+        applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
+                BARE_REMOTING_PORT));
+        applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, BARE_REMOTING_PROTOCOL, PROPERTIES_REALM,
+                DEFAULT_USERNAME, DEFAULT_PASSWORD));
+        applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
+        applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
+        applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
+        executeBlockingReloadClientServer(clientSideMCC);
+
+        deployer.deploy(EJB_SERVER_DEPLOYMENT);
+        deployer.deploy(EJB_CLIENT_DEPLOYMENT);
+        try {
+            callIntermediateWhoAmI(true);
+            Assert.fail("Expected NoSuchEJBException not thrown");
+        } catch (NoSuchEJBException expected) {
+        }
+    }
+
+    /**
+     * Test a remote outbound connection with a source address role decoder configured on the
+     * server-side server where the IP address configured on the role decoder does not match the
+     * IP address of the client-side server but the user already has "admin" permission based
+     * on the security realm.
+     */
+    @Test
+    public void testElytronWithBareRemotingWithSecurityRealmRole() {
+        //==================================
+        // Server-side server setup
+        //==================================
+        configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(serverSideMCC, "999.999.999.999");
+        //==================================
+        // Client-side server setup
+        //==================================
+        String username = "bob"; // has "admin" role based on the security realm
+        String password = "password2";
+        applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
+                BARE_REMOTING_PORT));
+        applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, BARE_REMOTING_PROTOCOL, PROPERTIES_REALM,
+                username, password));
+        applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
+        applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
+        applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
+        executeBlockingReloadClientServer(clientSideMCC);
+
+        deployer.deploy(EJB_SERVER_DEPLOYMENT);
+        deployer.deploy(EJB_CLIENT_DEPLOYMENT);
+        Assert.assertEquals(username, callIntermediateWhoAmI(true));
+    }
+
+
+    /**
+     * Test a remote outbound connection with a source address role decoder configured on the
+     * server-side server where the IP address configured on the role decoder does match the
+     * IP address of the client-side server but the client credentials are invalid.
+     */
+    @Test
+    public void testElytronWithBareRemotingWithSourceAddressRoleDecoderInvalidCredentials() {
+        //==================================
+        // Server-side server setup
+        //==================================
+        configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(serverSideMCC);
+        //==================================
+        // Client-side server setup
+        //==================================
+        applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
+                BARE_REMOTING_PORT));
+        applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, BARE_REMOTING_PROTOCOL, PROPERTIES_REALM,
+                DEFAULT_USERNAME, "badpassword"));
+        applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
+        applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
+        applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
+        executeBlockingReloadClientServer(clientSideMCC);
+
+        deployer.deploy(EJB_SERVER_DEPLOYMENT);
+        deployer.deploy(EJB_CLIENT_DEPLOYMENT);
+        try {
+            callIntermediateWhoAmI(true);
+            Assert.fail("Expected NoSuchEJBException not thrown");
+        } catch (NoSuchEJBException expected) {
+        }
+    }
+
     private static PathAddress getSocketBindingAddress(String socketBindingName) {
         return PathAddress.pathAddress()
                 .append(SOCKET_BINDING_GROUP, "standard-sockets")
@@ -880,6 +1055,68 @@ public class ElytronRemoteOutboundConnectionTestCase {
         op.get("realms").setEmptyList().add(realm);
         op.get("default-realm").set(realmName);
         op.get("permission-mapper").set("default-permission-mapper");
+        return op;
+    }
+
+    private static PathAddress getElytronSourceAddressRoleDecoderAddress(String decoderName) {
+        return PathAddress.pathAddress()
+                .append(SUBSYSTEM, "elytron")
+                .append("source-address-role-decoder", decoderName);
+    }
+
+    private static ModelNode getAddElytronSourceAddressRoleDecoder(String decoderName, String ipAddress, String role) {
+        ModelNode op = Util.createAddOperation(getElytronSourceAddressRoleDecoderAddress(decoderName));
+        op.get("source-address").set(ipAddress);
+        op.get("roles").add("admin");
+        return op;
+    }
+
+    private static PathAddress getElytronAggregateRoleDecoderAddress(String aggregateDecoderName) {
+        return PathAddress.pathAddress()
+                .append(SUBSYSTEM, "elytron")
+                .append("aggregate-role-decoder", aggregateDecoderName);
+    }
+
+    private static ModelNode getAddElytronAggregateRoleDecoder(String aggregateDecoderName, String decoderName1, String decoderName2) {
+        ModelNode op = Util.createAddOperation(getElytronAggregateRoleDecoderAddress(aggregateDecoderName));
+        op.get("role-decoders").add(decoderName1);
+        op.get("role-decoders").add(decoderName2);
+        return op;
+    }
+
+    private static ModelNode getAddElytronSecurityDomainWithSourceAddressRoleDecoderOp(String domainName, String realmName, String roleDecoderName, String permissionMapperName) {
+        ModelNode op = Util.createAddOperation(getElytronSecurityDomainAddress(domainName));
+        op.get("permission-mapper").set(permissionMapperName);
+        op.get("role-decoder").set(roleDecoderName);
+        ModelNode realm = new ModelNode();
+        realm.get(REALM).set(realmName);
+        realm.get("role-decoder").set("groups-to-roles");
+        op.get("realms").setEmptyList().add(realm);
+        op.get("default-realm").set(realmName);
+        return op;
+    }
+
+    private static PathAddress getElytronPermissionMapperAddress(String permissionMapperName) {
+        return PathAddress.pathAddress()
+                .append(SUBSYSTEM, "elytron")
+                .append("simple-permission-mapper", permissionMapperName);
+    }
+
+    private static ModelNode getAddElytronPermissionMapperOp(String permissionMapperName) {
+        ModelNode op = Util.createAddOperation(getElytronPermissionMapperAddress(permissionMapperName));
+        ModelNode permissionMapping1 = new ModelNode();
+        permissionMapping1.get("roles").add("admin");
+        ModelNode permissionSet1 = new ModelNode();
+        permissionSet1.get("permission-set").set("login-permission");
+        permissionMapping1.get("permission-sets").add(permissionSet1);
+        ModelNode permissionSet2 = new ModelNode();
+        permissionSet2.get("permission-set").set("default-permissions");
+        permissionMapping1.get("permission-sets").add(permissionSet2);
+        op.get("permission-mappings").add(permissionMapping1);
+        ModelNode permissionMapping2 = new ModelNode();
+        permissionMapping2.get("principals").add("alice");
+        op.get("permission-mappings").add(permissionMapping2);
+        op.get("mapping-mode").set("and");
         return op;
     }
 
@@ -929,11 +1166,25 @@ public class ElytronRemoteOutboundConnectionTestCase {
         if (serverSSLContextName != null && !serverSSLContextName.isEmpty()) {
             addConnectorOp.get(SSL_CONTEXT).set(serverSSLContextName);
         }
-        return addConnectorOp;
+
+        return Operations.CompositeOperationBuilder.create()
+            .addStep(addConnectorOp)
+            .addStep(getEjbConnectorOp("list-add", connectorName))
+            .build().getOperation();
     }
 
     private static ModelNode getAddConnectorOp(String connectorName, String socketBindingName, String factoryName) {
         return getAddConnectorOp(connectorName, socketBindingName, factoryName, "");
+    }
+
+    private static ModelNode getEjbConnectorOp(String operationName, String connectorName) {
+        ModelNode operation = Util.createOperation(operationName, PathAddress.pathAddress(
+                PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3"),
+                PathElement.pathElement(ModelDescriptionConstants.SERVICE, ModelDescriptionConstants.REMOTE)
+                ));
+        operation.get(ModelDescriptionConstants.NAME).set("connectors");
+        operation.get(ModelDescriptionConstants.VALUE).set(connectorName);
+        return operation;
     }
 
     private static PathAddress getOutboundSocketBindingAddress(String socketBindingName) {
@@ -952,7 +1203,11 @@ public class ElytronRemoteOutboundConnectionTestCase {
         ModelNode addHttpConnectorOp = Util.createAddOperation(getHttpConnectorAddress(connectorName));
         addHttpConnectorOp.get("connector-ref").set(connectorRef);
         addHttpConnectorOp.get(SASL_AUTHENTICATION_FACTORY).set(factoryName);
-        return addHttpConnectorOp;
+
+        return Operations.CompositeOperationBuilder.create()
+                .addStep(addHttpConnectorOp)
+                .addStep(getEjbConnectorOp("list-add", connectorName))
+                .build().getOperation();
     }
 
     private static ModelNode getAddOutboundSocketBindingOp(String socketBindingName, String host, int port) {
@@ -1111,6 +1366,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
         applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, BARE_REMOTING_PORT));
         applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY));
+        executeBlockingReloadServerSide(serverSideMCC);
     }
 
     private static void configureServerSideForInboundSSLRemoting(ModelControllerClient serverSideMCC) {
@@ -1125,6 +1381,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddTrustManagerOp(SERVER_TRUST_MANAGER, SERVER_TRUST_STORE));
         applyUpdate(serverSideMCC, getAddServerSSLContextOp(SERVER_SSL_CONTEXT, SERVER_KEY_MANAGER, SERVER_TRUST_MANAGER));
         applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, SERVER_SSL_CONTEXT));
+        executeBlockingReloadServerSide(serverSideMCC);
     }
 
     private static void configureServerSideForInboundHttpRemoting(ModelControllerClient serverSideMCC) {
@@ -1154,6 +1411,24 @@ public class ElytronRemoteOutboundConnectionTestCase {
                 .build().getOperation()
         );
         applyUpdate(serverSideMCC, getAddHttpConnectorOp(CONNECTOR, "https", AUTHENTICATION_FACTORY));
+        executeBlockingReloadServerSide(serverSideMCC);
+    }
+
+    private static void configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(ModelControllerClient serverSideMCC) {
+        configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(serverSideMCC, getIPAddress());
+    }
+
+    private static void configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(ModelControllerClient serverSideMCC, String ipAddress) {
+        applyUpdate(serverSideMCC, getAddPropertiesRealmOp(PROPERTIES_REALM, ROLES_PATH, USERS_PATH, true));
+        applyUpdate(serverSideMCC, getAddElytronSourceAddressRoleDecoder(DECODER_1, ipAddress, "admin"));
+        applyUpdate(serverSideMCC, getAddElytronSourceAddressRoleDecoder(DECODER_2, "99.99.99.99", "employee"));
+        applyUpdate(serverSideMCC, getAddElytronAggregateRoleDecoder(AGGREGATE_ROLE_DECODER, DECODER_1, DECODER_2));
+        applyUpdate(serverSideMCC, getAddElytronPermissionMapperOp(IP_PERMISSION_MAPPER));
+        applyUpdate(serverSideMCC, getAddElytronSecurityDomainWithSourceAddressRoleDecoderOp(SECURITY_DOMAIN, PROPERTIES_REALM, AGGREGATE_ROLE_DECODER, IP_PERMISSION_MAPPER));
+        applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
+        applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
+        applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, BARE_REMOTING_PORT));
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY));
         executeBlockingReloadServerSide(serverSideMCC);
     }
 
@@ -1252,6 +1527,10 @@ public class ElytronRemoteOutboundConnectionTestCase {
     }
 
     private String callIntermediateWhoAmI() {
+        return callIntermediateWhoAmI(false);
+    }
+
+    private String callIntermediateWhoAmI(boolean useRestrictedMethod) {
         AuthenticationConfiguration common = AuthenticationConfiguration.empty()
                 .useProviders(() -> new Provider[] {new WildFlyElytronProvider()})
                 .setSaslMechanismSelector(SaslMechanismSelector.ALL);
@@ -1277,7 +1556,11 @@ public class ElytronRemoteOutboundConnectionTestCase {
             InitialContext ctx = new InitialContext(props);
             String lookupName = "ejb:/outbound-module/IntermediateWhoAmI!org.jboss.as.test.manualmode.ejb.client.outbound.connection.security.WhoAmI";
             WhoAmI intermediate = (WhoAmI)ctx.lookup(lookupName);
-            result = intermediate.whoAmI();
+            if (useRestrictedMethod) {
+                result = intermediate.whoAmIRestricted();
+            } else {
+                result = intermediate.whoAmI();
+            }
             ctx.close();
         } catch (NamingException e) {
             throw new RuntimeException(e);

@@ -1,0 +1,519 @@
+Aaron Ogburn <aogburn@redhat.com>
+Adam Kovari <akovari@redhat.com>
+Adam Krajcik <akrajcik@redhat.com>
+Akram <akram@free.fr>
+Aleksandar Kostadinov <akostadi@redhat.com>
+Ales Justin <ales.justin@gmail.com>
+Alessio Soldano <alessio.soldano@jboss.com>
+Alessio Soldano <asoldano@redhat.com>
+Alexander Yerenkow <yerenkow@gmail.com>
+Alexey <alex@jboss.org>
+Alexey Loubyansky <alex@jboss.org>
+Alexey Loubyansky <loubyansky@gmail.com>
+Alexey Loubyansky <olubyans@redhat.com>
+Alexey Loubyansky <olubyans@tstudio.(none)>
+Alexey Makhmutov <makhmutov@netcracker.com>
+Alexis Hassler <alexis@sewatech.org>
+Amos Feng <zfeng@redhat.com>
+Andrej Golovnin <andrej.golovnin@googlemail.com>
+Andrew Dinn <adinn@redhat.com>
+Andrew Lee Rubinger <alr@alrubinger.com>
+Andrew Lee Rubinger <alr@jboss.org>
+André Dietisheim <adietish@redhat.com>
+Andy Taylor <ataylor@redhat.com>
+Anil Saldhana <Anil.Saldhana@jboss.com>
+Anil Saldhana <anil.saldhana@jboss.com>
+Antti Laisi <alaisi@iki.fi>
+Ashley Abdel-Sayed <aabdelsa@redhat.com>
+Aslak Knutsen <aslak@redhat.com>
+Aurel Pintea <apintea@redhat.com>
+Bartosz Baranowski <bbaranow@redhat.com>
+Bartosz Spyrko-Smietanko <bspyrkos@redhat.com>
+Benjamin Thompson <bjt@rabidquill.com>
+Bernard Tison <bernard.tison@gmail.com>
+Bernd Eckenfels <bernd-2012@eckenfels.net>
+Bernd Eckenfels <bernd@eckenfels.net>
+Bill Burke <bburke@redhat.com>
+Bob McWhirter <bob@mcwhirter.org>
+Brad Maxwell <bmaxwell@redhat.com>
+Brandon Gaisford <bgaisford@punagroup.com>
+Brent Douglas <brent.n.douglas@gmail.com>
+Brian Stansberry <brian.stansberry@jboss.com>
+Brian Stansberry <brian.stansberry@redhat.com>
+Brian Stansberry <bstansberry@jboss.com>
+Bruno Litman <blitman@egov.com>
+Bryan Brouckaert <info@egelke.net>
+Carlo de Wolf <carlo@nerdnet.nl>
+Carlo de Wolf <cdewolf@redhat.com>
+Chao Wang <chaowan@redhat.com>
+ChaoWang <chaowan@redhat.com>
+Cheng Fang <2079251+chengfang@users.noreply.github.com>
+Cheng Fang <cfang@redhat.com>
+Chris Laprun <metacosm@gmail.com>
+Chris Lowe <chris.lowe.uk@gmail.com>
+Claudio Miranda <claudio@claudius.com.br>
+Clebert Suconic <clebertsuconic@apache.org>
+Dan Allen <dan.j.allen@gmail.com>
+Danesh Mondegarian <dmondega@redhat.com>
+Daniel Bevenius <daniel.bevenius@redpill-linpro.com>
+Daniel Cihak <dcihak@redhat.com>
+Daniel Sachse <sachsedaniel@gmail.com>
+Daniel Straub <ds@ctrlaltdel.de>
+Daniel Šimko <dsimko@redhat.com>
+Darran Lofthouse <darran.lofthouse@jboss.com>
+Dave Stahl <dstahl@redhat.com>
+David Bosschaert <david.bosschaert@gmail.com>
+David Lloyd <david@wraith.home.flurg.com>
+David M. Lloyd <david.lloyd@redhat.com>
+David M. Lloyd <dmlloyd@flurg.com>
+David Salter <david.salter@outlook.com>
+David Santos <dawuid@gmail.com>
+Dennis Reed <dereed@redhat.com>
+Derek Horton <dehort@redhat.com>
+Dimitris Andreadis <dandread@redhat.com>
+Dimitris Andreadis <dimitris@jboss.org>
+Dimitris Andreadis <dimitris@redhat.com>
+Dmitrii Tikhomirov <dtikhomi@redhat.com>
+Dmitriy Sukharev <sukharevd@gmail.com>
+Dominic Cleal <dcleal@redhat.com>
+Dominik Pospisil <dpospisi@redhat.com>
+Dustin Kut <dcheung@redhat.com>
+Dustin Kut Moy Cheung <dcheung@redhat.com>
+Eduardo Martins <emartins.redhat@gmail.com>
+Eduardo Martins <emartins@redhat.com>
+Eduardo Sant'Ana da Silva <eduardo.santanadasilva@gmail.com>
+Eduardo Sant´Ana da Silva <eduardo.santanadasilva@gmail.com>
+Edward Wertz <ewertz@redhat.com>
+Emanuel Muckenhuber <emuckenh@redhat.com>
+Emmanuel Hugonnet <ehsavoie@users.noreply.github.com>
+Emmanuel Hugonnet <ehugonne@redhat.com>
+Emmanuel Hugonnet <emmanuel.hugonnet+gitkraken@gmail.com>
+Emmanuel Hugonnet <emmanuel.hugonnet@gmail.com>
+Emmanuel Hugonnet <emmanuel.hugonnet@silverpeas.com>
+Enrique Gonzalez Martinez <egonzale@egonzale.remote.csb>
+Enrique Gonzalez Martinez <egonzale@redhat.com>
+Erhard Siegl <esiegl@devjava.localdomain>
+Farah Juma <fjuma@redhat.com>
+Fernando Nasser <fnasser@redhat.com>
+Fernando Ribeiro <fernando.ribeiro@upic.com.br>
+Filip Bogyai <fbogyai@redhat.com>
+Filipe <filipepferraz@gmail.com>
+Filippe Spolti <fspolti@redhat.com>
+Firstname Lastname <ike.braun@googlemail.com>
+Flavia <frainone@redhat.com>
+Flavia Rainone <flavia.rainone@jboss.com>
+Flavia Rainone <frainone@redhat.com>
+Flemming Harms <fharms@Doctor-Who.(none)>
+Flemming Harms <flemming.harms@gmail.com>
+Frank Langelage <Frank Langelage>
+Frank Langelage <Frank.Langelage@osnanet.de>
+Frank Langelage <frank.langelage@osnanet.de>
+G. Ann Campbell <ann.campbell@sonarsource.com>
+Gail Badner <gbadner@redhat.com>
+Galder Zamarreño <galder@zamarreno.com>
+George Gastaldi <gegastaldi@gmail.com>
+Gonthim <ewertz@redhat.com>
+Guillaume Grossetie <g.grossetie@gmail.com>
+Guillaume Smet <guillaume.smet@gmail.com>
+Gunnar Morling <gunnar.morling@googlemail.com>
+Gytis Trikleris <gytis@redhat.com>
+Gytis Trikleris <gytist@gmail.com>
+Harald Pehl <harald.pehl@gmail.com>
+Hardy Ferentschik <hardy@ferentschik.de>
+Hardy Ferentschik <hardy@hibernate.org>
+Hayk Hovsepyan <hhovsepy@redhat.com>
+Heiko Braun <ike.braun@googlemail.com>
+Heiko W. Rupp <hwr@pilhuhn.de>
+Hisanobu Okuda <hisanobu.okuda@gmail.com>
+Honza Brázdil <jbrazdil@redhat.com>
+Howard Gao <hgao@redhat.com>
+Hoyt Summers Pittman <secondsun@gmail.com>
+Hynek Mlnarik <hmlnarik@redhat.com>
+Hynek Svabek <hsvabek@redhat.com>
+Ilia Vassilev <ivassile@redhat.com>
+Ingo Weiss <ingo@hoffmann.cx>
+Ingo Weiss <ingo@redhat.com>
+Ivan Straka <istraka@redhat.com>
+Ivo Studensky <istudens@redhat.com>
+JF Denise <jdenise@redhat.com>
+Jaikiran <jaikiran.pai@gmail.com>
+Jaikiran Pai <jaikiran.pai@gmail.com>
+Jakub Cechacek <jcechace@redhat.com>
+James Livingston <jlivings@redhat.com>
+James Netherton <jamesnetherton@gmail.com>
+James Perkins <jperkins@redhat.com>
+James Perkins <jrperkinsjr@gmail.com>
+James R. Perkins <jperkins@redhat.com>
+Jan Bliznak <jbliznak@redhat.com>
+Jan Kalina <jkalina@redhat.com>
+Jan Kasik <jkasik@redhat.com>
+Jan Lanik <jlanik@jnotes.redhat>
+Jan Lanik <jlanik@redhat.com>
+Jan Martiska <jmartisk@redhat.com>
+Jan Stourac <jstourac@redhat.com>
+Jan Tymel <jtymel@dhcp-4-212.brq.redhat.com>
+Jan Tymel <jtymel@redhat.com>
+Jan-Willem Gmelig Meyling <jan-willem@youngmediaexperts.nl>
+Jason T. Greene <jason.greene@redhat.com>
+Jason T. Greene <jason@stacksmash.com>
+Jason Tedor <jason@tedor.me>
+Jay SenSharma <joy.sensharma@gmail.com>
+Jay SenSharma <jsensharma@dhcp223-76.pnq.redhat.com>
+Jean-Francois Denise <jfdenise@gmail.com>
+Jean-Frederic Clere <jfclere@gmail.com>
+Jean-Frederic Clere <jfclere@jfcpc.(none)>
+Jeff Mesnil <jmesnil@gmail.com>
+Jeff Mesnil <jmesnil@redhat.com>
+Jeff Zhang <jeff.zhang@jboss.org>
+Jeremy Whiting <jwhiting@redhat.com>
+Jesper Pedersen <jesper.pedersen@jboss.org>
+Jesper Pedersen <jesper.pedersen@redhat.com>
+Jesse Jaggars <jhjaggars@gmail.com>
+Jesse Jaggars <jjaggars@redhat.com>
+Jesse Sightler <jesse.sightler@gmail.com>
+Jesse Sightler <jsightle@redhat.com>
+Jim Cheesman <jim.cheesman.work@gmail.com>
+Jim Ma <ema@redhat.com>
+Jiri Bilek <jbilek@redhat.com>
+JiriOndrusek <jondruse@redhat.com>
+Joakim Olsson <joakim@unbound.se>
+Joe Wertz <ewertz@redhat.com>
+Joerg Baesner <jbaesner@redhat.com>
+John Bailey <baileyje@gmail.com>
+John E. Bailey <baileyje@gmail.com>
+John E. Bailey <jbailey@redhat.com>
+John O'Hara <johara@redhat.com>
+John O'Hara <johnaohara80@gmail.com>
+Jonathan Halliday <jonathan.halliday@redhat.com>
+Jonathan Pearlin <jdp.grails.dev@gmail.com>
+Jorge Solorzano <jorsol@gmail.com>
+Josef Cacek <josef.cacek@gmail.com>
+Josh Kinlaw <jkinlaw@redhat.com>
+Jozef Hartinger <jharting@redhat.com>
+Juan Hernandez <juan.hernandez@redhat.com>
+Juergen Zimmermann <Juergen.Zimmermann (at) HS-Karlsruhe.de>
+Juraci Paixão Kröhling <juraci@kroehling.de>
+Justin Bertram <jbertram@redhat.com>
+Justin Cook <jucook@redhat.com>
+Kabir Khan <kkhan@redhat.com>
+Karel Piwko <kpiwko@redhat.com>
+Karl Pietrzak <kpietrzak@mimeya.com>
+Katka Novotna <kanovotn@redhat.com>
+Ken Wills <ken@zaptillion.net>
+Kirill Paliy <kirill.paliy@gmail.com>
+Krzysztof Rzymkowski <rzymek@gmail.com>
+Kurt Stam <kurt.stam@gmail.com>
+Kurt Stam <kurt@osconsulting.org>
+Kyle Lape <kyle.lape@redhat.com>
+Ladislav Thon <ladicek@gmail.com>
+Ladislav Thon <lthon@redhat.com>
+Libor Krzyžanek <libor@krzyzanek.com>
+Lin Gao <aoingl@gmail.com>
+Lin Gao <lgao@redhat.com>
+Luka <luka@evriala.net>
+Luka Furlan <luka@evriala.net>
+Lukas Krejci <lkrejci@redhat.com>
+Maas van den Berg <maasvdberg@gmail.com>
+Madhumita Sadhukhan <madhumita.sadhukhan@gmail.com>
+Maksim Karavaev <maxoid@mail.ru>
+Manuel Fehlhammer <fehlhammer@gmx.de>
+Marcel Šebek <sebek@ttc.cz>
+Marcus Moyses <marcus.moyses@gmail.com>
+Marcus Moyses <mmoyses@redhat.com>
+Marek Goldmann <marek.goldmann@gmail.com>
+Marek Goldmann <mgoldman@redhat.com>
+Marek Kopecky <mkopecky@redhat.com>
+Marek Marusic <marek.marusic@gmail.com>
+Marek Novotný <hotmana76@gmail.com>
+Marek Schmidt <maschmid@redhat.com>
+Marius Bogoevici <marius.bogoevici@gmail.com>
+Mark Torres <mtorres@reliancefirstcapital.com>
+Marko Luksa <marko.luksa@gmail.com>
+Marko Strukelj <marko.strukelj@gmail.com>
+Markus Gaisbauer <markus.gaisbauer@gmail.com>
+Martin <martinschaef@gmail.com>
+Martin Choma <mchoma@192.168.0.103>
+Martin Choma <mchoma@ibm-p8-kvm-08-fsp.mgmt.lab.eng.rdu2.redhat.com>
+Martin Choma <mchoma@localhost.localdomain>
+Martin Choma <mchoma@redhat.com>
+Martin Gencur <mgencur@redhat.com>
+Martin Kouba <mkouba@redhat.com>
+Martin Mazanek <mmazanek@redhat.com>
+Martin Mazanek <nekdozjam@gmail.com>
+Martin Minar <mminar@redhat.com>
+Martin Simka <msimka@redhat.com>
+Masafumi Miura <mmiura@redhat.com>
+Matej Briskar <mbriskar@redhat.com>
+Matej Novotny <manovotn@redhat.com>
+Mathieu Lachance <mathieu@mathieulachance.com>
+Matthew King <king12813@gmail.com>
+Matthias Berndt <mb.systemtrap@gmail.com>
+Matthieu Brouillard <matthieu.brouillard@agfa.com>
+Mattias Nilsson Grip <mattias.nilsson.grip@redpill-linpro.com>
+Matus Abaffy <maabaffy@redhat.com>
+Matus Madzin <mmadzin@redhat.com>
+Max Rydahl Andersen <max@jboss.org>
+Maxim Karavaev <karavaev@magenta-technology.ru>
+Michael Bannister <github@michaelbannister.co.uk>
+Michael Edgar <michael@xlate.io>
+Michael Levin <kinnetica@gmail.com>
+Michael Musgrove <mmusgrov@redhat.com>
+Michal Jurc <mjurc@redhat.com>
+Michal Karm Babacek <karm@redhat.com>
+Michal Petrov <mpetrov@redhat.com>
+Michal Vinkler <mvinkler@redhat.com>
+Mike Dobozy <dobozysaurus@gmail.com>
+Mike M. Clark <miclark@redhat.com>
+Miroslav Novak <mnovak@redhat.com>
+Mladen Turk <mturk@redhat.com>
+Moulali Shikalwadi <mshikalw@mshikalw.pnq.csb>
+MrEasy <mreasy@gmx.net>
+Navin Surtani <nsurtani@redhat.com>
+Nikoleta Ziakova <nziakova@redhat.com>
+Norito Agetsuma <norito.agetsuma@gmail.com>
+ORDTesters <ordtesters@gmail.com>
+Oleg Kulikov <oleg.kulikoff@gmail.com>
+Ondra Chaloupka <ochaloup@redhat.com>
+OndraZizka <zizka@seznam.cz>
+Ondrej Chaloupka <ochaloup@redhat.com>
+Ondrej Kotek <okotek@redhat.com>
+Ondrej Lukas <olukas@redhat.com>
+Ondrej Zizka <ozizka@redhat.com>
+Ondrej Zizka <zizka@seznam.cz>
+Osamu Nagano <onagano@redhat.com>
+Oved Ourfali <ovedo@redhat.com>
+Panagiotis Sotiropoulos <psotirop@redhat.com>
+Patrick Reinhart <patrick.reinhart@bison-group.com>
+Paul Ferraro <paul.ferraro@redhat.com>
+Paul Ferraro <paul@T520.(none)>
+Paul Gier <pgier@redhat.com>
+Paul Robinson <paul.robinson@redhat.com>
+Paul Robinson <paul@Pauls-MacBook-Air.local>
+Pavel Janoušek <pjanouse@redhat.com>
+Pavel Jelinek <pjelinek@redhat.com>
+Pedro Igor <pedroigor@gmail.com>
+Pedro Igor <pigor.craveiro@gmail.com>
+Pelisse Romain <belaran@redhat.com>
+Pete Muir <pmuir@bleepbleep.org.uk>
+Peter Mačkay <pmackay@redhat.com>
+Peter Palaga <ppalaga@redhat.com>
+Peter Skopek <pskopek@redhat.com>
+Peter Weldon <peter.weldon@null.net>
+Petr Adamec <padamec@redhat.com>
+Petr Jurak <pjurak@redhat.com>
+Petr Kremensky <pkremens@redhat.com>
+Petr Sakař <psakar@redhat.com>
+Philippe Marschall <philippe.marschall@gmail.com>
+Pieter Bos <pieter.bos@nedap.com>
+Pëtr Andreev <petrandreev@aol.com>
+R Searls <rsearls@redhat.com>
+Radim Hatlapatka <rhatlapa@redhat.com>
+Radoslav Husar <radosoft@gmail.com>
+Radoslav Husar <rhusar@syrah.local>
+Radovan STANCEL <rstancel@redhat.com>
+Radovan Stancel <rstancel@redhat.com>
+Rafał Osiecki <metempsychoza@wp.pl>
+Rainer Schamm <rschamm@rogueware.org>
+Ralf Battenfeld <ralf.battenfeld@bluewin.ch>
+Remy Maucherat <rmaucher@redhat.com>
+Ricardo Arguello <ricardo.arguello@gmail.com>
+Riccardo Pasquini <rick@myPenguin.site>
+Richard Achmatowicz <rachmato@redhat.com>
+Richard Achmatowicz <rachmatowicz@jboss.com>
+Richard Janík <rjanik@redhat.com>
+Richard Opalka <opalka.richard@gmail.com>
+Richard Opalka <ropalka@redhat.com>
+Richard Opálka <opalka.richard@gmail.com>
+Rico Neubauer <r.neubauer@seeburger.de>
+Rob Stryker <rob@oxbeef.net>
+Robert Panzer <Robert.Panzer@wincor-nixdorf.com>
+Robert Reimann <robert.reimann@googlemail.com>
+Roberto Oliveira <rguimara@redhat.com>
+Romain PELISSE <belaran@gmail.com>
+Romain Pelisse <belaran@gmail.com>
+Romain Pelisse <belaran@redhat.com>
+Ron Sigal <rsigal@redhat.com>
+Rostislav Svoboda <rsvoboda@redhat.com>
+Ruben Romero Montes <rromerom@redhat.com>
+Ryan Emerson <remerson@redhat.com>
+Rémy Maucherat <remm@ws.remm.hd.free.fr>
+Rémy Maucherat <rmaucher@redhat.com>
+Sande Gilda <sgilda@redhat.com>
+Sanne Grinovero <sanne@hibernate.org>
+Scott M Stark <scott.stark@jboss.org>
+Scott M Stark <starksm64@gmail.com>
+Scott Marlow <scott.marlow@gmail.com>
+Scott Marlow <smarlow@redhat.com>
+Sean Flanigan <sflaniga@redhat.com>
+Sebastian Laskawiec <sebastian.laskawiec@payu.pl>
+Seth Miller <innerverse@gmail.com>
+Shailendra Kumar Singh <shailendra14k@gmail.com>
+Shay Matasaro <smatasar@redhat.com>
+Shelly McGowan <smcgowan@redhat.com>
+Siamak Sadeghianfar <ssadeghi@redhat.com>
+Simon Strom <simon.strom@gmail.com>
+Simone Gotti <simone.gotti@gmail.com>
+Skye Book <skye.book@gmail.com>
+Slobodan Lazarevski <slobodanl@gmail.com>
+Sriram <sri.kmb@gmail.com>
+Stan Silvert <ssilvert@jboss.com>
+Stan Silvert <ssilvert@redhat.com>
+Stefan Fleiter <stefan.fleiter@web.de>
+Stefan Guilhen <sguilhen@redhat.com>
+Stefan Miklosovic <smikloso@redhat.com>
+Stefano Maestri <maeste@legolas.(none)>
+Stefano Maestri <stefano.maestri@ironjacamar.org>
+Stefano Maestri <stefano.maestri@javalinux.it>
+Stefano Maestri <stefano.maestri@redhat.com>
+Stephen Coy <steve.coy@me.com>
+Steve Ebersole <steve@hibernate.org>
+Stian Thorgersen <stian@redhat.com>
+Stoty <stoty@stoty.hu>
+Strong Liu <stliu@hibernate.org>
+Stuart Douglas <stuart.w.douglas@gmail.com>
+Stuart Douglas <stuart@Stuarts-MacBook-Pro.local>
+Stuart Douglas <stuart@stuart-thinkpad.localdomain>
+Ståle W. Pedersen <stalep@gmail.com>
+Sultan Zhantemirov <szhantem@redhat.com>
+Takayoshi Kimura <tkimura@redhat.com>
+Takayuki Konishi <tkonishi@redhat.com>
+Teresa Miyar <tmiyar@Teresas-MacBook-Pro.local>
+Thomas Diesler <thomas.diesler@jboss.com>
+Tobias Stadler <ts.stadler@gmx.de>
+Toby Crawley <toby@tcrawley.org>
+Tom Fonteyne <tom.fonteyne@redhat.com>
+Tom Jenkinson <tom.jenkinson@redhat.com>
+Tomas Hofman <thofman@redhat.com>
+Tomas Remes <tremes@redhat.com>
+Tomas Terem <tterem@redhat.com>
+Tomasz Adamski <tadamski@redhat.com>
+Tomasz Adamski <tomasz.adamski@outlook.com>
+Tomaz Cerar <tomaz.cerar@gmail.com>
+Tomaz Cerar <tomaz@fedora.localdomain>
+Tomek Adamski <tomek@tomek-desktop.(none)>
+Tomek adamski <tadamski@localhost.localdomain>
+Tommaso Borgato <35226256+tommaso-borgato@users.noreply.github.com>
+Tommy Tynja <tommy.tynja@diabol.se>
+Tommy Tynjä <tommy.tynja@diabol.se>
+Torben Jaeger <torben@jit-central.com>
+Tristan Tarrant <ttarrant@redhat.com>
+Viacheslav Kabanovich <scabanovich@exadel.com>
+Ville Skyttä <ville.skytta@iki.fi>
+Viral Gohel <vrlgohel87@gmail.com>
+Vladimir Dosoudil <dosoudil@redhat.com>
+Vladimir Rastseluev <vrastsel@redhat.com>
+Vojtech Juranek <vjuranek@redhat.com>
+Wang Chao <wangc@dhcp-128-40.nay.redhat.com>
+Weinan Li <l.weinan@gmail.com>
+Weinan Li <weli@redhat.com>
+Weston M. Price <wprice@redhat.com>
+Weston Price <wmprice@gethsemane.local>
+Weston Price <wmprice@redhat.com>
+William Collishaw <williamcollishaw@hotmail.co.uk>
+William DeCoste <bdecoste@william-decostes-macbook-pro-2.local>
+Winfried Wasser <winfried.wasser@kapsch.net>
+Wolf-Dieter Fink <wfink@redhat.com>
+Yaguo Zhou <zhouyaguo@gmail.com>
+Yeray Borges <yborgess@redhat.com>
+Yoann Rodière <yoann@hibernate.org>
+Zbyněk Roubalík <zroubali@redhat.com>
+alexVengrovsk <ovengrovsk@i.ua>
+andreitretyakov <tretyakov.andrei.a@gmail.com>
+andrigtmiller <andy.miller@jboss.com>
+asoldano <alessio.soldano@jboss.com>
+baranowb <baranowb@gmail.com>
+barreiro <lbbbarreiro@gmail.com>
+bayern39 <jardenchen@163.com>
+bayern39 <mchen@redhat.com>
+bbodnar <barnabas.bodnar@ser.de>
+blue61 <ktnagel@gmx.de>
+bmaxwell <bmaxwell@redhat.com>
+bstansberry@jboss.com <brian.stansberry@redhat.com>
+bstansberry@jboss.com <bstansberry@jboss.com>
+carmeloaprile <carmeloaprile@gmail.com>
+clebert suconic <clebert.suconic@gmail.com>
+daniel <ds@ctrlaltdel.de>
+dcihak <dcihak@dhcp-10-40-5-88.brq.redhat.com>
+dcihak <dcihak@redhat.com>
+dds <dmitry.durkin@gmail.com>
+dfj <david.jorm@gmail.com>
+dvilkola <dvilkola@redhat.com>
+ecki <bernd@eckenfels.net>
+emmartins <emartins@redhat.com>
+fharms <fharms@black-pearl>
+fharms <flemming.harms@gmail.com>
+filipepferraz <filipepferraz@gmail.com>
+flemming.harms@gmail.com <flemming.harms@gmail.com>
+fmarchio <francesco@fedora.redhat.com>
+frickeo <olaf.fricke@faulbaum.net>
+gytis <gytis@redhat.com>
+ivassile <ivassile@redhat.com>
+jaikiran <jaikiran.pai@gmail.com>
+jbertram <jbertram@redhat.com>
+jcibik <jcibik@redhat.com>
+jfclere <jfclere@gmail.com>
+jimma <ema@apache.org>
+jimma <ema@redhat.com>
+jimma <mail2jimma@gmail.com>
+jlanik <jlanik@redhat.com>
+joe <ewertz@redhat.com>
+jolee <jolee@redhat.com>
+jorsef <jorsef@jorsef.jp>
+jvdvTechno <jeroen.van.der.vegt@technolution.eu>
+kabir <kkhan@redhat.com>
+kanovotn <kanovotn@redhat.com>
+karavaev <karavaev@magenta-technology.ru>
+khermano <khermano@redhat.com>
+kudrevatykh <alexander@kudrevatykh.com>
+kurobako <wyyyrd@gmail.com>
+londonjbug <london.jbug.demo@gmail.com>
+maasvdberg <maasvdberg@gmail.com>
+maeste <stefano.maestri@ironjacamar.org>
+maximilienw <m.wiktorowski@free.fr>
+mgencur@redhat.com <mgencur@redhat.com>
+mich <orthodox.mich@gmail.com>
+michael <michael@localhost.localdomain>
+mjurc <mjurc@redhat.com>
+mmatloka <mmatloka@gmail.com>
+mmoyses <marcus.moyses@gmail.com>
+mmoyses <mmoyses@redhat.com>
+mmusgrov <mmusgrov@redhat.com>
+mnovak <mnovak@redhat.com>
+mw92.park <mw92.park@samsung.com>
+navssurtani <nsurtani@redhat.com>
+new23d <email@unknown.com>
+ochaloup <ochaloup@redhat.com>
+okremer <ori.kremer+github@gmail.com>
+panossot <psotirop@redhat.com>
+pedroigor <pigor.craveiro@gmail.com>
+pferraro <paul.ferraro@redhat.com>
+pjanouse <pjanouse@redhat.com>
+psharam <parsharm@redhat.com>
+pskopek <pskopek@redhat.com>
+rachmatowicz <rachmato@redhat.com>
+rchakrab <rchakrab@redhat.com>
+remm <rmaucher@redhat.com>
+rmartinc <rmartinc@redhat.com>
+rnetuka <rnetuka@redhat.com>
+rsearls <rsearls@ibm-p8-kvm-05-fsp.mgmt.pnr.lab.eng.rdu2.redhat.com>
+rsearls <rsearls@localhost.localdomain>
+rsearls <rsearls@redhat.com>
+sdirbach <sascha.dirbach@endless-webservices.de>
+smarlow <smarlow@redhat.com>
+spolti <filippespolti@gmail.com>
+spriadka <spriadka@github.com>
+starksm <scott.stark@jboss.com>
+stoty <stoty@users.noreply.github.com>
+timpeeters <tim.peeters@me.com>
+tmiyar <tmiyargi@redhat.com>
+tommaso-borgato <tborgato@redhat.com>
+ttarrant <ttarrant@redhat.com>
+unknown <avoka@.(none)>
+unknown <dimitris@.(none)>
+vkamble60 <vkamble@redhat.com>
+vpakan <vpakan@redhat.com>
+weli <weli@tower.(none)>
+wmprice <wmprice@redhat.com>
+wojtask9 <wojtask9.kde@gmail.com>
+xstefank <mjolnir122@gmail.com>
+xstefank <xstefank122@gmail.com>

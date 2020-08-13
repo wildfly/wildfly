@@ -80,6 +80,7 @@ public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHan
         String name = context.getCurrentAddressValue();
 
         context.removeService(InfinispanBindingFactory.createRemoteCacheContainerBinding(name).getBinderServiceName());
+        context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.registry.remove(new RemoteCacheContainerServiceConfigurator(address).getServiceName())).getServiceName());
 
         for (RemoteCacheContainerResourceDefinition.Capability component : EnumSet.allOf(RemoteCacheContainerResourceDefinition.Capability.class)) {
             ServiceName serviceName = component.getServiceName(address);

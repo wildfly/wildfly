@@ -22,11 +22,13 @@
 
 package org.jboss.as.test.integration.transactions;
 
+import org.jboss.logging.Logger;
+
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.jboss.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test {@link XAResource} class.
@@ -38,36 +40,44 @@ public class TestXAResource implements XAResource {
 
     public enum TestAction {
         NONE,
-        PREPARE_THROW_XAER_RMERR, PREPARE_THROW_XAER_RMFAIL, PREPARE_THROW_UNKNOWN_XA_EXCEPTION,
-        COMMIT_THROW_XAER_RMERR, COMMIT_THROW_XAER_RMFAIL, COMMIT_THROW_UNKNOWN_XA_EXCEPTION
+        PREPARE_THROW_XAER_RMERR, PREPARE_THROW_XAER_RMFAIL, PREPARE_THROW_UNKNOWN_XA_EXCEPTION, PREPARE_CRASH_VM,
+        COMMIT_THROW_XAER_RMERR, COMMIT_THROW_XAER_RMFAIL, COMMIT_THROW_UNKNOWN_XA_EXCEPTION, COMMIT_CRASH_VM,
+
     }
 
-    protected TestAction testAction = TestAction.NONE;
+    // prepared xids are shared over all the TestXAResource instances in the JVM
+    // used for the recovery purposes as the XAResourceRecoveryHelper works with a different instance
+    // of the XAResource than the one which is used during 2PC processing
+    private static final List<Xid> preparedXids = new ArrayList<>();
+
     private TransactionCheckerSingleton checker;
     private int transactionTimeout;
 
+    protected TestAction testAction;
+
+
     public TestXAResource(TransactionCheckerSingleton checker) {
-        this.checker = checker;
-    }
-
-    public TestXAResource(TestAction testAction, TransactionCheckerSingleton checker) {
-        this.checker = checker;
-        this.testAction = testAction;
-    }
-
-    public TestXAResource(TestAction testAction) {
-        this.checker = new TransactionCheckerSingleton();
-        this.testAction = testAction;
+        this(TestAction.NONE, checker);
     }
 
     public TestXAResource() {
         this(TestAction.NONE);
     }
 
+    public TestXAResource(TestAction testAction) {
+        // the checker singleton can't be used to check processing as it's not injected as a bean
+        this(testAction, new TransactionCheckerSingleton());
+    }
+
+    public TestXAResource(TestAction testAction, TransactionCheckerSingleton checker) {
+        log.debugf("created %s with testAction %s and checker %s", this.getClass().getName(), testAction, checker);
+        this.checker = checker;
+        this.testAction = testAction;
+    }
 
     @Override
     public int prepare(Xid xid) throws XAException {
-        log.tracef("prepare xid: [%s]", xid);
+        log.debugf("prepare xid: [%s], test action: %s", xid, testAction);
         checker.addPrepare();
 
         switch (testAction) {
@@ -77,15 +87,18 @@ public class TestXAResource implements XAResource {
                 throw new XAException(XAException.XAER_RMFAIL);
             case PREPARE_THROW_UNKNOWN_XA_EXCEPTION:
                 throw new XAException(null);
+            case PREPARE_CRASH_VM:
+                Runtime.getRuntime().halt(0);
             case NONE:
             default:
+                preparedXids.add(xid);
                 return XAResource.XA_OK;
         }
     }
 
     @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
-        log.tracef("commit xid:[%s], %s one phase", xid, onePhase ? "with" : "without");
+        log.debugf("commit xid:[%s], %s one phase, test action: %s", xid, onePhase ? "with" : "without", testAction);
         checker.addCommit();
 
         switch (testAction) {
@@ -95,55 +108,63 @@ public class TestXAResource implements XAResource {
                 throw new XAException(XAException.XAER_RMFAIL);
             case COMMIT_THROW_UNKNOWN_XA_EXCEPTION:
                 throw new XAException(null);
+            case COMMIT_CRASH_VM:
+                Runtime.getRuntime().halt(0);
             case NONE:
             default:
-                // do nothing
+                preparedXids.remove(xid);
         }
     }
 
     @Override
+    public void rollback(Xid xid) throws XAException {
+        log.debugf("rollback xid: [%s]", xid);
+        checker.addRollback();
+        preparedXids.remove(xid);
+    }
+
+    @Override
     public void end(Xid xid, int flags) throws XAException {
-        log.tracef("end xid:[%s], flag: %s", xid, flags);
+        log.debugf("end xid:[%s], flag: %s", xid, flags);
     }
 
     @Override
     public void forget(Xid xid) throws XAException {
-        log.tracef("forget xid:[%s]", xid);
+        log.debugf("forget xid:[%s]", xid);
+        preparedXids.remove(xid);
     }
 
     @Override
     public int getTransactionTimeout() throws XAException {
-        log.tracef("getTransactionTimeout: returning timeout: %s", transactionTimeout);
+        log.debugf("getTransactionTimeout: returning timeout: %s", transactionTimeout);
         return transactionTimeout;
     }
 
     @Override
     public boolean isSameRM(XAResource xares) throws XAException {
-        log.tracef("isSameRM returning false to xares: %s", xares);
+        log.debugf("isSameRM returning false to xares: %s", xares);
         return false;
     }
 
     @Override
     public Xid[] recover(int flag) throws XAException {
-        log.tracef("recover with flags: %s", flag);
-        return new Xid[]{};
-    }
-
-    @Override
-    public void rollback(Xid xid) throws XAException {
-        log.tracef("rollback xid: [%s]", xid);
-        checker.addRollback();
+        log.debugf("recover with flags: %s", flag);
+        return preparedXids.toArray(new Xid[0]);
     }
 
     @Override
     public boolean setTransactionTimeout(int seconds) throws XAException {
-        log.tracef("setTransactionTimeout: setting timeout: %s", seconds);
+        log.debugf("setTransactionTimeout: setting timeout: %s", seconds);
         this.transactionTimeout = seconds;
         return true;
     }
 
     @Override
     public void start(Xid xid, int flags) throws XAException {
-        log.tracef("start xid: [%s], flags: %s", xid, flags);
+        log.debugf("start xid: [%s], flags: %s", xid, flags);
+    }
+
+    public List<Xid> getPreparedXids() {
+        return preparedXids;
     }
 }

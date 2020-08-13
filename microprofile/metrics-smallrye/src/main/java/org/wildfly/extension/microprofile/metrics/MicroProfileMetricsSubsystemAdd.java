@@ -30,10 +30,13 @@ import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROPROFILE_MET
 import static org.jboss.as.server.deployment.Phase.INSTALL;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROPROFILE_METRICS;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE;
+import static org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger.LOGGER;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 
+import io.smallrye.metrics.setup.JmxRegistrar;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -88,6 +91,14 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 ImmutableManagementResourceRegistration rootResourceRegistration = context.getRootResourceRegistration();
                 Resource rootResource = context.readResourceFromRoot(EMPTY_ADDRESS);
                 metricCollector.collectResourceMetrics(rootResource, rootResourceRegistration, Function.identity());
+
+                JmxRegistrar jmxRegistrar = new JmxRegistrar();
+                try {
+                    jmxRegistrar.init();
+                } catch (IOException e) {
+                    throw LOGGER.failedInitializeJMXRegistrar(e);
+                }
+
             }
         }, VERIFY);
 
@@ -95,4 +106,6 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         MicroProfileMetricsLogger.LOGGER.activatingSubsystem();
     }
+
+
 }

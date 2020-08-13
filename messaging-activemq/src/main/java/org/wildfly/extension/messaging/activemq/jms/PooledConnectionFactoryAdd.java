@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL_TX;
@@ -29,6 +31,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.NONE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NO_TX;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.XA_TX;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,6 +64,12 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     private PooledConnectionFactoryAdd() {
         super(getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES));
+    }
+
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        super.populateModel(context, operation, resource);
+        handleCredentialReferenceUpdate(context, resource.getModel());
     }
 
     @Override
@@ -99,8 +108,12 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         String jgroupClusterName = null;
         final PathAddress serverAddress = MessagingServices.getActiveMQServerPathAddress(address);
         if (discoveryGroupName != null) {
-            PathAddress dgAddress = serverAddress.append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName);
-            Resource dgResource = context.readResourceFromRoot(dgAddress, false);
+            Resource dgResource;
+            try {
+                dgResource = context.readResourceFromRoot(serverAddress.append(CommonAttributes.SOCKET_DISCOVERY_GROUP, discoveryGroupName), false);
+            } catch (Resource.NoSuchResourceException ex) {
+                dgResource = context.readResourceFromRoot(serverAddress.append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, discoveryGroupName), false);
+            }
             ModelNode dgModel = dgResource.getModel();
             ModelNode jgroupCluster = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel);
             if(jgroupCluster.isDefined()) {
@@ -124,6 +137,11 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
             installStatistics(context, name);
         }
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(CREDENTIAL_REFERENCE, context, resource);
     }
 
     static String getTxSupport(final ModelNode resolvedModel) {

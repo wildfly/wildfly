@@ -81,7 +81,7 @@ public class EETransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
                 .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
                 // Deal with new attribute annotation-property-replacement
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT);
 
 

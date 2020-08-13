@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server.dispatcher;
 
+import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -36,15 +37,19 @@ import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.UnicastRequest;
 import org.jgroups.util.Buffer;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 /**
  * Translates a {@link NoSuchService} response to a {@link CancellationException}.
  * @author Paul Ferraro
  */
-public class ServiceRequest<T> extends UnicastRequest<T> {
+public class ServiceRequest<T, C> extends UnicastRequest<T> {
 
-    public ServiceRequest(RequestCorrelator correlator, Address target, RequestOptions options) {
+    private final C context;
+
+    public ServiceRequest(RequestCorrelator correlator, Address target, RequestOptions options, C context) {
         super(correlator, target, options);
+        this.context = context;
     }
 
     public CompletionStage<T> send(Buffer data) throws CommandDispatcherException {
@@ -66,7 +71,12 @@ public class ServiceRequest<T> extends UnicastRequest<T> {
         } else if (value instanceof NoSuchService) {
             this.completeExceptionally(new CancellationException());
         } else {
-            this.complete((T) value);
+            MarshalledValue<T, C> marshalledValue = (MarshalledValue<T, C>) value;
+            try {
+                this.complete(marshalledValue.get(this.context));
+            } catch (IOException e) {
+                this.completeExceptionally(e);
+            }
         }
         this.corrDone();
     }

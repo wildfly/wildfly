@@ -25,11 +25,10 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.group.Group;
 
 /**
  * Configuration for an {@link InfinispanBeanManager}.
@@ -40,8 +39,7 @@ public interface InfinispanBeanManagerConfiguration<I, T> {
     String getName();
     Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> getBeanFilter();
     KeyAffinityServiceFactory getAffinityFactory();
-    Registry<String, ?> getRegistry();
-    NodeFactory<Address> getNodeFactory();
+    Group<Address> getGroup();
     CommandDispatcherFactory getCommandDispatcherFactory();
     ExpirationConfiguration<T> getExpirationConfiguration();
     PassivationConfiguration<T> getPassivationConfiguration();

@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:5.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:6.0">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -80,8 +80,6 @@
             <recover-credential>
               <!--Optional:-->
               <user-name>userName</user-name>
-              <!--Optional:-->
-              <password>pwd</password>
               <!--Optional:-->
               <credential-reference store="teststore" alias="myalias"/>
               <!--Optional:-->

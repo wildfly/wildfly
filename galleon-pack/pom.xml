@@ -34,7 +34,8 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>19.0.0.Beta2-SNAPSHOT</version>
+        <version>21.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-galleon-pack</artifactId>
@@ -44,11 +45,7 @@
 
     <properties>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
-        <feature-pack.resources.directory>${basedir}/src/main/resources</feature-pack.resources.directory>
         <feature-pack.license.directory>${basedir}/src/license</feature-pack.license.directory>
-        <!-- Override observability versions -->
-        <version.io.smallrye.smallrye-health.override>2.1.0</version.io.smallrye.smallrye-health.override>
-        <version.org.eclipse.microprofile.health.api.override>2.1</version.org.eclipse.microprofile.health.api.override>
     </properties>
 
     <build>
@@ -90,6 +87,7 @@
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFile>${feature-pack.license.directory}/microprofile-feature-pack-licenses.xml</licensesConfigFile>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
+                            <excludedArtifacts>wildfly-core-galleon-pack|wildfly-servlet-galleon-pack|wildfly-ee-galleon-pack</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -134,7 +132,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-servlet-galleon-pack</artifactId>
             <type>zip</type>
             <exclusions>
@@ -146,7 +144,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-galleon-pack</artifactId>
             <type>zip</type>
             <exclusions>
@@ -172,32 +170,20 @@
         </dependency>
 
         <dependency>
-            <groupId>com.netflix.archaius</groupId>
-            <artifactId>archaius-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.netflix.hystrix</groupId>
-            <artifactId>hystrix-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.reactivex</groupId>
-            <artifactId>rxjava</artifactId>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-fault-tolerance</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-fault-tolerance</artifactId>
+            <artifactId>smallrye-fault-tolerance-core</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -221,7 +207,18 @@
 
         <dependency>
             <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-open-api</artifactId>
+            <artifactId>smallrye-open-api-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-open-api-jaxrs</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -280,13 +277,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hdrhistogram</groupId>
-            <artifactId>HdrHistogram</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
             <exclusions>
                 <exclusion>
@@ -298,8 +289,8 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-cdi</artifactId>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -310,7 +301,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
             <exclusions>
                 <exclusion>
@@ -322,7 +313,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
             <exclusions>
                 <exclusion>

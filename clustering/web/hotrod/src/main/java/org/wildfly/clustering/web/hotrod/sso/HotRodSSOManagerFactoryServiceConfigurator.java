@@ -33,8 +33,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
-import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
@@ -49,31 +48,36 @@ public class HotRodSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleS
     private final String name;
     private final HotRodSSOManagementConfiguration config;
 
-    private volatile SupplierDependency<RemoteCacheContainer> container;
+    private final CapabilityServiceConfigurator configurator;
+    private volatile SupplierDependency<RemoteCache<?, ?>> cache;
 
     public HotRodSSOManagerFactoryServiceConfigurator(HotRodSSOManagementConfiguration config, String name) {
         super(ServiceName.JBOSS.append("clustering", "sso", name));
 
         this.name = name;
         this.config = config;
+        this.configurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), this.config.getContainerName(), this.name, this.config.getConfigurationName());
     }
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        this.container = new ServiceSupplierDependency<>(InfinispanClientRequirement.REMOTE_CONTAINER.getServiceName(support, this.config.getContainerName()));
+        this.cache = new ServiceSupplierDependency<>(this.configurator.configure(support).getServiceName());
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
+        this.configurator.build(target).install();
+
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SSOManagerFactory<A, D, S, TransactionBatch>> factory = this.container.register(builder).provides(this.getServiceName());
+        Consumer<SSOManagerFactory<A, D, S, TransactionBatch>> factory = this.cache.register(builder).provides(this.getServiceName());
         Service service = Service.newInstance(factory, new HotRodSSOManagerFactory<>(this));
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <K, V> RemoteCache<K, V> getRemoteCache() {
-        return this.container.get().administration().getOrCreateCache(this.name, this.config.getConfigurationName());
+        return (RemoteCache<K, V>) this.cache.get();
     }
 }

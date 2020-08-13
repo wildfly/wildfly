@@ -59,11 +59,9 @@ public class MicroProfileHealthTransformers implements ExtensionTransformerRegis
      * Reject the attributes if they are defined or discard them if they are undefined or set to their default value.
      */
     private static void rejectDefinedAttributeWithDefaultValue(ResourceTransformationDescriptionBuilder builder, AttributeDefinition... attrs) {
-        for (AttributeDefinition attr : attrs) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(attr.getDefaultValue()), attr)
-                    .addRejectCheck(DEFINED, attr);
-        }
+        builder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, attrs)
+                .addRejectCheck(DEFINED, attrs);
     }
 
 }

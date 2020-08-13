@@ -1,0 +1,7 @@
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <sub-deployment name="web.war">
+        <dependencies>
+            <module name="deployment.deployment2.ear.library.jar" annotations="true" meta-inf="export"/>
+        </dependencies>
+    </sub-deployment>
+</jboss-deployment-structure>

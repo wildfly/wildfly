@@ -343,6 +343,10 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
                 writeHandler = AbstractDataSourceOperations.CONNECTION_POOL_WRITE_OPERATION;
             }
 
+            if (attributeDefinition == CREDENTIAL_REFERENCE) {
+                writeHandler = AbstractDataSourceOperations.CREDENTIAL_REFERENCE_WRITE_OPERATION;
+            }
+
             resourceRegistration.registerReadWriteAttribute(attributeDefinition, null, writeHandler);
         }
 
