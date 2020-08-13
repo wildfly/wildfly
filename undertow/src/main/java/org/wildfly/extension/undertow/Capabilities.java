@@ -60,7 +60,6 @@ public final class Capabilities {
     public static final String REF_SSL_CONTEXT = "org.wildfly.security.ssl-context";
     public static final String REF_HTTP_AUTHENTICATION_FACTORY = "org.wildfly.security.http-authentication-factory";
     public static final String REF_HTTP_LISTENER_REGISTRY = "org.wildfly.remoting.http-listener-registry";
-    public static final String REF_JACC_POLICY = "org.wildfly.security.jacc-policy";
     public static final String REF_OUTBOUND_SOCKET = "org.wildfly.network.outbound-socket-binding";
     public static final String REF_REQUEST_CONTROLLER = "org.wildfly.request-controller";
     public static final String REF_SUSPEND_CONTROLLER = "org.wildfly.server.suspend-controller";
