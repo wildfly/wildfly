@@ -63,7 +63,7 @@ public class SecurityAPITestCase {
     @ArquillianResource
     protected URL url;
 
-    private final boolean ejbSupported = !Boolean.getBoolean("ts.layers");
+    private final boolean ejbSupported = !Boolean.getBoolean("ts.layers") && !Boolean.getBoolean("ts.bootable");
 
     @Deployment
     protected static WebArchive createDeployment() {

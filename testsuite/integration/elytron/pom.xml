@@ -580,6 +580,153 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.wildfly.arquillian</groupId>
+                    <artifactId>wildfly-arquillian-container-bootable</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the default provisioning -->
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provisioning</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.jar.plugin}</version>
+                        <executions>
+                            <!-- Provision a server with the core functionality we will provide in OpenShift images -->
+                            <execution>
+                                <id>bootable-jar-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-resources</phase>
+                                <configuration>
+                                    <output-file-name>test-wildfly.jar</output-file-name>
+                                    <hollowJar>true</hollowJar>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <!-- content that is installed in wildfly home -->
+                                    <extraServerContent>${wildfly.dir}</extraServerContent>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                    <cli-sessions>
+                                        <cli-session>
+                                            <script-files>
+                                                <script>modify-elytron-config-bootable.cli</script>
+                                            </script-files>
+                                        </cli-session>
+                                    </cli-sessions>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>undertow-legacy-https</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Enable the default tests (which the parent pom turns off for this profile) -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <install.dir>${project.build.directory}/${wildfly.instance.name}</install.dir>
+                                        <bootable.jar>${project.build.directory}/test-wildfly.jar</bootable.jar>
+                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                    </systemPropertyVariables>
+                                    <excludes combine-children="append">
+                                        <!-- Needs batch -->
+                                        <exclude>org/wildfly/test/integration/elytron/batch/*TestCase.java</exclude>
+                                        <!-- Needs ejb -->
+                                        <exclude>org/wildfly/test/integration/elytron/ejb/*TestCase.java</exclude>
+                                        <exclude>org/wildfly/test/integration/elytron/permissionmappers/ConstantPermissionMapperTestCase.java</exclude>
+                                        <!-- Needs embedded jms -->
+                                        <exclude>org/wildfly/test/integration/elytron/sasl/AnonymousSaslMechTestCase.java</exclude>
+                                        <exclude>org/wildfly/test/integration/elytron/sasl/DefaultSaslConfigTestCase.java</exclude>
+                                        <exclude>org/wildfly/test/integration/elytron/sasl/OtpSaslTestCase.java</exclude>
+                                    </excludes>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>
+                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                        </classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
