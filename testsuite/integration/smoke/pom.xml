@@ -576,7 +576,6 @@
                                         <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectactivation/MultipleObjectActivationTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectpartialactivation/MultipleObjectPartialActivationTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/smoke/deployment/rar/tests/raconnection/RaTestConnectionTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/webservices/WSTestCase.java</exclude>
                                         <!-- Requires messaging -->
                                         <exclude>org/jboss/as/test/smoke/jms/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/smoke/jms/**/*Test.java</exclude>

@@ -1426,7 +1426,6 @@
                                         <exclude>org/jboss/as/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredHTTPEndpointEmptyMgmtUsersTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/*TestCase.java</exclude>
                                         <!-- Requires picketlink -->
                                         <exclude>org/jboss/as/test/integration/ws/authentication/policy/AuthenticationPolicyContextTestCase.java</exclude>
                                         <!-- Requires JSR77 -->
@@ -1520,9 +1519,6 @@
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/xacml/*XACMLAuthorizationModuleTestCase.java</exclude>
                                         <exclude>org/wildfly/test/elytron/intermediate/*TestCase.java</exclude>
-                                        <!-- missing [jboss.security.security-domain.other] -->
-                                        <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/xerces/ws/unit/XercesUsageInWebServiceTestCase.java</exclude>
                                         <!-- No agroal -->
                                         <exclude>org/wildfly/test/integration/agroal/*TestCase.java</exclude>
                                         <!-- No Hibernate 5.0 module -->
