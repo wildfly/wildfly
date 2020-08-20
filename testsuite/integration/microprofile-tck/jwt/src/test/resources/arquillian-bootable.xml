@@ -9,17 +9,12 @@
             <property name="installDir">${install.dir}</property>
             <property name="jarFile">${bootable.jar}</property>
 
-            <property name="javaVmArguments">${server.jvm.args}</property>
-            <property name="jbossArguments">${jboss.args}</property>
-            <!-- -Djboss.inst is not necessarily needed, only in case the test case neeeds path to the instance it runs in.
-                 In the future, Arquillian should capable of injecting it into @ArquillianResource File or such. -->
+            <property name="javaVmArguments">${microprofile.jvm.args}</property>
+            <property name="managementAddress">127.0.0.1</property>
+            <property name="managementPort">9990</property>
             <property name="allowConnectingToRunningServer">true</property>
-            <property name="managementAddress">${node0:127.0.0.1}</property>
-            <property name="managementPort">${as.managementPort:9990}</property>
-
-            <!-- AS7-4070 -->
-            <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
-            <property name="waitForPortsTimeoutInSeconds">8</property>
+            <property name="waitForPorts">9990</property>
+            <property name="waitForPortsTimeoutInSeconds">10</property>
         </configuration>
     </container>
 
