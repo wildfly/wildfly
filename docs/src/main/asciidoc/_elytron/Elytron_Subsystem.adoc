@@ -266,6 +266,9 @@ files.
 
 |token-realm |A security realm definition capable of validating and
 extracting identities from security tokens.
+
+|failover-realm |A realm definition that is an aggregation of two realms, one for default behaviour and
+second for cases when first realm is unavailable.
 |=======================================================================
 
 [[permission-mappers]]
