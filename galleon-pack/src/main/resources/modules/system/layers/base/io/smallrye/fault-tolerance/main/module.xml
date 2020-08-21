@@ -29,6 +29,7 @@
 
     <resources>
         <artifact name="${io.smallrye:smallrye-fault-tolerance}"/>
+        <artifact name="${io.smallrye:smallrye-fault-tolerance-api}"/>
         <artifact name="${io.smallrye:smallrye-fault-tolerance-core}"/>
     </resources>
 
