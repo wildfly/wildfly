@@ -30,12 +30,15 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
  */
 public class ElytronSSOServerSetupTask extends CLIServerSetupTask {
     public ElytronSSOServerSetupTask() {
-        boolean layersTest = Boolean.getBoolean("ts.layers") || Boolean.getBoolean("ts.standalone.microprofile");
+        // Some test profiles have an application-security-domain in the existing config
+        boolean hasApplicationSecurityDomain = Boolean.getBoolean("ts.layers")
+                || Boolean.getBoolean("ts.standalone.microprofile")
+                || Boolean.getBoolean("ts.ee9");
         NodeBuilder nb = this.builder.node(AbstractClusteringTestCase.TWO_NODES)
                 .setup("/subsystem=elytron/filesystem-realm=sso:add(path=sso-realm, relative-to=jboss.server.data.dir)")
                 .setup("/subsystem=elytron/security-domain=sso:add(default-realm=sso, permission-mapper=default-permission-mapper,realms=[{realm=sso, role-decoder=groups-to-roles}])")
                 .setup("/subsystem=elytron/http-authentication-factory=sso:add(security-domain=sso, http-server-mechanism-factory=global, mechanism-configurations=[{mechanism-name=FORM}])");
-        if (layersTest) {
+        if (hasApplicationSecurityDomain) {
             // We already have an application-security-domain; need to reconfigure
             nb = nb.setup("/subsystem=undertow/application-security-domain=other:undefine-attribute(name=security-domain)")
                     .setup("/subsystem=undertow/application-security-domain=other:write-attribute(name=http-authentication-factory,value=sso");
@@ -47,7 +50,7 @@ public class ElytronSSOServerSetupTask extends CLIServerSetupTask {
                 .setup("/subsystem=undertow/application-security-domain=other/setting=single-sign-on:add(key-store=sso, key-alias=localhost, credential-reference={clear-text=password})")
                 .teardown("/subsystem=undertow/application-security-domain=other/setting=single-sign-on:remove()")
                 .teardown("/subsystem=elytron/key-store=sso:remove()");
-        if (layersTest) {
+        if (hasApplicationSecurityDomain) {
             nb = nb.teardown("/subsystem=undertow/application-security-domain=other:undefine-attribute(name=http-authentication-factory)")
                     .teardown("/subsystem=undertow/application-security-domain=other:write-attribute(name=security-domain,value=ApplicationDomain");
         } else {
