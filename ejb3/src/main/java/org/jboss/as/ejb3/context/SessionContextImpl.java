@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.context;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.SessionContext;
@@ -37,6 +40,8 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.invocation.InterceptorContext;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Implementation of the SessionContext interface.
@@ -126,5 +131,27 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
     public boolean getRollbackOnly() throws IllegalStateException {
         AllowedMethodsInformation.checkAllowed(MethodType.GET_ROLLBACK_ONLY);
         return super.getRollbackOnly();
+    }
+
+
+    @MetaInfServices(Externalizer.class)
+    public static class SessionContextImplExternalizer implements Externalizer<SessionContextImpl> {
+        @Override
+        public void writeObject(ObjectOutput output, SessionContextImpl object) throws IOException {
+            EjbLogger.ROOT_LOGGER.info("Externalizing!!");
+            output.writeObject(object.getEjbComponentInstance());
+        }
+
+        @Override
+        public SessionContextImpl readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+            SessionBeanComponentInstance componentInstance = (SessionBeanComponentInstance) input.readObject();
+            EjbLogger.ROOT_LOGGER.info("Reading!!");
+            return new SessionContextImpl(componentInstance);
+        }
+
+        @Override
+        public Class<SessionContextImpl> getTargetClass() {
+            return SessionContextImpl.class;
+        }
     }
 }
