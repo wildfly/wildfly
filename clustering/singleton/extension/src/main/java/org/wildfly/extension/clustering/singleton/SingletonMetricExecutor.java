@@ -62,7 +62,7 @@ public class SingletonMetricExecutor implements MetricExecutor<Singleton> {
 
         @SuppressWarnings("deprecation")
         LegacySingletonFunctionExecutor(OperationContext context, ServiceName name) {
-            this.singleton = (Singleton) context.getServiceRegistry(false).getRequiredService(name).getService();
+            this.singleton = (Singleton) ((org.wildfly.clustering.service.AsynchronousServiceBuilder<?>) context.getServiceRegistry(false).getRequiredService(name).getService()).getService();
         }
 
         @Override

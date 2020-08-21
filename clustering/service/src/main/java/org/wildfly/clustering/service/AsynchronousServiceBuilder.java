@@ -71,6 +71,14 @@ public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
     }
 
     /**
+     * Return the underlying service for this builder
+     * @return an MSC service
+     */
+    public Service<T> getService() {
+        return this.service;
+    }
+
+    /**
      * Indicates that this service should *not* be started asynchronously.
      * @return a reference to this builder
      */
