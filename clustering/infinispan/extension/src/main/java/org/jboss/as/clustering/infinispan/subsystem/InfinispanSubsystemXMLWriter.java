@@ -32,7 +32,6 @@ import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
-import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteTransactionResourceDefinition;
@@ -43,6 +42,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.wildfly.clustering.ee.CompositeIterable;
 
 /**
  * XML writer for current Infinispan subsystem schema version.
@@ -81,7 +81,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     // write any configured thread pools
                     if (container.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
                         writeThreadPoolElements(XMLElement.ASYNC_OPERATIONS_THREAD_POOL, ThreadPoolResourceDefinition.ASYNC_OPERATIONS, writer, container);
+                        writeThreadPoolElements(XMLElement.BLOCKING_THREAD_POOL, ThreadPoolResourceDefinition.BLOCKING, writer, container);
                         writeThreadPoolElements(XMLElement.LISTENER_THREAD_POOL, ThreadPoolResourceDefinition.LISTENER, writer, container);
+                        writeThreadPoolElements(XMLElement.NON_BLOCKING_THREAD_POOL, ThreadPoolResourceDefinition.NON_BLOCKING, writer, container);
                         writeThreadPoolElements(XMLElement.PERSISTENCE_THREAD_POOL, ThreadPoolResourceDefinition.PERSISTENCE, writer, container);
                         writeThreadPoolElements(XMLElement.REMOTE_COMMAND_THREAD_POOL, ThreadPoolResourceDefinition.REMOTE_COMMAND, writer, container);
                         writeThreadPoolElements(XMLElement.STATE_TRANSFER_THREAD_POOL, ThreadPoolResourceDefinition.STATE_TRANSFER, writer, container);
@@ -183,10 +185,10 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeEndElement();
                     }
 
-                    if (remoteContainer.hasDefined(InvalidationNearCacheResourceDefinition.PATH.getKeyValuePair())) {
+                    if (remoteContainer.hasDefined(org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH.getKeyValuePair())) {
                         writer.writeStartElement(XMLElement.INVALIDATION_NEAR_CACHE.getLocalName());
-                        ModelNode nearCache = remoteContainer.get(InvalidationNearCacheResourceDefinition.PATH.getKeyValuePair());
-                        writeAttributes(writer, nearCache, EnumSet.allOf(InvalidationNearCacheResourceDefinition.Attribute.class));
+                        ModelNode nearCache = remoteContainer.get(org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH.getKeyValuePair());
+                        writeAttributes(writer, nearCache, EnumSet.allOf(org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.Attribute.class));
                         writer.writeEndElement();
                     }
 
@@ -238,9 +240,11 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writeAttributes(writer, cache, ClusteredCacheResourceDefinition.Attribute.class);
     }
 
+    @SuppressWarnings("deprecation")
     private static void writeSegmentedCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writeClusteredCacheAttributes(writer, name, cache);
         writeAttributes(writer, cache, SegmentedCacheResourceDefinition.Attribute.class);
+        writeAttributes(writer, cache, SegmentedCacheResourceDefinition.DeprecatedAttribute.class);
     }
 
     @SuppressWarnings("deprecation")
@@ -266,27 +270,22 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             }
         }
 
-        if (cache.hasDefined(ObjectMemoryResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode memory = cache.get(ObjectMemoryResourceDefinition.PATH.getKeyValuePair());
-            Set<ObjectMemoryResourceDefinition.Attribute> attributes = EnumSet.allOf(MemoryResourceDefinition.Attribute.class);
+        if (cache.hasDefined(HeapMemoryResourceDefinition.PATH.getKeyValuePair())) {
+            ModelNode memory = cache.get(HeapMemoryResourceDefinition.PATH.getKeyValuePair());
+            Iterable<Attribute> attributes = new CompositeIterable<>(EnumSet.allOf(MemoryResourceDefinition.Attribute.class), EnumSet.allOf(HeapMemoryResourceDefinition.Attribute.class));
             if (hasDefined(memory, attributes)) {
-                writer.writeStartElement(XMLElement.OBJECT_MEMORY.getLocalName());
+                writer.writeStartElement(XMLElement.HEAP_MEMORY.getLocalName());
                 writeAttributes(writer, memory, attributes);
                 writer.writeEndElement();
             }
-        } else if (cache.hasDefined(BinaryMemoryResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode memory = cache.get(BinaryMemoryResourceDefinition.PATH.getKeyValuePair());
-            writer.writeStartElement(XMLElement.BINARY_MEMORY.getLocalName());
-            writeAttributes(writer, memory, MemoryResourceDefinition.Attribute.class);
-            writeAttributes(writer, memory, BinaryMemoryResourceDefinition.Attribute.class);
-            writer.writeEndElement();
         } else if (cache.hasDefined(OffHeapMemoryResourceDefinition.PATH.getKeyValuePair())) {
             ModelNode memory = cache.get(OffHeapMemoryResourceDefinition.PATH.getKeyValuePair());
-            writer.writeStartElement(XMLElement.OFF_HEAP_MEMORY.getLocalName());
-            writeAttributes(writer, memory, MemoryResourceDefinition.Attribute.class);
-            writeAttributes(writer, memory, BinaryMemoryResourceDefinition.Attribute.class);
-            writeAttributes(writer, memory, OffHeapMemoryResourceDefinition.DeprecatedAttribute.class);
-            writer.writeEndElement();
+            Iterable<Attribute> attributes = new CompositeIterable<>(EnumSet.allOf(MemoryResourceDefinition.Attribute.class), EnumSet.allOf(OffHeapMemoryResourceDefinition.Attribute.class));
+            if (hasDefined(memory, attributes)) {
+                writer.writeStartElement(XMLElement.OFF_HEAP_MEMORY.getLocalName());
+                writeAttributes(writer, memory, attributes);
+                writer.writeEndElement();
+            }
         }
 
         if (cache.hasDefined(ExpirationResourceDefinition.PATH.getKeyValuePair())) {

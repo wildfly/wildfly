@@ -30,7 +30,8 @@ import org.infinispan.notifications.cachelistener.filter.EventType;
  * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  */
-public class BeanGroupFilter implements CacheEventFilter<Object, Object> {
+public enum BeanGroupFilter implements CacheEventFilter<Object, Object> {
+    INSTANCE;
 
     @Override
     public boolean accept(Object key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {

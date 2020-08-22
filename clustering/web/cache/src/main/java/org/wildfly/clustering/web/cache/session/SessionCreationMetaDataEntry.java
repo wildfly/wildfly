@@ -48,4 +48,9 @@ public class SessionCreationMetaDataEntry<L> {
     public AtomicReference<L> getLocalContext() {
         return this.localContext;
     }
+
+    @Override
+    public String toString() {
+        return this.metaData.toString();
+    }
 }

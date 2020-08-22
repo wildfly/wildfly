@@ -20,7 +20,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="org.infinispan">
+<module xmlns="urn:jboss:module:1.9" name="org.infinispan">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,7 +33,7 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="com.github.ben-manes.caffeine"/>
-        <module name="io.reactivex.rxjava2.rxjava"/>
+        <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="org.infinispan.persistence.jdbc" optional="true"/>
         <module name="org.infinispan.persistence.remote" optional="true"/>
         <module name="org.infinispan.client.hotrod" optional="true"/>

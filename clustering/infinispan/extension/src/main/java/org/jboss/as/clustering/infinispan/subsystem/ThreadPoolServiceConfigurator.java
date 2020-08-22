@@ -36,6 +36,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.common.cpu.ProcessorInfo;
 
 /**
  * Configures a service providing a {@link ThreadPoolConfiguration}.
@@ -54,13 +55,15 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        ThreadPoolExecutorFactory<?> factory = new BlockingThreadPoolExecutorFactory(
-                this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt(),
-                this.definition.getMinThreads().resolveModelAttribute(context, model).asInt(),
-                this.definition.getQueueLength().resolveModelAttribute(context, model).asInt(),
-                this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong(),
-                this.definition.isNonBlocking()
-        ) {
+        int minThreads = this.definition.getMinThreads().resolveModelAttribute(context, model).asInt();
+        int maxThreads = this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt();
+        int queueLength = this.definition.getQueueLength().resolveModelAttribute(context, model).asInt();
+        long keepAliveTime = this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong();
+        boolean nonBlocking = this.definition.isNonBlocking();
+        if (this.definition == ThreadPoolResourceDefinition.NON_BLOCKING) {
+            maxThreads *= ProcessorInfo.availableProcessors();
+        }
+        ThreadPoolExecutorFactory<?> factory = new BlockingThreadPoolExecutorFactory(maxThreads, minThreads, queueLength, keepAliveTime, nonBlocking) {
             @Override
             public ExecutorService createExecutor(ThreadFactory factory) {
                 return super.createExecutor(this.createsNonBlockingThreads() ? new DefaultNonBlockingThreadFactory(factory) : new DefaultThreadFactory(factory));

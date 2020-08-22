@@ -25,8 +25,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
@@ -87,13 +90,20 @@ public class ConfigurationServiceConfigurator extends SimpleServiceNameProvider 
     public Configuration get() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         this.consumer.accept(builder);
+        // Auto-enable simple cache optimization if cache is local, on-heap, non-transactional, and non-persistent
+        builder.simpleCache((builder.clustering().cacheMode() == CacheMode.LOCAL) && (builder.memory().storage() == StorageType.HEAP) && !builder.transaction().transactionMode().isTransactional() && builder.persistence().stores().isEmpty());
+
+        builder.encoding().mediaType(builder.memory().storage() == StorageType.OFF_HEAP ? this.container.get().getCacheManagerConfiguration().serialization().marshaller().mediaType().toString() : MediaType.APPLICATION_OBJECT_TYPE);
+
         Configuration configuration = builder.build();
-        this.container.get().defineConfiguration(this.cacheName, configuration);
+        CacheContainer container = this.container.get();
+        container.defineConfiguration(this.cacheName, configuration);
         return configuration;
     }
 
     @Override
     public void accept(Configuration configuration) {
-        this.container.get().undefineConfiguration(this.cacheName);
+        CacheContainer container = this.container.get();
+        container.undefineConfiguration(this.cacheName);
     }
 }

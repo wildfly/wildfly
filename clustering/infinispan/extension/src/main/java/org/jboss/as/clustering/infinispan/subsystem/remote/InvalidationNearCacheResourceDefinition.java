@@ -24,10 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -46,6 +43,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Radoslav Husar
  */
+@Deprecated
 public class InvalidationNearCacheResourceDefinition extends NearCacheResourceDefinition {
 
     public static final PathElement PATH = pathElement("invalidation");
@@ -94,16 +92,10 @@ public class InvalidationNearCacheResourceDefinition extends NearCacheResourceDe
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(InvalidationNearCacheResourceDefinition.Attribute.class)
+                .addIgnoredAttributes(InvalidationNearCacheResourceDefinition.Attribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, null).register(registration);
 
         return registration;
-    }
-
-    @Override
-    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new InvalidationNearCacheServiceConfigurator(address);
     }
 }

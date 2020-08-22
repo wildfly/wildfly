@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="org.infinispan.hibernate-cache">
+<module xmlns="urn:jboss:module:1.9" name="org.infinispan.hibernate-cache">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -45,5 +45,6 @@
         <module name="org.infinispan.component.annotations"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.logging"/>
+        <module name="org.wildfly.clustering.infinispan.spi" services="import"/>
     </dependencies>
 </module>

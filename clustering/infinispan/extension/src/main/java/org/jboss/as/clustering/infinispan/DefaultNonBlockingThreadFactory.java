@@ -24,14 +24,14 @@ package org.jboss.as.clustering.infinispan;
 
 import java.util.concurrent.ThreadFactory;
 
-import org.infinispan.commons.executors.NonBlockingThreadFactory;
+import org.infinispan.commons.executors.NonBlockingResource;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 
 /**
  * Thread factory for non-blocking threads.
  * @author Paul Ferraro
  */
-public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingThreadFactory {
+public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingResource {
 
     public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
         super(factory);

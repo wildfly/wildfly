@@ -83,7 +83,6 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
 
     private final KeyAffinityServiceFactory affinityFactory;
     private final SessionFactory<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> factory;
-    private final SessionCreationMetaDataKeyFilter filter = new SessionCreationMetaDataKeyFilter();
     private final BiConsumer<Locality, Locality> scheduleTask;
     private final SchedulerListener listener;
 
@@ -102,7 +101,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
         Group group = dispatcherFactory.getGroup();
         this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, config.getMemberFactory(), group), SessionCreationMetaDataKey::new);
 
-        this.scheduleTask = new ScheduleLocalKeysTask<>(this.cache, this.filter, localScheduler);
+        this.scheduleTask = new ScheduleLocalKeysTask<>(this.cache, SessionCreationMetaDataKeyFilter.INSTANCE, localScheduler);
         this.listener = new SchedulerTopologyChangeListener<>(this.cache, localScheduler, this.scheduleTask);
     }
 
