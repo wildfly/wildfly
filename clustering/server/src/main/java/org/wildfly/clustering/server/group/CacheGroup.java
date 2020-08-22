@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -45,6 +46,7 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.Registration;
@@ -119,7 +121,7 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
 
     @Override
     public boolean isSingleton() {
-        return this.cache.getCacheManager().getTransport() == null;
+        return this.cache.getAdvancedCache().getRpcManager() == null;
     }
 
     @Override
@@ -143,11 +145,11 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
 
     @Merged
     @ViewChanged
-    public void viewChanged(ViewChangedEvent event) {
+    public CompletionStage<Void> viewChanged(ViewChangedEvent event) {
         if (this.cache.getAdvancedCache().getDistributionManager() != null) {
             // Record view status for use by @TopologyChanged event
             this.views.put(event.getViewId(), event.isMergeView());
-        } else if (!this.listeners.isEmpty()) {
+        } else {
             Membership previousMembership = new CacheMembership(event.getLocalAddress(), event.getOldMembers(), this);
             Membership membership = new CacheMembership(event.getLocalAddress(), event.getNewMembers(), this);
             for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
@@ -170,14 +172,13 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
                 }
             }
         }
+        return CompletableFutures.completedNull();
     }
 
     @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<?, ?> event) {
-        if (event.isPre()) return;
-
-        int viewId = event.getCache().getCacheManager().getTransport().getViewId();
-        if (!this.listeners.isEmpty()) {
+    public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
+        if (!event.isPre()) {
+            int viewId = event.getCache().getAdvancedCache().getRpcManager().getTransport().getViewId();
             Address localAddress = event.getCache().getCacheManager().getAddress();
             Membership previousMembership = new CacheMembership(localAddress, event.getWriteConsistentHashAtStart(), this);
             Membership membership = new CacheMembership(localAddress, event.getWriteConsistentHashAtEnd(), this);
@@ -202,9 +203,10 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
                     // Listener was unregistered
                 }
             }
+            // Purge obsolete views
+            this.views.headMap(viewId).clear();
         }
-        // Purge obsolete views
-        this.views.headMap(viewId).clear();
+        return CompletableFutures.completedNull();
     }
 
     @Override

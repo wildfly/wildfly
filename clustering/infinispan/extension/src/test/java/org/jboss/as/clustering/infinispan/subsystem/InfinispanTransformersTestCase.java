@@ -36,7 +36,6 @@ import java.util.List;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
-import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteTransactionResourceDefinition;
@@ -117,6 +116,10 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
             case EAP_7_2_0:
                 return new String[] {
                         formatEAP7SubsystemArtifact(version),
+                        "org.infinispan:infinispan-commons:9.3.8.Final-redhat-00001",
+                        "org.infinispan:infinispan-core:9.3.8.Final-redhat-00001",
+                        "org.infinispan:infinispan-cachestore-jdbc:9.3.8.Final-redhat-00001",
+                        "org.infinispan:infinispan-client-hotrod:9.3.8.Final-redhat-00001",
                         // Following are needed for InfinispanSubsystemInitialization
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
@@ -372,7 +375,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> operations = builder.parseXmlResource("infinispan-transformer-reject.xml");
+        List<ModelNode> operations = builder.parseXmlResource("subsystem-infinispan-transformer-reject.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, operations, createFailedOperationConfig(version));
     }
 
@@ -401,19 +404,19 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH, StateTransferResourceDefinition.PATH), new RejectedValueConfig(StateTransferResourceDefinition.Attribute.TIMEOUT, value -> value.asLong() <= 0));
             config.addFailedAttribute(remoteContainerAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            for (PathElement path : Arrays.asList(ThreadPoolResourceDefinition.CLIENT.getPathElement(), ConnectionPoolResourceDefinition.PATH, InvalidationNearCacheResourceDefinition.PATH, RemoteClusterResourceDefinition.WILDCARD_PATH, RemoteTransactionResourceDefinition.PATH, SecurityResourceDefinition.PATH) ) {
+            for (PathElement path : Arrays.asList(ThreadPoolResourceDefinition.CLIENT.getPathElement(), ConnectionPoolResourceDefinition.PATH, org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH, RemoteClusterResourceDefinition.WILDCARD_PATH, RemoteTransactionResourceDefinition.PATH, SecurityResourceDefinition.PATH) ) {
                 config.addFailedAttribute(remoteContainerAddress.append(path), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             }
 
             PathAddress cacheAddress = containerAddress.append(ScatteredCacheResourceDefinition.WILDCARD_PATH);
             config.addFailedAttribute(cacheAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            for (PathElement path : Arrays.asList(LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH, ObjectMemoryResourceDefinition.PATH, ExpirationResourceDefinition.PATH, StateTransferResourceDefinition.PATH, PartitionHandlingResourceDefinition.PATH)) {
+            for (PathElement path : Arrays.asList(LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH, HeapMemoryResourceDefinition.PATH, ExpirationResourceDefinition.PATH, StateTransferResourceDefinition.PATH, PartitionHandlingResourceDefinition.PATH)) {
                 config.addFailedAttribute(cacheAddress.append(path), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             }
         }
 
         if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH, BinaryMemoryResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH, OffHeapMemoryResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH, OffHeapMemoryResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 

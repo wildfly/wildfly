@@ -24,8 +24,8 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.controller.PathElement;
 
 /**
@@ -33,7 +33,8 @@ import org.jboss.as.controller.PathElement;
  *
  * @author Radoslav Husar
  */
-public abstract class NearCacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
+@Deprecated
+public abstract class NearCacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -43,5 +44,6 @@ public abstract class NearCacheResourceDefinition extends ChildResourceDefinitio
 
     NearCacheResourceDefinition(PathElement path) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path));
+        this.setDeprecated(InfinispanModel.VERSION_13_0_0.getVersion());
     }
 }

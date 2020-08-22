@@ -22,16 +22,11 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.SegmentedCacheResourceDefinition.Attribute.CONSISTENT_HASH_STRATEGY;
 import static org.jboss.as.clustering.infinispan.subsystem.SegmentedCacheResourceDefinition.Attribute.SEGMENTS;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.HashConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.distribution.ch.impl.DefaultConsistentHashFactory;
-import org.infinispan.distribution.ch.impl.TopologyAwareConsistentHashFactory;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -48,7 +43,6 @@ public class SegmentedCacheServiceConfigurator extends SharedStateCacheServiceCo
 
     private final SupplierDependency<GlobalConfiguration> global;
 
-    private volatile ConsistentHashStrategy consistentHashStrategy;
     private volatile int segments;
 
     SegmentedCacheServiceConfigurator(PathAddress address, CacheMode mode) {
@@ -63,7 +57,6 @@ public class SegmentedCacheServiceConfigurator extends SharedStateCacheServiceCo
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, model), ConsistentHashStrategy.class);
         this.segments = SEGMENTS.resolveModelAttribute(context, model).asInt();
 
         return super.configure(context, model);
@@ -73,11 +66,6 @@ public class SegmentedCacheServiceConfigurator extends SharedStateCacheServiceCo
     public void accept(ConfigurationBuilder builder) {
         super.accept(builder);
 
-        HashConfigurationBuilder hash = builder.clustering().hash().numSegments(this.segments);
-
-        // ConsistentHashStrategy.INTER_CACHE is Infinispan's default behavior
-        if (this.consistentHashStrategy == ConsistentHashStrategy.INTRA_CACHE) {
-            hash.consistentHashFactory(this.global.get().transport().hasTopologyInfo() ? new TopologyAwareConsistentHashFactory() : new DefaultConsistentHashFactory());
-        }
+        builder.clustering().hash().numSegments(this.segments);
     }
 }

@@ -29,7 +29,6 @@ import java.util.NoSuchElementException;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Index;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
@@ -136,8 +135,8 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         INDEXING("indexing", ModelType.STRING, InfinispanModel.VERSION_4_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(Index.NONE.name()))
-                        .setValidator(new EnumValidator<>(Index.class))
+                return builder.setDefaultValue(new ModelNode(org.infinispan.configuration.cache.Index.NONE.name()))
+                        .setValidator(new EnumValidator<>(org.infinispan.configuration.cache.Index.class))
                         ;
             }
         },
@@ -302,8 +301,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
             builder.setCustomResourceTransformer(batchingTransformer);
         }
 
-        BinaryMemoryResourceDefinition.buildTransformation(version, builder);
-        ObjectMemoryResourceDefinition.buildTransformation(version, builder);
+        HeapMemoryResourceDefinition.buildTransformation(version, builder);
         OffHeapMemoryResourceDefinition.buildTransformation(version, builder);
         HotRodStoreResourceDefinition.buildTransformation(version, builder);
 
@@ -339,7 +337,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
-                .addRequiredSingletonChildren(ObjectMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
+                .addRequiredSingletonChildren(HeapMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
                 ;
         new SimpleResourceRegistration(descriptor, this.handler).register(registration);
 
@@ -352,8 +350,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
             }
         }
 
-        new ObjectMemoryResourceDefinition().register(registration);
-        new BinaryMemoryResourceDefinition().register(registration);
+        new HeapMemoryResourceDefinition().register(registration);
         new OffHeapMemoryResourceDefinition().register(registration);
 
         new ExpirationResourceDefinition().register(registration);

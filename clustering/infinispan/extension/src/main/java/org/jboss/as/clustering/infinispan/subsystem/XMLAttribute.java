@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
  */
 public enum XMLAttribute {
     // must be first
-    UNKNOWN(""),
+    UNKNOWN((String) null),
     ACQUIRE_TIMEOUT(LockingResourceDefinition.Attribute.ACQUIRE_TIMEOUT),
     @Deprecated CAPACITY(OffHeapMemoryResourceDefinition.DeprecatedAttribute.CAPACITY),
     ALIASES(CacheContainerResourceDefinition.Attribute.ALIASES),
@@ -58,7 +59,7 @@ public enum XMLAttribute {
     CLASS(CustomStoreResourceDefinition.Attribute.CLASS),
     @Deprecated CLUSTER(JGroupsTransportResourceDefinition.DeprecatedAttribute.CLUSTER),
     CONCURRENCY_LEVEL(LockingResourceDefinition.Attribute.CONCURRENCY),
-    CONSISTENT_HASH_STRATEGY(SegmentedCacheResourceDefinition.Attribute.CONSISTENT_HASH_STRATEGY),
+    @Deprecated CONSISTENT_HASH_STRATEGY(SegmentedCacheResourceDefinition.DeprecatedAttribute.CONSISTENT_HASH_STRATEGY),
     CREATE_ON_START(TableResourceDefinition.Attribute.CREATE_ON_START),
     DATA_SOURCE(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE),
     @Deprecated DATASOURCE(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE),
@@ -69,7 +70,7 @@ public enum XMLAttribute {
     @Deprecated EAGER_LOCKING("eager-locking"),
     ENABLED(BackupResourceDefinition.Attribute.ENABLED),
     @Deprecated EVICTION_EXECUTOR(CacheContainerResourceDefinition.ExecutorAttribute.EVICTION),
-    EVICTION_TYPE(BinaryMemoryResourceDefinition.Attribute.EVICTION_TYPE),
+    @Deprecated EVICTION_TYPE(OffHeapMemoryResourceDefinition.DeprecatedAttribute.EVICTION_TYPE),
     @Deprecated EXECUTOR(JGroupsTransportResourceDefinition.ExecutorAttribute.TRANSPORT),
     FETCH_SIZE(TableResourceDefinition.Attribute.FETCH_SIZE),
     FETCH_STATE(StoreResourceDefinition.Attribute.FETCH_STATE),
@@ -88,8 +89,9 @@ public enum XMLAttribute {
     LOCK_TIMEOUT(JGroupsTransportResourceDefinition.Attribute.LOCK_TIMEOUT),
     LOCKING(TransactionResourceDefinition.Attribute.LOCKING),
     MACHINE("machine"),
+    MAX("max"),
     MAX_BATCH_SIZE(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE),
-    MAX_ENTRIES(ObjectMemoryResourceDefinition.DeprecatedAttribute.MAX_ENTRIES),
+    MAX_ENTRIES(HeapMemoryResourceDefinition.DeprecatedAttribute.MAX_ENTRIES),
     MAX_IDLE(ExpirationResourceDefinition.Attribute.MAX_IDLE),
     MAX_THREADS(ThreadPoolResourceDefinition.values()[0].getMaxThreads()),
     MIN_THREADS(ThreadPoolResourceDefinition.values()[0].getMinThreads()),
@@ -119,16 +121,17 @@ public enum XMLAttribute {
     @Deprecated SHUTDOWN_TIMEOUT(StoreWriteBehindResourceDefinition.DeprecatedAttribute.SHUTDOWN_TIMEOUT),
     @Deprecated SINGLETON(StoreResourceDefinition.DeprecatedAttribute.SINGLETON),
     SITE("site"),
-    SIZE(ObjectMemoryResourceDefinition.Attribute.SIZE),
+    SIZE(MemoryResourceDefinition.Attribute.SIZE),
+    SIZE_UNIT(MemoryResourceDefinition.SharedAttribute.SIZE_UNIT),
     @Deprecated STACK(JGroupsTransportResourceDefinition.DeprecatedAttribute.STACK),
     @Deprecated START(CacheContainerResourceDefinition.DeprecatedAttribute.START),
     STATISTICS_ENABLED(CacheResourceDefinition.Attribute.STATISTICS_ENABLED),
     STOP_TIMEOUT(TransactionResourceDefinition.Attribute.STOP_TIMEOUT),
-    STRATEGY(ObjectMemoryResourceDefinition.DeprecatedAttribute.STRATEGY),
+    STRATEGY(HeapMemoryResourceDefinition.DeprecatedAttribute.STRATEGY),
     STRIPING(LockingResourceDefinition.Attribute.STRIPING),
     TAKE_OFFLINE_AFTER_FAILURES(BackupResourceDefinition.TakeOfflineAttribute.AFTER_FAILURES),
     TAKE_OFFLINE_MIN_WAIT(BackupResourceDefinition.TakeOfflineAttribute.MIN_WAIT),
-    THREAD_POOL_SIZE(StoreWriteBehindResourceDefinition.Attribute.THREAD_POOL_SIZE),
+    @Deprecated THREAD_POOL_SIZE(StoreWriteBehindResourceDefinition.DeprecatedAttribute.THREAD_POOL_SIZE),
     TIMEOUT(StateTransferResourceDefinition.Attribute.TIMEOUT),
     TYPE(TableResourceDefinition.ColumnAttribute.ID.getColumnType()),
     @Deprecated VIRTUAL_NODES("virtual-nodes"),
@@ -188,7 +191,7 @@ public enum XMLAttribute {
 
     static {
         final Map<String, XMLAttribute> map = new HashMap<>();
-        for (XMLAttribute attribute : values()) {
+        for (XMLAttribute attribute : EnumSet.allOf(XMLAttribute.class)) {
             final String name = attribute.getLocalName();
             if (name != null) {
                 assert !map.containsKey(name) : attribute;

@@ -20,41 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.client.near;
+package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.client.hotrod.MetadataValue;
-import org.infinispan.client.hotrod.near.NearCache;
+import java.math.BigInteger;
+import java.util.function.LongUnaryOperator;
 
 /**
- * An empty near cache.
+ * Units for the size attribute of the memory resource.
  * @author Paul Ferraro
  */
-public class EmptyNearCache<K, V> implements NearCache<K, V> {
+public enum MemorySizeUnit implements LongUnaryOperator {
+    ENTRIES(0),
+    BYTES(1),
+    KB(1000, 1),
+    KiB(1024, 1),
+    MB(1000, 2),
+    MiB(1024, 2),
+    GB(1000, 3),
+    GiB(1024, 3),
+    TB(1000, 4),
+    TiB(1024, 4),
+    ;
+    private final long value;
 
-    @Override
-    public void put(K key, MetadataValue<V> value) {
+    MemorySizeUnit(int base, int exponent) {
+        this(BigInteger.valueOf(base).pow(exponent).longValueExact());
+    }
+
+    MemorySizeUnit(long value) {
+        this.value = value;
     }
 
     @Override
-    public void putIfAbsent(K key, MetadataValue<V> value) {
-    }
-
-    @Override
-    public boolean remove(K key) {
-        return false;
-    }
-
-    @Override
-    public MetadataValue<V> get(K key) {
-        return null;
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    @Override
-    public int size() {
-        return 0;
+    public long applyAsLong(long size) {
+        return size * this.value;
     }
 }

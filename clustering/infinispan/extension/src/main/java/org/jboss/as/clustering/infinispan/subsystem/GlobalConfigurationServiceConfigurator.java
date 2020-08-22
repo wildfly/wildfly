@@ -26,7 +26,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
-import java.nio.file.Paths;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
@@ -37,7 +36,6 @@ import java.util.function.Supplier;
 import javax.management.MBeanServer;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.GlobalStatePathConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
@@ -75,7 +73,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     private final SupplierDependency<Module> module;
     private final SupplierDependency<TransportConfiguration> transport;
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
-    private final Map<ScheduledThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> schedulers = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
+    private final Map<ScheduledThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> scheduledPools = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
     private final String name;
 
     private volatile SupplierDependency<MBeanServer> server;
@@ -88,11 +86,11 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
         this.transport = new ServiceSupplierDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address));
-        for (ThreadPoolResourceDefinition pool : EnumSet.of(ThreadPoolResourceDefinition.ASYNC_OPERATIONS, ThreadPoolResourceDefinition.LISTENER, ThreadPoolResourceDefinition.PERSISTENCE, ThreadPoolResourceDefinition.REMOTE_COMMAND, ThreadPoolResourceDefinition.TRANSPORT)) {
+        for (ThreadPoolResourceDefinition pool : EnumSet.of(ThreadPoolResourceDefinition.LISTENER, ThreadPoolResourceDefinition.BLOCKING, ThreadPoolResourceDefinition.NON_BLOCKING)) {
             this.pools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
         }
         for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
-            this.schedulers.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
+            this.scheduledPools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
         }
     }
 
@@ -108,12 +106,9 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     public GlobalConfiguration get() {
         org.infinispan.configuration.global.GlobalConfigurationBuilder builder = new org.infinispan.configuration.global.GlobalConfigurationBuilder();
         builder.cacheManagerName(this.name)
-            .cacheContainer().statistics(this.statisticsEnabled)
+                .defaultCacheName(this.defaultCache)
+                .cacheContainer().statistics(this.statisticsEnabled)
         ;
-
-        if (this.defaultCache != null) {
-            builder.defaultCacheName(this.defaultCache);
-        }
 
         builder.transport().read(this.transport.get());
 
@@ -121,13 +116,10 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.serialization().marshaller(new JBossMarshaller(this.loader.get(), module));
         builder.classLoader(module.getClassLoader());
 
-        builder.transport().transportThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.TRANSPORT).get());
-        builder.transport().remoteCommandThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.REMOTE_COMMAND).get());
-
-        builder.asyncThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.ASYNC_OPERATIONS).get());
-        builder.expirationThreadPool().read(this.schedulers.get(ScheduledThreadPoolResourceDefinition.EXPIRATION).get());
+        builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());
         builder.listenerThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.LISTENER).get());
-        builder.persistenceThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.PERSISTENCE).get());
+        builder.nonBlockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.NON_BLOCKING).get());
+        builder.expirationThreadPool().read(this.scheduledPools.get(ScheduledThreadPoolResourceDefinition.EXPIRATION).get());
 
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
         // Disable registration of MicroProfile Metrics
@@ -136,13 +128,10 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
                 .mBeanServerLookup(new MBeanServerProvider((this.server != null) && this.statisticsEnabled ? this.server.get() : null))
                 ;
 
-        // Disable triangle algorithm
-        // We optimize for originator as primary owner
+        // Disable triangle algorithm - we optimize for originator as primary owner
         builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
         // Disable configuration storage
         builder.globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
-        // Workaround for ISPN-11845
-        builder.globalState().persistentLocation(Paths.get(GlobalStatePathConfiguration.PATH.getDefaultValue()).getRoot().toString());
 
         return builder.build();
     }
@@ -154,7 +143,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         for (Dependency dependency: this.pools.values()) {
             dependency.register(builder);
         }
-        for (Dependency dependency : this.schedulers.values()) {
+        for (Dependency dependency: this.scheduledPools.values()) {
             dependency.register(builder);
         }
         Service service = new FunctionalService<>(global, Function.identity(), this);

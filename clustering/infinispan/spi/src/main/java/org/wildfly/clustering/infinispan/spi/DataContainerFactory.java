@@ -29,8 +29,6 @@ import org.infinispan.commons.marshall.WrappedBytes;
 import org.infinispan.commons.util.EntrySizeCalculator;
 import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.infinispan.configuration.cache.MemoryConfiguration;
-import org.infinispan.configuration.cache.MemoryStorageConfiguration;
-import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.impl.BoundedSegmentedDataContainer;
@@ -47,7 +45,6 @@ import org.infinispan.container.offheap.OffHeapEntryFactory;
 import org.infinispan.container.offheap.OffHeapMemoryAllocator;
 import org.infinispan.container.offheap.SegmentedBoundedOffHeapDataContainer;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.eviction.EvictionType;
 import org.infinispan.factories.AbstractNamedCacheComponentFactory;
 import org.infinispan.factories.AutoInstantiableFactory;
 import org.infinispan.factories.annotations.DefaultFactoryFor;
@@ -63,14 +60,14 @@ public class DataContainerFactory<K, V> extends AbstractNamedCacheComponentFacto
     @Override
     public Object construct(String componentName) {
         MemoryConfiguration memory = this.configuration.memory();
-        EvictionStrategy strategy = memory.evictionStrategy();
+        EvictionStrategy strategy = memory.whenFull();
         // handle case when < 0 value signifies unbounded container or when we are not removal based
         if (strategy.isExceptionBased() || !strategy.isEnabled()) {
             return this.createUnboundedContainer();
         }
 
         DataContainer<?, ?> container = this.createBoundedDataContainer();
-        memory.heapConfiguration().attributes().attribute(MemoryStorageConfiguration.SIZE).addListener((newSize, oldSize) -> container.resize(newSize.get()));
+        memory.attributes().attribute(MemoryConfiguration.MAX_COUNT).addListener((newSize, oldSize) -> container.resize(newSize.get()));
         return container;
     }
 
@@ -79,7 +76,7 @@ public class DataContainerFactory<K, V> extends AbstractNamedCacheComponentFacto
         boolean segmented = clustering.cacheMode().needsStateTransfer();
         int level = this.configuration.locking().concurrencyLevel();
 
-        boolean offHeap = this.configuration.memory().storageType() == StorageType.OFF_HEAP;
+        boolean offHeap = this.configuration.memory().isOffHeap();
 
         if (segmented) {
             Supplier<PeekableTouchableMap<WrappedBytes, WrappedBytes>> mapSupplier = offHeap ? this::createAndStartOffHeapConcurrentMap : PeekableTouchableContainerMap::new;
@@ -89,29 +86,31 @@ public class DataContainerFactory<K, V> extends AbstractNamedCacheComponentFacto
         return offHeap ? new OffHeapDataContainer() : DefaultDataContainer.unBoundedDataContainer(level);
     }
 
+    @SuppressWarnings("deprecation")
     private DataContainer<?, ?> createBoundedDataContainer() {
         ClusteringConfiguration clustering = this.configuration.clustering();
         boolean segmented = clustering.cacheMode().needsStateTransfer();
         int level = this.configuration.locking().concurrencyLevel();
 
         MemoryConfiguration memory = this.configuration.memory();
-        boolean offHeap = memory.storageType() == StorageType.OFF_HEAP;
-        long thresholdSize = memory.size();
-        EvictionType type = memory.evictionType();
+        boolean offHeap = memory.isOffHeap();
+        long maxEntries = memory.maxCount();
+        long maxBytes = memory.maxSizeBytes();
+        org.infinispan.eviction.EvictionType type = memory.evictionType();
         DataContainerConfiguration config = this.configuration.module(DataContainerConfiguration.class);
         Predicate<?> evictable = (config != null) ? config.evictable() : DataContainerConfiguration.EVICTABLE_PREDICATE.getDefaultValue();
 
         if (segmented) {
             int segments = clustering.hash().numSegments();
             if (offHeap) {
-                return new SegmentedBoundedOffHeapDataContainer(segments, thresholdSize, type);
+                return new SegmentedBoundedOffHeapDataContainer(segments, maxEntries, type);
             }
-            return (type == EvictionType.COUNT) ? new BoundedSegmentedDataContainer<>(segments, thresholdSize, new EvictableEntrySizeCalculator<>(evictable)) : new BoundedSegmentedDataContainer<>(segments, thresholdSize, type);
+            return (maxEntries > 0) ? new BoundedSegmentedDataContainer<>(segments, maxEntries, new EvictableEntrySizeCalculator<>(evictable)) : new BoundedSegmentedDataContainer<>(segments, maxBytes, type);
         }
         if (offHeap) {
-            return new BoundedOffHeapDataContainer(thresholdSize, type);
+            return new BoundedOffHeapDataContainer(maxEntries, type);
         }
-        return (type == EvictionType.COUNT) ? new EvictableDataContainer<>(thresholdSize, new EvictableEntrySizeCalculator<>(evictable)) : DefaultDataContainer.boundedDataContainer(level, thresholdSize, type);
+        return (maxEntries > 0) ? new EvictableDataContainer<>(maxEntries, new EvictableEntrySizeCalculator<>(evictable)) : DefaultDataContainer.boundedDataContainer(level, maxBytes, type);
     }
 
     private OffHeapConcurrentMap createAndStartOffHeapConcurrentMap() {

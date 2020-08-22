@@ -45,6 +45,14 @@ public class HotRodStoreConfiguration extends AbstractStoreConfiguration {
         super(attributes, async);
     }
 
+    public RemoteCacheContainer remoteCacheContainer() {
+        return this.attributes().attribute(HotRodStoreConfiguration.REMOTE_CACHE_CONTAINER).get();
+    }
+
+    public String cacheConfiguration() {
+        return this.attributes.attribute(CACHE_CONFIGURATION).get();
+    }
+
     @Override
     public String toString() {
         return "HotRodStoreConfiguration{attributes=" + this.attributes + '}';

@@ -57,10 +57,10 @@ public class SingletonMetricExecutor implements MetricExecutor<Singleton> {
         return ((executor != null) ? executor : new LegacySingletonFunctionExecutor(context, name)).execute(new MetricFunction<>(Function.identity(), metric));
     }
 
+    @Deprecated
     private static class LegacySingletonFunctionExecutor implements FunctionExecutor<Singleton> {
         private final Singleton singleton;
 
-        @SuppressWarnings("deprecation")
         LegacySingletonFunctionExecutor(OperationContext context, ServiceName name) {
             this.singleton = (Singleton) ((org.wildfly.clustering.service.AsynchronousServiceBuilder<?>) context.getServiceRegistry(false).getRequiredService(name).getService()).getService();
         }
