@@ -1,5 +1,3 @@
-<?xml version='1.0' encoding='UTF-8'?>
-
 <!--
 ~ JBoss, Home of Professional Open Source.
 ~ Copyright 2018, Red Hat, Inc., and individual contributors
@@ -22,11 +20,15 @@
 ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<config>
-    <extension-module>org.wildfly.extension.microprofile.opentracing-smallrye</extension-module>
-    <subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:3.0" default-tracer="jaeger">
-        <jaeger-tracer name="jaeger">
-            <sampler-configuration sampler-type="const" sampler-param="1.0"/>
-        </jaeger-tracer>
-    </subsystem>
-</config>
+<subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:3.0" default-tracer="jaeger">
+    <jaeger-tracer name="jaeger">
+        <tags>
+            <property name="test" value="simple"/>
+        </tags>
+        <codec-configuration propagation="${JAEGER_AGENT_PROPAGATION}"/>
+        <sampler-configuration sampler-type="${JAEGER_SAMPLER_TYPE}" sampler-param="${JAEGER_SAMPLER_PARAM}"/>
+        <sender-configuration sender-endpoint="http://${JAEGER_AGENT_HOST}:14268/api/traces"
+                              sender-auth-password="${JAEGER_AGENT_PASSWORD}"
+                              sender-auth-user="${JAEGER_AGENT_USER}"/>
+    </jaeger-tracer>
+</subsystem>
