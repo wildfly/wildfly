@@ -63,16 +63,6 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final int startupBeansCount = moduleDescription.getStartupBeansCount();
-        if (deploymentUnit.getParent() == null) {
-            deploymentUnit.putAttachment(Attachments.STARTUP_COUNTDOWN, new StartupCountdown(startupBeansCount));
-        } else {
-            final StartupCountdown countdown = deploymentUnit.getParent().getAttachment(Attachments.STARTUP_COUNTDOWN);
-            // copy ref to child deployment
-            deploymentUnit.putAttachment(Attachments.STARTUP_COUNTDOWN, countdown);
-            countdown.countUp(startupBeansCount);
-        }
-
         final Set<ServiceName> failed = new HashSet<ServiceName>();
 
         final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription);
