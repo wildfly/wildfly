@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.7" name="test.weld-module-ref">
+    <dependencies>
+        <module name="test.weld-module-impl" export="true">
+            <imports>
+                <include path="META-INF**"/>
+                <include path="org**"/>
+            </imports>
+            <exports>
+                <include path="META-INF**"/>
+                <include path="org**"/>
+            </exports>
+        </module>
+
+        <module name="javax.enterprise.api"/>
+        <module name="javax.inject.api"/>
+    </dependencies>
+</module>

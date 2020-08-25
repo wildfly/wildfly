@@ -16,7 +16,7 @@
 
 <module name="org.jboss.test.testDriver" xmlns="urn:jboss:module:1.8">
     <resources>
-        <resource-root path="testDriver.jar"/>
+        <resource-root path="testDriver-bootableJar.jar"/>
     </resources>
     <dependencies>
         <module name="javax.sql.api"/>

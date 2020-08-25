@@ -2844,7 +2844,6 @@
                 <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
                     <artifactId>wildfly-arquillian-container-bootable</artifactId>
-                    <scope>test</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -2913,7 +2912,7 @@
                         <artifactId>maven-jar-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>create-module</id>
+                                <id>create-module-testDriver</id>
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
@@ -2930,6 +2929,235 @@
                                         <include>**/META-INF/services/java.sql.Driver</include>
                                     </includes>
                                     <finalName>testDriver</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-cidExtensionModule</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/cidExtensionModule/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/extensions/cdiportableextensions/FunExtension.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/extensions/cdiportableextensions/Funny.class</include>
+                                        <include>**/META-INF/services/javax.enterprise.inject.spi.Extension</include>
+                                    </includes>
+                                    <finalName>weldTest</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-alpha</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/alpha/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/AlphaBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/AlphaLookup.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>alpha</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-bravo</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/bravo/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/BravoBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/BravoLookup.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>bravo</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-charlie</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/charlie/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/CharlieBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/CharlieLookup.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>charlie</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-delta</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/delta/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/DeltaBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/DeltaLookup.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>delta</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-multiple1</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/multiple/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/Multiple1.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>multiple1</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-multiple2</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/multiple/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/Multiple2.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>multiple2</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-module-accessibility</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/module-accessibility/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/access/BuiltInBeanWithPackagePrivateConstructor.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>module-accessibility</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-module-impl</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-module-impl/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/alias/ModuleBean.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-module-impl</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-module-a</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-module-A/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/dependency/ModuleABean.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-module-a</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-module-b</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-module-B/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/dependency/ModuleBBean.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-module-b</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-modules-deployment-ear</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-modules-deployment-ear/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/deployment/ModuleBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/deployment/Foo.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-modules-deployment-ear</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-modules-deployment-war</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-modules-deployment-war/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/deployment/ModuleBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/deployment/Foo.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-modules-deployment-war</finalName>
+                                    <classifier>bootableJar</classifier>
                                 </configuration>
                             </execution>
                         </executions>
@@ -2964,8 +3192,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
@@ -3000,8 +3226,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
@@ -3037,13 +3261,11 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
-                                        <layer>jaxrs</layer>
                                         <layer>jpa</layer>
+                                        <layer>jaxrs-server</layer>
                                         <layer>h2-default-datasource</layer>
                                     </layers>
                                 </configuration>
@@ -3099,6 +3321,18 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <excludes combine.children="append">
+                                        <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
+                                        which is not sustainable for all tests. -->
+                                        <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordCommandsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordByClassTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
+                                        <!-- Requires security -->
+                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/vendor/MicroProfileVendorMetricsBootTestCase</exclude>                                        
+                                    </excludes>
                                 </configuration>
                             </execution>
 
@@ -3153,6 +3387,10 @@
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
                                         <!-- truststore setting used in LDAPs testing was affected by some other test - need a separate execution -->
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
+                                        <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
+                                        which is not sustainable for all tests. -->
+                                        <exclude>org/jboss/as/test/integration/security/auditing/CustomAuditProviderModuleTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/MultipleCustomLoginModulesTest.java</exclude>
                                     </excludes>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
@@ -3172,13 +3410,16 @@
                                 <configuration>
                                     <systemPropertyVariables>
                                         <install.dir>${project.build.directory}/wildfly-bootable-legacy-security-ldap</install.dir>
+                                        <module.path>${project.build.directory}/wildfly-bootable-legacy-security-ldap</module.path>
                                         <bootable.jar>${project.build.directory}/test-wildfly-legacy-security.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
                                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>
+                                        <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
+                                        which is not sustainable for all tests. Complex changes would be necessary for the following test cases. -->
+                                        <!--<include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>-->
                                     </includes>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>

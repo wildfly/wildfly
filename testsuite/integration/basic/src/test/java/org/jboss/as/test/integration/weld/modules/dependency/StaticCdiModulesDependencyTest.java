@@ -77,7 +77,7 @@ public class StaticCdiModulesDependencyTest {
         // create modules and deploy them
         doSetup();
         return ShrinkWrap.create(WebArchive.class)
-            .addClasses(StaticCdiModulesDependencyTest.class, WarBean.class)
+            .addClasses(StaticCdiModulesDependencyTest.class, WarBean.class, TestModule.class)
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
             .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME_A + " meta-inf export\n"), "MANIFEST.MF");
     }

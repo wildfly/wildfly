@@ -580,6 +580,35 @@
                                     <!--<includes> included tests are defined in the common part of legacy-security-layers.surefire above </includes>-->
                                 </configuration>
                             </execution>
+                            
+                            <!-- Tests against the install with legacy sar support -->
+                            <execution>
+                                <id>legacy-sar-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-sar</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-sar</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-sar</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-sar</jboss.dist>
+                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-sar</jboss.install.dir>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-sar/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-sar</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/smoke/sar/**/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                            
                         </executions>
                     </plugin>
                 </plugins>
@@ -598,7 +627,6 @@
                 <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
                     <artifactId>wildfly-arquillian-container-bootable</artifactId>
-                    <scope>test</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -658,8 +686,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
@@ -691,8 +717,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
@@ -761,34 +785,6 @@
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
                                     <!--<includes> included tests are defined in the common part of legacy-security-layers.surefire above </includes>-->
-                                </configuration>
-                            </execution>
-
-                            <!-- Tests against the install with legacy sar support -->
-                            <execution>
-                                <id>legacy-sar-layers.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <jboss.home>${project.build.directory}/wildfly-legacy-sar</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-sar</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-sar</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly-legacy-sar</jboss.dist>
-                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-sar</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from dist -->
-                                        <module.path>${project.build.directory}/wildfly-legacy-sar/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-sar</JBOSS_HOME>
-                                    </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/jboss/as/test/smoke/sar/**/*TestCase.java</include>
-                                    </includes>
                                 </configuration>
                             </execution>
 

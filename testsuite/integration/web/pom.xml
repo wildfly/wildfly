@@ -824,8 +824,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
@@ -863,8 +861,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
@@ -903,8 +899,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
@@ -921,7 +915,7 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Provision a jaxrs-server -->
+                            <!-- Package a jaxrs-server -->
                             <execution>
                                 <id>bootable-jar-jaxrs-packaging</id>
                                 <goals>
@@ -943,8 +937,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>
@@ -957,7 +949,7 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Provision a cloud-server -->
+                            <!-- Package a cloud-server -->
                             <execution>
                                 <id>bootable-jar-cloud-packaging</id>
                                 <goals>
@@ -979,8 +971,6 @@
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
                                     <layers>

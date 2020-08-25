@@ -1,0 +1,4 @@
+org.wildfly.test.integration.microprofile.config.smallrye.converter.Return101Converter
+org.wildfly.test.integration.microprofile.config.smallrye.converter.Return102Converter
+org.wildfly.test.integration.microprofile.config.smallrye.converter.HighPriorityStringConverter1
+org.wildfly.test.integration.microprofile.config.smallrye.converter.HighPriorityStringConverter2
