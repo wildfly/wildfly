@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.microprofile.metrics._private;
 
-import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.DEBUG;
 
 import java.io.IOException;
 
@@ -48,8 +48,8 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
     /**
      * Logs an informational message indicating the subsystem is being activated.
      */
-    @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating Eclipse MicroProfile Metrics Subsystem")
+    @LogMessage(level = DEBUG)
+    @Message(id = 1, value = "Activating WildFly MicroProfile Metrics Subsystem")
     void activatingSubsystem();
 
 

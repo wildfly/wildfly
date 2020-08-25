@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.microprofile.health._private;
 
-import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.DEBUG;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
@@ -46,8 +46,8 @@ public interface MicroProfileHealthLogger extends BasicLogger {
     /**
      * Logs an informational message indicating the naming subsystem is being activated.
      */
-    @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating Eclipse MicroProfile Health Subsystem")
+    @LogMessage(level = DEBUG)
+    @Message(id = 1, value = "Activating WildFly MicroProfile Health Subsystem")
     void activatingSubsystem();
 
     @Message(id = 2, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")

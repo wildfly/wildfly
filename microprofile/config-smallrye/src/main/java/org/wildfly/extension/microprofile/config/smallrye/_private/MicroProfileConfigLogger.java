@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.microprofile.config.smallrye._private;
 
-import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.DEBUG;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
@@ -36,26 +36,27 @@ import org.jboss.logging.annotations.MessageLogger;
  */
 @MessageLogger(projectCode = "WFLYCONF", length = 4)
 public interface MicroProfileConfigLogger extends BasicLogger {
+
     /**
      * The root logger with a category of the package name.
      */
-    MicroProfileConfigLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileConfigLogger.class, MicroProfileConfigLogger.class.getPackage().getName());
+    MicroProfileConfigLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileConfigLogger.class,"org.wildfly.extension.microprofile.config.smallrye");
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.
      */
-    @LogMessage(level = INFO)
+    @LogMessage(level = DEBUG)
     @Message(id = 1, value = "Activating WildFly MicroProfile Config Subsystem")
     void activatingSubsystem();
 
     @Message(id = 2, value = "Unable to load class %s from module %s")
     OperationFailedException unableToLoadClassFromModule(String className, String moduleName);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = DEBUG)
     @Message(id = 3, value = "Use directory for MicroProfile Config Source: %s")
     void loadConfigSourceFromDir(String path);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = DEBUG)
     @Message(id = 4, value = "Use class for MicroProfile Config Source: %s")
     void loadConfigSourceFromClass(Class clazz);
 }

@@ -18,7 +18,7 @@
 
 package org.wildfly.extension.microprofile.jwt.smallrye._private;
 
-import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -37,12 +37,12 @@ public interface MicroProfileJWTLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    MicroProfileJWTLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileJWTLogger.class, MicroProfileJWTLogger.class.getPackage().getName());
+    MicroProfileJWTLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileJWTLogger.class, "org.wildfly.extension.microprofile.jwt.smallrye");
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.
      */
-    @LogMessage(level = INFO)
+    @LogMessage(level = DEBUG)
     @Message(id = 1, value = "Activating WildFly MicroProfile JWT Subsystem")
     void activatingSubsystem();
 
