@@ -49,20 +49,20 @@ import org.jboss.as.weld.WeldCapability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
-public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+public class Subsystem_3_0_ParsingTestCase extends AbstractSubsystemBaseTest {
 
-    public Subsystem_2_0_ParsingTestCase() {
+    public Subsystem_3_0_ParsingTestCase() {
         super(SubsystemExtension.SUBSYSTEM_NAME, new SubsystemExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_2_0.xml");
+        return readResource("subsystem_3_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-microprofile-opentracing_2_0.xsd";
+        return "schema/wildfly-microprofile-opentracing_3_0.xsd";
     }
 
     @Override
@@ -76,9 +76,20 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
             "/subsystem-templates/microprofile-opentracing-smallrye.xml",};
     }
 
+    @Test
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
+    public void testTransformersWildFly20() throws Exception {
+        testTransformers(ModelTestControllerVersion.EAP_7_3_0, SubsystemExtension.VERSION_1_0_0);
+    }
+
+    @Test
+    public void testRejectingTransformersWildFly20() throws Exception {
+        testRejectingTransformers(ModelTestControllerVersion.EAP_7_3_0, SubsystemExtension.VERSION_1_0_0);
     }
 
     @Test
@@ -94,7 +105,7 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion opentracingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_2_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_3_0_transform.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, opentracingVersion)
                 .addMavenResourceURL(String.format("%s:wildfly-microprofile-opentracing-extension:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
                 .addMavenResourceURL(String.format("%s:wildfly-microprofile-opentracing-smallrye:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
@@ -125,7 +136,8 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(opentracingVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_2_0_reject_transform.xml");
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_3_0_reject_transform.xml");
+        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SubsystemExtension.SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();

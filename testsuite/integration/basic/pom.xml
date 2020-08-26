@@ -687,7 +687,6 @@
                                         <include>org/jboss/as/test/integration/ee/injection/support/jpa/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/substitution/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</include>
-                                        <exclude>org/jboss/as/test/integration/ejb/**/jts/**/*TestCase*.java</exclude>
                                         <include>org/jboss/as/test/integration/*/security/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/**/mdb/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/log/*TestCase.java</include>
@@ -701,7 +700,6 @@
                                         <include>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</include>
@@ -753,7 +751,6 @@
                                         <exclude>org/jboss/as/test/integration/ee/remotelookup/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/substitution/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/**/jts/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/*/security/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/**/mdb/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</exclude>
@@ -764,7 +761,6 @@
                                         <exclude>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
-                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <exclude>org/jboss/as/test/integration/management/cli/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
