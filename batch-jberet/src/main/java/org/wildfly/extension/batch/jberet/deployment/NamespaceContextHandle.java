@@ -31,8 +31,8 @@ class NamespaceContextHandle implements ContextHandle {
 
     private final NamespaceContextSelector namespaceContextSelector;
 
-    NamespaceContextHandle() {
-        this.namespaceContextSelector = NamespaceContextSelector.getCurrentSelector();
+    NamespaceContextHandle(NamespaceContextSelector namespaceContextSelector) {
+        this.namespaceContextSelector = namespaceContextSelector;
     }
 
     @Override

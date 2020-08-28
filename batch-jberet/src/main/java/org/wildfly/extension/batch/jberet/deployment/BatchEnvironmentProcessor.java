@@ -31,8 +31,10 @@ import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
 import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobOperatorContext;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -117,7 +119,9 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final JobOperatorService jobOperatorService = new JobOperatorService(restartJobsOnResume, deploymentName, jobXmlResolver);
 
             // Create the batch environment
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentName, legacySecurityPresent);
+            final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            final NamespaceContextSelector namespaceContextSelector = eeModuleDescription == null ? null : eeModuleDescription.getNamespaceContextSelector();
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentName, namespaceContextSelector, legacySecurityPresent);
             final ServiceBuilder<SecurityAwareBatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
 
             // Add a dependency to the thread-pool
