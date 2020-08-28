@@ -57,6 +57,40 @@
                         <xs:attribute name="entries" type="stringList" use="required" />
                         <xs:attribute name="enable-amq1-prefix" type="xs:boolean" use="optional" />
                         <xs:attribute name="use-topology-for-load-balancing" type="xs:boolean" use="optional" />
+                        <xs:attribute name="client-failure-check-period" type="xs:long" use="optional" />
+                        <xs:attribute name="connection-ttl" type="xs:long" use="optional" />
+                        <xs:attribute name="call-timeout" type="xs:long" use="optional" />
+                        <xs:attribute name="call-failover-timeout" type="xs:long" use="optional" />
+                        <xs:attribute name="consumer-window-size" type="xs:int" use="optional" />
+                        <xs:attribute name="consumer-max-rate" type="xs:int" use="optional" />
+                        <xs:attribute name="confirmation-window-size" type="xs:int" use="optional" />
+                        <xs:attribute name="producer-window-size" type="xs:int" use="optional" />
+                        <xs:attribute name="producer-max-rate" type="xs:int" use="optional" />
+                        <xs:attribute name="protocol-manager-factory" type="xs:string" use="optional" />
+                        <xs:attribute name="compress-large-messages" type="xs:boolean" use="optional" />
+                        <xs:attribute name="cache-large-message-client" type="xs:boolean" use="optional" />
+                        <xs:attribute name="min-large-message-size" type="xs:int" use="optional" />
+                        <xs:attribute name="client-id" type="xs:string" use="optional" />
+                        <xs:attribute name="dups-ok-batch-size" type="xs:int" use="optional" />
+                        <xs:attribute name="transaction-batch-size" type="xs:int" use="optional" />
+                        <xs:attribute name="block-on-acknowledge" type="xs:boolean" use="optional" />
+                        <xs:attribute name="block-on-non-durable-send" type="xs:boolean" use="optional" />
+                        <xs:attribute name="block-on-durable-send" type="xs:boolean" use="optional" />
+                        <xs:attribute name="auto-group" type="xs:boolean" use="optional" />
+                        <xs:attribute name="pre-acknowledge" type="xs:boolean" use="optional" />
+                        <xs:attribute name="retry-interval" type="xs:long" use="optional" />
+                        <xs:attribute name="retry-interval-multiplier" type="xs:double" use="optional" />
+                        <xs:attribute name="max-retry-interval" type="xs:long" use="optional" />
+                        <xs:attribute name="reconnect-attempts" type="xs:int" use="optional" />
+                        <xs:attribute name="failover-on-initial-connection" type="xs:boolean" use="optional" />
+                        <xs:attribute name="connection-load-balancing-policy-class-name" type="xs:string" use="optional" />
+                        <xs:attribute name="use-global-pools" type="xs:boolean" use="optional" />
+                        <xs:attribute name="scheduled-thread-pool-max-size" type="xs:int" use="optional" />
+                        <xs:attribute name="thread-pool-max-size" type="xs:int" use="optional" />
+                        <xs:attribute name="group-id" type="xs:string" use="optional" />
+                        <xs:attribute name="deserialization-white-list" type="stringList" use="optional" />
+                        <xs:attribute name="deserialization-black-list" type="stringList" use="optional" />
+                        <xs:attribute name="initial-message-packet-size" type="xs:int" use="optional" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="pooled-connection-factory" minOccurs="0" maxOccurs="unbounded">

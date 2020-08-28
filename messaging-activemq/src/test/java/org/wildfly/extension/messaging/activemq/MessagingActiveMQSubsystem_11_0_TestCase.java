@@ -25,6 +25,8 @@ package org.wildfly.extension.messaging.activemq;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_1_0;
+import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_2_0;
+import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_3_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEFAULT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_BRIDGE;
@@ -142,6 +144,7 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
     public void testTransformersWildfly20() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_10_0_0);
     }
+
     @Test
     public void testTransformersWildfly19() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_9_0_0);
@@ -149,12 +152,12 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
 
     @Test
     public void testTransformersEAP_7_3_0() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_3_0, MessagingExtension.VERSION_8_0_0);
+        testTransformers(EAP_7_3_0, MessagingExtension.VERSION_8_0_0);
     }
 
     @Test
     public void testTransformersEAP_7_2_0() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_2_0, MessagingExtension.VERSION_4_0_0);
+        testTransformers(EAP_7_2_0, MessagingExtension.VERSION_4_0_0);
     }
 
     @Test
@@ -168,8 +171,13 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
     }
 
     @Test
+    public void testRejectingTransformersEAP_7_3_0() throws Exception {
+        testRejectingTransformers(EAP_7_3_0, MessagingExtension.VERSION_8_0_0);
+    }
+
+    @Test
     public void testRejectingTransformersEAP_7_2_0() throws Exception {
-        testRejectingTransformers(ModelTestControllerVersion.EAP_7_2_0, MessagingExtension.VERSION_4_0_0);
+        testRejectingTransformers(EAP_7_2_0, MessagingExtension.VERSION_4_0_0);
     }
 
     @Test
@@ -230,16 +238,7 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
-        if (messagingVersion.compareTo(MessagingExtension.VERSION_10_0_0) > 0) {
-            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server1")),
-                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server2")).append(BRIDGE_PATH),
-                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server3")).append(POOLED_CONNECTION_FACTORY_PATH),
-                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(subsystemAddress.append(pathElement(JMS_BRIDGE, "bridge-with-credential-reference")),
-                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
-        }
+
         if (messagingVersion.compareTo(MessagingExtension.VERSION_9_0_0) > 0) {
             config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server1")),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE);
@@ -372,7 +371,79 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.QUEUE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(QueueDefinition.ROUTING_TYPE));
             config.addFailedAttribute(subsystemAddress.append(POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX, ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
-            config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX, ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
+            config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
+                    ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX,
+                    ConnectionFactoryAttributes.Common.USE_TOPOLOGY,
+                    ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
+                    ConnectionFactoryAttributes.Common.CONNECTION_TTL,
+                    CommonAttributes.CALL_TIMEOUT,
+                    CommonAttributes.CALL_FAILOVER_TIMEOUT,
+                    ConnectionFactoryAttributes.Common.CONSUMER_WINDOW_SIZE,
+                    ConnectionFactoryAttributes.Common.CONSUMER_MAX_RATE,
+                    ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE,
+                    ConnectionFactoryAttributes.Common.PRODUCER_WINDOW_SIZE,
+                    ConnectionFactoryAttributes.Common.PRODUCER_MAX_RATE,
+                    ConnectionFactoryAttributes.Common.PROTOCOL_MANAGER_FACTORY,
+                    ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES,
+                    ConnectionFactoryAttributes.Common.CACHE_LARGE_MESSAGE_CLIENT,
+                    CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+                    CommonAttributes.CLIENT_ID,
+                    ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE,
+                    ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE,
+                    ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE,
+                    ConnectionFactoryAttributes.Common.BLOCK_ON_NON_DURABLE_SEND,
+                    ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
+                    ConnectionFactoryAttributes.Common.AUTO_GROUP,
+                    ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE,
+                    ConnectionFactoryAttributes.Common.RETRY_INTERVAL,
+                    ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER,
+                    CommonAttributes.MAX_RETRY_INTERVAL,
+                    ConnectionFactoryAttributes.Common.RECONNECT_ATTEMPTS,
+                    ConnectionFactoryAttributes.Common.FAILOVER_ON_INITIAL_CONNECTION,
+                    ConnectionFactoryAttributes.Common.CONNECTION_LOAD_BALANCING_CLASS_NAME,
+                    ConnectionFactoryAttributes.Common.USE_GLOBAL_POOLS,
+                    ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
+                    ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
+                    ConnectionFactoryAttributes.Common.GROUP_ID,
+                    ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                    ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                    ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE));
+        } else {
+            config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
+                    ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
+                    ConnectionFactoryAttributes.Common.CONNECTION_TTL,
+                    CommonAttributes.CALL_TIMEOUT,
+                    CommonAttributes.CALL_FAILOVER_TIMEOUT,
+                    ConnectionFactoryAttributes.Common.CONSUMER_WINDOW_SIZE,
+                    ConnectionFactoryAttributes.Common.CONSUMER_MAX_RATE,
+                    ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE,
+                    ConnectionFactoryAttributes.Common.PRODUCER_WINDOW_SIZE,
+                    ConnectionFactoryAttributes.Common.PRODUCER_MAX_RATE,
+                    ConnectionFactoryAttributes.Common.PROTOCOL_MANAGER_FACTORY,
+                    ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES,
+                    ConnectionFactoryAttributes.Common.CACHE_LARGE_MESSAGE_CLIENT,
+                    CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+                    CommonAttributes.CLIENT_ID,
+                    ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE,
+                    ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE,
+                    ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE,
+                    ConnectionFactoryAttributes.Common.BLOCK_ON_NON_DURABLE_SEND,
+                    ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
+                    ConnectionFactoryAttributes.Common.AUTO_GROUP,
+                    ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE,
+                    ConnectionFactoryAttributes.Common.RETRY_INTERVAL,
+                    ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER,
+                    CommonAttributes.MAX_RETRY_INTERVAL,
+                    ConnectionFactoryAttributes.Common.RECONNECT_ATTEMPTS,
+                    ConnectionFactoryAttributes.Common.FAILOVER_ON_INITIAL_CONNECTION,
+                    ConnectionFactoryAttributes.Common.CONNECTION_LOAD_BALANCING_CLASS_NAME,
+                    ConnectionFactoryAttributes.Common.USE_GLOBAL_POOLS,
+                    ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
+                    ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
+                    ConnectionFactoryAttributes.Common.GROUP_ID,
+                    ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                    ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                    ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();
