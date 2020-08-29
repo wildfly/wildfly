@@ -385,7 +385,7 @@ public class ManagedExecutorServiceMetricsTestCase {
         Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
         return result.get(RESULT).asInt();
     }
-  
+
     private void assertStatsAttribute(PathAddress resourceAddress, String attrName, int expectedAttrValue) throws IOException, InterruptedException {
         int actualAttrValue = readStatsAttribute(resourceAddress, attrName);
         int retries = 3;
@@ -396,7 +396,7 @@ public class ManagedExecutorServiceMetricsTestCase {
         }
         Assert.assertEquals(attrName, expectedAttrValue, actualAttrValue);
     }
-  
+
     private void writeAttribute(PathAddress resourceAddress, String attrName, int value) throws IOException {
         writeAttribute(resourceAddress, attrName, value, false);
     }
