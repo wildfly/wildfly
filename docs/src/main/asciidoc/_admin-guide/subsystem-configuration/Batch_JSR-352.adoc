@@ -61,7 +61,7 @@ deployment descriptor.
 [source,xml,options="nowrap"]
 ----
 <jboss xmlns="urn:jboss:1.0">
-    <batch xmlns="urn:jboss:batch-jberet:1.0">
+    <batch xmlns="urn:jboss:domain:batch-jberet:2.0">
       <job-repository>
         <named name="batch-ds"/>
       </job-repository>
@@ -75,9 +75,9 @@ deployment descriptor.
 [source,xml,options="nowrap"]
 ----
 <jboss xmlns="urn:jboss:1.0">
-    <batch xmlns="urn:jboss:batch-jberet:1.0">
+    <batch xmlns="urn:jboss:domain:batch-jberet:2.0">
         <job-repository>
-            <jdbc jndi-name="java:jboss/datasources/ExampleDS"/>
+            <jdbc data-source="batch-ds"/>
         </job-repository>
     </batch>
 </jboss>

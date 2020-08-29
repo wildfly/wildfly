@@ -25,6 +25,8 @@ package org.wildfly.extension.batch.jberet.deployment;
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
+import javax.sql.DataSource;
+
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
@@ -52,6 +54,7 @@ import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
+import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryService;
 import org.wildfly.extension.requestcontroller.RequestController;
 
 /**
@@ -92,6 +95,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             JobRepository jobRepository = null;
             String jobRepositoryName = null;
+            String dataSourceName = null;
             String jobExecutorName = null;
             Boolean restartJobsOnResume = null;
 
@@ -107,6 +111,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             if (metaData != null) {
                 jobRepository = metaData.getJobRepository();
                 jobRepositoryName = metaData.getJobRepositoryName();
+                dataSourceName = metaData.getDataSourceName();
                 jobExecutorName = metaData.getExecutorName();
                 restartJobsOnResume = metaData.getRestartJobsOnResume();
             }
@@ -150,11 +155,20 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             artifactFactoryServiceBuilder.install();
             serviceBuilder.addDependency(artifactFactoryServiceName, WildFlyArtifactFactory.class, service.getArtifactFactoryInjector());
 
-            // No deployment defined repository, use the default
             if (jobRepositoryName != null) {
                 // Register a named job repository
                 serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), jobRepositoryName), JobRepository.class, service.getJobRepositoryInjector());
-            } else {
+            } else if (dataSourceName != null) {
+                // Register a jdbc job repository with data-source
+                final JdbcJobRepositoryService jdbcJobRepositoryService = new JdbcJobRepositoryService();
+                final ServiceName jobRepositoryServiceName = support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), deploymentName);
+                final ServiceBuilder<JobRepository> jobRepositoryServiceBuilder =
+                        Services.addServerExecutorDependency(serviceTarget.addService(jobRepositoryServiceName, jdbcJobRepositoryService),
+                            jdbcJobRepositoryService.getExecutorServiceInjector())
+                        .addDependency(support.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY, dataSourceName), DataSource.class, jdbcJobRepositoryService.getDataSourceInjector());
+                jobRepositoryServiceBuilder.install();
+                serviceBuilder.addDependency(jobRepositoryServiceName, JobRepository.class, service.getJobRepositoryInjector());
+            } else if (jobRepository != null) {
                 // Use the job repository as defined in the deployment descriptor
                 service.getJobRepositoryInjector().setValue(new ImmediateValue<>(jobRepository));
             }

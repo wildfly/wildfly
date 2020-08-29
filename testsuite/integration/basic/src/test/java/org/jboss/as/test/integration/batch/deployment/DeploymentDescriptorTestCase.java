@@ -34,6 +34,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -69,6 +70,7 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
 
     // JDBC deployment names
     private static final String NAMED_JDBC_DEPLOYMENT = "batch-named-jdbc.war";
+    private static final String DEFINED_JDBC_DEPLOYMENT = "batch-defined-jdbc.war";
 
     @Deployment(name = NAMED_IN_MEMORY_DEPLOYMENT)
     public static WebArchive createNamedInMemoryDeployment() {
@@ -91,6 +93,13 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
                 .addAsManifestResource(DeploymentDescriptorTestCase.class.getPackage(), "named-jdbc-jboss-all.xml", "jboss-all.xml");
     }
 
+    @Deployment(name = DEFINED_JDBC_DEPLOYMENT)
+    public static WebArchive createDefinedJdbcDeployment() {
+        return createDefaultWar(DEFINED_JDBC_DEPLOYMENT, DeploymentDescriptorTestCase.class.getPackage(), "test-chunk.xml")
+                .addClasses(CountingItemReader.class, CountingItemWriter.class)
+                .addAsManifestResource(DeploymentDescriptorTestCase.class.getPackage(), "defined-jdbc-jboss-all.xml", "jboss-all.xml");
+    }
+
     @OperateOnDeployment(NAMED_IN_MEMORY_DEPLOYMENT)
     @Test
     public void namedInMemoryTest(@ArquillianResource final URL url) throws Exception {
@@ -109,8 +118,16 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
 
     @OperateOnDeployment(NAMED_JDBC_DEPLOYMENT)
     @Test
+    @InSequence(1)
     public void namedJdbcTest(@ArquillianResource final URL url) throws Exception {
-        // Test the default batch defined, ExampleDS, repository is isolated
+        // This test runs after definedJdbcTest, and the two tests share the same data source.
+        testCompletion(3L, url);
+        testCompletion(4L, url);
+    }
+
+    @OperateOnDeployment(DEFINED_JDBC_DEPLOYMENT)
+    @Test
+    public void definedJdbcTest(@ArquillianResource final URL url) throws Exception {
         testCompletion(1L, url);
         testCompletion(2L, url);
     }
