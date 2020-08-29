@@ -24,7 +24,7 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-metrics">
     <dependencies>
-        <layer name="secure-management"/>
+        <layer name="management"/>
         <layer name="microprofile-config"/>
     </dependencies>
     <feature-group name="metrics"/>
