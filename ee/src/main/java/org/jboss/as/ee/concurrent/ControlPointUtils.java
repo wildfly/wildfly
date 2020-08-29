@@ -34,6 +34,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+
 /**
  * Class that manages the control point for executor services
  *
@@ -45,11 +47,20 @@ public class ControlPointUtils {
         if (controlPoint == null || runnable == null) {
             return runnable;
         }
+        final RunResult result;
         try {
-            controlPoint.forceBeginRequest();
+            result = controlPoint.forceBeginRequest();
+        } catch (Exception e) {
+            throw new RejectedExecutionException(e);
+        }
+        if (result == RunResult.REJECTED) {
+            throw ROOT_LOGGER.rejectedDueToMaxRequests();
+        }
+        try {
             final ControlledRunnable controlledRunnable = new ControlledRunnable(runnable, controlPoint);
             return runnable instanceof ManagedTask ? new ControlledManagedRunnable(controlledRunnable, (ManagedTask) runnable) : controlledRunnable;
         } catch (Exception e) {
+            controlPoint.requestComplete();
             throw new RejectedExecutionException(e);
         }
     }
@@ -58,11 +69,20 @@ public class ControlPointUtils {
         if (controlPoint == null || callable == null) {
             return callable;
         }
+        final RunResult result;
         try {
-            controlPoint.forceBeginRequest();
+            result = controlPoint.forceBeginRequest();
+        } catch (Exception e) {
+            throw new RejectedExecutionException(e);
+        }
+        if (result == RunResult.REJECTED) {
+            throw ROOT_LOGGER.rejectedDueToMaxRequests();
+        }
+        try {
             final ControlledCallable controlledCallable = new ControlledCallable(callable, controlPoint);
             return callable instanceof ManagedTask ? new ControlledManagedCallable(controlledCallable, (ManagedTask) callable) : controlledCallable;
         } catch (Exception e) {
+            controlPoint.requestComplete();
             throw new RejectedExecutionException(e);
         }
     }

@@ -58,22 +58,46 @@ public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurr
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        return super.submit(doIdentityWrap(doWrap(task, controlPoint)));
+        final Callable<T> callable = doWrap(task, controlPoint);
+        try {
+            return super.submit(doIdentityWrap(callable));
+        } catch (Exception e) {
+            controlPoint.requestComplete();
+            throw e;
+        }
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        return super.submit(doIdentityWrap(doWrap(task, controlPoint)), result);
+        final Runnable runnable = doWrap(task, controlPoint);
+        try {
+            return super.submit(doIdentityWrap(runnable), result);
+        } catch (Exception e) {
+            controlPoint.requestComplete();
+            throw e;
+        }
     }
 
     @Override
     public Future<?> submit(Runnable task) {
-        return super.submit(doIdentityWrap(doWrap(task, controlPoint)));
+        final Runnable runnable = doWrap(task, controlPoint);
+        try {
+            return super.submit(doIdentityWrap(runnable));
+        } catch (Exception e) {
+            controlPoint.requestComplete();
+            throw e;
+        }
     }
 
     @Override
     public void execute(Runnable command) {
-        super.execute(doIdentityWrap(doWrap(command, controlPoint)));
+        final Runnable runnable = doWrap(command, controlPoint);
+        try {
+            super.execute(doIdentityWrap(runnable));
+        } catch (Exception e) {
+            controlPoint.requestComplete();
+            throw e;
+        }
     }
 
     @Override
