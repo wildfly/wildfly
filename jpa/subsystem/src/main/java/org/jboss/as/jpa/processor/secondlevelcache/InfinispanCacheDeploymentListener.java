@@ -58,6 +58,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     public static final String CONTAINER = "container";
     public static final String NAME = "name";
     public static final String CACHES = "caches";
+    public static final String PENDING_PUTS = "pending-puts";
 
     public static final String DEFAULT_CACHE_CONTAINER = "hibernate";
 
@@ -121,7 +122,10 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         CapabilityServiceSupport support = CacheDeploymentListener.getInternalDeploymentCapablityServiceSupport();
         String container = properties.getProperty(CONTAINER);
         for (String cache : properties.getProperty(CACHES).split("\\s+")) {
-            builder.requires(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
+            // Workaround for legacy default configuration, where the pending-puts cache configuration is missing
+            if (cache.equals(PENDING_PUTS) ? support.hasCapability(InfinispanCacheRequirement.CACHE.resolve(container, cache)) : true) {
+                builder.requires(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
+            }
         }
     }
 
