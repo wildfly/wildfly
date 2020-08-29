@@ -78,11 +78,11 @@ public class JdbcJobRepositoryService extends JobRepositoryService implements Se
         return jobRepository;
     }
 
-    protected InjectedValue<DataSource> getDataSourceInjector() {
+    public InjectedValue<DataSource> getDataSourceInjector() {
         return dataSourceValue;
     }
 
-    protected Injector<ExecutorService> getExecutorServiceInjector() {
+    public Injector<ExecutorService> getExecutorServiceInjector() {
         return executor;
     }
 }

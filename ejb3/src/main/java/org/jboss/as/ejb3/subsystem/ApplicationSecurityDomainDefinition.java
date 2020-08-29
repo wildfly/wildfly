@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.security.Policy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,7 +34,6 @@ import java.util.function.Supplier;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.OperationFailedException;
@@ -55,7 +53,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
@@ -78,7 +75,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
     public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.ejb3.application-security-domain";
     public static final String CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS = "org.wildfly.ejb3.application-security-domain.known-deployments";
     private static final String SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.security.security-domain";
-    private static final String JACC_POLICY_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
 
     static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_CAPABILITY = RuntimeCapability
             .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, true, ApplicationSecurityDomain.class)
@@ -97,7 +93,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
     static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_JACC, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
-            .setCapabilityReference(new BooleanCapabilityReferenceRecorder(EJB3SubsystemModel.ENABLE_JACC, JACC_POLICY_CAPABILITY_NAME))
             .setMinSize(1)
             .setRestartAllServices()
             .build();
@@ -184,12 +179,6 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             ApplicationSecurityDomainService service = new ApplicationSecurityDomainService(enableJacc, securityDomainSupplier, applicationSecurityDomainConsumer, securityDomainConsumer);
             serviceBuilder.setInstance(service);
 
-            if (model.hasDefined(ENABLE_JACC.getName())) {
-                if (ENABLE_JACC.resolveModelAttribute(context, model).asBoolean()) {
-                    serviceBuilder.requires(context.getCapabilityServiceName(JACC_POLICY_CAPABILITY_NAME, Policy.class));
-                }
-            }
-
             serviceBuilder.install();
 
             KnownDeploymentsApi knownDeploymentsApi = context.getAttachment(KNOWN_DEPLOYMENTS_KEY);
@@ -270,63 +259,5 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             }
             return null;
         };
-    }
-
-    private static class BooleanCapabilityReferenceRecorder implements CapabilityReferenceRecorder {
-
-        private final String attributeName;
-        private final String requirementName;
-
-        BooleanCapabilityReferenceRecorder(final String attributeName, final String requirementName) {
-            this.attributeName = attributeName;
-            this.requirementName = requirementName;
-        }
-
-        @Override
-        public void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... attributeValues) {
-            assert attributeValues != null && attributeValues.length == 1;
-            boolean attributeValue = Boolean.parseBoolean(attributeValues[0]);
-            if (attributeValue) {
-                context.registerAdditionalCapabilityRequirement(requirementName, getDependentName(context), attributeName);
-            }
-        }
-
-        @Override
-        public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... attributeValues) {
-            assert attributeValues != null && attributeValues.length == 1;
-            boolean attributeValue = Boolean.parseBoolean(attributeValues[0]);
-            if (attributeValue) {
-                context.deregisterCapabilityRequirement(requirementName, getDependentName(context), attributeName);
-            }
-        }
-
-        String getDependentName(OperationContext context) {
-            RuntimeCapability<?> cap = getDependentCapability(context);
-            return getDependentName(cap, context);
-        }
-
-        RuntimeCapability<?> getDependentCapability(OperationContext context) {
-            ImmutableManagementResourceRegistration mrr = context.getResourceRegistration();
-            Set<RuntimeCapability> capabilities = mrr.getCapabilities();
-            assert capabilities != null && capabilities.size() == 1;
-            return capabilities.iterator().next();
-        }
-
-        final String getDependentName(RuntimeCapability<?> cap, OperationContext context) {
-            if (cap.isDynamicallyNamed()) {
-                return cap.fromBaseCapability(context.getCurrentAddress()).getName();
-            }
-            return cap.getName();
-        }
-
-        @Override
-        public String getBaseDependentName() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getBaseRequirementName() {
-            return requirementName;
-        }
     }
 }

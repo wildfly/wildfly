@@ -24,11 +24,8 @@ package org.wildfly.clustering.infinispan.client;
 
 import java.util.function.Function;
 
-import javax.transaction.TransactionManager;
-
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
-import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
 import org.infinispan.client.hotrod.near.NearCacheService;
@@ -62,22 +59,10 @@ public interface RemoteCacheContainer extends org.infinispan.client.hotrod.Remot
     RemoteCacheManagerAdmin administration();
 
     @Override
-    default <K, V> RemoteCache<K, V> getCache() {
-        // Defer to global configuration for forceReturnValues
-        return this.getCache(this.getConfiguration().forceReturnValues());
-    }
+    <K, V> RemoteCache<K, V> getCache();
 
     @Override
-    default <K, V> RemoteCache<K, V> getCache(String cacheName) {
-        // Defer to global configuration for forceReturnValues and transactional behavior
-        return this.getCache(cacheName, this.getConfiguration().forceReturnValues(), null, null);
-    }
-
-    @Override
-    default <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
-        // Defer to global configuration for forceReturnValues
-        return this.getCache(cacheName, this.getConfiguration().forceReturnValues(), transactionMode, transactionManager);
-    }
+    <K, V> RemoteCache<K, V> getCache(String cacheName);
 
     /**
      * Registers a factory for creating a near cache for a given cache.

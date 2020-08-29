@@ -40,4 +40,11 @@ public class SimpleSessionAccessMetaData implements SessionAccessMetaData {
     public void setLastAccessedDuration(Duration duration) {
         this.lastAccessedDuration = duration;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append('{');
+        builder.append("last-accessed=").append(this.lastAccessedDuration);
+        return builder.append('}').toString();
+    }
 }

@@ -22,8 +22,6 @@
 package org.wildfly.clustering.marshalling.spi;
 
 import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.InvalidObjectException;
 
 /**
  * Marshaller that stores attribute values using marshalled values.
@@ -37,15 +35,9 @@ public class MarshalledValueMarshaller<V, C> implements Marshaller<V, Marshalled
     }
 
     @Override
-    public V read(MarshalledValue<V, C> value) throws InvalidSerializedFormException {
+    public V read(MarshalledValue<V, C> value) throws IOException {
         if (value == null) return null;
-        try {
-            return value.get(this.factory.getMarshallingContext());
-        } catch (ClassNotFoundException | InvalidClassException | InvalidObjectException e) {
-            throw new InvalidSerializedFormException(e);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return value.get(this.factory.getMarshallingContext());
     }
 
     @Override

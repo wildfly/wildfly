@@ -63,6 +63,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -86,6 +87,7 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
     private final boolean appclient;
+    private final boolean ignoreUnusedResourceBinding = Boolean.valueOf(WildFlySecurityManager.getPropertyPrivileged("jboss.ee.ignore-unused-resource-binding", "false"));
 
     public ModuleJndiBindingProcessor(boolean appclient) {
         this.appclient = appclient;
@@ -162,7 +164,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         //were only intended to be installed when running as an app client
         boolean appClient = DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit) || this.appclient;
 
-        if (!MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit()) && !appClient) {
+        if (!ignoreUnusedResourceBinding && !MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit()) && !appClient) {
             final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
 
             for (EEModuleClassDescription config : eeModuleDescription.getClassDescriptions()) {

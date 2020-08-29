@@ -29,6 +29,7 @@ import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StateTransferConfiguration;
 import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
@@ -64,8 +65,6 @@ public class InfinispanLegacyRoutingProviderFactory implements LegacyRoutingProv
         ClusteringConfigurationBuilder clustering = builder.clustering();
         CacheMode mode = clustering.cacheMode();
         clustering.cacheMode(mode.needsStateTransfer() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
-        // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
-        clustering.hash().consistentHashFactory(null);
         clustering.l1().disable();
         // Workaround for ISPN-8722
         AttributeSet attributes = TemplateConfigurationServiceConfigurator.getAttributes(clustering);
@@ -77,7 +76,7 @@ public class InfinispanLegacyRoutingProviderFactory implements LegacyRoutingProv
         // Disable expiration
         builder.expiration().lifespan(-1).maxIdle(-1);
         // Disable eviction
-        builder.memory().size(-1).evictionStrategy(EvictionStrategy.MANUAL);
+        builder.memory().storage(StorageType.HEAP).maxCount(-1).whenFull(EvictionStrategy.NONE);
         builder.persistence().clearStores();
         StateTransferConfigurationBuilder stateTransfer = clustering.stateTransfer().fetchInMemoryState(mode.needsStateTransfer());
         attributes = TemplateConfigurationServiceConfigurator.getAttributes(stateTransfer);

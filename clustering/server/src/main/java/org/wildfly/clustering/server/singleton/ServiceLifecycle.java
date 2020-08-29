@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import javax.management.ServiceNotFoundException;
+
 import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceController;
@@ -87,6 +89,9 @@ public class ServiceLifecycle implements Lifecycle {
 
             // Force service to transition to desired state
             Mode currentMode = this.controller.getMode();
+            if (currentMode == ServiceController.Mode.REMOVE) {
+                throw new IllegalStateException(new ServiceNotFoundException(this.controller.getName().getCanonicalName()));
+            }
             Mode targetMode = transition.modeTransitions.get(currentMode);
             if (targetMode == null) {
                 throw new IllegalStateException(currentMode.name());

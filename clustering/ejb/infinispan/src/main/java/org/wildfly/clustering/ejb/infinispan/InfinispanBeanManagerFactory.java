@@ -39,10 +39,10 @@ import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanFactory;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.spi.group.Group;
 
@@ -64,10 +64,10 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
 
     @Override
     public BeanManager<I, T, TransactionBatch> createBeanManager(IdentifierFactory<I> identifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener) {
-        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
-        MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
+        ByteBufferMarshaller marshaller = new JBossByteBufferMarshaller(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
+        MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(marshaller);
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
-        Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, MarshallingContext>> groupCache = this.configuration.getCache();
+        Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, ByteBufferMarshaller>> groupCache = this.configuration.getCache();
         CacheProperties properties = new InfinispanCacheProperties(groupCache.getCacheConfiguration());
         String beanName = this.configuration.getBeanContext().getBeanName();
         BeanPassivationConfiguration passivationConfig = this.configuration.getPassivationConfiguration();
@@ -83,8 +83,8 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             }
         };
         Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter = new BeanFilter<>(beanName);
-        BeanGroupFactory<I, T, MarshallingContext> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, properties, passivation);
-        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, MarshallingContext>, BeanGroupFactory<I, T, MarshallingContext>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
+        BeanGroupFactory<I, T, ByteBufferMarshaller> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, properties, passivation);
+        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, ByteBufferMarshaller>, BeanGroupFactory<I, T, ByteBufferMarshaller>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanContext().getTimeout(), properties.isPersistent() ? passivationListener : null);
         Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
         Group<Address> group = this.configuration.getGroup();

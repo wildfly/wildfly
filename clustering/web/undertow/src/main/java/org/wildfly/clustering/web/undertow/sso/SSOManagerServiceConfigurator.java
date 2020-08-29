@@ -41,12 +41,12 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
@@ -63,7 +63,7 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<SSOManager<A, D, S, L, Batch>>, Consumer<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<MarshallingContext, L> {
+public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<SSOManager<A, D, S, L, Batch>>, Consumer<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<ByteBufferMarshaller, L> {
 
     enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
         VERSION_1() {
@@ -95,7 +95,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     private final SupplierDependency<SessionIdGenerator> generator;
     private final LocalContextFactory<L> localContextFactory;
 
-    private volatile MarshallingContext context;
+    private volatile ByteBufferMarshaller marshaller;
 
     public SSOManagerServiceConfigurator(ServiceName name, SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory, SupplierDependency<SessionIdGenerator> generator, LocalContextFactory<L> localContextFactory) {
         super(name);
@@ -116,7 +116,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     public SSOManager<A, D, S, L, Batch> get() {
         SSOManagerFactory<A, D, S, Batch> factory = this.factory.get();
         Module module = Module.forClass(this.getClass());
-        this.context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), null);
+        this.marshaller = new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), null);
         SSOManager<A, D, S, L, Batch> manager = factory.createSSOManager(this);
         manager.start();
         return manager;
@@ -138,7 +138,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     }
 
     @Override
-    public MarshalledValueFactory<MarshallingContext> getMarshalledValueFactory() {
-        return new SimpleMarshalledValueFactory(this.context);
+    public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
+        return new ByteBufferMarshalledValueFactory(this.marshaller);
     }
 }

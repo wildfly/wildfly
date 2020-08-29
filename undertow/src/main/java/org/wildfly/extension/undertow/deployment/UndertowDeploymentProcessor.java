@@ -302,6 +302,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final ServiceName legacyDeploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(deploymentUnit.getServiceName());
 
+        deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, handler->new ComponentStartupCountdownHandler(handler, deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.STARTUP_COUNTDOWN)));
 
         String securityDomain = deploymentUnit.getAttachment(UndertowAttachments.RESOLVED_SECURITY_DOMAIN);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);

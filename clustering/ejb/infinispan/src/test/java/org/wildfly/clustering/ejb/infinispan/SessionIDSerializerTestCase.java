@@ -41,7 +41,7 @@ import org.wildfly.clustering.marshalling.ExternalizerTester;
 public class SessionIDSerializerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         UUID uuid = UUID.randomUUID();
 
         new ExternalizerTester<>(new UUIDSessionIDExternalizer()).test(new UUIDSessionID(uuid));

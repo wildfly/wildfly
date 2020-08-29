@@ -26,12 +26,15 @@ import org.infinispan.factories.AbstractComponentFactory;
 import org.infinispan.factories.AutoInstantiableFactory;
 import org.infinispan.factories.annotations.DefaultFactoryFor;
 import org.infinispan.factories.annotations.SurvivesRestarts;
+import org.infinispan.factories.scopes.Scope;
+import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.globalstate.GlobalConfigurationManager;
 
 /**
  * @author Paul Ferraro
  */
 @DefaultFactoryFor(classes = GlobalConfigurationManager.class)
+@Scope(Scopes.GLOBAL)
 @SurvivesRestarts
 public class GlobalConfigurationManagerFactory extends AbstractComponentFactory implements AutoInstantiableFactory {
 

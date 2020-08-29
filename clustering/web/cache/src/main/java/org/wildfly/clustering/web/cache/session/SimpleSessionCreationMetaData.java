@@ -67,4 +67,12 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
     public boolean invalidate() {
         return this.valid.compareAndSet(true, false);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append('{');
+        builder.append("created=").append(this.creationTime);
+        builder.append(", max-inactive-interval=").append(this.maxInactiveInterval);
+        return builder.append('}').toString();
+    }
 }

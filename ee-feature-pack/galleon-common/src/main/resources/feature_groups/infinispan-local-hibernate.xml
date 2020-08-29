@@ -9,7 +9,7 @@
                 <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
                     <param name="max-idle" value="100000"/>
                 </feature>
-                <feature spec="subsystem.infinispan.cache-container.local-cache.memory.object">
+                <feature spec="subsystem.infinispan.cache-container.local-cache.memory.heap">
                     <param name="size" value="10000"/>
                 </feature>
             </feature>
@@ -18,12 +18,18 @@
                 <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
                     <param name="max-idle" value="100000"/>
                 </feature>
-                <feature spec="subsystem.infinispan.cache-container.local-cache.memory.object">
+                <feature spec="subsystem.infinispan.cache-container.local-cache.memory.heap">
                     <param name="size" value="10000"/>
                 </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="timestamps"/>
+            </feature>
+            <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <param name="local-cache" value="pending-puts"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="max-idle" value="60000"/>
+                </feature>
             </feature>
         </feature>
 

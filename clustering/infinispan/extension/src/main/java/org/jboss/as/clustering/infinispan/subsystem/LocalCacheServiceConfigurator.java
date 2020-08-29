@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.StorageType;
 import org.jboss.as.controller.PathAddress;
 
 /**
@@ -41,8 +40,5 @@ public class LocalCacheServiceConfigurator extends CacheConfigurationServiceConf
         super.accept(builder);
 
         builder.clustering().cacheMode(CacheMode.LOCAL);
-
-        // Auto-enable simple cache optimization if cache is non-transactional and non-persistent
-        builder.simpleCache((this.memory().storageType() == StorageType.OBJECT) && !this.transaction().transactionMode().isTransactional() && !this.persistence().usingStores());
     }
 }

@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKeyR
 public class SessionCreationMetaDataKeyResolverTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey("ABC123");
         new ExternalizerTester<>(new SessionCreationMetaDataKeyExternalizer()).test(key);
         new KeyFormatTester<>(new SessionCreationMetaDataKeyFormat()).test(key);

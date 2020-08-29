@@ -51,11 +51,15 @@ import java.util.Set;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import org.jboss.as.test.shared.ServerReload;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ReverseProxyTestCase {
 
     @ContainerResource
@@ -74,6 +78,8 @@ public class ReverseProxyTestCase {
             addr.add("reverse-proxy", "myproxy");
             op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+            op.get("max-request-time").set(60000);
+            op.get("connection-idle-timeout").set(60000);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
             //add the hosts
@@ -220,6 +226,29 @@ public class ReverseProxyTestCase {
             //for (int i = 0; i < 10; ++i) {
             //    Assert.assertEquals(session, performCall("name"));
             //}
+        }
+    }
+
+    private void configureMaxRequestTime(int value) throws Exception {
+        ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        op.get(ModelDescriptionConstants.OP_ADDR).add("configuration", "handler");
+        op.get(ModelDescriptionConstants.OP_ADDR).add("reverse-proxy", "myproxy");
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        op.get(ModelDescriptionConstants.NAME).set("max-request-time");
+        op.get(ModelDescriptionConstants.VALUE).set(value);
+
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        ServerReload.reloadIfRequired(managementClient);
+    }
+
+    @Test
+    public void testReverseProxyMaxRequestTime() throws Exception {
+        // set the max-request-time to a lower value than the wait
+        configureMaxRequestTime(10);
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpResponse res = httpclient.execute(new HttpGet("http://" + url.getHost() + ":" + url.getPort() + "/proxy/name?wait=50"));
+            Assert.assertEquals("Service Unaviable expected because max-request-time is set to 10ms", 503, res.getStatusLine().getStatusCode());
         }
     }
 }

@@ -90,7 +90,7 @@ public abstract class AbstractMarshaller implements Marshaller, StreamAwareMarsh
         // If the prediction is way off, then trim it
         if (estimatedSize > (actualSize * 4)) {
             byte[] bytes = trim(buffer);
-            buffer = new ByteBufferImpl(bytes, 0, bytes.length);
+            buffer = ByteBufferImpl.create(bytes);
         }
         this.getBufferSizePredictor(object).recordSize(actualSize);
         return buffer;
@@ -98,14 +98,14 @@ public abstract class AbstractMarshaller implements Marshaller, StreamAwareMarsh
 
     @Override
     public byte[] objectToByteBuffer(Object obj, int estimatedSize) throws IOException, InterruptedException {
-       ByteBuffer b = objectToBuffer(obj, estimatedSize);
+       ByteBuffer b = this.objectToBuffer(obj, estimatedSize);
        return trim(b);
     }
 
     private ByteBuffer objectToBuffer(Object object, int estimatedSize) throws IOException {
         ExposedByteArrayOutputStream output = new ExposedByteArrayOutputStream(estimatedSize + Byte.BYTES);
         this.writeObject(object, output);
-        return new ByteBufferImpl(output.getRawBuffer(), 0, output.size());
+        return ByteBufferImpl.create(output.getRawBuffer(), 0, output.size());
     }
 
     private static byte[] trim(ByteBuffer buffer) {

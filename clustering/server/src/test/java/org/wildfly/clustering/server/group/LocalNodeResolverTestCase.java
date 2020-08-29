@@ -37,7 +37,7 @@ import org.wildfly.clustering.server.group.LocalNodeResolver.LocalNodeKeyFormat;
 public class LocalNodeResolverTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         LocalNode node = new LocalNode("name");
 
         new ExternalizerTester<>(new LocalNodeExternalizer()).test(node);

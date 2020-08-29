@@ -26,14 +26,12 @@ import static java.security.AccessController.doPrivileged;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS;
 import static org.wildfly.extension.undertow.Capabilities.REF_HTTP_AUTHENTICATION_FACTORY;
-import static org.wildfly.extension.undertow.Capabilities.REF_JACC_POLICY;
 import static org.wildfly.extension.undertow.Capabilities.REF_SECURITY_DOMAIN;
 import static org.wildfly.security.http.HttpConstants.BASIC_NAME;
 import static org.wildfly.security.http.HttpConstants.CLIENT_CERT_NAME;
 import static org.wildfly.security.http.HttpConstants.DIGEST_NAME;
 import static org.wildfly.security.http.HttpConstants.FORM_NAME;
 
-import java.security.Policy;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -291,10 +289,6 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             } else {
                 securityDomainSupplier = serviceBuilder.requires(context.getCapabilityServiceName(REF_SECURITY_DOMAIN, SecurityDomain.class, securityDomain));
                 httpAuthenticationFactorySupplier = null;
-            }
-
-            if (enableJacc) {
-                serviceBuilder.requires(context.getCapabilityServiceName(REF_JACC_POLICY, Policy.class));
             }
 
             final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> transformerSupplier;

@@ -76,10 +76,9 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
             "/subsystem-templates/microprofile-opentracing-smallrye.xml",};
     }
 
-    @Test
     @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
@@ -127,7 +126,6 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.getLegacyServices(opentracingVersion).isSuccessfulBoot());
 
         List<ModelNode> ops = builder.parseXmlResource("subsystem_2_0_reject_transform.xml");
-        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SubsystemExtension.SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();

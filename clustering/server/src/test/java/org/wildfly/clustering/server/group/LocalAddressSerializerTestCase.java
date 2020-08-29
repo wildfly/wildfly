@@ -37,7 +37,7 @@ import org.wildfly.clustering.server.group.LocalAddressSerializer.LocalAddressKe
 public class LocalAddressSerializerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         new ExternalizerTester<>(new LocalAddressExternalizer()).test(LocalModeAddress.INSTANCE);
         new KeyFormatTester<>(new LocalAddressKeyFormat()).test(LocalModeAddress.INSTANCE);
     }

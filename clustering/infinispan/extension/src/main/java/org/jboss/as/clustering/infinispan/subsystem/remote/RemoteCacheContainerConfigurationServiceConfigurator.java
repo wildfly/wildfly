@@ -39,7 +39,6 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
-import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.TransactionConfiguration;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
@@ -82,7 +81,6 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<Module> module;
     private final SupplierDependency<ConnectionPoolConfiguration> connectionPool;
-    private final SupplierDependency<NearCacheConfiguration> nearCache;
     private final SupplierDependency<SecurityConfiguration> security;
     private final SupplierDependency<TransactionConfiguration> transaction;
 
@@ -104,7 +102,6 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         this.threadPools.put(ThreadPoolResourceDefinition.CLIENT, new ServiceSupplierDependency<>(ThreadPoolResourceDefinition.CLIENT.getServiceName(address)));
         this.module = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.MODULE.getServiceName(address));
         this.connectionPool = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.CONNECTION_POOL.getServiceName(address));
-        this.nearCache = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.NEAR_CACHE.getServiceName(address));
         this.security = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.SECURITY.getServiceName(address));
         this.transaction = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.TRANSACTION.getServiceName(address));
     }
@@ -144,7 +141,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<Configuration> configuration = new CompositeDependency(this.loader, this.module, this.connectionPool, this.nearCache, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
+        Consumer<Configuration> configuration = new CompositeDependency(this.loader, this.module, this.connectionPool, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
@@ -178,7 +175,6 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                 .valueSizeEstimate(this.valueSizeEstimate);
 
         builder.connectionPool().read(this.connectionPool.get());
-        builder.nearCache().read(this.nearCache.get());
         builder.asyncExecutorFactory().read(this.threadPools.get(ThreadPoolResourceDefinition.CLIENT).get());
 
         for (Map.Entry<String, List<SupplierDependency<OutboundSocketBinding>>> cluster : this.clusters.entrySet()) {

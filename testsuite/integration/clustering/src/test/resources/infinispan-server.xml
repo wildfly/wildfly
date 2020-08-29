@@ -21,10 +21,10 @@
   -->
 
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:infinispan:config:10.1 https://infinispan.org/schemas/infinispan-config-10.1.xsd
-                                urn:infinispan:server:10.1 https://infinispan.org/schemas/infinispan-server-10.1.xsd"
-            xmlns="urn:infinispan:config:10.1"
-            xmlns:server="urn:infinispan:server:10.1">
+            xsi:schemaLocation="urn:infinispan:config:11.0 https://infinispan.org/schemas/infinispan-config-11.0.xsd
+                                urn:infinispan:server:11.0 https://infinispan.org/schemas/infinispan-server-11.0.xsd"
+            xmlns="urn:infinispan:config:11.0"
+            xmlns:server="urn:infinispan:server:11.0">
 
     <cache-container name="default" statistics="true">
         <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:}"/>
@@ -34,7 +34,7 @@
         </distributed-cache>
     </cache-container>
 
-    <server xmlns="urn:infinispan:server:10.1">
+    <server xmlns="urn:infinispan:server:11.0">
         <interfaces>
             <interface name="public">
                 <inet-address value="${infinispan.bind.address:127.0.0.1}"/>

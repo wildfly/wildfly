@@ -51,6 +51,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
         </dependency>
         <dependency>
@@ -71,6 +75,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.infinispan.protostream</groupId>
+            <artifactId>protostream</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.reactivestreams</groupId>
             <artifactId>reactive-streams</artifactId>
         </dependency>
@@ -87,6 +95,13 @@
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-api</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
         </dependency>
     </dependencies>
 

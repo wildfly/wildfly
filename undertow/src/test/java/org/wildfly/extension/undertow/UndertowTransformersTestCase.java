@@ -256,6 +256,13 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                 ModelNode transformed = transformedOperation.getTransformedOperation().get(Constants.MAX_POST_SIZE);
                 Assert.assertEquals(Constants.MAX_POST_SIZE + " should be transformed for value 0.", Long.MAX_VALUE, transformed.asLong());
             }
+            PathAddress address = PathAddress.pathAddress(op.get("address"));
+            if (address.getLastElement().getKey().equals(Constants.REVERSE_PROXY) && !op.get(Constants.CONNECTION_IDLE_TIMEOUT).isDefined()) {
+                TransformedOperation transformedOperation = mainServices.transformOperation(targetVersion, op.clone());
+                ModelNode transformed = transformedOperation.getTransformedOperation().get(Constants.CONNECTION_IDLE_TIMEOUT);
+                Assert.assertEquals(Constants.CONNECTION_IDLE_TIMEOUT + " should be transformed to the new default value.",
+                        ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT.getDefaultValue().asInt(), transformed.asInt());
+            }
         }
     }
 

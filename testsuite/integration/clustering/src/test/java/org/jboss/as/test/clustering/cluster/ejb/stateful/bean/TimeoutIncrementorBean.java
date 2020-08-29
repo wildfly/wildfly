@@ -24,6 +24,10 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.PostActivate;
+import javax.ejb.PrePassivate;
 import javax.ejb.Stateful;
 import javax.ejb.StatefulTimeout;
 
@@ -31,9 +35,32 @@ import javax.ejb.StatefulTimeout;
 @StatefulTimeout(value = 1, unit = TimeUnit.SECONDS)
 public class TimeoutIncrementorBean implements Incrementor {
     private final AtomicInteger count = new AtomicInteger(0);
+    private volatile boolean active = false;
 
     @Override
     public int increment() {
         return this.count.incrementAndGet();
+    }
+
+    @PostActivate
+    public void postActivate() {
+        this.active = true;
+    }
+
+    @PrePassivate
+    public void prePassivate() {
+        this.active = false;
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        this.active = true;
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        if (!this.active) {
+            throw new IllegalStateException("@PostActivate listener not triggered!");
+        }
     }
 }

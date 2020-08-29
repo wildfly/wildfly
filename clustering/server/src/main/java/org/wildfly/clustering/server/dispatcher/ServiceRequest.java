@@ -74,7 +74,7 @@ public class ServiceRequest<T, C> extends UnicastRequest<T> {
             MarshalledValue<T, C> marshalledValue = (MarshalledValue<T, C>) value;
             try {
                 this.complete(marshalledValue.get(this.context));
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 this.completeExceptionally(e);
             }
         }

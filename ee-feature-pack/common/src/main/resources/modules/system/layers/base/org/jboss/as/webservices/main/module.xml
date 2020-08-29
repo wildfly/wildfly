@@ -72,6 +72,5 @@
         <module name="io.undertow.servlet"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="javax.transaction.api"/>
-        <module name="javax.xml.rpc.api"/>
     </dependencies>
 </module>

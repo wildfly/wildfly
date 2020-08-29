@@ -64,7 +64,7 @@ public class InfinispanBeanGroup<I, T, C> implements BeanGroup<I, T> {
     private Map<I, T> beans() {
         try {
             return this.entry.getBeans().get(this.context);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             throw InfinispanEjbLogger.ROOT_LOGGER.deserializationFailure(e, this.id);
         }
     }
@@ -87,9 +87,15 @@ public class InfinispanBeanGroup<I, T, C> implements BeanGroup<I, T> {
     }
 
     @Override
-    public T removeBean(I id) {
-        this.entry.decrementUsage(id);
-        return this.beans().remove(id);
+    public T removeBean(I id, PassivationListener<T> listener) {
+        int usage = this.entry.decrementUsage(id);
+        T bean = this.beans().remove(id);
+        if (bean != null) {
+            if ((usage == 0) && (listener != null)) {
+                listener.postActivate(bean);
+            }
+        }
+        return bean;
     }
 
     @Override

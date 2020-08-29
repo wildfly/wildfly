@@ -50,6 +50,7 @@ import static org.wildfly.extension.undertow.WebsocketsDefinition.PER_MESSAGE_DE
 import static org.wildfly.extension.undertow.filters.ModClusterDefinition.FAILOVER_STRATEGY;
 import static org.wildfly.extension.undertow.filters.ModClusterDefinition.MAX_AJP_PACKET_SIZE;
 import static org.wildfly.extension.undertow.handlers.ReverseProxyHandler.CONNECTIONS_PER_THREAD;
+import static org.wildfly.extension.undertow.handlers.ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT;
 import static org.wildfly.extension.undertow.handlers.ReverseProxyHandler.MAX_RETRIES;
 
 import org.jboss.as.controller.ModelVersion;
@@ -107,6 +108,12 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .addChildResource(UndertowExtension.PATH_SSO)
                 .getAttributeBuilder()
                     .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, ApplicationSecurityDomainSingleSignOnDefinition.Attribute.CREDENTIAL.getName())
+                .end();
+
+        subsystemBuilder.addChildResource(UndertowExtension.PATH_HANDLERS)
+                .addChildResource(PathElement.pathElement(Constants.REVERSE_PROXY))
+                .getAttributeBuilder()
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, CONNECTION_IDLE_TIMEOUT)
                 .end();
     }
 

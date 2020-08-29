@@ -38,12 +38,7 @@ public class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
     private final Consumer<Cache<?, ?>> consumer;
 
     DefaultCache(EmbeddedCacheManager manager, AdvancedCache<K, V> cache, Consumer<Cache<?, ?>> consumer) {
-        super(cache, new AdvancedCacheWrapper<K, V>() {
-            @Override
-            public AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
-                return new DefaultCache<>(manager, cache, consumer);
-            }
-        });
+        super(cache);
         this.manager = manager;
         this.consumer = consumer;
     }
@@ -73,5 +68,11 @@ public class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
     @Override
     public int hashCode() {
         return this.cache.hashCode();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public AdvancedCache rewrap(AdvancedCache newDelegate) {
+        return new DefaultCache<>(this.manager, newDelegate, this.consumer);
     }
 }

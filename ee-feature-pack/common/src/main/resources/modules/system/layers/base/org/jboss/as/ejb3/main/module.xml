@@ -102,7 +102,9 @@
         <module name="org.picketbox"/>
 
         <module name="org.omg.api"/>
-        <module name="javax.xml.rpc.api"/>
+        <!-- Not supported but a class is a return value in the EE 8 SessionContext API
+             and thus in our impl. But not in EE 9. So make it optional. -->
+        <module name="javax.xml.rpc.api" optional="true"/>
         <!-- Needed for EJB over HTTP support-->
         <module name="io.undertow.core" />
 
