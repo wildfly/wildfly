@@ -31,6 +31,7 @@ import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -61,14 +62,20 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
     private final ClassLoader classLoader;
     private final JobXmlResolver jobXmlResolver;
     private final String deploymentName;
+    private final NamespaceContextSelector namespaceContextSelector;
     private final boolean legacySecurityPresent;
     private SecurityAwareBatchEnvironment batchEnvironment = null;
     private volatile ControlPoint controlPoint;
 
-    public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName, final boolean legacySecurityPresent) {
+    public BatchEnvironmentService(final ClassLoader classLoader,
+                                   final JobXmlResolver jobXmlResolver,
+                                   final String deploymentName,
+                                   final NamespaceContextSelector namespaceContextSelector,
+                                   final boolean legacySecurityPresent) {
         this.classLoader = classLoader;
         this.jobXmlResolver = jobXmlResolver;
         this.deploymentName = deploymentName;
+        this.namespaceContextSelector = namespaceContextSelector;
         this.legacySecurityPresent = legacySecurityPresent;
     }
 
@@ -227,10 +234,10 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
             final ClassLoaderContextHandle classLoaderContextHandle = (tccl == null ? new ClassLoaderContextHandle(classLoader) : new ClassLoaderContextHandle(tccl));
             // Class loader handle must be first so the TCCL is set before the other handles execute
             if (legacySecurityPresent) {
-                return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(),
+                return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(namespaceContextSelector),
                         new SecurityContextHandle(), artifactFactory.createContextHandle(), new ConcurrentContextHandle());
             } else {
-                return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(),
+                return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(namespaceContextSelector),
                          artifactFactory.createContextHandle(), new ConcurrentContextHandle());
             }
         }
