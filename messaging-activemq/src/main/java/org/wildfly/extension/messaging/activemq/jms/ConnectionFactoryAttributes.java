@@ -683,7 +683,6 @@ public interface ConnectionFactoryAttributes {
     interface External {
         AttributeDefinition ENABLE_AMQ1_PREFIX = create("enable-amq1-prefix", BOOLEAN)
                 .setDefaultValue(ModelNode.TRUE)
-                .setValidator(ConnectionFactoryType.VALIDATOR)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
