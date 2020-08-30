@@ -2189,7 +2189,6 @@
                                                 <layer>remoting</layer>
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
-                                                <layer>secure-management</layer>
                                                 <layer>security-manager</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
@@ -2279,7 +2278,6 @@
                                                 <layer>remoting</layer>
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
-                                                <layer>secure-management</layer>
                                                 <layer>security-manager</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>

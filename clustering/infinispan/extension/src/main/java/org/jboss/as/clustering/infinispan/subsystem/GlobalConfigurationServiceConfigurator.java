@@ -128,8 +128,14 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
                 .mBeanServerLookup(new MBeanServerProvider((this.server != null) && this.statisticsEnabled ? this.server.get() : null))
                 ;
 
-        // Disable triangle algorithm - we optimize for originator as primary owner
-        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
+        // Do not enable server-mode for the Hibernate 2LC use case:
+        // * The 2LC stack already overrides the interceptor for distribution caches
+        // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
+        // See ISPN-12252 for details
+        if (!module.getName().equals("org.infinispan.hibernate-cache")) {
+            // Disable triangle algorithm - we optimize for originator as primary owner
+            builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
+        }
         // Disable configuration storage
         builder.globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
 

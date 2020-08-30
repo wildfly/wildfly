@@ -22,12 +22,11 @@
 
 package org.jboss.as.test.clustering.cluster.web.persistence;
 
-import java.net.URL;
-
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.ClusterTestUtil;
+import org.jboss.as.test.clustering.ClusterDatabaseTestUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
@@ -35,10 +34,12 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 /**
- * Tests session failover where sessions are stored in a shared database (H2 database in AUTO_SERVER mode) using invalidation cache mode.
+ * Tests session failover where sessions are stored in a shared H2 database using invalidation cache mode.
  *
  * @author Tomas Remes
  * @author Radoslav Husar
@@ -59,17 +60,22 @@ public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends Abs
         return war;
     }
 
-    @Override
-    public void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) {
-        // TODO rework to use external database process since H2's AUTO_SERVER doesn't handle server restarts reliably
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        ClusterDatabaseTestUtil.startH2();
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        ClusterDatabaseTestUtil.stopH2();
     }
 
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
             this.builder.node(THREE_NODES)
-                    .setup("/subsystem=datasources/data-source=web-sessions-ds:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\",enabled=true,use-java-context=true,connection-url=\"jdbc:h2:file:./target/h2/web-sessions;AUTO_SERVER=true;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;\",driver-name=h2")
+                    .setup("/subsystem=datasources/data-source=web-sessions-ds:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\", enabled=true, use-java-context=true, connection-url=\"jdbc:h2:tcp://localhost:%s/./web-sessions\", driver-name=h2", DB_PORT)
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:add")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions-ds,fetch-state=false,purge=false,passivation=false,shared=true)")
+                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions-ds, fetch-state=false, purge=false, passivation=false, shared=true)")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=transaction:add(mode=BATCH)")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=locking:add(isolation=REPEATABLE_READ)")
                     .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:remove")

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,27 +22,25 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import org.jboss.as.naming.context.NamespaceContextSelector;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.wildfly.extension.batch.jberet.Attribute;
 
 /**
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * A parser for batch deployment descriptors ({@code batch-jberet:2.0}) in {@code jboss-all.xml}.
  */
-class NamespaceContextHandle implements ContextHandle {
+public class BatchDeploymentDescriptorParser_2_0 extends BatchDeploymentDescriptorParser_1_0 {
 
-    private final NamespaceContextSelector namespaceContextSelector;
-
-    NamespaceContextHandle(NamespaceContextSelector namespaceContextSelector) {
-        this.namespaceContextSelector = namespaceContextSelector;
-    }
+    public static final String NAMESPACE = "urn:jboss:domain:batch-jberet:2.0";
+    public static final QName ROOT_ELEMENT = new QName(NAMESPACE, "batch");
 
     @Override
-    public Handle setup() {
-        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
-        return new Handle() {
-            @Override
-            public void tearDown() {
-                NamespaceContextSelector.popCurrentSelector();
-            }
-        };
+    String parseJdbcJobRepository(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final String dataSourceName = readRequiredAttribute(reader, Attribute.DATA_SOURCE);
+        ParseUtils.requireNoContent(reader);
+        return dataSourceName;
     }
 }

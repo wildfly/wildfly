@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.deployment;
+package org.jboss.as.test.clustering;
 
-import org.jboss.as.naming.context.NamespaceContextSelector;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DB_PORT;
+
+import java.sql.SQLException;
+
+import org.h2.tools.Server;
 
 /**
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * Simple test utility to start/stop an external H2 database, e.g. to be used in clustering tests which use a shared database.
+ * Database files are stored in ${project.build.directory}/target/h2 directory.
+ *
+ * @author Radoslav Husar
  */
-class NamespaceContextHandle implements ContextHandle {
+public class ClusterDatabaseTestUtil {
 
-    private final NamespaceContextSelector namespaceContextSelector;
-
-    NamespaceContextHandle(NamespaceContextSelector namespaceContextSelector) {
-        this.namespaceContextSelector = namespaceContextSelector;
+    public static void startH2() throws SQLException {
+        Server.createTcpServer("-tcpPort", DB_PORT, "-tcpAllowOthers", "-baseDir", "./target/h2").start();
     }
 
-    @Override
-    public Handle setup() {
-        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
-        return new Handle() {
-            @Override
-            public void tearDown() {
-                NamespaceContextSelector.popCurrentSelector();
-            }
-        };
+    public static void stopH2() throws SQLException {
+        Server.shutdownTcpServer("tcp://localhost:" + DB_PORT, "", true, true);
+    }
+
+    private ClusterDatabaseTestUtil() {
+        // Utility class
     }
 }
