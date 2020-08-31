@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="web-console">
     <dependencies>
-        <layer name="secure-management"/>
+        <layer name="management"/>
     </dependencies>
     <packages>
         <package name="org.jboss.as.console"/>
