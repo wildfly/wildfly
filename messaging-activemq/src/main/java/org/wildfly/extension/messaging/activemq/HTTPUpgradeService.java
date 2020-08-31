@@ -35,13 +35,19 @@ import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_LISTENE
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
 
 import java.io.IOException;
-import java.util.Map;
 
 import io.netty.channel.socket.SocketChannel;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.HttpUpgradeListener;
 import io.undertow.server.ListenerRegistry;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
+import io.undertow.server.handlers.HttpUpgradeHandshake;
+import io.undertow.util.FlexBase64;
+import io.undertow.util.HttpString;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyAcceptor;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.core.remoting.server.RemotingService;
@@ -51,7 +57,7 @@ import org.apache.activemq.artemis.core.server.cluster.ha.HAManager;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.remoting.SimpleHttpUpgradeHandshake;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -119,38 +125,52 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         httpUpgradeListener = switchToMessagingProtocol(activeMQServer, acceptorName, getProtocol());
         injectedRegistry.getValue().addProtocol(getProtocol(),
                 httpUpgradeListener,
-                new SimpleHttpUpgradeHandshake(MAGIC_NUMBER, getSecKeyHeader(), getSecAcceptHeader()) {
-                    /**
-                     * override the default upgrade handshake to take into account the {@code TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME} header
-                     * to select the correct acceptors among all that are configured in ActiveMQ.
-                     *
-                     * If the request does not have this header, the first acceptor will be used.
-                     */
-                    @Override
-                    public boolean handleUpgrade(HttpServerExchange exchange) throws IOException {
+                new HttpUpgradeHandshake() {
+            /**
+             * override the default upgrade handshake to take into account the
+             * {@code TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME} header
+             * to select the correct acceptors among all that are configured in ActiveMQ.
+             *
+             * If the request does not have this header, the first acceptor will be used.
+             */
+            @Override
+            public boolean handleUpgrade(HttpServerExchange exchange) throws IOException {
+                String secretKey = exchange.getRequestHeaders().getFirst(getSecKeyHeader());
+                if (secretKey == null) {
+                    throw RemotingLogger.ROOT_LOGGER.upgradeRequestMissingKey();
+                }
+                ActiveMQServer server = selectServer(exchange, activeMQServer);
+                if (server == null) {
+                    return false;
+                }
+                // If ActiveMQ remoting service is stopped (eg during shutdown), refuse
+                // the handshake so that the ActiveMQ client will detect the connection has failed
+                RemotingService remotingService = server.getRemotingService();
+                if (!server.isActive() || !remotingService.isStarted()) {
+                    return false;
+                }
+                final String endpoint = exchange.getRequestHeaders().getFirst(getHttpUpgradeEndpointKey());
+                if (endpoint == null || endpoint.equals(acceptorName)) {
+                    String response = createExpectedResponse(MAGIC_NUMBER, secretKey);
+                    exchange.getResponseHeaders().put(HttpString.tryFromString(getSecAcceptHeader()), response);
+                    return true;
+                }
+                return false;
+            }
 
-                        if (super.handleUpgrade(exchange)) {
-                            ActiveMQServer server = selectServer(exchange, activeMQServer);
-                            if (server == null) {
-                                return false;
-                            }
-                            // If ActiveMQ remoting service is stopped (eg during shutdown), refuse
-                            // the handshake so that the ActiveMQ client will detect the connection has failed
-                            RemotingService remotingService = server.getRemotingService();
-                            final String endpoint = exchange.getRequestHeaders().getFirst(getHttpUpgradeEndpointKey());
-                            if (!server.isActive() || !remotingService.isStarted()) {
-                                return false;
-                            }
-                            if (endpoint == null) {
-                                return true;
-                            } else {
-                                return acceptorName.equals(endpoint);
-                            }
-                        } else {
-                            return false;
-                        }
-                    }
-                });
+            private String createExpectedResponse(final String magicNumber, final String secretKey) throws IOException {
+                try {
+                    final String concat = secretKey + magicNumber;
+                    final MessageDigest digest = MessageDigest.getInstance("SHA1");
+
+                    digest.update(concat.getBytes(StandardCharsets.UTF_8));
+                    final byte[] bytes = digest.digest();
+                    return FlexBase64.encodeString(bytes, false);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new IOException(e);
+                }
+            }
+        });
     }
 
     private static ActiveMQServer selectServer(HttpServerExchange exchange, ActiveMQServer rootServer) {
