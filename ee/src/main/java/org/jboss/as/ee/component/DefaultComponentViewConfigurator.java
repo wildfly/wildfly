@@ -90,7 +90,7 @@ class DefaultComponentViewConfigurator extends AbstractComponentConfigurator imp
 
             //we define it in the modules class loader to prevent permgen leaks
             if (viewClass.isInterface()) {
-                proxyConfiguration.setSuperClass(Object.class);
+                proxyConfiguration.setSuperClass(configuration.getComponentClass());
                 proxyConfiguration.addAdditionalInterface(viewClass);
                 viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(proxyConfiguration));
             } else {
