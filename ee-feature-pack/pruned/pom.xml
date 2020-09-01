@@ -126,11 +126,6 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-hibernate5-legacy</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-openjpa</artifactId>
             <!-- Exclude dependencies declared in the common module -->
             <exclusions>
