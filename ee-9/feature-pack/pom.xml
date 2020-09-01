@@ -711,6 +711,7 @@
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
             <version>${version.org.eclipse.yasson}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -728,6 +729,7 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
             <version>${version.org.glassfish.jakarta.el}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- TODO EE 9 glassfish 6 M1 version not yet on maven cental
@@ -747,6 +749,7 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
             <version>${version.org.glassfish.jakarta.json}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.json</groupId>
@@ -759,6 +762,7 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${version.org.hibernate.validator}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.validation</groupId>
@@ -775,12 +779,14 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator-cdi</artifactId>
             <version>${version.org.hibernate.validator}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-api</artifactId>
             <version>${version.org.jboss.weld.weld-api}</version>
+            <scope>provided</scope>
             <exclusions>
                 <!-- TODO remove this exclusion once this depends on Jakarta CDI -->
                 <!-- superseded by jakarta.enterprise:jakarta.enterprise.cdi-api -->
@@ -801,6 +807,7 @@
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core-impl</artifactId>
             <version>${version.org.jboss.weld.weld}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -813,6 +820,7 @@
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-ejb</artifactId>
             <version>${version.org.jboss.weld.weld}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -825,6 +833,7 @@
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-jsf</artifactId>
             <version>${version.org.jboss.weld.weld}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -837,6 +846,7 @@
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-jta</artifactId>
             <version>${version.org.jboss.weld.weld}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -849,12 +859,14 @@
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-spi</artifactId>
             <version>${version.org.jboss.weld.weld-api}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-web</artifactId>
             <version>${version.org.jboss.weld.weld}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -867,6 +879,7 @@
             <groupId>org.jboss.weld.probe</groupId>
             <artifactId>weld-probe-core</artifactId>
             <version>${version.org.jboss.weld.weld}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -879,6 +892,7 @@
             <groupId>com.sun.faces</groupId>
             <artifactId>jsf-impl</artifactId>
             <version>${version.com.sun.faces}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!--<dependency>
