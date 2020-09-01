@@ -68,7 +68,8 @@
         <module name="org.wildfly.iiop-openjdk"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
-        <module name="org.jboss.as.remoting" optional="true"/>
+        <!-- Needed for RemotingConnectorInfo TODO get this via org.jboss.as.network -->
+        <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.as.server"/>
