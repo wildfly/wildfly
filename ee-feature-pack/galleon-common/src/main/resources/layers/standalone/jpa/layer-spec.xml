@@ -2,6 +2,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jpa">
     <dependencies>
         <layer name="datasources"/>
+        <layer name="bean-validation" optional="true"/>
     </dependencies>
     <feature-group name="jpa"/>
     <feature-group name="infinispan-local-hibernate"/>
