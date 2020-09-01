@@ -2,7 +2,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jdr">
     <dependencies>
         <layer name="base-server"/>
-        <layer name="secure-management" optional="true"/>
+        <layer name="management" optional="true"/>
     </dependencies>
     <feature spec="subsystem.jdr"/>
     <packages>
