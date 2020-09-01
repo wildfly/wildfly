@@ -31,9 +31,9 @@ import org.jboss.as.controller.registry.RuntimePackageDependency;
  * A {@link org.jboss.as.controller.ResourceDefinition} for JNDI bindings
  */
 public class RemoteNamingResourceDefinition extends SimpleResourceDefinition {
-    private static final String JBOSS_AS_REMOTING = "org.jboss.as.remoting";
+
     private static final String JBOSS_REMOTING = "org.jboss.remoting";
-    private static final String REMOTING_ENDPOINT_CAPABILITY_NAME = "org.wildfly.remoting.endpoint";
+    static final String REMOTING_ENDPOINT_CAPABILITY_NAME = "org.wildfly.remoting.endpoint";
 
     public static final RuntimeCapability<Void> REMOTE_NAMING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.naming.remote")
             .addRequirements(REMOTING_ENDPOINT_CAPABILITY_NAME)
@@ -50,7 +50,6 @@ public class RemoteNamingResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(JBOSS_AS_REMOTING));
         resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(JBOSS_REMOTING));
     }
 }
