@@ -38,6 +38,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -45,6 +46,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.common.Assert;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
@@ -193,9 +195,22 @@ public final class ViewService implements Service<ComponentView> {
             if(component instanceof BasicComponent) {
                 ((BasicComponent) component).waitForComponentStart();
             }
-            final Method method = interceptorContext.getMethod();
+            final Method method = matchMethod(interceptorContext.getMethod());
             final Interceptor interceptor = viewInterceptors.get(method);
             return interceptor.processInvocation(interceptorContext);
+        }
+
+        private Method matchMethod(Method invokedMethod) {
+            if (invokedMethod.getDeclaringClass().isInterface()) {
+                for (Method beanMethod : proxyFactory.getCachedMethods()) {
+                    if (MethodIdentifier.getIdentifierForMethod(beanMethod).equals(MethodIdentifier.getIdentifierForMethod(invokedMethod))) {
+                        return beanMethod;
+                    }
+                }
+                throw Assert.unreachableCode();
+            } else {
+                return invokedMethod;
+            }
         }
 
         public Component getComponent() {
