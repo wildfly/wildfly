@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.jdr.mgmt;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -145,7 +146,7 @@ public class JdrReportManagmentTestCase {
                 reportName, reportZip);
         validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/cluster-proxies-configuration.json", fileNames,
                 reportName, reportZip);
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/deployment-dependencies.txt", fileNames,
+        validateEntryPresent("sos_strings/" + FOLDER_NAME + "/deployment-dependencies.txt", fileNames,
                 reportName, reportZip);
         validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/jndi-view.json", fileNames,
                 reportName, reportZip);
@@ -157,7 +158,7 @@ public class JdrReportManagmentTestCase {
     }
 
     /**
-     * Check if entry (reprtname/filename) is presented in reportZip file
+     * Check if entry (reportname/filename) is presented in reportZip file and is not empty
      *
      * @param fileName   Name of file inside report
      * @param reportZip  Report zip file
@@ -169,7 +170,7 @@ public class JdrReportManagmentTestCase {
     }
 
     /**
-     * Check if entry (reprtname/filename) is presented in reportZip file
+     * Check if entry (reportname/filename) is presented in reportZip file and is not empty
      *
      * @param fileName         Name of file inside report
      * @param fileNameOptional Optional name of file inside report
@@ -180,6 +181,19 @@ public class JdrReportManagmentTestCase {
                                        String reportName, ZipFile reportZip) {
         ZipEntry zipENtry = getZipEntry(reportZip, fileName, fileNameOptional, fileNames, reportName);
         assertTrue("Report entry " + fileName + " was empty or could not be determined", zipENtry.getSize() > 0);
+    }
+
+    /**
+     * Check if entry (reportname/filename) is presented in reportZip file, either empty or not empty.
+     *
+     * @param fileName   Name of file inside report
+     * @param reportZip  Report zip file
+     * @param reportName Report root folder name
+     */
+    private void validateEntryPresent(String fileName, Set<String> fileNames,
+                                       String reportName, ZipFile reportZip) {
+        ZipEntry zipENtry = getZipEntry(reportZip, fileName, null, fileNames, reportName);
+        assertNotNull("Report entry " + fileName + " was not present", zipENtry);
     }
 
     private ZipEntry getZipEntry(ZipFile reportZip, String fileName, String fileNameOptional, Set<String> fileNames, String reportName) {
@@ -205,7 +219,7 @@ public class JdrReportManagmentTestCase {
     }
 
     /**
-     * Check if entry (reprtname/filename) is presented in reportZip file and is empty
+     * Check if entry (reportname/filename) is presented in reportZip file and is empty
      *
      * @param fileName   Name of file inside report
      * @param reportZip  Report zip file
