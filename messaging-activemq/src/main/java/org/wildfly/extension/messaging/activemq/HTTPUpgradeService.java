@@ -48,6 +48,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyAcceptor;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.core.remoting.server.RemotingService;
@@ -57,14 +58,12 @@ import org.apache.activemq.artemis.core.server.cluster.ha.HAManager;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.remoting.logging.RemotingLogger;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
@@ -82,8 +81,8 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
     private final String activeMQServerName;
     private final String acceptorName;
     private final String httpListenerName;
-    protected InjectedValue<ChannelUpgradeHandler> injectedRegistry = new InjectedValue<>();
-    protected InjectedValue<ListenerRegistry> listenerRegistry = new InjectedValue<>();
+    private final Supplier<ChannelUpgradeHandler> upgradeSupplier;
+    private final Supplier<ListenerRegistry> listenerRegistrySupplier;
 
     // Keep a reference to the HttpUpgradeListener that is created when the service is started.
     // There are many HttpUpgradeListener fro the artemis-remoting protocol (one per http-acceptor, for each
@@ -92,28 +91,31 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
     private HttpUpgradeListener httpUpgradeListener;
     private ListenerRegistry.HttpUpgradeMetadata httpUpgradeMetadata;
 
-    public HTTPUpgradeService(String activeMQServerName, String acceptorName, String httpListenerName) {
+    public HTTPUpgradeService(String activeMQServerName, String acceptorName, String httpListenerName, Supplier<ChannelUpgradeHandler> upgradeSupplier, Supplier<ListenerRegistry> listenerRegistrySupplier) {
         this.activeMQServerName = activeMQServerName;
         this.acceptorName = acceptorName;
         this.httpListenerName = httpListenerName;
+        this.upgradeSupplier = upgradeSupplier;
+        this.listenerRegistrySupplier = listenerRegistrySupplier;
     }
 
+    @SuppressWarnings("unchecked")
     public static void installService(final CapabilityServiceTarget target, String activeMQServerName, final String acceptorName, final String httpListenerName) {
-
-        final HTTPUpgradeService service = new HTTPUpgradeService(activeMQServerName, acceptorName, httpListenerName);
         final CapabilityServiceBuilder sb = target.addCapability(HTTPAcceptorDefinition.CAPABILITY);
-        sb.setInstance(service);
-        sb.addAliases(MessagingServices.getHttpUpgradeServiceName(activeMQServerName, acceptorName));
-        sb.addCapabilityRequirement(HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME, ChannelUpgradeHandler.class, service.injectedRegistry, httpListenerName);
-        sb.addCapabilityRequirement(HTTP_LISTENER_REGISTRY_CAPABILITY_NAME, ListenerRegistry.class, service.listenerRegistry);
+        sb.provides(MessagingServices.getHttpUpgradeServiceName(activeMQServerName, acceptorName));
+        Supplier<ChannelUpgradeHandler> upgradeSupplier = sb.requiresCapability(HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME, ChannelUpgradeHandler.class, httpListenerName);
+        Supplier<ListenerRegistry> listenerRegistrySupplier = sb.requiresCapability(HTTP_LISTENER_REGISTRY_CAPABILITY_NAME, ListenerRegistry.class);
         sb.requires(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)));
+        final HTTPUpgradeService service = new HTTPUpgradeService(activeMQServerName, acceptorName, httpListenerName, upgradeSupplier, listenerRegistrySupplier);
         sb.setInitialMode(ServiceController.Mode.PASSIVE);
+        sb.setInstance(service);
         sb.install();
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        ListenerRegistry.Listener listenerInfo = listenerRegistry.getValue().getListener(httpListenerName);
+        ListenerRegistry listenerRegistry = listenerRegistrySupplier.get();
+        ListenerRegistry.Listener listenerInfo = listenerRegistry.getListener(httpListenerName);
         assert listenerInfo != null;
         httpUpgradeMetadata = new ListenerRegistry.HttpUpgradeMetadata(getProtocol(), CORE);
         listenerInfo.addHttpUpgradeMetadata(httpUpgradeMetadata);
@@ -123,7 +125,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         ActiveMQServer activeMQServer = ActiveMQServer.class.cast(activeMQService.getValue());
 
         httpUpgradeListener = switchToMessagingProtocol(activeMQServer, acceptorName, getProtocol());
-        injectedRegistry.getValue().addProtocol(getProtocol(),
+        upgradeSupplier.get().addProtocol(getProtocol(),
                 httpUpgradeListener,
                 new HttpUpgradeHandshake() {
             /**
@@ -137,7 +139,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
             public boolean handleUpgrade(HttpServerExchange exchange) throws IOException {
                 String secretKey = exchange.getRequestHeaders().getFirst(getSecKeyHeader());
                 if (secretKey == null) {
-                    throw RemotingLogger.ROOT_LOGGER.upgradeRequestMissingKey();
+                    throw MessagingLogger.ROOT_LOGGER.upgradeRequestMissingKey();
                 }
                 ActiveMQServer server = selectServer(exchange, activeMQServer);
                 if (server == null) {
@@ -199,9 +201,9 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
     @Override
     public void stop(StopContext context) {
-        listenerRegistry.getValue().getListener(httpListenerName).removeHttpUpgradeMetadata(httpUpgradeMetadata);
+        listenerRegistrySupplier.get().getListener(httpListenerName).removeHttpUpgradeMetadata(httpUpgradeMetadata);
         httpUpgradeMetadata = null;
-        injectedRegistry.getValue().removeProtocol(getProtocol(), httpUpgradeListener);
+        upgradeSupplier.get().removeProtocol(getProtocol(), httpUpgradeListener);
         httpUpgradeListener = null;
     }
 
@@ -265,19 +267,18 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
     static class LegacyHttpUpgradeService extends HTTPUpgradeService {
 
         public static void installService(final OperationContext context, String activeMQServerName, final String acceptorName, final String httpListenerName) {
-
-            final LegacyHttpUpgradeService service = new LegacyHttpUpgradeService(activeMQServerName, acceptorName, httpListenerName);
-            final ServiceBuilder sb =
-            context.getServiceTarget().addService(MessagingServices.getLegacyHttpUpgradeServiceName(activeMQServerName, acceptorName), service);
-            sb.addDependency(context.getCapabilityServiceName(HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME, httpListenerName, ChannelUpgradeHandler.class), ChannelUpgradeHandler.class, service.injectedRegistry);
-            sb.addDependency(context.getCapabilityServiceName(HTTP_LISTENER_REGISTRY_CAPABILITY_NAME, ListenerRegistry.class), ListenerRegistry.class, service.listenerRegistry);
+            final CapabilityServiceBuilder sb = context.getCapabilityServiceTarget().addCapability(RuntimeCapability.Builder.of(MessagingServices.getLegacyHttpUpgradeServiceName(activeMQServerName, acceptorName).getCanonicalName(), false, LegacyHttpUpgradeService.class).build());
+            Supplier<ChannelUpgradeHandler> upgradeSupplier = sb.requiresCapability(HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME, ChannelUpgradeHandler.class, httpListenerName);
+            Supplier<ListenerRegistry> listenerRegistrySupplier = sb.requiresCapability(HTTP_LISTENER_REGISTRY_CAPABILITY_NAME, ListenerRegistry.class);
             sb.requires(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)));
             sb.setInitialMode(ServiceController.Mode.PASSIVE);
+            final LegacyHttpUpgradeService service = new LegacyHttpUpgradeService(activeMQServerName, acceptorName, httpListenerName, upgradeSupplier, listenerRegistrySupplier);
+            sb.setInstance(service);
             sb.install();
         }
 
-        private LegacyHttpUpgradeService(String activeMQServerName, String acceptorName, String httpListenerName) {
-            super(activeMQServerName, acceptorName, httpListenerName);
+        private LegacyHttpUpgradeService(String activeMQServerName, String acceptorName, String httpListenerName, Supplier<ChannelUpgradeHandler> upgradeSupplier, Supplier<ListenerRegistry> listenerRegistrySupplier) {
+            super(activeMQServerName, acceptorName, httpListenerName, upgradeSupplier, listenerRegistrySupplier);
         }
 
         @Override
