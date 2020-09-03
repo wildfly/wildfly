@@ -1353,6 +1353,47 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+
+                            <!-- Provision a server with JSF and EJB support. -->
+                            <execution>
+                                <id>jsf-ejb-lite-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jsf-ejb-lite</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>jsf</layer>
+                                                <layer>ejb-lite</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
 
@@ -1412,6 +1453,34 @@
                                         <exclude>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
                                     </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with both JSF and EJB support -->
+                            <execution>
+                                <id>jsf-ejb-lite-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jsf-ejb-lite</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jsf-ejb-lite</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jsf-ejb-lite</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jsf-ejb-lite</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jsf-ejb-lite</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jsf-ejb-lite/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jsf-ejb-lite</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</include>
+                                        <include>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</include>
+                                    </includes>
                                 </configuration>
                             </execution>
 
