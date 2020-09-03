@@ -347,6 +347,7 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>webservices</layer>
+                                                <layer>legacy-security</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -398,6 +399,12 @@
                                      <excludes>
                                         <!-- This requires JSF layer -->
                                         <exclude>org/jboss/as/test/integration/ws/cdi/CdiJsfWebServicesTestCase.java</exclude>
+                                        <!-- requries jboss-ejb-policy --> 
+                                        <exclude>org/jboss/as/test/integration/ws/authentication/policy/AuthenticationPolicyContextTestCase.java</exclude>
+                                        <exclue>org/jboss/as/test/integration/ws/authentication/EJBEndpointAuthenticationTestCase.java</exclue>
+                                        <exclue>org/jboss/as/test/integration/ws/authentication/EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase.java</exclue>
+                                        <exclue>org/jboss/as/test/integration/ws/authentication/EJBEndpointSecuredWSDLAccessTestCase.java</exclue>
+                                        <exclue>org/jboss/as/test/integration/ws/wsse/trust/WSBearerSecurityPropagationTestCase.java</exclue>
                                     </excludes>
                                 </configuration>
                             </execution>

@@ -6,14 +6,10 @@
         <layer name="messaging-activemq" optional="true"/>
     </dependencies>
     <feature-group name="webservices"/>
-    <!--TODO: move to optional layer if it's ready-->
-    <feature-group name="picketbox-security"/>
     <packages>
         <package name="org.jboss.as.webservices.server.integration"/>
         <package name="org.jboss.ws.saaj-impl"/>
-        <package name="org.jboss.ws.cxf.sts"/>
-        <!-- PicketLinkSTS provision -->
-        <package name="org.picketlink"/>    
+        <package name="org.jboss.ws.cxf.sts"/>    
         <!-- ws tools provision -->
         <package name="bin.wstools"/>
         <package name="org.jboss.ws.tools.common"/>
