@@ -140,7 +140,7 @@ Basic layers:
 * _h2-driver_: Support for the H2 JDBC driver.
 * _h2-datasource_: Support for an H2 datasource. Depends on _h2-driver_.
 * _h2-default-datasource_: Support for h2 datasource set as the ee subsystem default datasource. Depends on _h2-datasource_.
-
+* _webservices_: Support for Jakarta XML Web Services
 Aggregation layers:
 
 * _cloud-profile_, an aggregation of the basic layers (except _h2-*_ layers) and a _web-server_ .
