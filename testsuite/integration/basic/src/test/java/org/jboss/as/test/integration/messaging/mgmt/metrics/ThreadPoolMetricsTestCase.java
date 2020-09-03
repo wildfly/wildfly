@@ -122,7 +122,7 @@ public class ThreadPoolMetricsTestCase {
             }
 
             // we are in the middle of processing
-            Thread.sleep(TimeoutUtil.adjust(100));
+            Thread.sleep(100);
             resources = JMSThreadPoolMetricsUtil.getResources(managementClient);
 
             JMSThreadPoolMetricsUtil.assertGreater("active count", resources.get(JMSThreadPoolMetricsUtil.ACTIVE_COUNT).asLong(), activeCount);
@@ -132,7 +132,7 @@ public class ThreadPoolMetricsTestCase {
 
             // read responses
             for (int i = 0; i < JMSThreadPoolMetricsUtil.MESSAGES_COUNT; i++) {
-                TextMessage textMessage = JMSThreadPoolMetricsUtil.receiveReply(session, replyQueue, 5000);
+                TextMessage textMessage = JMSThreadPoolMetricsUtil.receiveReply(session, replyQueue, TimeoutUtil.adjust(5000));
                 logger.trace("got reply for [" + textMessage.getText() + "]");
             }
 
