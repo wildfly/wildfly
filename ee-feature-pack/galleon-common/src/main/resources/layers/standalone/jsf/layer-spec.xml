@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jsf">
+    <dependencies>
+        <layer name="web-server"/>
+        <layer name="cdi" optional="true"/>
+        <layer name="bean-validation" optional="true"/>
+    </dependencies>
+    <feature spec="subsystem.jsf"/>
+    <packages>
+        <!-- The jsf-injection module the subsystem looks for depends on the value
+             of the subsystem root resource's default-jsf-impl-slot attribute.
+             This means the subsystem doesn't know it needs the org.jboss.as.jsf-injection:main
+             module. But this layer is meant for the default JSF install, so we do know.
+             TODO perhaps make this package a separate optional layer. But maybe other layers
+             that install alternative impls could just exclude this package.
+        -->
+        <package name="org.jboss.as.jsf-injection" optional="true"/>
+    </packages>
+</layer-spec>

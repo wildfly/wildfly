@@ -820,6 +820,37 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.jsf</id>
+                                <!-- Disabled by default; other profiles turn it on -->
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/cluster/jsf/*TestCase.java</include>
+                                    </includes>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -1078,6 +1109,69 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- Provision a jaxrs-server with web-clustering and jsf-->
+                            <execution>
+                                <id>jaxrs-server-jsf-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-clustering-jsf</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <!-- Provision the configuration that the ts.surefire.clustering.jsf
+                                             surefire execution tests. -->
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-full-ha.xml</name>
+                                            <layers>
+                                                <layer>jaxrs-server</layer>
+                                                <layer>web-clustering</layer>
+                                                <layer>jsf</layer>
+                                            </layers>
+                                        </config>
+                                        <!-- Also produce a standalone-ha.xml file with the same content
+                                             as standalone-full-ha.xml.
+                                             This doesn't actually get used in any tests we run with this
+                                             profile but the clustering-all.cli script wants to modify it
+                                             so to keep it simple create the file so that doesn't fail.
+                                        -->
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-ha.xml</name>
+                                            <layers>
+                                                <layer>jaxrs-server</layer>
+                                                <layer>web-clustering</layer>
+                                                <layer>jsf</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <!-- Update server profile with shared configuration changes -->
@@ -1184,6 +1278,61 @@
                                             <property name="wildfly4" value="wildfly-clustering-ejb-4"/>
                                             <property name="wildfly-original" value="wildfly-clustering-ejb"/>
                                             <property name="wildfly-load-balancer1" value="wildfly-clustering-ejb-load-balancer-1"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Update server profile with shared configuration changes -->
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly-clustering-jsf</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>clustering-all.cli</script>
+                                    </scripts>
+                                    <jboss-home>${project.build.directory}/wildfly-clustering-jsf</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-clustering-jsf-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${project.build.directory}/wildfly-clustering-jsf/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Copy 4 containers based on the shared configuration and one load balancer profile -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.config-as.clustering.jsf</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <target name="build-clustering"/>
+                                            <property name="wildfly1" value="wildfly-clustering-jsf-1"/>
+                                            <property name="wildfly2" value="wildfly-clustering-jsf-2"/>
+                                            <property name="wildfly3" value="wildfly-clustering-jsf-3"/>
+                                            <property name="wildfly4" value="wildfly-clustering-jsf-4"/>
+                                            <property name="wildfly-original" value="wildfly-clustering-jsf"/>
+                                            <property name="wildfly-load-balancer1" value="wildfly-clustering-jsf-load-balancer-1"/>
                                         </ant>
                                     </target>
                                 </configuration>
@@ -1314,6 +1463,28 @@
                                         <wildfly3>wildfly-clustering-ejb-3</wildfly3>
                                         <wildfly4>wildfly-clustering-ejb-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-clustering-ejb-load-balancer-1</wildfly-load-balancer1>
+                                        <!-- end required by arquillian.xml -->
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.jsf</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <!-- Override the standard module path that points at the shared module set from dist.
+                                        Have all the servers use wildfly-clustering-jsf-1 for the modules -->
+                                        <module.path>${project.build.directory}/wildfly-clustering-jsf-1/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <!-- required by arquillian.xml -->
+                                        <wildfly1>wildfly-clustering-jsf-1</wildfly1>
+                                        <wildfly2>wildfly-clustering-jsf-2</wildfly2>
+                                        <wildfly3>wildfly-clustering-jsf-3</wildfly3>
+                                        <wildfly4>wildfly-clustering-jsf-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-clustering-jsf-load-balancer-1</wildfly-load-balancer1>
                                         <!-- end required by arquillian.xml -->
                                     </systemPropertyVariables>
                                 </configuration>
