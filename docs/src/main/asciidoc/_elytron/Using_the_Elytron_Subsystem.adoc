@@ -33,6 +33,10 @@ user1=Admin
 user2=Guest
 ....
 
+The Properties Realm also supports storing hashed passwords in the properties
+files, namely DIGEST passwords. Learn how to specify the encoding and character set for these passwords
+in the next section.
+
 [[configure-a-properties-realm-in-wildfly]]
 ==== Configure a properties-realm in WildFly:
 
@@ -46,6 +50,23 @@ in the previous step in the _example-users.properties_ file. Also, if
 your properties files are located outside of _jboss.server.config.dir_,
 then you need to change the _path_ and _relative-to_ values
 appropriately.
+
+Additionally, if storing hashed passwords in the properties file, you can specify the following
+attributes:
+
+* `hash-encoding`: This attribute specifies the string format for the password if it is not stored in plain
+text. It is set to ``hex`` encoding by default, but ``base64`` is also supported.
+
+* `hash-charset`: This attribute specifies the character set to use when converting the password string to a
+byte array. It is set to ``UTF-8`` by default.
+
+For example, the following properties realm is configured to use ``base64`` encoding and the character set
+``GB2312``.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/properties-realm=examplePropRealm:add(groups-attribute=groups,groups-properties={path=example-roles.properties,relative-to=jboss.server.config.dir},users-properties={path=example-users.properties,relative-to=jboss.server.config.dir},hash-encoding=base64,hash-charset=GB2312)
+----
 
 [[configure-a-security-domain]]
 ==== Configure a security-domain:
@@ -319,6 +340,23 @@ connect to the server.
 ----
 /subsystem=elytron/ldap-realm=exampleLR:add(dir-context=exampleDC,identity-mapping={search-base-dn="ou=Users,dc=wildfly,dc=org",rdn-identifier="uid",user-password-mapper={from="userPassword"},attribute-mapping=[{filter-base-dn="ou=Roles,dc=wildfly,dc=org",filter="(&(objectClass=groupOfNames)(member={1}))",from="cn",to="Roles"}]})
 ----
+
+Additionally, if storing hashed passwords in the LDIF file, you can specify the following
+attributes:
+
+* `hash-encoding`: This attribute specifies the string format for the password if it is not stored in plain
+text. It is set to ``base64`` encoding by default, but ``hex`` is also supported.
+
+* `hash-charset`: This attribute specifies the character set to use when converting the password string to a
+byte array. It is set to ``UTF-8`` by default.
+
+For example, the following LDAP realm is storing hexadecimal encoded strings hashed using the `GB2312` character set:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/ldap-realm=exampleLR:add(dir-context=exampleDC,identity-mapping={...},hash-encoding=hex,hash-charset=GB2312)
+----
+
 
 [[add-a-simple-role-decoder-1]]
 ==== Add a simple-role-decoder:

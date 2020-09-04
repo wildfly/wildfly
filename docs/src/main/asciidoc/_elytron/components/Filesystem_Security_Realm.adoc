@@ -11,17 +11,23 @@ Every identity is stored in an XML file where the name of the file is the name o
 * `relative-to` If 'relative-to' is provided, the value of the 'path' attribute is treated as relative to the path specified by this attribute.
 * `levels` The number of levels of directory hashing to apply. When this attribute is set to positive value, filesystem realm will store identities in directory structure where the name of subdirectories will be derived from first characters of identity name. For example, location of identity named "alex" could be `a/l/alex.xml`. This is useful not only because some filesystems can limit the amount of files that can be stored in a single directory, but also for performance reasons, because that might be influenced by the number of entries in a single directory as well. Default value is 2.
 * `encoded` When encoding is set to true, the identity names will be BASE32 encoded before they are used as filenames. This is beneficial, because some filesystems are case-insensitive or might restrict set of characters allowed in a filename. Default value is true.
+* `hash-encoding` specifies the string format for the password if it is not stored in plain text. Set to BASE64 bt default, but HEX is also supported.
+* `hash-charset` specifies the character set to use when converting the password string to a byte array. Set to UTF-8 by default.
 
 Filesystem security realm can be added with WildFly management CLI or with Elytron API.
 
 === WildFly management CLI
 
 The following command creates realm with name `fsRealm` that resides in directory `fs-realm-users` inside the base configuration directory defined by `jboss.server.config.dir` property. The levels number is 2 and encoded value is true.
+The charset is UTF-8 and the string encoding is BASE64.
 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/filesystem-realm=fsRealm:add(path=fs-realm-users, relative-to=jboss.server.config.dir)
 ----
+
+NOTE: Although identities stored within the same realm can be hashed using different algorithms, they are all
+hashed using the same character set and stored using the same string encoding across the whole realm.
 
 To add identity with the name "alex" to this filesystem realm:
 
