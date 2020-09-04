@@ -3,7 +3,7 @@
     <dependencies>
         <layer name="web-server"/>
         <layer name="core-server"/>
-        <layer name="core-tools"/>
+        <layer name="core-tools" optional="true"/>
         <layer name="datasources" optional="true"/>
     </dependencies>
     <feature-group name="undertow-elytron-security"/>
