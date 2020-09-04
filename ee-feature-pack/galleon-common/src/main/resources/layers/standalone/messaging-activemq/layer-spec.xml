@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="messaging-activemq">
+    <dependencies>
+        <layer name="resource-adapters"/>
+    </dependencies>
+    <feature spec="subsystem.messaging-activemq"/>
+</layer-spec>

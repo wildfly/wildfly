@@ -39,12 +39,14 @@ import javax.jms.TextMessage;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.security.RemotingPermission;
@@ -67,24 +69,33 @@ public class SendToExternalJMSQueueTestCase {
 
     public static final String QUEUE_LOOKUP = "java:jboss/exported/queue/myAwesomeClientQueue";
 
-    static class SetupTask extends SnapshotRestoreSetupTask {
+    static class SetupTask implements ServerSetupTask {
 
         private static final Logger logger = Logger.getLogger(SendToExternalJMSQueueTestCase.SetupTask.class);
+        private AutoCloseable snapshot = null;
 
         @Override
-        public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
+        public void setup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
+            snapshot = ServerSnapshot.takeSnapshot(managementClient);
             ServerReload.executeReloadAndWaitForCompletion(managementClient, true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-            ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
-            ops.createJmsQueue("myAwesomeQueue", "/queue/myAwesomeQueue");
-            ModelNode attr = new ModelNode();
-            attr.get("connectors").add("http-test-connector");
-            ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress());
+            boolean needRemoteConnector = ops.isRemoteBroker();
+            if (needRemoteConnector) {
+                ops.addExternalRemoteConnector("remote-broker-connector", "messaging-activemq");
+            } else {
+                ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
+                ops.createJmsQueue("myAwesomeQueue", "/queue/myAwesomeQueue");
+            }
+            ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress(ops.getServerAddress()));
             execute(managementClient, op, true);
             op = Operations.createAddOperation(getPooledConnectionFactoryAddress());
             op.get("transaction").set("xa");
             op.get("entries").add("java:/JmsXA java:jboss/DefaultJMSConnectionFactory");
-            op.get("connectors").add("http-test-connector");
+            if(needRemoteConnector) {
+                op.get("connectors").add("remote-broker-connector");
+            } else {
+                op.get("connectors").add("http-test-connector");
+            }
             execute(managementClient, op, true);
             op = Operations.createAddOperation(getClientQueueAddress());
             op.get("entries").add(QUEUE_LOOKUP);
@@ -93,6 +104,15 @@ public class SendToExternalJMSQueueTestCase {
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            ops.removeJmsQueue("myAwesomeQueue");
+            if (snapshot != null) {
+                snapshot.close();
+            }
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
+        }
         private ModelNode execute(final org.jboss.as.arquillian.container.ManagementClient managementClient, final ModelNode op, final boolean expectSuccess) throws IOException {
             ModelNode response = managementClient.getControllerClient().execute(op);
             final String outcome = response.get("outcome").asString();
@@ -120,10 +140,8 @@ public class SendToExternalJMSQueueTestCase {
             return address;
         }
 
-        ModelNode getInitialPooledConnectionFactoryAddress() {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "messaging-activemq");
-            address.add("server", "default");
+        ModelNode getInitialPooledConnectionFactoryAddress(ModelNode serverAddress) {
+            ModelNode address = serverAddress.clone();
             address.add("pooled-connection-factory", "activemq-ra");
             return address;
         }

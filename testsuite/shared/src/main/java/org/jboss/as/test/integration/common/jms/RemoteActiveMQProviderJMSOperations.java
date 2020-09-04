@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.common.jms;
 
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -39,31 +38,44 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.execute;
 
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
+import javax.jms.QueueRequestor;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import org.apache.activemq.artemis.api.core.RoutingType;
+import org.apache.activemq.artemis.api.core.management.ResourceNames;
+import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.jboss.as.controller.PathAddress;
-
 
 /**
  * An implementation of JMSOperations for Apache ActiveMQ 6.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
-public class ActiveMQProviderJMSOperations implements JMSOperations {
+public class RemoteActiveMQProviderJMSOperations implements JMSOperations {
+
     private final ModelControllerClient client;
 
-    public ActiveMQProviderJMSOperations(ModelControllerClient client) {
+    public RemoteActiveMQProviderJMSOperations(ModelControllerClient client) {
         this.client = client;
     }
 
-    public ActiveMQProviderJMSOperations(ManagementClient client) {
+    public RemoteActiveMQProviderJMSOperations(ManagementClient client) {
         this.client = client.getControllerClient();
     }
 
     private static final ModelNode subsystemAddress = new ModelNode();
+
     static {
         subsystemAddress.add("subsystem", "messaging-activemq");
     }
 
     private static final ModelNode serverAddress = new ModelNode();
+
     static {
         serverAddress.add("subsystem", "messaging-activemq");
         serverAddress.add("server", "default");
@@ -76,7 +88,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
 
     @Override
     public ModelNode getServerAddress() {
-        return serverAddress.clone();
+        return subsystemAddress.clone();
     }
 
     @Override
@@ -97,9 +109,10 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     @Override
     public void createJmsQueue(String queueName, String jndiName, ModelNode attributes) {
         ModelNode address = getServerAddress()
-                .add("jms-queue", queueName);
+                .add("external-jms-queue", queueName);
         attributes.get("entries").add(jndiName);
         executeOperation(address, ADD, attributes);
+        createRemoteQueue("jms.queue." + queueName);
     }
 
     @Override
@@ -110,23 +123,26 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     @Override
     public void createJmsTopic(String topicName, String jndiName, ModelNode attributes) {
         ModelNode address = getServerAddress()
-                .add("jms-topic", topicName);
+                .add("external-jms-topic", topicName);
         attributes.get("entries").add(jndiName);
         executeOperation(address, ADD, attributes);
+        createRemoteTopic("jms.topic." + topicName);
     }
 
     @Override
     public void removeJmsQueue(String queueName) {
         ModelNode address = getServerAddress()
-                .add("jms-queue", queueName);
+                .add("external-jms-queue", queueName);
         executeOperation(address, REMOVE_OPERATION, null);
+        deleteRemoteQueue("jms.queue." + queueName);
     }
 
     @Override
     public void removeJmsTopic(String topicName) {
         ModelNode address = getServerAddress()
-                .add("jms-topic", topicName);
+                .add("external-jms-topic", topicName);
         executeOperation(address, REMOVE_OPERATION, null);
+        deleteRemoteTopic("jms.topic." + topicName);
     }
 
     @Override
@@ -143,6 +159,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
                 .add("connection-factory", name);
         executeOperation(address, REMOVE_OPERATION, null);
     }
+
     @Override
     public void addJmsExternalConnectionFactory(String name, String jndiName, ModelNode attributes) {
         ModelNode address = getSubsystemAddress()
@@ -306,16 +323,13 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         executeOperation(address, REMOVE_OPERATION, null);
     }
 
-
     @Override
     public void addExternalHttpConnector(String connectorName, String socketBinding, String endpoint) {
         ModelNode address = getSubsystemAddress()
                 .add("http-connector", connectorName);
-
         ModelNode attributes = new ModelNode();
         attributes.get("socket-binding").set(socketBinding);
         attributes.get("endpoint").set(endpoint);
-
         executeOperation(address, ADD, attributes);
     }
 
@@ -323,7 +337,6 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     public void addExternalRemoteConnector(String name, String socketBinding) {
         ModelNode address = getSubsystemAddress()
                 .add("remote-connector", name);
-
         ModelNode attributes = new ModelNode();
         attributes.get("socket-binding").set(socketBinding);
         executeOperation(address, ADD, attributes);
@@ -386,8 +399,106 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         executeOperation(address, ADD, attributes);
     }
 
+    private void createRemoteQueue(String queueName) {
+        ActiveMQConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61616", "guest", "guest");
+        try (Connection connection = cf.createConnection();
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
+            connection.start();
+            Queue managementQueue = ActiveMQJMSClient.createQueue("activemq.management");
+            QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
+            Message m = session.createMessage();
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", queueName, queueName, true, RoutingType.ANYCAST.name());
+            Message reply = requestor.request(m);
+            System.out.println("Creating queue " + queueName + " returned " + reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                String body = reply.getBody(String.class);
+                if (!destinationAlreadyExist(body)) {
+                    System.out.println("Creation of queue " + queueName + " has failed because of " + body);
+                }
+            }
+        } catch (JMSException ex) {
+            ex.printStackTrace();
+            throw new JMSOperationsException(ex);
+        }
+        System.out.println("Queue " + queueName + " has been created");
+    }
+
+    private void deleteRemoteQueue(String queueName) {
+        ActiveMQConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61616", "guest", "guest");
+        try (Connection connection = cf.createConnection();
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
+            connection.start();
+            Queue managementQueue = ActiveMQJMSClient.createQueue("activemq.management");
+            QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
+            Message m = session.createMessage();
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "destroyQueue", queueName, true, true);
+            Message reply = requestor.request(m);
+            System.out.println("Deleting queue " + queueName + " returned " + reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                String body = reply.getBody(String.class);
+                System.out.println("Deleting of queue " + queueName + " has failed because of " + body);
+            }
+        } catch (JMSException ex) {
+            ex.printStackTrace();
+            throw new JMSOperationsException(ex);
+        }
+        System.out.println("Queue " + queueName + " has been deleted");
+    }
+
+    private boolean destinationAlreadyExist(String body) {
+        return body.contains("AMQ119019") || body.contains("AMQ119018") || body.contains("AMQ229019") || body.contains("AMQ229018");
+    }
+
+    private void createRemoteTopic(String topicName) {
+        ActiveMQConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61616", "guest", "guest");
+        try (Connection connection = cf.createConnection();
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
+            connection.start();
+            Queue managementQueue = ActiveMQJMSClient.createQueue("activemq.management");
+            QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
+            Message m = session.createMessage();
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createAddress", topicName, RoutingType.MULTICAST.name());
+            Message reply = requestor.request(m);
+            System.out.println("Creating topic " + topicName + " returned " + reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                String body = reply.getBody(String.class);
+                if (!destinationAlreadyExist(body)) {
+                    System.out.println("Creation of topic " + topicName + " has failed because of " + body);
+                    throw new JMSOperationsException("Creation of topic " + topicName + " has failed because of " + body);
+                }
+            }
+        } catch (JMSException ex) {
+            ex.printStackTrace();
+            throw new JMSOperationsException(ex);
+        }
+        System.out.println("Topic " + topicName + " has been created");
+    }
+
+    private void deleteRemoteTopic(String topicName) {
+        ActiveMQConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61616", "guest", "guest");
+        try (Connection connection = cf.createConnection();
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
+            connection.start();
+            Queue managementQueue = ActiveMQJMSClient.createQueue("activemq.management");
+            QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
+            Message m = session.createMessage();
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "deleteAddress", topicName, true);
+            Message reply = requestor.request(m);
+            System.out.println("Deleting topic " + topicName + " returned " + reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                String body = reply.getBody(String.class);
+                System.out.println("Deleting of topic " + topicName + " has failed because of " + body);
+            }
+        } catch (JMSException ex) {
+            ex.printStackTrace();
+            throw new JMSOperationsException(ex);
+        }
+
+        System.out.println("Topic " + topicName + " has been deleted");
+    }
+
     @Override
     public boolean isRemoteBroker() {
-        return false;
+        return true;
     }
 }
