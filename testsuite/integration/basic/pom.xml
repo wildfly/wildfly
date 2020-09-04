@@ -513,12 +513,12 @@
                                 <include>org/jboss/as/test/integration/management/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/messaging/mgmt/ExternalConnectionFactoryManagementTestCase.java</include>
                                 <include>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</include>
-                                <include>org/jboss/as/test/integration/microprofile/**/*TestCase.java</include>
-                                <include>org/jboss/as/test/integration/microprofile/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/security/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/security/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/weld/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/weld/**/*Test.java</include>
+                                <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
+                                <include>org/wildfly/test/integration/microprofile/**/*Test.java</include>
                             </includes>
                             <excludes>
                                 <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
@@ -628,6 +628,15 @@
                                 <exclude>org/jboss/as/test/integration/logging/config/*TestCase</exclude>
                                 <!-- requires web-services-->
                                 <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
+                                <!-- microprofile exclusions -->
+                                <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/SimpleRestClientTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/jaxrs/ResteasyProvidersTestCase</exclude>
                             </excludes>
                         </configuration>
                     </execution>
