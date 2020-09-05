@@ -2,7 +2,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="webservices">
     <dependencies>
         <layer name="web-server"/>
-        <layer name="ejb" optional="true"/>
+        <layer name="ejb-lite" optional="true"/>
         <layer name="messaging-activemq" optional="true"/>
     </dependencies>
     <feature-group name="webservices"/>
