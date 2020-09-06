@@ -27,6 +27,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -868,4 +869,7 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 101, value = "Invalid value %s for %s, legal values are %s, default value is applied.")
     void invalidTransactionNameValue(String value, String name, Collection<?> validValues);
+
+    @Message(id = 102, value = "HTTP Upgrade request missing Sec-JbossRemoting-Key header")
+    IOException upgradeRequestMissingKey();
 }

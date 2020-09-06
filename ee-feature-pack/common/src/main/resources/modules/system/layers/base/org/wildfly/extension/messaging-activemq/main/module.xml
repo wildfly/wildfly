@@ -52,8 +52,6 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
-        <!-- required only to access the HttpListenerRegistryService used by http-acceptor -->
-        <module name="org.jboss.as.remoting" optional="true"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.common"/>
         <module name="org.jboss.as.server"/>
