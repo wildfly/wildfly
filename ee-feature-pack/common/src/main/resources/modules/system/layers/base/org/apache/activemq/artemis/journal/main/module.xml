@@ -34,6 +34,7 @@
         <!-- required for ARTEMIS-298 -->
         <module name="com.google.guava"/>
         <module name="javax.api"/>
+        <module name="javax.json.api"/>
         <module name="org.apache.commons.beanutils" />
         <module name="org.jboss.logging"/>
         <module name="io.netty"/>
