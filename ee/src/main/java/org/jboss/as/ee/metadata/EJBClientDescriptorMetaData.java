@@ -43,7 +43,7 @@ public class EJBClientDescriptorMetaData {
     private long invocationTimeout;
     private String deploymentNodeSelector;
     private String profile;
-    private int defaultCompression;
+    private int defaultCompression = -1;
 
     private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
     private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
