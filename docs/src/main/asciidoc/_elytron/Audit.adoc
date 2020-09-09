@@ -74,6 +74,10 @@ endpoint and so will always attempt to send audit messages despite previous fail
 | ```int``` of ```-1``` (infinite attempts) or higher
 | ```0```
 
+| ```encoding```
+| Encoding used by the audit file. 
+| String of ```UTF-8```, ```UTF-16BE```, ```UTF-16LE```, ```UTF-16```, ```US-ASCII``` or ```ISO-8859-1```
+| ```UTF-8```
 |===
 
 === Defining Syslog Audit Logging
@@ -130,11 +134,11 @@ records audit events in a simple format, and uses RFC5424 to describe the audit 
 )
 ----
 
-==== Full UDP Definition with Infinite Reconnect Attempts and JSON Format
+==== Full UDP Definition with Infinite Reconnect Attempts, JSON Format and UTF-16 encoding.
 
 Using the following command will generate a syslog audit logging resource that connects with
 UDP, always attempts to send messages despite previous failures sending messages, records audit
-events in a JSON format, and uses RFC5424 to describe the audit event.
+events in a JSON format, uses UTF-16 file encoding and RFC5424 to describe the audit event.
 
 [source,options="nowrap"]
 ----
@@ -144,6 +148,7 @@ events in a JSON format, and uses RFC5424 to describe the audit event.
     host-name=localhost,
     transport=UDP,
     format=JSON,
-    reconnect-attempts=-1
+    reconnect-attempts=-1,
+    encoding=UTF-16
 )
 ----
