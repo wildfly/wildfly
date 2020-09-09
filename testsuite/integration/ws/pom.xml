@@ -342,7 +342,6 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
                                                 <layer>webservices</layer>
                                             </layers>
                                         </config>
@@ -380,7 +379,6 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
                                                 <layer>ejb</layer>
                                                 <layer>webservices</layer>
                                             </layers>
@@ -419,7 +417,6 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
                                                 <layer>webservices</layer>
                                                 <layer>legacy-security</layer>
                                             </layers>
