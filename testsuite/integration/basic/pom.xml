@@ -402,6 +402,58 @@
             <artifactId>wildfly-jaxrs</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- To be able to start a 'remote' broker -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-commons</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-journal</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-artemis-native</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-ra</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-selector</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-service-extensions</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -604,7 +656,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
                         <executions>
                             <execution>
                                 <id>generate-ldap-store</id>
@@ -955,7 +1006,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>${version.exec.plugin}</version>
                         <executions>
                             <!-- There is no similar option as -Dcom.sun.CORBA.ORBUseDynamicStub=true for IBM JDK
                             we need to create stub do it manually with rmic tools -->
@@ -1102,6 +1152,25 @@
                                 <inherited>true</inherited>
                                 <configuration>
                                     <outputDirectory>${basedir}/target/wildfly-ejb/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <!-- Copy users and their roles -->
+                            <execution>
+                                <id>ejb-embedded-broker.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ejb-embedded-broker/standalone/configuration</outputDirectory>
                                     <overwrite>true</overwrite>
                                     <resources>
                                         <resource>
@@ -1309,6 +1378,88 @@
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>ejb</layer>
                                                 <layer>ejb-elytron-testsuite</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a cloud-profile server with ejb and embedded-broker-->
+                            <execution>
+                                <id>ejb-embedded-broker-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ejb-embedded-broker</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>ejb</layer>
+                                                <layer>embedded-activemq</layer>
+                                                <layer>remote-naming</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a cloud-profile server with ejb for remote Artemis broker-->
+                            <execution>
+                                <id>ejb-remote-broker-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ejb-remote-broker</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>ejb</layer>
+                                                <layer>remote-activemq-cf</layer>
+                                                <layer>remote-naming</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -1660,7 +1811,79 @@
                                     </includes>
                                 </configuration>
                             </execution>
-
+                            <!-- Tests against the install with ejb and embedded broker-->
+                            <execution>
+                                <id>ejb-embedded-broker-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ejb-embedded-broker</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-ejb-embedded-broker</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ejb-embedded-broker</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ejb-embedded-broker</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ejb-embedded-broker</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ejb-embedded-broker/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ejb-embedded-broker</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                            <!-- Tests against the install with ejb and remote broker-->
+                            <execution>
+                                <id>ejb-remote-broker-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jmsoperations.implementation.class>org.jboss.as.test.integration.common.jms.RemoteActiveMQProviderJMSOperations</jmsoperations.implementation.class>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ejb-remote-broker</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-ejb-remote-broker</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ejb-remote-broker</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ejb-remote-broker</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ejb-remote-broker</jboss.dist>
+                                        <artemis.home>${project.build.directory}/artemis</artemis.home>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ejb-remote-broker/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ejb-remote-broker</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/messaging/mgmt/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/definitions/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/xmldeployment/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/external/DiscoveryGroupExternalMessagingDeploymentTestCase.java</exclude>
+                                        <!-- Security is managed at the broker level -->
+                                        <exclude>org/jboss/as/test/integration/messaging/security/SecurityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/security/DeserializationBlackListTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/deployment/DependentMessagingDeploymentTestCase.java</exclude>
+                                    </excludes>
+                                    <!-- Starting and stopping the remote broker -->
+                                    <properties>
+                                        <property>
+                                            <name>listener</name>
+                                            <value>org.jboss.as.test.integration.common.jms.ArtemisRunListener</value>
+                                        </property>
+                                    </properties>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

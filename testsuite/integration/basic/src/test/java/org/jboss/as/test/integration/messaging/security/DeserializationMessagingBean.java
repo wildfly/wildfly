@@ -60,14 +60,14 @@ import javax.naming.NamingException;
                         name = "java:comp/env/myBlackListCF",
                         interfaceName = "javax.jms.QueueConnectionFactory",
                         properties = {
-                                "connectors=in-vm",
+                                "connectors=${org.jboss.messaging.default-connector:in-vm}",
                                 "deserialization-black-list=java.util.UUID"
                         }),
                 @JMSConnectionFactoryDefinition(
                         name = "java:comp/env/myWhiteListCF",
                         interfaceName = "javax.jms.QueueConnectionFactory",
                         properties = {
-                                "connectors=in-vm",
+                                "connectors=${org.jboss.messaging.default-connector:in-vm}",
                                 "deserialization-white-list=java.util.UUID"
                         }
                 )

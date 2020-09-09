@@ -40,6 +40,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -74,15 +75,17 @@ public class DependentMessagingDeploymentTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            JMSOperationsProvider.getInstance(managementClient).createJmsQueue(QUEUE_NAME, QUEUE_LOOKUP);
-            JMSOperationsProvider.getInstance(managementClient).createJmsTopic(TOPIC_NAME, TOPIC_LOOKUP);
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.createJmsQueue(QUEUE_NAME, QUEUE_LOOKUP);
+            jmsOperations.createJmsTopic(TOPIC_NAME, TOPIC_LOOKUP);
         }
 
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            JMSOperationsProvider.getInstance(managementClient).removeJmsQueue(QUEUE_NAME);
-            JMSOperationsProvider.getInstance(managementClient).removeJmsTopic(TOPIC_NAME);
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsQueue(QUEUE_NAME);
+            jmsOperations.removeJmsTopic(TOPIC_NAME);
         }
     }
 
@@ -99,7 +102,8 @@ public class DependentMessagingDeploymentTestCase {
         sendAndReceiveMessage(true);
 
         try {
-            JMSOperationsProvider.getInstance(managementClient).removeJmsQueue(QUEUE_NAME);
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsQueue(QUEUE_NAME);
             fail("removing a JMS resource that the deployment is depending upon must fail");
         } catch(Exception e) {
         }
@@ -112,20 +116,19 @@ public class DependentMessagingDeploymentTestCase {
         sendAndReceiveMessage(false);
 
         try {
-            JMSOperationsProvider.getInstance(managementClient).removeJmsTopic(TOPIC_NAME);
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsTopic(TOPIC_NAME);
             fail("removing a JMS resource that the deployment is depending upon must fail");
         } catch(Exception e) {
         }
-
         sendAndReceiveMessage(false);
     }
 
     private void sendAndReceiveMessage(boolean sendToQueue) throws Exception {
         String destination = sendToQueue ? "queue" : "topic";
         String text = UUID.randomUUID().toString();
-        URL url = new URL(this.url.toExternalForm() + "DependentMessagingDeploymentTestCase?destination=" + destination + "&text=" + text);
-        String reply = HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
-
+        URL servletUrl = new URL(this.url.toExternalForm() + "DependentMessagingDeploymentTestCase?destination=" + destination + "&text=" + text);
+        String reply = HttpRequest.get(servletUrl.toExternalForm(), 10, TimeUnit.SECONDS);
         assertNotNull(reply);
         assertEquals(text, reply);
     }
