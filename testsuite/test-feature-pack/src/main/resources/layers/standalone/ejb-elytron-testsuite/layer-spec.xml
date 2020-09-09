@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-elytron-testsuite">
+    <!-- Enables the EJB authentication via HTTP -->
+    <feature spec="subsystem.elytron.http-authentication-factory">
+        <param name="http-authentication-factory" value="ejb-http-authentication"/>
+        <param name="http-server-mechanism-factory" value="global"/>
+        <param name="security-domain" value="ApplicationDomain"/>
+        <param name="mechanism-configurations" value="[{mechanism-name=BASIC}]"/>
+    </feature>
+
+    <feature spec="subsystem.undertow.server">
+        <param name="server" value="default-server" />
+        <feature spec="subsystem.undertow.server.host">
+            <param name="host" value="default-host" />
+            <feature spec="subsystem.undertow.server.host.setting.http-invoker">
+                <param name="http-authentication-factory" value="ejb-http-authentication"/>
+            </feature>
+        </feature>
+    </feature>
+</layer-spec>

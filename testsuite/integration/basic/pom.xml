@@ -1065,13 +1065,51 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
+                        <executions combine.children="append">
                             <execution>
                                 <id>ts.copy-wildfly</id>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <phase>none</phase>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources. -->
+                            <execution>
+                                <id>ejb-lite.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ejb-lite/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources. -->
+                            <execution>
+                                <id>ejb.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ejb/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -1197,8 +1235,88 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Provision a cloud-profile server with ejb-lite -->
+                            <execution>
+                                <id>ejb-lite-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ejb-lite</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>ejb-lite</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a cloud-profile server with ejb -->
+                            <execution>
+                                <id>ejb-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ejb</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>ejb</layer>
+                                                <layer>ejb-elytron-testsuite</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -1329,6 +1447,186 @@
                                         <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>
                                     </includes>
+                                </configuration>
+                            </execution>
+                            <!-- Tests against the install with ejb-lite -->
+                            <execution>
+                                <id>ejb-lite-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ejb-lite</jboss.install.dir>
+                                        <jboss.inst>${basedir}/target/wildfly-ejb-lite</jboss.inst>
+                                        <jboss.home>${project.build.directory}/wildfly-ejb-lite</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ejb-lite</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ejb-lite</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ejb-lite</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ejb-lite/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ejb-lite</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ejb/annotationprocessing/ResourceAnnotationsProcessingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/bridgemethods/EjbBridgeMethodsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/descriptor/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/exception/AppExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/compenvbindings/EjbJavaCompBindingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/duplicate/EjbDuplicateBindingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/ejb/EjbInjectionSameEjbNameTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/ejbs/EjbsInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/injectiontarget/EjbRefInjectionTargetTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/aroundconstruct/nocreate/AroundConstructNoCreateTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/aroundconstruct/simple/AroundConstructSimpleTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/defaultinterceptor/DefaultInterceptorsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/exception/EjbInterceptorExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/inheritorder/MoreInterceptorInheritanceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/invocationcontext/InvocationContextTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/chains/InterceptorLifecycleSFSBTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/destroy/PreDestroyInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/order/PostConstructOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/method/EjbMethodInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/regex/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/java8/Java8InterfacesEJBTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/localview/EjbLocalViewTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/log/InvalidTransactionAttributeTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/packaging/injection/CrossModuleInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/packaging/jbossall/JBossAllEjbJarTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/remove/RemoveTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/reentrant/SingletonReentrantTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/dependson/DependsOnSingletonUnitTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/creation/SingletonReentrantPostConstructTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/concurrency/SingletonBeanTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/concurrency/inheritance/SingletonConcurrencyInheritanceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/timeout/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/serialization/StatefulSerializationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/remove/RemoveMethodOnSFSBTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/passivation/store/TwoPassivationStoresTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/locking/reentrant/ReentrantLockTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/locking/AccessSerializationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateless/systemexception/SystemExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/aroundtimeout/TimerServiceInterceptorOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/cancelation/TimerServiceCancellationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/cdi/requestscope/CDIRequestScopeTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/count/ActiveTimerServiceCountTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/expired/ExpiredTimerTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/GetTimersTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/overlap/OverlapTimerTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/persistence/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/schedule/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/security/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/serialization/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/simple/SimpleTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/suspend/TimerServiceSuspendTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/tx/retry/TimerRetryTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/view/ViewTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/annotation/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/bmt/BeanManagedTransactionsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/beforecompletion/BeforeCompletionExceptionDestroysBeanTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/inheritance/TransactionAttributeTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/lifecycle/LifecycleMethodTransactionManagementTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/mandatory/SFSBMandatoryTransactionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/never/NeverTransactionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/methodparams/TxMethodParamsTest.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/usertransaction/UserTransactionAccessTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/view/duplicateview/DuplicateViewDefinitionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/view/javapackage/ViewFromJavaPackageTestCase.java</include>
+
+                                        <include>org/jboss/as/test/integration/ee/interceptors/exceptions/ExceptionsFromInterceptorsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/mappedname/MappedNameInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/ztatic/StaticInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/ejblocalref/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/multipleinterceptors/BindingsOnInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/superclass/SuperClassInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/url/URLConnectionFactoryResourceInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/initializeinorder/InitializeInOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/datasourcedefinition/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/concurrent/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/altdd/AltDDTestCase.java</include>
+
+                                        <include>org/jboss/as/test/integration/jpa/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- JpaJarFileTestCase requires custom hibernate module -->
+                                        <exclude>org/jboss/as/test/integration/jpa/jarfile/JpaJarFileTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <!-- Tests against the install with ejb -->
+                            <execution>
+                                <id>ejb-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ejb</jboss.install.dir>
+                                        <jboss.inst>${basedir}/target/wildfly-ejb</jboss.inst>
+                                        <jboss.home>${project.build.directory}/wildfly-ejb</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ejb</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ejb</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ejb</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ejb/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <!-- EJB client library hack, see WFLY-4973-->
+                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                        <elytron>true</elytron>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ejb</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ejb/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- IIOP is not available -->
+                                        <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase.java</exclude>
+
+                                        <!-- Unable to persist timers in data base -->
+                                        <exclude>org/jboss/as/test/integration/ejb/timerservice/database/*TestCase.java</exclude>
+
+                                        <!-- These tests use legacy security.
+
+                                            Instead of excluding them here, it would be better to work on AssumeTestGroupUtil.assumeElytronProfileEnabled()
+                                            Although we are using elytron=true system property in this surefire execution, this value is not retrieved on
+                                            AssumeTestGroupUtil.assumeElytronProfileEnabled() check, not sure why, maybe because it is RunAsClient?
+                                        -->
+                                        <exclude>org/jboss/as/test/integration/ejb/container/**/SwitchIdentityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/LdapLegacyTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsPrincipalCustomDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/EJBContextMultipleSDTestCase.java</exclude>
+
+                                        <!-- Excluded temporarily because they are using using mdb -->
+                                        <exclude>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/pool/**/PooledEJBLifecycleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/transaction/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbInvocationStatisticsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbJarInEarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbJarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/MDBRoleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/GetCallerPrincipalTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsEjbMdbTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsMDBUnitTestCase.java</exclude>
+
+                                        <!-- Needs batch jberet -->
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsWithElytronEJBContextPropagationTestCase.java</exclude>
+
+                                    </excludes>
                                 </configuration>
                             </execution>
 
