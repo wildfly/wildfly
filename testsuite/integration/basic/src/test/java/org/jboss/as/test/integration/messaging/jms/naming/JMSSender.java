@@ -15,8 +15,12 @@
  */
 package org.jboss.as.test.integration.messaging.jms.naming;
 
+
+import static javax.ejb.TransactionAttributeType.NOT_SUPPORTED;
+
 import javax.annotation.Resource;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSConnectionFactoryDefinition;
 import javax.jms.JMSConnectionFactoryDefinitions;
@@ -34,8 +38,8 @@ import javax.jms.Queue;
         @JMSConnectionFactoryDefinition(
             name = "java:app/jms/nonXAconnectionFactory",
             transactional = false,
-             properties = {
-                            "connectors=in-vm",}
+            properties = {
+                "connectors=${org.jboss.messaging.default-connector:in-vm}",}
         )
     }
 )
@@ -47,6 +51,7 @@ public class JMSSender {
     @Resource(lookup = "java:app/jms/queue")
     private Queue queue;
 
+    @TransactionAttribute(NOT_SUPPORTED)
     public void sendMessage(String payload) {
         try (JMSContext context = connectionFactory.createContext()) {
             JMSProducer producer = context.createProducer();

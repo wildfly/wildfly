@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="remote-activemq-cf">
+    <dependencies>
+        <layer name="remote-activemq"/>
+    </dependencies>
+    <feature spec="subsystem.messaging-activemq">
+        <feature spec="subsystem.messaging-activemq.connection-factory">
+            <param name="connection-factory" value="RemoteConnectionFactory,"/>
+            <param name="entries" value="[java:/ConnectionFactory,java:jboss/exported/jms/RemoteConnectionFactory]"/>
+            <param name="connectors" value="[artemis]"/>
+        </feature>
+    </feature>
+    <feature spec="system-property">
+        <param name="system-property" value="org.jboss.messaging.default-connector"/>
+        <param name="value" value="artemis"/>
+    </feature>
+    <feature spec="subsystem.ee">
+        <param name="annotation-property-replacement" value="true"/>
+    </feature>
+</layer-spec>

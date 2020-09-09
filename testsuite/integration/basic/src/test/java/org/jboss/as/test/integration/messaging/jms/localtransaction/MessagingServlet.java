@@ -44,7 +44,7 @@ import org.junit.Assert;
 @JMSConnectionFactoryDefinition(
         name="java:module/CF_allow_local_tx",
         properties = {
-                "connectors=in-vm",
+                "connectors=${org.jboss.messaging.default-connector:in-vm}",
                 "allow-local-transactions=true"
         }
 )
