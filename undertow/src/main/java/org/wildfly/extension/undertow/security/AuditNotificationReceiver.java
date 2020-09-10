@@ -101,7 +101,13 @@ public class AuditNotificationReceiver implements NotificationReceiver {
         Enumeration<?> enparam = httpRequest.getParameterNames();
         while (enparam.hasMoreElements()) {
             String paramName = (String) enparam.nextElement();
-            String[] paramValues = httpRequest.getParameterValues(paramName);
+            String[] paramValues;
+            if (paramName.equals("j_password")) {
+                paramValues = new String[1];
+                paramValues[0] = "***";
+            } else {
+                paramValues = httpRequest.getParameterValues(paramName);
+            }
             int len = paramValues != null ? paramValues.length : 0;
             for (int i = 0; i < len; i++) { sb.append(paramValues[i]).append("::"); }
             sb.append(",");
