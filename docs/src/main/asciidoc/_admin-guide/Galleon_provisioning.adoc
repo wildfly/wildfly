@@ -131,9 +131,10 @@ Basic layers:
 * _ejb_: Support for Jakarta Enterprise Beans, excluding IIOP protocol.
 * _jaxrs_: Support for JAXRS. Depends on _web-server_ (defined in the WildFly servlet feature-pack).
 * _jdr_: Support for the JBoss Diagnostic Reporting (JDR) subsystem.
-* _jms-activemq_: Support for connections to a remote JMS broker.
+* _jms-activemq_: deprecated - use _messaging-activemq_.
 * _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
 * _jsf_: Support for Jakarta Server Faces. Depends on _web-server_ (defined in the WildFly servlet feature-pack) and optionally on _cdi_ and _bean-validation_
+* _messaging-activemq_: Support for connections to a remote JMS broker.
 * _microprofile-config_: Support for MicroProfile Config.
 * _microprofile-metrics_: Support for MicroProfile Metrics.
 * _microprofile-health_: Support for MicroProfile Health.
@@ -172,6 +173,8 @@ Includes Health support (optional), _microprofile-config_ (optional), _microprof
 * _ejb-local-cache_: Infinispan-based local cache for stateful session bean.
 
 * _ejb-dist-cache_: Infinispan-based distributed cache for stateful session bean.
+
+* _remote-activemq_: Support for connections to a remote Apache Activemq Artemis JMS broker.
 
 Tools layers:
 

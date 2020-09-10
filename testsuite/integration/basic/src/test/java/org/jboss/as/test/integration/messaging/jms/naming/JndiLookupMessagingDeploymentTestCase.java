@@ -30,7 +30,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -42,6 +49,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(JndiLookupMessagingDeploymentTestCase.SetupTask.class)
 public class JndiLookupMessagingDeploymentTestCase {
 
     @ArquillianResource
@@ -67,5 +75,20 @@ public class JndiLookupMessagingDeploymentTestCase {
 
         assertNotNull(reply);
         assertEquals(text, reply);
+    }
+
+    static class SetupTask implements ServerSetupTask{
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            managementClient.getControllerClient().execute(Operations.createWriteAttributeOperation(new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", true));
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            managementClient.getControllerClient().execute(Operations.createWriteAttributeOperation(new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", ops.isRemoteBroker()));
+        }
+
     }
 }

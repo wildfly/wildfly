@@ -49,6 +49,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -86,17 +87,26 @@ public class ExternalMessagingDeploymentRemoteTestCase {
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
             ServerReload.executeReloadAndWaitForCompletion(managementClient, true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-            ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
-            ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
-            execute(managementClient, addSocketBinding("legacy-messaging", 5445) , true);
-            execute(managementClient, addExternalRemoteConnector(ops.getSubsystemAddress(), "remote-broker-connector", "legacy-messaging") , true);
-            execute(managementClient, addRemoteAcceptor(ops.getServerAddress(), "legacy-messaging-acceptor", "legacy-messaging") , true);
+            boolean needRemoteConnector = ops.isRemoteBroker();
+            if (needRemoteConnector) {
+                ops.addExternalRemoteConnector("remote-broker-connector", "messaging-activemq");
+            } else {
+                ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
+                ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
+                execute(managementClient, addSocketBinding("legacy-messaging", 5445) , true);
+                ops.addExternalRemoteConnector("legacy-broker-connector", "legacy-messaging");
+                execute(managementClient, addRemoteAcceptor(ops.getServerAddress(), "legacy-broker-acceptor", "legacy-messaging") , true);
+            }
             ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress(ops.getServerAddress()));
-            execute(managementClient, op, true);
+            managementClient.getControllerClient().execute(op);
             op = Operations.createAddOperation(getPooledConnectionFactoryAddress());
             op.get("transaction").set("xa");
             op.get("entries").add("java:/JmsXA java:jboss/DefaultJMSConnectionFactory");
-            op.get("connectors").add("remote-broker-connector");
+            if (needRemoteConnector) {
+                op.get("connectors").add("remote-broker-connector");
+            } else {
+                op.get("connectors").add("legacy-broker-connector");
+            }
             execute(managementClient, op, true);
             op = Operations.createAddOperation(getExternalTopicAddress());
             op.get("entries").add(TOPIC_LOOKUP);
@@ -210,8 +220,12 @@ public class ExternalMessagingDeploymentRemoteTestCase {
     private void sendAndReceiveMessage(boolean sendToQueue) throws Exception {
         String destination = sendToQueue ? "queue" : "topic";
         String text = UUID.randomUUID().toString();
-        URL url = new URL(this.url.toExternalForm() + "ClientMessagingDeploymentTestCase?destination=" + destination + "&text=" + text);
-        String reply = HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
+       String serverUrl = this.url.toExternalForm();
+        if (!serverUrl.endsWith("/")) {
+            serverUrl = serverUrl + "/";
+        }
+        URL servletUrl = new URL(serverUrl + "ClientMessagingDeploymentTestCase?destination=" + destination + "&text=" + text);
+        String reply = HttpRequest.get(servletUrl.toExternalForm(), TimeoutUtil.adjust(10), TimeUnit.SECONDS);
 
         assertNotNull(reply);
         assertEquals(text, reply);

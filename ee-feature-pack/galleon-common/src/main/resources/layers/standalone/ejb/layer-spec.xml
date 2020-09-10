@@ -4,9 +4,11 @@
     <dependencies>
         <layer name="ejb-lite"/>
         <layer name="resource-adapters"/>
-        <layer name="jms-activemq"/>    <!-- change to messaging-activemq when available -->
+
+        <layer name="messaging-activemq"/>    <!-- change to messaging-activemq when available -->
         <layer name="remoting"/>
         <layer name="undertow"/>
+
     </dependencies>
 
     <feature spec="subsystem.naming">

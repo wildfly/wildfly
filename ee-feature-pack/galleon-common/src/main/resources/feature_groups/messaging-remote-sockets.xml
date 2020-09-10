@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="messaging-remote-sockets" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="socket-binding-group.remote-destination-outbound-socket-binding">
+         <param name="socket-binding-group" value="standard-sockets" />
+        <param name="remote-destination-outbound-socket-binding" value="messaging-activemq"/>
+        <param name="host" value="${jboss.messaging.connector.host:localhost}"/>
+        <param name="port" value="${jboss.messaging.connector.port:61616}"/>
+    </feature>
+</feature-group-spec>
