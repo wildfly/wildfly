@@ -180,7 +180,7 @@ public class JdrReportManagmentTestCase {
     private void validateEntryNotEmpty(String fileName, String fileNameOptional, Set<String> fileNames,
                                        String reportName, ZipFile reportZip) {
         ZipEntry zipENtry = getZipEntry(reportZip, fileName, fileNameOptional, fileNames, reportName);
-        assertTrue("Report entry " + fileName + " was empty or could not be determined", zipENtry.getSize() > 0);
+        assertTrue("Report entry " + fileName + " was empty or could not be determined", zipENtry.getSize() > 0 || zipENtry.getCompressedSize() > 0);
     }
 
     /**
@@ -227,6 +227,6 @@ public class JdrReportManagmentTestCase {
      */
     private void validateEmptyEntry(String fileName, Set<String> fileNames, String reportName, ZipFile reportZip) {
         ZipEntry zipEntry = getZipEntry(reportZip, fileName, null, fileNames, reportName);
-        assertFalse("Report entry " + fileName + " should be empty", zipEntry.getSize() > 0);
+        assertFalse("Report entry " + fileName + " should be empty", zipEntry.getSize() > 0 || zipEntry.getCompressedSize() > 0);
     }
 }
