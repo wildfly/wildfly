@@ -129,7 +129,7 @@ public class JdrReportManagmentTestCase {
         }
     }
 
-    public static final String FOLDER_NAME = "(wildfly_full-[0-9]*)|(jboss_eap[_-][-cd0-9]*)";
+    public static final String FOLDER_NAME = "((wildfly_full-[0-9]*)|(jboss_eap[_-][-cd0-9]*))";
 
     private void validateReportEntries(Set<String> fileNames, String reportName, ZipFile reportZip) {
 
