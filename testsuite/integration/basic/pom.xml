@@ -1384,79 +1384,6 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <!-- Disable the standard test executions. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>basic-integration-default-full.surefire</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>basic-integration-default-web.surefire</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>basic-integration-2nd.surefire</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>basic-integration-ldap.surefire</id>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Tests against the install with microprofile-platform support -->
-                            <execution>
-                                <id>microprofile-platform-layers.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <jboss.install.dir>${basedir}/target/wildfly-microprofile-platform</jboss.install.dir>
-                                        <jboss.home>${project.build.directory}/wildfly-microprofile-platform</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly-microprofile-platform</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly-microprofile-platform</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly-microprofile-platform</jboss.dist>
-                                        <module.path>${project.build.directory}/wildfly-microprofile-platform/modules${path.separator}${basedir}/target/modules</module.path>
-                                    </systemPropertyVariables>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/wildfly-microprofile-platform</JBOSS_HOME>
-                                        <!-- dummy env property for MicroProfile Config testing -->
-                                        <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
-                                        <TEST_PROP>JMXPropertyEditorsTestCase-WFLY-12899</TEST_PROP>
-                                    </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <!-- Requires extra modules -->
-                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/converter/MicroProfileConfigConvertersTestCase</exclude>
-                                        <!-- Requires security -->
-                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
-                                        <!-- Requires EJB -->
-                                        <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
-                                        <!-- Requires security -->
-                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/metrics/vendor/MicroProfileVendorMetricsBootTestCase</exclude>
-                                        <!-- Requires extra modules -->
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
                             <!-- Provision a cloud-profile server with ejb-lite -->
                             <execution>
                                 <id>ejb-lite-provisioning</id>
@@ -2337,6 +2264,52 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/management/console/*TestCase.java</include>
                                     </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with microprofile-platform support -->
+                            <execution>
+                                <id>microprofile-platform-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-microprofile-platform</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-microprofile-platform</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-microprofile-platform</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-microprofile-platform</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-microprofile-platform</jboss.dist>
+                                        <module.path>${project.build.directory}/wildfly-microprofile-platform/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-microprofile-platform</JBOSS_HOME>
+                                        <!-- dummy env property for MicroProfile Config testing -->
+                                        <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                                        <TEST_PROP>JMXPropertyEditorsTestCase-WFLY-12899</TEST_PROP>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Requires extra modules -->
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/converter/MicroProfileConfigConvertersTestCase</exclude>
+                                        <!-- Requires security -->
+                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
+                                        <!-- Requires EJB -->
+                                        <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
+                                        <!-- Requires security -->
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/vendor/MicroProfileVendorMetricsBootTestCase</exclude>
+                                        <!-- Requires extra modules -->
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
 
