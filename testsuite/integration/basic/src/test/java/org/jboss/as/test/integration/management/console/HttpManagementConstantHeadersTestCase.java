@@ -16,6 +16,12 @@
 
 package org.jboss.as.test.integration.management.console;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
@@ -42,19 +48,17 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * Test case to test custom / constant headers are applied to /console.
@@ -293,6 +297,7 @@ public class HttpManagementConstantHeadersTestCase {
     */
    @Test
    public void testHeadersOverrideNonManagementEndpoint() throws Exception {
+      Assume.assumeTrue(checkIfMetricsUsable());
       HttpGet get = new HttpGet(metricsUrl.toURI().toString());
       HttpResponse response = httpClient.execute(get);
       assertEquals(200, response.getStatusLine().getStatusCode());
@@ -324,5 +329,20 @@ public class HttpManagementConstantHeadersTestCase {
       for (Header header : headerList) {
          assertEquals(TEST_VALUE, response.getFirstHeader(header.getName()).getValue());
       }
+   }
+
+   /**
+    * Check if we cannot assume the use of metrics to run a test. We could have this situation when we are testing layers
+    * and the current server provision does not configure metrics.
+    */
+   private boolean checkIfMetricsUsable() throws IOException {
+      if (Boolean.getBoolean("ts.layers")) {
+         ModelNode metricsReadOp = Operations.createReadResourceOperation(PathAddress.pathAddress(SUBSYSTEM, "microprofile-metrics-smallrye"));
+         ModelNode result = managementClient.getControllerClient().execute(metricsReadOp);
+         if (!result.get(OUTCOME).asString().equals(SUCCESS)) {
+            return false;
+         }
+      }
+      return true;
    }
 }
