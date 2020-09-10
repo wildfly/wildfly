@@ -127,17 +127,17 @@ public class MultiTracerTestCase {
 
     @Test
     public void testMultipleWarServicesUseDifferentTracers() throws Exception {
-        testHttpInvokation();
+        testHttpInvocation();
     }
 
     @Test
     public void testMultipleWarServicesUseDifferentTracersAfterReload() throws Exception {
-        testHttpInvokation();
+        testHttpInvocation();
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
-        testHttpInvokation();
+        testHttpInvocation();
     }
 
-    private void testHttpInvokation() throws Exception {
+    private void testHttpInvocation() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse svcOneResponse = client.execute(new HttpGet(serviceOneUrl.toString() + "service-endpoint/tags"));
             Assert.assertEquals(200, svcOneResponse.getStatusLine().getStatusCode());

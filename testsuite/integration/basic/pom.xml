@@ -1344,6 +1344,48 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Provision a server with microprofile-platform support. -->
+                            <execution>
+                                <id>microprofile-platform-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-microprofile-platform</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>microprofile-platform</layer>
+                                                <layer>jaxrs-server</layer>
+                                                <!-- Needed by arquillian: protocol and security manager -->
+                                                <layer>jmx-remoting</layer>
+                                                <layer>security-manager</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <!-- Provision a cloud-profile server with ejb-lite -->
                             <execution>
                                 <id>ejb-lite-provisioning</id>
@@ -1778,6 +1820,53 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/jdr/mgmt/*TestCase.java</include>
                                     </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with microprofile-platform support -->
+                            <execution>
+                                <id>microprofile-platform-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-microprofile-platform</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-microprofile-platform</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-microprofile-platform</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-microprofile-platform</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-microprofile-platform</jboss.dist>
+                                        <module.path>${project.build.directory}/wildfly-microprofile-platform/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-microprofile-platform</JBOSS_HOME>
+                                        <!-- dummy env property for MicroProfile Config testing -->
+                                        <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                                        <TEST_PROP>JMXPropertyEditorsTestCase-WFLY-12899</TEST_PROP>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Requires extra modules -->
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/converter/MicroProfileConfigConvertersTestCase</exclude>
+                                        <!-- Requires security -->
+                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
+                                        <!-- Requires EJB -->
+                                        <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
+                                        <!-- Requires security -->
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/vendor/MicroProfileVendorMetricsBootTestCase</exclude>
+                                        <!-- Requires extra modules -->
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/jaxrs/ResteasyProvidersTestCase</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
 
