@@ -618,7 +618,7 @@
             <xs:extension base="tns:store">
                 <xs:attribute name="remote-servers" type="tns:list" use="required">
                     <xs:annotation>
-                        <xs:documentation>A list of outbound socket bindings a.</xs:documentation>
+                        <xs:documentation>A list of outbound socket bindings.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="cache" type="xs:string">
