@@ -1960,6 +1960,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     this.parseInvalidationNearCache(reader, address, operations);
                     break;
                 }
+                case PROPERTY: {
+                    ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
+                    readElement(reader, operation, RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES);
+                    break;
+                }
                 case REMOTE_CLUSTERS: {
                     this.parseRemoteClusters(reader, address, operations);
                     break;
