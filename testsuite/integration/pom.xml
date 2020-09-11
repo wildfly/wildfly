@@ -225,6 +225,7 @@
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>clustering</module>
+                <module>ws</module>
             </modules>
         </profile>
 
