@@ -596,17 +596,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-hibernate5-legacy</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
-           <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-hibernate5-3-legacy</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
