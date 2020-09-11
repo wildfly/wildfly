@@ -22,6 +22,16 @@
 
 package org.jboss.as.security.plugins;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.security._private.SecurityLogger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.AuthenticationManager;
@@ -33,15 +43,6 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.identitytrust.IdentityTrustManager;
 import org.jboss.security.mapping.MappingManager;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.security.auth.callback.CallbackHandler;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JNDI based implementation of {@code ISecurityManagement}

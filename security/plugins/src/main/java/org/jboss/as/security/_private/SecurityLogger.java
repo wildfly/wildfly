@@ -22,8 +22,8 @@
 
 package org.jboss.as.security._private;
 
-import org.jboss.logging.Logger;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;

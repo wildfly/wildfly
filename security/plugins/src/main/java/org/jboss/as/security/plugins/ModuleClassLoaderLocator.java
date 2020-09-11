@@ -21,8 +21,8 @@
  */
 package org.jboss.as.security.plugins;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
