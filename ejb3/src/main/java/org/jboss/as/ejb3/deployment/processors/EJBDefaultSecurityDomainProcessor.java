@@ -34,7 +34,6 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
-import org.jboss.as.security.Constants;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -97,7 +96,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         if (defaultDomainMapping != null) {
             defaultElytronDomainServiceName = support
                     .getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, defaultSecurityDomain)
-                    .append(Constants.SECURITY_DOMAIN);
+                    .append("security-domain");
         } else {
             defaultElytronDomainServiceName = null;
         }
@@ -145,7 +144,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
 
                 ServiceName applicationSecurityDomainServiceName = support.getCapabilityServiceName(
                         ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, selectedElytronDomainName);
-                elytronDomainServiceName = applicationSecurityDomainServiceName.append(Constants.SECURITY_DOMAIN);
+                elytronDomainServiceName = applicationSecurityDomainServiceName.append("security-domain");
 
                 final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(ejbSecurityDomainServiceName, ejbSecurityDomainService)
                         .addDependency(applicationSecurityDomainServiceName, ApplicationSecurityDomain.class, ejbSecurityDomainService.getApplicationSecurityDomainInjector());

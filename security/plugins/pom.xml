@@ -67,6 +67,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.remoting</groupId>
+            <artifactId>jboss-remoting</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.spec.javax.security.jacc</groupId>
             <artifactId>jboss-jacc-api_1.5_spec</artifactId>
         </dependency>
@@ -79,6 +84,11 @@
         <dependency>
             <groupId>org.picketbox</groupId>
             <artifactId>picketbox-infinispan</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-security</artifactId>
         </dependency>
 
         <dependency>

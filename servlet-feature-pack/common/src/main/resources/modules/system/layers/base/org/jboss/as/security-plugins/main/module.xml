@@ -33,8 +33,10 @@
 
     <dependencies>
         <module name="javax.security.jacc.api"/>
+        <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
+        <module name="org.jboss.remoting"/>
         <module name="org.picketbox"/>
         <module name="org.wildfly.clustering.infinispan.spi" optional="true"/>
         <module name="org.wildfly.common"/>
