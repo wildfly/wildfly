@@ -62,8 +62,11 @@
         <module name="org.wildfly.extension.io"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
+
         <!-- Only needed if capability 'org.wildfly.legacy-security' is present -->
         <module name="org.jboss.as.security" optional="true"/>
+        <module name="org.jboss.as.security-plugins" optional="true"/>
+
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.security.elytron-web.undertow-server"/>
         <module name="org.wildfly.security.elytron-web.undertow-server-servlet"/>

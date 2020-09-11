@@ -22,7 +22,7 @@
 
 package org.jboss.as.security.plugins;
 
-import org.jboss.as.security.logging.SecurityLogger;
+import org.jboss.as.security._private.SecurityLogger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;

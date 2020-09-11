@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.security.logging.SecurityLogger;
+import org.jboss.as.security._private.SecurityLogger;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.plugins.ClassLoaderLocator;
