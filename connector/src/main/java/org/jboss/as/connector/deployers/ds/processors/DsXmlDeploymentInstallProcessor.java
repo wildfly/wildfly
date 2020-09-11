@@ -61,9 +61,6 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.security.deployment.SecurityAttachments;
-import org.jboss.as.security.service.SimpleSecurityManagerService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
@@ -100,6 +97,9 @@ import org.jboss.security.SubjectFactory;
  */
 public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor {
 
+    private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
+    private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
+
     private static final String DATA_SOURCE = "data-source";
     private static final String XA_DATA_SOURCE = "xa-data-source";
     private static final String CONNECTION_PROPERTIES = "connection-properties";
@@ -129,7 +129,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
         final List<DataSources> dataSourcesList = deploymentUnit.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
-        final boolean legacySecurityPresent = phaseContext.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED);
+        final boolean legacySecurityPresent = support.hasCapability("org.wildfly.legacy-security");
 
         for(DataSources dataSources : dataSourcesList) {
             if (dataSources.getDrivers() != null && dataSources.getDrivers().size() > 0) {
@@ -323,9 +323,9 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         dataSourceServiceBuilder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
 
         if (requireLegacySecurity) {
-            dataSourceServiceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class,
+            dataSourceServiceBuilder.addDependency(SECURITY_MANAGER_SERVICE, ServerSecurityManager.class,
                     dataSourceService.getServerSecurityManager());
-            dataSourceServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+            dataSourceServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
                     dataSourceService.getSubjectFactoryInjector());
         }
 
