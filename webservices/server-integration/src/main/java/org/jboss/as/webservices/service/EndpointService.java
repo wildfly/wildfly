@@ -36,7 +36,6 @@ import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -86,6 +85,8 @@ import org.wildfly.security.auth.server.SecurityDomain;
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public final class EndpointService implements Service {
+
+    private static final ServiceName SECURITY_DOMAIN_SERVICE = ServiceName.JBOSS.append("security", "security-domain");
 
     private static final String WEB_APPLICATION_SECURITY_DOMAIN = "org.wildfly.undertow.application-security-domain";
     private static final String EJB_APPLICATION_SECURITY_DOMAIN = "org.wildfly.ejb3.application-security-domain";
@@ -263,7 +264,7 @@ public final class EndpointService implements Service {
             endpoint.setProperty(ELYTRON_SECURITY_DOMAIN, true);
         } else {
             // This is still picketbox jaas securityDomainContext
-            securityDomainContext = builder.requires(SecurityDomainService.SERVICE_NAME.append(domainName));
+            securityDomainContext = builder.requires(SECURITY_DOMAIN_SERVICE.append(domainName));
         }
         final Supplier<AbstractServerConfig> serverConfigService = builder.requires(WSServices.CONFIG_SERVICE);
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
