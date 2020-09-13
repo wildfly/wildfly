@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:11.0" default-server="undertow-server" default-servlet-container="servlet-container" default-virtual-host="virtual-host" instance-id="${jboss.node.name}-undertow" statistics-enabled="true" >
+<subsystem xmlns="urn:jboss:domain:undertow:12.0" default-server="undertow-server" default-servlet-container="servlet-container" default-virtual-host="virtual-host" instance-id="${jboss.node.name}-undertow" statistics-enabled="true" >
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="default"/>
    <server name="undertow-server" default-host="virtual-host" servlet-container="servlet-container">
       <http-listener name="default" socket-binding="http" redirect-socket="ajp" enable-http2="true"/>

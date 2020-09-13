@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:11.0">
+<subsystem xmlns="urn:jboss:domain:undertow:12.0">
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="default"/>
    <server name="default-server">
       <http-listener name="default" socket-binding="http" redirect-socket="ajp" enable-http2="true"/>
