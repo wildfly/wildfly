@@ -220,7 +220,7 @@ Basic layers:
 
 Aggregation layers:
 
-* _core-server_: Aggregation of layers that compose a typical core server: _core-security-realms_, _secure-management_, 
+* _core-server_: Aggregation of layers that compose a typical core server: _core-security-realms_, _management_,
 _jmx-remoting_, _logging_, _core-management_, _request-controller_ and _security-manager_.
 
 Tools layers:
