@@ -56,8 +56,9 @@
         <module name="org.jboss.jboss-transaction-spi"/>
         <!--this reverse dependency is here so integration classes in the AS code base can be instantiated by Artemis-->
         <module name="org.wildfly.extension.messaging-activemq" services="import"/>
-        <module name="org.jboss.as.security"/>
         <module name="org.picketbox"/>
+        <module name="org.jboss.as.security-plugins"/>
+        <module name="org.jboss.as.security"/>
         <!-- this optional dependency is required to be able to use this module from a jms-bridge to connect to a remote
              WildFly server [AS7-6549] -->
         <module name="org.wildfly.naming-client" optional="true"  services="import"/>

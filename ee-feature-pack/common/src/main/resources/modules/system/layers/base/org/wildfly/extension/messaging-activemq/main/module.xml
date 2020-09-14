@@ -65,7 +65,8 @@
         <module name="org.jboss.ironjacamar.impl"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.as.connector" />
-        <module name="org.jboss.as.security"/>
+        <!-- Use of legacy security domain ends up using this module's class loader. -->
+        <module name="org.jboss.as.security" optional="true"/>
         <module name="org.jboss.as.security-plugins"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.jts"/>
