@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import javax.batch.runtime.JobExecution;
-import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +45,7 @@ public class StartBatchServlet extends AbstractBatchServlet {
     protected static final String TIMEOUT_PARAM = "timeout";
     public static final String WAIT_FOR_COMPLETION = "wait";
 
-    @EJB
+    @Inject
     private BatchExecutionService service;
 
     @Override

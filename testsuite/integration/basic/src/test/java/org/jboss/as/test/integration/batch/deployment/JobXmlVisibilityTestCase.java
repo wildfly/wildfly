@@ -34,7 +34,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
-import org.jboss.as.test.integration.batch.common.BatchExecutionService;
 import org.jboss.as.test.integration.batch.common.CountingItemReader;
 import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.dmr.ModelNode;
@@ -216,7 +215,7 @@ public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, name)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                 // Add at least one EJB annotated class to make this an EJB JAR
-                .addClasses(CountingItemReader.class, CountingItemWriter.class, BatchExecutionService.class);
+                .addClasses(CountingItemReader.class, CountingItemWriter.class, SimpleEJB.class);
         addJobXml(jar, "test-ejb");
         return jar;
     }
