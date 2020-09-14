@@ -170,7 +170,8 @@ Decorator layers:
 Layers that you combine with "use-case tailored" layers to extend the capabilities of the provisioned server.
 
 * _web-clustering_: Infinispan-based web session clustering.
-
+* _jsonb_: Support for JSON Binding (JSON-B) provisioning the JSON-B API and Implementation modules.
+* _jsonp_: Support for JSON Processing (JSON-P) provisioning the JSON-P API and Implementation modules.
 * _observability_: Support for MicroProfile monitoring and configuration features. 
 Includes Health support (optional), _microprofile-config_ (optional), _microprofile-metrics_ (optional) and _open-tracing_ (optional).
 
