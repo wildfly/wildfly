@@ -124,7 +124,7 @@ Basic layers:
 
 Basic layers:
 
-* _batch-jberet_: Tech preview support for Jakarta Batch.
+* _batch-jberet_: Support for Jakarta Batch.
 * _bean-validation_: Support for Jakarta Bean Validation. Optionally depends on _cdi_.
 * _cdi_: Support for CDI. Optionally depends on _bean-validation_.
 * _datasources_: Support for datasources.
