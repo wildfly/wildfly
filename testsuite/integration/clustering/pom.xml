@@ -1178,62 +1178,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <id>ts.config-as.configure-wildfly-jpa-dist</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                                <configuration>
-                                    <offline>true</offline>
-                                    <scripts>
-                                        <script>clustering-all.cli</script>
-                                    </scripts>
-                                    <jboss-home>${project.build.directory}/wildfly-jpa-dist</jboss-home>
-                                    <stdout>${project.build.directory}/wildfly-jpa-dist-plugin.log</stdout>
-                                    <java-opts>${modular.jdk.args}</java-opts>
-                                    <system-properties>
-                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                                        <module.path>${project.build.directory}/wildfly-jpa-dist/modules</module.path>
-                                    </system-properties>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Copy 4 containers based on the shared configuration and one load balancer profile -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering.jpa-dist</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <target name="build-clustering"/>
-                                            <property name="wildfly1" value="wildfly-jpa-dist-1"/>
-                                            <property name="wildfly2" value="wildfly-jpa-dist-2"/>
-                                            <property name="wildfly3" value="wildfly-jpa-dist-3"/>
-                                            <property name="wildfly4" value="wildfly-jpa-dist-4"/>
-                                            <property name="wildfly-original" value="wildfly-jpa-dist"/>
-                                            <property name="wildfly-load-balancer1" value="wildfly-jpa-dist-load-balancer-1"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Update server profile with shared configuration changes -->
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-ejb</id>
@@ -1252,6 +1196,46 @@
                                     <system-properties>
                                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                         <module.path>${project.build.directory}/wildfly-clustering-ejb/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly-clustering-jpa-dist</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>clustering-all.cli</script>
+                                    </scripts>
+                                    <jboss-home>${project.build.directory}/wildfly-jpa-dist</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-jpa-dist-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${project.build.directory}/wildfly-jpa-dist/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly-clustering-jsf</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>clustering-all.cli</script>
+                                    </scripts>
+                                    <jboss-home>${project.build.directory}/wildfly-clustering-jsf</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-clustering-jsf-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${project.build.directory}/wildfly-clustering-jsf/modules</module.path>
                                     </system-properties>
                                 </configuration>
                             </execution>
@@ -1282,41 +1266,26 @@
                                     </target>
                                 </configuration>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Update server profile with shared configuration changes -->
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
                             <execution>
-                                <id>ts.config-as.configure-wildfly-clustering-jsf</id>
-                                <phase>process-test-resources</phase>
+                                <id>ts.config-as.clustering.jpa-dist</id>
+                                <phase>test-compile</phase>
                                 <goals>
-                                    <goal>execute-commands</goal>
+                                    <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <offline>true</offline>
-                                    <scripts>
-                                        <script>clustering-all.cli</script>
-                                    </scripts>
-                                    <jboss-home>${project.build.directory}/wildfly-clustering-jsf</jboss-home>
-                                    <stdout>${project.build.directory}/wildfly-clustering-jsf-plugin.log</stdout>
-                                    <java-opts>${modular.jdk.args}</java-opts>
-                                    <system-properties>
-                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                                        <module.path>${project.build.directory}/wildfly-clustering-jsf/modules</module.path>
-                                    </system-properties>
+                                    <target>
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <target name="build-clustering"/>
+                                            <property name="wildfly1" value="wildfly-jpa-dist-1"/>
+                                            <property name="wildfly2" value="wildfly-jpa-dist-2"/>
+                                            <property name="wildfly3" value="wildfly-jpa-dist-3"/>
+                                            <property name="wildfly4" value="wildfly-jpa-dist-4"/>
+                                            <property name="wildfly-original" value="wildfly-jpa-dist"/>
+                                            <property name="wildfly-load-balancer1" value="wildfly-jpa-dist-load-balancer-1"/>
+                                        </ant>
+                                    </target>
                                 </configuration>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Copy 4 containers based on the shared configuration and one load balancer profile -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
                             <execution>
                                 <id>ts.config-as.clustering.jsf</id>
                                 <phase>test-compile</phase>
