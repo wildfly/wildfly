@@ -1668,6 +1668,125 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Provision a server with sar support. Some test cases need mail as well. So added mail too. -->
+                            <execution>
+                                <id>legacy-sar-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-legacy-sar</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>sar</layer>
+                                                <layer>mail</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with mail support. -->
+                            <execution>
+                                <id>mail-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-mail</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>mail</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with mail and ejb support. -->
+                            <execution>
+                                <id>mail-ejb-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-mail-ejb</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>mail</layer>
+                                                <layer>ejb</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <!-- Provision a server with Web Console -->
                             <execution>
                                 <id>web-console-provisioning</id>
@@ -1958,6 +2077,36 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+
+                            <!-- Tests against the install with legacy sar support -->
+                            <execution>
+                                <id>legacy-sar-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-sar</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-sar</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-sar</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-sar</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-sar</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-sar/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-sar</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <!-- SarResourceInjectionTestCase needs mail -->
+                                        <include>org/jboss/as/test/integration/sar/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/deployment/classloading/sar/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
                             <!-- Tests against the install with legacy security -->
                             <execution>
                                 <id>legacy-security-layers.surefire</id>
@@ -2329,6 +2478,65 @@
                                             <value>org.jboss.as.test.integration.common.jms.ArtemisRunListener</value>
                                         </property>
                                     </properties>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with mail support -->
+                            <execution>
+                                <id>mail-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-mail</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-mail</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-mail</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-mail</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-mail</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-mail/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-mail</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/mail/annotation/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Uses EJB -->
+                                        <exclude>org/jboss/as/test/integration/mail/annotation/MailSessionDefinitionAnnotationTest.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with mail and ejb support -->
+                            <execution>
+                                <id>mail-ejb-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-mail-ejb</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-mail-ejb</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-mail-ejb</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-mail-ejb</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-mail-ejb</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-mail-ejb/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-mail-ejb</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/mail/annotation/MailSessionDefinitionAnnotationTest.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/mail/*TestCase.java</include>
+                                    </includes>
                                 </configuration>
                             </execution>
 
