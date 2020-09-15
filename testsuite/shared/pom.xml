@@ -78,6 +78,10 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-security-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-security</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
