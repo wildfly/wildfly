@@ -1234,6 +1234,13 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        A property with name and value.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="remote-clusters" type="tns:remote-clusters" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>

@@ -387,12 +387,16 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
+        if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES.getName()));
+        }
+
         if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress.append(LocalCacheResourceDefinition.WILDCARD_PATH, JDBCStoreResourceDefinition.PATH, StringTableResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
         if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()));
+            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName(), RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES.getName()));
 
             if (!InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
                 PathAddress storeAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH, MixedKeyedJDBCStoreResourceDefinition.PATH);

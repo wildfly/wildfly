@@ -49,7 +49,7 @@ public interface DistributableSessionManagementProvider {
 
     /**
      * Returns a {@link CapabilityServiceConfigurator} used to configure a service providing a {@link org.wildfly.clustering.web.routing.RouteLocator}.
-     * @param configuration the configuratoin of a deployment
+     * @param configuration the configuration of a deployment
      * @return a service configurator
      */
     CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(WebDeploymentConfiguration configuration);
