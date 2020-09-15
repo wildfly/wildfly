@@ -97,6 +97,10 @@ vi:ts=4:sw=4:expandtab
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-iiop-openjdk</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-security</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.wildfly.core</groupId>

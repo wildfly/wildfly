@@ -48,7 +48,6 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server" />
         <module name="org.wildfly.security.elytron-private"/>
-        <module name="org.jboss.as.security" />
         <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.as.ee" />
         <module name="org.jboss.as.threads"/>
