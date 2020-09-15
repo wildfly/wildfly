@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jsonb">
+    <dependencies>
+        <layer name="base-server"/>
+    </dependencies>
+    <packages>
+        <package name="org.eclipse.yasson"/>
+        <package name="javax.json.bind.api"/>
+    </packages>
+</layer-spec>
