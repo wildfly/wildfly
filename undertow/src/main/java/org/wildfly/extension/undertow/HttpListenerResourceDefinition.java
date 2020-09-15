@@ -25,11 +25,9 @@ package org.wildfly.extension.undertow;
 import io.undertow.UndertowOptions;
 import io.undertow.protocols.http2.Http2Channel;
 
-import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -47,11 +45,6 @@ import java.util.List;
  * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  */
 public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
-
-    static final RuntimeCapability<Void> HTTP_UPGRADE_REGISTRY_CAPABILITY =
-            RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HTTP_UPGRADE_REGISTRY, true, ChannelUpgradeHandler.class)
-            .setAllowMultipleRegistrations(true)
-            .build();
 
     protected static final HttpListenerResourceDefinition INSTANCE = new HttpListenerResourceDefinition();
 
