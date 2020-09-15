@@ -46,6 +46,7 @@
         <module>integration</module>
         <module>plugins</module>        
         <module>subsystem</module>
+        <module>vault-tool</module>        
     </modules>
 
 </project>

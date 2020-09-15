@@ -33,7 +33,6 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.jboss.as.security.logging.SecurityLogger;
 
 /**
  * Command Line Tool for the default implementation of the {@link org.jboss.security.vault.SecurityVault}
@@ -82,7 +81,7 @@ public class VaultTool {
                 tool = new VaultTool(args);
                 returnVal = tool.execute();
             } catch (Exception e) {
-                System.err.println(SecurityLogger.ROOT_LOGGER.problemOcurred());
+                System.err.println(VaultLogger.ROOT_LOGGER.problemOcurred());
                 e.printStackTrace(System.err);
                 System.exit(1);
             }
@@ -97,24 +96,24 @@ public class VaultTool {
             Console console = System.console();
 
             if (console == null) {
-                System.err.println(SecurityLogger.ROOT_LOGGER.noConsole());
+                System.err.println(VaultLogger.ROOT_LOGGER.noConsole());
                 System.exit(1);
             }
 
             Scanner in = new Scanner(System.in);
             while (true) {
-                System.out.println(SecurityLogger.ROOT_LOGGER.interactiveCommandString());
+                System.out.println(VaultLogger.ROOT_LOGGER.interactiveCommandString());
                 try {
                     int choice = in.nextInt();
                     switch (choice) {
                         case 0:
-                            System.out.println(SecurityLogger.ROOT_LOGGER.startingInteractiveSession());
+                            System.out.println(VaultLogger.ROOT_LOGGER.startingInteractiveSession());
                             VaultInteractiveSession vsession = new VaultInteractiveSession();
                             tool.setSession(vsession);
                             vsession.start();
                             break;
                         case 1:
-                            System.out.println(SecurityLogger.ROOT_LOGGER.removingInteractiveSession());
+                            System.out.println(VaultLogger.ROOT_LOGGER.removingInteractiveSession());
                             tool.setSession(null);
                             break;
                         default:
@@ -135,7 +134,7 @@ public class VaultTool {
         try {
             cmdLine = parser.parse(options, args, true);
         } catch (ParseException e) {
-            System.out.println(SecurityLogger.ROOT_LOGGER.problemParsingCommandLineParameters());
+            System.out.println(VaultLogger.ROOT_LOGGER.problemParsingCommandLineParameters());
             e.printStackTrace(System.err);
             System.exit(2);
         }
@@ -151,21 +150,21 @@ public class VaultTool {
      */
     private void initOptions() {
         options = new Options();
-        options.addOption("k", KEYSTORE_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineKeyStoreURL());
-        options.addOption("p", KEYSTORE_PASSWORD_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineKeyStorePassword());
-        options.addOption("e", ENC_DIR_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineEncryptionDirectory());
-        options.addOption("s", SALT_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineSalt());
-        options.addOption("i", ITERATION_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineIterationCount());
-        options.addOption("v", ALIAS_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineVaultKeyStoreAlias());
-        options.addOption("b", VAULT_BLOCK_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineVaultBlock());
-        options.addOption("a", ATTRIBUTE_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineAttributeName());
-        options.addOption("t", CREATE_KEYSTORE_PARAM, false, SecurityLogger.ROOT_LOGGER.cmdLineAutomaticallyCreateKeystore());
+        options.addOption("k", KEYSTORE_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineKeyStoreURL());
+        options.addOption("p", KEYSTORE_PASSWORD_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineKeyStorePassword());
+        options.addOption("e", ENC_DIR_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineEncryptionDirectory());
+        options.addOption("s", SALT_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineSalt());
+        options.addOption("i", ITERATION_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineIterationCount());
+        options.addOption("v", ALIAS_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineVaultKeyStoreAlias());
+        options.addOption("b", VAULT_BLOCK_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineVaultBlock());
+        options.addOption("a", ATTRIBUTE_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineAttributeName());
+        options.addOption("t", CREATE_KEYSTORE_PARAM, false, VaultLogger.ROOT_LOGGER.cmdLineAutomaticallyCreateKeystore());
 
         OptionGroup og = new OptionGroup();
-        Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineSecuredAttribute());
-        Option c = new Option("c", CHECK_SEC_ATTR_EXISTS_PARAM, false, SecurityLogger.ROOT_LOGGER.cmdLineCheckAttribute());
-        Option r = new Option("r", REMOVE_SEC_ATTR_PARAM, false, SecurityLogger.ROOT_LOGGER.cmdLineRemoveSecuredAttribute());
-        Option h = new Option("h", HELP_PARAM, false, SecurityLogger.ROOT_LOGGER.cmdLineHelp());
+        Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, VaultLogger.ROOT_LOGGER.cmdLineSecuredAttribute());
+        Option c = new Option("c", CHECK_SEC_ATTR_EXISTS_PARAM, false, VaultLogger.ROOT_LOGGER.cmdLineCheckAttribute());
+        Option r = new Option("r", REMOVE_SEC_ATTR_PARAM, false, VaultLogger.ROOT_LOGGER.cmdLineRemoveSecuredAttribute());
+        Option h = new Option("h", HELP_PARAM, false, VaultLogger.ROOT_LOGGER.cmdLineHelp());
         og.addOption(x);
         og.addOption(c);
         og.addOption(r);
@@ -198,19 +197,19 @@ public class VaultTool {
         if (cmdLine.hasOption(CHECK_SEC_ATTR_EXISTS_PARAM)) {
             // check password
             if (nonInteractiveSession.checkSecuredAttribute(vaultBlock, attributeName)) {
-                System.out.println(SecurityLogger.ROOT_LOGGER.cmdLineSecuredAttributeAlreadyExists());
+                System.out.println(VaultLogger.ROOT_LOGGER.cmdLineSecuredAttributeAlreadyExists());
                 return 0;
             } else {
-                System.out.println(SecurityLogger.ROOT_LOGGER.cmdLineSecuredAttributeDoesNotExist());
+                System.out.println(VaultLogger.ROOT_LOGGER.cmdLineSecuredAttributeDoesNotExist());
                 return 5;
             }
         } if (cmdLine.hasOption(REMOVE_SEC_ATTR_PARAM)) {
             // remove password
             if (nonInteractiveSession.removeSecuredAttribute(vaultBlock, attributeName)) {
-                System.out.println(SecurityLogger.ROOT_LOGGER.messageAttributeRemovedSuccessfuly(VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName)));
+                System.out.println(VaultLogger.ROOT_LOGGER.messageAttributeRemovedSuccessfuly(VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName)));
                 return 0;
             } else {
-                System.out.println(SecurityLogger.ROOT_LOGGER.messageAttributeNotRemoved(VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName)));
+                System.out.println(VaultLogger.ROOT_LOGGER.messageAttributeNotRemoved(VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName)));
                 return 6;
             }
         } else if (cmdLine.hasOption(SEC_ATTR_VALUE_PARAM)) {
@@ -220,7 +219,7 @@ public class VaultTool {
             summary();
             return 0;
         } else {
-            System.out.println(SecurityLogger.ROOT_LOGGER.actionNotSpecified());
+            System.out.println(VaultLogger.ROOT_LOGGER.actionNotSpecified());
             return -1;
         }
     }
