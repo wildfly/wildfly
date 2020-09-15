@@ -1304,6 +1304,46 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Provision a cloud-profile server with batch-jberet as well -->
+                            <execution>
+                                <id>batch-jberet-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-batch</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>batch-jberet</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <!-- Provision a server with jpa -->
                             <execution>
                                 <id>jpa-provisioning</id>
@@ -1733,6 +1773,37 @@
                             <execution>
                                 <id>basic-integration-ldap.surefire</id>
                                 <phase>none</phase>
+                            </execution>
+
+                            <!-- Tests against the install with batch-jberet -->
+                            <execution>
+                                <id>batch-jberet-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-batch</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-batch</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-batch</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-batch</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-batch</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-batch/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-batch</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/batch/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Test requires agroal -->
+                                        <exclude>org/jboss/as/test/integration/batch/repository/JdbcRepositoryTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
                             </execution>
 
                             <!-- Tests against the install with JSF support -->
