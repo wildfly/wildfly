@@ -2447,6 +2447,42 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>pojo-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/pojo</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>pojo</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>resource-adapters-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2780,6 +2816,7 @@
                                                 <layer>observability</layer>
                                                 <layer>open-tracing</layer>
                                                 <layer>remoting</layer>
+                                                <layer>pojo</layer>
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
@@ -2881,6 +2918,7 @@
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
                                                 <layer>open-tracing</layer>
+                                                <layer>pojo</layer>
                                                 <layer>remoting</layer>
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>

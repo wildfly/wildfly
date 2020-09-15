@@ -1870,6 +1870,45 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Provision a server with legacy pojo support. -->
+                            <execution>
+                                <id>pojo-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-pojo</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>pojo</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <!-- Provision a server with Web Console -->
                             <execution>
                                 <id>web-console-provisioning</id>
@@ -2676,6 +2715,33 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/mail/annotation/MailSessionDefinitionAnnotationTest.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/mail/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with legacy pojo support -->
+                            <execution>
+                                <id>pojo-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-pojo</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-pojo</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-pojo</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-pojo</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-pojo</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-pojo/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-pojo</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/pojo/**/*TestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
