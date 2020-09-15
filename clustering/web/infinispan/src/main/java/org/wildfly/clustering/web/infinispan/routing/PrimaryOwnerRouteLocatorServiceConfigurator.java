@@ -38,6 +38,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -77,7 +78,7 @@ public class PrimaryOwnerRouteLocatorServiceConfigurator extends RouteLocatorSer
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
-        ServiceBuilder<?> builder = target.addService(name);
+        ServiceBuilder<?> builder = new AsyncServiceConfigurator(name).build(target);
         Consumer<RouteLocator> locator = new CompositeDependency(this.registry, this.cache, this.factory).register(builder).provides(name);
         Service service = new FunctionalService<>(locator, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
