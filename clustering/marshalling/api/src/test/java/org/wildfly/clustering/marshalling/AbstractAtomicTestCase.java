@@ -58,7 +58,7 @@ public abstract class AbstractAtomicTestCase {
     @Test
     public void testAtomicLong() throws IOException {
         MarshallingTester<AtomicLong> tester = this.factory.createTester();
-        tester.test(new AtomicLong(Integer.MAX_VALUE), (expected, actual) -> Assert.assertEquals(expected.get(), actual.get()));
+        tester.test(new AtomicLong(Long.MAX_VALUE), (expected, actual) -> Assert.assertEquals(expected.get(), actual.get()));
     }
 
     @Test
