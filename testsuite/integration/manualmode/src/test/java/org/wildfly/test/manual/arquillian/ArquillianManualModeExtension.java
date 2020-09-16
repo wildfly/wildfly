@@ -20,13 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.manualmode.ejb.client.outbound.connection.transaction.preparehalt;
+package org.wildfly.test.manual.arquillian;
 
-import javax.ejb.Remote;
+import org.jboss.arquillian.container.spi.ServerKillProcessor;
+import org.jboss.arquillian.core.spi.LoadableExtension;
 
-@Remote
-public interface ClientBeanRemote {
-    void twoPhaseCommitCrashAtClient(String remoteDeploymentName);
-    void twoPhaseIntermittentCommitFailureOnServer(String remoteDeploymentName);
-    void onePhaseIntermittentCommitFailureOnServer(String remoteDeploymentName);
+/**
+ * Arquillian extensions registered for WildFly integration/manualmode testsuite.
+ */
+public class ArquillianManualModeExtension implements LoadableExtension {
+    public void register(ExtensionBuilder builder) {
+        builder.service(ServerKillProcessor.class, WildFlyServerKillProcessor.class);
+    }
 }

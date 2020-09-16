@@ -27,24 +27,44 @@ import javax.transaction.SystemException;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.MessageContext;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.txn.deployment.TransactionRollbackSetupAction;
 import org.jboss.as.xts.XTSHandlerDeploymentProcessor;
+import org.jboss.as.xts.jandex.EndpointMetaData;
 import org.jboss.as.xts.logging.XtsAsLogger;
+import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.invocation.Invocation;
 import org.wildfly.transaction.client.ContextTransactionManager;
+
+import java.util.List;
 
 /**
  * <p>
- * Handler to integrate the handle message event with WildFly Transaction client (WFTC) SPI.
- * This handler has to be defined in order to be called after the {@link OptionalJaxWSTxInboundBridgeHandler}.
- * Check the handler enlistment at {@link XTSHandlerDeploymentProcessor}.
+ *   Handler integrating the handle message event with WildFly Transaction Client (WFTC) SPI.
+ * </p>
  * <p>
- * Importing transaction for incoming WS message is handled by WS integration class: AbstractInvocationHandler
- * where the interceptor context is filled with the imported transaction.
+ *   This handler manages the outbound processing where it has to be processed
+ *   before the {@link org.jboss.jbossts.txbridge.inbound.OptionalJaxWSTxInboundBridgeHandler}.
+ *   Check the handler enlistment at {@link XTSHandlerDeploymentProcessor#updateXTSEndpoint(String, EndpointMetaData, List, DeploymentUnit)}.
  * <p>
- * When the call leaves eJB there is invoked handler {@link TransactionRollbackSetupAction} verifying existence of the transactions.
- * At that time the transaction should be suspended. In case of WS call where XTS transaction was imported the suspend
- * of the transaction is done in XTS handler. This handler is part of the Narayana code and the transaction is thus suspended.
- * But WFTC stores its own notion about transaction existence and none suspends the WFTC
+ * <p>
+ *   <i>NOTE:</i> the order of the JAX-WS handlers are defined as:
+ *   <q>For outbound messages handler processing starts with the first handler in the chain
+ *      and proceeds in the same order as the handler chain.
+ *      For inbound messages the order of processing is reversed.
+ *   </q>
+ * </p>
+ * <p>
+ *   This handler works on outbound side. The inbound side is handled by WS integration class:
+ *   {@link org.jboss.as.webservices.invocation.AbstractInvocationHandler#invokeInternal(Endpoint, Invocation)}.
+ *   There is the place where WFTC imports the Narayana transaction for the incoming WS message.
+ * </p>
+ * <p>
+ *   The outbound filter is useful for suspending the WFTC wrapper transaction. Otherwise only the underlaying Narayana transaction is suspended
+ *   (Narayana XTS txbridge inbound filter does so).
+ *   Then when the call leaves EJB there is invoked handler {@link TransactionRollbackSetupAction} verifying existence of the transactions.
+ *   If the the WFTC transaction is not suspended then the setup action rolls-back it which leads to an errors in the server log.
+ * </p>
  */
 public class WildflyTransactionClientTxBridgeIntegrationHandler implements Handler<MessageContext> {
 

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.messaging.jms.deployment;
 
+import org.jboss.as.test.shared.TimeoutUtil;
+
 import static org.jboss.as.test.integration.messaging.jms.deployment.DependentMessagingDeploymentTestCase.QUEUE_LOOKUP;
 import static org.jboss.as.test.integration.messaging.jms.deployment.DependentMessagingDeploymentTestCase.TOPIC_LOOKUP;
 
@@ -76,6 +78,6 @@ public class MessagingServlet extends HttpServlet {
                     .setJMSReplyTo(replyTo)
                     .send(destination, text);
 
-            return consumer.receiveBody(String.class, 5000);
+            return consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
     }
 }

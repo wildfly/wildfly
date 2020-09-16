@@ -31,6 +31,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -54,8 +55,33 @@ public class TransactionalBean implements TransactionalRemote {
             log.debugf("Invocation to #enlistOnePersistentXAResource with transaction", tm.getTransaction());
             tm.getTransaction().enlistResource(new PersistentTestXAResource(transactionCheckerSingleton));
         } catch (Exception e) {
-            throw new IllegalStateException("Cannot enlist single PersistentTestXAResource to transaction", e);
+            throw new IllegalStateException("Cannot enlist single " + PersistentTestXAResource.class.getSimpleName()
+                    + " to transaction", e);
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.MANDATORY)
+    public void intermittentCommitFailure() {
+        try {
+            Transaction txn = tm.getTransaction();
+            log.debugf("Invocation to #intermittentCommitFailure with the transaction: %s", txn);
+            txn.enlistResource(new TestCommitFailureXAResource(transactionCheckerSingleton));
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot enlist single " + TestCommitFailureXAResource.class.getSimpleName()
+                    + " to the transaction", e);
+        }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.MANDATORY)
+    public void intermittentCommitFailureTwoPhase() {
+        try {
+            Transaction txn = tm.getTransaction();
+            log.debugf("Invocation to #intermittentCommitFailure with transaction: %s", txn);
+            txn.enlistResource(new TestCommitFailureXAResource(transactionCheckerSingleton));
+            txn.enlistResource(new PersistentTestXAResource(transactionCheckerSingleton));
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot enlist one of the XAResources " + TestCommitFailureXAResource.class.getSimpleName()
+                    + " or " + PersistentTestXAResource.class.getSimpleName() + " to the transaction", e);
+        }
+    }
 }
