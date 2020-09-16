@@ -33,7 +33,7 @@ public class HighPriorityStringConverter1 implements Converter<String> {
 
     @Override
     public String convert(String value) {
-        return "Property converted by HighPriorityStringConverter1";
+        return !value.isEmpty() ? "Property converted by HighPriorityStringConverter1" : null;
     }
 
 }

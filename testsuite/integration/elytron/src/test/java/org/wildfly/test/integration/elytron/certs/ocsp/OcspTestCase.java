@@ -144,6 +144,97 @@ public class OcspTestCase extends OcspTestBase {
     }
 
     /**
+     * Let's check connection to server using a certificate which has been revoked in OCSP responder, although not in
+     * CRL. Based on the value of 'prefer-crls' we expect server to either reject connection or accept the connection.
+     * Expected behavior: server rejects connection for prefer-crls=false but accepts connection for prefer-crls=true.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testOcspPreferCrls() throws Exception {
+        setCrl(CliUtils.asAbsolutePath(CA_BLANK_PEM_CRL));
+        setSoftFail(false);
+
+        try {
+            setPreferCrls(false);
+            testCommon(ocspCheckedRevokedKeyStore, trustStore, PASSWORD, false);
+
+            setPreferCrls(true);
+            testCommon(ocspCheckedRevokedKeyStore, trustStore, PASSWORD, true);
+        } finally {
+            setPreferCrls(null);
+        }
+    }
+
+    /**
+     * Let's check that OCPS URL attribute is working. Certificate in use doesn't have specified its OCSP URL, we need
+     * to specify it manually in our configuration. If this is not specified, we expect server to reject the connection.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testOcspUrl() throws Exception {
+        setCrl(null);
+        setPreferCrls(false);
+        setSoftFail(false);
+
+        testCommon(ocspCheckedGoodNoUrlKeyStore, trustStore, PASSWORD, false);
+
+        try {
+            setOcspUrl(OCSP_RESPONDER_URL);
+            testCommon(ocspCheckedGoodNoUrlKeyStore, trustStore, PASSWORD, true);
+        } finally {
+            setOcspUrl(null);
+            setPreferCrls(null);
+        }
+    }
+
+    /**
+     * Let's check that server respects 'maximum-cert-path' attribute. Use certificate with longer certificate chain
+     * than what is allowed. Expected behavior: with default 'maximum-cert-path' attribute value the server accepts
+     * given client certificate; with more restricted value of 'maximum-cert-path' the request is rejected.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testOcspTooLongCertChain() throws Exception {
+        setSoftFail(false);
+        setCrl(null);
+
+        testCommon(ocspCheckedTooLongChainKeyStore, trustStore, PASSWORD, true);
+
+        try {
+            setMaxCertChain(1);
+            testCommon(ocspCheckedTooLongChainKeyStore, trustStore, PASSWORD, false);
+        } finally {
+            setMaxCertChain(null);
+        }
+    }
+
+    /**
+     * Let's check that server respects 'maximum-cert-path' attribute. Use certificate with longer certificate chain
+     * than what is allowed; CRL configured. Expected behavior: with default 'maximum-cert-path' attribute value the
+     * server accepts given client certificate; with more restricted value of 'maximum-cert-path' the request is
+     * rejected.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testOcspTooLongCertChainCrlActive() throws Exception {
+        setSoftFail(false);
+        setCrl(CliUtils.asAbsolutePath(CA_BLANK_PEM_CRL));
+
+        testCommon(ocspCheckedTooLongChainKeyStore, trustStore, PASSWORD, true);
+
+        try {
+            setMaxCertChain(1);
+            testCommon(ocspCheckedTooLongChainKeyStore, trustStore, PASSWORD, false);
+        } finally {
+            setMaxCertChain(null);
+        }
+    }
+
+    /**
      * This deployment is required just so OcspServerSetup task is executed.
      */
     @Deployment

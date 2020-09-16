@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2020, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.deployment.classloading.war;
+package org.jboss.as.test.integration.web.security.external;
 
-public class WebInfLibClass {
+/**
+ * Credentials for WebSecurityExternalAuthTestCase
+ */
+public class Credentials {
+    public static final String BAD_USER_NAME = "marcus";
+    public static final String BAD_USER_ROLE = "notallowed";
 
+    public static final String GOOD_USER_NAME = "anil";
+    public static final String AUTHORIZED_WITHOUT_AUTHENTICATION_USER_NAME = "noAuthentication";
+    public static final String CORRECT_ROLE = "gooduser";
+
+    public static final String NOT_USED_PASSWORD = "notUsed";
 }

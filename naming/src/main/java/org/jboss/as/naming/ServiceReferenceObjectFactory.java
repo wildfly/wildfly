@@ -34,7 +34,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.StabilityMonitor;
 
 /**
  * Abstract object factory that allows for the creation of service references. Object factories that subclass
@@ -71,32 +70,16 @@ public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory 
             throw NamingLogger.ROOT_LOGGER.invalidContextReference("srof");
         }
         final ServiceName serviceName = (ServiceName)nameAdr.getContent();
-        final ServiceController<?> controller;
         try {
-            controller = serviceRegistry.getRequiredService(serviceName);
+            final ServiceController<?> controller = serviceRegistry.getRequiredService(serviceName);
+            return getObjectInstance(controller.awaitValue(), obj, name, nameCtx, environment);
         } catch (ServiceNotFoundException e) {
             throw NamingLogger.ROOT_LOGGER.cannotResolveService(serviceName);
-        }
-
-        final StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(controller);
-        try {
-            monitor.awaitStability();
         } catch (InterruptedException e) {
             throw NamingLogger.ROOT_LOGGER.threadInterrupt(serviceName);
-        } finally {
-            monitor.removeController(controller);
+        } catch (Throwable t) {
+            throw NamingLogger.ROOT_LOGGER.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
         }
-        switch (controller.getState()) {
-            case UP:
-                return getObjectInstance(controller.getValue(), obj, name, nameCtx, environment);
-            case START_FAILED:
-                throw NamingLogger.ROOT_LOGGER.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
-            case REMOVED:
-                throw NamingLogger.ROOT_LOGGER.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
-        }
-        // we should never get here, as the listener should not notify unless the state was one of the above
-        throw NamingLogger.ROOT_LOGGER.cannotResolveServiceBug(serviceName, getClass().getName(), controller.getState().toString());
     }
 
     /**

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.security;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.security.Principal;
@@ -29,6 +28,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -54,9 +54,10 @@ import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.SimplePrincipal;
 
@@ -226,19 +227,21 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
      * @throws OperationFailedException if the service is not available, or the thread was interrupted.
      */
     private static void waitForService(final ServiceController<?> controller) throws OperationFailedException {
-        if (controller.getState() == ServiceController.State.UP) return;
-
-        final StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(controller);
         try {
-            monitor.awaitStability(100, MILLISECONDS);
+            final CountDownLatch latch = new CountDownLatch(1);
+            final LifecycleListener listener = new LifecycleListener() {
+                @Override
+                public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                    latch.countDown();
+                    controller.removeListener(this);
+                }
+            };
+            controller.addListener(listener);
+            latch.await();
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
             throw SecurityLogger.ROOT_LOGGER.interruptedWaitingForSecurityDomain(controller.getName().getSimpleName());
-        } finally {
-            monitor.removeController(controller);
-        }
-
+        } catch (final Throwable ignored) {}
         if (controller.getState() != ServiceController.State.UP) {
             throw SecurityLogger.ROOT_LOGGER.requiredSecurityDomainServiceNotAvailable(controller.getName().getSimpleName());
         }

@@ -38,11 +38,13 @@ public class PropertiesRealm extends AbstractUserAttributeValuesCapableElement i
     private static final Logger LOGGER = Logger.getLogger(PropertiesRealm.class);
 
     private final String groupsAttribute;
+    private final boolean plainText; // true by default
     private File tempFolder;
 
     private PropertiesRealm(Builder builder) {
         super(builder);
         this.groupsAttribute = builder.groupsAttribute;
+        this.plainText = builder.plainText;
     }
 
     @Override
@@ -61,8 +63,8 @@ public class PropertiesRealm extends AbstractUserAttributeValuesCapableElement i
         // groups-properties={path=/tmp/groups.properties}, groups-attribute="groups")
         final String groupsAttrStr = groupsAttribute == null ? "" : String.format(", groups-attribute=\"%s\"", groupsAttribute);
         cli.sendLine(String.format(
-                "/subsystem=elytron/properties-realm=%s:add(users-properties={path=\"%s\", plain-text=true}, groups-properties={path=\"%s\"}%s)",
-                name, asAbsolutePath(usersFile), asAbsolutePath(rolesFile), groupsAttrStr));
+                "/subsystem=elytron/properties-realm=%s:add(users-properties={path=\"%s\", plain-text=%b}, groups-properties={path=\"%s\"}%s)",
+                name, asAbsolutePath(usersFile), plainText, asAbsolutePath(rolesFile), groupsAttrStr));
     }
 
     @Override
@@ -85,8 +87,11 @@ public class PropertiesRealm extends AbstractUserAttributeValuesCapableElement i
         File result = new File(tempFolder, fileName);
         LOGGER.debugv("Creating property file {0}", result);
         try (FileOutputStream fos = new FileOutputStream(result)) {
-            // comment $REALM_NAME is just a workaround for https://issues.jboss.org/browse/WFLY-7104
-            properties.store(fos, "$REALM_NAME=" + name + "$");
+            if (plainText) {
+                properties.store(fos, null);
+            } else {
+                properties.store(fos, "$REALM_NAME=" + name + "$");
+            }
         }
         return result;
     }
@@ -96,12 +101,18 @@ public class PropertiesRealm extends AbstractUserAttributeValuesCapableElement i
      */
     public static final class Builder extends AbstractUserAttributeValuesCapableElement.Builder<Builder> {
         private String groupsAttribute;
+        private boolean plainText = true;
 
         private Builder() {
         }
 
         public Builder withGroupsAttribute(String groupsAttribute) {
             this.groupsAttribute = groupsAttribute;
+            return this;
+        }
+
+        public Builder withPlainText(boolean plainText) {
+            this.plainText = plainText;
             return this;
         }
 

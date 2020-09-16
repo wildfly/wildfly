@@ -26,15 +26,17 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installBinderService;
 import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.Locale;
 
 import org.apache.activemq.artemis.spi.core.naming.BindingRegistry;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.StabilityMonitor;
 
 /**
  * A {@link BindingRegistry} implementation for WildFly.
@@ -91,16 +93,24 @@ public class WildFlyBindingRegistry implements BindingRegistry {
             return;
         }
         // remove the binding service
-        bindingService.setMode(ServiceController.Mode.REMOVE);
-        final StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(bindingService);
+        final CountDownLatch latch = new CountDownLatch(1);
+        bindingService.addListener(new LifecycleListener() {
+            @Override
+            public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                if (event == LifecycleEvent.REMOVED) {
+                    ROOT_LOGGER.unboundJndiName(bindInfo.getAbsoluteJndiName());
+                    latch.countDown();
+                }
+            }
+        });
         try {
-            monitor.awaitStability();
-            ROOT_LOGGER.unboundJndiName(bindInfo.getAbsoluteJndiName());
-        } catch (InterruptedException e) {
-            ROOT_LOGGER.failedToUnbindJndiName(name, 5, SECONDS.toString().toLowerCase(Locale.US));
+            bindingService.setMode(ServiceController.Mode.REMOVE);
         } finally {
-            monitor.removeController(bindingService);
+            try {
+                latch.await(5, SECONDS);
+            } catch (InterruptedException ie) {
+                ROOT_LOGGER.failedToUnbindJndiName(name, 5, SECONDS.toString().toLowerCase(Locale.US));
+            }
         }
     }
 

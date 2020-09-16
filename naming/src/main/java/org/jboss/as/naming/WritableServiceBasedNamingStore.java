@@ -27,18 +27,20 @@ import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
 import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.util.ThreadLocalStack;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.value.ImmediateValue;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import java.util.Hashtable;
+import java.util.concurrent.CountDownLatch;
 
 import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
@@ -83,16 +85,13 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
             final ServiceBuilder<?> builder = serviceTarget.addService(bindName, binderService)
                     .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
             final ServiceController<?> binderServiceController = builder.install();
-            final StabilityMonitor monitor = new StabilityMonitor();
-            monitor.addController(binderServiceController);
             try {
-                monitor.awaitStability();
-            } finally {
-                monitor.removeController(binderServiceController);
-            }
-            final Exception startException = binderServiceController.getStartException();
-            if (startException != null) {
-                throw startException;
+                binderServiceController.awaitValue();
+            } catch (final IllegalStateException t) {
+                final Exception startException = binderServiceController.getStartException();
+                if (startException != null) {
+                    throw startException;
+                }
             }
             if (deploymentUnitServiceName != null) {
                 binderService.acquire();
@@ -134,15 +133,18 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         if (controller == null) {
             throw NamingLogger.ROOT_LOGGER.cannotResolveService(bindName);
         }
-        controller.setMode(ServiceController.Mode.REMOVE);
-        final StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(controller);
+        final CountDownLatch latch = new CountDownLatch(1);
+        controller.addListener(new LifecycleListener() {
+            @Override
+            public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                if (event == LifecycleEvent.REMOVED) latch.countDown();
+            }
+        });
         try {
-            monitor.awaitStability();
+            controller.setMode(ServiceController.Mode.REMOVE);
+            latch.await();
         } catch (Exception e) {
             throw namingException("Failed to unbind [" + bindName + "]", e);
-        } finally {
-            monitor.removeController(controller);
         }
     }
 
