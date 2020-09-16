@@ -1,5 +1,3 @@
-syntax = "proto3";
-
 package java.util.concurrent;
 
 import "java.util.proto";
