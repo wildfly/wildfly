@@ -40,6 +40,9 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.security.remoting.RemoteConnection;
+import org.jboss.as.server.suspend.ServerActivity;
+import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.EJBClientInvocationContext;
@@ -89,6 +92,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -105,13 +109,15 @@ final class AssociationImpl implements Association, AutoCloseable {
     private final DeploymentRepository deploymentRepository;
     private final Map<Integer, ClusterTopologyRegistrar> clusterTopologyRegistrars;
     private volatile Executor executor;
+    private final SuspendController suspendController;
 
-    AssociationImpl(final DeploymentRepository deploymentRepository, final List<Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>>> clientMappingRegistries) {
+    AssociationImpl(final DeploymentRepository deploymentRepository, final List<Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>>> clientMappingRegistries, SuspendController suspendController) {
         this.deploymentRepository = deploymentRepository;
         this.clusterTopologyRegistrars = clientMappingRegistries.isEmpty() ? Collections.emptyMap() : new HashMap<>(clientMappingRegistries.size());
         for (Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>> entry : clientMappingRegistries) {
             this.clusterTopologyRegistrars.put(entry.getKey().getSocketBinding().getSocketAddress().getPort(), new ClusterTopologyRegistrar(entry.getValue()));
         }
+        this.suspendController = suspendController;
     }
 
     @Override
@@ -389,15 +395,21 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public ListenerHandle registerModuleAvailabilityListener(@NotNull final ModuleAvailabilityListener moduleAvailabilityListener) {
-        final DeploymentRepositoryListener listener = new DeploymentRepositoryListener() {
+        // here we register a DeploymentRepositoryListener as well as a SuspendController listener
+
+        // register the deploymentRepositoryListener
+        final DeploymentRepositoryListener deploymentRepositoryListener = new DeploymentRepositoryListener() {
             @Override
             public void listenerAdded(final DeploymentRepository repository) {
-                List<EJBModuleIdentifier> list = new ArrayList<>();
-                for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
-                    EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
-                    list.add(ejbModuleIdentifier);
+                // only send out the initial list of the server is not in a suspended state
+                if (serverIsNotSuspended()) {
+                    List<EJBModuleIdentifier> list = new ArrayList<>();
+                    for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
+                        EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
+                        list.add(ejbModuleIdentifier);
+                    }
+                    moduleAvailabilityListener.moduleAvailable(list);
                 }
-                moduleAvailabilityListener.moduleAvailable(list);
             }
 
             @Override
@@ -424,9 +436,53 @@ final class AssociationImpl implements Association, AutoCloseable {
             public void deploymentResumed(DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
+
+            private boolean serverIsNotSuspended() {
+                return suspendController.getState() == SuspendController.State.RUNNING;
+            }
         };
-        deploymentRepository.addListener(listener);
-        return () -> deploymentRepository.removeListener(listener);
+        deploymentRepository.addListener(deploymentRepositoryListener);
+
+        // register the ServerActivity listener for suspend/resume
+        final ServerActivity suspendResumeListener = new ServerActivity() {
+            @Override
+            public void preSuspend(ServerActivityCallback listener) {
+                final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = AssociationImpl.this.deploymentRepository.getStartedModules();
+                if (availableModules != null && !availableModules.isEmpty()) {
+                    // transform the Set of DeploymentModuleIdentifiers to a List of EJBModuleIdentifiers
+                    List<EJBModuleIdentifier> availableEJBModuleIdentifiers = availableModules.keySet().stream().map(id -> toModuleIdentifier(id)).collect(Collectors.toList());
+
+                    EjbLogger.REMOTE_LOGGER.debugf("Sending module unavailability message containing %s modules on suspend of server, to all connected channels", availableModules.size());
+
+                    // send out the unavailable message now that the server is suspended
+                    moduleAvailabilityListener.moduleUnavailable(availableEJBModuleIdentifiers);
+                }
+                listener.done();
+            }
+
+            @Override
+            public void suspended(ServerActivityCallback listener) {
+                listener.done();
+            }
+
+            @Override
+            public void resume() {
+                final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = AssociationImpl.this.deploymentRepository.getStartedModules();
+                if (availableModules != null && !availableModules.isEmpty()) {
+                    // transform the Set of DeploymentModuleIdentifiers to a List of EJBModuleIdentifiers
+                    List<EJBModuleIdentifier> availableEJBModuleIdentifiers = availableModules.keySet().stream().map(id -> toModuleIdentifier(id)).collect(Collectors.toList());
+
+                    EjbLogger.REMOTE_LOGGER.debugf("Sending module availability message containing %s modules on resume of server, to all connected channels", availableModules.size());
+
+                    // send out the available message now that the server is resumed
+                    moduleAvailabilityListener.moduleAvailable(availableEJBModuleIdentifiers);
+                }
+            }
+        };
+        suspendController.registerActivity(suspendResumeListener);
+
+        // return the handle called by channel close listeners which unregister these listeners
+        return () -> { deploymentRepository.removeListener(deploymentRepositoryListener); suspendController.unRegisterActivity(suspendResumeListener); };
     }
 
     static EJBModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {

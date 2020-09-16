@@ -92,7 +92,7 @@ public final class AssociationService implements Service<AssociationService> {
         for (Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>> entry : this.clientMappingsRegistries) {
             clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().getValue(), entry.getValue().getValue()));
         }
-        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), clientMappingsRegistries);
+        value = new AssociationImpl(getDeploymentRepositoryInjector().getValue(), clientMappingsRegistries, getSuspendControllerInjector().getValue());
 
         String ourNodeName = serverEnvironmentServiceInjector.getValue().getNodeName();
 
