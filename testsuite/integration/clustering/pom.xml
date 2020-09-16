@@ -223,6 +223,28 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <!-- Patch infinispan server distribution, e.g. with authentication / users configuration. -->
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.configure-users-infinispan-server</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/infinispan-server-${version.org.infinispan.server}/server/conf</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/resources/infinispan-server</directory>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- Update server profile with shared configuration changes and the load balancer -->
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>

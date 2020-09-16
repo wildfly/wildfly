@@ -65,7 +65,7 @@
             </security-realms>
         </security>
 
-        <endpoints socket-binding="default">
+        <endpoints socket-binding="default" security-realm="default">
             <hotrod-connector name="hotrod"/>
             <rest-connector name="rest"/>
         </endpoints>
