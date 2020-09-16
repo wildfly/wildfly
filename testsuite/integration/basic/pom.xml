@@ -1111,6 +1111,22 @@
             </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${version.exec.plugin}</version>
+                        <executions>
+                            <!-- See the default execution on the ibmjdk.profile, this execution should be activated selectively
+                                 for any provisioning under this profile that requires the manual IIOP/CORBA stub generation -->
+                            <execution>
+                                <id>ibmjdk.iiop.stub-creation</id>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
