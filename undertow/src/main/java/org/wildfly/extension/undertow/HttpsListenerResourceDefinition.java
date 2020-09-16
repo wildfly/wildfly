@@ -57,7 +57,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
 
     protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, false)
             .setAlternatives(Constants.SECURITY_REALM, Constants.VERIFY_CLIENT, Constants.ENABLED_CIPHER_SUITES, Constants.ENABLED_PROTOCOLS, Constants.SSL_SESSION_CACHE_SIZE, Constants.SSL_SESSION_TIMEOUT)
-            .setCapabilityReference(REF_SSL_CONTEXT)
+            .setCapabilityReference(LISTENER_CAPABILITY, REF_SSL_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
@@ -119,7 +119,8 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setDeprecated(ModelVersion.create(4, 0, 0)).setMeasurementUnit(MeasurementUnit.SECONDS).setRequired(false).setAllowExpression(true).setAlternatives(Constants.SSL_CONTEXT).build();
 
     private HttpsListenerResourceDefinition() {
-        super(new Parameters(UndertowExtension.HTTPS_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER)));
+        super(new Parameters(UndertowExtension.HTTPS_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
+                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY));
     }
 
     @Override
