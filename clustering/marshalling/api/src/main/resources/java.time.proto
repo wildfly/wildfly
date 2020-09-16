@@ -1,5 +1,3 @@
-syntax = "proto3";
-
 package java.time;
 
 // IDs: 90 - 109

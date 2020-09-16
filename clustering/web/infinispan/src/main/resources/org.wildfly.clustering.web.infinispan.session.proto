@@ -1,5 +1,3 @@
-syntax = "proto3";
-
 package org.wildfly.clustering.web.infinispan.session;
 
 /**
