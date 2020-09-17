@@ -33,7 +33,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
-import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.security.plugins.PBEUtils;
 import org.jboss.security.vault.SecurityVault;
 import org.jboss.security.vault.SecurityVaultException;
@@ -116,16 +115,16 @@ public final class VaultSession {
         File f = new File(keystoreURL);
         if (!f.exists()) {
             if (!createKeystore) {
-                throw SecurityLogger.ROOT_LOGGER.keyStoreDoesnotExistWithExample(keystoreURL, keystoreURL);
+                throw VaultLogger.ROOT_LOGGER.keyStoreDoesnotExistWithExample(keystoreURL, keystoreURL);
             }
         } else if (!f.canWrite() || !f.isFile()) {
-            throw SecurityLogger.ROOT_LOGGER.keyStoreNotWritable(keystoreURL);
+            throw VaultLogger.ROOT_LOGGER.keyStoreNotWritable(keystoreURL);
         }
     }
 
     protected void validateKeystorePassword() throws Exception {
         if (keystorePassword == null) {
-            throw SecurityLogger.ROOT_LOGGER.keyStorePasswordNotSpecified();
+            throw VaultLogger.ROOT_LOGGER.keyStorePasswordNotSpecified();
         }
     }
 
@@ -139,23 +138,23 @@ public final class VaultSession {
         File d = new File(encryptionDirectory);
         if (!d.exists()) {
             if (!d.mkdirs()) {
-                throw SecurityLogger.ROOT_LOGGER.cannotCreateEncryptionDirectory(d.getAbsolutePath());
+                throw VaultLogger.ROOT_LOGGER.cannotCreateEncryptionDirectory(d.getAbsolutePath());
             }
         }
         if (!d.isDirectory()) {
-            throw SecurityLogger.ROOT_LOGGER.encryptionDirectoryDoesNotExist(encryptionDirectory);
+            throw VaultLogger.ROOT_LOGGER.encryptionDirectoryDoesNotExist(encryptionDirectory);
         }
     }
 
     protected void validateIterationCount() throws Exception {
         if (iterationCount < 1 && iterationCount > Integer.MAX_VALUE) {
-            throw SecurityLogger.ROOT_LOGGER.iterationCountOutOfRange(String.valueOf(iterationCount));
+            throw VaultLogger.ROOT_LOGGER.iterationCountOutOfRange(String.valueOf(iterationCount));
         }
     }
 
     protected void validateSalt() throws Exception {
         if (salt == null || salt.length() != 8) {
-            throw SecurityLogger.ROOT_LOGGER.saltWrongLength();
+            throw VaultLogger.ROOT_LOGGER.saltWrongLength();
         }
     }
 
@@ -191,7 +190,7 @@ public final class VaultSession {
             this.vault.init(getVaultOptionsMap());
             handshake();
         } catch (SecurityVaultException e) {
-            throw SecurityLogger.ROOT_LOGGER.securityVaultException(e);
+            throw VaultLogger.ROOT_LOGGER.securityVaultException(e);
         }
     }
 
@@ -203,7 +202,7 @@ public final class VaultSession {
      */
     public void startVaultSession(String vaultAlias) throws Exception {
         if (vaultAlias == null) {
-            throw SecurityLogger.ROOT_LOGGER.vaultAliasNotSpecified();
+            throw VaultLogger.ROOT_LOGGER.vaultAliasNotSpecified();
         }
         this.keystoreMaskedPassword = (org.jboss.security.Util.isPasswordCommand(keystorePassword))
                 ? keystorePassword
@@ -308,7 +307,7 @@ public final class VaultSession {
      * @param attributeName
      */
     private void attributeCreatedDisplay(String vaultBlock, String attributeName) {
-        System.out.println(SecurityLogger.ROOT_LOGGER.vaultAttributeCreateDisplay(vaultBlock, attributeName, securedAttributeConfigurationString(vaultBlock, attributeName)));
+        System.out.println(VaultLogger.ROOT_LOGGER.vaultAttributeCreateDisplay(vaultBlock, attributeName, securedAttributeConfigurationString(vaultBlock, attributeName)));
     }
 
     /**
@@ -327,7 +326,7 @@ public final class VaultSession {
      */
     public void vaultConfigurationDisplay() {
         final String configuration = vaultConfiguration();
-        System.out.println(SecurityLogger.ROOT_LOGGER.vaultConfigurationTitle());
+        System.out.println(VaultLogger.ROOT_LOGGER.vaultConfigurationTitle());
         System.out.println("********************************************");
         System.out.println("For standalone mode:");
         System.out.println(configuration);

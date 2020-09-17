@@ -82,6 +82,12 @@
        <groupId>${project.groupId}</groupId>
        <artifactId>wildfly-ejb3</artifactId>
     </dependency>
+    
+    <dependency>
+       <groupId>${project.groupId}</groupId>
+       <artifactId>wildfly-security-plugins</artifactId>
+       <scope>provided</scope>
+    </dependency>
 
     <dependency>
        <groupId>${project.groupId}</groupId>

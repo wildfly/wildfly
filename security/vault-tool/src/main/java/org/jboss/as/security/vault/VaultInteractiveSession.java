@@ -24,8 +24,6 @@ package org.jboss.as.security.vault;
 import java.io.Console;
 import java.util.Arrays;
 
-import org.jboss.as.security.logging.SecurityLogger;
-
 /**
  * An interactive session for {@link VaultTool}
  *
@@ -46,45 +44,45 @@ public class VaultInteractiveSession {
         Console console = System.console();
 
         if (console == null) {
-            System.err.println(SecurityLogger.ROOT_LOGGER.noConsole());
+            System.err.println(VaultLogger.ROOT_LOGGER.noConsole());
             System.exit(1);
         }
 
         while (encDir == null || encDir.length() == 0) {
             encDir = console
-                    .readLine(SecurityLogger.ROOT_LOGGER.enterEncryptionDirectory() + " ");
+                    .readLine(VaultLogger.ROOT_LOGGER.enterEncryptionDirectory() + " ");
         }
 
         while (keystoreURL == null || keystoreURL.length() == 0) {
-            keystoreURL = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreURL() + " ");
+            keystoreURL = console.readLine(VaultLogger.ROOT_LOGGER.enterKeyStoreURL() + " ");
         }
 
-        char[] keystorePasswd = getSensitiveValue(SecurityLogger.ROOT_LOGGER.enterKeyStorePassword(), SecurityLogger.ROOT_LOGGER.enterKeyStorePasswordAgain());
+        char[] keystorePasswd = getSensitiveValue(VaultLogger.ROOT_LOGGER.enterKeyStorePassword(), VaultLogger.ROOT_LOGGER.enterKeyStorePasswordAgain());
 
         try {
             while (salt == null || salt.length() != 8) {
-                salt = console.readLine(SecurityLogger.ROOT_LOGGER.enterSalt() + " ");
+                salt = console.readLine(VaultLogger.ROOT_LOGGER.enterSalt() + " ");
             }
 
-            String ic = console.readLine(SecurityLogger.ROOT_LOGGER.enterIterationCount() + " ");
+            String ic = console.readLine(VaultLogger.ROOT_LOGGER.enterIterationCount() + " ");
             iterationCount = Integer.parseInt(ic);
             vaultNISession = new VaultSession(keystoreURL, new String(keystorePasswd), encDir, salt, iterationCount, true);
 
             while (keystoreAlias == null || keystoreAlias.length() == 0) {
-                keystoreAlias = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreAlias() + " ");
+                keystoreAlias = console.readLine(VaultLogger.ROOT_LOGGER.enterKeyStoreAlias() + " ");
             }
 
-            System.out.println(SecurityLogger.ROOT_LOGGER.initializingVault());
+            System.out.println(VaultLogger.ROOT_LOGGER.initializingVault());
             vaultNISession.startVaultSession(keystoreAlias);
             vaultNISession.vaultConfigurationDisplay();
 
-            System.out.println(SecurityLogger.ROOT_LOGGER.vaultInitialized());
-            System.out.println(SecurityLogger.ROOT_LOGGER.handshakeComplete());
+            System.out.println(VaultLogger.ROOT_LOGGER.vaultInitialized());
+            System.out.println(VaultLogger.ROOT_LOGGER.handshakeComplete());
 
             VaultInteraction vaultInteraction = new VaultInteraction(vaultNISession);
             vaultInteraction.start();
         } catch (Exception e) {
-            System.out.println(SecurityLogger.ROOT_LOGGER.exceptionEncountered());
+            System.out.println(VaultLogger.ROOT_LOGGER.exceptionEncountered());
             e.printStackTrace(System.err);
         }
     }
@@ -92,9 +90,9 @@ public class VaultInteractiveSession {
     public static char[] getSensitiveValue(String passwordPrompt, String confirmationPrompt) {
         while (true) {
             if (passwordPrompt == null)
-                passwordPrompt = SecurityLogger.ROOT_LOGGER.enterYourPassword();
+                passwordPrompt = VaultLogger.ROOT_LOGGER.enterYourPassword();
             if (confirmationPrompt == null) {
-                confirmationPrompt = SecurityLogger.ROOT_LOGGER.enterYourPasswordAgain();
+                confirmationPrompt = VaultLogger.ROOT_LOGGER.enterYourPasswordAgain();
             }
 
             Console console = System.console();
@@ -103,9 +101,9 @@ public class VaultInteractiveSession {
             char[] passwd1 = console.readPassword(confirmationPrompt + " ");
             boolean noMatch = !Arrays.equals(passwd, passwd1);
             if (noMatch)
-                System.out.println(SecurityLogger.ROOT_LOGGER.passwordsDoNotMatch());
+                System.out.println(VaultLogger.ROOT_LOGGER.passwordsDoNotMatch());
             else {
-                System.out.println(SecurityLogger.ROOT_LOGGER.passwordsMatch());
+                System.out.println(VaultLogger.ROOT_LOGGER.passwordsMatch());
                 return passwd;
             }
         }

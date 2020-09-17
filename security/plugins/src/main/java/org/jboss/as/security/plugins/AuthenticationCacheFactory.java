@@ -22,10 +22,10 @@
 
 package org.jboss.as.security.plugins;
 
-import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
-
 import java.security.Principal;
 import java.util.concurrent.ConcurrentMap;
+
+import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
 /**
  * Factory that creates default {@code ConcurrentMap}s for authentication cache.

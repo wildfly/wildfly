@@ -61,6 +61,7 @@
         <module name="org.jboss.as.connector"/>
         <!-- Need access to org.jboss.as.core.security.ServerSecurityManager -->
         <module name="org.jboss.as.core-security"/>
+        <module name="org.jboss.as.security-plugins"/>
         <!-- Need access to org.jboss.as.domain.management.SecurityRealm for authentication of EJB cluster nodes
          in EJB client context-->
         <module name="org.jboss.as.domain-management"/>
@@ -70,7 +71,6 @@
         <module name="org.jboss.as.network"/>
         <!-- Needed for RemotingConnectorInfo TODO get this via org.jboss.as.network -->
         <module name="org.jboss.as.remoting"/>
-        <module name="org.jboss.as.security"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>

@@ -35,6 +35,7 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="org.jboss.as.security"/>
+        <module name="org.jboss.as.security-plugins"/>
         <module name="org.jboss.as.jpa"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.staxmapper"/>
