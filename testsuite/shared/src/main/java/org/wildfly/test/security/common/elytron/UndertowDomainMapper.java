@@ -69,6 +69,7 @@ public class UndertowDomainMapper  extends AbstractConfigurableElement {
                         + "  mechanism-configurations=["
                         + "    {mechanism-name=DIGEST,mechanism-realm-configurations=[{realm-name=%1$s}]},"
                         + "    {mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=%1$s}]},"
+                        + "    {mechanism-name=EXTERNAL},"
                         + "    {mechanism-name=FORM}])", name));
 
         if (applicationDomains.isEmpty()) {

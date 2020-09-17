@@ -416,3 +416,18 @@ which corresponds the following in the xml configuration file:
 ----
 
 include::SSL_Configuration_using_Elytron_Subsystem.adoc[leveloffset=+1]
+
+== Remote User Authentication with Elytron
+
+It is possible to accept a `REMOTE_USER` already authenticated by the Apache httpd server with Elytron via the AJP protocol.
+This can be done by setting up Elytron to secure a WildFly deployment and specifying for the External HTTP mechanism to
+be used. This is done by creating a security domain and specifying the External mechanism as one of the mechanism
+configurations to be used by the `http-authentication-factory`:
+
+----
+/subsystem=elytron/http-authentication-factory=web-tests:add(security-domain=example-domain, http-server-mechanism-factory=example-factory,
+mechanism-configurations=[{mechanism-name=EXTERNAL}])
+----
+
+Elytron will accept the externally authenticated user and use the specified security domain to perform role mapping to
+complete authorization.
