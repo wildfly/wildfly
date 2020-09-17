@@ -21,8 +21,8 @@
  */
 package org.jboss.as.security.plugins;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.security.logging.SecurityLogger;
+import org.jboss.as.security._private.SecurityLogger;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.plugins.ClassLoaderLocator;

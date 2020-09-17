@@ -37,7 +37,8 @@
         <module name="org.picketbox"/>
         <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.as.security"/>
-        <module name="org.jboss.remoting"/>        
+        <module name="org.jboss.as.security-plugins"/>
+        <module name="org.jboss.remoting"/>
         <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

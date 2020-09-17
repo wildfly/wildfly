@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
@@ -74,10 +75,13 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
+ * This {@code SimpleSecurityManager} also implements {@code Supplier<ServerSecurityManager>} so that
+ * the corresponding {@code get()} method can return a new instance which delegates to {@code this}.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SimpleSecurityManager implements ServerSecurityManager {
+public class SimpleSecurityManager implements ServerSecurityManager, Supplier<ServerSecurityManager> {
     protected static final PrivilegedAction<SecurityContext> GET_SECURITY_CONTEXT = new PrivilegedAction<SecurityContext>() {
         public SecurityContext run() {
             return SecurityContextAssociation.getSecurityContext();
@@ -95,10 +99,16 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     public SimpleSecurityManager() {
     }
 
-    public SimpleSecurityManager(SimpleSecurityManager delegate) {
+    SimpleSecurityManager(SimpleSecurityManager delegate) {
         this.securityManagement = delegate.securityManagement;
         this.propagate = false;
     }
+
+    public ServerSecurityManager get() {
+        return new SimpleSecurityManager(this);
+    }
+
+
 
     private ISecurityManagement securityManagement = null;
 

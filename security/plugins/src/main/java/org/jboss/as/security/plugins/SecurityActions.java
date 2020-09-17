@@ -22,11 +22,12 @@
 
 package org.jboss.as.security.plugins;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.List;
 
-import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 import org.jboss.as.security.plugins.ModuleClassLoaderLocator.CombinedClassLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -36,8 +37,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 
 /**
  * Privileged blocks for this package

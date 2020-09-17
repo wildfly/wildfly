@@ -24,8 +24,6 @@ package org.jboss.as.security.vault;
 import java.io.Console;
 import java.util.Scanner;
 
-import org.jboss.as.security.logging.SecurityLogger;
-
 /**
  * Interaction with initialized {@link org.jboss.security.vault.SecurityVault} via the {@link VaultTool}
  *
@@ -43,86 +41,86 @@ public class VaultInteraction {
         Console console = System.console();
 
         if (console == null) {
-            System.err.println(SecurityLogger.ROOT_LOGGER.noConsole());
+            System.err.println(VaultLogger.ROOT_LOGGER.noConsole());
             System.exit(1);
         }
 
         Scanner in = new Scanner(System.in);
         while (true) {
-            String commandStr = SecurityLogger.ROOT_LOGGER.interactionCommandOptions();
+            String commandStr = VaultLogger.ROOT_LOGGER.interactionCommandOptions();
 
             System.out.println(commandStr);
             int choice = in.nextInt();
             switch (choice) {
                 case 0:
-                    System.out.println(SecurityLogger.ROOT_LOGGER.taskStoreSecuredAttribute());
-                    char[] attributeValue = VaultInteractiveSession.getSensitiveValue(SecurityLogger.ROOT_LOGGER.interactivePromptSecureAttributeValue(), SecurityLogger.ROOT_LOGGER.interactivePromptSecureAttributeValueAgain());
+                    System.out.println(VaultLogger.ROOT_LOGGER.taskStoreSecuredAttribute());
+                    char[] attributeValue = VaultInteractiveSession.getSensitiveValue(VaultLogger.ROOT_LOGGER.interactivePromptSecureAttributeValue(), VaultLogger.ROOT_LOGGER.interactivePromptSecureAttributeValueAgain());
                     String vaultBlock = null;
 
                     while (vaultBlock == null || vaultBlock.length() == 0) {
-                        vaultBlock = console.readLine(SecurityLogger.ROOT_LOGGER.interactivePromptVaultBlock());
+                        vaultBlock = console.readLine(VaultLogger.ROOT_LOGGER.interactivePromptVaultBlock());
                     }
 
                     String attributeName = null;
 
                     while (attributeName == null || attributeName.length() == 0) {
-                        attributeName = console.readLine(SecurityLogger.ROOT_LOGGER.interactivePromptAttributeName());
+                        attributeName = console.readLine(VaultLogger.ROOT_LOGGER.interactivePromptAttributeName());
                     }
                     try {
                         vaultNISession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, attributeValue);
                     } catch (Exception e) {
-                        System.out.println(SecurityLogger.ROOT_LOGGER.problemOcurred() + "\n" + e.getLocalizedMessage());
+                        System.out.println(VaultLogger.ROOT_LOGGER.problemOcurred() + "\n" + e.getLocalizedMessage());
                     }
                     break;
                 case 1:
-                    System.out.println(SecurityLogger.ROOT_LOGGER.taskVerifySecuredAttributeExists());
+                    System.out.println(VaultLogger.ROOT_LOGGER.taskVerifySecuredAttributeExists());
                     try {
                         vaultBlock = null;
 
                         while (vaultBlock == null || vaultBlock.length() == 0) {
-                            vaultBlock = console.readLine(SecurityLogger.ROOT_LOGGER.interactivePromptVaultBlock());
+                            vaultBlock = console.readLine(VaultLogger.ROOT_LOGGER.interactivePromptVaultBlock());
                         }
 
                         attributeName = null;
 
                         while (attributeName == null || attributeName.length() == 0) {
-                            attributeName = console.readLine(SecurityLogger.ROOT_LOGGER.interactivePromptAttributeName());
+                            attributeName = console.readLine(VaultLogger.ROOT_LOGGER.interactivePromptAttributeName());
                         }
                         if (!vaultNISession.checkSecuredAttribute(vaultBlock, attributeName)) {
-                            System.out.println(SecurityLogger.ROOT_LOGGER.interactiveMessageNoValueStored(VaultSession
+                            System.out.println(VaultLogger.ROOT_LOGGER.interactiveMessageNoValueStored(VaultSession
                                     .blockAttributeDisplayFormat(vaultBlock, attributeName)));
                         } else {
-                            System.out.println(SecurityLogger.ROOT_LOGGER.interactiveMessageValueStored(VaultSession
+                            System.out.println(VaultLogger.ROOT_LOGGER.interactiveMessageValueStored(VaultSession
                                     .blockAttributeDisplayFormat(vaultBlock, attributeName)));
                         }
                     } catch (Exception e) {
-                        System.out.println(SecurityLogger.ROOT_LOGGER.problemOcurred() + "\n" + e.getLocalizedMessage());
+                        System.out.println(VaultLogger.ROOT_LOGGER.problemOcurred() + "\n" + e.getLocalizedMessage());
                     }
                     break;
                 case 2:
-                    System.out.println(SecurityLogger.ROOT_LOGGER.taskRemoveSecuredAttribute());
+                    System.out.println(VaultLogger.ROOT_LOGGER.taskRemoveSecuredAttribute());
                     try {
                         vaultBlock = null;
 
                         while (vaultBlock == null || vaultBlock.length() == 0) {
-                            vaultBlock = console.readLine(SecurityLogger.ROOT_LOGGER.interactivePromptVaultBlock());
+                            vaultBlock = console.readLine(VaultLogger.ROOT_LOGGER.interactivePromptVaultBlock());
                         }
 
                         attributeName = null;
 
                         while (attributeName == null || attributeName.length() == 0) {
-                            attributeName = console.readLine(SecurityLogger.ROOT_LOGGER.interactivePromptAttributeName());
+                            attributeName = console.readLine(VaultLogger.ROOT_LOGGER.interactivePromptAttributeName());
                         }
                         if (!vaultNISession.removeSecuredAttribute(vaultBlock, attributeName)) {
-                            System.out.println(SecurityLogger.ROOT_LOGGER.messageAttributeNotRemoved(VaultSession
+                            System.out.println(VaultLogger.ROOT_LOGGER.messageAttributeNotRemoved(VaultSession
                                     .blockAttributeDisplayFormat(vaultBlock, attributeName)));
                         } else {
-                            System.out.println(SecurityLogger.ROOT_LOGGER
+                            System.out.println(VaultLogger.ROOT_LOGGER
                                     .messageAttributeRemovedSuccessfuly(VaultSession.blockAttributeDisplayFormat(
                                             vaultBlock, attributeName)));
                         }
                     } catch (Exception e) {
-                        System.out.println(SecurityLogger.ROOT_LOGGER.problemOcurred() + "\n" + e.getLocalizedMessage());
+                        System.out.println(VaultLogger.ROOT_LOGGER.problemOcurred() + "\n" + e.getLocalizedMessage());
                     }
                     break;
                 default:

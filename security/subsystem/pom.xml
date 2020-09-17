@@ -42,22 +42,6 @@
 
     <name>WildFly: Security Subsystem</name>
 
-    <build>
-        <plugins>
-            <!-- JAR -->
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.jboss.as.security.vault.VaultTool</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -102,6 +86,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-security-plugins</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-transactions</artifactId>
         </dependency>
 
@@ -139,13 +129,13 @@
         </dependency>
 
         <dependency>
-        	<groupId>org.picketbox</groupId>
-        	<artifactId>picketbox</artifactId>
+            <groupId>org.picketbox</groupId>
+            <artifactId>picketbox</artifactId>
         </dependency>
 
         <dependency>
-        	<groupId>org.jboss.spec.javax.security.jacc</groupId>
-        	<artifactId>jboss-jacc-api_1.5_spec</artifactId>
+            <groupId>org.jboss.spec.javax.security.jacc</groupId>
+            <artifactId>jboss-jacc-api_1.5_spec</artifactId>
         </dependency>
 
         <dependency>
