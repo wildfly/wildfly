@@ -88,7 +88,9 @@
         <module name="org.jboss.as.webservices" services="export" export="true"/>
         <module name="com.sun.xml.messaging.saaj" services="export" export="true"/>
         <module name="org.apache.ws.security" export="true"/>
-        <module name="org.bouncycastle" export="true"/>
+        <module name="org.bouncycastle.bcmail" export="true"/>
+        <module name="org.bouncycastle.bcpkix" export="true"/>
+        <module name="org.bouncycastle.bcprov" export="true"/>
         <module name="org.jboss.xts">
           <imports>
             <include path="com.arjuna.mw.wst11.client"/>

@@ -70,7 +70,9 @@
         <module name="org.picketbox"/>
         <module name="org.apache.commons.beanutils"/>
         <module name="javax.wsdl4j.api" />
-        <module name="org.bouncycastle" />
+        <module name="org.bouncycastle.bcmail" />
+        <module name="org.bouncycastle.bcpkix"/>
+        <module name="org.bouncycastle.bcprov"/>
         <module name="org.jboss.modules"/>
     </dependencies>
 </module>

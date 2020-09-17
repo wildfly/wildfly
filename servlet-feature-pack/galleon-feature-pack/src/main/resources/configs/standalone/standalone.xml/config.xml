@@ -13,6 +13,7 @@
         <include name="undertow-legacy-https"/>
         <include name="legacy-security"/>
         <include name="core-tools"/>
+        <include name="git-history"/>
     </layers>
     <feature-group name="undertow-default-config"/>
     <!-- package included in case configuration is provisioned without inheriting all modules -->
