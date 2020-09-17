@@ -44,13 +44,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumMap<E, Object>> {
+    private static final ProtoStreamMarshaller<byte[]> BYTE_ARRAY_MARSHALLER = AnyField.BYTE_ARRAY.cast(byte[].class);
 
     @SuppressWarnings("unchecked")
     @Override
     public EnumMap<E, Object> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
         Class<E> enumClass = (Class<E>) ClassMarshaller.ANY.readFrom(context, reader);
         EnumMap<E, Object> map = new EnumMap<>(enumClass);
-        BitSet keys = BitSet.valueOf((byte[]) AnyField.BYTE_ARRAY.readFrom(context, reader));
+        BitSet keys = BitSet.valueOf(BYTE_ARRAY_MARSHALLER.readFrom(context, reader));
         E[] enumValues = enumClass.getEnumConstants();
         for (int i = 0; i < enumValues.length; ++i) {
             if (keys.get(i)) {
@@ -70,7 +71,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
         for (int i = 0; i < enumValues.length; ++i) {
             keys.set(i, map.containsKey(enumValues[i]));
         }
-        AnyField.BYTE_ARRAY.writeTo(context, writer, keys.toByteArray());
+        BYTE_ARRAY_MARSHALLER.writeTo(context, writer, keys.toByteArray());
         for (Object value : map.values()) {
             ObjectMarshaller.INSTANCE.writeTo(context, writer, value);
         }

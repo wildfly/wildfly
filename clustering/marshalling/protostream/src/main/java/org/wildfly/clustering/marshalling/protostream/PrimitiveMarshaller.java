@@ -34,7 +34,7 @@ import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
 /**
  * @author Paul Ferraro
  */
-public enum PrimitiveMarshaller implements ProtoStreamMarshaller<Object> {
+public enum PrimitiveMarshaller implements MarshallerProvider {
     VOID(Void.class) {
         @Override
         public Boolean readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
@@ -190,5 +190,10 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshaller<Object> {
     @Override
     public Class<? extends Object> getJavaClass() {
         return this.primitiveClass;
+    }
+
+    @Override
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this;
     }
 }

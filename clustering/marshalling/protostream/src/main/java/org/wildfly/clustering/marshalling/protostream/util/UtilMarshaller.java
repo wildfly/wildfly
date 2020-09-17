@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -31,22 +30,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
 /**
  * @author Paul Ferraro
  */
-public enum UtilMarshaller implements ProtoStreamMarshaller<Object> {
+public enum UtilMarshaller implements MarshallerProvider {
     ARRAY_DEQUE(new CollectionMarshaller<>(ArrayDeque.class, ArrayDeque::new)),
     ARRAY_LIST(new CollectionMarshaller<>(ArrayList.class, ArrayList::new)),
     BIT_SET(UtilExternalizerProvider.BIT_SET),
@@ -97,27 +93,7 @@ public enum UtilMarshaller implements ProtoStreamMarshaller<Object> {
     }
 
     @Override
-    public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.marshaller.readFrom(context, reader);
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-        this.marshaller.writeTo(context, writer, value);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, Object value) {
-        return this.marshaller.size(context, value);
-    }
-
-    @Override
-    public Class<? extends Object> getJavaClass() {
-        return this.marshaller.getJavaClass();
-    }
-
-    @Override
-    public String getTypeName() {
-        return this.marshaller.getTypeName();
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

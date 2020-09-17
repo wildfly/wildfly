@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.marshalling.protostream.util.concurrent;
 
-import java.io.IOException;
-import java.util.OptionalInt;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -32,11 +30,9 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.HashMapMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.CollectionMarshaller;
@@ -46,7 +42,7 @@ import org.wildfly.clustering.marshalling.protostream.util.SortedSetMarshaller;
 /**
  * @author Paul Ferraro
  */
-public enum ConcurrentMarshaller implements ProtoStreamMarshaller<Object> {
+public enum ConcurrentMarshaller implements MarshallerProvider {
     CONCURRENT_HASH_MAP(new HashMapMarshaller<>(ConcurrentHashMap.class, ConcurrentHashMap::new)),
     CONCURRENT_HASH_SET(new CollectionMarshaller<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
     CONCURRENT_LINKED_DEQUE(new CollectionMarshaller<>(ConcurrentLinkedDeque.class, size -> new ConcurrentLinkedDeque<>())),
@@ -68,27 +64,7 @@ public enum ConcurrentMarshaller implements ProtoStreamMarshaller<Object> {
     }
 
     @Override
-    public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.marshaller.readFrom(context, reader);
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-        this.marshaller.writeTo(context, writer, value);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, Object value) {
-        return this.marshaller.size(context, value);
-    }
-
-    @Override
-    public String getTypeName() {
-        return this.marshaller.getTypeName();
-    }
-
-    @Override
-    public Class<? extends Object> getJavaClass() {
-        return this.marshaller.getJavaClass();
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

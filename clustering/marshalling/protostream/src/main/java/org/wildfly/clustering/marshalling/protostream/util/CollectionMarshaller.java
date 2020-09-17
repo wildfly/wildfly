@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.function.IntFunction;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
  * Collection marshaller for collections constructed with a capacity.
@@ -35,8 +34,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
  */
 public class CollectionMarshaller<T extends Collection<Object>> extends AbstractCollectionMarshaller<T, Void, Integer> {
 
-    @SuppressWarnings("unchecked")
     public CollectionMarshaller(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, factory::apply, Map.Entry::getValue, collection -> null, (ProtoStreamMarshaller<Void>) (ProtoStreamMarshaller<?>) PrimitiveMarshaller.VOID);
+        super(targetClass, factory::apply, Map.Entry::getValue, collection -> null, PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }

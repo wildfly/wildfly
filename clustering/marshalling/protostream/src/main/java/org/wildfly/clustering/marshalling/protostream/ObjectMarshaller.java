@@ -37,7 +37,7 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
 /**
  * @author Paul Ferraro
  */
-public enum ObjectMarshaller implements ProtoStreamMarshaller<Object> {
+public enum ObjectMarshaller implements MarshallerProvider {
     INSTANCE;
 
     @Override
@@ -69,5 +69,10 @@ public enum ObjectMarshaller implements ProtoStreamMarshaller<Object> {
         Predictable<Any> marshaller = (AnyMarshaller) context.getMarshaller(Any.class);
         OptionalInt size = marshaller.size(context, new Any(value));
         return size.isPresent() ? OptionalInt.of(Predictable.byteArraySize(size.getAsInt())) : OptionalInt.empty();
+    }
+
+    @Override
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this;
     }
 }

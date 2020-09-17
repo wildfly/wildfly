@@ -35,6 +35,7 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.concurrent.atomic.AtomicExternalizerProvider;
@@ -43,23 +44,13 @@ import org.wildfly.clustering.marshalling.spi.util.concurrent.atomic.AtomicExter
  * ProtoStream optimized marshallers for java.util.concurrent.atomic types.
  * @author Paul Ferraro
  */
-public enum AtomicMarshaller implements ProtoStreamMarshaller<Object> {
+public enum AtomicMarshaller implements MarshallerProvider {
     BOOLEAN(AtomicBoolean.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ExternalizerMarshaller<>(AtomicExternalizerProvider.ATOMIC_BOOLEAN);
+        private final ProtoStreamMarshaller<AtomicBoolean> marshaller = new ExternalizerMarshaller<>(AtomicExternalizerProvider.ATOMIC_BOOLEAN.cast(AtomicBoolean.class));
 
         @Override
-        public AtomicBoolean readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return (AtomicBoolean) this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     INTEGER(AtomicInteger.class) {
@@ -99,18 +90,8 @@ public enum AtomicMarshaller implements ProtoStreamMarshaller<Object> {
         private final ProtoStreamMarshaller<AtomicReference> marshaller = new FunctionalObjectMarshaller<>(AtomicReference.class, AtomicReference::new, AtomicReference::get);
 
         @Override
-        public AtomicReference<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, (AtomicReference<?>) value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, (AtomicReference<?>) value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     }
     ;
@@ -123,5 +104,10 @@ public enum AtomicMarshaller implements ProtoStreamMarshaller<Object> {
     @Override
     public Class<? extends Object> getJavaClass() {
         return this.targetClass;
+    }
+
+    @Override
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this;
     }
 }

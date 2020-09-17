@@ -33,6 +33,7 @@ import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
@@ -40,7 +41,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
  * ProtoStream optimized marshallers for optional types.
  * @author Paul Ferraro
  */
-public enum OptionalMarshaller implements ProtoStreamMarshaller<Object> {
+public enum OptionalMarshaller implements MarshallerProvider {
     INT(OptionalInt.class) {
         @Override
         public OptionalInt readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
@@ -175,5 +176,10 @@ public enum OptionalMarshaller implements ProtoStreamMarshaller<Object> {
     @Override
     public Class<? extends Object> getJavaClass() {
         return this.targetClass;
+    }
+
+    @Override
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this;
     }
 }

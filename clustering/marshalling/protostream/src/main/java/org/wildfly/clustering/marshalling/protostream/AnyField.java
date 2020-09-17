@@ -41,133 +41,53 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author Paul Ferraro
  */
-public enum AnyField implements ProtoStreamMarshaller<Object>, Field {
+public enum AnyField implements MarshallerProvider, Field {
     BOOLEAN(Boolean.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return PrimitiveMarshaller.BOOLEAN.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            PrimitiveMarshaller.BOOLEAN.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return PrimitiveMarshaller.BOOLEAN.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return PrimitiveMarshaller.BOOLEAN;
         }
     },
     BYTE(Byte.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return PrimitiveMarshaller.BYTE.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            PrimitiveMarshaller.BYTE.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return PrimitiveMarshaller.BYTE.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return PrimitiveMarshaller.BYTE;
         }
     },
     SHORT(Short.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return PrimitiveMarshaller.SHORT.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            PrimitiveMarshaller.SHORT.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return PrimitiveMarshaller.SHORT.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return PrimitiveMarshaller.SHORT;
         }
     },
     INTEGER(Integer.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return PrimitiveMarshaller.INTEGER.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            PrimitiveMarshaller.INTEGER.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return PrimitiveMarshaller.INTEGER.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return PrimitiveMarshaller.INTEGER;
         }
     },
     LONG(Long.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return PrimitiveMarshaller.LONG.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            PrimitiveMarshaller.LONG.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return PrimitiveMarshaller.LONG.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return PrimitiveMarshaller.LONG;
         }
     },
     FLOAT(Float.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return PrimitiveMarshaller.FLOAT.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            PrimitiveMarshaller.FLOAT.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return PrimitiveMarshaller.FLOAT.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return PrimitiveMarshaller.FLOAT;
         }
     },
     DOUBLE(Double.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return PrimitiveMarshaller.DOUBLE.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            PrimitiveMarshaller.DOUBLE.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return PrimitiveMarshaller.DOUBLE.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return PrimitiveMarshaller.DOUBLE;
         }
     },
     CHARACTER(Character.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return PrimitiveMarshaller.CHARACTER.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            PrimitiveMarshaller.CHARACTER.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return PrimitiveMarshaller.CHARACTER.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return PrimitiveMarshaller.CHARACTER;
         }
     },
     STRING(String.class) {
@@ -175,14 +95,14 @@ public enum AnyField implements ProtoStreamMarshaller<Object>, Field {
 
         @Override
         public String readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            byte[] bytes = (byte[]) BYTE_ARRAY.readFrom(context, reader);
+            byte[] bytes = BYTE_ARRAY.cast(byte[].class).readFrom(context, reader);
             return (bytes.length > 0) ? new String(bytes, StandardCharsets.UTF_8) : null;
         }
 
         @Override
         public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
             String string = (String) value;
-            BYTE_ARRAY.writeTo(context, writer, (string != null) ? string.getBytes(StandardCharsets.UTF_8) : this.empty);
+            BYTE_ARRAY.cast(byte[].class).writeTo(context, writer, (string != null) ? string.getBytes(StandardCharsets.UTF_8) : this.empty);
         }
 
         @Override
@@ -252,108 +172,48 @@ public enum AnyField implements ProtoStreamMarshaller<Object>, Field {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Short.TYPE), PrimitiveMarshaller.SHORT);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     INTEGER_ARRAY(int[].class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Integer.TYPE), PrimitiveMarshaller.INTEGER);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     LONG_ARRAY(long[].class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Long.TYPE), PrimitiveMarshaller.LONG);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     FLOAT_ARRAY(float[].class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Float.TYPE), PrimitiveMarshaller.FLOAT);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     DOUBLE_ARRAY(double[].class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Double.TYPE), PrimitiveMarshaller.DOUBLE);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     CHAR_ARRAY(char[].class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Character.TYPE), PrimitiveMarshaller.CHARACTER);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     REFERENCE(Void.class) {
@@ -378,18 +238,8 @@ public enum AnyField implements ProtoStreamMarshaller<Object>, Field {
         private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassMarshaller.ID);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     IDENTIFIED_ENUM(Void.class) {
@@ -397,54 +247,24 @@ public enum AnyField implements ProtoStreamMarshaller<Object>, Field {
         private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassMarshaller.ID);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     IDENTIFIED_ARRAY(Void.class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassMarshaller.ID, ObjectMarshaller.INSTANCE);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     OBJECT(Void.class) {
         private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassMarshaller.ANY);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     ENUM(Void.class) {
@@ -452,170 +272,68 @@ public enum AnyField implements ProtoStreamMarshaller<Object>, Field {
         private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassMarshaller.ANY);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     FIELD_ARRAY(Void.class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassMarshaller.FIELD, ObjectMarshaller.INSTANCE);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     ARRAY(Void.class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassMarshaller.ANY, ObjectMarshaller.INSTANCE);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     MULTI_DIMENSIONAL_ARRAY(Void.class) {
         private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassMarshaller.ARRAY, ObjectMarshaller.INSTANCE);
 
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     },
     IDENTIFIED_CLASS(Void.class) {
         @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return ClassMarshaller.ID.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ClassMarshaller.ID.writeTo(context, writer, (Class<?>) value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return ClassMarshaller.ID.size(context, (Class<?>) value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return ClassMarshaller.ID;
         }
     },
     NAMED_CLASS(Void.class) {
         @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return ClassMarshaller.NAME.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ClassMarshaller.NAME.writeTo(context, writer, (Class<?>) value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return ClassMarshaller.NAME.size(context, (Class<?>) value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return ClassMarshaller.NAME;
         }
     },
     FIELD_CLASS(Void.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return ClassMarshaller.FIELD.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            Class<?> targetClass = (Class<?>) value;
-            ClassMarshaller.FIELD.writeTo(context, writer, targetClass);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            Class<?> targetClass = (Class<?>) value;
-            return ClassMarshaller.FIELD.size(context, targetClass);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return ClassMarshaller.FIELD;
         }
     },
     LOADED_CLASS(Void.class) {
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return ClassMarshaller.LOADED.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ClassMarshaller.LOADED.writeTo(context, writer, (Class<?>) value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return ClassMarshaller.LOADED.size(context, (Class<?>) value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return ClassMarshaller.LOADED;
         }
     },
     ARRAY_CLASS(Void.class) {
         @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return ClassMarshaller.ARRAY.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ClassMarshaller.ARRAY.writeTo(context, writer, (Class<?>) value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return ClassMarshaller.ARRAY.size(context, (Class<?>) value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return ClassMarshaller.ARRAY;
         }
     },
     OBJECT_CLASS(Void.class) {
         @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return ClassMarshaller.OBJECT.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ClassMarshaller.OBJECT.writeTo(context, writer, (Class<?>) value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return ClassMarshaller.OBJECT.size(context, (Class<?>) value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return ClassMarshaller.OBJECT;
         }
     },
     PROXY(Void.class) {
@@ -702,6 +420,11 @@ public enum AnyField implements ProtoStreamMarshaller<Object>, Field {
     @Override
     public int getIndex() {
         return this.ordinal() + 1;
+    }
+
+    @Override
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this;
     }
 
     private static final AnyField[] VALUES = AnyField.values();
