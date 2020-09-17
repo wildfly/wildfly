@@ -55,6 +55,7 @@
                         <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
                     </channel-creation-options>
                 </remoting-ejb-receiver>
+                <remote-http-connection name="connection" uri="http://localhost:8180/wildfly-services"/>
                 <static-ejb-discovery>
                     <module uri="remote+http://localhost" module-name="somemodule" />
                     <module uri="remote+http://somehost" app-name="myapp" module-name="mymodule" distinct-name="distict"/>
