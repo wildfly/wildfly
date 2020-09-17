@@ -52,7 +52,7 @@ import org.jboss.modules.Module;
 
 /**
  * @author sfcoy
- * @autor <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  *
  */
 public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
@@ -138,12 +138,44 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private static boolean hasCxfModuleDependency(DeploymentUnit unit) {
+    static boolean hasCxfModuleDependency(DeploymentUnit unit) {
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         for (ModuleDependency dep : moduleSpec.getUserDependencies()) {
             final String id = dep.getIdentifier().getName();
             if (cxfExportingModules.contains(id)) {
                 return true;
+            }
+        }
+        return hasExportedCxfModuleDependency(unit.getParent()) || hasSiblingCxfModuleDependency(unit);
+    }
+
+    private static boolean hasExportedCxfModuleDependency(DeploymentUnit unit) {
+        if (unit != null) {
+            final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
+            for (ModuleDependency dep : moduleSpec.getUserDependencies()) {
+                final String id = dep.getIdentifier().getName();
+                if (cxfExportingModules.contains(id) && dep.isExport()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasSiblingCxfModuleDependency(DeploymentUnit unit) {
+        if (unit.getParent() == null) {
+            return false;
+        }
+        final ModuleSpecification rootModuleSpec = unit.getParent().getAttachment(Attachments.MODULE_SPECIFICATION);
+        // if ear-subdeployments-isolated is false, we can also look at siblings exported dependencies
+        if (!rootModuleSpec.isSubDeploymentModulesIsolated()) {
+            for (DeploymentUnit siblingUnit : unit.getParent().getAttachment(Attachments.SUB_DEPLOYMENTS)) {
+                // look only at JAR dependencies, WARs are always isolated
+                if (siblingUnit.getName().endsWith(".jar") && !siblingUnit.equals(unit)) {
+                    if (hasExportedCxfModuleDependency(siblingUnit)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
