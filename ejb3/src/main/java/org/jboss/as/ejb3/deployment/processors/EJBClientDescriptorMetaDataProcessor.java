@@ -188,10 +188,11 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 // if descriptor defines list of ejb-receivers instead of profile then we create internal ProfileService for this
                 // application which contains defined receivers
                 profileServiceName = ejbClientContextServiceName.append(INTERNAL_REMOTING_PROFILE);
-                final Map<String, RemotingProfileService.ConnectionSpec> map = new HashMap<>();
-                final RemotingProfileService profileService = new RemotingProfileService(Collections.emptyList(), map);
-                final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName, profileService);
-
+                final Map<String, RemotingProfileService.RemotingConnectionSpec> remotingConnectionMap = new HashMap<>();
+                final List<RemotingProfileService.HttpConnectionSpec> httpConnections = new ArrayList<>();
+                final RemotingProfileService profileService = new RemotingProfileService(Collections.emptyList(), remotingConnectionMap, httpConnections);
+                final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName,
+                        profileService);
                 if (ejbClientDescriptorMetaData.isLocalReceiverExcluded() != Boolean.TRUE) {
                     final Boolean passByValue = ejbClientDescriptorMetaData.isLocalReceiverPassByValue();
                     profileServiceBuilder.addDependency(passByValue == Boolean.FALSE ? LocalTransportProvider.BY_REFERENCE_SERVICE_NAME : LocalTransportProvider.BY_VALUE_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
@@ -208,8 +209,13 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                     final ServiceName internalServiceName = capabilityServiceSupport.getCapabilityServiceName(OUTBOUND_CONNECTION_CAPABILITY_NAME, connectionRef);
                     profileServiceBuilder.addDependency(internalServiceName, OutboundConnection.class, injector);
 
-                    final RemotingProfileService.ConnectionSpec connectionSpec = new RemotingProfileService.ConnectionSpec(connectionRef, injector, optionMap, connectTimeout);
-                    map.put(connectionRef, connectionSpec);
+                    final RemotingProfileService.RemotingConnectionSpec connectionSpec = new RemotingProfileService.RemotingConnectionSpec(connectionRef, injector, optionMap, connectTimeout);
+                    remotingConnectionMap.put(connectionRef, connectionSpec);
+                }
+                for (EJBClientDescriptorMetaData.HttpConnectionConfiguration httpConfigurations : ejbClientDescriptorMetaData.getHttpConnectionConfigurations()) {
+                    final String uri = httpConfigurations.getUri();
+                    RemotingProfileService.HttpConnectionSpec httpConnectionSpec = new RemotingProfileService.HttpConnectionSpec(uri);
+                    httpConnections.add(httpConnectionSpec);
                 }
                 profileServiceBuilder.install();
 

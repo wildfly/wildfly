@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <authentication-rules>
+            <rule use-configuration="jta">
+                <match-protocol name="http"/>
+            </rule>
+        </authentication-rules>
+        <authentication-configurations>
+            <configuration name="jta">
+                <sasl-mechanism-selector selector="DIGEST-MD5"/>
+                <providers>
+                    <use-service-loader />
+                </providers>
+                <set-user-name name="remoteejbuser"/>
+                <credentials>
+                    <clear-password password="rem@teejbpasswd1"/>
+                </credentials>
+                <set-mechanism-realm name="ApplicationRealm" />
+            </configuration>
+        </authentication-configurations>
+    </authentication-client>
+</configuration>

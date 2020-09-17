@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,13 +22,21 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
@@ -132,5 +140,103 @@ public class EJB3Subsystem60Parser extends EJB3Subsystem50Parser {
         requireNoContent(reader);
 
         interceptors.add(interceptor);
+    }
+
+    protected void parseProfile(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String profileName = null;
+
+        final EJBClientContext.Builder builder = new EJBClientContext.Builder();
+
+        final ModelNode operation = Util.createAddOperation();
+
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME:
+                    profileName = value;
+                    break;
+                case EXCLUDE_LOCAL_RECEIVER:
+                    RemotingProfileResourceDefinition.EXCLUDE_LOCAL_RECEIVER.parseAndSetParameter(value, operation, reader);
+                    break;
+                case LOCAL_RECEIVER_PASS_BY_VALUE:
+                    RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        if (profileName == null) {
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+        }
+
+
+        final PathAddress address = SUBSYSTEM_PATH.append(EJB3SubsystemModel.REMOTING_PROFILE, profileName);
+        operation.get(OP_ADDR).set(address.toModelNode());
+        operations.add(operation);
+
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case STATIC_EJB_DISCOVERY:
+                    final ModelNode staticEjb = parseStaticEjbDiscoveryType(reader);
+                    operation.get(StaticEJBDiscoveryDefinition.STATIC_EJB_DISCOVERY).set(staticEjb);
+                    break;
+                case REMOTING_EJB_RECEIVER: {
+                    parseRemotingReceiver(reader, address, operations);
+                    break;
+                }
+                case REMOTE_HTTP_CONNECTION:
+                    parseRemoteHttpConnection(reader, address, operations);
+                    break;
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseRemoteHttpConnection(final XMLExtendedStreamReader reader, final PathAddress profileAddress,
+                                         final List<ModelNode> operations) throws XMLStreamException {
+
+        final ModelNode operation = Util.createAddOperation();
+
+        String name = null;
+        final Set<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.URI);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME:
+                    name = value;
+                    break;
+                case URI:
+                    RemoteHttpConnectionDefinition.URI.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+        final PathAddress receiverAddress = profileAddress.append(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, name);
+        operation.get(OP_ADDR).set(receiverAddress.toModelNode());
+        operations.add(operation);
+
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case CHANNEL_CREATION_OPTIONS:
+                    parseChannelCreationOptions(reader, receiverAddress, operations);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
     }
 }
