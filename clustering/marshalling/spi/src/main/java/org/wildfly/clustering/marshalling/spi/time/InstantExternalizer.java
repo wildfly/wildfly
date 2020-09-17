@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.time.Instant;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
@@ -51,5 +52,10 @@ public class InstantExternalizer implements Externalizer<Instant> {
     @Override
     public Class<Instant> getTargetClass() {
         return Instant.class;
+    }
+
+    @Override
+    public OptionalInt size(Instant object) {
+        return OptionalInt.of(Long.BYTES + Integer.BYTES);
     }
 }

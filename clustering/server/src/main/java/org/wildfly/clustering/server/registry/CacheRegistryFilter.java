@@ -32,7 +32,8 @@ import org.infinispan.remoting.transport.Address;
 /**
  * @author Paul Ferraro
  */
-public class CacheRegistryFilter implements CacheEventFilter<Object, Object>, Predicate<Object> {
+public enum CacheRegistryFilter implements CacheEventFilter<Object, Object>, Predicate<Object> {
+    INSTANCE;
 
     @Override
     public boolean accept(Object key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {

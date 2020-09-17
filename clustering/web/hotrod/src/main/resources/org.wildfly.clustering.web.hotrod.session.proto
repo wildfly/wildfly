@@ -1,0 +1,15 @@
+package org.wildfly.clustering.web.hotrod.session;
+
+/**
+ * @TypeId(210)
+ */
+message SessionCreationMetaDataKey {
+	required	string	id	= 1;
+}
+
+/**
+ * @TypeId(211)
+ */
+message SessionAccessMetaDataKey {
+	required	string	id	= 1;
+}

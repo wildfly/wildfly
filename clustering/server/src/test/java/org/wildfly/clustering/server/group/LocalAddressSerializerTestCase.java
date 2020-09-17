@@ -24,10 +24,14 @@ package org.wildfly.clustering.server.group;
 
 import java.io.IOException;
 
+import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.group.LocalAddressSerializer.LocalAddressExternalizer;
 import org.wildfly.clustering.server.group.LocalAddressSerializer.LocalAddressKeyFormat;
 
@@ -38,7 +42,13 @@ public class LocalAddressSerializerTestCase {
 
     @Test
     public void test() throws IOException {
-        new ExternalizerTester<>(new LocalAddressExternalizer()).test(LocalModeAddress.INSTANCE);
-        new KeyFormatTester<>(new LocalAddressKeyFormat()).test(LocalModeAddress.INSTANCE);
+        test(new ExternalizerTester<>(new LocalAddressExternalizer()));
+        test(new KeyFormatTester<>(new LocalAddressKeyFormat()));
+        test(new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester());
+        test(new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester());
+    }
+
+    static void test(Tester<Address> tester) throws IOException {
+        tester.test(LocalModeAddress.INSTANCE);
     }
 }

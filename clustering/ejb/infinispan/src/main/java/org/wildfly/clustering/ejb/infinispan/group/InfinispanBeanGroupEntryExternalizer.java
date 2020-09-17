@@ -28,8 +28,8 @@ import java.util.Map;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import org.wildfly.clustering.marshalling.spi.MarshallingExternalizerProvider;
 
 /**
  * @author Paul Ferraro
@@ -39,12 +39,12 @@ public class InfinispanBeanGroupEntryExternalizer<I, T, C> implements Externaliz
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanGroupEntry<I, T, C> entry) throws IOException {
-        DefaultExternalizer.MARSHALLED_VALUE.cast(MarshalledValue.class).writeObject(output, entry.getBeans());
+        MarshallingExternalizerProvider.MARSHALLED_VALUE.cast(MarshalledValue.class).writeObject(output, entry.getBeans());
     }
 
     @Override
     public InfinispanBeanGroupEntry<I, T, C> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        MarshalledValue<Map<I, T>, C> value = DefaultExternalizer.MARSHALLED_VALUE.cast(MarshalledValue.class).readObject(input);
+        MarshalledValue<Map<I, T>, C> value = MarshallingExternalizerProvider.MARSHALLED_VALUE.cast(MarshalledValue.class).readObject(input);
         return new InfinispanBeanGroupEntry<>(value);
     }
 

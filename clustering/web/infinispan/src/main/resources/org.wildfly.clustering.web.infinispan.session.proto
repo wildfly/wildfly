@@ -1,0 +1,22 @@
+package org.wildfly.clustering.web.infinispan.session;
+
+/**
+ * @TypeId(210)
+ */
+message SessionCreationMetaDataKey {
+	required	bytes	id	= 1;
+}
+
+/**
+ * @TypeId(211)
+ */
+message SessionAccessMetaDataKey {
+	required	bytes	id	= 1;
+}
+
+/**
+ * @TypeId(212)
+ */
+enum SessionCreationMetaDataKeyFilter {
+	INSTANCE	= 0;
+}

@@ -25,13 +25,16 @@ package org.wildfly.clustering.server.group;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Random;
 
+import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.IpAddressUUID;
 import org.jgroups.util.UUID;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.group.AddressSerializer.IpAddressExternalizer;
 import org.wildfly.clustering.server.group.AddressSerializer.IpAddressUUIDExternalizer;
 import org.wildfly.clustering.server.group.AddressSerializer.UUIDExternalizer;
@@ -40,15 +43,22 @@ import org.wildfly.clustering.server.group.AddressSerializer.UUIDExternalizer;
  * @author Paul Ferraro
  */
 public class AddressSerializerTestCase {
+
     @Test
     public void test() throws IOException {
-        new ExternalizerTester<>(new UUIDExternalizer()).test(UUID.randomUUID());
+        test(new ExternalizerTesterFactory(new UUIDExternalizer(), new IpAddressExternalizer(), new IpAddressUUIDExternalizer()).createTester());
+        test(new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester());
+        test(new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester());
+    }
 
-        Random random = new Random();
-        InetAddress address = InetAddress.getLoopbackAddress();
-        int bound = Short.MAX_VALUE - Short.MIN_VALUE;
+    private static void test(Tester<Address> tester) throws IOException {
+        UUID uuid = UUID.randomUUID();
+        InetSocketAddress address = new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE);
+        IpAddress ipAddress = new IpAddress(address);
+        IpAddressUUID ipAddressUUID = new IpAddressUUID(address);
 
-        new ExternalizerTester<>(new IpAddressExternalizer()).test(new IpAddress(new InetSocketAddress(address, random.nextInt(bound))));
-        new ExternalizerTester<>(new IpAddressUUIDExternalizer()).test(new IpAddressUUID(new InetSocketAddress(address, random.nextInt(bound))));
+        tester.test(uuid);
+        tester.test(ipAddress);
+        tester.test(ipAddressUUID);
     }
 }

@@ -38,9 +38,9 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.marshalling.ByteBufferExternalizer;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.jboss.DefaultExternalizerProviders;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -73,10 +73,16 @@ public enum JBossMarshallingVersion implements Function<Map.Entry<ModuleLoader, 
             }
         });
 
-        Set<DefaultExternalizer> defaultExternalizers = EnumSet.allOf(DefaultExternalizer.class);
-        List<Externalizer<Object>> result = new ArrayList<>(defaultExternalizers.size() + loadedExternalizers.size() + 1);
+        Set<DefaultExternalizerProviders> providers = EnumSet.allOf(DefaultExternalizerProviders.class);
+        int size = loadedExternalizers.size() + 1;
+        for (DefaultExternalizerProviders provider : providers) {
+            size += provider.get().size();
+        }
+        List<Externalizer<Object>> result = new ArrayList<>(size);
         result.add((Externalizer<Object>) (Externalizer<?>) ByteBufferExternalizer.INSTANCE);
-        result.addAll(defaultExternalizers);
+        for (DefaultExternalizerProviders provider : providers) {
+            result.addAll(provider.get());
+        }
         result.addAll(loadedExternalizers);
         return result;
     }

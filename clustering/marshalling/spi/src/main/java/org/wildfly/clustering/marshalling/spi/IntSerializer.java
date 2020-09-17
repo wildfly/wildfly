@@ -50,4 +50,8 @@ public interface IntSerializer {
     default int readInt(DataInput input) throws IOException {
         return input.readInt();
     }
+
+    default int size(int value) {
+        return Integer.BYTES;
+    }
 }

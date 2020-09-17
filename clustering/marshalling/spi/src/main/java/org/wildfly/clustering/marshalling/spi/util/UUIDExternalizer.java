@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -48,5 +49,10 @@ public class UUIDExternalizer implements Externalizer<UUID> {
     @Override
     public Class<UUID> getTargetClass() {
         return UUID.class;
+    }
+
+    @Override
+    public OptionalInt size(UUID object) {
+        return OptionalInt.of(Long.BYTES + Long.BYTES);
     }
 }

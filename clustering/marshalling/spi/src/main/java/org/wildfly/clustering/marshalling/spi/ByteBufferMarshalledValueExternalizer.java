@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
@@ -66,5 +67,16 @@ public class ByteBufferMarshalledValueExternalizer implements Externalizer<ByteB
     @Override
     public Class<ByteBufferMarshalledValue<Object>> getTargetClass() {
         return (Class<ByteBufferMarshalledValue<Object>>) (Class<?>) ByteBufferMarshalledValue.class;
+    }
+
+    @Override
+    public OptionalInt size(ByteBufferMarshalledValue<Object> value) {
+        try {
+            ByteBuffer buffer = value.getBuffer();
+            int length = (buffer != null) ? buffer.limit() - buffer.arrayOffset() : 0;
+            return OptionalInt.of(IndexSerializer.VARIABLE.size(length) + length);
+        } catch (IOException e) {
+            return OptionalInt.empty();
+        }
     }
 }

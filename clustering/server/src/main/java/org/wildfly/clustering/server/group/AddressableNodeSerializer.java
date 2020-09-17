@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
+import org.jgroups.stack.IpAddress;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
@@ -41,25 +42,29 @@ import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
  * @author Paul Ferraro
  */
 public enum AddressableNodeSerializer implements Serializer<AddressableNode> {
-
     INSTANCE;
 
     @Override
     public void write(DataOutput output, AddressableNode node) throws IOException {
         AddressSerializer.INSTANCE.write(output, node.getAddress());
         output.writeUTF(node.getName());
-        InetSocketAddress socketAddress = node.getSocketAddress();
-        // Socket address will always contain a resolved address
-        byte[] address = socketAddress.getAddress().getAddress();
-        IndexSerializer.UNSIGNED_BYTE.writeInt(output, address.length);
-        output.write(address);
-        IndexSerializer.UNSIGNED_SHORT.writeInt(output, socketAddress.getPort());
+        if (!(node.getAddress() instanceof IpAddress)) {
+            InetSocketAddress socketAddress = node.getSocketAddress();
+            // Socket address will always contain a resolved address
+            byte[] address = socketAddress.getAddress().getAddress();
+            IndexSerializer.UNSIGNED_BYTE.writeInt(output, address.length);
+            output.write(address);
+            IndexSerializer.UNSIGNED_SHORT.writeInt(output, socketAddress.getPort());
+        }
     }
 
     @Override
     public AddressableNode read(DataInput input) throws IOException {
         Address jgroupsAddress = AddressSerializer.INSTANCE.read(input);
         String name = input.readUTF();
+        if (jgroupsAddress instanceof IpAddress) {
+            return new AddressableNode((IpAddress) jgroupsAddress, name);
+        }
         byte[] address = new byte[IndexSerializer.UNSIGNED_BYTE.readInt(input)];
         input.readFully(address);
         int port = IndexSerializer.UNSIGNED_SHORT.readInt(input);
