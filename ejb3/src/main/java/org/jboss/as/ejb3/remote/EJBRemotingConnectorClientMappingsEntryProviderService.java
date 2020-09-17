@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.remote;
 
+import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR_CAPABILITY_NAME;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -36,7 +38,7 @@ import java.util.function.Supplier;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
+import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -57,20 +59,22 @@ import org.wildfly.common.net.Inet;
 public class EJBRemotingConnectorClientMappingsEntryProviderService extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<Map.Entry<String, List<ClientMapping>>> {
     private static final ServiceName BASE_NAME = ServiceName.JBOSS.append("ejb", "remote", "client-mappings");
 
-    private final SupplierDependency<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfo;
+    private volatile SupplierDependency<ProtocolSocketBinding> remotingConnectorInfo;
     private final String containerName;
+    private final String connectorName;
 
     private volatile SupplierDependency<Group> group;
 
     public EJBRemotingConnectorClientMappingsEntryProviderService(String containerName, String connectorName) {
         super(BASE_NAME.append(connectorName));
         this.containerName = containerName;
-        this.remotingConnectorInfo = new ServiceSupplierDependency<>(RemotingConnectorBindingInfoService.serviceName(connectorName));
+        this.connectorName = connectorName;
     }
 
     @Override
     public ServiceConfigurator configure(OperationContext context) {
         this.group = new ServiceSupplierDependency<>(ClusteringRequirement.GROUP.getServiceName(context, this.containerName));
+        this.remotingConnectorInfo = new ServiceSupplierDependency<>(context.getCapabilityServiceName(CONNECTOR_CAPABILITY_NAME, connectorName, ProtocolSocketBinding.class));
         return this;
     }
 
@@ -97,7 +101,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService extends Simp
      */
     List<ClientMapping> getClientMappings() {
         final List<ClientMapping> ret = new ArrayList<>();
-        RemotingConnectorBindingInfoService.RemotingConnectorInfo info = this.remotingConnectorInfo.get();
+        ProtocolSocketBinding info = this.remotingConnectorInfo.get();
 
         if (info.getSocketBinding().getClientMappings() != null && !info.getSocketBinding().getClientMappings().isEmpty()) {
             ret.addAll(info.getSocketBinding().getClientMappings());
