@@ -62,7 +62,9 @@
                 </exclude-set>
             </imports>
         </module>
-        <module name="org.bouncycastle" />
+        <module name="org.bouncycastle.bcmail"/>
+        <module name="org.bouncycastle.bcpkix"/>
+        <module name="org.bouncycastle.bcprov"/>
     </dependencies>
 
 </module>

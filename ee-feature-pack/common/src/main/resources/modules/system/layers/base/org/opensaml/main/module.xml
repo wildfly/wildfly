@@ -53,7 +53,9 @@
       <module name="org.apache.ws.security" />
       <module name="org.joda.time"/>
       <module name="com.google.guava"/>
-      <module name="org.bouncycastle"/>
+        <module name="org.bouncycastle.bcmail"/>
+        <module name="org.bouncycastle.bcpkix"/>
+        <module name="org.bouncycastle.bcprov"/>
       <module name="org.apache.commons.codec"/>
     </dependencies>
 </module>
