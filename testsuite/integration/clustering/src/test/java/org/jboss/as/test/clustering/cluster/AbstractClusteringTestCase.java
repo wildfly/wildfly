@@ -29,8 +29,6 @@ import java.util.stream.Stream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.infinispan.commons.test.skip.OS;
-import org.infinispan.commons.test.skip.SkipJunit;
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.core.TestSystemPropertyNames;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
@@ -42,7 +40,6 @@ import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
-import org.jgroups.util.Util;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.rules.TestRule;
@@ -102,8 +99,7 @@ public abstract class AbstractClusteringTestCase {
     public static final int INFINISPAN_SERVER_PORT = 11222;
 
     public static TestRule infinispanServerTestRule() {
-        // Disable on Windows until https://issues.redhat.com/browse/ISPN-12041 is fixed
-        return Util.checkForWindows() ? new SkipJunit(OS.WINDOWS) : InfinispanServerRuleBuilder
+        return InfinispanServerRuleBuilder
                 .config(INFINISPAN_SERVER_PROFILE)
                 .property(TestSystemPropertyNames.INFINISPAN_SERVER_HOME, INFINISPAN_SERVER_HOME)
                 .numServers(1)
