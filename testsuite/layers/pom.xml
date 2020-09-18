@@ -2988,7 +2988,7 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/remoting</install-dir>
+                                    <install-dir>${layers.install.dir}/legacy-remoting</install-dir>
                                     <record-state>false</record-state>
                                     <log-time>${galleon.log.time}</log-time>
                                     <offline>true</offline>
