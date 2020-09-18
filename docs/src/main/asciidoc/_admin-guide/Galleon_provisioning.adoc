@@ -218,8 +218,9 @@ Basic layers:
 * _jmx-remoting_: Support for registration of Management Model MBeans and a JMX remoting connector.
 * _logging_: Support for the logging subsystem.
 * _legacy-management_: Support for remote access to management interfaces secured with the core ManagementRealm.
+* _legacy_remoting_: Support for inbound and outbound JBoss Remoting connections, secured using legacy security realms.
 * _management_: Support for remote access to management interfaces secured using Elytron.
-* _remoting_: Support for inbound and outbound JBoss Remoting connections.
+* _remoting_: Support for inbound and outbound JBoss Remoting connections, secured using Elytron.
 * _request-controller_: Support for request management.
 * _security-manager_: Support for security manager.
 
