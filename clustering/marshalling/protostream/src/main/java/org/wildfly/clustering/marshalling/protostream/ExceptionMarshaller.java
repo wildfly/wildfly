@@ -66,7 +66,7 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
 
     @Override
     public E readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        String message = (String) AnyField.STRING.readFrom(context, reader);
+        String message = AnyField.STRING.cast(String.class).readFrom(context, reader);
 
         Throwable cause = (Throwable) ObjectMarshaller.INSTANCE.readFrom(context, reader);
 
