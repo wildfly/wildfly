@@ -47,7 +47,9 @@ public enum JavaByteBufferMarshaller implements ByteBufferMarshaller {
         try {
             return new ObjectInputStream(input).readObject();
         } catch (ClassNotFoundException e) {
-            throw new InvalidClassException(e.getMessage());
+            InvalidClassException exception = new InvalidClassException(e.getMessage());
+            exception.initCause(e);
+            throw exception;
         }
     }
 

@@ -39,6 +39,7 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
  *
  * @param <I> the bean identifier type
  * @param <T> the bean type
+ * @param <C> the marshalling context type
  */
 public class InfinispanBeanGroup<I, T, C> implements BeanGroup<I, T> {
 

@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.spi;
 
 import org.wildfly.clustering.marshalling.AbstractSQLTestCase;
 import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
+import org.wildfly.clustering.marshalling.spi.sql.SQLExternalizerProvider;
 
 /**
  * Externalizer tests for java.sql.* classes.
@@ -32,6 +33,6 @@ import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
 public class ExternalizerSQLTestCase extends AbstractSQLTestCase {
 
     public ExternalizerSQLTestCase() {
-        super(new ExternalizerTesterFactory(DefaultExternalizer.class));
+        super(new ExternalizerTesterFactory(SQLExternalizerProvider.class));
     }
 }

@@ -1,0 +1,18 @@
+package org.wildfly.clustering.web.cache.session;
+
+// IDs: 200 - 204
+
+/**
+ * @TypeId(200)
+ */
+message SessionCreationMetaDataEntry {
+	required	sint64	creationTime	= 1;
+	required	uint32	lastAccessedTime	= 2;
+}
+
+/**
+ * @TypeId(201)
+ */
+message SimpleSessionAccessMetaData {
+	required	uint32	seconds	= 1;
+}

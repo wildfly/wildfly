@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.time.Duration;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
@@ -51,5 +52,10 @@ public class DurationExternalizer implements Externalizer<Duration> {
     @Override
     public Class<Duration> getTargetClass() {
         return Duration.class;
+    }
+
+    @Override
+    public OptionalInt size(Duration object) {
+        return OptionalInt.of(Long.BYTES + Integer.BYTES);
     }
 }
