@@ -202,8 +202,9 @@ public enum ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
     },
     ;
 
+    @SuppressWarnings("unchecked")
     @Override
     public Class<? extends Class<?>> getJavaClass() {
-        return null;
+        return (Class<? extends Class<?>>) (Class<?>) Class.class;
     }
 }
