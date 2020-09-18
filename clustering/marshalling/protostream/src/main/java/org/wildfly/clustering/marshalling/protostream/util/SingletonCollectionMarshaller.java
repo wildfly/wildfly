@@ -22,47 +22,25 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.OptionalInt;
 import java.util.function.Function;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public class SingletonCollectionMarshaller<T extends Collection<Object>> implements ProtoStreamMarshaller<T> {
-
-    private final Function<Object, T> factory;
-
-    public SingletonCollectionMarshaller(Function<Object, T> factory) {
-        this.factory = factory;
-    }
-
-    @Override
-    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        Object value = ObjectMarshaller.INSTANCE.readFrom(context, reader);
-        return this.factory.apply(value);
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T collection) throws IOException {
-        ObjectMarshaller.INSTANCE.writeTo(context, writer, collection.iterator().next());
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T collection) {
-        return ObjectMarshaller.INSTANCE.size(context, collection.iterator().next());
-    }
+public class SingletonCollectionMarshaller<T extends Collection<Object>> extends FunctionalObjectMarshaller<T> {
 
     @SuppressWarnings("unchecked")
-    @Override
-    public Class<? extends T> getJavaClass() {
-        return (Class<T>) this.factory.apply(null).getClass();
+    public SingletonCollectionMarshaller(Function<Object, T> factory) {
+        super((Class<T>) factory.apply(null).getClass(), factory, new Accessor<>());
+    }
+
+    static class Accessor<T extends Collection<Object>> implements Function<T, Object> {
+        @Override
+        public Object apply(T collection) {
+            return collection.iterator().next();
+        }
     }
 }
