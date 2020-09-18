@@ -37,6 +37,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
 /**
@@ -65,7 +66,7 @@ public enum UtilMarshaller implements MarshallerProvider {
     HASH_SET(new CollectionMarshaller<>(HashSet.class, HashSet::new)),
     LINKED_HASH_MAP(new LinkedHashMapMarshaller()),
     LINKED_HASH_SET(new CollectionMarshaller<>(LinkedHashSet.class, LinkedHashSet::new)),
-    LINKED_LIST(new CollectionMarshaller<>(LinkedList.class, size -> new LinkedList<>())),
+    LINKED_LIST(new CollectionMarshaller<>(LinkedList.class, new SupplierFunction<>(LinkedList::new))),
     LOCALE(UtilExternalizerProvider.LOCALE),
     OPTIONAL(OptionalMarshaller.OBJECT),
     OPTIONAL_DOUBLE(OptionalMarshaller.DOUBLE),

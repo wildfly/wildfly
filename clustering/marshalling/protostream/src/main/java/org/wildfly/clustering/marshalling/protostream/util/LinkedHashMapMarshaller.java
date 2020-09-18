@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
 
@@ -32,8 +33,16 @@ import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
  */
 public class LinkedHashMapMarshaller extends MapMarshaller<LinkedHashMap<Object, Object>, Boolean> {
 
-    public LinkedHashMapMarshaller() {
-        super(LinkedHashMap.class, accessOrder -> new LinkedHashMap<>(16, 0.75f, accessOrder), map -> {
+    private static final Function<Boolean, LinkedHashMap<Object, Object>> FACTORY = new Function<Boolean, LinkedHashMap<Object, Object>>() {
+        @Override
+        public LinkedHashMap<Object, Object> apply(Boolean accessOrder) {
+            return new LinkedHashMap<>(16, 0.75f, accessOrder);
+        }
+    };
+
+    private static final Function<LinkedHashMap<Object, Object>, Boolean> ACCESS_ORDER = new Function<LinkedHashMap<Object, Object>, Boolean>() {
+        @Override
+        public Boolean apply(LinkedHashMap<Object, Object> map) {
             Object insertOrder = new Object();
             Object accessOrder = new Object();
             map.put(insertOrder, null);
@@ -49,6 +58,10 @@ public class LinkedHashMapMarshaller extends MapMarshaller<LinkedHashMap<Object,
             map.remove(insertOrder);
             map.remove(accessOrder);
             return element == accessOrder;
-        }, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class));
+        }
+    };
+
+    public LinkedHashMapMarshaller() {
+        super(LinkedHashMap.class, FACTORY, ACCESS_ORDER, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class));
     }
 }

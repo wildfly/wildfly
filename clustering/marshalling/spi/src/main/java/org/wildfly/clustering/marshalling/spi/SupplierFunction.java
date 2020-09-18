@@ -20,22 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream.util;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.function.DoubleFunction;
+import java.util.function.Function;
 import java.util.function.IntFunction;
-
-import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
-import org.wildfly.clustering.marshalling.spi.ConstantFunction;
+import java.util.function.LongFunction;
+import java.util.function.Supplier;
 
 /**
- * Collection marshaller for collections constructed with a capacity.
+ * Adapts a Supplier to a Function ignoring it's parameter.
  * @author Paul Ferraro
  */
-public class CollectionMarshaller<T extends Collection<Object>> extends AbstractCollectionMarshaller<T, Void, Integer> {
+public class SupplierFunction<R> implements Function<Void, R>, IntFunction<R>, LongFunction<R>, DoubleFunction<R> {
 
-    public CollectionMarshaller(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, factory::apply, Map.Entry::getValue, new ConstantFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
+    private final Supplier<R> supplier;
+
+    public SupplierFunction(Supplier<R> supplier) {
+        this.supplier = supplier;
+    }
+
+    @Override
+    public R apply(Void ignored) {
+        return this.supplier.get();
+    }
+
+    @Override
+    public R apply(int value) {
+        return this.supplier.get();
+    }
+
+    @Override
+    public R apply(long value) {
+        return this.supplier.get();
+    }
+
+    @Override
+    public R apply(double value) {
+        return this.supplier.get();
     }
 }

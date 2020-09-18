@@ -44,6 +44,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.ExternalizerProvider;
 import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
 import org.wildfly.clustering.marshalling.spi.StringExternalizer;
+import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
@@ -74,7 +75,7 @@ public enum UtilExternalizerProvider implements ExternalizerProvider {
     HASH_SET(new CollectionExternalizer<>(HashSet.class, HashSet::new)),
     LINKED_HASH_MAP(new LinkedHashMapExternalizer()),
     LINKED_HASH_SET(new CollectionExternalizer<>(LinkedHashSet.class, LinkedHashSet::new)),
-    LINKED_LIST(new CollectionExternalizer<>(LinkedList.class, size -> new LinkedList<>())),
+    LINKED_LIST(new CollectionExternalizer<>(LinkedList.class, new SupplierFunction<>(LinkedList::new))),
     LOCALE(new StringExternalizer<>(Locale.class, Locale::forLanguageTag, Locale::toLanguageTag)),
     NATURAL_ORDER_COMPARATOR(new ValueExternalizer<>(Comparator.naturalOrder())),
     @SuppressWarnings({ "unchecked", "rawtypes" })
