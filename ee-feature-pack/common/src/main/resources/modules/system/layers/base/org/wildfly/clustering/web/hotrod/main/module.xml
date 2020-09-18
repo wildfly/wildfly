@@ -41,6 +41,7 @@
         <module name="com.github.ben-manes.caffeine"/>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.protostream"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.logging"/>
@@ -53,12 +54,11 @@
         <module name="org.wildfly.clustering.infinispan.client"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.cache" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>
-        <!-- Enable dynamic loading of single sign-on class tables -->
-        <module name="org.wildfly.clustering.web.undertow" services="import" optional="true"/>
         <module name="org.wildfly.common"/>
     </dependencies>
 </module>

@@ -28,11 +28,14 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
+import org.jboss.logging.Logger;
+
 /**
  * Marshals an object to and from a {@link ByteBuffer}.
  * @author Paul Ferraro
  */
 public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
+    Logger LOGGER = Logger.getLogger(ByteBufferMarshaller.class);
 
     Object readFrom(InputStream input) throws IOException;
 
@@ -47,9 +50,20 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 
     @Override
     default ByteBuffer write(Object object) throws IOException {
-        try (ByteBufferOutputStream output = new ByteBufferOutputStream(this.size(object))) {
+        OptionalInt size = this.size(object);
+        try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
             this.writeTo(output, object);
-            return output.getBuffer();
+            ByteBuffer buffer = output.getBuffer();
+            if (size.isPresent()) {
+                int predictedSize = size.getAsInt();
+                int actualSize = buffer.limit() - buffer.arrayOffset();
+                if (predictedSize < actualSize) {
+                    LOGGER.debugf("Buffer size prediction too small for %s (%s), predicted = %d, actual = %d", object, (object != null) ? object.getClass().getCanonicalName() : null, predictedSize, actualSize);
+                }
+            } else {
+                LOGGER.tracef("Buffer size prediction missing for %s (%s)", object, (object != null) ? object.getClass().getCanonicalName() : null);
+            }
+            return buffer;
         }
     }
 

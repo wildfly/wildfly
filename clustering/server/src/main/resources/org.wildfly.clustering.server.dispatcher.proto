@@ -1,0 +1,10 @@
+package org.wildfly.clustering.server.dispatcher;
+
+// IDs: 130
+
+/**
+ * @TypeId(130)
+ */
+enum NoSuchService {
+	INSTANCE	= 0;
+}

@@ -100,7 +100,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
         this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
         this.invoker = new RetryingInvoker(this.cache);
         this.invoker.invoke(this);
-        this.cache.addListener(this, new CacheRegistryFilter(), null);
+        this.cache.addListener(this, CacheRegistryFilter.INSTANCE, null);
     }
 
     @Override

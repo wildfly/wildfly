@@ -71,6 +71,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @param <I> the bean identifier type
  * @param <T> the bean type
+ * @param <C> the marshalling context
  */
 @Listener
 public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, T, C> {

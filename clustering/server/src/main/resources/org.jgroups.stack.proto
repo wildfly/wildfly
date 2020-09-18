@@ -1,0 +1,17 @@
+package org.jgroups.stack;
+
+// IDs: 137 - 139
+
+/**
+ * @TypeId(137)
+ */
+message IpAddress {
+	required	bytes	address	= 1;
+}
+
+/**
+ * @TypeId(138)
+ */
+message IpAddressUUID {
+	required	bytes	address	= 1;
+}

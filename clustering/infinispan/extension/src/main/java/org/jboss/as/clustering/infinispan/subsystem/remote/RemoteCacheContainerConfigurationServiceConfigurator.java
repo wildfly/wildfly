@@ -28,6 +28,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -43,11 +44,13 @@ import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.TransactionConfiguration;
+import org.infinispan.commons.marshall.Marshaller;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
@@ -67,6 +70,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
+import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -166,6 +170,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
     @Override
     public Configuration get() {
+        String name = this.getServiceName().getSimpleName();
         MBeanServer server = (this.server != null) ? this.server.get() : null;
         ConfigurationBuilder builder = new ConfigurationBuilder();
         // Configure formal security first
@@ -182,11 +187,15 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                     .enabled(this.statisticsEnabled)
                     .jmxDomain("org.wildfly.clustering.infinispan")
                     .jmxEnabled(server != null)
-                    .jmxName(this.getServiceName().getSimpleName())
+                    .jmxName(name)
                     .mBeanServerLookup(new MBeanServerProvider(server))
                 .tcpNoDelay(this.tcpNoDelay)
                 .tcpKeepAlive(this.tcpKeepAlive)
                 .valueSizeEstimate(this.valueSizeEstimate);
+
+        Marshaller marshaller = this.createMarshaller();
+        InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", name, marshaller.getClass().getName());
+        builder.marshaller(marshaller);
 
         builder.connectionPool().read(this.connectionPool.get());
         builder.asyncExecutorFactory().read(this.threadPools.get(ThreadPoolResourceDefinition.CLIENT).get());
@@ -212,5 +221,14 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         builder.transaction().read(this.transaction.get());
 
         return builder.build();
+    }
+
+    private Marshaller createMarshaller() {
+        Module module = this.module.get();
+        try {
+            return new ProtoStreamMarshaller(module);
+        } catch (NoSuchElementException e) {
+            return new JBossMarshaller(this.loader.get(), module);
+        }
     }
 }

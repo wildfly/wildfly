@@ -1,0 +1,8 @@
+package org.wildfly.clustering.web.hotrod.session.coarse;
+
+/**
+ * @TypeId(220)
+ */
+message SessionAttributesKey {
+	required	string	id	= 1;
+}

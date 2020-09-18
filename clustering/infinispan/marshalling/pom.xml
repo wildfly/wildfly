@@ -50,6 +50,10 @@
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-commons</artifactId>
         </dependency>

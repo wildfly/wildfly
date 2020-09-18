@@ -50,6 +50,11 @@ public class OptionalIntExternalizer implements Externalizer<OptionalInt> {
     }
 
     @Override
+    public OptionalInt size(OptionalInt value) {
+        return OptionalInt.of(value.isPresent() ? Integer.BYTES + Byte.BYTES : Byte.BYTES);
+    }
+
+    @Override
     public Class<OptionalInt> getTargetClass() {
         return OptionalInt.class;
     }

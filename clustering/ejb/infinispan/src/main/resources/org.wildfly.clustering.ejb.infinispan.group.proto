@@ -1,0 +1,17 @@
+package org.wildfly.clustering.ejb.infinispan.group;
+
+// IDs: 320 - 329
+
+/**
+ * @TypeId(320)
+ */
+message InfinispanBeanGroupKey {
+	required	bytes	id	= 1;
+}
+
+/**
+ * @TypeId(321)
+ */
+message InfinispanBeanGroupEntry {
+	required	bytes	value	= 1;
+}

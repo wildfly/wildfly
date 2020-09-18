@@ -1,0 +1,11 @@
+package org.wildfly.clustering.web.undertow.sso.elytron;
+
+// IDs: 250
+
+/**
+ * @TypeId(250)
+ */
+message ElytronAuthentication {
+	required	string	mechanism	= 1;
+	required	string	name	= 2;
+}

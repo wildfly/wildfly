@@ -22,28 +22,19 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
-import java.io.Externalizable;
-import java.io.Serializable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
@@ -57,6 +48,7 @@ import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import io.undertow.server.session.SessionIdGenerator;
 
@@ -64,32 +56,6 @@ import io.undertow.server.session.SessionIdGenerator;
  * @author Paul Ferraro
  */
 public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<SSOManager<A, D, S, L, Batch>>, Consumer<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<ByteBufferMarshaller, L> {
-
-    enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
-        VERSION_1() {
-            @Override
-            public MarshallingConfiguration apply(Module module) {
-                ModuleLoader loader = module.getModuleLoader();
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassResolver(ModularClassResolver.getInstance(loader));
-                config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
-                return config;
-            }
-        },
-        VERSION_2() {
-            @Override
-            public MarshallingConfiguration apply(Module module) {
-                ModuleLoader loader = module.getModuleLoader();
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassResolver(ModularClassResolver.getInstance(loader));
-                config.setClassTable(new DynamicClassTable(module.getClassLoader()));
-                config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
-                return config;
-            }
-        },
-        ;
-        static final MarshallingVersion CURRENT = VERSION_2;
-    }
 
     private final SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory;
     private final SupplierDependency<SessionIdGenerator> generator;
@@ -115,8 +81,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     @Override
     public SSOManager<A, D, S, L, Batch> get() {
         SSOManagerFactory<A, D, S, Batch> factory = this.factory.get();
-        Module module = Module.forClass(this.getClass());
-        this.marshaller = new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), null);
+        this.marshaller = new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder().register(WildFlySecurityManager.getClassLoaderPrivileged(this.getClass())).build());
         SSOManager<A, D, S, L, Batch> manager = factory.createSSOManager(this);
         manager.start();
         return manager;
