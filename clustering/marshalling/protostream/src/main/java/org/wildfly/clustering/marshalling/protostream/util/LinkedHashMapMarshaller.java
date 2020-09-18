@@ -49,6 +49,6 @@ public class LinkedHashMapMarshaller extends MapMarshaller<LinkedHashMap<Object,
             map.remove(insertOrder);
             map.remove(accessOrder);
             return element == accessOrder;
-        }, PrimitiveMarshaller.BOOLEAN.cast(Boolean.TYPE));
+        }, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class));
     }
 }
