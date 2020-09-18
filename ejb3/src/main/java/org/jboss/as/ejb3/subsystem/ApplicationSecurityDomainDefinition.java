@@ -57,7 +57,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
-import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -165,7 +164,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
             RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
             ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
-            ServiceName securityDomainServiceName = serviceName.append(Constants.SECURITY_DOMAIN);
+            ServiceName securityDomainServiceName = serviceName.append("security-domain");
 
             CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(APPLICATION_SECURITY_DOMAIN_CAPABILITY)
                     .setInitialMode(Mode.LAZY);

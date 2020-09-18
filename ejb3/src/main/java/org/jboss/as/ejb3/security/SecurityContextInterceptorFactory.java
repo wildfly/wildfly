@@ -25,13 +25,13 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -67,7 +67,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         if(propagateSecurity) {
             securityManager = ejbComponent.getSecurityManager();
         } else {
-            securityManager = new SimpleSecurityManager((SimpleSecurityManager) ejbComponent.getSecurityManager());
+            securityManager =  ((Supplier<ServerSecurityManager>) ejbComponent.getSecurityManager()).get();
         }
         final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
         String securityDomainName =  securityMetaData.getSecurityDomainName();

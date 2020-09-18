@@ -62,7 +62,7 @@ public class BouncyCastleModuleTestCase {
         ), "permissions.xml");
         archive.setManifest(new StringAsset(""
                 + "Manifest-Version: 1.0\n"
-                + "Dependencies: org.bouncycastle\n"));
+                + "Dependencies: org.bouncycastle.bcprov, org.bouncycastle.bcpkix, org.bouncycastle.bcmail\n"));
         return archive;
     }
 

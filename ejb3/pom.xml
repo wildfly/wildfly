@@ -103,6 +103,12 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-security-plugins</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-network</artifactId>
         </dependency>
@@ -239,6 +245,11 @@ projects that depend on this project.-->
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-common</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
+         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>

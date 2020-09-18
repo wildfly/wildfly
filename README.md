@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://wildfly.org">
+      <img src="logo/wildfly_logo.svg" alt="wildfly logo" title="wildlfy" width="600"/>
+  </a>
+</p>
+
 WildFly Application Server
 ========================
 https://wildfly.org

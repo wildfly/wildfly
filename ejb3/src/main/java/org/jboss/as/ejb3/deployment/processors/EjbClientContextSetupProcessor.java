@@ -180,7 +180,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
                             AuthenticationContext transformed = finalAuthenticationContext;
                             // now transform it
                             if (profileService != null) {
-                                for (RemotingProfileService.ConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
+                                for (RemotingProfileService.RemotingConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
                                     transformed = transformOne(connectionSpec, transformed);
                                 }
                             }
@@ -219,9 +219,8 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             return null;
         }
 
-        private static AuthenticationContext transformOne(RemotingProfileService.ConnectionSpec connectionSpec, AuthenticationContext context) {
+        private static AuthenticationContext transformOne(RemotingProfileService.RemotingConnectionSpec connectionSpec, AuthenticationContext context) {
             final OutboundConnection connectionService = connectionSpec.getInjector().getValue();
-
             AuthenticationConfiguration authenticationConfiguration = connectionService.getAuthenticationConfiguration();
             SSLContext sslContext = connectionService.getSSLContext();
             final URI destinationUri = connectionService.getDestinationUri();

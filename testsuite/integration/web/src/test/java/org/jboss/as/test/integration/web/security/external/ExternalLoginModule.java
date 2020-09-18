@@ -66,8 +66,11 @@ public class ExternalLoginModule extends AbstractServerLoginModule {
         Group roles = new SimpleGroup("Roles");
         Group[] groups = { roles };
         //group mapping would go here
-        if(getIdentity().getName().equals("anil")) {
-            roles.addMember(new SimplePrincipal("gooduser"));
+        if(getIdentity().getName().equals(Credentials.GOOD_USER_NAME)) {
+            roles.addMember(new SimplePrincipal(Credentials.CORRECT_ROLE));
+        }
+        if(getIdentity().getName().equals(Credentials.AUTHORIZED_WITHOUT_AUTHENTICATION_USER_NAME)) {
+            roles.addMember(new SimplePrincipal(Credentials.CORRECT_ROLE));
         }
         roles.addMember(getIdentity());
         return groups;

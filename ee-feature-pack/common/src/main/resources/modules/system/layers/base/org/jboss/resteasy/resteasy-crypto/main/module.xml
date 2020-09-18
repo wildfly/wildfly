@@ -38,7 +38,9 @@
         <module name="org.apache.james.mime4j"/>
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>
-        <module name="org.bouncycastle"/>
+        <module name="org.bouncycastle.bcmail"/>
+        <module name="org.bouncycastle.bcpkix"/>
+        <module name="org.bouncycastle.bcprov"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.logging"/>
     </dependencies>

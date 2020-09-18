@@ -31,9 +31,13 @@
     <main-class name="org.jboss.as.security.vault.VaultTool"/>
 
     <resources>
+        <artifact name="${org.wildfly:wildfly-security-vault-tool}"/>
     </resources>
 
     <dependencies>
-        <module name="org.jboss.as.security"/>
+        <module name="org.apache.commons.cli" />
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.picketbox"/>
     </dependencies>
 </module>

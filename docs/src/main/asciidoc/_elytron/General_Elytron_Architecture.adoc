@@ -128,8 +128,9 @@ duplicated is so that mechanism specific mappings can be applied.
 == HTTP Authentication
 
 The HttpAuthenticationFactory is an authentication policy for
-authentication using HTTP authentication mechanisms, in addition to
-being a policy it is also a factory for configured authentication
+authentication using HTTP authentication mechanisms, including the BASIC,
+DIGEST, EXTERNAL, FORM, SPNEGO, and CLIENT_CERT mechanisms. In addition to
+being a policy, it is also a factory for configured authentication
 mechanisms backed by a SecurityDomain.
 
 The HttpAuthenticationFactory references the following:
@@ -148,7 +149,7 @@ mechanisms.
 
 Additional configuration can be supplied for the authentication
 mechanisms, the configuration will be described in more detail later but
-the purpose of the MechanismConfigurationSelector is to obtain
+the purpose of the `MechanismConfigurationSelector` is to obtain
 configuration specific to the mechanism selected. This can include
 information about realm names a mechanism should present to a remote
 client plus additional NameRewriters and RealmMappers to use during the
