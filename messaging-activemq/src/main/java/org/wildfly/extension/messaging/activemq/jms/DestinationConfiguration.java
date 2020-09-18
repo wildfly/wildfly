@@ -113,7 +113,7 @@ public class DestinationConfiguration {
     }
 
     private boolean destinationAlreadyExist(String body) {
-        return body.contains("AMQ119019") || body.contains("AMQ119018") || body.contains("AMQ229019") || body.contains("AMQ229018");
+        return body.contains("AMQ119019") || body.contains("AMQ119018") || body.contains("AMQ229019") || body.contains("AMQ229018") || body.contains("AMQ229204");
     }
 
     public void destroyQueue(ConnectionFactory cf, Queue managementQueue, String queueName) throws JMSException {
