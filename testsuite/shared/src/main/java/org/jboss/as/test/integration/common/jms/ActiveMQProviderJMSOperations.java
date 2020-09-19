@@ -320,6 +320,16 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
+    public void addExternalRemoteConnector(String name, String socketBinding) {
+        ModelNode address = getSubsystemAddress()
+                .add("remote-connector", name);
+
+        ModelNode attributes = new ModelNode();
+        attributes.get("socket-binding").set(socketBinding);
+        executeOperation(address, ADD, attributes);
+    }
+
+    @Override
     public void removeExternalHttpConnector(String connectorName) {
         ModelNode address = getSubsystemAddress()
                 .add("http-connector", connectorName);
@@ -374,5 +384,10 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         } catch (Exception e) {
         }
         executeOperation(address, ADD, attributes);
+    }
+
+    @Override
+    public boolean isRemoteBroker() {
+        return false;
     }
 }

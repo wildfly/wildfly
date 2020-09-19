@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jsonp">
+    <dependencies>
+        <layer name="base-server"/>
+    </dependencies>
+    <!-- The base server already includes the packages to provision JsonP modules.
+         We add them here just to ensure they are provisioned if base-server changes -->
+    <packages>
+        <package name="javax.json.api"/>
+        <package name="org.glassfish.jakarta.json"/>
+    </packages>
+</layer-spec>

@@ -45,6 +45,12 @@ import java.util.PropertyPermission;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import javax.jms.QueueRequestor;
+import javax.jms.QueueSession;
+import org.apache.activemq.artemis.api.core.management.ResourceNames;
+import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
+import org.junit.After;
+
 /**
  * Tests EJB2.0 MDBs with message selector.
  *
@@ -89,7 +95,7 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
         ejbJar.addAsManifestResource(MDB20MessageSelectorTestCase.class.getPackage(), "ejb-jar-20-message-selector.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MDB20MessageSelectorTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr,  org.apache.activemq.artemis\n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
         return ejbJar;
     }
@@ -98,14 +104,22 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
     public void initQueues() {
         try {
             final InitialContext ic = new InitialContext();
-
             queue = (Queue) ic.lookup("java:jboss/ejb2x/queue");
             replyQueueA = (Queue) ic.lookup("java:jboss/ejb2x/replyQueueA");
             replyQueueB = (Queue) ic.lookup("java:jboss/ejb2x/replyQueueB");
-
+            purgeQueue("ejb2x/queue");
+            purgeQueue("ejb2x/replyQueueA");
+            purgeQueue("ejb2x/replyQueueB");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @After
+    public void purgeQueues() throws Exception {
+        purgeQueue("ejb2x/queue");
+        purgeQueue("ejb2x/replyQueueA");
+        purgeQueue("ejb2x/replyQueueB");
     }
 
     /**
@@ -114,11 +128,11 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
     @Test
     public void testMessageSelectors() {
         sendTextMessage("Say 1st hello to " + EJB2xMDB.class.getName() + " in 1.0 format", queue, replyQueueA, "Version 1.0");
-        final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(1000));
+        final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(5000));
         Assert.assertNull("Unexpected reply from " + replyQueueA, replyA);
 
         sendTextMessage("Say 2nd hello to " + EJB2xMDB.class.getName() + " in 1.1 format", queue, replyQueueB, "Version 1.1");
-        final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(1000));
+        final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Missing reply from " + replyQueueB, replyB);
     }
 
@@ -128,10 +142,27 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
     @Test
     public void retestMessageSelectors() {
         sendTextMessage("Say 1st hello to " + EJB2xMDB.class.getName() + " in 1.1 format", queue, replyQueueA, "Version 1.1");
-        final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(1000));
+        final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Missing reply from " + replyQueueA, replyA);
+
         sendTextMessage("Say 2nd hello to " + EJB2xMDB.class.getName() + " in 1.1 format", queue, replyQueueB, "Version 1.1");
-        final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(1000));
+        final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Missing reply from " + replyQueueB, replyB);
+    }
+
+    /**
+     * Removes all message son a queue
+     *
+     * @param queueName name of the queue
+     * @throws Exception
+     */
+    private void purgeQueue(String queueName) throws Exception {
+        QueueRequestor requestor = new QueueRequestor((QueueSession) session, ActiveMQJMSClient.createQueue("activemq.management"));
+        Message m = session.createMessage();
+        org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.QUEUE + "jms.queue." + queueName, "removeAllMessages");
+        Message reply = requestor.request(m);
+        if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+            logger.warn(reply.getBody(String.class));
+        }
     }
 }

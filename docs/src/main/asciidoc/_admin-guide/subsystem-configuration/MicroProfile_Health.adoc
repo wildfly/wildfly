@@ -19,18 +19,45 @@ element to the xml or by using the following CLI operation:
 [standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.health-smallrye:add
 ----
 
-== Management Operation
+== Management Operations
 
-The healthiness of the application server can be queried by calling the `check`:
+The healthiness of the application server can be queried by calling 3 different operations:
+
+* `check` to check both the liveness and readiness of the runtime
+* `check-live` to check only the liveness of the runtime
+* `check-ready` to check only the readiness of the runtime
+
 
 [source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=microprofile-health-smallrye:check
 {
-    "outcome" => "success", <1>
+    "outcome" => "success",
     "result" => {
-        "outcome" => "UP", <2>
-        "checks" => []
+        "status" => "UP",
+        "checks" => [
+            {
+                "name" => "empty-liveness-checks",
+                "status" => "UP"
+            },
+            {
+                "name" => "server-state",
+                "status" => "UP",
+                "data" => {"value" => "running"}
+            },
+            {
+                "name" => "boot-errors",
+                "status" => "UP"
+            },
+            {
+                "name" => "deployments-status",
+                "status" => "UP"
+            },
+            {
+                "name" => "empty-readiness-checks",
+                "status" => "UP"
+            }
+        ]
     }
 }
 ----
@@ -40,6 +67,7 @@ The healthiness of the application server can be queried by calling the `check`:
 == HTTP Endpoints
 
 The MicroProfile Health Check specifications defines three HTTP endpoints:
+
 * `/health` to test both the liveness and readiness of the runtime.
 * `/health/live` to test the liveness of the runtime.
 * `/health/ready` to test the readiness of the runtime.
@@ -58,7 +86,7 @@ If the application server is healthy, it will return a `200 OK` response:
 $ curl -v http://localhost:9990/health
 < HTTP/1.1 200 OK
 ...
-{"outcome":"UP","checks":[]}
+{"status":"UP","checks":[{"name":"empty-liveness-checks","status":"UP"},{"name":"server-state","status":"UP","data":{"value":"running"}},{"name":"boot-errors","status":"UP"},{"name":"deployments-status","status":"UP"},{"name":"empty-readiness-checks","status":"UP"}]}
 ----
 
 If the application server (and its deployment) is not healthy, it returns `503 Service Unavailable`
@@ -79,28 +107,44 @@ created by the `add-user` script. For example:
 $ curl -v --digest -u myadminuser:myadminpassword http://localhost:9990/health
 < HTTP/1.1 200 OK
 ...
-{"outcome":"UP","checks":[]}
+{"status":"UP","checks":[{"name":"empty-liveness-checks","status":"UP"},{"name":"server-state","status":"UP","data":{"value":"running"}},{"name":"boot-errors","status":"UP"},{"name":"deployments-status","status":"UP"},{"name":"empty-readiness-checks","status":"UP"}]}
 ----
 
 If the authentication fails, the  server will reply with a `401 NOT AUTHORIZED` response.
 
-=== Global Status when probes are not defined
+=== Default Server Procedures
 
-By default, the HTTP endpoints will return `UP` if there are no health check probes defined by the application.
+WildFly provides some readiness procedures that are checked to determine if the application server is ready to serve requests:
 
-However, it is possible to change this behaviour.
-The `/health/live` HTTP endpoint (as well as the `check-live` management operation) can return `DOWN` when there are no liveness check probes by setting the `empty-liveness-checks-status` attribute
-on the `subsystem` resource to `DOWN`.
-Similarly, the `/health/ready` HTTP endpoint (as well as the `check-ready` management operation) can return `DOWN` when there are no readiness check probes by setting the `empty-readiness-checks-status` attribute
-on the `subsystem` resource to `DOWN`.
+* `boot-errors` checks that there were no errors during the server boot sequence
+* `deployments-status` checks that all deployments were deployed without errors
+* `server-state` checks that the server state is `running`
+* `empty-readiness-checks` determines the status when there are no readiness check procedures deployed to the server. The outcome of this procedure is determined by the `empty-readiness-checks-status` attribute. If the attribute is
+   `UP` (by default), the server can be ready when there are no readiness checks in the deployments. Setting the `empty-readiness-checks-status` attribute to `DOWN` will make this procedure fail when there are no readiness checks in the deployments.
 
-This allows application to ensure that the HTTP liveness and readiness endpoints will return `DOWN` until their probes are deployed and used to determine the actual
-liveness and readiness state of the application.
+If a deployment does not provide any readiness checks, WildFly will automatically add one for each deployment (named `ready-<deployment name>`) which always returns `UP`.
 
 [NOTE]
-There is a specific behaviour for deployments that provides no _readiness_ probes. In that the case, WildFly automatically adds a readiness probe for the deployment that always return
-`UP`. This allows existing deployments that do not provide readiness probes to configure WildFly so it will not be ready until this deployment is actually deployed.
+====
+This allows applications that does not provide readiness checks to still be able to inform cloud containers when they are ready to serve requests.
+Setting empty-readiness-checks-status` to `DOWN` ensures that the server will not be ready until the application is deployed. At that time, the `ready-<deployment name>`
+will be added (which returns `UP`) and the `empty-readiness-checks` procedure will no longer be checked as there is no a readiness check procedure provided by the deployment.
+====
 
+WildFly also provide a liveness procedure that is checked to determine if the application server is live:
+
+* `empty-liveness-checks` determines the status when there are no liveness check procedures deployed to the server. The outcome of this procedure is determined by the `empty-liveness-checks-status` attribute. If the attribute is
+`UP` (by default), the server can be live when there are no liveness checks in the deployments.  Setting the `empty-liveness-checks-status` attribute to `DOWN` will make this procedure fail when there are no liveness checks in the deployments.
+
+It is possible to disable all these server procedures by using the MicroProfile Config property `mp.health.disable-default-procedures`.
+
+[NOTE]
+====
+The MicroProfile Config property `mp.health.disable-default-procedures` is read at 2 different times:
+
+1. __When the server starts__, to determine if its server procedures should be disabled or enabled. It can be set using the system property `mp.health.disable-default-procedures` or the environment variable `MP_HEALTH_DISABLE_DEFAULT_PROCEDURES`. Setting this property in a deployment is ignored at that time.
+2. __When an application is deployed__, to determine if WildFly should add a readiness check if the deployment does not provide any. At that time, setting this property in a `microprofile-config.properties` file in the deployment would be taken into account. (with the usual priority rules for MicroProfile Config properties).
+====
 
 == Component Reference
 

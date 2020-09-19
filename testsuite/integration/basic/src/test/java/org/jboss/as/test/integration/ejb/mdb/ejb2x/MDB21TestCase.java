@@ -109,7 +109,7 @@ public class MDB21TestCase extends AbstractMDB2xTestCase {
     @Test
     public void testSimple21MDB() {
         sendTextMessage("Say hello to " + EJB2xMDB.class.getName(), queue, replyQueue);
-        final Message reply = receiveMessage(replyQueue, TimeoutUtil.adjust(1000));
+        final Message reply = receiveMessage(replyQueue, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Reply message was null on reply queue: " + replyQueue, reply);
     }
 }

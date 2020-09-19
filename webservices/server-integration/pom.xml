@@ -47,6 +47,11 @@
        <artifactId>junit</artifactId>
        <scope>test</scope>
     </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     <dependency>
        <groupId>org.jboss.msc</groupId>
@@ -76,6 +81,12 @@
     <dependency>
        <groupId>${project.groupId}</groupId>
        <artifactId>wildfly-ejb3</artifactId>
+    </dependency>
+    
+    <dependency>
+       <groupId>${project.groupId}</groupId>
+       <artifactId>wildfly-security-plugins</artifactId>
+       <scope>provided</scope>
     </dependency>
 
     <dependency>

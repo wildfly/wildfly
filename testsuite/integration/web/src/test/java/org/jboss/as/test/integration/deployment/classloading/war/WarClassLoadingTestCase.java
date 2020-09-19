@@ -35,6 +35,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jboss.as.test.integration.common.WebInfLibClass;
 
 @RunWith(Arquillian.class)
 public class WarClassLoadingTestCase {
@@ -53,7 +54,7 @@ public class WarClassLoadingTestCase {
 
     @Test
     public void testWebInfLibAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.test.integration.deployment.classloading.war.WebInfLibClass");
+        loadClass("org.jboss.as.test.integration.common.WebInfLibClass");
     }
 
     /*

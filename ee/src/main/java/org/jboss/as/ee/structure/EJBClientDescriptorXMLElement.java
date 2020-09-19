@@ -9,6 +9,8 @@ public enum EJBClientDescriptorXMLElement {
     EJB_RECEIVERS("ejb-receivers"),
     JBOSS_EJB_CLIENT("jboss-ejb-client"),
     REMOTING_EJB_RECEIVER("remoting-ejb-receiver"),
+    HTTP_CONNECTIONS("http-connections"),
+    HTTP_CONNECTION("http-connection"),
     CLUSTERS("clusters"),
     CLUSTER("cluster"),
     CHANNEL_CREATION_OPTIONS("channel-creation-options"),

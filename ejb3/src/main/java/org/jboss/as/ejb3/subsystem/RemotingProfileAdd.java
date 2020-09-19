@@ -109,8 +109,9 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                 }
                 urls.add(builder.create());
             }
-            final Map<String, RemotingProfileService.ConnectionSpec> map = new HashMap<>();
-            final RemotingProfileService profileService = new RemotingProfileService(urls, map);
+            final Map<String, RemotingProfileService.RemotingConnectionSpec> map = new HashMap<>();
+            final List<RemotingProfileService.HttpConnectionSpec> httpConnectionSpecs = new ArrayList<>();
+            final RemotingProfileService profileService = new RemotingProfileService(urls, map, httpConnectionSpecs);
             // populating the map after the fact is cheating, but it works thanks to the MSC start service "fence"
 
             final CapabilityServiceBuilder capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(RemotingProfileResourceDefinition.REMOTING_PROFILE_CAPABILITY, profileService);
@@ -128,7 +129,7 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                     final ModelNode channelCreationOptionsNode = receiverNode.get(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS);
                     OptionMap channelCreationOptions = createChannelOptionMap(context, channelCreationOptionsNode);
 
-                    map.put(connectionRef, new RemotingProfileService.ConnectionSpec(
+                    map.put(connectionRef, new RemotingProfileService.RemotingConnectionSpec(
                         connectionRef,
                         connectionInjector,
                         channelCreationOptions,
@@ -137,6 +138,17 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                 }
             }
             final boolean isLocalReceiverExcluded = RemotingProfileResourceDefinition.EXCLUDE_LOCAL_RECEIVER.resolveModelAttribute(context, profileNode).asBoolean();
+            if (profileNode.hasDefined(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION)) {
+                for (final Property receiverProperty : profileNode.get(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION)
+                        .asPropertyList()) {
+                    final ModelNode receiverNode = receiverProperty.getValue();
+
+                    final String uri = RemoteHttpConnectionDefinition.URI.resolveModelAttribute(context,
+                            receiverNode).asString();
+
+                    httpConnectionSpecs.add(new RemotingProfileService.HttpConnectionSpec(uri));
+                }
+            }
 
             // if the local receiver is enabled for this context, then add a dependency on the appropriate LocalEjbReceive service
             if (!isLocalReceiverExcluded) {

@@ -135,6 +135,10 @@ public class TokenRealm implements SecurityRealm {
         return new JwtBuilder();
     }
 
+    public static Oauth2IntrospectionBuilder oauth2IntrospectionBuilder() {
+        return new Oauth2IntrospectionBuilder();
+    }
+
     public static final class Builder {
 
         private final String name;

@@ -52,8 +52,6 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
-        <!-- required only to access the HttpListenerRegistryService used by http-acceptor -->
-        <module name="org.jboss.as.remoting" optional="true"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.common"/>
         <module name="org.jboss.as.server"/>
@@ -67,7 +65,9 @@
         <module name="org.jboss.ironjacamar.impl"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.as.connector" />
-        <module name="org.jboss.as.security"/>
+        <!-- Use of legacy security domain ends up using this module's class loader. -->
+        <module name="org.jboss.as.security" optional="true"/>
+        <module name="org.jboss.as.security-plugins"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.jts"/>
         <module name="org.picketbox"/>

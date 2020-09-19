@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.deployment.classloading.war.WebInfLibClass;
+import org.jboss.as.test.integration.common.WebInfLibClass;
 import org.jboss.as.test.shared.ResourceListingUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;

@@ -402,6 +402,58 @@
             <artifactId>wildfly-jaxrs</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- To be able to start a 'remote' broker -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-commons</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-journal</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-artemis-native</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-ra</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-selector</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-service-extensions</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -461,12 +513,12 @@
                                 <include>org/jboss/as/test/integration/management/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/messaging/mgmt/ExternalConnectionFactoryManagementTestCase.java</include>
                                 <include>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</include>
-                                <include>org/jboss/as/test/integration/microprofile/**/*TestCase.java</include>
-                                <include>org/jboss/as/test/integration/microprofile/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/security/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/security/**/*Test.java</include>
                                 <include>org/jboss/as/test/integration/weld/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/weld/**/*Test.java</include>
+                                <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
+                                <include>org/wildfly/test/integration/microprofile/**/*Test.java</include>
                             </includes>
                             <excludes>
                                 <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
@@ -576,6 +628,15 @@
                                 <exclude>org/jboss/as/test/integration/logging/config/*TestCase</exclude>
                                 <!-- requires web-services-->
                                 <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
+                                <!-- microprofile exclusions -->
+                                <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/SimpleRestClientTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/opentracing/jaxrs/ResteasyProvidersTestCase</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -604,7 +665,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
                         <executions>
                             <execution>
                                 <id>generate-ldap-store</id>
@@ -955,7 +1015,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>${version.exec.plugin}</version>
                         <executions>
                             <!-- There is no similar option as -Dcom.sun.CORBA.ORBUseDynamicStub=true for IBM JDK
                             we need to create stub do it manually with rmic tools -->
@@ -1061,17 +1120,90 @@
             </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${version.exec.plugin}</version>
+                        <executions>
+                            <!-- See the default execution on the ibmjdk.profile, this execution should be activated selectively
+                                 for any provisioning under this profile that requires the manual IIOP/CORBA stub generation -->
+                            <execution>
+                                <id>ibmjdk.iiop.stub-creation</id>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
+                        <executions combine.children="append">
                             <execution>
                                 <id>ts.copy-wildfly</id>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <phase>none</phase>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources. -->
+                            <execution>
+                                <id>ejb-lite.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ejb-lite/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources. -->
+                            <execution>
+                                <id>ejb.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ejb/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <!-- Copy users and their roles -->
+                            <execution>
+                                <id>ejb-embedded-broker.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ejb-embedded-broker/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -1117,6 +1249,46 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+
+                            <!-- Provision a server with JBoss Diagnostic Reporting layer -->
+                            <execution>
+                                <id>jdr-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jdr</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>jdr</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <!-- Provision a cloud-profile server with legacy-security as well -->
                             <execution>
                                 <id>legacy-security-provisioning</id>
@@ -1151,6 +1323,46 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>legacy-security</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a cloud-profile server with batch-jberet as well -->
+                            <execution>
+                                <id>batch-jberet-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-batch</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>batch-jberet</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -1197,8 +1409,612 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Provision a server with JSON-P layer -->
+                            <execution>
+                                <id>jsonp-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jsonp</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>jsonp</layer>
+                                            </layers>
+                                            <excluded-layers>
+                                                <!-- Not strictly necessary but it will avoid the provisioning of
+                                                     JSON-B brought in by ee layer. We removes JSON-B to make the tests cleaner -->
+                                                <layer>jsonb</layer>
+                                            </excluded-layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with JSON-B layer -->
+                            <execution>
+                                <id>jsonb-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jsonb</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>jsonb</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with microprofile-platform support. -->
+                            <execution>
+                                <id>microprofile-platform-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-microprofile-platform</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>microprofile-platform</layer>
+                                                <layer>jaxrs-server</layer>
+                                                <!-- Needed by arquillian: protocol and security manager -->
+                                                <layer>jmx-remoting</layer>
+                                                <layer>security-manager</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a cloud-profile server with ejb-lite -->
+                            <execution>
+                                <id>ejb-lite-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ejb-lite</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>ejb-lite</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a cloud-profile server with ejb -->
+                            <execution>
+                                <id>ejb-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ejb</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>ejb</layer>
+                                                <layer>ejb-elytron-testsuite</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a cloud-profile server with ejb and embedded-broker-->
+                            <execution>
+                                <id>ejb-embedded-broker-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ejb-embedded-broker</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>ejb</layer>
+                                                <layer>embedded-activemq</layer>
+                                                <layer>remote-naming</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a cloud-profile server with ejb for remote Artemis broker-->
+                            <execution>
+                                <id>ejb-remote-broker-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ejb-remote-broker</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>ejb</layer>
+                                                <layer>remote-activemq-cf</layer>
+                                                <layer>remote-naming</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with JSF support. -->
+                            <execution>
+                                <id>jsf-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jsf</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>jsf</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with JSF and EJB support. -->
+                            <execution>
+                                <id>jsf-ejb-lite-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-jsf-ejb-lite</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>jsf</layer>
+                                                <layer>ejb-lite</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with sar support. Some test cases need mail as well. So added mail too. -->
+                            <execution>
+                                <id>legacy-sar-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-legacy-sar</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>sar</layer>
+                                                <layer>mail</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with mail support. -->
+                            <execution>
+                                <id>mail-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-mail</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>mail</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with mail and ejb support. -->
+                            <execution>
+                                <id>mail-ejb-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-mail-ejb</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>mail</layer>
+                                                <layer>ejb</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with legacy pojo support. -->
+                            <execution>
+                                <id>pojo-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-pojo</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>pojo</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with Web Console -->
+                            <execution>
+                                <id>web-console-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-web-console</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>web-console</layer>
+                                                <layer>datasources-web-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <!-- Provision a server with Web Console combined with cloud-server to configure metrics -->
+                            <execution>
+                                <id>web-console-cloud-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-web-console-cloud</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>web-console</layer>
+                                                <layer>cloud-server</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -1225,6 +2041,229 @@
                                 <phase>none</phase>
                             </execution>
 
+                            <!-- Tests against the install with batch-jberet -->
+                            <execution>
+                                <id>batch-jberet-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-batch</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-batch</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-batch</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-batch</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-batch</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-batch/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-batch</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/batch/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Test requires agroal -->
+                                        <exclude>org/jboss/as/test/integration/batch/repository/JdbcRepositoryTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with JSF support -->
+                            <execution>
+                                <id>jsf-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jsf</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jsf</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jsf</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jsf</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jsf</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jsf/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jsf</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/jsf/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jsf/**/*Test.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Uses EJB -->
+                                        <exclude>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with both JSF and EJB support -->
+                            <execution>
+                                <id>jsf-ejb-lite-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jsf-ejb-lite</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jsf-ejb-lite</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jsf-ejb-lite</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jsf-ejb-lite</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jsf-ejb-lite</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jsf-ejb-lite/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jsf-ejb-lite</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</include>
+                                        <include>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with Jboss Diagnostic Reporting layer -->
+                            <execution>
+                                <id>jdr.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jdr</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jdr</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jdr</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jdr</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jdr</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jdr/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jdr</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/jdr/mgmt/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with Jsonp layer -->
+                            <execution>
+                                <id>jsonp-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jsonp</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jsonp</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jsonp</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jsonp</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jsonp</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jsonp/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jsonp</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/json/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/json/JSONB*TestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with Jsonb layer -->
+                            <execution>
+                                <id>jsonb-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jsonb</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-jsonb</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jsonb</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jsonb</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jsonb</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jsonb/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jsonb</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/json/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with microprofile-platform support -->
+                            <execution>
+                                <id>microprofile-platform-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-microprofile-platform</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-microprofile-platform</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-microprofile-platform</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-microprofile-platform</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-microprofile-platform</jboss.dist>
+                                        <module.path>${project.build.directory}/wildfly-microprofile-platform/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-microprofile-platform</JBOSS_HOME>
+                                        <!-- dummy env property for MicroProfile Config testing -->
+                                        <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                                        <TEST_PROP>JMXPropertyEditorsTestCase-WFLY-12899</TEST_PROP>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Requires extra modules -->
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/converter/MicroProfileConfigConvertersTestCase</exclude>
+                                        <!-- Requires security -->
+                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
+                                        <!-- Requires EJB -->
+                                        <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
+                                        <!-- Requires security -->
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/vendor/MicroProfileVendorMetricsBootTestCase</exclude>
+                                        <!-- Requires extra modules -->
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/jaxrs/ResteasyProvidersTestCase</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
                             <!-- Tests against the cloud-server install without legacy security -->
                             <execution>
                                 <!-- We reuse the microprofile.surefire execution used for testing standalone-microprofile.xml
@@ -1242,6 +2281,36 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+
+                            <!-- Tests against the install with legacy sar support -->
+                            <execution>
+                                <id>legacy-sar-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-sar</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-legacy-sar</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-sar</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-sar</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-legacy-sar</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-legacy-sar/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-sar</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <!-- SarResourceInjectionTestCase needs mail -->
+                                        <include>org/jboss/as/test/integration/sar/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/deployment/classloading/sar/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
                             <!-- Tests against the install with legacy security -->
                             <execution>
                                 <id>legacy-security-layers.surefire</id>
@@ -1331,6 +2400,186 @@
                                     </includes>
                                 </configuration>
                             </execution>
+                            <!-- Tests against the install with ejb-lite -->
+                            <execution>
+                                <id>ejb-lite-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ejb-lite</jboss.install.dir>
+                                        <jboss.inst>${basedir}/target/wildfly-ejb-lite</jboss.inst>
+                                        <jboss.home>${project.build.directory}/wildfly-ejb-lite</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ejb-lite</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ejb-lite</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ejb-lite</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ejb-lite/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ejb-lite</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ejb/annotationprocessing/ResourceAnnotationsProcessingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/bridgemethods/EjbBridgeMethodsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/descriptor/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/exception/AppExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/compenvbindings/EjbJavaCompBindingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/duplicate/EjbDuplicateBindingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/ejb/EjbInjectionSameEjbNameTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/ejbs/EjbsInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/injectiontarget/EjbRefInjectionTargetTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/aroundconstruct/nocreate/AroundConstructNoCreateTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/aroundconstruct/simple/AroundConstructSimpleTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/defaultinterceptor/DefaultInterceptorsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/exception/EjbInterceptorExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/inheritorder/MoreInterceptorInheritanceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/invocationcontext/InvocationContextTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/chains/InterceptorLifecycleSFSBTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/destroy/PreDestroyInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/order/PostConstructOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/method/EjbMethodInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/regex/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/java8/Java8InterfacesEJBTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/localview/EjbLocalViewTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/log/InvalidTransactionAttributeTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/packaging/injection/CrossModuleInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/packaging/jbossall/JBossAllEjbJarTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/remove/RemoveTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/reentrant/SingletonReentrantTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/dependson/DependsOnSingletonUnitTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/creation/SingletonReentrantPostConstructTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/concurrency/SingletonBeanTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/concurrency/inheritance/SingletonConcurrencyInheritanceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/timeout/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/serialization/StatefulSerializationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/remove/RemoveMethodOnSFSBTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/passivation/store/TwoPassivationStoresTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/locking/reentrant/ReentrantLockTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/locking/AccessSerializationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateless/systemexception/SystemExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/aroundtimeout/TimerServiceInterceptorOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/cancelation/TimerServiceCancellationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/cdi/requestscope/CDIRequestScopeTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/count/ActiveTimerServiceCountTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/expired/ExpiredTimerTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/GetTimersTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/overlap/OverlapTimerTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/persistence/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/schedule/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/security/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/serialization/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/simple/SimpleTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/suspend/TimerServiceSuspendTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/tx/retry/TimerRetryTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/view/ViewTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/annotation/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/bmt/BeanManagedTransactionsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/beforecompletion/BeforeCompletionExceptionDestroysBeanTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/inheritance/TransactionAttributeTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/lifecycle/LifecycleMethodTransactionManagementTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/mandatory/SFSBMandatoryTransactionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/never/NeverTransactionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/methodparams/TxMethodParamsTest.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/usertransaction/UserTransactionAccessTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/view/duplicateview/DuplicateViewDefinitionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/view/javapackage/ViewFromJavaPackageTestCase.java</include>
+
+                                        <include>org/jboss/as/test/integration/ee/interceptors/exceptions/ExceptionsFromInterceptorsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/mappedname/MappedNameInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/ztatic/StaticInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/ejblocalref/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/multipleinterceptors/BindingsOnInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/superclass/SuperClassInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/url/URLConnectionFactoryResourceInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/initializeinorder/InitializeInOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/datasourcedefinition/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/concurrent/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/altdd/AltDDTestCase.java</include>
+
+                                        <include>org/jboss/as/test/integration/jpa/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- JpaJarFileTestCase requires custom hibernate module -->
+                                        <exclude>org/jboss/as/test/integration/jpa/jarfile/JpaJarFileTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <!-- Tests against the install with ejb -->
+                            <execution>
+                                <id>ejb-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ejb</jboss.install.dir>
+                                        <jboss.inst>${basedir}/target/wildfly-ejb</jboss.inst>
+                                        <jboss.home>${project.build.directory}/wildfly-ejb</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ejb</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ejb</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ejb</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ejb/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <!-- EJB client library hack, see WFLY-4973-->
+                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                        <elytron>true</elytron>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ejb</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ejb/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- IIOP is not available -->
+                                        <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase.java</exclude>
+
+                                        <!-- Unable to persist timers in data base -->
+                                        <exclude>org/jboss/as/test/integration/ejb/timerservice/database/*TestCase.java</exclude>
+
+                                        <!-- These tests use legacy security.
+
+                                            Instead of excluding them here, it would be better to work on AssumeTestGroupUtil.assumeElytronProfileEnabled()
+                                            Although we are using elytron=true system property in this surefire execution, this value is not retrieved on
+                                            AssumeTestGroupUtil.assumeElytronProfileEnabled() check, not sure why, maybe because it is RunAsClient?
+                                        -->
+                                        <exclude>org/jboss/as/test/integration/ejb/container/**/SwitchIdentityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/LdapLegacyTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsPrincipalCustomDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/EJBContextMultipleSDTestCase.java</exclude>
+
+                                        <!-- Excluded temporarily because they are using using mdb -->
+                                        <exclude>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/pool/**/PooledEJBLifecycleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/transaction/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbInvocationStatisticsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbJarInEarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbJarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/MDBRoleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/GetCallerPrincipalTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsEjbMdbTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsMDBUnitTestCase.java</exclude>
+
+                                        <!-- Needs batch jberet -->
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsWithElytronEJBContextPropagationTestCase.java</exclude>
+
+                                    </excludes>
+                                </configuration>
+                            </execution>
 
                             <!-- Tests against a server provisioned with jpa -->
                             <execution>
@@ -1359,6 +2608,220 @@
                                         <include>org/jboss/as/test/integration/jpa/**/NonTransactionalEmTestCase.java</include>
                                         <!-- WebJPATestCase is currently the only test that does not need EJB -->
                                         <include>org/jboss/as/test/integration/jpa/**/WebJPATestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                            <!-- Tests against the install with ejb and embedded broker-->
+                            <execution>
+                                <id>ejb-embedded-broker-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ejb-embedded-broker</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-ejb-embedded-broker</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ejb-embedded-broker</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ejb-embedded-broker</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ejb-embedded-broker</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ejb-embedded-broker/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ejb-embedded-broker</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                            <!-- Tests against the install with ejb and remote broker-->
+                            <execution>
+                                <id>ejb-remote-broker-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jmsoperations.implementation.class>org.jboss.as.test.integration.common.jms.RemoteActiveMQProviderJMSOperations</jmsoperations.implementation.class>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ejb-remote-broker</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-ejb-remote-broker</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ejb-remote-broker</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ejb-remote-broker</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ejb-remote-broker</jboss.dist>
+                                        <artemis.home>${project.build.directory}/artemis</artemis.home>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ejb-remote-broker/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ejb-remote-broker</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/messaging/mgmt/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/definitions/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/xmldeployment/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/external/DiscoveryGroupExternalMessagingDeploymentTestCase.java</exclude>
+                                        <!-- Security is managed at the broker level -->
+                                        <exclude>org/jboss/as/test/integration/messaging/security/SecurityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/security/DeserializationBlackListTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/deployment/DependentMessagingDeploymentTestCase.java</exclude>
+                                    </excludes>
+                                    <!-- Starting and stopping the remote broker -->
+                                    <properties>
+                                        <property>
+                                            <name>listener</name>
+                                            <value>org.jboss.as.test.integration.common.jms.ArtemisRunListener</value>
+                                        </property>
+                                    </properties>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with mail support -->
+                            <execution>
+                                <id>mail-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-mail</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-mail</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-mail</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-mail</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-mail</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-mail/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-mail</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/mail/annotation/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Uses EJB -->
+                                        <exclude>org/jboss/as/test/integration/mail/annotation/MailSessionDefinitionAnnotationTest.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with mail and ejb support -->
+                            <execution>
+                                <id>mail-ejb-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-mail-ejb</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-mail-ejb</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-mail-ejb</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-mail-ejb</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-mail-ejb</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-mail-ejb/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-mail-ejb</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/mail/annotation/MailSessionDefinitionAnnotationTest.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/mail/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with legacy pojo support -->
+                            <execution>
+                                <id>pojo-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-pojo</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-pojo</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-pojo</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-pojo</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-pojo</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-pojo/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-pojo</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/pojo/**/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with the Web Console -->
+                            <execution>
+                                <id>web-console-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-web-console</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-web-console</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-web-console</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-web-console</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-web-console</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-web-console/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-web-console</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <!-- notice HttpManagementConstantHeadersTestCase#testHeadersOverrideNonManagementEndpoint will be ignored because the provisioning don't configure metrics -->
+                                        <include>org/jboss/as/test/integration/management/console/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with the Web Console -->
+                            <execution>
+                                <id>web-console-cloud-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-web-console-cloud</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-web-console-cloud</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-web-console-cloud</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-web-console-cloud</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-web-console-cloud</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-web-console-cloud/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-web-console-cloud</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/management/console/*TestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>

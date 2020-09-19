@@ -23,10 +23,12 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -45,6 +47,7 @@ import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
@@ -56,6 +59,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
@@ -80,6 +84,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ExecutorFactoryConfiguration>> threadPools = new EnumMap<>(ThreadPoolResourceDefinition.class);
     private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<Module> module;
+    private final Properties properties = new Properties();
     private final SupplierDependency<ConnectionPoolConfiguration> connectionPool;
     private final SupplierDependency<SecurityConfiguration> security;
     private final SupplierDependency<TransactionConfiguration> transaction;
@@ -135,6 +140,11 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
 
+        this.properties.clear();
+        for (Property property : ModelNodes.optionalPropertyList(Attribute.PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+            this.properties.setProperty(property.getName(), property.getValue().asString());
+        }
+
         return this;
     }
 
@@ -157,7 +167,11 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     @Override
     public Configuration get() {
         MBeanServer server = (this.server != null) ? this.server.get() : null;
-        ConfigurationBuilder builder = new ConfigurationBuilder()
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        // Configure formal security first
+        builder.security().read(this.security.get());
+        // Apply properties next, which may override formal security configuration
+        builder.withProperties(this.properties)
                 .marshaller(new JBossMarshaller(this.loader.get(), this.module.get()))
                 .connectionTimeout(this.connectionTimeout)
                 .keySizeEstimate(this.keySizeEstimate)
@@ -195,7 +209,6 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
             }
         }
 
-        builder.security().read(this.security.get());
         builder.transaction().read(this.transaction.get());
 
         return builder.build();

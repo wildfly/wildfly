@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.ejb2x;
 
+import static org.jboss.as.test.integration.ejb.mdb.ejb2x.AbstractMDB2xTestCase.logger;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -44,6 +46,11 @@ import javax.naming.InitialContext;
 import java.util.PropertyPermission;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import javax.jms.QueueRequestor;
+import javax.jms.QueueSession;
+import org.apache.activemq.artemis.api.core.management.ResourceNames;
+import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 
 /**
  * Tests EJB2.0 MDBs listening on a queue.
@@ -86,7 +93,7 @@ public class MDB20QueueTestCase extends AbstractMDB2xTestCase {
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
         ejbJar.addAsManifestResource(MDB20QueueTestCase.class.getPackage(), "ejb-jar-20.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MDB20QueueTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.apache.activemq.artemis \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
         return ejbJar;
     }
@@ -98,6 +105,8 @@ public class MDB20QueueTestCase extends AbstractMDB2xTestCase {
 
             queue = (Queue) ic.lookup("java:jboss/ejb2x/queue");
             replyQueue = (Queue) ic.lookup("java:jboss/ejb2x/replyQueue");
+        purgeQueue("ejb2x/queue");
+        purgeQueue("ejb2x/replyQueue");
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -110,7 +119,23 @@ public class MDB20QueueTestCase extends AbstractMDB2xTestCase {
     @Test
     public void testEjb20MDB() {
         sendTextMessage("Say hello to " + EJB2xMDB.class.getName(), queue, replyQueue);
-        final Message reply = receiveMessage(replyQueue, TimeoutUtil.adjust(1000));
+        final Message reply = receiveMessage(replyQueue, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Reply message was null on reply queue: " + replyQueue, reply);
+    }
+
+    /**
+     * Removes all message son a queue
+     *
+     * @param queueName name of the queue
+     * @throws Exception
+     */
+    private void purgeQueue(String queueName) throws Exception {
+        QueueRequestor requestor = new QueueRequestor((QueueSession) session, ActiveMQJMSClient.createQueue("activemq.management"));
+        Message m = session.createMessage();
+        org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.QUEUE + "jms.queue." + queueName, "removeAllMessages");
+        Message reply = requestor.request(m);
+        if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+            logger.warn(reply.getBody(String.class));
+        }
     }
 }

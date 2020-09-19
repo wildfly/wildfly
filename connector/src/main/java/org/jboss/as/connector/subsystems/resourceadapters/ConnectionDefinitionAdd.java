@@ -55,8 +55,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.core.security.ServerSecurityManager;
-import org.jboss.as.security.service.SimpleSecurityManagerService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
@@ -72,6 +70,9 @@ import org.wildfly.security.auth.client.AuthenticationContext;
  * Adds a recovery-environment to the Transactions subsystem
  */
 public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
+
+    private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
+    private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
 
     public static final ConnectionDefinitionAdd INSTANCE = new ConnectionDefinitionAdd();
 
@@ -181,9 +182,9 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             }
 
             if (!elytronEnabled || !elytronRecoveryEnabled) {
-                cdServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                cdServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
                         service.getSubjectFactoryInjector())
-                        .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
+                        .addDependency(SECURITY_MANAGER_SERVICE,
                                 ServerSecurityManager.class, service.getServerSecurityManager());
             }
 

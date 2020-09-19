@@ -45,6 +45,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -84,22 +85,36 @@ public class ExternalMessagingDeploymentTestCase {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
             ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
-            ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
-            ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress());
-            execute(managementClient, op, true);
+            boolean needRemoteConnector = ops.isRemoteBroker();
+            if(needRemoteConnector) {
+                ops.addExternalRemoteConnector("remote-broker-connector", "messaging-activemq");
+            } else {
+                ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
+            }
+            ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress(ops.getServerAddress()));
+            managementClient.getControllerClient().execute(op);
             op = Operations.createAddOperation(getPooledConnectionFactoryAddress());
             op.get("transaction").set("xa");
             op.get("entries").add("java:/JmsXA java:jboss/DefaultJMSConnectionFactory");
-            op.get("connectors").add("http-test-connector");
+            if(needRemoteConnector) {
+                op.get("connectors").add("remote-broker-connector");
+            } else {
+                op.get("connectors").add("http-test-connector");
+            }
             execute(managementClient, op, true);
+            op = Operations.createRemoveOperation(getClientTopicAddress());
+            managementClient.getControllerClient().execute(op);
             op = Operations.createAddOperation(getClientTopicAddress());
             op.get("entries").add(TOPIC_LOOKUP);
             op.get("entries").add("/topic/myAwesomeClientTopic");
             execute(managementClient, op, true);
+            op = Operations.createRemoveOperation(getClientQueueAddress());
+            managementClient.getControllerClient().execute(op);
             op = Operations.createAddOperation(getClientQueueAddress());
             op.get("entries").add(QUEUE_LOOKUP);
             op.get("entries").add("/queue/myAwesomeClientQueue");
             execute(managementClient, op, true);
+            ops.close();
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
@@ -138,10 +153,8 @@ public class ExternalMessagingDeploymentTestCase {
             return address;
         }
 
-        ModelNode getInitialPooledConnectionFactoryAddress() {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "messaging-activemq");
-            address.add("server", "default");
+        ModelNode getInitialPooledConnectionFactoryAddress(ModelNode serverAddress) {
+            ModelNode address = serverAddress.clone();
             address.add("pooled-connection-factory", "activemq-ra");
             return address;
         }
@@ -170,8 +183,12 @@ public class ExternalMessagingDeploymentTestCase {
     private void sendAndReceiveMessage(boolean sendToQueue) throws Exception {
         String destination = sendToQueue ? "queue" : "topic";
         String text = UUID.randomUUID().toString();
-        URL url = new URL(this.url.toExternalForm() + "ClientMessagingDeploymentTestCase?destination=" + destination + "&text=" + text);
-        String reply = HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
+        String serverUrl = this.url.toExternalForm();
+        if (!serverUrl.endsWith("/")) {
+            serverUrl = serverUrl + "/";
+        }
+        URL servletUrl = new URL(serverUrl + "ClientMessagingDeploymentTestCase?destination=" + destination + "&text=" + text);
+        String reply = HttpRequest.get(servletUrl.toExternalForm(), TimeoutUtil.adjust(10), TimeUnit.SECONDS);
 
         assertNotNull(reply);
         assertEquals(text, reply);

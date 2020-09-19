@@ -131,6 +131,8 @@
                          min-evictable-idle-time="4"
                          min-idle="5"
         />
+        <property name="infinispan.client.hotrod.auth_username">username</property>
+        <property name="infinispan.client.hotrod.auth_password">password</property>
         <invalidation-near-cache max-entries="20"/>
         <remote-clusters>
             <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3"/>

@@ -22,6 +22,7 @@
 package org.wildfly.extension.microprofile.health;
 
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,48 +43,87 @@ public class HealthReporter {
 
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";
+    private final boolean defaultServerProceduresDisabled;
     private Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
     private Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
     private Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
+    private Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
 
-    private final String emptyLivenessChecksStatus;
-    private final String emptyReadinessChecksStatus;
+    private final HealthCheck emptyDeploymentLivenessCheck;
+    private final HealthCheck emptyDeploymentReadinessCheck;
 
-    public HealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus) {
-        this.emptyLivenessChecksStatus = emptyLivenessChecksStatus;
-        this.emptyReadinessChecksStatus = emptyReadinessChecksStatus;
+    private static class EmptyDeploymentCheckStatus implements HealthCheck {
+        private final String name;
+        private final String status;
+
+        EmptyDeploymentCheckStatus(String name, String status) {
+            this.name = name;
+            this.status = status;
+        }
+
+        @Override
+        public HealthCheckResponse call() {
+            return HealthCheckResponse.named(name)
+                    .state(status.equals("UP"))
+                    .build();
+        }
+    }
+
+
+    public HealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus, boolean defaultServerProceduresDisabled) {
+        this.emptyDeploymentLivenessCheck  = new EmptyDeploymentCheckStatus("empty-liveness-checks", emptyLivenessChecksStatus);
+        this.emptyDeploymentReadinessCheck  = new EmptyDeploymentCheckStatus("empty-readiness-checks", emptyReadinessChecksStatus);
+        this.defaultServerProceduresDisabled = defaultServerProceduresDisabled;
     }
 
     public SmallRyeHealth getHealth() {
-        String emptyChecksStatus = DOWN.equals(emptyLivenessChecksStatus) || DOWN.equals(emptyReadinessChecksStatus) ? DOWN : UP;
-        return getHealth(emptyChecksStatus, healthChecks, livenessChecks, readinessChecks);
+        HashMap<HealthCheck, ClassLoader> deploymentChecks = new HashMap<>();
+        deploymentChecks.putAll(healthChecks);
+        deploymentChecks.putAll(livenessChecks);
+        deploymentChecks.putAll(readinessChecks);
+
+        HashMap<HealthCheck, ClassLoader> serverChecks= new HashMap<>();
+        serverChecks.putAll(serverReadinessChecks);
+        if (deploymentChecks.size() == 0 && !defaultServerProceduresDisabled) {
+            serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
+            serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
+        }
+
+        return getHealth(serverChecks, deploymentChecks);
     }
 
     public SmallRyeHealth getLiveness() {
-        return getHealth(emptyLivenessChecksStatus, livenessChecks);
+        final Map<HealthCheck, ClassLoader> serverChecks;
+        if (livenessChecks.size() == 0 && !defaultServerProceduresDisabled) {
+            serverChecks = Collections.singletonMap(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
+        } else {
+            serverChecks = Collections.emptyMap();
+        }
+        return getHealth(serverChecks, livenessChecks);
     }
 
     public SmallRyeHealth getReadiness() {
-        return getHealth(emptyReadinessChecksStatus, readinessChecks);
+        final Map<HealthCheck, ClassLoader> serverChecks = new HashMap<>();
+        serverChecks.putAll(serverReadinessChecks);
+        if (readinessChecks.size() == 0 && !defaultServerProceduresDisabled) {
+            serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
+        }
+        return getHealth(serverChecks, readinessChecks);
     }
 
-
-    @SafeVarargs
-    private final SmallRyeHealth getHealth(String emptyChecksStatus, Map<HealthCheck, ClassLoader>... checks) {
+    private final SmallRyeHealth getHealth(Map<HealthCheck, ClassLoader> serverChecks, Map<HealthCheck, ClassLoader> deploymentChecks) {
         JsonArrayBuilder results = Json.createArrayBuilder();
         HealthCheckResponse.State status = HealthCheckResponse.State.UP;
 
-        if (checks != null) {
-            for (Map<HealthCheck, ClassLoader> entry : checks) {
-                status = processChecks(entry, results, status);
-            }
-        }
+        status = processChecks(serverChecks, results, status);
+
+        status = processChecks(deploymentChecks, results, status);
 
         JsonObjectBuilder builder = Json.createObjectBuilder();
 
         JsonArray checkResults = results.build();
 
-        builder.add("status", checkResults.isEmpty() ? emptyChecksStatus : status.toString());
+        builder.add("status", status.toString());
         builder.add("checks", checkResults);
 
         return new SmallRyeHealth(builder.build());
@@ -168,6 +208,12 @@ public class HealthReporter {
     public void addReadinessCheck(HealthCheck check, ClassLoader moduleClassLoader) {
         if (check != null) {
             readinessChecks.put(check, moduleClassLoader);
+        }
+    }
+
+    public void addServerReadinessCheck(HealthCheck check, ClassLoader moduleClassLoader) {
+        if (check != null) {
+            serverReadinessChecks.put(check, moduleClassLoader);
         }
     }
 

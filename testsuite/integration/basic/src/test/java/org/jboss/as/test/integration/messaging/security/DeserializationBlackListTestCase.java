@@ -38,6 +38,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,20 +58,26 @@ public class DeserializationBlackListTestCase {
     static class SetupTask implements ServerSetupTask {
 
         private static final String CF_NAME = "myBlackListCF";
-
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            managementClient.getControllerClient().execute(Operations.createWriteAttributeOperation(new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", true));
+            JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ModelNode attributes = new ModelNode();
-            attributes.get("connectors").add("in-vm");
+            if (ops.isRemoteBroker()) {
+                attributes.get("connectors").add("artemis");
+            } else {
+                attributes.get("connectors").add("in-vm");
+            }
             attributes.get("deserialization-black-list").add(new ModelNode("*"));
-            JMSOperationsProvider.getInstance(managementClient.getControllerClient())
-                    .addJmsConnectionFactory(CF_NAME, BLACK_LIST_REGULAR_CF_LOOKUP, attributes);
+            ops.addJmsConnectionFactory(CF_NAME, BLACK_LIST_REGULAR_CF_LOOKUP, attributes);
         }
 
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            JMSOperationsProvider.getInstance(managementClient.getControllerClient()).removeJmsConnectionFactory(CF_NAME);
+            JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            ops.removeJmsConnectionFactory(CF_NAME);
+            managementClient.getControllerClient().execute(Operations.createWriteAttributeOperation(new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", ops.isRemoteBroker()));
         }
     }
 

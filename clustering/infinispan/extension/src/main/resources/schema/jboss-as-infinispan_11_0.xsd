@@ -618,7 +618,7 @@
             <xs:extension base="tns:store">
                 <xs:attribute name="remote-servers" type="tns:list" use="required">
                     <xs:annotation>
-                        <xs:documentation>A list of outbound socket bindings a.</xs:documentation>
+                        <xs:documentation>A list of outbound socket bindings.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="cache" type="xs:string">
@@ -1231,6 +1231,13 @@
                     <xs:documentation>
                         Configures using near cache in invalidated mode.
                         When entries are updated or removed server-side, invalidation messages will be sent to clients to remove them from the near cache.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        A property with name and value.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>

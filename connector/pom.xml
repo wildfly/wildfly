@@ -70,10 +70,6 @@
             <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-security</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.threads</groupId>
             <artifactId>jboss-threads</artifactId>
         </dependency>

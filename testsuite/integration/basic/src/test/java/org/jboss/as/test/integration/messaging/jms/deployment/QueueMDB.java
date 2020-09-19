@@ -46,6 +46,7 @@ public class QueueMDB implements MessageListener {
     @Inject
     private JMSContext context;
 
+    @Override
     public void onMessage(final Message m) {
         try {
             TextMessage message = (TextMessage) m;

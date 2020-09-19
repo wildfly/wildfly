@@ -459,7 +459,7 @@
 
         <!-- Test against slimmed servers provisioned by Galleon -->
         <profile>
-            <id>ts.clustering.layers.profile</id>
+            <id>ts.elytron.layers.profile</id>
             <activation>
                 <property>
                     <name>ts.layers</name>
