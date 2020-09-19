@@ -2992,6 +2992,7 @@
                                         <exclude>org/jboss/as/test/integration/ejb/stateful/persistencecontext/StatefulUnitTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/stateless/callerprincipal/Ejb2GetCallerPrincipalTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/BeanManagedTransactionsTestCase.java</exclude><!-- use of @Test(expected = EJBException.class) ??? -->
+                                        <exclude>org/jboss/as/test/integration/jdr/mgmt/JdrReportManagmentTestCase.java</exclude><!-- WFLY-13884 -->
                                         <exclude>org/jboss/as/test/integration/jsf/beanvalidation/cdi/BeanValidationCdiIntegrationTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/doctype/DoctypeDeclTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/jsf23/JSF23SanityTestCase.java</exclude>
