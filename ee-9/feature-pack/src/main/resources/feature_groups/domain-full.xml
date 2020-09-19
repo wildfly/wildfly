@@ -24,7 +24,7 @@
         <feature-group name="domain-profile"/>
         <feature-group name="ejb3-mdb"/>
         <feature-group name="iiop-openjdk"/>
-        <feature-group name="messaging-activemq-remote"/>
+        <feature-group name="messaging-remote-activemq"/>
         <feature spec="subsystem.ejb3">
             <feature spec="subsystem.ejb3.service.iiop">
                 <param name="enable-by-default" value="false"/>

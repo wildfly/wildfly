@@ -22,7 +22,7 @@
         </config>
         <config model="standalone" name="standalone-activemq-embedded.xml">
             <feature-group name="standalone-full-x-messaging"/>
-            <feature-group name="messaging-activemq-embedded"/>
+            <feature-group name="messaging-embedded-activemq"/>
         </config>
     </example-configs>
 </tasks>

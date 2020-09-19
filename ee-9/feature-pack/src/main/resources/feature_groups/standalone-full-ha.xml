@@ -12,11 +12,11 @@
         <param name="port-offset" value="${jboss.socket.binding.port-offset:0}"/>
         <param name="default-interface" value="public"/>
         <feature-group name="iiop-sockets"/>
-        <feature-group name="messaging-sockets"/>
+        <feature-group name="messaging-remote-sockets"/>
     </feature>
 
     <feature-group name="iiop-openjdk"/>
-    <feature-group name="messaging-activemq-remote"/>
+    <feature-group name="messaging-remote-activemq"/>
 
     <feature spec="subsystem.ejb3">
         <feature spec="subsystem.ejb3.service.iiop">
