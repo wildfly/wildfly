@@ -24,17 +24,19 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
+import org.wildfly.clustering.marshalling.spi.ConstantFunction;
+import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 
 /**
- * Collection marshaller for collections constructed with a context.
+ * Collection marshaller for unbounded collections.
  * @author Paul Ferraro
  */
-public class ContextualCollectionMarshaller<T extends Collection<Object>, C> extends CollectionMarshaller<T, C, C> {
+public class UnboundedCollectionMarshaller<T extends Collection<Object>> extends CollectionMarshaller<T, Void, Void> {
 
-    public ContextualCollectionMarshaller(Class<T> targetClass, Function<C, T> factory, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
-        super(targetClass, factory, Map.Entry::getKey, context, contextMarshaller);
+    public UnboundedCollectionMarshaller(Class<T> targetClass, Supplier<T> factory) {
+        super(targetClass, new SupplierFunction<>(factory), Map.Entry::getKey, new ConstantFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }

@@ -37,15 +37,14 @@ import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
 /**
  * @author Paul Ferraro
  */
 public enum UtilMarshaller implements MarshallerProvider {
-    ARRAY_DEQUE(new CollectionMarshaller<>(ArrayDeque.class, ArrayDeque::new)),
-    ARRAY_LIST(new CollectionMarshaller<>(ArrayList.class, ArrayList::new)),
+    ARRAY_DEQUE(new BoundedCollectionMarshaller<>(ArrayDeque.class, ArrayDeque::new)),
+    ARRAY_LIST(new BoundedCollectionMarshaller<>(ArrayList.class, ArrayList::new)),
     BIT_SET(UtilExternalizerProvider.BIT_SET),
     CALENDAR(UtilExternalizerProvider.CALENDAR),
     CURRENCY(UtilExternalizerProvider.CURRENCY),
@@ -63,10 +62,10 @@ public enum UtilMarshaller implements MarshallerProvider {
     ENUM_MAP(new EnumMapMarshaller<>()),
     ENUM_SET(new EnumSetMarshaller<>()),
     HASH_MAP(new HashMapMarshaller<>(HashMap.class, HashMap::new)),
-    HASH_SET(new CollectionMarshaller<>(HashSet.class, HashSet::new)),
+    HASH_SET(new BoundedCollectionMarshaller<>(HashSet.class, HashSet::new)),
     LINKED_HASH_MAP(new LinkedHashMapMarshaller()),
-    LINKED_HASH_SET(new CollectionMarshaller<>(LinkedHashSet.class, LinkedHashSet::new)),
-    LINKED_LIST(new CollectionMarshaller<>(LinkedList.class, new SupplierFunction<>(LinkedList::new))),
+    LINKED_HASH_SET(new BoundedCollectionMarshaller<>(LinkedHashSet.class, LinkedHashSet::new)),
+    LINKED_LIST(new UnboundedCollectionMarshaller<>(LinkedList.class, LinkedList::new)),
     LOCALE(UtilExternalizerProvider.LOCALE),
     OPTIONAL(OptionalMarshaller.OBJECT),
     OPTIONAL_DOUBLE(OptionalMarshaller.DOUBLE),
