@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
+import org.wildfly.clustering.marshalling.spi.util.SingletonCollectionExternalizer;
 
 /**
  * @author Paul Ferraro
@@ -34,13 +35,6 @@ public class SingletonCollectionMarshaller<T extends Collection<Object>> extends
 
     @SuppressWarnings("unchecked")
     public SingletonCollectionMarshaller(Function<Object, T> factory) {
-        super((Class<T>) factory.apply(null).getClass(), factory, new Accessor<>());
-    }
-
-    static class Accessor<T extends Collection<Object>> implements Function<T, Object> {
-        @Override
-        public Object apply(T collection) {
-            return collection.iterator().next();
-        }
+        super((Class<T>) factory.apply(null).getClass(), factory, new SingletonCollectionExternalizer.Accessor<>());
     }
 }
