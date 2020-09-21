@@ -27,6 +27,9 @@ import java.io.IOException;
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.group.LocalNodeResolver.LocalNodeExternalizer;
 import org.wildfly.clustering.server.group.LocalNodeResolver.LocalNodeKeyFormat;
 
@@ -35,12 +38,17 @@ import org.wildfly.clustering.server.group.LocalNodeResolver.LocalNodeKeyFormat;
  * @author Paul Ferraro
  */
 public class LocalNodeResolverTestCase {
+    private final LocalNode localNode = new LocalNode("name");
 
     @Test
     public void test() throws IOException {
-        LocalNode node = new LocalNode("name");
+        this.test(new ExternalizerTester<>(new LocalNodeExternalizer()));
+        this.test(new KeyFormatTester<>(new LocalNodeKeyFormat()));
+        this.test(new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester());
+        this.test(new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester());
+    }
 
-        new ExternalizerTester<>(new LocalNodeExternalizer()).test(node);
-        new KeyFormatTester<>(new LocalNodeKeyFormat()).test(node);
+    private void test(Tester<LocalNode> tester) throws IOException {
+        tester.test(this.localNode);
     }
 }

@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
@@ -42,7 +43,9 @@ public class SerializationTestMarshaller<T> implements TestMarshaller<T> {
         try (ObjectInputStream input = new ObjectInputStream(in)) {
             return (T) input.readObject();
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e);
+            InvalidClassException exception = new InvalidClassException(e.getMessage());
+            exception.initCause(e);
+            throw exception;
         }
     }
 

@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.spi;
 
 import org.wildfly.clustering.marshalling.AbstractUtilTestCase;
 import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
+import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
 /**
  * Externalizer tests for java.util.* classes.
@@ -32,6 +33,6 @@ import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
 public class ExternalizerUtilTestCase extends AbstractUtilTestCase {
 
     public ExternalizerUtilTestCase() {
-        super(new ExternalizerTesterFactory(DefaultExternalizer.class));
+        super(new ExternalizerTesterFactory(UtilExternalizerProvider.class));
     }
 }

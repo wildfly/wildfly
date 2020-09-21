@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.BitSet;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
@@ -47,6 +48,16 @@ public class BitSetExternalizer implements Externalizer<BitSet> {
         byte[] bytes = new byte[IndexSerializer.VARIABLE.readInt(input)];
         input.readFully(bytes);
         return BitSet.valueOf(bytes);
+    }
+
+    @Override
+    public OptionalInt size(BitSet set) {
+        int size = set.size();
+        int bytes = size / Byte.SIZE;
+        if (size % Byte.SIZE > 0) {
+            bytes += 1;
+        }
+        return OptionalInt.of(IndexSerializer.VARIABLE.size(bytes) + bytes);
     }
 
     @Override

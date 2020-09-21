@@ -36,6 +36,8 @@
 
         <module name="io.undertow.core"/>
         <module name="io.undertow.servlet"/>
+        <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.protostream"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.server"/>
@@ -47,6 +49,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.container"/>

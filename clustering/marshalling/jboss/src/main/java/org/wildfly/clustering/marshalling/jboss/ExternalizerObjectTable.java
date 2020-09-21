@@ -43,7 +43,6 @@ import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.IntSerializer;
 import org.wildfly.security.manager.WildFlySecurityManager;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * {@link ObjectTable} implementation that dynamically loads {@link Externalizer} instances available from a given {@link ClassLoader}.
@@ -73,9 +72,15 @@ public class ExternalizerObjectTable implements ObjectTable {
             }
         });
 
-        Set<DefaultExternalizer> defaultExternalizers = EnumSet.allOf(DefaultExternalizer.class);
-        List<Externalizer<Object>> result = new ArrayList<>(defaultExternalizers.size() + loadedExternalizers.size());
-        result.addAll(defaultExternalizers);
+        Set<DefaultExternalizerProviders> providers = EnumSet.allOf(DefaultExternalizerProviders.class);
+        int size = loadedExternalizers.size();
+        for (DefaultExternalizerProviders provider : providers) {
+            size += provider.get().size();
+        }
+        List<Externalizer<Object>> result = new ArrayList<>(size);
+        for (DefaultExternalizerProviders provider : providers) {
+            result.addAll(provider.get());
+        }
         result.addAll(loadedExternalizers);
         return result;
     }

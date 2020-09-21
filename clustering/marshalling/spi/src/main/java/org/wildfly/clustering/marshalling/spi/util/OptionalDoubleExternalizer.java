@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.OptionalDouble;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
@@ -47,6 +48,11 @@ public class OptionalDoubleExternalizer implements Externalizer<OptionalDouble> 
     @Override
     public OptionalDouble readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         return (input.readBoolean()) ? OptionalDouble.of(input.readDouble()) : OptionalDouble.empty();
+    }
+
+    @Override
+    public OptionalInt size(OptionalDouble value) {
+        return OptionalInt.of(value.isPresent() ? Double.BYTES + Byte.BYTES : Byte.BYTES);
     }
 
     @Override

@@ -35,7 +35,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>21.0.0.Beta1-SNAPSHOT</version>
+    <version>21.0.0.Final-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -775,6 +775,11 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -6499,6 +6504,17 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.infinispan.protostream</groupId>
+                <artifactId>protostream-processor</artifactId>
+                <version>${version.org.infinispan.protostream}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
             <dependency>
                 <groupId>org.jasypt</groupId>
@@ -9198,7 +9214,7 @@
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                        <excludes>**/*$logger.java,**/*$bundle.java</excludes>
+                        <excludes>**/*$logger.java,**/*$bundle.java,**/*$___Marshaller_*.java,**/*SerializationContextInitializerImpl.java</excludes>
                         <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
                         <useFile></useFile>
                     </configuration>

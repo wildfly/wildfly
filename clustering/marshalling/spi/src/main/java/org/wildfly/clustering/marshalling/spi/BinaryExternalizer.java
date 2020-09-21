@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.spi;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.OptionalInt;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -66,5 +67,17 @@ public class BinaryExternalizer<T, X, Y> implements Externalizer<T> {
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
+    }
+
+    @Override
+    public OptionalInt size(T object) {
+        OptionalInt size1 = this.externalizer1.size(this.accessor1.apply(object));
+        if (size1.isPresent()) {
+            OptionalInt size2 = this.externalizer2.size(this.accessor2.apply(object));
+            if (size2.isPresent()) {
+                return OptionalInt.of(size1.getAsInt() + size2.getAsInt());
+            }
+        }
+        return OptionalInt.empty();
     }
 }

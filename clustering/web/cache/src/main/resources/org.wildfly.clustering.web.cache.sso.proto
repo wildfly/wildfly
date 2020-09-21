@@ -1,0 +1,10 @@
+package org.wildfly.clustering.web.cache.sso;
+
+// IDs: 205
+
+/**
+ * @TypeId(205)
+ */
+message AuthenticationEntry {
+	required	bytes	authentication	= 1;
+}

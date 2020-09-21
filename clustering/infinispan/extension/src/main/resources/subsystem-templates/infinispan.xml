@@ -73,14 +73,14 @@
                     <heap-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
+                <local-cache name="pending-puts">
+                    <expiration max-idle="60000"/>
+                </local-cache>
                 <invalidation-cache name="entity">
                     <heap-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </invalidation-cache>
                 <replicated-cache name="timestamps"/>
-                <local-cache name="pending-puts">
-                    <expiration max-idle="60000"/>
-                </local-cache>
             </cache-container>
         </replacement>
     </supplement>

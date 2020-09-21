@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.spi;
 
 import org.wildfly.clustering.marshalling.AbstractNetTestCase;
 import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
+import org.wildfly.clustering.marshalling.spi.net.NetExternalizerProvider;
 
 /**
  * Externalizer tests for java.net.* classes.
@@ -32,6 +33,6 @@ import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
 public class ExternalizerNetTestCase extends AbstractNetTestCase {
 
     public ExternalizerNetTestCase() {
-        super(new ExternalizerTesterFactory(DefaultExternalizer.class));
+        super(new ExternalizerTesterFactory(NetExternalizerProvider.class));
     }
 }
