@@ -342,6 +342,12 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // register rejections for changes in 7.0.0
 
+            // register rejections for changes in 8.0.0
+            PathAddress httpConnectionAddress = remotingProfileAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection"));
+            PathAddress httpConnectionOptions = httpConnectionAddress.append(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS));
+            config.addFailedAttribute(httpConnectionAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(httpConnectionOptions, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
             // create a chained config to apply multiple transformation configs to each one of a collection of attributes
             FailedOperationTransformationConfig.ChainedConfig chainedSubsystemConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
@@ -419,6 +425,11 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             config.addFailedAttribute(ejbReceiverAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(channelCreationOptionsAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
+            PathAddress httpConnectionAddress = remotingProfileAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection"));
+            PathAddress httpConnectionOptions = httpConnectionAddress.append(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS));
+            config.addFailedAttribute(httpConnectionAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(httpConnectionOptions, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
             // reject the attribute 'cluster' from resource /subsystem=ejb3/service=remote
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME, EJB3RemoteResourceDefinition.CONNECTORS));
@@ -458,6 +469,10 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CONNECTORS));
 
+            // reject /subsystem=ejb3/remoting-profile=profile/remote-http-connection=connection
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"))
+                            .append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
         // need to include all changes from current to 5.0.0
@@ -474,6 +489,11 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             // reject the attribute 'connectors' from resource /subsystem=ejb3/service=remote
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CONNECTORS));
+
+            // reject /subsystem=ejb3/remoting-profile=profile/remote-http-connection=connection
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"))
+                            .append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
         // need to include all changes from current to 6.0.0
@@ -483,14 +503,24 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             // reject the attribute 'connectors' from resource /subsystem=ejb3/service=remote
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CONNECTORS));
+
+            // reject /subsystem=ejb3/remoting-profile=profile/remote-http-connection=connection
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"))
+                            .append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
-        // need to include all changes from current to .0.0
+        // need to include all changes from current to 7.0.0
         if (EJB3Model.VERSION_7_0_0.matches(version)) {
 
             // reject the attribute 'connectors' from resource /subsystem=ejb3/service=remote
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CONNECTORS));
+
+            // reject /subsystem=ejb3/remoting-profile=profile/remote-http-connection=connection
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"))
+                            .append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
         return config;
