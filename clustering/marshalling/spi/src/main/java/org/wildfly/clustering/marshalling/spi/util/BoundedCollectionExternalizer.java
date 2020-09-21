@@ -22,24 +22,20 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.function.Function;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.IntFunction;
 
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IdentityFunction;
-import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
+import org.wildfly.clustering.marshalling.spi.ConstantFunction;
+import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
- * Externalizers for implementations of {@link SortedSet}.
- * Requires additional serialization of the comparator.
+ * Externalizer for bounded implementations of {@link Collection}.
  * @author Paul Ferraro
  */
-public class SortedSetExternalizer<T extends SortedSet<Object>> extends ContextualCollectionExternalizer<T, Comparator<Object>> {
-    @SuppressWarnings("unchecked")
-    private static final Externalizer<Comparator<Object>> COMPARATOR_EXTERNALIZER = (Externalizer<Comparator<Object>>) (Externalizer<?>) new ObjectExternalizer<>(Comparator.class, Comparator.class::cast, new IdentityFunction<>());
+public class BoundedCollectionExternalizer<T extends Collection<Object>> extends CollectionExternalizer<T, Void, Integer> {
 
-    public SortedSetExternalizer(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
-        super(targetClass, factory, SortedSet::comparator, COMPARATOR_EXTERNALIZER);
+    public BoundedCollectionExternalizer(Class<T> targetClass, IntFunction<T> factory) {
+        super(targetClass, factory::apply, Map.Entry::getValue, new ConstantFunction<>(null), new ValueExternalizer<>(null));
     }
 }

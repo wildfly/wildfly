@@ -34,11 +34,12 @@ import java.util.concurrent.TimeUnit;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.EnumExternalizer;
 import org.wildfly.clustering.marshalling.spi.ExternalizerProvider;
-import org.wildfly.clustering.marshalling.spi.util.CollectionExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.BoundedCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CopyOnWriteCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.HashMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SortedMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SortedSetExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.UnboundedCollectionExternalizer;
 
 /**
  * @author Paul Ferraro
@@ -46,9 +47,9 @@ import org.wildfly.clustering.marshalling.spi.util.SortedSetExternalizer;
 public enum ConcurrentExternalizerProvider implements ExternalizerProvider {
 
     CONCURRENT_HASH_MAP(new HashMapExternalizer<>(ConcurrentHashMap.class, ConcurrentHashMap::new)),
-    CONCURRENT_HASH_SET(new CollectionExternalizer<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
-    CONCURRENT_LINKED_DEQUE(new CollectionExternalizer<>(ConcurrentLinkedDeque.class, size -> new ConcurrentLinkedDeque<>())),
-    CONCURRENT_LINKED_QUEUE(new CollectionExternalizer<>(ConcurrentLinkedQueue.class, size -> new ConcurrentLinkedQueue<>())),
+    CONCURRENT_HASH_SET(new BoundedCollectionExternalizer<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
+    CONCURRENT_LINKED_DEQUE(new UnboundedCollectionExternalizer<>(ConcurrentLinkedDeque.class, ConcurrentLinkedDeque::new)),
+    CONCURRENT_LINKED_QUEUE(new UnboundedCollectionExternalizer<>(ConcurrentLinkedQueue.class, ConcurrentLinkedQueue::new)),
     CONCURRENT_SKIP_LIST_MAP(new SortedMapExternalizer<>(ConcurrentSkipListMap.class, ConcurrentSkipListMap::new)),
     CONCURRENT_SKIP_LIST_SET(new SortedSetExternalizer<>(ConcurrentSkipListSet.class, ConcurrentSkipListSet::new)),
     COPY_ON_WRITE_ARRAY_LIST(new CopyOnWriteCollectionExternalizer<>(CopyOnWriteArrayList.class, CopyOnWriteArrayList::new)),
