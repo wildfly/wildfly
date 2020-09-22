@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
-import org.wildfly.clustering.marshalling.spi.ConstantFunction;
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
 import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 
 /**
@@ -37,6 +37,6 @@ import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 public class UnboundedCollectionMarshaller<T extends Collection<Object>> extends CollectionMarshaller<T, Void, Void> {
 
     public UnboundedCollectionMarshaller(Class<T> targetClass, Supplier<T> factory) {
-        super(targetClass, new SupplierFunction<>(factory), Map.Entry::getKey, new ConstantFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
+        super(targetClass, new SupplierFunction<>(factory), Map.Entry::getKey, new ValueFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }

@@ -31,11 +31,11 @@ import java.util.function.LongFunction;
  * A function that always results a constant value, ignoring its parameter.
  * @author Paul Ferraro
  */
-public class ConstantFunction<T, R> implements Function<T, R>, IntFunction<R>, LongFunction<R>, DoubleFunction<R> {
+public class ValueFunction<T, R> implements Function<T, R>, IntFunction<R>, LongFunction<R>, DoubleFunction<R> {
 
     private final R result;
 
-    public ConstantFunction(R result) {
+    public ValueFunction(R result) {
         this.result = result;
     }
 

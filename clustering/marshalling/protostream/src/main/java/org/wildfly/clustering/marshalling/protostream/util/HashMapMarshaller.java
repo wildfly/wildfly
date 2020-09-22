@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
-import org.wildfly.clustering.marshalling.spi.ConstantFunction;
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
 import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 
 /**
@@ -35,6 +35,6 @@ import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 public class HashMapMarshaller<T extends Map<Object, Object>> extends MapMarshaller<T, Void> {
 
     public HashMapMarshaller(Class<?> targetClass, Supplier<T> factory) {
-        super(targetClass, new SupplierFunction<>(factory), new ConstantFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
+        super(targetClass, new SupplierFunction<>(factory), new ValueFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }

@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.function.IntFunction;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
-import org.wildfly.clustering.marshalling.spi.ConstantFunction;
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
 
 /**
  * Collection marshaller for bounded collections.
@@ -36,6 +36,6 @@ import org.wildfly.clustering.marshalling.spi.ConstantFunction;
 public class BoundedCollectionMarshaller<T extends Collection<Object>> extends CollectionMarshaller<T, Void, Integer> {
 
     public BoundedCollectionMarshaller(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, factory::apply, Map.Entry::getValue, new ConstantFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
+        super(targetClass, factory::apply, Map.Entry::getValue, new ValueFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }

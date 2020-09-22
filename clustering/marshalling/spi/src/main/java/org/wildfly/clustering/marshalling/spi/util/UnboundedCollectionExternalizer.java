@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.marshalling.spi.ConstantFunction;
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
 import org.wildfly.clustering.marshalling.spi.SupplierFunction;
 import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
@@ -37,6 +37,6 @@ import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 public class UnboundedCollectionExternalizer<T extends Collection<Object>> extends CollectionExternalizer<T, Void, Void> {
 
     public UnboundedCollectionExternalizer(Class<T> targetClass, Supplier<T> factory) {
-        super(targetClass, new SupplierFunction<>(factory), Map.Entry::getKey, new ConstantFunction<>(null), new ValueExternalizer<>(null));
+        super(targetClass, new SupplierFunction<>(factory), Map.Entry::getKey, new ValueFunction<>(null), new ValueExternalizer<>(null));
     }
 }
