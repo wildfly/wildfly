@@ -46,6 +46,10 @@
         </license>
     </licenses>
 
+    <properties>
+        <version.org.infinispan.infinispan-directory-provider>10.1.8.Final</version.org.infinispan.infinispan-directory-provider>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <!-- base import of server's dep management -->
@@ -80,7 +84,11 @@
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
-            
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-directory-provider</artifactId>
+                <version>${version.org.infinispan.infinispan-directory-provider}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -486,11 +494,6 @@
                                     <groupId>org.hibernate</groupId>
                                     <artifactId>hibernate-jpamodelgen</artifactId>
                                     <version>org.hibernate:hibernate-core:jar</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.infinispan</groupId>
-                                    <artifactId>infinispan-directory-provider</artifactId>
-                                    <version>org.infinispan:infinispan-core:jar</version>
                                 </dependency>
                             </versionRefDependencies>
                             <addExclusions>
