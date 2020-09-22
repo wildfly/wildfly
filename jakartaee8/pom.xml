@@ -395,6 +395,14 @@
                                     <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-spring</artifactId>
                                 </dependency>
+                                <dependency>
+                                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                                    <artifactId>jackson-datatype-jsr310</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                                    <artifactId>jackson-datatype-jdk8</artifactId>
+                                </dependency>
 
                                 <!-- include security: elytron  -->
                                 <dependency>
