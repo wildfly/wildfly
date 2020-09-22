@@ -22,46 +22,17 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
+import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
 
 /**
  * @author Paul Ferraro
  */
 public class LinkedHashMapMarshaller extends MapMarshaller<LinkedHashMap<Object, Object>, Boolean> {
 
-    private static final Function<Boolean, LinkedHashMap<Object, Object>> FACTORY = new Function<Boolean, LinkedHashMap<Object, Object>>() {
-        @Override
-        public LinkedHashMap<Object, Object> apply(Boolean accessOrder) {
-            return new LinkedHashMap<>(16, 0.75f, accessOrder);
-        }
-    };
-
-    private static final Function<LinkedHashMap<Object, Object>, Boolean> ACCESS_ORDER = new Function<LinkedHashMap<Object, Object>, Boolean>() {
-        @Override
-        public Boolean apply(LinkedHashMap<Object, Object> map) {
-            Object insertOrder = new Object();
-            Object accessOrder = new Object();
-            map.put(insertOrder, null);
-            map.put(accessOrder, null);
-            // Access first inserted entry
-            // If map uses access order, this element will move to the tail of the map
-            map.get(insertOrder);
-            Iterator<Object> keys = map.keySet().iterator();
-            Object element = keys.next();
-            while ((element != insertOrder) && (element != accessOrder)) {
-                element = keys.next();
-            }
-            map.remove(insertOrder);
-            map.remove(accessOrder);
-            return element == accessOrder;
-        }
-    };
-
     public LinkedHashMapMarshaller() {
-        super(LinkedHashMap.class, FACTORY, ACCESS_ORDER, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class));
+        super(LinkedHashMap.class, LinkedHashMapExternalizer.FACTORY, LinkedHashMapExternalizer.ACCESS_ORDER, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class));
     }
 }
