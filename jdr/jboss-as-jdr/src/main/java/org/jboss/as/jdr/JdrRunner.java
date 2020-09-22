@@ -108,6 +108,7 @@ public class JdrRunner implements JdrReportCollector {
             }
             versionWriter.close();
             this.env.getZip().add(new ByteArrayInputStream(versionStream.toByteArray()), "version.txt");
+            this.env.getZip().add(new ByteArrayInputStream(this.env.getZip().getProductDirName().getBytes(StandardCharsets.UTF_8)), "product.txt");
 
         } catch (Exception e) {
             ROOT_LOGGER.error(ROOT_LOGGER.couldNotConfigureJDR(), e);
