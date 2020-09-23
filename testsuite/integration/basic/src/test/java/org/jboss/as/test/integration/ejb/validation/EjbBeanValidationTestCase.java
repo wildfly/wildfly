@@ -21,6 +21,19 @@
  */
 package org.jboss.as.test.integration.ejb.validation;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.net.URL;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -35,19 +48,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.net.URL;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -66,8 +66,7 @@ public class EjbBeanValidationTestCase {
                 .addPackage(HttpRequest.class.getPackage())
                 .addClasses(
                         EjbBeanValidationTestCase.class, TestApplication.class, TestResource.class, EchoResourceImpl.class, EchoResource.class,
-                        DummySubclass.class, DummyAbstractClass.class, DummyClass.class, DummyFlagImpl.class, DummyFlag.class)
-                .addAsWebInfResource("web.xml");
+                        DummySubclass.class, DummyAbstractClass.class, DummyClass.class, DummyFlagImpl.class, DummyFlag.class);
     }
 
     @ArquillianResource

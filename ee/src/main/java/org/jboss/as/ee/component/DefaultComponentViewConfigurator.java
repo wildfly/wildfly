@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.ee.logging.EeLogger;
@@ -90,7 +91,14 @@ class DefaultComponentViewConfigurator extends AbstractComponentConfigurator imp
 
             //we define it in the modules class loader to prevent permgen leaks
             if (viewClass.isInterface()) {
-                proxyConfiguration.setSuperClass(configuration.getComponentClass());
+                final Class<?> componentClass = configuration.getComponentClass();
+                Constructor<?> defaultConstructor = null;
+                try {
+                    defaultConstructor = componentClass.getConstructor();
+                } catch (NoSuchMethodException e) {
+                    //ignore
+                }
+                proxyConfiguration.setSuperClass(defaultConstructor == null ? Object.class : componentClass);
                 proxyConfiguration.addAdditionalInterface(viewClass);
                 viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(proxyConfiguration));
             } else {
