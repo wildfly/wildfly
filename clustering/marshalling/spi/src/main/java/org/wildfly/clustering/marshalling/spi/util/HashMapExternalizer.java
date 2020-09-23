@@ -35,6 +35,6 @@ import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 public class HashMapExternalizer<T extends Map<Object, Object>> extends MapExternalizer<T, Void, Integer> {
 
     public HashMapExternalizer(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, new CapacityFactory<>(factory), Map.Entry::getValue, new ValueFunction<>(null), new ValueExternalizer<>(null));
+        super(targetClass, new CapacityFactory<>(factory), Map.Entry::getValue, new ValueFunction<>(null), ValueExternalizer.VOID);
     }
 }

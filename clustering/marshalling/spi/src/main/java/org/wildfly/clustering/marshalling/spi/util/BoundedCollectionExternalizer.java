@@ -36,6 +36,6 @@ import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 public class BoundedCollectionExternalizer<T extends Collection<Object>> extends CollectionExternalizer<T, Void, Integer> {
 
     public BoundedCollectionExternalizer(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, factory::apply, Map.Entry::getValue, new ValueFunction<>(null), new ValueExternalizer<>(null));
+        super(targetClass, factory::apply, Map.Entry::getValue, new ValueFunction<>(null), ValueExternalizer.VOID);
     }
 }

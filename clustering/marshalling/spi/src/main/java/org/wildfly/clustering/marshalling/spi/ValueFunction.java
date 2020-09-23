@@ -32,6 +32,12 @@ import java.util.function.LongFunction;
  * @author Paul Ferraro
  */
 public class ValueFunction<T, R> implements Function<T, R>, IntFunction<R>, LongFunction<R>, DoubleFunction<R> {
+    private static final ValueFunction<Object, Void> VOID = new ValueFunction<>(null);
+
+    @SuppressWarnings("unchecked")
+    public static <T> ValueFunction<T, Void> nullFunction() {
+        return (ValueFunction<T, Void>) VOID;
+    }
 
     private final R result;
 
