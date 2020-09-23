@@ -34,8 +34,13 @@ import java.util.function.LongFunction;
 public class ValueFunction<T, R> implements Function<T, R>, IntFunction<R>, LongFunction<R>, DoubleFunction<R> {
     private static final ValueFunction<Object, Void> VOID = new ValueFunction<>(null);
 
+    /**
+     * Returns a function that always returns a null result, regardless of input.
+     * @param <T> the function parameter type
+     * @return a function that always returns null
+     */
     @SuppressWarnings("unchecked")
-    public static <T> ValueFunction<T, Void> nullFunction() {
+    public static <T> ValueFunction<T, Void> voidFunction() {
         return (ValueFunction<T, Void>) VOID;
     }
 

@@ -36,6 +36,6 @@ import org.wildfly.clustering.marshalling.spi.ValueFunction;
 public class BoundedCollectionMarshaller<T extends Collection<Object>> extends CollectionMarshaller<T, Void, Integer> {
 
     public BoundedCollectionMarshaller(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, factory::apply, Map.Entry::getValue, new ValueFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
+        super(targetClass, factory::apply, Map.Entry::getValue, ValueFunction.voidFunction(), PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }

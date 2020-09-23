@@ -35,6 +35,6 @@ import org.wildfly.clustering.marshalling.spi.util.HashSetExternalizer.CapacityF
 public class HashMapMarshaller<T extends Map<Object, Object>> extends MapMarshaller<T, Void, Integer> {
 
     public HashMapMarshaller(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, new CapacityFactory<>(factory), Map.Entry::getValue, new ValueFunction<>(null), PrimitiveMarshaller.VOID.cast(Void.class));
+        super(targetClass, new CapacityFactory<>(factory), Map.Entry::getValue, ValueFunction.voidFunction(), PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }
