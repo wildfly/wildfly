@@ -147,11 +147,13 @@ public class MessagingSubsystemParser_13_0 extends PersistentResourceXMLParser {
                 .addChild(createPooledConnectionFactory(true))
                 .addChild(builder(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH)
                         .addAttributes(
-                                ConnectionFactoryAttributes.Common.ENTRIES
+                                ConnectionFactoryAttributes.Common.ENTRIES,
+                                ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX
                         ))
                 .addChild(builder(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH)
                         .addAttributes(
-                                ConnectionFactoryAttributes.Common.ENTRIES
+                                ConnectionFactoryAttributes.Common.ENTRIES,
+                                ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX
                         ))
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)

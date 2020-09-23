@@ -62,13 +62,13 @@ public class ExternalJMSTopicService implements Service<Topic> {
     private final DestinationConfiguration config;
     private ClientSessionFactory sessionFactory;
 
-    private ExternalJMSTopicService(String name) {
-        this.topicName = JMS_TOPIC_PREFIX + name;
+    private ExternalJMSTopicService(final String name, final boolean enabledAMQ1Prefix) {
+        this.topicName = enabledAMQ1Prefix ? JMS_TOPIC_PREFIX + name : name;
         this.config = null;
     }
 
-    private ExternalJMSTopicService(final DestinationConfiguration config) {
-        this.topicName = JMS_TOPIC_PREFIX + config.getName();
+    private ExternalJMSTopicService(final DestinationConfiguration config, final boolean enabledAMQ1Prefix) {
+        this.topicName = enabledAMQ1Prefix ? JMS_TOPIC_PREFIX + config.getName() : config.getName();
         this.config = config;
     }
 
@@ -142,15 +142,15 @@ public class ExternalJMSTopicService implements Service<Topic> {
         return topic;
     }
 
-    public static ExternalJMSTopicService installService(final String name, final ServiceName serviceName, final ServiceTarget serviceTarget) {
-        final ExternalJMSTopicService service = new ExternalJMSTopicService(name);
+    public static ExternalJMSTopicService installService(final String name, final ServiceName serviceName, final ServiceTarget serviceTarget, final boolean enabledAMQ1Prefix) {
+        final ExternalJMSTopicService service = new ExternalJMSTopicService(name, enabledAMQ1Prefix);
         final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.install();
         return service;
     }
 
-    public static ExternalJMSTopicService installRuntimeTopicService(final DestinationConfiguration config, final ServiceTarget serviceTarget, final ServiceName pcf) {
-        final ExternalJMSTopicService service = new ExternalJMSTopicService(config);
+    public static ExternalJMSTopicService installRuntimeTopicService(final DestinationConfiguration config, final ServiceTarget serviceTarget, final ServiceName pcf, final boolean enabledAMQ1Prefix) {
+        final ExternalJMSTopicService service = new ExternalJMSTopicService(config, enabledAMQ1Prefix);
         final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(config.getDestinationServiceName(), service);
         serviceBuilder.addDependency(NamingService.SERVICE_NAME, NamingStore.class, service.namingStoreInjector);
         serviceBuilder.addDependency(pcf, ExternalPooledConnectionFactoryService.class, service.pcfInjector);

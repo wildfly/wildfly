@@ -119,6 +119,10 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         clusterConnection.getAttributeBuilder()
                 .setValueConverter(AttributeConverter.DEFAULT_VALUE, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE)
                 .end();
+        ResourceTransformationDescriptionBuilder externaljmsqueue = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH);
+        rejectDefinedAttributeWithDefaultValue(externaljmsqueue,ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        ResourceTransformationDescriptionBuilder externaljmstopic = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH);
+        rejectDefinedAttributeWithDefaultValue(externaljmstopic,ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
     }
 
     private static void registerTransformers_WF_22(ResourceTransformationDescriptionBuilder subsystem) {

@@ -67,6 +67,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External;
 import org.wildfly.extension.messaging.activemq.jms.DestinationConfiguration;
 import org.wildfly.extension.messaging.activemq.jms.ExternalJMSQueueService;
 import org.wildfly.extension.messaging.activemq.jms.ExternalJMSTopicService;
@@ -190,6 +191,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         final String managementAddress =  properties.containsKey(MANAGEMENT_ADDRESS.getName()) ? properties.get(MANAGEMENT_ADDRESS.getName()) : MANAGEMENT_ADDRESS.getDefaultValue().asString();
         final String user =  properties.containsKey("management-user") ? properties.get("management-user") : null;
         final String password =  properties.containsKey("management-password") ? properties.get("\"management-password") : null;
+        // check @JMSDestinationDefinitions boolean property named enable-amq1-prefix for runtime queue
+        final boolean enabledAMQ1Prefix = properties.containsKey(External.ENABLE_AMQ1_PREFIX.getName()) ? Boolean.valueOf(properties.get(External.ENABLE_AMQ1_PREFIX.getName())) : External.ENABLE_AMQ1_PREFIX.getDefaultValue().asBoolean();
 
         ModelNode destination = new ModelNode();
         destination.get(NAME).set(queueName);
@@ -214,7 +217,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                             .setManagementPassword(password)
                             .build(),
                     serviceTarget,
-                    pcfName);
+                    pcfName, enabledAMQ1Prefix);
         } else {
            queueService = JMSQueueService.installService(queueName, serviceTarget, serverServiceName, selector, durable);
         }
@@ -251,6 +254,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         final String managementAddress =  properties.containsKey(MANAGEMENT_ADDRESS.getName()) ? properties.get(MANAGEMENT_ADDRESS.getName()) : MANAGEMENT_ADDRESS.getDefaultValue().asString();
         final String user =  properties.containsKey("management-user") ? properties.get("management-user") : null;
         final String password =  properties.containsKey("management-password") ? properties.get("\"management-password") : null;
+        // check @JMSDestinationDefinitions boolean property named enable-amq1-prefix for runtime topic
+        final boolean enabledAMQ1Prefix = properties.containsKey(External.ENABLE_AMQ1_PREFIX.getName()) ? Boolean.valueOf(properties.get(External.ENABLE_AMQ1_PREFIX.getName())) : External.ENABLE_AMQ1_PREFIX.getDefaultValue().asBoolean();
         ModelNode destination = new ModelNode();
         destination.get(NAME).set(topicName);
         destination.get(ENTRIES).add(jndiName);
@@ -269,7 +274,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                             .setDestinationServiceName(jmsTopicServiceName)
                             .build(),
                     serviceTarget,
-                    pcfName);
+                    pcfName, enabledAMQ1Prefix);
         } else {
             topicService = JMSTopicService.installService(topicName, serverServiceName, serviceTarget);
         }
