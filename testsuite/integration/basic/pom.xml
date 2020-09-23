@@ -3328,6 +3328,10 @@
                                         <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordByClassTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
+                                        <!-- Requires extra modules -->
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/converter/MicroProfileConfigConvertersTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/management/config_source/ConfigSourceFromClassTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/management/config_source_provider/ConfigSourceProviderFromClassTestCase</exclude>                                        
                                         <!-- Requires security -->
                                         <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
                                         <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
