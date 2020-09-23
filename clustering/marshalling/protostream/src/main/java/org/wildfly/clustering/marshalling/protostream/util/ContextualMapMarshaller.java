@@ -22,20 +22,18 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.util.Comparator;
-import java.util.SortedMap;
+import java.util.Map;
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
+ * Marshaller for maps constructed with a context.
  * @author Paul Ferraro
  */
-public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends ContextualMapMarshaller<T, Comparator<Object>> {
+public class ContextualMapMarshaller<T extends Map<Object, Object>, C> extends MapMarshaller<T, C, C> {
 
-    @SuppressWarnings("unchecked")
-    public SortedMapMarshaller(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
-        super(targetClass, factory, SortedMap::comparator, (ProtoStreamMarshaller<Comparator<Object>>) (ProtoStreamMarshaller<?>) ObjectMarshaller.INSTANCE);
+    public ContextualMapMarshaller(Class<T> targetClass, Function<C, T> factory, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
+        super(targetClass, factory, Map.Entry::getKey, context, contextMarshaller);
     }
 }

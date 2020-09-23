@@ -23,6 +23,8 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
@@ -30,9 +32,10 @@ import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
 /**
  * @author Paul Ferraro
  */
-public class LinkedHashMapMarshaller extends MapMarshaller<LinkedHashMap<Object, Object>, Boolean> {
+public class LinkedHashMapMarshaller extends MapMarshaller<LinkedHashMap<Object, Object>, Boolean, Map.Entry<Boolean, Integer>> {
 
+    @SuppressWarnings("unchecked")
     public LinkedHashMapMarshaller() {
-        super(LinkedHashMap.class, LinkedHashMapExternalizer.FACTORY, LinkedHashMapExternalizer.ACCESS_ORDER, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class));
+        super((Class<LinkedHashMap<Object, Object>>) (Class<?>) LinkedHashMap.class, LinkedHashMapExternalizer.FACTORY, Function.identity(), LinkedHashMapExternalizer.ACCESS_ORDER, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class));
     }
 }
