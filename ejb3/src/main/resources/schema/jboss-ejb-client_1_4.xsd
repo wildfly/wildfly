@@ -79,6 +79,13 @@
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
+            <xsd:element name="http-connections" type="http-connectionsType" >
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Configures remote http-connection for EJB invocation
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
         </xsd:all>
         <xsd:attribute name="invocation-timeout" type="xsd:long" use="optional">
             <xsd:annotation>
@@ -161,6 +168,29 @@
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
+
+    <xsd:complexType name="http-connectionsType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="http-connection" type="http-connectionType" >
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Configures remote HTTP Connection for EJB invocation
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="http-connectionType">
+        <xsd:attribute name="uri" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Uniform Resource Identifier for the HTTP connection
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
 
     <xsd:complexType name="clustersType">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
