@@ -56,14 +56,21 @@ public class ExternalTagLibTestCase {
     private static final String TEST_JSP = "test.jsp";
     private static TestModule testModule;
 
+    private static final boolean isRunningWithBootableJar = Boolean.getBoolean("ts.bootable");
+
     @AfterClass
     public static void tearDown() throws Exception {
-        testModule.remove();
+        if (!isRunningWithBootableJar) {
+            testModule.remove();
+        }
     }
 
     @Deployment(name = EXTERNAL_DEPENDENCY_ONLY_WAR, order = 1)
     public static WebArchive deployment() throws Exception {
-        doSetup();
+        //when running with bootable JAR, the module is packed into JAR before tests are run
+        if (!isRunningWithBootableJar) {
+            createExternalTaglibModule();
+        }
         return ShrinkWrap.create(WebArchive.class, EXTERNAL_DEPENDENCY_ONLY_WAR)
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF")
                 .addAsWebResource(getJspAsset(false), TEST_JSP);
@@ -109,7 +116,7 @@ public class ExternalTagLibTestCase {
         }
     }
 
-    private static void doSetup() throws Exception {
+    private static void createExternalTaglibModule() throws Exception {
         testModule = ModuleUtils.createTestModuleWithEEDependencies(MODULE_NAME);
         JavaArchive jar = testModule.addResource("module.jar");
         jar.addClass(ExternalTag.class);

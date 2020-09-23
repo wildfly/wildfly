@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.7" name="test.weld-module-B">
+
+    <resources>
+        <resource-root path="weld-module-b-bootableJar.jar"/>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+
+        <module name="javax.enterprise.api"/>
+        <module name="javax.inject.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.servlet.jsp.api"/>
+    </dependencies>
+</module>

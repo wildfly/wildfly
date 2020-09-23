@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2020, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <defaultProtocol type="jmx-as7"/>
+
+    <engine>
+        <property name="deploymentExportPath">target/</property>
+    </engine>
+
+    <container qualifier="single">
+        <configuration>
+            <property name="installDir">${install.dir.1}</property>
+            <property name="jarFile">${bootable.jar}</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+            <property name="jbossArguments">${jboss.args}</property>
+            <property name="allowConnectingToRunningServer">true</property>
+            <property name="managementAddress">${node0:127.0.0.1}</property>
+            <property name="managementPort">${as.managementPort:9990}</property>
+            <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+            <property name="waitForPortsTimeoutInSeconds">8</property>
+        </configuration>
+    </container>
+
+    <group qualifier="clustering-all">
+        <container qualifier="node-1" mode="custom">
+            <configuration>
+                <property name="installDir">${install.dir.1}</property>
+                <property name="jarFile">${bootable.jar}</property>
+                <!-- AS7-2493 different jboss.node.name must be specified -->
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <!-- AS7-4070 Arquillian should wait until a port is free after AS JVM process ends to prevent "port in use" -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+        <container qualifier="node-2" mode="custom">
+            <configuration>
+                <property name="installDir">${install.dir.2}</property>
+                <property name="jarFile">${bootable.jar}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.private=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-2 -Djboss.socket.binding.port-offset=100</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node1}</property>
+                <property name="managementPort">10090</property>
+                <property name="waitForPorts">${as.debug.port.node1} 10090</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+        <container qualifier="node-3" mode="custom">
+            <configuration>
+                <property name="installDir">${install.dir.3}</property>
+                <property name="jarFile">${bootable.jar}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node2} -Djboss.bind.address.management=${node2} -Djboss.bind.address.private=${node2} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-3 -Djboss.socket.binding.port-offset=200</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node2}</property>
+                <property name="managementPort">10190</property>
+                <property name="waitForPorts">${as.debug.port.node2} 10190</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+        <container qualifier="node-4" mode="custom">
+            <configuration>
+                <property name="installDir">${install.dir.4}</property>
+                <property name="jarFile">${bootable.jar}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node3} -Djboss.bind.address.management=${node3} -Djboss.bind.address.private=${node3} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-4 -Djboss.socket.binding.port-offset=300</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node3}</property>
+                <property name="managementPort">10290</property>
+                <property name="waitForPorts">${as.debug.port.node3} 10290</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <container qualifier="load-balancer-1" mode="custom">
+            <configuration>
+                <property name="installDir">${install.dir.load.balancer}</property>
+                <property name="jarFile">${bootable.jar.load.balancer}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.socket.binding.port-offset=500</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0}</property>
+                <property name="managementPort">10490</property>
+                <property name="waitForPorts">10490</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+    </group>
+</arquillian>

@@ -38,7 +38,7 @@ abstract class JaspiTestBase {
     @ArquillianResource
     protected URL url;
 
-    final boolean ejbSupported = !Boolean.getBoolean("ts.layers");
+    final boolean ejbSupported = !Boolean.getBoolean("ts.layers") && !Boolean.getBoolean("ts.bootable");
 
     protected static WebArchive createDeployment(final String name) {
         final Package testPackage = ConfiguredJaspiTestCase.class.getPackage();
