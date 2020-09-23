@@ -37,7 +37,7 @@ import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
  */
 public class SortedMapExternalizer<T extends SortedMap<Object, Object>> extends ContextualMapExternalizer<T, Comparator<Object>> {
     @SuppressWarnings("unchecked")
-    private static final Externalizer<Comparator<Object>> COMPARATOR_EXTERNALIZER = (Externalizer<Comparator<Object>>) (Externalizer<?>) new ObjectExternalizer<>(Comparator.class, Comparator.class::cast, new IdentityFunction<>());
+    private static final Externalizer<Comparator<Object>> COMPARATOR_EXTERNALIZER = (Externalizer<Comparator<Object>>) (Externalizer<?>) new ObjectExternalizer<>(Comparator.class, Comparator.class::cast, IdentityFunction.getInstance());
 
     public SortedMapExternalizer(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
         super(targetClass, factory, SortedMap::comparator, COMPARATOR_EXTERNALIZER);
