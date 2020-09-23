@@ -35,6 +35,6 @@ public class SingletonCollectionMarshaller<T extends Collection<Object>> extends
 
     @SuppressWarnings("unchecked")
     public SingletonCollectionMarshaller(Function<Object, T> factory) {
-        super((Class<T>) factory.apply(null).getClass(), factory, new SingletonCollectionExternalizer.Accessor<>());
+        super((Class<T>) factory.apply(null).getClass(), factory, SingletonCollectionExternalizer.accessor());
     }
 }
