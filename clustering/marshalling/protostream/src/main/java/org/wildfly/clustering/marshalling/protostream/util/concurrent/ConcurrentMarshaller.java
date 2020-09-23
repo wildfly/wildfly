@@ -35,7 +35,7 @@ import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.HashMapMarshaller;
-import org.wildfly.clustering.marshalling.protostream.util.BoundedCollectionMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.HashSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.SortedMapMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.SortedSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.UnboundedCollectionMarshaller;
@@ -45,7 +45,7 @@ import org.wildfly.clustering.marshalling.protostream.util.UnboundedCollectionMa
  */
 public enum ConcurrentMarshaller implements MarshallerProvider {
     CONCURRENT_HASH_MAP(new HashMapMarshaller<>(ConcurrentHashMap.class, ConcurrentHashMap::new)),
-    CONCURRENT_HASH_SET(new BoundedCollectionMarshaller<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
+    CONCURRENT_HASH_SET(new HashSetMarshaller<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
     CONCURRENT_LINKED_DEQUE(new UnboundedCollectionMarshaller<>(ConcurrentLinkedDeque.class, ConcurrentLinkedDeque::new)),
     CONCURRENT_LINKED_QUEUE(new UnboundedCollectionMarshaller<>(ConcurrentLinkedQueue.class, ConcurrentLinkedQueue::new)),
     CONCURRENT_SKIP_LIST_MAP(new SortedMapMarshaller<>(ConcurrentSkipListMap.class, ConcurrentSkipListMap::new)),
