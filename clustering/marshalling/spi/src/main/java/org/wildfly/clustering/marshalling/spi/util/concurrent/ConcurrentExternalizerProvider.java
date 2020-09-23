@@ -34,9 +34,9 @@ import java.util.concurrent.TimeUnit;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.EnumExternalizer;
 import org.wildfly.clustering.marshalling.spi.ExternalizerProvider;
-import org.wildfly.clustering.marshalling.spi.util.BoundedCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CopyOnWriteCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.HashMapExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.HashSetExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SortedMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SortedSetExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.UnboundedCollectionExternalizer;
@@ -47,7 +47,7 @@ import org.wildfly.clustering.marshalling.spi.util.UnboundedCollectionExternaliz
 public enum ConcurrentExternalizerProvider implements ExternalizerProvider {
 
     CONCURRENT_HASH_MAP(new HashMapExternalizer<>(ConcurrentHashMap.class, ConcurrentHashMap::new)),
-    CONCURRENT_HASH_SET(new BoundedCollectionExternalizer<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
+    CONCURRENT_HASH_SET(new HashSetExternalizer<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
     CONCURRENT_LINKED_DEQUE(new UnboundedCollectionExternalizer<>(ConcurrentLinkedDeque.class, ConcurrentLinkedDeque::new)),
     CONCURRENT_LINKED_QUEUE(new UnboundedCollectionExternalizer<>(ConcurrentLinkedQueue.class, ConcurrentLinkedQueue::new)),
     CONCURRENT_SKIP_LIST_MAP(new SortedMapExternalizer<>(ConcurrentSkipListMap.class, ConcurrentSkipListMap::new)),
