@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.function.Function;
@@ -36,17 +37,18 @@ import org.wildfly.clustering.marshalling.spi.IndexSerializer;
  * Externalizers for implementations of {@link Map}.
  * @author Paul Ferraro
  */
-public class MapExternalizer<T extends Map<Object, Object>, C> implements Externalizer<T> {
+public class MapExternalizer<T extends Map<Object, Object>, C, CC> implements Externalizer<T> {
 
     private final Class<T> targetClass;
-    private final Function<C, T> factory;
+    private final Function<CC, T> factory;
+    private final Function<Map.Entry<C, Integer>, CC> constructorContext;
     private final Function<T, C> context;
     private final Externalizer<C> contextExternalizer;
 
-    @SuppressWarnings("unchecked")
-    protected MapExternalizer(Class<?> targetClass, Function<C, T> factory, Function<T, C> context, Externalizer<C> contextExternalizer) {
-        this.targetClass = (Class<T>) targetClass;
+    protected MapExternalizer(Class<T> targetClass, Function<CC, T> factory, Function<Map.Entry<C, Integer>, CC> constructorContext, Function<T, C> context, Externalizer<C> contextExternalizer) {
+        this.targetClass = targetClass;
         this.factory = factory;
+        this.constructorContext = constructorContext;
         this.context = context;
         this.contextExternalizer = contextExternalizer;
     }
@@ -65,8 +67,9 @@ public class MapExternalizer<T extends Map<Object, Object>, C> implements Extern
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         C context = this.contextExternalizer.readObject(input);
-        T map = this.factory.apply(context);
         int size = IndexSerializer.VARIABLE.readInt(input);
+        CC constructorContext = this.constructorContext.apply(new AbstractMap.SimpleImmutableEntry<>(context, size));
+        T map = this.factory.apply(constructorContext);
         for (int i = 0; i < size; ++i) {
             map.put(input.readObject(), input.readObject());
         }

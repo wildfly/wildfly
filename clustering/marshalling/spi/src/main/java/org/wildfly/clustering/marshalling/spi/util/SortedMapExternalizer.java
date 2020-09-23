@@ -35,11 +35,11 @@ import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
  * Requires additional serialization of the comparator.
  * @author Paul Ferraro
  */
-public class SortedMapExternalizer<T extends SortedMap<Object, Object>> extends MapExternalizer<T, Comparator<Object>> {
+public class SortedMapExternalizer<T extends SortedMap<Object, Object>> extends ContextualMapExternalizer<T, Comparator<Object>> {
     @SuppressWarnings("unchecked")
     private static final Externalizer<Comparator<Object>> COMPARATOR_EXTERNALIZER = (Externalizer<Comparator<Object>>) (Externalizer<?>) new ObjectExternalizer<>(Comparator.class, Comparator.class::cast, new IdentityFunction<>());
 
-    public SortedMapExternalizer(Class<?> targetClass, Function<Comparator<Object>, T> factory) {
+    public SortedMapExternalizer(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
         super(targetClass, factory, SortedMap::comparator, COMPARATOR_EXTERNALIZER);
     }
 }
