@@ -8704,6 +8704,24 @@
 
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-bootable</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.sasl</groupId>
+                        <artifactId>jboss-sasl</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this depends on Jakarta Inject -->
+                    <!-- superseded by jakarta.inject:jakarta.inject-api -->
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
                 <version>${version.org.wildfly.arquillian}</version>
             </dependency>

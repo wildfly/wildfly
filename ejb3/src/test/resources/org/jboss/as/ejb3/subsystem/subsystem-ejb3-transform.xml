@@ -40,6 +40,11 @@
             <option name="READ_TIMEOUT" value="${prop.remoting-connector.read.timeout:20}" type="xnio"/>
             <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
         </channel-creation-options>
+        <profiles>
+            <profile name="profile">
+                <remote-http-connection name="connection" uri="http://localhost:8180/wildfly-services"/>
+            </profile>
+        </profiles>
     </remote>
 
     <!-- Session bean configurations -->

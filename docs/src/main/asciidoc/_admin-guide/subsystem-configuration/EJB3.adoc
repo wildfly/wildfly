@@ -49,11 +49,11 @@ of each
   <remote connectors="remoting-connector" thread-pool-name="default">
     <profiles>
         <profile name="profile">
+          <remoting-ejb-receiver name="receiver" outbound-connection-ref="remote-ejb-connection"/>
+          <remote-http-connection name="connection" uri="http://localhost:8180/wildfly-services"/>
           <static-ejb-discovery>
             <module uri="http://localhost:8180/wildfly-services" module-name="foo" app-name="bar" distinct-name="baz"/>
           </static-ejb-discovery>
-          <remote-http-connection name="connection" uri="http://localhost:8180/wildfly-services"/>
-          <remoting-ejb-receiver name="receiver" outbound-connection-ref="remote-ejb-connection"/>
         </profile>
     </profiles>
   </remote>

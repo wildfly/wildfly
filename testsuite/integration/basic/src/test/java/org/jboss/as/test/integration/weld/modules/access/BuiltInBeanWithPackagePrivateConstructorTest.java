@@ -71,6 +71,7 @@ public class BuiltInBeanWithPackagePrivateConstructorTest {
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
         return ShrinkWrap.create(WebArchive.class).addClasses(InjectedBean.class, BuiltInBeanWithPackagePrivateConstructorTest.class)
+                .addClass(TestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test.module-accessibility meta-inf\n"), "MANIFEST.MF");
 

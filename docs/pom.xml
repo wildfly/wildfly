@@ -147,6 +147,8 @@
                         <required-extension>org.wildfly.extension.rts</required-extension>
                         <required-extension>org.jboss.as.xts</required-extension>
                         <required-extension>org.wildfly.extension.datasources-agroal</required-extension>
+                        <required-extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</required-extension>
+                        <required-extension>org.wildfly.extension.microprofile.openapi-smallrye</required-extension>
                     </required-extensions>
                 </configuration>
                 <executions>

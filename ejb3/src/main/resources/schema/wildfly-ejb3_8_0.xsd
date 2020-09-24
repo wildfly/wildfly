@@ -114,6 +114,7 @@
     <xs:complexType name="profileType">
         <xs:sequence>
             <xs:element name="remoting-ejb-receiver" type="remoting-ejb-receiverType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="remote-http-connection" type="remote-http-connectionType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="static-ejb-discovery" type="static-ejb-discoveryType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
@@ -130,6 +131,15 @@
         <xs:attribute name="module-name" use="required" type="xs:string" />
         <xs:attribute name="app-name" use="optional" type="xs:string" />
         <xs:attribute name="distinct-name" use="optional" type="xs:string" />
+    </xs:complexType>
+
+    <xs:complexType name="remote-http-connectionType">
+        <xs:all>
+            <xs:element name="channel-creation-options" type="channel-creation-optionsType" minOccurs="0"
+                        maxOccurs="1"/>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="uri" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="remoting-ejb-receiverType">

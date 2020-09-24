@@ -2331,7 +2331,7 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/jca/anno/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jca/basic/*TestCase.java</include>
@@ -2393,7 +2393,7 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>
@@ -2832,6 +2832,641 @@
             </build>
         </profile>
 
+        <!-- Test against bootable jar -->
+        <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.wildfly.arquillian</groupId>
+                    <artifactId>wildfly-arquillian-container-bootable</artifactId>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>copy-module-files</id>
+                                <goals>
+                                    <goal>testResources</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/modules</directory>
+                                            <includes>
+                                                <include>**/module.xml</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the default provisioning -->
+                            <execution>
+                                <id>cloud-profile-provisioning</id>
+                                <goals>
+                                    <goal>provisioning</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>legacy-security-provisioning</id>
+                                <goals>
+                                    <goal>provisioning</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>jpa-provisioning</id>
+                                <goals>
+                                    <goal>provisioning</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-module-testDriver</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/org/jboss/test/testDriver/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/ClassloadingDataSource.class</include>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/ClassloadingDriver.class</include>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/TestConnection.class</include>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/ClassloadingXADataSource.class</include>
+                                        <include>**/org/jboss/as/test/integration/jca/classloading/TestXAConnection.class</include>
+                                        <include>**/META-INF/services/java.sql.Driver</include>
+                                    </includes>
+                                    <finalName>testDriver</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-cidExtensionModule</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/cidExtensionModule/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/extensions/cdiportableextensions/FunExtension.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/extensions/cdiportableextensions/Funny.class</include>
+                                        <include>**/META-INF/services/javax.enterprise.inject.spi.Extension</include>
+                                    </includes>
+                                    <finalName>weldTest</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-alpha</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/alpha/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/AlphaBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/AlphaLookup.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>alpha</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-bravo</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/bravo/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/BravoBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/BravoLookup.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>bravo</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-charlie</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/charlie/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/CharlieBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/CharlieLookup.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>charlie</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-delta</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/delta/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/DeltaBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/DeltaLookup.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>delta</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-multiple1</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/multiple/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/Multiple1.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>multiple1</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-multiple2</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/multiple/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/Multiple2.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>multiple2</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-module-accessibility</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/module-accessibility/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/access/BuiltInBeanWithPackagePrivateConstructor.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>module-accessibility</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-module-impl</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-module-impl/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/alias/ModuleBean.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-module-impl</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-module-a</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-module-A/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/dependency/ModuleABean.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-module-a</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-module-b</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-module-B/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/dependency/ModuleBBean.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-module-b</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-modules-deployment-ear</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-modules-deployment-ear/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/deployment/ModuleBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/deployment/Foo.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-modules-deployment-ear</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-module-test-weld-modules-deployment-war</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/extraContent/modules/test/weld-modules-deployment-war/main</outputDirectory>
+                                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                                    <includes>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/deployment/ModuleBean.class</include>
+                                        <include>**/org/jboss/as/test/integration/weld/modules/deployment/Foo.class</include>
+                                        <include>**/META-INF/beans.xml</include>
+                                    </includes>
+                                    <finalName>weld-modules-deployment-war</finalName>
+                                    <classifier>bootableJar</classifier>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.jar.plugin}</version>
+                        <executions>
+                            <!-- Package a cloud-profile server -->
+                            <execution>
+                                <id>bootable-jar-cloud-profile-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
+                                    <hollowJar>true</hollowJar>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <extraServerContent>
+                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                    </extraServerContent>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
+                                </configuration>
+                            </execution>
+
+                            <!-- Package a cloud-profile server with legacy security as well -->
+                            <execution>
+                                <id>bootable-jar-legacy-security-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <output-file-name>test-wildfly-legacy-security.jar</output-file-name>
+                                    <hollowJar>true</hollowJar>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <extraServerContent>
+                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                    </extraServerContent>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>legacy-security</layer>
+                                    </layers>
+                                </configuration>
+                            </execution>
+
+                            <!-- Package a server with jpa -->
+                            <execution>
+                                <id>bootable-jar-jpa-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <output-file-name>test-wildfly-jpa.jar</output-file-name>
+                                    <hollowJar>true</hollowJar>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <extraServerContent>
+                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                    </extraServerContent>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <layers>
+                                        <layer>jpa</layer>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the standard test executions. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-full.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-web.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-ldap.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Tests against the cloud-server install without legacy security -->
+                            <execution>
+                                <!-- We reuse the microprofile.surefire execution used for testing standalone-microprofile.xml
+                                     as the set of tests we want is the same -->
+                                <id>microprofile.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <install.dir>${project.build.directory}/wildfly</install.dir>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-cloud-profile.jar</bootable.jar>
+                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>
+                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                        </classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                    <excludes combine.children="append">
+                                        <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
+                                        which is not sustainable for all tests. -->
+                                        <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordCommandsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordByClassTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
+                                        <!-- Requires extra modules -->
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/converter/MicroProfileConfigConvertersTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/management/config_source/ConfigSourceFromClassTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/management/config_source_provider/ConfigSourceProviderFromClassTestCase</exclude>                                        
+                                        <!-- Requires security -->
+                                        <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/metrics/vendor/MicroProfileVendorMetricsBootTestCase</exclude>                                        
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with legacy security -->
+                            <execution>
+                                <id>legacy-security-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <install.dir>${project.build.directory}/wildfly-bootable-legacy-security</install.dir>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-legacy-security.jar</bootable.jar>
+                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/jca/anno/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/basic/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/management/api/security/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/aselytron/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/auditing/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/auditing/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/security/cli/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/jaspi/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</include>
+                                        <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
+                                        <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
+                                        <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
+                                        <!-- no ejb -->
+                                        <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
+                                        <!-- truststore setting used in LDAPs testing was affected by some other test - need a separate execution -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
+                                        <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
+                                        which is not sustainable for all tests. -->
+                                        <exclude>org/jboss/as/test/integration/security/auditing/CustomAuditProviderModuleTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/MultipleCustomLoginModulesTest.java</exclude>
+                                    </excludes>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>
+                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                        </classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- truststore setting used in LDAPs testing was affected by some other test - need an extra run -->
+                            <execution>
+                                <id>legacy-security-layers-ldap.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <install.dir>${project.build.directory}/wildfly-bootable-legacy-security-ldap</install.dir>
+                                        <module.path>${project.build.directory}/wildfly-bootable-legacy-security-ldap</module.path>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-legacy-security.jar</bootable.jar>
+                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
+                                        <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
+                                        which is not sustainable for all tests. Complex changes would be necessary for the following test cases. -->
+                                        <!--<include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>-->
+                                    </includes>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>
+                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                        </classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with jpa -->
+                            <execution>
+                                <id>jpa-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <install.dir>${project.build.directory}/wildfly-bootable-jpa</install.dir>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-jpa.jar</bootable.jar>
+                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/weld/jpa/*TestCase.java</include>
+                                        <!-- NonTransactionalEmTestCase is currently the only test that does not need EJB -->
+                                        <include>org/jboss/as/test/integration/jpa/**/NonTransactionalEmTestCase.java</include>
+                                        <!-- WebJPATestCase is currently the only test that does not need EJB -->
+                                        <include>org/jboss/as/test/integration/jpa/**/WebJPATestCase.java</include>
+                                    </includes>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>
+                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                        </classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Test against ee-9 -->
         <profile>
             <id>ee9.test.profile</id>
@@ -3017,12 +3652,12 @@
                                 <!-- We just turn this execution off because none of the included tests work -->
                                 <phase>none</phase>
                                 <configuration>
-                                    <excludes>
-                                        <!-- Requires legacy security -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
-                                        <!-- Need to handle addition of JBoss Modules that use EE 8 -->
-                                        <exclude>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</exclude>
-                                    </excludes>
+                                <excludes>
+                                    <!-- Requires legacy security -->
+                                    <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
+                                    <!-- Need to handle addition of JBoss Modules that use EE 8 -->
+                                    <exclude>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</exclude>
+                                </excludes>
                                 </configuration>
                             </execution>
                         </executions>
