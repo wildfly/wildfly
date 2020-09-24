@@ -253,7 +253,7 @@ public final class EndpointService implements Service {
         final String domainName = getDeploymentSecurityDomainName(endpoint, unit);
         endpoint.setProperty(SECURITY_DOMAIN_NAME, domainName);
         CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-        if (capabilitySupport.hasCapability(ELYTRON_SECURITY_CAPABILITY) && isElytronSecurityDomain(unit, endpoint, domainName)) {
+        if (isElytronSecurityDomain(unit, endpoint, domainName)) {
             if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
                 ServiceName ejbSecurityDomainServiceName = EJB_APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY
                         .getCapabilityServiceName(domainName, ApplicationSecurityDomainService.ApplicationSecurityDomain.class);
@@ -267,7 +267,7 @@ public final class EndpointService implements Service {
             }
             endpoint.setProperty(ELYTRON_SECURITY_DOMAIN, true);
         }
-        else if (capabilitySupport.hasCapability(LEGACY_SECURITY_CAPABILITY)) {
+        else if (isLegacySecurityDomain(unit, endpoint, domainName)) {
             // This is still picketbox jaas securityDomainContext
             securityDomainContext = builder.requires(SECURITY_DOMAIN_SERVICE.append(domainName));
         }
@@ -332,6 +332,10 @@ public final class EndpointService implements Service {
     }
 
     private static boolean isElytronSecurityDomain(DeploymentUnit unit, Endpoint endpoint, String domainName) {
+        CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (capabilitySupport != null && !capabilitySupport.hasCapability(ELYTRON_SECURITY_CAPABILITY)) {
+            return false;
+        }
         final ServiceName serviceName;
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
             serviceName = EJB_APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(domainName,
@@ -343,4 +347,12 @@ public final class EndpointService implements Service {
         return currentServiceContainer().getService(serviceName) != null;
     }
 
+    private static boolean isLegacySecurityDomain(DeploymentUnit unit, Endpoint endpoint, String domainName) {
+        CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (capabilitySupport != null && !capabilitySupport.hasCapability(LEGACY_SECURITY_CAPABILITY)) {
+            return false;
+        }
+        final ServiceName serviceName = SECURITY_DOMAIN_SERVICE.append(domainName);
+        return currentServiceContainer().getService(serviceName) != null;
+    }
 }
