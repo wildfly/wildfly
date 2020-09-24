@@ -44,15 +44,15 @@ If you need to use destinations without those prefixes, you can configure your c
 [[configuration-of-a-mdb-using-a-pooled-connection-factory]]
 == Jakarta Messaging Queues and Topics on a remote Artemis Server
 
-You can also add queues and topics defined on a remote Artemis server to be used as if they were local to the server. This means that you can make those remote destinations available viza JNDI just like local destinations. Those destinations are defined out-of the server element:
+You can also add queues and topics defined on a remote Artemis server to be used as if they were local to the server. This means that you can make those remote destinations available via JNDI just like local destinations. You can also configure destinations not to enable the Artemis 1.x prefixes by setting the attribute `enable-amq1-prefix` to false. Those destinations are defined out-of the server element:
 
 [source,xml]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
     <external-jms-queue name="testQueue"
-               entries="jms/queue/test java:jboss/exported/jms/queue/test" />
+               entries="jms/queue/test java:jboss/exported/jms/queue/test" enable-amq1-prefix="false" />
     <external-jms-topic name="testTopic"
-               entries="jms/topic/test java:jboss/exported/jms/topic/test" />
+               entries="jms/topic/test java:jboss/exported/jms/topic/test" enable-amq1-prefix="false" />
 </subsystem>
 ----
 
@@ -152,10 +152,10 @@ documentation] or configure external configuration context in the naming
 subsystem (which allows to inject the Jakarta Messaging resources using the
 `@Resource` annotation).
 
-[[configuration of a remote destination using annotations]]
-==== Configuration of a remote destination using annotations
+[[configuration-of-a-remote-destination-using-annotations]]
+=== Configuration of a remote destination using annotations
 
-The annotation `@JMSDestinationDefinition` can be used to create a destination on a remote Artemis Server. This will work in the same way as for a local server.+
+The annotation `@JMSDestinationDefinition` can be used to create a destination on a remote Artemis Server. This will work in the same way as for a local server.
 For this it needs to be able to access Artemis management queue. If your remote Artemis Server management queue is not the default one you can pass the management queue address as a property to the `@JMSDestinationDefinition`.
 Please note that the destination is created remotely but won't be removed once the deployement is undeployed/removed.
 
@@ -171,5 +171,21 @@ Please note that the destination is created remotely but won't be removed once t
             "management-address=my.management.queue",
             "selector=color = 'red'"
        }
+)
+----
+
+You can also configure destinations not to enable the Artemis 1.x prefixes by adding a property `enable-amq1-prefix` to false to the `@JMSDestinationDefinition`.
+
+[source, java]
+----
+@JMSDestinationDefinition(
+    // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource to the remote server
+    resourceAdapter = "activemq-ra",
+    name="java:global/env/myQueue2",
+    interfaceName="javax.jms.Queue",
+    destinationName="myQueue2",
+    properties = {
+        "enable-amq1-prefix=false"
+    }
 )
 ----
