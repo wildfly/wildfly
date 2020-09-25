@@ -25,8 +25,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -129,30 +134,30 @@ public class JdrReportManagmentTestCase {
         }
     }
 
-    public static final String FOLDER_NAME = "((wildfly_full-[0-9]*)|(jboss_eap[_-][-cd0-9]*))";
-
-    private void validateReportEntries(Set<String> fileNames, String reportName, ZipFile reportZip) {
+    private void validateReportEntries(Set<String> fileNames, String reportName, ZipFile reportZip) throws IOException {
+        ZipEntry zipENtry = validateEntryNotEmpty("product.txt", fileNames, reportName, reportZip);
+        String productName = readProductDirectory(reportZip.getInputStream(zipENtry));
 
         validateEntryNotEmpty("version.txt", fileNames, reportName, reportZip);
         validateEntryNotEmpty("JBOSS_HOME/standalone/configuration/standalone(.*).xml$", "JBOSS_HOME\\\\standalone\\\\configuration\\\\standalone(.*).xml$",
                 fileNames, reportName, reportZip);
 
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/tree.txt", fileNames, reportName, reportZip);
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/jarcheck.txt", fileNames,
+        validateEntryNotEmpty("sos_strings/" + productName + "/tree.txt", fileNames, reportName, reportZip);
+        validateEntryNotEmpty("sos_strings/" + productName + "/jarcheck.txt", fileNames,
                 reportName, reportZip);
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/dump-services.json", fileNames,
+        validateEntryNotEmpty("sos_strings/" + productName + "/dump-services.json", fileNames,
                 reportName, reportZip);
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/configuration.json", fileNames,
+        validateEntryNotEmpty("sos_strings/" + productName + "/configuration.json", fileNames,
                 reportName, reportZip);
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/cluster-proxies-configuration.json", fileNames,
+        validateEntryNotEmpty("sos_strings/" + productName + "/cluster-proxies-configuration.json", fileNames,
                 reportName, reportZip);
-        validateEntryPresent("sos_strings/" + FOLDER_NAME + "/deployment-dependencies.txt", fileNames,
+        validateEntryPresent("sos_strings/" + productName + "/deployment-dependencies.txt", fileNames,
                 reportName, reportZip);
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/jndi-view.json", fileNames,
+        validateEntryNotEmpty("sos_strings/" + productName + "/jndi-view.json", fileNames,
                 reportName, reportZip);
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/local-module-dependencies.txt", fileNames,
+        validateEntryNotEmpty("sos_strings/" + productName + "/local-module-dependencies.txt", fileNames,
                 reportName, reportZip);
-        validateEntryNotEmpty("sos_strings/" + FOLDER_NAME + "/system-properties.txt", fileNames,
+        validateEntryNotEmpty("sos_strings/" + productName + "/system-properties.txt", fileNames,
                 reportName, reportZip);
         validateEmptyEntry("sos_logs/skips.log", fileNames, reportName, reportZip);
     }
@@ -163,10 +168,11 @@ public class JdrReportManagmentTestCase {
      * @param fileName   Name of file inside report
      * @param reportZip  Report zip file
      * @param reportName Report root folder name
+     * @return The entry found
      */
-    private void validateEntryNotEmpty(String fileName, Set<String> fileNames,
+    private ZipEntry validateEntryNotEmpty(String fileName, Set<String> fileNames,
                                        String reportName, ZipFile reportZip) {
-        validateEntryNotEmpty(fileName, null, fileNames, reportName, reportZip);
+       return validateEntryNotEmpty(fileName, null, fileNames, reportName, reportZip);
     }
 
     /**
@@ -176,11 +182,14 @@ public class JdrReportManagmentTestCase {
      * @param fileNameOptional Optional name of file inside report
      * @param reportZip        Report zip file
      * @param reportName       Report root folder name
+     * @return The entry found
      */
-    private void validateEntryNotEmpty(String fileName, String fileNameOptional, Set<String> fileNames,
+    private ZipEntry validateEntryNotEmpty(String fileName, String fileNameOptional, Set<String> fileNames,
                                        String reportName, ZipFile reportZip) {
         ZipEntry zipENtry = getZipEntry(reportZip, fileName, fileNameOptional, fileNames, reportName);
         assertTrue("Report entry " + fileName + " was empty or could not be determined", zipENtry.getSize() > 0);
+
+        return zipENtry;
     }
 
     /**
@@ -228,5 +237,17 @@ public class JdrReportManagmentTestCase {
     private void validateEmptyEntry(String fileName, Set<String> fileNames, String reportName, ZipFile reportZip) {
         ZipEntry zipEntry = getZipEntry(reportZip, fileName, null, fileNames, reportName);
         assertFalse("Report entry " + fileName + " should be empty", zipEntry.getSize() > 0);
+    }
+
+    private String readProductDirectory(InputStream in) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(in, Charset.forName(StandardCharsets.UTF_8.name())))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+
+        return sb.toString();
     }
 }
