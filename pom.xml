@@ -329,7 +329,7 @@
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
         <version.org.apache.lucene>5.5.5</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>2.3.1</version.org.apache.myfaces.core>
+        <version.org.apache.myfaces.core>2.3.6</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.openjpa>2.4.2</version.org.apache.openjpa>
         <version.org.apache.qpid.proton>0.33.2</version.org.apache.qpid.proton>
