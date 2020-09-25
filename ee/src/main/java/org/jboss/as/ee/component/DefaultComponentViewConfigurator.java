@@ -95,7 +95,7 @@ class DefaultComponentViewConfigurator extends AbstractComponentConfigurator imp
                 Constructor<?> defaultConstructor = null;
                 try {
                     defaultConstructor = componentClass.getConstructor();
-                } catch (NoSuchMethodException e) {
+                } catch (Exception e) {
                     //ignore
                 }
                 proxyConfiguration.setSuperClass(defaultConstructor == null ? Object.class : componentClass);
