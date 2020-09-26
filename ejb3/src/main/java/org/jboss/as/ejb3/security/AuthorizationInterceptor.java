@@ -102,7 +102,7 @@ public class AuthorizationInterceptor implements Interceptor {
         final ComponentView componentView = context.getPrivateData(ComponentView.class);
         final String viewClassOfInvokedMethod = componentView.getViewClass().getName();
         // shouldn't really happen if the interceptor was setup correctly. But let's be safe and do a check
-        if (!this.viewClassName.equals(viewClassOfInvokedMethod) || !this.viewMethod.equals(invokedMethod)) {
+        if (!this.viewClassName.equals(viewClassOfInvokedMethod)) {
             throw EjbLogger.ROOT_LOGGER.failProcessInvocation(this.getClass().getName(), invokedMethod, viewClassOfInvokedMethod, viewMethod, viewClassName);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
