@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.utils.DescriptorUtils;
@@ -38,16 +42,15 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.common.Assert;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -104,7 +107,7 @@ public final class ViewService implements Service<ComponentView> {
         }
     }
 
-    public void start(final StartContext context) throws StartException {
+    public void start(final StartContext context) {
         // Construct the view
         View view = new View(privateData);
         view.initializeInterceptors();
@@ -145,6 +148,7 @@ public final class ViewService implements Service<ComponentView> {
         private final Map<Method, Interceptor> viewInterceptors;
         private final Map<MethodDescription, Method> methods;
         private final Map<Class<?>, Object> privateData;
+        private final ConcurrentMap<Method, Method> invokedMethodToCached = new ConcurrentHashMap<>();
 
         View(final Map<Class<?>, Object> privateData) {
             this.privateData = privateData;
@@ -190,12 +194,25 @@ public final class ViewService implements Service<ComponentView> {
 
         @Override
         public Object invoke(InterceptorContext interceptorContext) throws Exception {
-            if(component instanceof BasicComponent) {
-                ((BasicComponent) component).waitForComponentStart();
-            }
-            final Method method = interceptorContext.getMethod();
+            component.waitForComponentStart();
+            final Method method = matchMethod(interceptorContext.getMethod());
             final Interceptor interceptor = viewInterceptors.get(method);
             return interceptor.processInvocation(interceptorContext);
+        }
+
+        private Method matchMethod(Method invokedMethod) {
+            if (invokedMethod.getDeclaringClass().isInterface()) {
+                return invokedMethodToCached.computeIfAbsent(invokedMethod, method -> {
+                    for (Method m : proxyFactory.getCachedMethods()) {
+                        if (MethodIdentifier.getIdentifierForMethod(m).equals(MethodIdentifier.getIdentifierForMethod(method))) {
+                            return m;
+                        }
+                    }
+                    throw Assert.unreachableCode();
+                });
+            } else {
+                return invokedMethod;
+            }
         }
 
         public Component getComponent() {

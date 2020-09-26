@@ -706,7 +706,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         }
                     } else {
                         Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
-                        ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);
+                        ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass, true);
                         if (creator != null) {
                             InstanceFactory<Servlet> factory = createInstanceFactory(creator);
                             s = new ServletInfo(servlet.getName(), servletClass, factory);
