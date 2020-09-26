@@ -246,6 +246,7 @@
                                 <product.release.version>${ee.dist.product.release.version}</product.release.version>
                             </task-properties>
                             <jakarta-transform>true</jakarta-transform>
+                            <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->
                             <!--<jakarta-transform-verbose>true</jakarta-transform-verbose>-->
                         </configuration>
                     </execution>
