@@ -54,8 +54,6 @@ include::_admin-guide/Domain_Setup.adoc[]
 
 include::_admin-guide/Management_tasks.adoc[]
 
-include::_admin-guide/Galleon_provisioning.adoc[]
-
 include::_admin-guide/Management_API_reference.adoc[]
 
 include::_admin-guide/CLI_Recipes.adoc[]
