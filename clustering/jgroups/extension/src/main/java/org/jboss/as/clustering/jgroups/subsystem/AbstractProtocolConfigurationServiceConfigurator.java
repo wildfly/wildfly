@@ -127,7 +127,7 @@ public abstract class AbstractProtocolConfigurationServiceConfigurator<P extends
                 @Override
                 public Protocol run() throws Exception {
                     try {
-                        Protocol protocol = protocolClass.newInstance();
+                        Protocol protocol = protocolClass.getConstructor().newInstance();
                         // These Configurator methods are destructive, so make a defensive copy
                         Map<String, String> copy = new HashMap<>(properties);
                         StackType type = Util.getIpStackType();
