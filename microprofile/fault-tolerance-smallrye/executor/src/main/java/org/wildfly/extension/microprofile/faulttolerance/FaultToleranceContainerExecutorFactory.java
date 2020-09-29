@@ -19,9 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.microprofile.faulttolerance;
 
+import io.opentracing.Tracer;
 import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.naming.InitialContext;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +34,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import io.smallrye.faulttolerance.ExecutorFactory;
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.CDI;
+import org.wildfly.extension.microprofile.faulttolerance.MiniContextPropagation.ContextProvider;
 
 /**
  * Implementation of {@link io.smallrye.faulttolerance.ExecutorFactory} specific to this container to provide context
@@ -48,17 +51,28 @@ public class FaultToleranceContainerExecutorFactory implements ExecutorFactory {
 
     @Override
     public ExecutorService createCoreExecutor(int size) {
-        return new ThreadPoolExecutor(1, size, KEEP_ALIVE_TIME, TimeUnit.SECONDS, new SynchronousQueue<>(), this.getThreadFactory());
+        ExecutorService baseExecutor = new ThreadPoolExecutor(1, size, KEEP_ALIVE_TIME, TimeUnit.SECONDS, new SynchronousQueue<>(), this.getThreadFactory());
+        return MiniContextPropagation.executorService(getTracingContext(), baseExecutor);
     }
 
     @Override
     public ExecutorService createExecutor(int coreSize, int size) {
-        return new ThreadPoolExecutor(coreSize, size, KEEP_ALIVE_TIME, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), this.getThreadFactory());
+        ExecutorService baseExecutor = new ThreadPoolExecutor(coreSize, size, KEEP_ALIVE_TIME, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), this.getThreadFactory());
+        return MiniContextPropagation.executorService(getTracingContext(), baseExecutor);
     }
 
     @Override
     public ScheduledExecutorService createTimeoutExecutor(int size) {
-        return Executors.newScheduledThreadPool(size, this.getThreadFactory());
+        ScheduledExecutorService baseExecutor = Executors.newScheduledThreadPool(size, this.getThreadFactory());
+        return MiniContextPropagation.scheduledExecutorService(getTracingContext(), baseExecutor);
+    }
+
+    private ContextProvider getTracingContext() {
+        Instance<Tracer> tracerInstance = CDI.current().select(Tracer.class);
+        if (tracerInstance.isResolvable()) {
+            return new TracingContextProvider(tracerInstance.get());
+        }
+        return MiniContextPropagation.ContextProvider.NOOP;
     }
 
     private ThreadFactory getThreadFactory() {

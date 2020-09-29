@@ -33,7 +33,10 @@
 
     <dependencies>
         <module name="io.smallrye.fault-tolerance"/>
+        <module name="javax.annotation.api"/>
         <module name="javax.api"/>
+        <module name="javax.enterprise.api"/>
         <module name="javax.enterprise.concurrent.api"/>
+        <module name="io.opentracing.opentracing-api" optional="true"/>
     </dependencies>
 </module>
