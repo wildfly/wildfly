@@ -175,6 +175,13 @@
                         </goals>
                     </execution>
                     <execution>
+                        <id>layers-test</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <configuration>
                             <systemPropertyVariables>
                                 <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
@@ -280,11 +287,15 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <!-- Re-enable the default surefire execution -->
+                        <!-- Enable the layers-test surefire execution -->
                         <executions>
                             <execution>
-                                <id>default-test</id>
+                                <id>layers-test</id>
                                 <phase>test</phase>
+                            </execution>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
                             </execution>
                             <execution>
                                 <id>standalone-enabled-microprofile-test</id>
