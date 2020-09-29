@@ -34,9 +34,8 @@ import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 @MetaInfServices(SerializationContextInitializer.class)
 public class UndertowSecuritySerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "io.undertow.security.api.proto";
+    public UndertowSecuritySerializationContextInitializer() {
+        super("io.undertow.security.api.proto");
     }
 
     @Override

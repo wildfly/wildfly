@@ -369,7 +369,7 @@
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <!-- n.b. Infinispan Server version used for integration testing is defined separately in testsuite/integration/clustering/pom.xml -->
         <version.org.infinispan>11.0.3.Final</version.org.infinispan>
-        <version.org.infinispan.protostream>4.3.3.Final</version.org.infinispan.protostream>
+        <version.org.infinispan.protostream>4.3.4.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
         <version.org.jberet>1.3.7.Final</version.org.jberet>

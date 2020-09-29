@@ -34,9 +34,8 @@ import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 @MetaInfServices(SerializationContextInitializer.class)
 public class NetworkSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.jboss.as.network.proto";
+    public NetworkSerializationContextInitializer() {
+        super("org.jboss.as.network.proto");
     }
 
     @Override

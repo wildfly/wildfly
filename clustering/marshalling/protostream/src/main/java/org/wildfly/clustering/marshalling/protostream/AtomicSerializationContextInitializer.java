@@ -33,9 +33,8 @@ import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.Ato
  */
 public class AtomicSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.util.concurrent.atomic.proto";
+    public AtomicSerializationContextInitializer() {
+        super("java.util.concurrent.atomic.proto");
     }
 
     @Override

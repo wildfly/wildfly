@@ -33,9 +33,8 @@ import org.wildfly.clustering.marshalling.spi.net.NetExternalizerProvider;
  */
 public class NetSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.net.proto";
+    public NetSerializationContextInitializer() {
+        super("java.net.proto");
     }
 
     @Override

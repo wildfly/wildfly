@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.UncheckedIOException;
-
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 
@@ -48,13 +46,15 @@ public enum DefaultSerializationContextInitializer implements SerializationConte
         this.initializer = initializer;
     }
 
+    @Deprecated
     @Override
     public String getProtoFileName() {
         return this.initializer.getProtoFileName();
     }
 
+    @Deprecated
     @Override
-    public String getProtoFile() throws UncheckedIOException {
+    public String getProtoFile() {
         return this.initializer.getProtoFile();
     }
 

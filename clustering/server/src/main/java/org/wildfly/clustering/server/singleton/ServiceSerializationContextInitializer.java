@@ -37,9 +37,8 @@ import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshallerProv
 @MetaInfServices(SerializationContextInitializer.class)
 public class ServiceSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.jboss.msc.service.proto";
+    public ServiceSerializationContextInitializer() {
+        super("org.jboss.msc.service.proto");
     }
 
     @Override

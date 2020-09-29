@@ -34,9 +34,8 @@ import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
  */
 public class UtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.util.proto";
+    public UtilSerializationContextInitializer() {
+        super("java.util.proto");
     }
 
     @Override
