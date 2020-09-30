@@ -369,7 +369,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
+        <dependency>
             <groupId>org.jboss.spec.javax.security.jacc</groupId>
             <artifactId>jboss-jacc-api_1.5_spec</artifactId>
             <scope>provided</scope>
@@ -379,8 +379,8 @@
                     <artifactId>jboss-servlet-api_3.1_spec</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>-->
-        <dependency>
+        </dependency>
+        <!--<dependency>
             <groupId>jakarta.authorization</groupId>
             <artifactId>jakarta.authorization-api</artifactId>
             <version>${version.jakarta.authorization.jakarta-authorization-api}</version>
@@ -391,7 +391,7 @@
                     <artifactId>jakarta.servlet-api</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
 
         <!-- EE 9 API - Servlet -->
 
