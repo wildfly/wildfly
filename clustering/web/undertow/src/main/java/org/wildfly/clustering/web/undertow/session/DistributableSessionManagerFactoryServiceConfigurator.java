@@ -23,7 +23,6 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.io.Externalizable;
 import java.io.Serializable;
-import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -46,8 +45,6 @@ import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
@@ -101,11 +98,7 @@ public class DistributableSessionManagerFactoryServiceConfigurator extends Simpl
     }
 
     private static ByteBufferMarshaller createMarshaller(Module module) {
-        try {
-            return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder().register(module.getClassLoader()).build());
-        } catch (NoSuchElementException e) {
-            return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
-        }
+        return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
     }
 
     @Override
