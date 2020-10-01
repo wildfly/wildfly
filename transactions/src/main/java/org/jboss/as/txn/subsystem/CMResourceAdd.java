@@ -65,7 +65,7 @@ class CMResourceAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         if (!context.isBooting()) {
-            context.reloadRequired();
+            context.restartRequired();
             return;
         }
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
