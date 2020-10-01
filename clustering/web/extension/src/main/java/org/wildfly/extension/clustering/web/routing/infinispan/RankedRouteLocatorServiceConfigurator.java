@@ -23,10 +23,10 @@
 package org.wildfly.extension.clustering.web.routing.infinispan;
 
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocator;
 import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorConfiguration;
 import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.routing.RouteLocator;
 
 /**
@@ -37,8 +37,8 @@ public class RankedRouteLocatorServiceConfigurator extends PrimaryOwnerRouteLoca
 
     private final RankedRoutingConfiguration config;
 
-    public RankedRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration, RankedRoutingConfiguration routeConfiguration) {
-        super(managementConfiguration, deploymentConfiguration);
+    public RankedRouteLocatorServiceConfigurator(InfinispanCacheConfiguration configuration, WebDeploymentConfiguration deploymentConfiguration, RankedRoutingConfiguration routeConfiguration) {
+        super(configuration, deploymentConfiguration);
         this.config = routeConfiguration;
     }
 

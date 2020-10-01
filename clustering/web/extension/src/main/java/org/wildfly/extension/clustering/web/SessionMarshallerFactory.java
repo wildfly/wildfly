@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,15 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web.routing;
+package org.wildfly.extension.clustering.web;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import java.util.function.Function;
+
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.modules.Module;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
- * Factory for creating a service configurator for a route locator.
  * @author Paul Ferraro
  */
-public interface RouteLocatorServiceConfiguratorFactory<C> {
-    CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(C configuration, WebDeploymentConfiguration deploymentConfiguration);
+public enum SessionMarshallerFactory implements Function<DeploymentUnit, ByteBufferMarshaller> {
+
+    JBOSS() {
+        @Override
+        public ByteBufferMarshaller apply(DeploymentUnit unit) {
+            Module module = unit.getAttachment(Attachments.MODULE);
+            return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, module), module.getClassLoader());
+        }
+    },
+    ;
 }

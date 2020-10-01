@@ -46,8 +46,10 @@
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.marshalling"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.web"/>
+        <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
@@ -59,6 +61,7 @@
         <module name="org.wildfly.clustering.infinispan.embedded.api"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.clustering.infinispan.embedded.spi"/>
+        <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.service"/>

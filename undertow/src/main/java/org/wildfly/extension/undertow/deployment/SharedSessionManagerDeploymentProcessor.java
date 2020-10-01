@@ -37,7 +37,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
@@ -81,7 +80,6 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         Integer defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : (servletContainer != null) ? servletContainer.getDefaultSessionTimeout() : Integer.valueOf(30);
 
         CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-        Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         ServiceTarget target = phaseContext.getServiceTarget();
         ServiceName deploymentServiceName = deploymentUnit.getServiceName();
 
@@ -106,8 +104,8 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
             }
 
             @Override
-            public Module getModule() {
-                return module;
+            public DeploymentUnit getDeploymentUnit() {
+                return deploymentUnit;
             }
 
             @Override

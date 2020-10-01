@@ -33,12 +33,14 @@ import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
@@ -52,7 +54,7 @@ import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfigura
  * Abstract service configurator for session management providers.
  * @author Paul Ferraro
  */
-public abstract class SessionManagementServiceConfigurator<C extends DistributableSessionManagementConfiguration> extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, DistributableSessionManagementConfiguration, Supplier<DistributableSessionManagementProvider> {
+public abstract class SessionManagementServiceConfigurator<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, DistributableSessionManagementConfiguration<DeploymentUnit>, Supplier<DistributableSessionManagementProvider<C>> {
 
     private volatile SessionGranularity granularity;
     private volatile SupplierDependency<RouteLocatorServiceConfiguratorFactory<C>> factory;
@@ -72,7 +74,7 @@ public abstract class SessionManagementServiceConfigurator<C extends Distributab
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        Consumer<DistributableSessionManagementProvider> provider = this.factory.register(builder).provides(name);
+        Consumer<DistributableSessionManagementProvider<C>> provider = this.factory.register(builder).provides(name);
         Service service = new FunctionalService<>(provider, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
@@ -80,6 +82,11 @@ public abstract class SessionManagementServiceConfigurator<C extends Distributab
     @Override
     public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
         return this.granularity.getAttributePersistenceStrategy();
+    }
+
+    @Override
+    public Function<DeploymentUnit, ByteBufferMarshaller> getMarshallerFactory() {
+        return SessionMarshallerFactory.JBOSS;
     }
 
     public RouteLocatorServiceConfiguratorFactory<C> getRouteLocatorServiceConfiguratorFactory() {

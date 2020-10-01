@@ -22,12 +22,26 @@
 
 package org.wildfly.extension.clustering.web.session.infinispan;
 
+import java.io.Externalizable;
+import java.io.Serializable;
+import java.util.function.Function;
+
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
@@ -41,10 +55,35 @@ import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRoute
  */
 @MetaInfServices(LegacySessionManagementProviderFactory.class)
 @Deprecated
-public class InfinispanLegacySessionManagementProviderFactory implements LegacySessionManagementProviderFactory, RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> {
+public class InfinispanLegacySessionManagementProviderFactory implements LegacySessionManagementProviderFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>>, RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>>, Function<DeploymentUnit, ByteBufferMarshaller> {
+
+    private enum JBossMarshallingVersion implements Function<Module, MarshallingConfiguration> {
+
+        VERSION_1() {
+            @Override
+            public MarshallingConfiguration apply(Module module) {
+                MarshallingConfiguration config = new MarshallingConfiguration();
+                config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
+                config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
+                return config;
+            }
+        },
+        VERSION_2() {
+            @Override
+            public MarshallingConfiguration apply(Module module) {
+                MarshallingConfiguration config = new MarshallingConfiguration();
+                config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
+                config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
+                config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
+                return config;
+            }
+        },
+        ;
+        static final JBossMarshallingVersion CURRENT = VERSION_2;
+    }
 
     @Override
-    public DistributableSessionManagementProvider createSessionManagerProvider(ReplicationConfig config) {
+    public DistributableSessionManagementProvider<InfinispanSessionManagementConfiguration<DeploymentUnit>> createSessionManagerProvider(ReplicationConfig config) {
         // Determine container and cache names using legacy logic
         String replicationConfigCacheName = (config != null) ? config.getCacheName() : null;
         ServiceName replicationConfigServiceName = ServiceNameFactory.parseServiceName((replicationConfigCacheName != null) ? replicationConfigCacheName : "web");
@@ -54,7 +93,7 @@ public class InfinispanLegacySessionManagementProviderFactory implements LegacyS
         }
         String containerName = ((replicationConfigServiceName.length() > 3) ? replicationConfigServiceName.getParent() : replicationConfigServiceName).getSimpleName();
         String cacheName = (replicationConfigServiceName.length() > 3) ? replicationConfigServiceName.getSimpleName() : null;
-        InfinispanSessionManagementConfiguration configuration = new InfinispanSessionManagementConfiguration() {
+        InfinispanSessionManagementConfiguration<DeploymentUnit> configuration = new InfinispanSessionManagementConfiguration<DeploymentUnit>() {
             @Override
             public String getContainerName() {
                 return containerName;
@@ -70,13 +109,25 @@ public class InfinispanLegacySessionManagementProviderFactory implements LegacyS
                 ReplicationGranularity granularity = (config != null) ? config.getReplicationGranularity() : null;
                 return (granularity == ReplicationGranularity.ATTRIBUTE) ? SessionAttributePersistenceStrategy.FINE : SessionAttributePersistenceStrategy.COARSE;
             }
+
+            @Override
+            public Function<DeploymentUnit, ByteBufferMarshaller> getMarshallerFactory() {
+                // Legacy session management was hard-coded to use JBoss Marshalling
+                return InfinispanLegacySessionManagementProviderFactory.this;
+            }
         };
         return new InfinispanSessionManagementProvider(configuration, this);
     }
 
     @Override
-    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
+    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration<DeploymentUnit> configuration, WebDeploymentConfiguration deploymentConfiguration) {
         // Legacy session management was hard-coded to use primary owner routing
-        return new PrimaryOwnerRouteLocatorServiceConfigurator(managementConfiguration, deploymentConfiguration);
+        return new PrimaryOwnerRouteLocatorServiceConfigurator(configuration, deploymentConfiguration);
+    }
+
+    @Override
+    public ByteBufferMarshaller apply(DeploymentUnit unit) {
+        Module module = unit.getAttachment(Attachments.MODULE);
+        return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, module), module.getClassLoader());
     }
 }

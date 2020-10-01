@@ -24,15 +24,15 @@ package org.wildfly.extension.clustering.web.routing.infinispan;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * Factory for creating a service configurator for a ranked route locator.
  * @author Paul Ferraro
  */
-public class RankedRouteLocatorServiceConfiguratorFactory implements RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> {
+public class RankedRouteLocatorServiceConfiguratorFactory<C extends InfinispanCacheConfiguration> implements RouteLocatorServiceConfiguratorFactory<C> {
 
     private final RankedRoutingConfiguration config;
 
@@ -41,8 +41,8 @@ public class RankedRouteLocatorServiceConfiguratorFactory implements RouteLocato
     }
 
     @Override
-    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
-        return new RankedRouteLocatorServiceConfigurator(managementConfiguration, deploymentConfiguration, this.config);
+    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(C configuration, WebDeploymentConfiguration deploymentConfiguration) {
+        return new RankedRouteLocatorServiceConfigurator(configuration, deploymentConfiguration, this.config);
     }
 
     public RankedRoutingConfiguration getConfiguration() {
