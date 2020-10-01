@@ -82,7 +82,7 @@ public class CMResourceResourceDefinition extends SimpleResourceDefinition {
         super(new Parameters(PATH_CM_RESOURCE,
                 TransactionExtension.getResourceDescriptionResolver(CommonAttributes.CM_RESOURCE))
                 .setAddHandler(CMResourceAdd.INSTANCE)
-                .setAddRestartLevel(OperationEntry.Flag.RESTART_NONE) // FIXME update the API version and make the description report reality
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_JVM)
                 .setRemoveHandler(new AbstractRemoveStepHandler() { // TODO consider adding a RestartRequiredRemoveStepHandler to WildFly Core
                     @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -94,7 +94,7 @@ public class CMResourceResourceDefinition extends SimpleResourceDefinition {
                         context.revertRestartRequired();
                     }
                 })
-                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)  // FIXME update the API version and make the description report reality
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_JVM)
         );
     }
 

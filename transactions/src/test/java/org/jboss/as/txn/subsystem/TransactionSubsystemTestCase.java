@@ -49,6 +49,7 @@ import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_E
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP70;
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP71;
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP72;
+import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP73;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -188,6 +189,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformersFullEAP720() throws Exception {
         testTransformersFull(ModelTestControllerVersion.EAP_7_2_0, MODEL_VERSION_EAP72);
+    }
+
+    @Test
+    public void testTransformersFullEAP730() throws Exception {
+        testTransformersFull(ModelTestControllerVersion.EAP_7_3_0, MODEL_VERSION_EAP73);
     }
 
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
