@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
+import org.infinispan.commons.util.ProcessorInfo;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
@@ -36,7 +37,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.common.cpu.ProcessorInfo;
 
 /**
  * Configures a service providing a {@link ThreadPoolConfiguration}.
@@ -61,7 +61,9 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
         long keepAliveTime = this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong();
         boolean nonBlocking = this.definition.isNonBlocking();
         if (this.definition == ThreadPoolResourceDefinition.NON_BLOCKING) {
-            maxThreads *= ProcessorInfo.availableProcessors();
+            int availableProcessors = ProcessorInfo.availableProcessors();
+            minThreads *= availableProcessors;
+            maxThreads *= availableProcessors;
         }
         ThreadPoolExecutorFactory<?> factory = new BlockingThreadPoolExecutorFactory(maxThreads, minThreads, queueLength, keepAliveTime, nonBlocking) {
             @Override
