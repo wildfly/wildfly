@@ -36,9 +36,10 @@ public enum DistributableWebModel implements Model {
 
     VERSION_1_0_0(1, 0, 0), // WildFly 17
      */
-    VERSION_2_0_0(2, 0, 0), // WildFly 18+, EAP 7.4
+    VERSION_2_0_0(2, 0, 0), // WildFly 18-26
+    VERSION_3_0_0(3, 0, 0), // WildFly 27
     ;
-    public static final DistributableWebModel CURRENT = VERSION_2_0_0;
+    public static final DistributableWebModel CURRENT = VERSION_3_0_0;
 
     private final ModelVersion version;
 
