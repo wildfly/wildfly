@@ -2,7 +2,7 @@
     <infinispan-session-management name="session" cache-container="foo" granularity="SESSION">
         <ranked-affinity delimiter=":" max-routes="4"/>
     </infinispan-session-management>
-    <infinispan-session-management name="attribute" cache-container="foo" cache="bar" granularity="ATTRIBUTE">
+    <infinispan-session-management name="attribute" cache-container="foo" cache="bar" granularity="ATTRIBUTE" marshaller="JBOSS">
         <local-affinity/>
     </infinispan-session-management>
     <hotrod-session-management name="remote" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE">

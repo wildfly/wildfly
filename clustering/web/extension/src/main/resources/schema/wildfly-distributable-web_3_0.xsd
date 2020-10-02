@@ -92,6 +92,11 @@
                 <xs:documentation>Defines the granularity of cache entry mapping for the attributes of a session.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="marshaller" type="tns:marshaller" default="JBOSS">
+            <xs:annotation>
+                <xs:documentation>Indicates the marshalling implementation used for serializing attributes of a session.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="abstract-single-sign-on-management" abstract="true">
@@ -220,6 +225,25 @@
                     <xs:documentation>
                         Stores each session attribute within a separate cache entry.
                         Generally more efficient than SESSION granularity, but does not preserve any cross-attribute object references.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="marshaller">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="JBOSS">
+                <xs:annotation>
+                    <xs:documentation>
+                        Session attributes will be marshalled using JBoss Marshalling.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="PROTOSTREAM">
+                <xs:annotation>
+                    <xs:documentation>
+                        Session attributes will be marshalled using ProtoStream.
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>

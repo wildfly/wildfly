@@ -23,6 +23,7 @@
 package org.wildfly.extension.clustering.web;
 
 import static org.wildfly.extension.clustering.web.SessionManagementResourceDefinition.Attribute.GRANULARITY;
+import static org.wildfly.extension.clustering.web.SessionManagementResourceDefinition.Attribute.MARSHALLER;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -57,6 +58,7 @@ import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfigura
 public abstract class SessionManagementServiceConfigurator<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, DistributableSessionManagementConfiguration<DeploymentUnit>, Supplier<DistributableSessionManagementProvider<C>> {
 
     private volatile SessionGranularity granularity;
+    private volatile SessionMarshallerFactory marshallerFactory;
     private volatile SupplierDependency<RouteLocatorServiceConfiguratorFactory<C>> factory;
 
     SessionManagementServiceConfigurator(PathAddress address) {
@@ -66,6 +68,7 @@ public abstract class SessionManagementServiceConfigurator<C extends Distributab
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.granularity = SessionGranularity.valueOf(GRANULARITY.resolveModelAttribute(context, model).asString());
+        this.marshallerFactory = SessionMarshallerFactory.valueOf(MARSHALLER.resolveModelAttribute(context, model).asString());
         this.factory = new ServiceSupplierDependency<>(new AffinityServiceNameProvider(context.getCurrentAddress()));
         return this;
     }
@@ -86,7 +89,7 @@ public abstract class SessionManagementServiceConfigurator<C extends Distributab
 
     @Override
     public Function<DeploymentUnit, ByteBufferMarshaller> getMarshallerFactory() {
-        return SessionMarshallerFactory.JBOSS;
+        return this.marshallerFactory;
     }
 
     public RouteLocatorServiceConfiguratorFactory<C> getRouteLocatorServiceConfiguratorFactory() {

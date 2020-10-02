@@ -60,8 +60,8 @@ public class MutableSessionManagementConfiguration implements DistributableSessi
         this.granularity = SessionGranularity.valueOf(this.replacer.apply(value));
     }
 
-    public void setMarshallerFactory(Function<DeploymentUnit, ByteBufferMarshaller> marshallerFactory) {
-        this.marshallerFactory = marshallerFactory;
+    public void setMarshallerFactory(String value) {
+        this.marshallerFactory = SessionMarshallerFactory.valueOf(this.replacer.apply(value));
     }
 
     @Override

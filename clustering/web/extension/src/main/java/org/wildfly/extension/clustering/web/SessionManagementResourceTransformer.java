@@ -22,28 +22,25 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagementResourceTransformer extends SessionManagementResourceTransformer implements Consumer<ModelVersion> {
-
-    private final ResourceTransformationDescriptionBuilder parent;
-
-    InfinispanSessionManagementResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.parent = parent;
-    }
+public class SessionManagementResourceTransformer implements BiConsumer<ModelVersion, ResourceTransformationDescriptionBuilder> {
 
     @Override
-    public void accept(ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH);
-
-        this.accept(version, builder);
-
-        new RankedAffinityResourceTransformer(builder).accept(version);
+    public void accept(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (DistributableWebModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, SessionManagementResourceDefinition.Attribute.MARSHALLER.getName())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, SessionManagementResourceDefinition.Attribute.MARSHALLER.getName())
+                    .end();
+        }
     }
 }

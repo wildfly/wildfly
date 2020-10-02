@@ -38,6 +38,7 @@ public class DistributableWebResourceTransformer implements Function<ModelVersio
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         new InfinispanSessionManagementResourceTransformer(builder).accept(version);
+        new HotRodSessionManagementResourceTransformer(builder).accept(version);
 
         return builder;
     }

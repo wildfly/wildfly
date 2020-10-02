@@ -60,6 +60,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     private static final String CACHE_CONTAINER = "cache-container";
     private static final String CACHE = "cache";
     private static final String GRANULARITY = "granularity";
+    private static final String MARSHALLER = "marshaller";
     private static final String NO_AFFINITY = "no-affinity";
     private static final String LOCAL_AFFINITY = "local-affinity";
     private static final String PRIMARY_OWNER_AFFINITY = "primary-owner-affinity";
@@ -149,6 +150,14 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
             case GRANULARITY: {
                 try {
                     configuration.setSessionGranularity(value);
+                } catch (IllegalArgumentException e) {
+                    throw ParseUtils.invalidAttributeValue(reader, index);
+                }
+                break;
+            }
+            case MARSHALLER: {
+                try {
+                    configuration.setMarshallerFactory(value);
                 } catch (IllegalArgumentException e) {
                     throw ParseUtils.invalidAttributeValue(reader, index);
                 }
