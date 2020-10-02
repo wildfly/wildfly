@@ -41,7 +41,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
@@ -57,9 +56,8 @@ import java.util.List;
  */
 public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
-    private static final String JBOSS_AS_REMOTING = "org.jboss.as.remoting";
     // todo: add in connector capability reference when connector resources are converted to use capabilities (WFCORE-5055)
-    protected static final String CONNECTOR_CAPABILITY_NAME = "org.wildfly.remoting.connector";
+    public static final String CONNECTOR_CAPABILITY_NAME = "org.wildfly.remoting.connector";
     protected static final String INFINISPAN_CACHE_CONTAINER_CAPABILITY_NAME = "org.wildfly.clustering.infinispan.cache-container";
     protected static final String REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME = "org.wildfly.transactions.remote-transaction-service";
     protected static final String REMOTING_ENDPOINT_CAPABILITY_NAME = "org.wildfly.remoting.endpoint";
@@ -142,11 +140,6 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         // register channel-creation-options as sub model for EJB remote service
         resourceRegistration.registerSubModel(new RemoteConnectorChannelCreationOptionResource());
-    }
-
-    @Override
-    public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(JBOSS_AS_REMOTING));
     }
 
     /**

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR_CAPABILITY_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
@@ -135,8 +136,7 @@ import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
-import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
-import org.jboss.as.remoting.RemotingConnectorBindingInfoService.RemotingConnectorInfo;
+import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.ServerEnvironment;
@@ -284,8 +284,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             for (ModelNode connector : EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, remoteModel).asList()) {
                 String connectorName = connector.asString();
 
-                Map.Entry<Injector<RemotingConnectorInfo>, Injector<Registry>> entry = associationService.addConnectorInjectors(connectorName);
-                associationServiceBuilder.addDependency(RemotingConnectorBindingInfoService.serviceName(connectorName), RemotingConnectorInfo.class, entry.getKey());
+                Map.Entry<Injector<ProtocolSocketBinding>, Injector<Registry>> entry = associationService.addConnectorInjectors(connectorName);
+                associationServiceBuilder.addDependency(context.getCapabilityServiceName(CONNECTOR_CAPABILITY_NAME, connectorName, ProtocolSocketBinding.class), ProtocolSocketBinding.class, entry.getKey());
                 associationServiceBuilder.addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(context, clusterName, connectorName), Registry.class, entry.getValue());
             }
         }

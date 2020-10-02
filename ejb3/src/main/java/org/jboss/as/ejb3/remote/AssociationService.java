@@ -35,7 +35,7 @@ import java.util.concurrent.Executor;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.as.remoting.RemotingConnectorBindingInfoService.RemotingConnectorInfo;
+import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.client.Affinity;
@@ -71,7 +71,7 @@ public final class AssociationService implements Service<AssociationService> {
 
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjector = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    private final List<Map.Entry<Value<RemotingConnectorInfo>, Value<Registry>>> clientMappingsRegistries = new LinkedList<>();
+    private final List<Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>>> clientMappingsRegistries = new LinkedList<>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
 
@@ -88,8 +88,8 @@ public final class AssociationService implements Service<AssociationService> {
     public void start(final StartContext context) throws StartException {
         // todo suspendController
         //noinspection unchecked
-        List<Map.Entry<RemotingConnectorInfo, Registry<String, List<ClientMapping>>>> clientMappingsRegistries = this.clientMappingsRegistries.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.clientMappingsRegistries.size());
-        for (Map.Entry<Value<RemotingConnectorInfo>, Value<Registry>> entry : this.clientMappingsRegistries) {
+        List<Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>>> clientMappingsRegistries = this.clientMappingsRegistries.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.clientMappingsRegistries.size());
+        for (Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>> entry : this.clientMappingsRegistries) {
             clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().getValue(), entry.getValue().getValue()));
         }
         value = new AssociationImpl(deploymentRepositoryInjector.getValue(), clientMappingsRegistries);
@@ -123,7 +123,7 @@ public final class AssociationService implements Service<AssociationService> {
                         ServiceURL.Builder b = new ServiceURL.Builder();
                         b.setUri(Affinity.LOCAL.getUri()).setAbstractType("ejb").setAbstractTypeAuthority("jboss");
                         b.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(ourNodeName));
-                        for (Map.Entry<RemotingConnectorInfo, Registry<String, List<ClientMapping>>> entry : clientMappingsRegistries) {
+                        for (Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>> entry : clientMappingsRegistries) {
                             Group group = entry.getValue().getGroup();
                             if (!group.isSingleton()) {
                                 b.addAttribute(EJBClientContext.FILTER_ATTR_CLUSTER, AttributeValue.fromString(group.getName()));
@@ -185,8 +185,8 @@ public final class AssociationService implements Service<AssociationService> {
         return deploymentRepositoryInjector;
     }
 
-    public Map.Entry<Injector<RemotingConnectorInfo>, Injector<Registry>> addConnectorInjectors(String connectorName) {
-        InjectedValue<RemotingConnectorInfo> info = new InjectedValue<>();
+    public Map.Entry<Injector<ProtocolSocketBinding>, Injector<Registry>> addConnectorInjectors(String connectorName) {
+        InjectedValue<ProtocolSocketBinding> info = new InjectedValue<>();
         InjectedValue<Registry> registry = new InjectedValue<>();
         this.clientMappingsRegistries.add(new AbstractMap.SimpleImmutableEntry<>(info, registry));
         return new AbstractMap.SimpleImmutableEntry<>(info, registry);
