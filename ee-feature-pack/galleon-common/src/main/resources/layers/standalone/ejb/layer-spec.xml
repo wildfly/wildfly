@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb">
+    <!-- Aggregates EJB functionality, excluding ejb-iiop. -->
+    <dependencies>
+        <layer name="ejb-lite"/>
+        <layer name="resource-adapters"/>
+
+        <layer name="messaging-activemq"/>    <!-- change to messaging-activemq when available -->
+        <layer name="remoting"/>
+        <layer name="undertow"/>
+
+    </dependencies>
+
+    <feature spec="subsystem.naming">
+        <feature spec="subsystem.naming.service.remote-naming"/>
+    </feature>
+    <feature spec="subsystem.ejb3">
+        <param name="default-resource-adapter-name" value="${ejb.resource-adapter-name:activemq-ra.rar}"/>
+        <param name="default-mdb-instance-pool" value="mdb-strict-max-pool"/>
+        <feature spec="subsystem.ejb3.strict-max-bean-instance-pool">
+            <param name="strict-max-bean-instance-pool" value="mdb-strict-max-pool"/>
+            <param name="derive-size" value="from-cpu-count"/>
+            <param name="timeout" value="5"/>
+            <param name="timeout-unit" value="MINUTES"/>
+        </feature>
+        <feature spec="subsystem.ejb3.service.remote">
+            <param name="connectors" value="[http-remoting-connector]"/>
+            <param name="thread-pool-name" value="default"/>
+            <feature spec="subsystem.ejb3.service.remote.channel-creation-options">
+                <param name="channel-creation-options" value="MAX_OUTBOUND_MESSAGES"/>
+                <param name="value" value="1234"/>
+                <param name="type" value="remoting"/>
+            </feature>
+        </feature>
+    </feature>
+</layer-spec>

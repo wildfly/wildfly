@@ -74,9 +74,9 @@ public class DomainAdjuster730 extends DomainAdjuster {
 
     private void adjustOpenTracing(final List<ModelNode> ops, final PathAddress subsystem) {
         // jaeger resource does not exist
-        ops.add(createRemoveOperation(subsystem.append("jaeger-tracer", "jaeger")));
         ModelNode undefineAttr = createEmptyOperation("undefine-attribute", subsystem);
         undefineAttr.get("name").set("default-tracer");
         ops.add(undefineAttr);
+        ops.add(createRemoveOperation(subsystem.append("jaeger-tracer", "jaeger")));
     }
 }

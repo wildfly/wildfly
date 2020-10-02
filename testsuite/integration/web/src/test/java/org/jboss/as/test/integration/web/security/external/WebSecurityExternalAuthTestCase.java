@@ -46,6 +46,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Unit Test to test external custom login module.
  *
@@ -98,7 +100,7 @@ public class WebSecurityExternalAuthTestCase {
      */
     @Test
     public void testSucessfulAuth() throws Exception {
-        makeCall("anil", 200);
+        makeCall(Credentials.GOOD_USER_NAME, HttpServletResponse.SC_OK);
     }
 
     /**
@@ -112,7 +114,17 @@ public class WebSecurityExternalAuthTestCase {
      * @throws Exception
      */
     @Test
-    public void testUnsuccessfulAuth() throws Exception {
-        makeCall("marcus", 403);
+    public void testUnsuccessfulAuthr() throws Exception {
+        makeCall(Credentials.BAD_USER_NAME, HttpServletResponse.SC_FORBIDDEN);
+    }
+
+    /**
+     * Test with a user who is not authenticated, but has correct authorization permissions
+     *
+     * Should be a HTTP/403
+     */
+    @Test
+    public void testUnsuccessfulAuthn() throws Exception {
+        makeCall(Credentials.AUTHORIZED_WITHOUT_AUTHENTICATION_USER_NAME, HttpServletResponse.SC_FORBIDDEN);
     }
 }

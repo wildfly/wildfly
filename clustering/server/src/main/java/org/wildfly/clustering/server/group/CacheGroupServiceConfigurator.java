@@ -37,6 +37,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Address;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -78,8 +79,9 @@ public class CacheGroupServiceConfigurator extends SimpleServiceNameProvider imp
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<Group> group = new CompositeDependency(this.cache, this.factory).register(builder).provides(this.getServiceName());
+        ServiceName name = this.getServiceName();
+        ServiceBuilder<?> builder = new AsyncServiceConfigurator(name).build(target);
+        Consumer<Group> group = new CompositeDependency(this.cache, this.factory).register(builder).provides(name);
         Service service = new FunctionalService<>(group, Functions.identity(), this, Consumers.close());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }

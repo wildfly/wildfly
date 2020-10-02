@@ -38,6 +38,7 @@ import java.util.Map;
 
 import io.undertow.UndertowOptions;
 import io.undertow.server.ConnectorStatistics;
+import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -76,6 +77,12 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             //.addDynamicRequirements(Capabilities.CAPABILITY_SERVER) -- has no function so don't use it
             .setAllowMultipleRegistrations(true) //hack to support mod_cluster's legacy profiles
             .build();
+
+    // only used by the subclasses Http(s)ListenerResourceDefinition
+    protected static final RuntimeCapability<Void> HTTP_UPGRADE_REGISTRY_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HTTP_UPGRADE_REGISTRY, true, ChannelUpgradeHandler.class)
+            .setAllowMultipleRegistrations(true)
+            .build();
+
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setRequired(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)

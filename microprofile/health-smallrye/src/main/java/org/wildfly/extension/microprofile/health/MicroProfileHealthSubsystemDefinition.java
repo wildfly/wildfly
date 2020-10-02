@@ -44,9 +44,12 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
 
     static final String HEALTH_REPORTER_CAPABILITY = "org.wildfly.microprofile.health.reporter";
 
+    static final String CLIENT_FACTORY_CAPABILITY ="org.wildfly.management.model-controller-client-factory";
+    static final String MANAGEMENT_EXECUTOR ="org.wildfly.management.executor";
+
     static final RuntimeCapability<Void> HEALTH_REPORTER_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, HealthReporter.class)
-                    .addRequirements(WELD_CAPABILITY_NAME)
+                    .addRequirements(WELD_CAPABILITY_NAME, CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR)
                     .build();
 
     public static final ServiceName HEALTH_REPORTER_SERVICE = ServiceName.parse(HEALTH_REPORTER_CAPABILITY);

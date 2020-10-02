@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="mail-all" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <feature-group name="mail-sockets"/>
+    </feature>
+    <feature-group name="mail"/>
+</feature-group-spec>

@@ -38,8 +38,20 @@ public class SingletonElectionCommand implements Command<Void, SingletonElection
     private final Integer index;
 
     public SingletonElectionCommand(List<Node> candidates, Node elected) {
+        this(candidates, (elected != null) ? candidates.indexOf(elected) : null);
+    }
+
+    SingletonElectionCommand(List<Node> candidates, Integer index) {
         this.candidates = candidates;
-        this.index = (elected != null) ? candidates.indexOf(elected) : null;
+        this.index = index;
+    }
+
+    List<Node> getCandidates() {
+        return this.candidates;
+    }
+
+    Integer getIndex() {
+        return this.index;
     }
 
     @Override

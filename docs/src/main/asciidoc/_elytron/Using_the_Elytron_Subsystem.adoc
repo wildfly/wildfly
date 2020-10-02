@@ -2209,6 +2209,7 @@ use custom implementations of the following components:
 When creating custom implementations of Elytron components, they must
 present the appropriate capabilities and requirements.
 
+[[configuring-a-server-sslcontext]]
 === Configuring a server SSLContext
 
 Using the Elytron subsystem, it is possible to configure an `SSLContext` for use on the server side of a connection.
@@ -2262,7 +2263,7 @@ post-realm-principal-transformer:: _(Optional)_ A principal transformer to apply
 final-principal-transformer:: _(Optional)_ A final principal transformer to apply for this mechanism realm.
 realm-mapper:: _(Optional)_ The realm mapper to be used for SSL authentication.
 
-
+[[configuring-a-client-sslcontext]]
 === Configuring a client SSLContext
 
 Using the Elytron subsystem, it is possible to configure an `SSLContext` for use on the client side of a connection.

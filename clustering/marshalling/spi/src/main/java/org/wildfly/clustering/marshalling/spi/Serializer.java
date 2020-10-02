@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.spi;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.OptionalInt;
 
 /**
  * Writes/reads an object to/from a binary stream.
@@ -47,4 +48,12 @@ public interface Serializer<T> {
      * @throws IOException if an I/O error occurs
      */
     T read(DataInput input) throws IOException;
+
+    /**
+     * Returns the size of the buffer to use for marshalling the specified object, if known.
+     * @return the buffer size (in bytes), or empty if unknown.
+     */
+    default OptionalInt size(T object) {
+        return OptionalInt.empty();
+    }
 }

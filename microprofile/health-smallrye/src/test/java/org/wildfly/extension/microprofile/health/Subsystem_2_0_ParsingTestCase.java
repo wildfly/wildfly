@@ -26,6 +26,7 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.microprofile.health.MicroProfileHealthExtension.VERSION_1_0_0;
 import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HTTP_EXTENSIBILITY_CAPABILITY;
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.MANAGEMENT_EXECUTOR;
 
 import java.io.IOException;
 import java.util.List;
@@ -110,7 +111,8 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
                 HTTP_EXTENSIBILITY_CAPABILITY,
-                WELD_CAPABILITY_NAME);
+                WELD_CAPABILITY_NAME,
+                MANAGEMENT_EXECUTOR);
     }
 
     private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion healthVersion) throws Exception {

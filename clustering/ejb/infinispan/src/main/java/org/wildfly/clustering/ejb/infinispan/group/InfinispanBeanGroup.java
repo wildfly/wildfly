@@ -39,6 +39,7 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
  *
  * @param <I> the bean identifier type
  * @param <T> the bean type
+ * @param <C> the marshalling context type
  */
 public class InfinispanBeanGroup<I, T, C> implements BeanGroup<I, T> {
 
@@ -87,9 +88,15 @@ public class InfinispanBeanGroup<I, T, C> implements BeanGroup<I, T> {
     }
 
     @Override
-    public T removeBean(I id) {
-        this.entry.decrementUsage(id);
-        return this.beans().remove(id);
+    public T removeBean(I id, PassivationListener<T> listener) {
+        int usage = this.entry.decrementUsage(id);
+        T bean = this.beans().remove(id);
+        if (bean != null) {
+            if ((usage == 0) && (listener != null)) {
+                listener.postActivate(bean);
+            }
+        }
+        return bean;
     }
 
     @Override

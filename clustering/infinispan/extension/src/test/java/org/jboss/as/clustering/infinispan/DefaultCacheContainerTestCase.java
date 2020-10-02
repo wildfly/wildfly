@@ -135,43 +135,6 @@ public class DefaultCacheContainerTestCase {
         assertNull(this.subject.getCache("non-existent", false));
     }
 
-    @Deprecated
-    @Test
-    public void getCacheFromTemplate() {
-        AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
-        String templateName = "template";
-
-        when(this.manager.getCache("other", templateName)).thenReturn(cache);
-        when(cache.getAdvancedCache()).thenReturn(cache);
-        when(cache.getName()).thenReturn("other");
-
-        Cache<Object, Object> result = this.subject.getCache("other", templateName);
-
-        assertNotSame(cache, result);
-        assertEquals(result, cache);
-        assertSame(this.subject, result.getCacheManager());
-    }
-
-    @Deprecated
-    @Test
-    public void getCacheFromTemplateCreateIfAbsent() {
-        AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
-        String templateName = "template";
-
-        when(this.manager.getCache("non-existent", templateName, true)).thenReturn(cache);
-        when(this.manager.getCache("non-existent", templateName, false)).thenReturn(null);
-        when(cache.getAdvancedCache()).thenReturn(cache);
-        when(cache.getName()).thenReturn("non-existent");
-
-        Cache<Object, Object> result = this.subject.getCache("non-existent", templateName, true);
-
-        assertNotSame(cache, result);
-        assertEquals(result, cache);
-        assertSame(this.subject, result.getCacheManager());
-
-        assertNull(this.subject.getCache("non-existent", templateName, false));
-    }
-
     @Test
     public void start() {
         this.subject.start();

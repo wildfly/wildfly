@@ -22,10 +22,11 @@ public class StartupCountDownInterceptor implements Interceptor {
   public Object processInvocation(final InterceptorContext context) throws Exception {
     final StartupCountdown.Frame frame = countdown.enter();
     try {
-      return context.proceed();
+      Object proceed = context.proceed();
+      countdown.countDown();
+      return proceed;
     } finally {
       StartupCountdown.restore(frame);
-      countdown.countDown();
     }
   }
 }

@@ -149,8 +149,6 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.as.security.service.SecurityBootstrapService;
-import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -188,6 +186,9 @@ class ServerAdd extends AbstractAddStepHandler {
     private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS = "brokerconfig.storeConfiguration.jdbcLockRenewPeriodMillis";
     private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS = "brokerconfig.storeConfiguration.jdbcLockExpirationMillis";
     private static final String ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS = "brokerconfig.storeConfiguration.jdbcLockAcquisitionTimeoutMillis";
+
+    private static final ServiceName SECURITY_BOOTSTRAP_SERVICE = ServiceName.JBOSS.append("security", "bootstrap");
+    private static final ServiceName SECURITY_DOMAIN_SERVICE = ServiceName.JBOSS.append("security", "security-domain");
 
     private ServerAdd() {
         super(ServerDefinition.ATTRIBUTES);
@@ -326,10 +327,10 @@ class ServerAdd extends AbstractAddStepHandler {
             } else {
                 // Add legacy security
                 String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
-                securityDomainContext = Optional.of(serviceBuilder.requires(SecurityDomainService.SERVICE_NAME.append(domain)));
+                securityDomainContext = Optional.of(serviceBuilder.requires(SECURITY_DOMAIN_SERVICE.append(domain)));
                 // WFLY-6652 / WFLY-10292 this dependency ensures that Artemis will be able to destroy any queues created on behalf of a
                 // pooled-connection-factory client during server stop
-                serviceBuilder.requires(SecurityBootstrapService.SERVICE_NAME);
+                serviceBuilder.requires(SECURITY_BOOTSTRAP_SERVICE);
             }
 
             List<Interceptor> incomingInterceptors = processInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation));

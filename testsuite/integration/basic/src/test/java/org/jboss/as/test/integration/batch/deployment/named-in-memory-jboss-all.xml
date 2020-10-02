@@ -21,7 +21,7 @@
   -->
 
 <jboss xmlns="urn:jboss:1.0">
-    <batch xmlns="urn:jboss:batch-jberet:1.0">
+    <batch xmlns="urn:jboss:domain:batch-jberet:2.0">
         <job-repository>
             <named name="batch-in-mem"/>
         </job-repository>

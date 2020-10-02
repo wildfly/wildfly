@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.0.Beta1-SNAPSHOT</version>
+        <version>21.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-infinispan-spi</artifactId>
@@ -48,6 +48,10 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -69,6 +73,10 @@
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-component-processor</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan.protostream</groupId>
+            <artifactId>protostream</artifactId>
         </dependency>
         <dependency>
             <groupId>org.reactivestreams</groupId>

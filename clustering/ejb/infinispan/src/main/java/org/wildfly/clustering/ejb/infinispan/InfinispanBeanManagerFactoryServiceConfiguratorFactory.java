@@ -32,7 +32,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.eviction.EvictionType;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.Services;
@@ -98,7 +97,7 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
 
             int size = this.config.getMaxSize();
             EvictionStrategy strategy = (size > 0) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
-            builder.memory().evictionStrategy(strategy).evictionType(EvictionType.COUNT).storageType(StorageType.OBJECT).size(size);
+            builder.memory().storage(StorageType.HEAP).whenFull(strategy).maxCount(size);
             if (strategy.isEnabled()) {
                 // Only evict bean group entries
                 // We will cascade eviction to the associated beans

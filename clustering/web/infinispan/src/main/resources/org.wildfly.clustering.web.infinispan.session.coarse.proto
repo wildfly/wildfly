@@ -1,0 +1,8 @@
+package org.wildfly.clustering.web.infinispan.session.coarse;
+
+/**
+ * @TypeId(220)
+ */
+message SessionAttributesKey {
+	required	bytes	id	= 1;
+}

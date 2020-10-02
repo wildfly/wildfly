@@ -293,7 +293,10 @@ public class DistributableSessionManager implements UndertowSessionManager, Cons
                 return (session != null) ? new DistributableImmutableSession(this, session) : null;
             } catch (RuntimeException | Error e) {
                 batch.discard();
-                throw e;
+                // Do not propagate exceptions here
+                // This could cause a request for a different deployment to fail, see UNDERTOW-1003
+                UndertowClusteringLogger.ROOT_LOGGER.debugf(e.getLocalizedMessage(), e);
+                return null;
             }
         }
     }

@@ -30,9 +30,9 @@ import org.wildfly.clustering.ee.Remover;
  *
  * @author Paul Ferraro
  *
- * @param <G> the group identifier type
  * @param <I> the bean identifier type
  * @param <T> the bean type
+ * @param <C> the marshalling context
  */
 public interface BeanGroupFactory<I, T, C> extends Creator<I, BeanGroupEntry<I, T, C>, Void>, Locator<I, BeanGroupEntry<I, T, C>>, Remover<I>, BeanGroupEvictor<I> {
     /**

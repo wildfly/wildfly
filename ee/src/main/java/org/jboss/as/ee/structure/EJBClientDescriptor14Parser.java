@@ -88,6 +88,9 @@ class EJBClientDescriptor14Parser extends EJBClientDescriptor13Parser {
                         case EJB_RECEIVERS:
                             this.parseEJBReceivers(reader, ejbClientDescriptorMetaData);
                             break;
+                        case HTTP_CONNECTIONS:
+                            this.parseHttpConnections(reader, ejbClientDescriptorMetaData);
+                            break;
                         case CLUSTERS:
                             this.parseClusters(reader, ejbClientDescriptorMetaData);
                             break;
@@ -105,5 +108,55 @@ class EJBClientDescriptor14Parser extends EJBClientDescriptor13Parser {
             }
         }
         unexpectedEndOfDocument(reader.getLocation());
+    }
+
+    protected void parseHttpConnections(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    return;
+                }
+                case START_ELEMENT: {
+                    final EJBClientDescriptorXMLElement element = EJBClientDescriptorXMLElement.forName(reader.getLocalName());
+                    switch (element) {
+                        case HTTP_CONNECTION:
+                            this.parseHttpConnection(reader, ejbClientDescriptorMetaData);
+                            break;
+                        default:
+                            unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: {
+                    unexpectedContent(reader);
+                }
+            }
+        }
+        unexpectedEndOfDocument(reader.getLocation());
+    }
+
+    protected void parseHttpConnection(final XMLExtendedStreamReader reader,
+                                       final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
+        String uri = null;
+        final Set<EJBClientDescriptorXMLAttribute> required = EnumSet.of(EJBClientDescriptorXMLAttribute.URI);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader
+                    .getAttributeLocalName(i));
+            required.remove(attribute);
+            final String value = readResolveValue(reader, i);
+            switch (attribute) {
+                case URI:
+                    uri = value;
+                    break;
+                default:
+                    unexpectedContent(reader);
+            }
+        }
+        if (!required.isEmpty()) {
+            missingAttributes(reader.getLocation(), required);
+        }
+        requireNoContent(reader);
+        ejbClientDescriptorMetaData.addHttpConnectionRef(uri);
     }
 }

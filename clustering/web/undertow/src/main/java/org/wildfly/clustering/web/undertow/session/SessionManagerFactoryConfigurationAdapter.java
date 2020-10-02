@@ -30,38 +30,30 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
 
-import org.jboss.modules.Module;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
-import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SpecificationProvider;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
-import org.wildfly.clustering.web.undertow.session.DistributableSessionManagerFactoryServiceConfigurator.MarshallingVersion;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, LocalSessionContext> {
+public class SessionManagerFactoryConfigurationAdapter<C> extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, C, LocalSessionContext> {
 
     private final Integer maxActiveSessions;
-    private final MarshalledValueFactory<ByteBufferMarshaller> marshalledValueFactory;
+    private final MarshalledValueFactory<C> marshalledValueFactory;
     private final LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
     private final Immutability immutability;
 
-    public SessionManagerFactoryConfigurationAdapter(SessionManagerFactoryConfiguration configuration, Immutability immutability) {
+    public SessionManagerFactoryConfigurationAdapter(SessionManagerFactoryConfiguration configuration, MarshalledValueFactory<C> marshalledValueFactory, Immutability immutability) {
         super(configuration);
         this.maxActiveSessions = configuration.getMaxActiveSessions();
-        Module module = configuration.getModule();
-        ByteBufferMarshaller marshaller = new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
-        this.marshalledValueFactory = new ByteBufferMarshalledValueFactory(marshaller);
+        this.marshalledValueFactory = marshalledValueFactory;
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
         this.immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(UndertowSessionAttributeImmutability.class), loadedImmutability, Collections.singleton(immutability)));
     }
@@ -72,7 +64,7 @@ public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConf
     }
 
     @Override
-    public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
+    public MarshalledValueFactory<C> getMarshalledValueFactory() {
         return this.marshalledValueFactory;
     }
 

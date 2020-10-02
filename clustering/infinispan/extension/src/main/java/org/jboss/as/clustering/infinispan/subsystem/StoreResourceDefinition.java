@@ -99,10 +99,6 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, boolean defaultValue) {
-            this(name, ModelType.BOOLEAN, new ModelNode(defaultValue));
-        }
-
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)

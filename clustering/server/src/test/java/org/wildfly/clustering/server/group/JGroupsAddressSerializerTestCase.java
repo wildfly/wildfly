@@ -38,7 +38,7 @@ import org.wildfly.clustering.server.group.JGroupsAddressSerializer.JGroupsAddre
 public class JGroupsAddressSerializerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         JGroupsAddress address = new JGroupsAddress(UUID.randomUUID());
 
         new ExternalizerTester<>(new JGroupsAddressExternalizer()).test(address);

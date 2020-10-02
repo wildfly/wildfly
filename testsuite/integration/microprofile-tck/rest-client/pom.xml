@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.0.Beta1-SNAPSHOT</version>
+        <version>21.0.0.Final-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-ts-integ-mp-rest-client</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile - REST Client TCK</name>
@@ -342,8 +342,8 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
-                                            <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang 
-                                                     but the layers we want don't result in it being provisioned, so explicitly tell Galleon to 
+                                            <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
+                                                     but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
                                                      provision it. -->
                                             <included-packages>
                                               <package>org.apache.commons.lang3</package>
@@ -379,6 +379,167 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.wildfly.arquillian</groupId>
+                    <artifactId>wildfly-arquillian-container-bootable</artifactId>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>mp-server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-wiremock-module</id>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.internetitem</groupId>
+                        <artifactId>write-properties-file-maven-plugin</artifactId>
+                        <version>1.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>generate-properties-file</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>write-properties-file</goal>
+                                </goals>
+                                <configuration>
+                                    <filename>wiremock-bootable-cli.properties</filename>
+                                    <properties>
+                                        <property>
+                                            <name>wiremock.jar.path</name>
+                                            <value>${project.build.directory}/wildfly/wiremock/wiremock.jar</value>
+                                        </property>
+                                        <property>
+                                            <name>wiremock.junit.jar.path</name>
+                                            <value>${project.build.directory}/wildfly/wiremock/junit.jar</value>
+                                        </property>
+                                        <property>
+                                            <name>module.xml.path</name>
+                                            <value>${basedir}/module.xml</value>
+                                        </property>
+                                        <property>
+                                            <name>beans.xml.path</name>
+                                            <value>${basedir}/beans.xml</value>
+                                        </property>
+                                    </properties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.jar.plugin}</version>
+                        <executions>
+                            <!-- Package a cloud-server with openapi decorator added -->
+                            <execution>
+                                <id>bootable-jar-microprofile-rest-client-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-resources</phase>
+                                <configuration>
+                                    <output-file-name>test-wildfly-rest-client.jar</output-file-name>
+                                    <hollowJar>true</hollowJar>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <cli-sessions>
+                                        <cli-session>
+                                            <script-files>
+                                                <script>wiremock-bootable.cli</script>
+                                            </script-files>
+                                            <properties-file>${project.build.outputDirectory}/wiremock-bootable-cli.properties</properties-file>
+                                        </cli-session>
+                                    </cli-sessions>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <included-packages>
+                                                <package>org.apache.commons.lang3</package>
+                                            </included-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <layers>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>observability</layer>
+                                    </layers>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <!-- Tests against the fault tolerance install  -->
+                        <configuration>
+                            <systemPropertyVariables>
+                                <install.dir>${project.build.directory}/wildfly</install.dir>
+                                <bootable.jar>${project.build.directory}/test-wildfly-rest-client.jar</bootable.jar>
+                                <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                            </systemPropertyVariables>
+                            <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>
+                                    org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                </classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Skip TCK testing on Windows due to issues with beans.xml deployment overlay -->
         <profile>
             <id>noWindowsTesting</id>

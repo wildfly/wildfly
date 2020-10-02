@@ -21,18 +21,10 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import java.io.Serializable;
-
 /**
  * Simple object that indicates that no service is registered on the remote node for which to execute the remote command.
  * @author Paul Ferraro
  */
-public class NoSuchService implements Serializable {
-    private static final long serialVersionUID = 557858072730039623L;
-
-    public static final NoSuchService INSTANCE = new NoSuchService();
-
-    private NoSuchService() {
-        // Hide
-    }
+public enum NoSuchService {
+    INSTANCE;
 }

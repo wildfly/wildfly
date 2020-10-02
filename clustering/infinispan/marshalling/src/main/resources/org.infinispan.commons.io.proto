@@ -1,0 +1,10 @@
+package org.infinispan.commons.io;
+
+// IDs: 400 - 409
+
+/**
+ * @TypeId(400)
+ */
+message ByteBufferImpl {
+	required	bytes	bytes	= 1;
+}

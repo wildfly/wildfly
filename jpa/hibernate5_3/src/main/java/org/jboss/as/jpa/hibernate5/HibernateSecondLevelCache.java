@@ -19,6 +19,7 @@ package org.jboss.as.jpa.hibernate5;
 
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.COLLECTION_CACHE_RESOURCE_PROP;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_ENTITY_RESOURCE;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_PENDING_PUTS_RESOURCE;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_QUERY_RESOURCE;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_TIMESTAMPS_RESOURCE;
 import static org.infinispan.hibernate.cache.spi.InfinispanProperties.ENTITY_CACHE_RESOURCE_PROP;
@@ -92,10 +93,8 @@ public class HibernateSecondLevelCache {
         caches.add(properties.getProperty(IMMUTABLE_ENTITY_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
         caches.add(properties.getProperty(COLLECTION_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
         caches.add(properties.getProperty(NATURAL_ID_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
+        caches.add(properties.getProperty(PENDING_PUTS_CACHE_RESOURCE_PROP, DEF_PENDING_PUTS_RESOURCE));
 
-        if (properties.containsKey(PENDING_PUTS_CACHE_RESOURCE_PROP)) {
-            caches.add(properties.getProperty(PENDING_PUTS_CACHE_RESOURCE_PROP));
-        }
         if (Boolean.parseBoolean(properties.getProperty(AvailableSettings.USE_QUERY_CACHE))) {
             caches.add(properties.getProperty(QUERY_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
             caches.add(properties.getProperty(TIMESTAMPS_CACHE_RESOURCE_PROP, DEF_TIMESTAMPS_RESOURCE));

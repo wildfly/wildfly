@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.time.Period;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
@@ -53,5 +54,10 @@ public class PeriodExternalizer implements Externalizer<Period> {
     @Override
     public Class<Period> getTargetClass() {
         return Period.class;
+    }
+
+    @Override
+    public OptionalInt size(Period object) {
+        return OptionalInt.of(Integer.BYTES * 3);
     }
 }

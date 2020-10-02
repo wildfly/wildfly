@@ -67,6 +67,21 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     }
 
     @Override
+    public <K, V> RemoteCache<K, V> getCache() {
+        return this.manager.getCache();
+    }
+
+    @Override
+    public <K, V> RemoteCache<K, V> getCache(String cacheName) {
+        return this.manager.getCache(cacheName);
+    }
+
+    @Override
+    public <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
+        return this.manager.getCache(cacheName, transactionMode, transactionManager);
+    }
+
+    @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue, TransactionMode transactionMode, TransactionManager transactionManager) {
         return this.manager.getCache(cacheName, forceReturnValue, transactionMode, transactionManager);
     }

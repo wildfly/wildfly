@@ -46,7 +46,7 @@ public class InfinispanCacheProperties implements CacheProperties {
         boolean clustered = config.clustering().cacheMode().needsStateTransfer();
         boolean hasStore = config.persistence().usingStores();
         this.marshalling = clustered || hasStore;
-        this.persistent = clustered || (hasStore && !config.persistence().passivation());
+        this.persistent = clustered || (hasStore && !config.persistence().passivation()) || config.memory().isOffHeap();
     }
 
     @Override

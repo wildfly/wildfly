@@ -31,7 +31,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.wildfly.http-client.ejb" />
+        <module name="org.wildfly.http-client.ejb" services="import"/>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.ejb.api"/>
@@ -61,6 +61,7 @@
         <module name="org.jboss.as.connector"/>
         <!-- Need access to org.jboss.as.core.security.ServerSecurityManager -->
         <module name="org.jboss.as.core-security"/>
+        <module name="org.jboss.as.security-plugins"/>
         <!-- Need access to org.jboss.as.domain.management.SecurityRealm for authentication of EJB cluster nodes
          in EJB client context-->
         <module name="org.jboss.as.domain-management"/>
@@ -68,8 +69,6 @@
         <module name="org.wildfly.iiop-openjdk"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
-        <module name="org.jboss.as.remoting" optional="true"/>
-        <module name="org.jboss.as.security"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
@@ -112,6 +111,7 @@
 
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.transaction.client"/>
+
         <!-- Those are needed for integration with hibernate validator -->
         <module name="javax.enterprise.api" optional="true"/>
         <module name="org.jboss.as.weld.common" optional="true"/>

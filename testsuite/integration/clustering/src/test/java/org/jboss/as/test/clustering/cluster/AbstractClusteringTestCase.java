@@ -96,7 +96,7 @@ public abstract class AbstractClusteringTestCase {
 
     // Infinispan Server
     public static final String INFINISPAN_SERVER_HOME = System.getProperty("infinispan.server.home");
-    public static final String INFINISPAN_SERVER_PROFILE = "infinispan-server.xml";
+    public static final String INFINISPAN_SERVER_PROFILE = "infinispan-server/infinispan.xml";
     public static final String INFINISPAN_SERVER_PROTOCOL_VERSION = "3.0";
     public static final String INFINISPAN_SERVER_ADDRESS = "127.0.0.1";
     public static final int INFINISPAN_SERVER_PORT = 11222;
@@ -113,6 +113,9 @@ public abstract class AbstractClusteringTestCase {
 
     // Undertow-based WildFly load-balancer
     public static final String LOAD_BALANCER_1 = "load-balancer-1";
+
+    // H2 database
+    public static final String DB_PORT = System.getProperty("dbport", "9092");
 
     // Timeouts
     public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);

@@ -62,9 +62,9 @@
                         <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
                     </channel-creation-options>
                 </remoting-ejb-receiver>-->
+                <remote-http-connection name="connection" uri="http://localhost:8180/wildfly-services"/>
             </profile>
         </profiles>
-
     </remote>
 
     <!-- Session bean configurations -->

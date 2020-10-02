@@ -1,0 +1,142 @@
+package java.time;
+
+// IDs: 90 - 109
+
+/**
+ * @TypeId(90)
+ */
+enum DayOfWeek {
+	MONDAY	= 0;
+	TUESDAY	= 1;
+	WEDNESDAY	= 2;
+	THURSDAY	= 3;
+	FRIDAY	= 4;
+	SATURDAY	= 5;
+	SUNDAY	= 6;
+}
+
+/**
+ * @TypeId(91)
+ */
+message Duration {
+	required	sint64	seconds	= 1;
+	required	sint32	nanos	= 2;
+}
+
+/**
+ * @TypeId(92)
+ */
+message Instant {
+	required	sint64	seconds	= 1;
+	required	sint32	nanos	= 2;
+}
+
+/**
+ * @TypeId(93)
+ */
+message LocalDate {
+	required	sint64	day	= 1;
+}
+
+/**
+ * @TypeId(94)
+ */
+message LocalDateTime {
+	required	LocalDate	date	= 1;
+	required	LocalTime	time	= 2;
+}
+
+/**
+ * @TypeId(95)
+ */
+message LocalTime {
+	required	sint64	nanos	= 1;
+}
+
+/**
+ * @TypeId(96)
+ */
+enum Month {
+	JANUARY	= 0;
+	FEBRUARY	= 1;
+	MARCH	= 2;
+	APRIL	= 3;
+	MAY	= 4;
+	JUNE	= 5;
+	JULY	= 6;
+	AUGUST	= 7;
+	SEPTEMBER	= 8;
+	OCTOBER	= 9;
+	NOVEMBER	= 10;
+	DECEMBER	= 11;
+}
+
+/**
+ * @TypeId(97)
+ */
+message MonthDay {
+	required	Month	month	= 1;
+	required	uint32	day	= 2;
+}
+
+/**
+ * @TypeId(98)
+ */
+message OffsetDateTime {
+	required	LocalDateTime	time	= 1;
+	required	ZoneOffset	offset	= 2;
+}
+
+/**
+ * @TypeId(99)
+ */
+message OffsetTime {
+	required	LocalTime	time	= 1;
+	required	ZoneOffset	offset	= 2;
+}
+
+/**
+ * @TypeId(100)
+ */
+message Period {
+	required	sint32	years	= 1;
+	required	sint32	months	= 2;
+	required	sint32	days	= 3;
+}
+
+/**
+ * @TypeId(101)
+ */
+message Year {
+	required	sint32	year	= 1;
+}
+
+/**
+ * @TypeId(102)
+ */
+message YearMonth {
+	required	Year	year	= 1;
+	required	Month	month	= 2;
+}
+
+/**
+ * @TypeId(103)
+ */
+message ZoneId {
+	required	string	id	= 1;
+}
+
+/**
+ * @TypeId(104)
+ */
+message ZoneOffset {
+	required	string	id	= 1;
+}
+
+/**
+ * @TypeId(105)
+ */
+message ZonedDateTime {
+	required	LocalDateTime	time	= 1;
+	required	ZoneId	offset	= 2;
+}

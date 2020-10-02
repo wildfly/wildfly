@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.clustering.infinispan">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.clustering.infinispan">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -40,7 +40,7 @@
         <module name="javax.transaction.api"/>
         <!-- The io.netty module is only require to initialize Netty's InternalLoggingFactory -->
         <module name="io.netty"/>
-        <module name="io.reactivex.rxjava2.rxjava"/>
+        <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="net.jcip"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.persistence.jdbc"/>

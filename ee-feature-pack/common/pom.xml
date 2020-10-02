@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.0.Beta1-SNAPSHOT</version>
+        <version>21.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-common</artifactId>
@@ -864,11 +864,6 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-hibernate5-3-legacy</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -1054,6 +1049,10 @@
 
         <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
         </dependency>
 
@@ -2413,6 +2412,16 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

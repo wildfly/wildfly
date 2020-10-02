@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.0.Beta1-SNAPSHOT</version>
+        <version>21.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -225,6 +225,7 @@
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>clustering</module>
+                <module>ws</module>
             </modules>
         </profile>
 
@@ -318,6 +319,28 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- Test against bootable jar -->
+        <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <properties>
+                <version.org.jboss.arquillian.core>1.6.0.Final</version.org.jboss.arquillian.core>
+                <version.org.wildfly.arquillian>3.0.0.Beta3</version.org.wildfly.arquillian>
+                <version.org.wildfly.jar.plugin>2.0.0.Beta8</version.org.wildfly.jar.plugin>        
+            </properties>            
+            <modules>
+                <module>basic</module>
+                <module>clustering</module>
+                <module>elytron</module>
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+            </modules>
         </profile>
 
     </profiles>

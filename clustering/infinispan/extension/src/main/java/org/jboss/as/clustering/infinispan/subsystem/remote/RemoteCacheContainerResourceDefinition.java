@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
@@ -30,6 +31,7 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
@@ -50,6 +52,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -105,10 +108,11 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
             }
         },
+        PROPERTIES("properties"),
         PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_30.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(ProtocolVersion.class));
+                return builder.setValidator(new EnumValidator<>(ProtocolVersion.class, EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO))));
             }
         },
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),
@@ -119,6 +123,13 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         ;
 
         private final AttributeDefinition definition;
+
+        Attribute(String name) {
+            this.definition = new PropertiesAttributeDefinition.Builder(name)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
@@ -140,12 +151,19 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
             parent.rejectChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
+            if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder()
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROPERTIES.getDefinition())
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.PROPERTIES.getDefinition())
+                        .end();
+            }
             if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
                 builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName());
             }
@@ -175,6 +193,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);

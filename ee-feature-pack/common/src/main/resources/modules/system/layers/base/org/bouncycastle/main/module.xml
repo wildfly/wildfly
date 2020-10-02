@@ -28,21 +28,16 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
-    <resources>
-        <artifact name="${org.bouncycastle:bcprov-jdk15on}"/>
-        <artifact name="${org.bouncycastle:bcmail-jdk15on}"/>
-        <artifact name="${org.bouncycastle:bcpkix-jdk15on}"/>
-    </resources>
     <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.mail.api" optional="true"/>
-        <module name="javax.activation.api" optional="true"/>
+        <module name="org.bouncycastle.bcpkix" export="true" services="export"/>
+        <module name="org.bouncycastle.bcprov" export="true" services="export"/>
+        <module name="org.bouncycastle.bcmail" export="true" services="export"/>
     </dependencies>
+
     <provides>
         <service name="java.security.Provider">
             <with-class name="org.bouncycastle.jce.provider.BouncyCastleProvider"/>
             <with-class name="org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider"/>
         </service>
     </provides>
-
 </module>

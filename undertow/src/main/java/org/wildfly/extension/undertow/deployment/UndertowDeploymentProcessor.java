@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static org.jboss.as.ee.component.Attachments.STARTUP_COUNTDOWN;
 import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.isVirtualDomainRequired;
 import static org.wildfly.extension.undertow.Capabilities.REF_LEGACY_SECURITY;
@@ -58,6 +59,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -302,6 +304,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final ServiceName legacyDeploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(deploymentUnit.getServiceName());
 
+        StartupCountdown countDown = deploymentUnit.getAttachment(STARTUP_COUNTDOWN);
+        if (countDown != null) {
+            deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS,
+                    handler->new ComponentStartupCountdownHandler(handler, countDown));
+        }
 
         String securityDomain = deploymentUnit.getAttachment(UndertowAttachments.RESOLVED_SECURITY_DOMAIN);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);

@@ -24,15 +24,15 @@ package org.wildfly.clustering.server.registry;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
+import org.wildfly.clustering.marshalling.spi.EnumExternalizer;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class CacheRegistryFilterExternalizer extends ValueExternalizer<CacheRegistryFilter> {
+public class CacheRegistryFilterExternalizer extends EnumExternalizer<CacheRegistryFilter> {
 
     public CacheRegistryFilterExternalizer() {
-        super(new CacheRegistryFilter());
+        super(CacheRegistryFilter.class);
     }
 }

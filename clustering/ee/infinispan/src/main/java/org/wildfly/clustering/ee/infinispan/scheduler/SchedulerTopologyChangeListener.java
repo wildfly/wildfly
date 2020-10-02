@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.ee.infinispan.scheduler;
 
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -39,6 +40,7 @@ import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.cache.Key;
@@ -82,28 +84,26 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
     }
 
     @DataRehashed
-    public void dataRehashed(DataRehashedEvent<K, V> event) {
-        try {
-            if (event.isPre()) {
-                this.rehashTopology.set(event.getNewTopologyId());
-                this.cancel(event.getCache(), event.getConsistentHashAtEnd());
-            } else {
-                this.rehashTopology.compareAndSet(event.getNewTopologyId(), 0);
-                this.schedule(event.getCache(), event.getConsistentHashAtStart(), event.getConsistentHashAtEnd());
-            }
-        } catch (RejectedExecutionException e) {
-            // Executor was shutdown
+    public CompletionStage<Void> dataRehashed(DataRehashedEvent<K, V> event) {
+        if (event.isPre()) {
+            this.rehashTopology.set(event.getNewTopologyId());
+            this.cancel(event.getCache(), event.getConsistentHashAtEnd());
+        } else {
+            this.rehashTopology.compareAndSet(event.getNewTopologyId(), 0);
+            this.schedule(event.getCache(), event.getConsistentHashAtStart(), event.getConsistentHashAtEnd());
         }
+        return CompletableFutures.completedNull();
     }
 
     @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<K, V> event) {
+    public CompletionStage<Void> topologyChanged(TopologyChangedEvent<K, V> event) {
         if (!event.isPre()) {
             // If this topology change has no corresponding rehash event, we must reschedule expirations as primary ownership may have changed
             if (this.rehashTopology.get() != event.getNewTopologyId()) {
                 this.schedule(event.getCache(), event.getReadConsistentHashAtStart(), event.getWriteConsistentHashAtEnd());
             }
         }
+        return CompletableFutures.completedNull();
     }
 
     private void cancel(Cache<K, V> cache, ConsistentHash hash) {
@@ -111,21 +111,23 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
         if (future != null) {
             future.cancel(true);
         }
-        this.executor.submit(() -> this.cancelTask.accept(new ConsistentHashLocality(cache, hash)));
+        try {
+            this.executor.submit(() -> this.cancelTask.accept(new ConsistentHashLocality(cache, hash)));
+        } catch (RejectedExecutionException e) {
+            // Executor was shutdown
+        }
     }
 
     private void schedule(Cache<K, V> cache, ConsistentHash oldHash, ConsistentHash newHash) {
         // Skip rescheduling if we do not own any segments
         if (!newHash.getPrimarySegmentsForOwner(cache.getCacheManager().getAddress()).isEmpty()) {
-            Future<?> future = this.rehashFuture.getAndSet(null);
-            if (future != null) {
-                future.cancel(true);
-            }
-            // For non-transactional invalidation-caches, where all keys hash to a single member, always schedule
             Locality oldLocality = new ConsistentHashLocality(cache, oldHash);
             Locality newLocality = new ConsistentHashLocality(cache, newHash);
             try {
-                this.rehashFuture.compareAndSet(null, this.executor.submit(() -> this.scheduleTask.accept(oldLocality, newLocality)));
+                Future<?> future = this.rehashFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(oldLocality, newLocality)));
+                if (future != null) {
+                    future.cancel(true);
+                }
             } catch (RejectedExecutionException e) {
                 // Executor was shutdown
             }

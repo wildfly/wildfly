@@ -28,7 +28,7 @@ that will use the OpenSSL TLS provider:
 reload
 ----
 
-== OpenSSL Library Location
+=== OpenSSL Library Location
 
 WildFly will search for the OpenSSL library using the standard system library search path. If you'd like to specify a
 custom location for the OpenSSL library, the `org.wildfly.openssl.path` property can be specified during WildFly startup.
@@ -39,3 +39,14 @@ If OpenSSL was loaded successfully, a message similar to the one below will occu
 ----
 15:37:59,814 INFO [org.wildfly.openssl.SSL] (MSC service thread 1-7) WFOPENSSL0002 OpenSSL Version OpenSSL 1.1.1d FIPS  10 Sep 2019
 ----
+
+=== Enabling TLSv1.3
+
+*WARNING* It is possible to use TLSv1.3 with the OpenSSL TLS provider when using OpenSSL 1.1.1 or higher and
+when running against JDK 11 or higher. However, if JDK 11 is in use and if there is a very large number of
+TLSv1.3 requests being made, it is possible that a drop in performance (throughput and response time) will occur
+compared to TLSv1.2. For this reason, the use of TLSv1.3 is currently disabled by default. TLSv1.3 can be enabled
+by configuring the `cipher-suite-names` attribute for an SSL context. See the sections on
+<<configuring-a-server-sslcontext,Configuring a server SSLContext>> and
+<<configuring-a-client-sslcontext,Configuring a client SSLContext>> for more details. It is recommended to test
+for performance degradation prior to enabling TLSv1.3 in a production environment.

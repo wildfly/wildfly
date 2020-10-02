@@ -42,6 +42,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IN_VM_REMOTE_INTERF
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LOG_SYSTEM_EXCEPTIONS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PROFILE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE_HTTP_CONNECTION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTING_EJB_RECEIVER;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTING_PROFILE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
@@ -86,14 +87,10 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     protected void writeElements(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
         ModelNode model = context.getModelNode();
 
-        // write the session-bean element
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
-                || model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
-            // <session-bean>
-            writer.writeStartElement(EJB3SubsystemXMLElement.SESSION_BEAN.getLocalName());
-        }
+        boolean sessionBeanStartWritten = false;
         // <stateless> element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL)) {
+            sessionBeanStartWritten = writeSessionBeanStartElement(writer, sessionBeanStartWritten);
             // <stateless>
             writer.writeStartElement(EJB3SubsystemXMLElement.STATELESS.getLocalName());
             // write out the <bean-instance-pool-ref>
@@ -105,6 +102,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
                 || model.hasDefined(EJB3SubsystemModel.DEFAULT_SFSB_CACHE)
                 || model.hasDefined(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)) {
+            sessionBeanStartWritten = writeSessionBeanStartElement(writer, sessionBeanStartWritten);
             // <stateful>
             writer.writeStartElement(EJB3SubsystemXMLElement.STATEFUL.getLocalName());
             // write out the <stateful> element contents
@@ -114,6 +112,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         }
         // <singleton> element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
+            sessionBeanStartWritten = writeSessionBeanStartElement(writer, sessionBeanStartWritten);
             // <singleton>
             writer.writeStartElement(EJB3SubsystemXMLElement.SINGLETON.getLocalName());
             // write out the <singleton> element contents
@@ -122,8 +121,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
         // write out the </session-bean> end element
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
-                || model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
+        if (sessionBeanStartWritten) {
             // </session-bean>
             writer.writeEndElement();
         }
@@ -329,6 +327,20 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             }
             writer.writeEndElement();
         }
+    }
+
+    /**
+     * Writes the start of the 'session-bean' element if not already written
+     * @param writer the writer to use
+     * @param alreadyWritten {@code true} if the element has already been written
+     * @return whether the start element has been written by the time this method returns
+     */
+    private boolean writeSessionBeanStartElement(final XMLExtendedStreamWriter writer, boolean alreadyWritten) throws XMLStreamException {
+        if (!alreadyWritten) {
+            // <session-bean>
+            writer.writeStartElement(EJB3SubsystemXMLElement.SESSION_BEAN.getLocalName());
+        }
+        return true;
     }
 
     private void writeIIOP(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
@@ -640,6 +652,9 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             if(profileNode.hasDefined(REMOTING_EJB_RECEIVER)){
                 writeRemotingEjbReceivers(writer, profileNode);
             }
+            if(profileNode.hasDefined(REMOTE_HTTP_CONNECTION)){
+                writeRemoteHttpConnection(writer, profileNode);
+            }
             StaticEJBDiscoveryDefinition.INSTANCE.marshallAsElement(profileNode, writer);
             writer.writeEndElement();
         }
@@ -657,6 +672,18 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             if (receiverNode.hasDefined(CHANNEL_CREATION_OPTIONS)) {
                 writeChannelCreationOptions(writer, receiverNode.get(CHANNEL_CREATION_OPTIONS));
             }
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeRemoteHttpConnection(final XMLExtendedStreamWriter writer, final ModelNode profileNode)
+            throws XMLStreamException {
+        final List<Property> connections = profileNode.get(REMOTE_HTTP_CONNECTION).asPropertyList();
+        for (final Property property : connections) {
+            writer.writeStartElement(REMOTE_HTTP_CONNECTION);
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+            final ModelNode connectionNode = property.getValue();
+            RemoteHttpConnectionDefinition.URI.marshallAsAttribute(connectionNode, writer);
             writer.writeEndElement();
         }
     }

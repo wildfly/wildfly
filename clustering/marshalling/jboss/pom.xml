@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.0.Beta1-SNAPSHOT</version>
+        <version>21.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
@@ -41,8 +41,8 @@
 
     <name>WildFly: Marshalling for WildFly clustering: JBoss Marshalling integration</name>
     <description>
-        Adapts implementations of wildfly-clustering-marshalling-api to JBoss marshalling.
-        Also contains wildfly-clustering-marshalling-spi implementations that use JBoss marshalling.
+        Adapts implementations of wildfly-clustering-marshalling-api to JBoss Marshalling.
+        Also contains wildfly-clustering-marshalling-spi implementations using JBoss Marshalling.
     </description>
 
     <dependencies>

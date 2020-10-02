@@ -295,6 +295,10 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(REJECT_NON_SINGLETON_LIST, EJB3RemoteResourceDefinition.CONNECTORS)
                 .setValueConverter(CONVERT_CONNECTOR_REF, EJB3SubsystemModel.CONNECTOR_REF)
                 .end();
+
+        // Reject ejb3/remoting-profile=xxx/remote-http-connection
+        subsystemBuilder.addChildResource(EJB3SubsystemModel.REMOTING_PROFILE_PATH)
+                .rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION));
     }
 
 

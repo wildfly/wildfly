@@ -45,5 +45,6 @@
         <module name="org.wildfly.http-client.transaction" />
         <module name="org.wildfly.transaction.client" />
         <module name="org.jboss.xnio"/>
+        <module name="org.wildfly.discovery"/>
     </dependencies>
 </module>

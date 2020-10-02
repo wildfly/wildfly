@@ -34,10 +34,14 @@ public class Ocsp implements CliFragment {
     public static final Ocsp EMPTY = Ocsp.builder().build();
 
     private final String responder;
+    private final String responderKeyStore;
+    private final String responderCertificate;
     private final boolean preferCrls;
 
     private Ocsp(Builder builder) {
         this.responder = builder.responder;
+        this.responderKeyStore = builder.responderKeyStore;
+        this.responderCertificate = builder.responderCertificate;
         this.preferCrls = builder.preferCrls;
     }
 
@@ -48,6 +52,12 @@ public class Ocsp implements CliFragment {
 
         if (isNotBlank(responder)) {
             sb.append(String.format("responder=\"%s\", ", responder));
+        }
+        if (isNotBlank(responderKeyStore)) {
+            sb.append(String.format("responder-keystore=\"%s\", ", responderKeyStore));
+        }
+        if (isNotBlank(responderCertificate)) {
+            sb.append(String.format("responder-certificate=\"%s\", ", responderCertificate));
         }
         sb.append(String.format("prefer-crls=\"%s\", ", preferCrls));
 
@@ -69,6 +79,8 @@ public class Ocsp implements CliFragment {
      */
     public static final class Builder {
         private String responder;
+        private String responderKeyStore;
+        private String responderCertificate;
         private boolean preferCrls;
 
         private Builder() {
@@ -76,6 +88,14 @@ public class Ocsp implements CliFragment {
 
         public Builder withResponder(String responder) {
             this.responder = responder;
+            return this;
+        }
+        public Builder withResponderKeyStore(String responderKeyStore) {
+            this.responderKeyStore = responderKeyStore;
+            return this;
+        }
+        public Builder withResponderCertificate(String responderCertificate) {
+            this.responderCertificate = responderCertificate;
             return this;
         }
 

@@ -124,3 +124,142 @@ You may need to push your repository changes to a remote repository so you can s
 [standalone@localhost:9990 /] :publish-configuration(location="origin")
 {"outcome" => "success"}
 ----
+
+[[ssh_auth]]
+== SSH Authentication
+
+Users may also connect to an SSH git server. In order to connect to any SSH git server to manage your configuration file history, you must use an Elytron configuration
+file to specify your SSH credentials. The following example shows how to specify an SSH url and a `wildfly-config.xml` file
+containing SSH credentials:
+
+[source,options="nowrap"]
+----
+./standalone.sh --git-repo=git@github.com:wildfly/wildfly-config.git --git-auth=file:///home/user/github-wildfly-config.xml
+----
+
+
+There are a number of ways to specify your SSH credentials in the `wildfly-config.xml` file:
+
+=== SSH Key Location Credential
+
+It is possible to reference a file containing your SSH keys as follows:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <authentication-client xmlns="urn:elytron:client:1.6">
+        <authentication-rules>
+            <rule use-configuration="test-login">
+            </rule>
+        </authentication-rules>
+        <authentication-configurations>
+            <configuration name="test-login">
+                <credentials>
+                    <ssh-credential ssh-directory="/home/user/git-persistence/" private-key-file="id_ec_test" known-hosts-file="known_hosts">
+                        <clear-password password="secret"/>
+                    </ssh-private-key>
+                </credentials>
+            </configuration>
+        </authentication-configurations>
+    </authentication-client>
+</configuration>
+----
+This configuration indicates that the private key to be used for SSH authentication is in the file `id_ec_test` in the
+directory `/home/user/git-persistence` and the passphrase "secret" is needed to decrypt the key.
+
+The `ssh-credential` accepts the following attributes:
+
+* `ssh-directory` - the path to the directory containing the private key file and the known hosts file. The default value
+is `[user.home]/.ssh`.
+* `private-key-file` - the name of the file containing the private key. The default private key file names used are: `id_rsa`,
+`id_dsa`, and `id_ecdsa`.
+* `known-hosts-file` - the name of the file containing the known SSH hosts you trust. The default value is `known_hosts`
+
+One of the following child elements may also be used to specify the passphrase to be used to decrypt the private key (if applicable):
+[source,xml,options="nowrap"]
+----
+<ssh-credential ...>
+    <credential-store-reference store="..." alias="..." clear-text="..." />
+    <clear-password password="..." />
+    <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+</ssh-credential>
+----
+
+=== Key Pair Credential
+
+It is also possible to specify your SSH credentials as a KeyPairCredential as follows:
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <authentication-client xmlns="urn:elytron:client:1.6">
+        <authentication-rules>
+            <rule use-configuration="test-login">
+            </rule>
+        </authentication-rules>
+        <authentication-configurations>
+            <configuration name="test-login">
+                <credentials>
+                    <key-pair>
+                        <openssh-private-key pem="-----BEGIN OPENSSH PRIVATE KEY-----
+                        b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABCdRswttV
+                        UNQ6nKb6ojozTGAAAAEAAAAAEAAABoAAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlz
+                        dHAyNTYAAABBBAKxnsRT7n6qJLKoD3mFfAvcH5ZFUyTzJVW8t60pNgNaXO4q5S4qL9yCCZ
+                        cKyg6QtVgRuVxkUSseuR3fiubyTnkAAADQq3vrkvuSfm4n345STr/i/29FZEFUd0qD++B2
+                        ZoWGPKU/xzvxH7S2GxREb5oXcIYO889jY6mdZT8LZm6ZZig3rqoEAqdPyllHmEadb7hY+y
+                        jwcQ4Wr1ekGgVwNHCNu2in3cYXxbrYGMHc33WmdNrbGRDUzK+EEUM2cwUiM7Pkrw5s88Ff
+                        IWI0V+567Ob9LxxIUO/QvSbKMJGbMM4jZ1V9V2Ti/GziGJ107CBudZr/7wNwxIK86BBAEg
+                        hfnrhYBIaOLrtP8R+96i8iu4iZAvcIbQ==
+                        -----END OPENSSH PRIVATE KEY-----">
+                            <clear-password password="secret"/>
+                        </openssh-private-key>
+                    </key-pair>
+                </credentials>
+            </configuration>
+        </authentication-configurations>
+    </authentication-client>
+</configuration>
+----
+
+Along with the `key-pair` credential, if your known SSH hosts are not in `~/.ssh/known_hosts`, you should specify an `ssh-credential`
+with the `ssh-directory` and `known-hosts-file` attributes defined to specify the location and name of your known hosts file.
+
+When specifying keys in OpenSSH format, it is only necessary to specify the private key and the public key will be parsed
+from the private key string. When specifying key pairs in PKCS format, it is necessary to specify both the private and
+public keys using the following elements:
+
+[source,xml,options="nowrap"]
+----
+<key-pair>
+    <private-key-pem>-----BEGIN PRIVATE KEY-----
+                     MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgj+ToYNaHz/pISg/Z
+                     I9BjdhcTre/SJpIxASY19XtOV1ehRANCAASngcxUTBf2atGC5lQWCupsQGRNwwnK
+                     6Ww9Xt37SmaHv0bX5n1KnsAal0ykJVKZsD0Z09jVF95jL6udwaKpWQwb
+                     -----END PRIVATE KEY-----</private-key>
+    <public-key-pem>-----BEGIN PUBLIC KEY-----
+                     MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEp4HMVEwX9mrRguZUFgrqbEBkTcMJ
+                     yulsPV7d+0pmh79G1+Z9Sp7AGpdMpCVSmbA9GdPY1RfeYy+rncGiqVkMGw==
+                     -----END PUBLIC KEY-----</public-key>
+</key-pair>
+----
+
+When using a key pair credential in OpenSSH format, it is also possible to specify a passphrase to be used to decrypt
+the private key:
+[source,xml,options="nowrap"]
+----
+<openssh-private-key pem="...">
+    <credential-store-reference store="..." alias="..." clear-text="..." />
+    <clear-password password="..." />
+    <masked-password algorithm="..." key-material="..." iteration-count="..." salt="..." masked-password="..." initialization-vector="..." />
+</ssh-private-key-file>
+----
+
+When using PKCS formatted keys, the keys should not be encrypted with a passphrase
+
+=== Credential Store Reference
+
+It is possible to specify your SSH credentials as a reference to a credential store entry.
+See: https://github.com/wildfly/wildfly/blob/master/docs/src/main/asciidoc/_elytron/Credential_Store.adoc#adding-a-credential[Adding a Credential]
+to a credential store and https://github.com/wildfly/wildfly/blob/master/docs/src/main/asciidoc/_elytron/Credential_Store.adoc#referencing-credentials[Referencing Credentials]
+stored in a credential store.

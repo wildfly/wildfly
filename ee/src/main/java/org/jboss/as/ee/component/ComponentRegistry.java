@@ -71,9 +71,14 @@ public class ComponentRegistry {
     }
 
     public ManagedReferenceFactory createInstanceFactory(final Class<?> componentClass) {
+        return createInstanceFactory(componentClass, false);
+    }
+
+    public ManagedReferenceFactory createInstanceFactory(final Class<?> componentClass, final boolean optional) {
         final ManagedReferenceFactory factory = componentsByClass.get(componentClass);
         if (factory == null) {
-            return classIntrospectorInjectedValue.getValue().createFactory(componentClass);
+            EEClassIntrospector introspector = optional ? classIntrospectorInjectedValue.getOptionalValue() : classIntrospectorInjectedValue.getValue();
+            return introspector != null ? introspector.createFactory(componentClass) : null;
         }
         return factory;
     }

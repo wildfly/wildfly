@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.0.Beta1-SNAPSHOT</version>
+        <version>21.0.0.Final-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-connector</artifactId>
     <name>WildFly: Connector Subsystem</name>
@@ -68,10 +68,6 @@
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.threads</groupId>

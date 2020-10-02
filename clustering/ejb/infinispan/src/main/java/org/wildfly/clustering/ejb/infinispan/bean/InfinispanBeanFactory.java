@@ -45,9 +45,9 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
  *
  * @author Paul Ferraro
  *
- * @param <G> the group identifier type
  * @param <I> the bean identifier type
  * @param <T> the bean type
+ * @param <C> the marshalling context type
  */
 public class InfinispanBeanFactory<I, T, C> implements BeanFactory<I, T> {
     private final String beanName;
@@ -112,7 +112,7 @@ public class InfinispanBeanFactory<I, T, C> implements BeanFactory<I, T> {
             BeanGroupEntry<I, T, C> groupEntry = this.groupFactory.findValue(groupId);
             if (groupEntry != null) {
                 try (BeanGroup<I, T> group = this.groupFactory.createGroup(groupId, groupEntry)) {
-                    T bean = group.removeBean(id);
+                    T bean = group.removeBean(id, this.listener);
                     if (listener != null) {
                         listener.removed(bean);
                     }

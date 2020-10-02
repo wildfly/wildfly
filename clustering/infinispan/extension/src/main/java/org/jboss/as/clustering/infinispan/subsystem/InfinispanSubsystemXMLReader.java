@@ -271,6 +271,18 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                         break;
                     }
                 }
+                case BLOCKING_THREAD_POOL: {
+                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.BLOCKING, reader, address, operations);
+                        break;
+                    }
+                }
+                case NON_BLOCKING_THREAD_POOL: {
+                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.NON_BLOCKING, reader, address, operations);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
@@ -581,7 +593,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
             case CONSISTENT_HASH_STRATEGY: {
                 if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
-                    readAttribute(reader, index, operation, SegmentedCacheResourceDefinition.Attribute.CONSISTENT_HASH_STRATEGY);
+                    readAttribute(reader, index, operation, SegmentedCacheResourceDefinition.DeprecatedAttribute.CONSISTENT_HASH_STRATEGY);
                     break;
                 }
             }
@@ -706,12 +718,18 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
             case OBJECT_MEMORY: {
+                if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
                 if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
-                    this.parseObjectMemory(reader, cacheAddress, operations);
+                    this.parseHeapMemory(reader, cacheAddress, operations);
                     break;
                 }
             }
             case BINARY_MEMORY: {
+                if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
                 if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
                     this.parseBinaryMemory(reader, cacheAddress, operations);
                     break;
@@ -720,6 +738,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             case OFF_HEAP_MEMORY: {
                 if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
                     this.parseOffHeapMemory(reader, cacheAddress, operations);
+                    break;
+                }
+            }
+            case HEAP_MEMORY: {
+                if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                    this.parseHeapMemory(reader, cacheAddress, operations);
                     break;
                 }
             }
@@ -1007,7 +1031,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
     private void parseEviction(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        PathAddress address = cacheAddress.append(ObjectMemoryResourceDefinition.PATH);
+        PathAddress address = cacheAddress.append(HeapMemoryResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -1019,7 +1043,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case MAX_ENTRIES: {
-                    readAttribute(reader, i, operation, ObjectMemoryResourceDefinition.DeprecatedAttribute.MAX_ENTRIES);
+                    readAttribute(reader, i, operation, HeapMemoryResourceDefinition.DeprecatedAttribute.MAX_ENTRIES);
                     break;
                 }
                 case INTERVAL: {
@@ -1098,21 +1122,32 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
-    private void parseObjectMemory(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private void parseHeapMemory(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        PathAddress address = cacheAddress.append(ObjectMemoryResourceDefinition.PATH);
+        PathAddress address = cacheAddress.append(HeapMemoryResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            this.parseMemoryAttribute(reader, i, operation);
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case SIZE_UNIT: {
+                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                        readAttribute(reader, i, operation, HeapMemoryResourceDefinition.Attribute.SIZE_UNIT);
+                        break;
+                    }
+                }
+                default: {
+                    this.parseMemoryAttribute(reader, i, operation);
+                }
+            }
         }
         ParseUtils.requireNoContent(reader);
     }
 
     private void parseBinaryMemory(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        PathAddress address = cacheAddress.append(BinaryMemoryResourceDefinition.PATH);
+        PathAddress address = cacheAddress.append(OffHeapMemoryResourceDefinition.BINARY_PATH);
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -1135,6 +1170,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     readAttribute(reader, i, operation, OffHeapMemoryResourceDefinition.DeprecatedAttribute.CAPACITY);
                     break;
                 }
+                case SIZE_UNIT: {
+                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                        readAttribute(reader, i, operation, OffHeapMemoryResourceDefinition.Attribute.SIZE_UNIT);
+                        break;
+                    }
+                }
                 default: {
                     this.parseBinaryMemoryAttribute(reader, i, operation);
                 }
@@ -1148,7 +1189,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
         switch (attribute) {
             case EVICTION_TYPE: {
-                readAttribute(reader, index, operation, BinaryMemoryResourceDefinition.Attribute.EVICTION_TYPE);
+                readAttribute(reader, index, operation, OffHeapMemoryResourceDefinition.DeprecatedAttribute.EVICTION_TYPE);
                 break;
             }
             default: {
@@ -1162,7 +1203,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
         switch (attribute) {
             case SIZE: {
-                readAttribute(reader, index, operation, ObjectMemoryResourceDefinition.Attribute.SIZE);
+                readAttribute(reader, index, operation, MemoryResourceDefinition.Attribute.SIZE);
                 break;
             }
             default: {
@@ -1753,7 +1794,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case THREAD_POOL_SIZE: {
-                    readAttribute(reader, i, operation, StoreWriteBehindResourceDefinition.Attribute.THREAD_POOL_SIZE);
+                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    readAttribute(reader, i, operation, StoreWriteBehindResourceDefinition.DeprecatedAttribute.THREAD_POOL_SIZE);
                     break;
                 }
                 default: {
@@ -1914,6 +1958,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case INVALIDATION_NEAR_CACHE: {
                     this.parseInvalidationNearCache(reader, address, operations);
+                    break;
+                }
+                case PROPERTY: {
+                    ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
+                    readElement(reader, operation, RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES);
                     break;
                 }
                 case REMOTE_CLUSTERS: {

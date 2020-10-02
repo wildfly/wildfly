@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.0.Beta1-SNAPSHOT</version>
+        <version>21.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-pruned</artifactId>
@@ -122,11 +122,6 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-hibernate5-legacy</artifactId>
         </dependency>
 
         <dependency>
@@ -261,6 +256,17 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-messaging</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-security-vault-tool</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

@@ -98,6 +98,7 @@ public interface EJB3SubsystemModel {
     String OUTBOUND_CONNECTION_REF= "outbound-connection-ref";
     String CONNECT_TIMEOUT= "connect-timeout";
     String CLIENT_MAPPINGS_CLUSTER_NAME = "cluster";
+    String REMOTE_HTTP_CONNECTION = "remote-http-connection";
 
     String TIMER = "timer";
     String TIMER_SERVICE = "timer-service";
@@ -176,5 +177,6 @@ public interface EJB3SubsystemModel {
     String CLASS = "class";
     String BINDING = "binding";
 
+    String URI = "uri";
 
 }

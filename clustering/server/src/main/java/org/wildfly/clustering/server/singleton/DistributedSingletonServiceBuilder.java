@@ -31,6 +31,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
@@ -74,7 +75,7 @@ public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProv
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
         SingletonService<T> service = new LegacyDistributedSingletonService<>(this, this.primaryService, this.backupService);
-        ServiceBuilder<T> installer = target.addService(this.getServiceName(), service);
+        ServiceBuilder<T> installer = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target);
         return new CompositeDependency(this.registry, this.dispatcherFactory).register(installer);
     }
 

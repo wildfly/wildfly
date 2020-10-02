@@ -107,6 +107,8 @@ public interface JMSOperations {
 
     void addExternalHttpConnector(String connectorName, String socketBinding, String endpoint);
 
+    void addExternalRemoteConnector(String name, String socketBinding);
+
     void removeExternalHttpConnector(String connectorName);
 
     /**
@@ -121,4 +123,6 @@ public interface JMSOperations {
     void enableMessagingTraces();
 
     void createSocketBinding(String name, String interfaceName, int port);
+
+    boolean isRemoteBroker();
 }

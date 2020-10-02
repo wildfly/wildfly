@@ -47,11 +47,11 @@ import org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstant
 
 public class SubsystemDefinition extends PersistentResourceDefinition {
 
-    private static final String OPENTRACING_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing";
+    public static final String OPENTRACING_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing";
     public static final String DEFAULT_TRACER_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing.default-tracer";
-    private static final String MICROPROFILE_CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
+    public static final String MICROPROFILE_CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
 
-    private static final RuntimeCapability<Void> OPENTRACING_CAPABILITY = RuntimeCapability.Builder
+    public static final RuntimeCapability<Void> OPENTRACING_CAPABILITY = RuntimeCapability.Builder
             .of(OPENTRACING_CAPABILITY_NAME)
             .addRequirements(WELD_CAPABILITY_NAME, MICROPROFILE_CONFIG_CAPABILITY_NAME)
             .build();

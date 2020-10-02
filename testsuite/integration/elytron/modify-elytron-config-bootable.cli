@@ -1,0 +1,36 @@
+/subsystem=datasources/data-source=ExampleDS:undefine-attribute(name=password)
+/subsystem=datasources/data-source=ExampleDS:write-attribute(name=credential-reference,value={clear-text=sa})
+
+# Use filesystem-realm instead of legacy (compatibility mode) properties-realm in default domains
+/subsystem=elytron/filesystem-realm=ManagementFsRealm:add(path=mgmt-users,relative-to=jboss.server.config.dir)
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:add(path=application-users,relative-to=jboss.server.config.dir)
+
+/subsystem=elytron/security-domain=ManagementDomain:list-add(name=realms, index=0, value={realm=ManagementFsRealm, role-decoder=groups-to-roles})
+/subsystem=elytron/security-domain=ManagementDomain:write-attribute(name=default-realm, value=ManagementFsRealm)
+
+/subsystem=elytron/security-domain=ApplicationDomain:list-add(name=realms, index=0, value={realm=ApplicationFsRealm, role-decoder=groups-to-roles})
+/subsystem=elytron/security-domain=ApplicationDomain:write-attribute(name=default-realm, value=ApplicationFsRealm)
+
+# add test users (copies the test configuration from property files)
+
+/subsystem=elytron/filesystem-realm=ManagementFsRealm:add-identity(identity=testsuite)
+/subsystem=elytron/filesystem-realm=ManagementFsRealm:set-password(identity=testsuite, clear={password="testSuitePassword"})
+
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:add-identity(identity=user1)
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:set-password(identity=user1, clear={password="password1"})
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:add-identity-attribute(identity=user1, name=groups, value=["Users","Role1"])
+
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:add-identity(identity=user2)
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:set-password(identity=user2, clear={password="password2"})
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:add-identity-attribute(identity=user2, name=groups, value=["Users","Role2"])
+
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:add-identity(identity=guest)
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:set-password(identity=guest, clear={password="guest"})
+/subsystem=elytron/filesystem-realm=ApplicationFsRealm:add-identity-attribute(identity=guest, name=groups, value=["guest"])
+
+# Create some test credential store entries (aliases) - they will be checked by CredentialStoreTestCase
+# The keystore file for the credential store is created by keytool maven plugin in pom.xml.
+/subsystem=elytron/credential-store=cred-store-default:add(location=cred-store.jceks, modifiable=true, relative-to=jboss.server.config.dir, credential-reference={clear-text=password})
+/subsystem=elytron/credential-store=cred-store-default:add-alias(alias=alias-password, secret-value=password)
+/subsystem=elytron/credential-store=cred-store-default:add-alias(alias=alias-secret, secret-value=secret)
+/subsystem=elytron/credential-store=cred-store-default:remove()

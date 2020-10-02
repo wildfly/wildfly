@@ -22,10 +22,12 @@
 
 package org.jboss.as.ee.metadata;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -43,10 +45,11 @@ public class EJBClientDescriptorMetaData {
     private long invocationTimeout;
     private String deploymentNodeSelector;
     private String profile;
-    private int defaultCompression;
+    private int defaultCompression = -1;
 
-    private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
-    private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
+    private final Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
+    private final List<HttpConnectionConfiguration> httpConnectionConfigurations = new ArrayList<>();
+    private final Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
 
 
     /**
@@ -65,6 +68,21 @@ public class EJBClientDescriptorMetaData {
     }
 
     /**
+     * Adds an HTTP connection
+     * by this {@link EJBClientDescriptorMetaData}
+     *
+     * @param uri The uri of the HTTP outbound connection. Cannot be null or empty string.
+     */
+    public HttpConnectionConfiguration addHttpConnectionRef(final String uri) {
+        if (uri == null || uri.trim().isEmpty()) {
+            throw new IllegalArgumentException("Cannot add a HTTP connection which references a null/empty URI");
+        }
+        final HttpConnectionConfiguration httpConnectionConfiguration = new HttpConnectionConfiguration(uri);
+        this.httpConnectionConfigurations.add(httpConnectionConfiguration);
+        return httpConnectionConfiguration;
+    }
+
+    /**
      * Returns a collection of outbound connection references that are used by the remoting receivers
      * configured in the client context of this {@link EJBClientDescriptorMetaData}
      *
@@ -72,6 +90,10 @@ public class EJBClientDescriptorMetaData {
      */
     public Collection<RemotingReceiverConfiguration> getRemotingReceiverConfigurations() {
         return this.remotingReceiverConfigurations.values();
+    }
+
+    public List<HttpConnectionConfiguration> getHttpConnectionConfigurations() {
+        return httpConnectionConfigurations;
     }
 
     /**
@@ -344,6 +366,18 @@ public class EJBClientDescriptorMetaData {
         @Override
         public int hashCode() {
             return outboundConnectionRef != null ? outboundConnectionRef.hashCode() : 0;
+        }
+    }
+
+    public static final class HttpConnectionConfiguration {
+        private final String uri;
+
+        HttpConnectionConfiguration(final String uri) {
+            this.uri = uri;
+        }
+
+        public String getUri() {
+            return uri;
         }
     }
 }

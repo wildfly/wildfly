@@ -1,0 +1,17 @@
+package org.wildfly.clustering.ee.infinispan.scheduler;
+
+// IDs: 180 - 189
+
+/**
+ * @TypeId(180)
+ */
+message CancelCommand {
+	required	bytes	id	= 1;
+}
+
+/**
+ * @TypeId(181)
+ */
+message ScheduleCommand {
+	required	bytes	id	= 1;
+}

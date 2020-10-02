@@ -22,16 +22,28 @@
 
 package org.wildfly.extension.microprofile.health;
 
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.CLIENT_FACTORY_CAPABILITY;
 import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_CAPABILITY;
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.MANAGEMENT_EXECUTOR;
+
+import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 import io.smallrye.health.ResponseProvider;
 import io.smallrye.health.SmallRyeHealthReporter;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.LocalModelControllerClient;
+import org.jboss.as.controller.ModelControllerClientFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.extension.microprofile.health.ServerReadinessProbes.DeploymentsStatusCheck;
+import org.wildfly.extension.microprofile.health.ServerReadinessProbes.NoBootErrorsCheck;
+import org.wildfly.extension.microprofile.health.ServerReadinessProbes.ServerStateCheck;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
@@ -40,30 +52,54 @@ import org.jboss.msc.service.StopContext;
 public class HealthReporterService implements Service<HealthReporter> {
 
     private static HealthReporter healthReporter;
+    private final Supplier<ModelControllerClientFactory> modelControllerClientFactory;
+    private final Supplier<Executor> managementExecutor;
     private String emptyLivenessChecksStatus;
     private String emptyReadinessChecksStatus;
+    private LocalModelControllerClient modelControllerClient;
 
     static void install(OperationContext context, String emptyLivenessChecksStatus, String emptyReadinessChecksStatus) {
-        context.getCapabilityServiceTarget()
-                .addCapability(RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class).build())
-                .setInstance(new HealthReporterService(emptyLivenessChecksStatus, emptyReadinessChecksStatus))
+
+        CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
+                .addCapability(RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class).build());
+
+        Supplier<ModelControllerClientFactory> modelControllerClientFactory = serviceBuilder.requires(context.getCapabilityServiceName(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class));
+        Supplier<Executor> managementExecutor = serviceBuilder.requires(context.getCapabilityServiceName(MANAGEMENT_EXECUTOR, Executor.class));
+
+        serviceBuilder.setInstance(new HealthReporterService(modelControllerClientFactory, managementExecutor, emptyLivenessChecksStatus, emptyReadinessChecksStatus))
                 .install();
     }
 
-    private HealthReporterService(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus) {
+    private HealthReporterService(Supplier<ModelControllerClientFactory> modelControllerClientFactory,
+                                  Supplier<Executor> managementExecutor,
+                                  String emptyLivenessChecksStatus, String emptyReadinessChecksStatus) {
+        this.modelControllerClientFactory = modelControllerClientFactory;
+        this.managementExecutor = managementExecutor;
         this.emptyLivenessChecksStatus = emptyLivenessChecksStatus;
         this.emptyReadinessChecksStatus = emptyReadinessChecksStatus;
     }
 
     @Override
     public void start(StartContext context) {
-        healthReporter = new HealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus);
+        // MicroProfile Health supports the mp.health.disable-default-procedures to let users disable any vendor procedures
+        final boolean defaultServerProceduresDisabled = ConfigProvider.getConfig().getOptionalValue("mp.health.disable-default-procedures", Boolean.class).orElse(false);
+        healthReporter = new HealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus, defaultServerProceduresDisabled);
+
+        modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
+
+        if (!defaultServerProceduresDisabled) {
+            healthReporter.addServerReadinessCheck(new ServerStateCheck(modelControllerClient), Thread.currentThread().getContextClassLoader());
+            healthReporter.addServerReadinessCheck(new NoBootErrorsCheck(modelControllerClient), Thread.currentThread().getContextClassLoader());
+            healthReporter.addServerReadinessCheck(new DeploymentsStatusCheck(modelControllerClient), Thread.currentThread().getContextClassLoader());
+        }
+
         HealthCheckResponse.setResponseProvider(new ResponseProvider());
     }
 
     @Override
     public void stop(StopContext context) {
-        this.healthReporter = null;
+        modelControllerClient.close();
+        healthReporter = null;
         HealthCheckResponse.setResponseProvider(null);
     }
 

@@ -1,0 +1,25 @@
+package java.sql;
+
+// IDs: 125 - 127
+
+/**
+ * @TypeId(125)
+ */
+message Date {
+	required	sint32	millis	= 1;
+}
+
+/**
+ * @TypeId(126)
+ */
+message Time {
+	required	sint32	millis	= 1;
+}
+
+/**
+ * @TypeId(127)
+ */
+message Timestamp {
+	required	sint32	millis	= 1;
+	required	sint64	nanos	= 2;
+}

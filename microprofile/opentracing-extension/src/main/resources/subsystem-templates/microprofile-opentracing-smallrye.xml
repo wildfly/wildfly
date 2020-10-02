@@ -24,7 +24,7 @@
 
 <config>
     <extension-module>org.wildfly.extension.microprofile.opentracing-smallrye</extension-module>
-    <subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:2.0"  default-tracer="jaeger">
+    <subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:3.0" default-tracer="jaeger">
         <jaeger-tracer name="jaeger">
             <sampler-configuration sampler-type="const" sampler-param="1.0"/>
         </jaeger-tracer>
