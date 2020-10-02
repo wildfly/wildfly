@@ -11,5 +11,5 @@
     <infinispan-single-sign-on-management name="default" cache-container="foo"/>
     <infinispan-single-sign-on-management name="domain" cache-container="foo" cache="bar"/>
     <hotrod-single-sign-on-management name="remote" remote-cache-container="foo"/>
-    <infinispan-routing cache-container="foo" cache="routing"/>
+    <infinispan-routing cache-container="web" cache="routing"/>
 </subsystem>
