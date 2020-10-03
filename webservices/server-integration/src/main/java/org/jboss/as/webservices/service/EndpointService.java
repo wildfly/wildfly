@@ -31,6 +31,7 @@ import javax.management.JMException;
 import javax.management.MBeanServer;
 
 import org.jboss.as.controller.ServiceNameFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService;
@@ -87,7 +88,8 @@ import org.wildfly.security.auth.server.SecurityDomain;
 public final class EndpointService implements Service {
 
     private static final ServiceName SECURITY_DOMAIN_SERVICE = ServiceName.JBOSS.append("security", "security-domain");
-
+    private static final String LEGACY_SECURITY_CAPABILITY = "org.wildfly.legacy-security";
+    private static final String ELYTRON_SECURITY_CAPABILITY = "org.wildfly.security.elytron";
     private static final String WEB_APPLICATION_SECURITY_DOMAIN = "org.wildfly.undertow.application-security-domain";
     private static final String EJB_APPLICATION_SECURITY_DOMAIN = "org.wildfly.ejb3.application-security-domain";
     private static final RuntimeCapability<Void> EJB_APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
@@ -140,7 +142,8 @@ public final class EndpointService implements Service {
             } else {
                 endpoint.setSecurityDomainContext(new ElytronSecurityDomainContextImpl(this.elytronSecurityDomain.get()));
             }
-        } else {
+        }
+        if (this.securityDomainContext != null && this.securityDomainContext.get() != null) {
             endpoint.setSecurityDomainContext(new SecurityDomainContextImpl(securityDomainContext.get()));
         }
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
@@ -249,6 +252,7 @@ public final class EndpointService implements Service {
         //builder.addAliases(alias);
         final String domainName = getDeploymentSecurityDomainName(endpoint, unit);
         endpoint.setProperty(SECURITY_DOMAIN_NAME, domainName);
+        CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (isElytronSecurityDomain(unit, endpoint, domainName)) {
             if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
                 ServiceName ejbSecurityDomainServiceName = EJB_APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY
@@ -262,7 +266,8 @@ public final class EndpointService implements Service {
                 elytronSecurityDomain = builder.requires(securityDomainName);
             }
             endpoint.setProperty(ELYTRON_SECURITY_DOMAIN, true);
-        } else {
+        }
+        else if (isLegacySecurityDomain(unit, endpoint, domainName)) {
             // This is still picketbox jaas securityDomainContext
             securityDomainContext = builder.requires(SECURITY_DOMAIN_SERVICE.append(domainName));
         }
@@ -327,6 +332,10 @@ public final class EndpointService implements Service {
     }
 
     private static boolean isElytronSecurityDomain(DeploymentUnit unit, Endpoint endpoint, String domainName) {
+        CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (capabilitySupport != null && !capabilitySupport.hasCapability(ELYTRON_SECURITY_CAPABILITY)) {
+            return false;
+        }
         final ServiceName serviceName;
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
             serviceName = EJB_APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(domainName,
@@ -338,4 +347,12 @@ public final class EndpointService implements Service {
         return currentServiceContainer().getService(serviceName) != null;
     }
 
+    private static boolean isLegacySecurityDomain(DeploymentUnit unit, Endpoint endpoint, String domainName) {
+        CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (capabilitySupport != null && !capabilitySupport.hasCapability(LEGACY_SECURITY_CAPABILITY)) {
+            return false;
+        }
+        final ServiceName serviceName = SECURITY_DOMAIN_SERVICE.append(domainName);
+        return currentServiceContainer().getService(serviceName) != null;
+    }
 }
