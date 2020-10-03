@@ -1171,4 +1171,8 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 126, value = "Rejected due to maximum number of requests")
     RejectedExecutionException rejectedDueToMaxRequests();
+
+    @LogMessage(level = WARN)
+    @Message(id = 127, value = "Invalid '%s' name segment for env, name can't start with '/' prefix, prefix has been removed")
+    void invalidNamePrefix(String name);
 }
