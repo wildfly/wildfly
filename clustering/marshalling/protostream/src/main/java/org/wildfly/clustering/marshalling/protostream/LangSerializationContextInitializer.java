@@ -39,9 +39,8 @@ import org.infinispan.protostream.impl.WireFormat;
  */
 public class LangSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.lang.proto";
+    public LangSerializationContextInitializer() {
+        super("java.lang.proto");
     }
 
     @Override

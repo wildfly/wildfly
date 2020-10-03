@@ -29,9 +29,8 @@ import org.infinispan.protostream.SerializationContext;
  */
 public class ModulesSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.jboss.modules.proto";
+    public ModulesSerializationContextInitializer() {
+        super("org.jboss.modules.proto");
     }
 
     @Override

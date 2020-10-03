@@ -28,7 +28,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.sso.ElytronSSOServerSetupTask;
 import org.jboss.as.test.clustering.cluster.sso.IdentityServerSetupTask;
-import org.jboss.as.test.clustering.cluster.sso.InfinispanServerSetupTask;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;

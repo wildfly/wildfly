@@ -102,16 +102,11 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
             PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>() {
                 @Override
                 public Object run() throws Exception {
-                    boolean accessible = AbstractAttribute.this.accessible.isAccessible();
-                    if (!accessible) {
-                        AbstractAttribute.this.accessible.setAccessible(true);
-                    }
+                    AbstractAttribute.this.accessible.setAccessible(true);
                     try {
                         return AbstractAttribute.this.get(object);
                     } finally {
-                        if (!accessible) {
-                            AbstractAttribute.this.accessible.setAccessible(false);
-                        }
+                        AbstractAttribute.this.accessible.setAccessible(false);
                     }
                 }
             };

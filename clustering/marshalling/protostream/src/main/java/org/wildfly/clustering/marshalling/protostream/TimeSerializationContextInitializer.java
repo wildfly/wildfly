@@ -33,9 +33,8 @@ import org.wildfly.clustering.marshalling.spi.time.TimeExternalizerProvider;
  */
 public class TimeSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.time.proto";
+    public TimeSerializationContextInitializer() {
+        super("java.time.proto");
     }
 
     @Override
