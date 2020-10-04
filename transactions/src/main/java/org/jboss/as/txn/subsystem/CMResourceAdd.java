@@ -64,6 +64,10 @@ class CMResourceAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        if (!context.isBooting()) {
+            context.restartRequired();
+            return;
+        }
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String jndiName = address.getLastElement().getValue();
         final String tableName = CMResourceResourceDefinition.CM_TABLE_NAME.resolveModelAttribute(context, model).asString();
@@ -76,9 +80,5 @@ class CMResourceAdd extends AbstractAddStepHandler {
                 .addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, service.getJTAEnvironmentBeanInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-
-        if (!context.isBooting()) {
-            context.reloadRequired();
-        }
     }
 }
