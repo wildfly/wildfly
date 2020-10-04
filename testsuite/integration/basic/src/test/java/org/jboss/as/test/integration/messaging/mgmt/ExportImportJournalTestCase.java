@@ -52,6 +52,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
@@ -95,7 +96,7 @@ public class ExportImportJournalTestCase {
 
         try (JMSContext context = cf.createContext("guest", "guest")) {
             JMSConsumer consumer = context.createConsumer(destination);
-            String text = consumer.receiveBody(String.class, 5000);
+            String text = consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
             if (expectReceivedMessage) {
                 assertNotNull(text);
                 assertEquals(expectedText, text);

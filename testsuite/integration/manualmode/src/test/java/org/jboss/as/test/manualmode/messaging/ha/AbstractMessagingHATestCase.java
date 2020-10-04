@@ -195,7 +195,7 @@ public abstract class AbstractMessagingHATestCase {
 
         try (JMSContext context = cf.createContext("guest", "guest")) {
             JMSConsumer consumer = context.createConsumer(destination);
-            String text = consumer.receiveBody(String.class, 5000);
+            String text = consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
             assertNotNull(text);
             assertEquals(expectedText, text);
         }

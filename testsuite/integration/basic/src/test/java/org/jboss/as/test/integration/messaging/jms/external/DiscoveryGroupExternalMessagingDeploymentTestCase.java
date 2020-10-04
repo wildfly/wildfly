@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.messaging.jms.external;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.PropertyPermission;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -229,9 +231,12 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
                     .addAsWebResource(new StringAsset("Root file"), "root-file.txt");
         }
         return create(WebArchive.class, "ClientMessagingDeploymentTestCase.war")
-                .addClass(MessagingServlet.class)
+                .addClasses(MessagingServlet.class, TimeoutUtil.class)
                 .addClasses(QueueMDB.class, TopicMDB.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")
+                ), "permissions.xml");
     }
 
     @BeforeClass
