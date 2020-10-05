@@ -90,9 +90,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <suiteXmlFiles>
-                        <suiteXmlFile>tck-suite.xml</suiteXmlFile>
-                    </suiteXmlFiles>
+                    <dependenciesToScan>
+                        <dependency>org.eclipse.microprofile.fault-tolerance:microprofile-fault-tolerance-tck</dependency>
+                    </dependenciesToScan>
                     <systemPropertyVariables>
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
                         <!-- Increase timeout to reduce timing intermittent failures -->
