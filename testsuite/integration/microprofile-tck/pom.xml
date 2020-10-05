@@ -71,6 +71,8 @@
         <module>openapi</module>
         <module>opentracing</module>
         <module>rest-client</module>
+        <module>reactive-messaging</module>
+        <module>reactive-streams-operators</module>
     </modules>
 
     <build>
