@@ -6130,6 +6130,16 @@
                 <artifactId>microprofile-reactive-streams-operators-tck</artifactId>
                 <version>${version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <!--
+                        Depends on org.reactivestreams:reactive-streams-tck which in turn has a dependency
+                        on an ancient version of this spi
+                     -->
+                    <exclusion>
+                        <groupId>org.jboss.arquillian.test</groupId>
+                        <artifactId>arquillian-test-spi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

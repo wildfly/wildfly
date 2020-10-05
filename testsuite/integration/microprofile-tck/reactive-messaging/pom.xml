@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2020, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ts-integ-mp</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>23.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-ts-integ-mp-reactive-messaging</artifactId>
+    <name>WildFly Test Suite: Integration - MicroProfile TCK - Reactive Messaging</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <ts.elytron.cli>${jbossas.ts.dir}/shared/enable-elytron.cli</ts.elytron.cli>
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <!--
+            Change how the server is provisioned since we are not part of the standard configs.
+            Since we're not shipping it in our standard configs, it makes no sense to use
+            @ServerSetup.
+            Essentially by default it will work like -Dts.layers
+        -->
+        <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
+        <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+        <!-- These properties control what layers are provisioned if galleon provision occurs -->
+        <ts.microprofile-tck-provisioning.base.layer>cloud-server</ts.microprofile-tck-provisioning.base.layer>
+        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-reactive-messaging</ts.microprofile-tck-provisioning.decorator.layer>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
+            <artifactId>microprofile-reactive-messaging-tck</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
+            <artifactId>microprofile-reactive-messaging-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>microprofile-reactive-streams-operators-${project.version}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <dependenciesToScan>
+                        <dependenciesToScan>org.eclipse.microprofile.reactive.messaging:microprofile-reactive-messaging-tck</dependenciesToScan>
+                    </dependenciesToScan>
+                    <systemPropertyVariables>
+                        <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
+                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                        <module.path>${project.build.directory}/wildfly/modules</module.path>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <profiles>
+        <profile>
+            <id>layers.profile</id>
+            <activation>
+                <property>
+                    <name>ts.layers</name>
+                </property>
+            </activation>
+            <!--- Just uses the standard provisioning mechanism for this module -->
+        </profile>
+
+        <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Turn off provisioning since it is enabled by default-->
+                <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
+                <!-- Enable bootable jar packaging -->
+                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <!---
+                    Just uses the standard provisioning mechanism for this module,
+                    with EE9 stuff coming from parent
+                 -->
+            </properties>
+        </profile>
+
+    </profiles>
+</project>

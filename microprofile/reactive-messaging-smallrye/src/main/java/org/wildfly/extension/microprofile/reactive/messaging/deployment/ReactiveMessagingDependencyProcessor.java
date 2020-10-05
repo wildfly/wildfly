@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.microprofile.reactive.messaging.deployment;
 
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,11 +41,18 @@ import org.jboss.modules.ModuleDependencySpec;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.extension.microprofile.reactive.messaging._private.MicroProfileReactiveMessagingLogger;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProcessor {
+
+
+    // Force strict mode in the SmallRye reactive messaging validation. This is needed to pass the TCK,
+    // and also gives fail-fast behaviour
+    //TODO Replace this with a ConfigSource once we have a release with https://github.com/smallrye/smallrye-reactive-messaging/pull/936/
+    private static final String STRICT_MODE_PROPERTY = "smallrye-messaging-strict-binding";
 
     private static final List<DotName> REACTIVE_MESSAGING_ANNOTATIONS;
     static {
@@ -59,6 +67,13 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
     public void deploy(DeploymentPhaseContext phaseContext) {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isReactiveMessagingDeployment(deploymentUnit)) {
+            WildFlySecurityManager.doChecked(new PrivilegedAction() {
+                @Override
+                public Void run() {
+                    System.setProperty(STRICT_MODE_PROPERTY, "true");
+                    return null;
+                }
+            });
             addModuleDependencies(deploymentUnit);
         }
     }
@@ -72,15 +87,13 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.reactive-messaging.api", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.messaging", false, false, true, false));
+        moduleSpecification.addSystemDependency(
+                cdiDependency(
+                        new ModuleDependency(moduleLoader, "io.smallrye.reactive.messaging", false, false, true, false)));
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.config", false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.config.api", false, false, true, false));
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.reactive-streams-operators.core", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.reactive-streams-operators.api", false, false, true, false));
-
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.reactivestreams", false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.reactivex.rxjava2.rxjava", false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.mutiny.reactive-streams-operators", false, false, true, false));
 
@@ -89,6 +102,7 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         // load them and list them all individually instead
         addDependenciesForIntermediateModule(moduleSpecification, moduleLoader, "io.smallrye.reactive.messaging.connector");
 
+        // Provisioned along with the connectors above
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.vertx.client", true, false, true, false));
     }
 
@@ -98,7 +112,10 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
             for (DependencySpec dep : module.getDependencies()) {
                 if (dep instanceof ModuleDependencySpec) {
                     ModuleDependencySpec mds = (ModuleDependencySpec) dep;
-                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, mds.getName(), mds.isOptional(), false, true, false));
+                    ModuleDependency md =
+                            cdiDependency(
+                                    new ModuleDependency(moduleLoader, mds.getName(), mds.isOptional(), false, true, false));
+                    moduleSpecification.addSystemDependency(md);
                 }
             }
         } catch (ModuleLoadException e) {
@@ -117,5 +134,11 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         }
         MicroProfileReactiveMessagingLogger.LOGGER.debugf("Deployment '%s' is not a MicroProfile Fault Tolerance deployment.", deploymentUnit.getName());
         return false;
+    }
+
+    private ModuleDependency cdiDependency(ModuleDependency moduleDependency) {
+        // This is needed following https://issues.redhat.com/browse/WFLY-13641 / https://github.com/wildfly/wildfly/pull/13406
+        moduleDependency.addImportFilter(s -> s.equals("META-INF"), true);
+        return moduleDependency;
     }
 }
