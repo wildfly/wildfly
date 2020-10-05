@@ -31,7 +31,7 @@ public class DeploymentMetricService implements Service {
     public static void install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Resource rootResource, ManagementResourceRegistration managementResourceRegistration) {
         PathAddress deploymentAddress = createDeploymentAddressPrefix(deploymentUnit);
 
-        ServiceBuilder<?> sb = serviceTarget.addService(deploymentUnit.getServiceName().append("metrics"));
+        ServiceBuilder<?> sb = serviceTarget.addService(deploymentUnit.getServiceName().append("microprofile", "metrics"));
         Supplier<MetricCollector> metricCollector = sb.requires(MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE);
 
         /*

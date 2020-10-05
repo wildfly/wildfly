@@ -72,6 +72,10 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-metrics</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
         </dependency>

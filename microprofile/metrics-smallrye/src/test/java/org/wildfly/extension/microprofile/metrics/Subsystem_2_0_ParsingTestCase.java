@@ -22,14 +22,15 @@
 
 package org.wildfly.extension.microprofile.metrics;
 
-import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.HTTP_EXTENSIBILITY_CAPABILITY;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.MANAGEMENT_EXECUTOR;
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.METRICS_HTTP_CONTEXT_CAPABILITY;
 
 import java.io.IOException;
 import java.util.Properties;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
@@ -62,11 +63,15 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         return System.getProperties();
     }
 
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
+    }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
-                HTTP_EXTENSIBILITY_CAPABILITY,
+                METRICS_HTTP_CONTEXT_CAPABILITY,
                 MANAGEMENT_EXECUTOR);
     }
 

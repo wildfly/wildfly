@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.microprofile.metrics;
 
-import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.HTTP_EXTENSIBILITY_CAPABILITY;
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.METRICS_HTTP_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.MANAGEMENT_EXECUTOR;
 
 import java.io.IOException;
@@ -71,7 +71,7 @@ public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
-                HTTP_EXTENSIBILITY_CAPABILITY,
+                METRICS_HTTP_CONTEXT_CAPABILITY,
                 MANAGEMENT_EXECUTOR);
     }
 }

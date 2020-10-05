@@ -53,9 +53,10 @@ public class MicroProfileMetricsExtension implements Extension {
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
+    protected static final ModelVersion VERSION_2_1_0 = ModelVersion.create(2, 1, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_1_0;
 
-    private static final MicroProfileMetricsParser_2_0 CURRENT_PARSER = new MicroProfileMetricsParser_2_0();
+    private static final MicroProfileMetricsParser_2_1 CURRENT_PARSER = new MicroProfileMetricsParser_2_1();
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);
@@ -85,6 +86,7 @@ public class MicroProfileMetricsExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileMetricsParser_1_0.NAMESPACE, MicroProfileMetricsParser_1_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileMetricsParser_2_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileMetricsParser_2_0.NAMESPACE, MicroProfileMetricsParser_2_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileMetricsParser_2_1.NAMESPACE, CURRENT_PARSER);
     }
 }

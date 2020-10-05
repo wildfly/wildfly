@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.metrics;
 
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsExtension.VERSION_2_1_0;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -53,17 +55,22 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
 
     public static final ServiceName WILDFLY_COLLECTOR_SERVICE = METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();
 
-    static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
-    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.metrics.http-context", MetricsContextService.class)
-            .addRequirements(HTTP_EXTENSIBILITY_CAPABILITY)
+    static final String METRICS_HTTP_CONTEXT_CAPABILITY = "org.wildfly.extension.metrics.http-context";
+    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.metrics.http-context", MicroProfileMetricsContextService.class)
+            .addRequirements(METRICS_HTTP_CONTEXT_CAPABILITY)
             .build();
     static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
 
+    /**
+     * @deprecated Enable the security is now controlled by the security-enabled attribute of the metrics subsystem.
+     */
+    @Deprecated
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
+            .setDeprecated(VERSION_2_1_0)
             .build();
 
     static final StringListAttributeDefinition EXPOSED_SUBSYSTEMS = new StringListAttributeDefinition.Builder("exposed-subsystems")

@@ -66,7 +66,8 @@ public class MetricsCollectorService implements Service<MetricCollector> {
     }
 
     MetricsCollectorService(Supplier<ModelControllerClientFactory> modelControllerClientFactory, Supplier<Executor> managementExecutor,
-                            Supplier<ProcessStateNotifier> processStateNotifier, List<String> exposedSubsystems, String globalPrefix) {
+                            Supplier<ProcessStateNotifier> processStateNotifier,
+                            List<String> exposedSubsystems, String globalPrefix) {
         this.modelControllerClientFactory = modelControllerClientFactory;
         this.managementExecutor = managementExecutor;
         this.processStateNotifier = processStateNotifier;

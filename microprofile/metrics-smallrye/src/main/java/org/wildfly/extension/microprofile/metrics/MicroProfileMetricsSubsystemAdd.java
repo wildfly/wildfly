@@ -74,11 +74,10 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, RUNTIME);
 
-        final boolean securityEnabled = MicroProfileMetricsSubsystemDefinition.SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean();
         List<String> exposedSubsystems = MicroProfileMetricsSubsystemDefinition.EXPOSED_SUBSYSTEMS.unwrap(context, model);
         String prefix = MicroProfileMetricsSubsystemDefinition.PREFIX.resolveModelAttribute(context, model).asStringOrNull();
 
-        MetricsContextService.install(context, securityEnabled);
+        MicroProfileMetricsContextService.install(context);
         MetricsCollectorService.install(context, exposedSubsystems, prefix);
         // delay the registration of the metrics in the VERIFY stage so that all resources
         // created during the RUNTIME phase will have been registered in the MRR.
