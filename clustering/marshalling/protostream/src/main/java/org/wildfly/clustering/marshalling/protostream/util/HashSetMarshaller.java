@@ -22,20 +22,19 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.util.Comparator;
-import java.util.SortedMap;
-import java.util.function.Function;
+import java.util.Set;
+import java.util.function.IntFunction;
 
-import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.spi.util.BoundedCollectionExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.HashSetExternalizer.CapacityFactory;
 
 /**
+ * Marshaller for hash table based sets constructed with a capacity rather than a size.
  * @author Paul Ferraro
  */
-public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends ContextualMapMarshaller<T, Comparator<Object>> {
+public class HashSetMarshaller<T extends Set<Object>> extends BoundedCollectionExternalizer<T> {
 
-    @SuppressWarnings("unchecked")
-    public SortedMapMarshaller(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
-        super(targetClass, factory, SortedMap::comparator, (ProtoStreamMarshaller<Comparator<Object>>) (ProtoStreamMarshaller<?>) ObjectMarshaller.INSTANCE);
+    public HashSetMarshaller(Class<T> targetClass, IntFunction<T> factory) {
+        super(targetClass, new CapacityFactory<>(factory));
     }
 }

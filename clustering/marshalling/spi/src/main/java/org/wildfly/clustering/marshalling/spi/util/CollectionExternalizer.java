@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,33 +25,39 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.function.IntFunction;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
- * Externalizers for non-concurrent implementations of {@link Collection}.
+ * Generic externalizer for implementations of {@link Collection}.
  * @author Paul Ferraro
  */
-public class CollectionExternalizer<T extends Collection<Object>> implements Externalizer<T> {
+public class CollectionExternalizer<T extends Collection<Object>, C, CC> implements Externalizer<T> {
 
     private final Class<T> targetClass;
-    private final IntFunction<T> factory;
+    private final Function<CC, T> factory;
+    private final Function<Map.Entry<C, Integer>, CC> constructorContext;
+    private final Function<T, C> context;
+    private final Externalizer<C> contextExternalizer;
 
-    @SuppressWarnings("unchecked")
-    public CollectionExternalizer(Class<?> targetClass, IntFunction<T> factory) {
-        this.targetClass = (Class<T>) targetClass;
+    public CollectionExternalizer(Class<T> targetClass, Function<CC, T> factory, Function<Map.Entry<C, Integer>, CC> constructorContext, Function<T, C> context, Externalizer<C> contextExternalizer) {
+        this.targetClass = targetClass;
         this.factory = factory;
+        this.constructorContext = constructorContext;
+        this.context = context;
+        this.contextExternalizer = contextExternalizer;
     }
 
     @Override
     public void writeObject(ObjectOutput output, T collection) throws IOException {
-        writeCollection(output, collection);
-    }
-
-    static <T extends Collection<Object>> void writeCollection(ObjectOutput output, T collection) throws IOException {
+        C context = this.context.apply(collection);
+        this.contextExternalizer.writeObject(output, context);
         IndexSerializer.VARIABLE.writeInt(output, collection.size());
         for (Object element : collection) {
             output.writeObject(element);
@@ -60,15 +66,22 @@ public class CollectionExternalizer<T extends Collection<Object>> implements Ext
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        C context = this.contextExternalizer.readObject(input);
         int size = IndexSerializer.VARIABLE.readInt(input);
-        return readCollection(input, this.factory.apply(size), size);
-    }
-
-    static <T extends Collection<Object>> T readCollection(ObjectInput input, T collection, int size) throws IOException, ClassNotFoundException {
+        CC constructorContext = this.constructorContext.apply(new AbstractMap.SimpleImmutableEntry<>(context, size));
+        T collection = this.factory.apply(constructorContext);
         for (int i = 0; i < size; ++i) {
             collection.add(input.readObject());
         }
         return collection;
+    }
+
+    @Override
+    public OptionalInt size(T collection) {
+        if (!collection.isEmpty()) return OptionalInt.empty();
+        C context = this.context.apply(collection);
+        OptionalInt contextSize = this.contextExternalizer.size(context);
+        return contextSize.isPresent() ? OptionalInt.of(contextSize.getAsInt() + IndexSerializer.VARIABLE.size(collection.size())) : OptionalInt.empty();
     }
 
     @Override

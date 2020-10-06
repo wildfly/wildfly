@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.function.Function;
@@ -35,19 +36,21 @@ import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
+ * Generic marshaller for {@link Map} implementations.
  * @author Paul Ferraro
  */
-public abstract class MapMarshaller<T extends Map<Object, Object>, C> implements ProtoStreamMarshaller<T> {
+public class MapMarshaller<T extends Map<Object, Object>, C, CC> implements ProtoStreamMarshaller<T> {
 
     private final Class<T> targetClass;
-    private final Function<C, T> factory;
+    private final Function<CC, T> factory;
+    private final Function<Map.Entry<C, Integer>, CC> constructorContext;
     private final Function<T, C> context;
     private final ProtoStreamMarshaller<C> contextMarshaller;
 
-    @SuppressWarnings("unchecked")
-    public MapMarshaller(Class<?> targetClass, Function<C, T> factory, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
-        this.targetClass = (Class<T>) targetClass;
+    public MapMarshaller(Class<T> targetClass, Function<CC, T> factory, Function<Map.Entry<C, Integer>, CC> constructorContext, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
+        this.targetClass = targetClass;
         this.factory = factory;
+        this.constructorContext = constructorContext;
         this.context = context;
         this.contextMarshaller = contextMarshaller;
     }
@@ -55,8 +58,9 @@ public abstract class MapMarshaller<T extends Map<Object, Object>, C> implements
     @Override
     public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
         C mapContext = this.contextMarshaller.readFrom(context, reader);
-        T map = this.factory.apply(mapContext);
         int size = reader.readUInt32();
+        CC constructorContext = this.constructorContext.apply(new AbstractMap.SimpleImmutableEntry<>(mapContext, size));
+        T map = this.factory.apply(constructorContext);
         for (int i = 0; i < size; ++i) {
             map.put(ObjectMarshaller.INSTANCE.readFrom(context, reader), ObjectMarshaller.INSTANCE.readFrom(context, reader));
         }

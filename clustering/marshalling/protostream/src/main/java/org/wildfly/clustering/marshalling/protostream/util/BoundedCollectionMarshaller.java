@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,32 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.util.Collection;
-import java.util.function.Function;
+import java.util.Map;
+import java.util.function.IntFunction;
 
-import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
+import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
 
 /**
- * Externalizer for singleton collections.
+ * Collection marshaller for bounded collections.
  * @author Paul Ferraro
  */
-public class SingletonCollectionExternalizer<T extends Collection<Object>> extends ObjectExternalizer<T> {
-    private static final Function<Collection<Object>, Object> ACCESSOR = new Function<Collection<Object>, Object>() {
-        @Override
-        public Object apply(Collection<Object> collection) {
-            return collection.iterator().next();
-        }
-    };
+public class BoundedCollectionMarshaller<T extends Collection<Object>> extends CollectionMarshaller<T, Void, Integer> {
 
-    @SuppressWarnings("unchecked")
-    public SingletonCollectionExternalizer(Function<Object, T> factory) {
-        super((Class<T>) factory.apply(null).getClass(), factory, accessor());
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends Collection<Object>> Function<T, Object> accessor() {
-        return (Function<T, Object>) ACCESSOR;
+    public BoundedCollectionMarshaller(Class<T> targetClass, IntFunction<T> factory) {
+        super(targetClass, factory::apply, Map.Entry::getValue, ValueFunction.voidFunction(), PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }

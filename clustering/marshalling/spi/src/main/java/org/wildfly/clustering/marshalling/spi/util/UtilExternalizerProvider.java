@@ -52,8 +52,8 @@ import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
  */
 public enum UtilExternalizerProvider implements ExternalizerProvider {
 
-    ARRAY_DEQUE(new CollectionExternalizer<>(ArrayDeque.class, ArrayDeque::new)),
-    ARRAY_LIST(new CollectionExternalizer<>(ArrayList.class, ArrayList::new)),
+    ARRAY_DEQUE(new BoundedCollectionExternalizer<>(ArrayDeque.class, ArrayDeque::new)),
+    ARRAY_LIST(new BoundedCollectionExternalizer<>(ArrayList.class, ArrayList::new)),
     BIT_SET(new BitSetExternalizer()),
     CALENDAR(new CalendarExternalizer()),
     CURRENCY(new StringExternalizer<>(Currency.class, Currency::getInstance, Currency::getCurrencyCode)),
@@ -71,10 +71,10 @@ public enum UtilExternalizerProvider implements ExternalizerProvider {
     ENUM_MAP(new EnumMapExternalizer<>()),
     ENUM_SET(new EnumSetExternalizer<>()),
     HASH_MAP(new HashMapExternalizer<>(HashMap.class, HashMap::new)),
-    HASH_SET(new CollectionExternalizer<>(HashSet.class, HashSet::new)),
+    HASH_SET(new HashSetExternalizer<>(HashSet.class, HashSet::new)),
     LINKED_HASH_MAP(new LinkedHashMapExternalizer()),
-    LINKED_HASH_SET(new CollectionExternalizer<>(LinkedHashSet.class, LinkedHashSet::new)),
-    LINKED_LIST(new CollectionExternalizer<>(LinkedList.class, size -> new LinkedList<>())),
+    LINKED_HASH_SET(new HashSetExternalizer<>(LinkedHashSet.class, LinkedHashSet::new)),
+    LINKED_LIST(new UnboundedCollectionExternalizer<>(LinkedList.class, LinkedList::new)),
     LOCALE(new StringExternalizer<>(Locale.class, Locale::forLanguageTag, Locale::toLanguageTag)),
     NATURAL_ORDER_COMPARATOR(new ValueExternalizer<>(Comparator.naturalOrder())),
     @SuppressWarnings({ "unchecked", "rawtypes" })

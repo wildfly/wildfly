@@ -152,18 +152,8 @@ public enum OptionalMarshaller implements MarshallerProvider {
         private final ProtoStreamMarshaller<Optional> marshaller = new FunctionalObjectMarshaller<>(Optional.class, Optional::ofNullable, value -> value.orElse(null));
 
         @Override
-        public Optional<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return this.marshaller.readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            this.marshaller.writeTo(context, writer, (Optional<?>) value);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return this.marshaller.size(context, (Optional<?>) value);
+        public ProtoStreamMarshaller<?> getMarshaller() {
+            return this.marshaller;
         }
     }
     ;

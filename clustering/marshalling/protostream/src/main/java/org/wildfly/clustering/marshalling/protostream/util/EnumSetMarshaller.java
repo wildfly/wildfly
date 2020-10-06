@@ -44,14 +44,13 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumSet<E>> {
-    private static final ProtoStreamMarshaller<byte[]> BYTE_ARRAY_MARSHALLER = AnyField.BYTE_ARRAY.cast(byte[].class);
 
     @SuppressWarnings("unchecked")
     @Override
     public EnumSet<E> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
         Class<E> enumClass = (Class<E>) ClassMarshaller.ANY.readFrom(context, reader);
         EnumSet<E> set = EnumSet.noneOf(enumClass);
-        BitSet values = BitSet.valueOf(BYTE_ARRAY_MARSHALLER.readFrom(context, reader));
+        BitSet values = BitSet.valueOf(AnyField.BYTE_ARRAY.cast(byte[].class).readFrom(context, reader));
         E[] enumValues = enumClass.getEnumConstants();
         for (int i = 0; i < enumValues.length; ++i) {
             if (values.get(i)) {
@@ -71,7 +70,7 @@ public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
         for (int i = 0; i < enumValues.length; ++i) {
             values.set(i, set.contains(enumValues[i]));
         }
-        BYTE_ARRAY_MARSHALLER.writeTo(context, writer, values.toByteArray());
+        AnyField.BYTE_ARRAY.writeTo(context, writer, values.toByteArray());
     }
 
     @Override

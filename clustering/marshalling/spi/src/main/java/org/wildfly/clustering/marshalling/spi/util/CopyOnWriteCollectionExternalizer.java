@@ -27,16 +27,18 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
- * Externalizers for copy-on-write implementations of {@link Collection}.
+ * Externalizer for copy-on-write implementations of {@link Collection}.
  * @author Paul Ferraro
  */
 public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> implements Externalizer<T> {
+    @SuppressWarnings("unchecked")
+    private static final Externalizer<Collection<Object>> COLLECTION_EXTERNALIZER = new BoundedCollectionExternalizer<>((Class<Collection<Object>>) (Class<?>) ArrayList.class, ArrayList::new);
 
     private final Class<T> targetClass;
     private final Function<Collection<Object>, T> factory;
@@ -48,15 +50,19 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
     }
 
     @Override
+    public OptionalInt size(T collection) {
+        return COLLECTION_EXTERNALIZER.size(collection);
+    }
+
+    @Override
     public void writeObject(ObjectOutput output, T collection) throws IOException {
-        CollectionExternalizer.writeCollection(output, collection);
+        COLLECTION_EXTERNALIZER.writeObject(output, collection);
     }
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = IndexSerializer.VARIABLE.readInt(input);
         // Collect all elements first to avoid COW costs per element.
-        return this.factory.apply(CollectionExternalizer.readCollection(input, new ArrayList<>(size), size));
+        return this.factory.apply(COLLECTION_EXTERNALIZER.readObject(input));
     }
 
     @Override

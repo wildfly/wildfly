@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,32 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.util.Collection;
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
-
 /**
- * Externalizer for singleton collections.
+ * Behaves the same as {@link Function#identity()}, where the return type is a superclass of the function parameter.
  * @author Paul Ferraro
  */
-public class SingletonCollectionExternalizer<T extends Collection<Object>> extends ObjectExternalizer<T> {
-    private static final Function<Collection<Object>, Object> ACCESSOR = new Function<Collection<Object>, Object>() {
-        @Override
-        public Object apply(Collection<Object> collection) {
-            return collection.iterator().next();
-        }
-    };
+public enum IdentityFunction implements Function<Object, Object> {
+    INSTANCE;
 
-    @SuppressWarnings("unchecked")
-    public SingletonCollectionExternalizer(Function<Object, T> factory) {
-        super((Class<T>) factory.apply(null).getClass(), factory, accessor());
+    @Override
+    public Object apply(Object value) {
+        return value;
     }
 
+    /**
+     * Returns a function that returns its parameter.
+     * @param <T> the parameter type
+     * @param <R> the return type
+     * @return a function that return its parameter
+     */
     @SuppressWarnings("unchecked")
-    public static <T extends Collection<Object>> Function<T, Object> accessor() {
-        return (Function<T, Object>) ACCESSOR;
+    public static <T extends R, R> Function<T, R> getInstance() {
+        return (Function<T, R>) INSTANCE;
     }
 }

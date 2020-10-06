@@ -135,7 +135,7 @@ public enum ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
     LOADED() {
         @Override
         public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            String className = (String) AnyField.STRING.readFrom(context, reader);
+            String className = AnyField.STRING.cast(String.class).readFrom(context, reader);
             Module module = (Module) ObjectMarshaller.INSTANCE.readFrom(context, reader);
             PrivilegedExceptionAction<Class<?>> action = new PrivilegedExceptionAction<Class<?>>() {
                 @Override
@@ -166,7 +166,7 @@ public enum ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
     NAME() {
         @Override
         public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            String typeName = (String) AnyField.STRING.readFrom(context, reader);
+            String typeName = AnyField.STRING.cast(String.class).readFrom(context, reader);
             BaseMarshaller<?> marshaller = context.getMarshaller(typeName);
             return marshaller.getJavaClass();
         }
@@ -202,8 +202,9 @@ public enum ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
     },
     ;
 
+    @SuppressWarnings("unchecked")
     @Override
     public Class<? extends Class<?>> getJavaClass() {
-        return null;
+        return (Class<? extends Class<?>>) (Class<?>) Class.class;
     }
 }

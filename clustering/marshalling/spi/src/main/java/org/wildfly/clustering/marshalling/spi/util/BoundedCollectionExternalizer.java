@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,29 +23,19 @@
 package org.wildfly.clustering.marshalling.spi.util;
 
 import java.util.Collection;
-import java.util.function.Function;
+import java.util.Map;
+import java.util.function.IntFunction;
 
-import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
+import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
- * Externalizer for singleton collections.
+ * Externalizer for bounded implementations of {@link Collection}.
  * @author Paul Ferraro
  */
-public class SingletonCollectionExternalizer<T extends Collection<Object>> extends ObjectExternalizer<T> {
-    private static final Function<Collection<Object>, Object> ACCESSOR = new Function<Collection<Object>, Object>() {
-        @Override
-        public Object apply(Collection<Object> collection) {
-            return collection.iterator().next();
-        }
-    };
+public class BoundedCollectionExternalizer<T extends Collection<Object>> extends CollectionExternalizer<T, Void, Integer> {
 
-    @SuppressWarnings("unchecked")
-    public SingletonCollectionExternalizer(Function<Object, T> factory) {
-        super((Class<T>) factory.apply(null).getClass(), factory, accessor());
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends Collection<Object>> Function<T, Object> accessor() {
-        return (Function<T, Object>) ACCESSOR;
+    public BoundedCollectionExternalizer(Class<T> targetClass, IntFunction<T> factory) {
+        super(targetClass, factory::apply, Map.Entry::getValue, ValueFunction.voidFunction(), ValueExternalizer.VOID);
     }
 }

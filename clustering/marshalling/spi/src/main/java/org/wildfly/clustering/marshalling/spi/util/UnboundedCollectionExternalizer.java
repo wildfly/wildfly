@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,29 +23,20 @@
 package org.wildfly.clustering.marshalling.spi.util;
 
 import java.util.Collection;
-import java.util.function.Function;
+import java.util.Map;
+import java.util.function.Supplier;
 
-import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
+import org.wildfly.clustering.marshalling.spi.SupplierFunction;
+import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
- * Externalizer for singleton collections.
+ * Externalizer for unbounded implementations of {@link Collection}.
  * @author Paul Ferraro
  */
-public class SingletonCollectionExternalizer<T extends Collection<Object>> extends ObjectExternalizer<T> {
-    private static final Function<Collection<Object>, Object> ACCESSOR = new Function<Collection<Object>, Object>() {
-        @Override
-        public Object apply(Collection<Object> collection) {
-            return collection.iterator().next();
-        }
-    };
+public class UnboundedCollectionExternalizer<T extends Collection<Object>> extends CollectionExternalizer<T, Void, Void> {
 
-    @SuppressWarnings("unchecked")
-    public SingletonCollectionExternalizer(Function<Object, T> factory) {
-        super((Class<T>) factory.apply(null).getClass(), factory, accessor());
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends Collection<Object>> Function<T, Object> accessor() {
-        return (Function<T, Object>) ACCESSOR;
+    public UnboundedCollectionExternalizer(Class<T> targetClass, Supplier<T> factory) {
+        super(targetClass, new SupplierFunction<>(factory), Map.Entry::getKey, ValueFunction.voidFunction(), ValueExternalizer.VOID);
     }
 }

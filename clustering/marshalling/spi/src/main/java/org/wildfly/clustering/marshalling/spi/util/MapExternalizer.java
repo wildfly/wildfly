@@ -25,7 +25,9 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -35,20 +37,26 @@ import org.wildfly.clustering.marshalling.spi.IndexSerializer;
  * Externalizers for implementations of {@link Map}.
  * @author Paul Ferraro
  */
-public abstract class MapExternalizer<T extends Map<Object, Object>, C> implements Externalizer<T> {
+public class MapExternalizer<T extends Map<Object, Object>, C, CC> implements Externalizer<T> {
 
     private final Class<T> targetClass;
-    private final Function<C, T> factory;
+    private final Function<CC, T> factory;
+    private final Function<Map.Entry<C, Integer>, CC> constructorContext;
+    private final Function<T, C> context;
+    private final Externalizer<C> contextExternalizer;
 
-    @SuppressWarnings("unchecked")
-    protected MapExternalizer(Class<?> targetClass, Function<C, T> factory) {
-        this.targetClass = (Class<T>) targetClass;
+    protected MapExternalizer(Class<T> targetClass, Function<CC, T> factory, Function<Map.Entry<C, Integer>, CC> constructorContext, Function<T, C> context, Externalizer<C> contextExternalizer) {
+        this.targetClass = targetClass;
         this.factory = factory;
+        this.constructorContext = constructorContext;
+        this.context = context;
+        this.contextExternalizer = contextExternalizer;
     }
 
     @Override
     public void writeObject(ObjectOutput output, T map) throws IOException {
-        this.writeContext(output, map);
+        C context = this.context.apply(map);
+        this.contextExternalizer.writeObject(output, context);
         IndexSerializer.VARIABLE.writeInt(output, map.size());
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             output.writeObject(entry.getKey());
@@ -58,9 +66,10 @@ public abstract class MapExternalizer<T extends Map<Object, Object>, C> implemen
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        C context = this.readContext(input);
-        T map = this.factory.apply(context);
+        C context = this.contextExternalizer.readObject(input);
         int size = IndexSerializer.VARIABLE.readInt(input);
+        CC constructorContext = this.constructorContext.apply(new AbstractMap.SimpleImmutableEntry<>(context, size));
+        T map = this.factory.apply(constructorContext);
         for (int i = 0; i < size; ++i) {
             map.put(input.readObject(), input.readObject());
         }
@@ -68,24 +77,15 @@ public abstract class MapExternalizer<T extends Map<Object, Object>, C> implemen
     }
 
     @Override
+    public OptionalInt size(T map) {
+        if (!map.isEmpty()) return OptionalInt.empty();
+        C context = this.context.apply(map);
+        OptionalInt contextSize = this.contextExternalizer.size(context);
+        return contextSize.isPresent() ? OptionalInt.of(contextSize.getAsInt() + IndexSerializer.VARIABLE.size(map.size())) : OptionalInt.empty();
+    }
+
+    @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
     }
-
-    /**
-     * Writes the context of the specified map to the specified output stream.
-     * @param output an output stream
-     * @param map the target map
-     * @throws IOException if the constructor context cannot be written to the stream
-     */
-    protected abstract void writeContext(ObjectOutput output, T map) throws IOException;
-
-    /**
-     * Reads the map context from the specified input stream.
-     * @param input an input stream
-     * @return the map constructor context
-     * @throws IOException if the constructor context cannot be read from the stream
-     * @throws ClassNotFoundException if a class could not be found
-     */
-    protected abstract C readContext(ObjectInput input) throws IOException, ClassNotFoundException;
 }
