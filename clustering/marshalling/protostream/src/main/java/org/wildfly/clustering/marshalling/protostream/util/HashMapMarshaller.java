@@ -23,16 +23,18 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.IntFunction;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
+import org.wildfly.clustering.marshalling.spi.util.HashSetExternalizer.CapacityFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class HashMapMarshaller<T extends Map<Object, Object>> extends MapMarshaller<T, Void> {
+public class HashMapMarshaller<T extends Map<Object, Object>> extends MapMarshaller<T, Void, Integer> {
 
-    public HashMapMarshaller(Class<?> targetClass, Supplier<T> factory) {
-        super(targetClass, c -> factory.get(), map -> null, PrimitiveMarshaller.VOID.cast(Void.class));
+    public HashMapMarshaller(Class<T> targetClass, IntFunction<T> factory) {
+        super(targetClass, new CapacityFactory<>(factory), Map.Entry::getValue, ValueFunction.voidFunction(), PrimitiveMarshaller.VOID.cast(Void.class));
     }
 }

@@ -11,6 +11,9 @@ should be located in jar's `META-INF` directory.
         <ejb-receivers exclude-local-receiver="false" local-receiver-pass-by-value="true">
             <remoting-ejb-receiver outbound-connection-ref="connection" connection-timeout="3000"/>
         </ejb-receivers>
+        <http-connections>
+            <http-connection uri="http://localhost:8180/wildfly-services"/>
+        </http-connections>
         <profile name="test-profile"/>
     </client-context>
 </jboss-ejb-client>
@@ -49,6 +52,18 @@ client context, should use pass-by-reference (instead of pass-by-value) semantic
 
 * `outbound-connection-ref` Reference to an outbound connection configured in the remoting subsystem.
 * `connect-timeout` The timeout, in milliseconds, to be used while creating a connection.
+
+[[http-connections]]
+=== <http-connections>
+
+Configures remote http-connection for EJB invocation
+
+[[http-connection]]
+==== <http-connection>
+
+HTTP Connection for EJB invocation.
+
+* `uri` Uniform Resource Identifier for the HTTP connection should be defined.
 
 [[profile]]
 === <profile>

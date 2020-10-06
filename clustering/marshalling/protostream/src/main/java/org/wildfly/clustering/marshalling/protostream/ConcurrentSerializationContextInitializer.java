@@ -35,9 +35,8 @@ import org.wildfly.clustering.marshalling.protostream.util.concurrent.Concurrent
  */
 public class ConcurrentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.util.concurrent.proto";
+    public ConcurrentSerializationContextInitializer() {
+        super("java.util.concurrent.proto");
     }
 
     @Override

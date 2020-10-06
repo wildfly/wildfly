@@ -22,33 +22,20 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
+import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class LinkedHashMapMarshaller extends MapMarshaller<LinkedHashMap<Object, Object>, Boolean> {
+public class LinkedHashMapMarshaller extends MapMarshaller<LinkedHashMap<Object, Object>, Boolean, Map.Entry<Boolean, Integer>> {
 
+    @SuppressWarnings("unchecked")
     public LinkedHashMapMarshaller() {
-        super(LinkedHashMap.class, accessOrder -> new LinkedHashMap<>(16, 0.75f, accessOrder), map -> {
-            Object insertOrder = new Object();
-            Object accessOrder = new Object();
-            map.put(insertOrder, null);
-            map.put(accessOrder, null);
-            // Access first inserted entry
-            // If map uses access order, this element will move to the tail of the map
-            map.get(insertOrder);
-            Iterator<Object> keys = map.keySet().iterator();
-            Object element = keys.next();
-            while ((element != insertOrder) && (element != accessOrder)) {
-                element = keys.next();
-            }
-            map.remove(insertOrder);
-            map.remove(accessOrder);
-            return element == accessOrder;
-        }, PrimitiveMarshaller.BOOLEAN.cast(Boolean.TYPE));
+        super((Class<LinkedHashMap<Object, Object>>) (Class<?>) LinkedHashMap.class, LinkedHashMapExternalizer.FACTORY, Function.identity(), LinkedHashMapExternalizer.ACCESS_ORDER, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class));
     }
 }

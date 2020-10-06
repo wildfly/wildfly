@@ -38,7 +38,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.as.remoting.RemotingConnectorBindingInfoService.RemotingConnectorInfo;
+import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
@@ -106,10 +106,10 @@ final class AssociationImpl implements Association, AutoCloseable {
     private final Map<Integer, ClusterTopologyRegistrar> clusterTopologyRegistrars;
     private volatile Executor executor;
 
-    AssociationImpl(final DeploymentRepository deploymentRepository, final List<Map.Entry<RemotingConnectorInfo, Registry<String, List<ClientMapping>>>> clientMappingRegistries) {
+    AssociationImpl(final DeploymentRepository deploymentRepository, final List<Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>>> clientMappingRegistries) {
         this.deploymentRepository = deploymentRepository;
         this.clusterTopologyRegistrars = clientMappingRegistries.isEmpty() ? Collections.emptyMap() : new HashMap<>(clientMappingRegistries.size());
-        for (Map.Entry<RemotingConnectorInfo, Registry<String, List<ClientMapping>>> entry : clientMappingRegistries) {
+        for (Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>> entry : clientMappingRegistries) {
             this.clusterTopologyRegistrars.put(entry.getKey().getSocketBinding().getSocketAddress().getPort(), new ClusterTopologyRegistrar(entry.getValue()));
         }
     }

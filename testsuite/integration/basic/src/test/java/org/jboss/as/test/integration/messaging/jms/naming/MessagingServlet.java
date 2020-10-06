@@ -22,6 +22,8 @@
 package org.jboss.as.test.integration.messaging.jms.naming;
 
 
+import org.jboss.as.test.shared.TimeoutUtil;
+
 import java.io.IOException;
 import javax.annotation.Resource;
 
@@ -64,6 +66,6 @@ public class MessagingServlet extends HttpServlet {
     private String sendAndReceiveMessage(String text) {
         JMSConsumer consumer = context.createConsumer(queue);
         jmsSender.sendMessage(text);
-        return consumer.receiveBody(String.class, 5000);
+        return consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
     }
 }

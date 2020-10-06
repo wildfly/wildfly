@@ -50,7 +50,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
             return OptionalInt.of(0);
         }
     },
-    BOOLEAN(Boolean.TYPE) {
+    BOOLEAN(Boolean.class) {
         @Override
         public Boolean readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Boolean.valueOf(reader.readBool());
@@ -66,7 +66,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
             return OptionalInt.of(Byte.BYTES);
         }
     },
-    BYTE(Byte.TYPE) {
+    BYTE(Byte.class) {
         @Override
         public Byte readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Byte.valueOf(((RawProtoStreamReaderImpl) reader).getDelegate().readRawByte());
@@ -82,7 +82,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
             return OptionalInt.of(1);
         }
     },
-    SHORT(Short.TYPE) {
+    SHORT(Short.class) {
         @Override
         public Short readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Short.valueOf((short) reader.readSInt32());
@@ -98,7 +98,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
             return OptionalInt.of(Predictable.signedIntSize(((Short) value).shortValue()));
         }
     },
-    INTEGER(Integer.TYPE) {
+    INTEGER(Integer.class) {
         @Override
         public Integer readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Integer.valueOf(reader.readSInt32());
@@ -114,7 +114,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
             return OptionalInt.of(Predictable.signedIntSize(((Integer) value).intValue()));
         }
     },
-    LONG(Long.TYPE) {
+    LONG(Long.class) {
         @Override
         public Long readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Long.valueOf(reader.readSInt64());
@@ -130,7 +130,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
             return OptionalInt.of(Predictable.signedLongSize(((Long) value).longValue()));
         }
     },
-    FLOAT(Float.TYPE) {
+    FLOAT(Float.class) {
         @Override
         public Float readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Float.valueOf(reader.readFloat());
@@ -146,7 +146,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
             return OptionalInt.of(Float.BYTES);
         }
     },
-    DOUBLE(Double.TYPE) {
+    DOUBLE(Double.class) {
         @Override
         public Double readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Double.valueOf(reader.readDouble());
@@ -162,7 +162,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
             return OptionalInt.of(Double.BYTES);
         }
     },
-    CHARACTER(Character.TYPE) {
+    CHARACTER(Character.class) {
         @Override
         public Character readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Character.valueOf((char) reader.readUInt32());

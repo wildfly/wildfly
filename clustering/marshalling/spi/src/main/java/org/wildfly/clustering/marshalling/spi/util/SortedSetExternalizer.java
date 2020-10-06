@@ -22,48 +22,24 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.IdentityFunction;
+import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
 
 /**
  * Externalizers for implementations of {@link SortedSet}.
  * Requires additional serialization of the comparator.
  * @author Paul Ferraro
  */
-public class SortedSetExternalizer<T extends SortedSet<Object>> implements Externalizer<T> {
-
-    private final Class<T> targetClass;
-    private final Function<Comparator<? super Object>, T> factory;
-
+public class SortedSetExternalizer<T extends SortedSet<Object>> extends ContextualCollectionExternalizer<T, Comparator<Object>> {
     @SuppressWarnings("unchecked")
-    public SortedSetExternalizer(Class<?> targetClass, Function<Comparator<? super Object>, T> factory) {
-        this.targetClass = (Class<T>) targetClass;
-        this.factory = factory;
-    }
+    private static final Externalizer<Comparator<Object>> COMPARATOR_EXTERNALIZER = (Externalizer<Comparator<Object>>) (Externalizer<?>) new ObjectExternalizer<>(Comparator.class, Comparator.class::cast, IdentityFunction.getInstance());
 
-    @Override
-    public void writeObject(ObjectOutput output, T set) throws IOException {
-        output.writeObject(set.comparator());
-        CollectionExternalizer.writeCollection(output, set);
-    }
-
-    @Override
-    public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        @SuppressWarnings("unchecked")
-        Comparator<? super Object> comparator = (Comparator<? super Object>) input.readObject();
-        int size = IndexSerializer.VARIABLE.readInt(input);
-        return CollectionExternalizer.readCollection(input, this.factory.apply(comparator), size);
-    }
-
-    @Override
-    public Class<T> getTargetClass() {
-        return this.targetClass;
+    public SortedSetExternalizer(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
+        super(targetClass, factory, SortedSet::comparator, COMPARATOR_EXTERNALIZER);
     }
 }

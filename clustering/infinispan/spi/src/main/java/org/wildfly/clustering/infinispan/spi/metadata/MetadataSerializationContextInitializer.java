@@ -34,9 +34,8 @@ import org.wildfly.clustering.marshalling.protostream.AbstractSerializationConte
  */
 public class MetadataSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.infinispan.metadata.proto";
+    public MetadataSerializationContextInitializer() {
+        super("org.infinispan.metadata.proto");
     }
 
     @Override

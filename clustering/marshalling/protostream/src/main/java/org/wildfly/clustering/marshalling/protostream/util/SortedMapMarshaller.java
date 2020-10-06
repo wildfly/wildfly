@@ -32,10 +32,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 /**
  * @author Paul Ferraro
  */
-public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends MapMarshaller<T, Comparator<Object>> {
+public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends ContextualMapMarshaller<T, Comparator<Object>> {
 
     @SuppressWarnings("unchecked")
-    public SortedMapMarshaller(Class<?> targetClass, Function<Comparator<Object>, T> factory) {
+    public SortedMapMarshaller(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
         super(targetClass, factory, SortedMap::comparator, (ProtoStreamMarshaller<Comparator<Object>>) (ProtoStreamMarshaller<?>) ObjectMarshaller.INSTANCE);
     }
 }

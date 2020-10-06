@@ -33,9 +33,8 @@ import org.wildfly.clustering.marshalling.spi.sql.SQLExternalizerProvider;
  */
 public class SQLSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "java.sql.proto";
+    public SQLSerializationContextInitializer() {
+        super("java.sql.proto");
     }
 
     @Override

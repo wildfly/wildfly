@@ -32,9 +32,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.PropertyPermission;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -53,6 +55,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.security.common.VaultHandler;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -164,7 +167,10 @@ public class MDBWithVaultedPropertiesTestCase {
         return ShrinkWrap.create(JavaArchive.class, "MDBWithVaultedPropertiesTestCase.jar")
                 .addClass(StoreVaultedPropertyTask.class)
                 .addClass(MDB.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addClass(TimeoutUtil.class)
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
     }
 
     @Resource(mappedName = CLEAR_TEXT_DESTINATION_LOOKUP)
@@ -184,7 +190,7 @@ public class MDBWithVaultedPropertiesTestCase {
                     .send(queue, text);
 
             JMSConsumer consumer = context.createConsumer(replyTo);
-            String reply = consumer.receiveBody(String.class, 5000);
+            String reply = consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
             assertEquals(text, reply);
         }
     }

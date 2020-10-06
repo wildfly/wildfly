@@ -165,6 +165,18 @@
                 <executions>
                     <execution>
                         <id>default-test</id>
+                        <configuration>
+                            <excludes>
+                                <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase.java</exclude>
+                            </excludes>
+                        </configuration>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>layers-test</id>
+                        <phase>none</phase>
                         <goals>
                             <goal>test</goal>
                         </goals>
@@ -264,6 +276,7 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>microprofile-platform</layer>
+                                                <layer>ejb</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -274,11 +287,15 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <!-- Re-enable the default surefire execution -->
+                        <!-- Enable the layers-test surefire execution -->
                         <executions>
                             <execution>
-                                <id>default-test</id>
+                                <id>layers-test</id>
                                 <phase>test</phase>
+                            </execution>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
                             </execution>
                             <execution>
                                 <id>standalone-enabled-microprofile-test</id>

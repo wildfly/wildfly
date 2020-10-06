@@ -177,7 +177,6 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         builder.security().read(this.security.get());
         // Apply properties next, which may override formal security configuration
         builder.withProperties(this.properties)
-                .marshaller(new JBossMarshaller(this.loader.get(), this.module.get()))
                 .connectionTimeout(this.connectionTimeout)
                 .keySizeEstimate(this.keySizeEstimate)
                 .maxRetries(this.maxRetries)

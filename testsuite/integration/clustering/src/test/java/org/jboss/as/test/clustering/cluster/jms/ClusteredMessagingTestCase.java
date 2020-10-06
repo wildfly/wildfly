@@ -45,6 +45,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -206,7 +207,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     }
 
     protected static void receiveMessage(JMSConsumer consumer, String expectedText) {
-        String text = consumer.receiveBody(String.class, 5000);
+        String text = consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
         assertNotNull(text);
         assertEquals(expectedText, text);
     }

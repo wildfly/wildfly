@@ -33,9 +33,8 @@ import org.wildfly.clustering.marshalling.TestInvocationHandlerExternalizer;
 @MetaInfServices(SerializationContextInitializer.class)
 public class TestSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.wildfly.clustering.marshalling.proto";
+    public TestSerializationContextInitializer() {
+        super("org.wildfly.clustering.marshalling.proto");
     }
 
     @Override

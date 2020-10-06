@@ -90,7 +90,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
             }
         }
     },
-    NON_BLOCKING("non-blocking", 1, 2, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
+    NON_BLOCKING("non-blocking", 2, 2, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
         @Override
         public void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
             if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {

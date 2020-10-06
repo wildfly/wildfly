@@ -112,10 +112,14 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
                 throw WSLogger.ROOT_LOGGER.endpointAlreadyStopped(endpoint.getShortName());
             }
             SecurityDomainContext securityDomainContext = endpoint.getSecurityDomainContext();
-            securityDomainContext.runAs((Callable<Void>) () -> {
+            if (securityDomainContext != null) {
+                securityDomainContext.runAs((Callable<Void>) () -> {
+                    invokeInternal(endpoint, wsInvocation);
+                    return null;
+                });
+            } else {
                 invokeInternal(endpoint, wsInvocation);
-                return null;
-            });
+            }
         } catch (Throwable t) {
             handleInvocationException(t);
         } finally {

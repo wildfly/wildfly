@@ -32,7 +32,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.util.CollectionMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.BoundedCollectionMarshaller;
 
 /**
  * ProtoStream optimized marshaller for copy-on-write implementations of {@link Collection}.
@@ -40,7 +40,7 @@ import org.wildfly.clustering.marshalling.protostream.util.CollectionMarshaller;
  */
 public class CopyOnWriteCollectionMarshaller<T extends Collection<Object>> implements ProtoStreamMarshaller<T> {
     @SuppressWarnings("unchecked")
-    private static final ProtoStreamMarshaller<Collection<Object>> COLLECTION_MARSHALLER = new CollectionMarshaller<>((Class<Collection<Object>>) (Class<?>) Collection.class, ArrayList::new);
+    private static final ProtoStreamMarshaller<Collection<Object>> COLLECTION_MARSHALLER = new BoundedCollectionMarshaller<>((Class<Collection<Object>>) (Class<?>) Collection.class, ArrayList::new);
 
     private final Class<T> targetClass;
     private final Function<Collection<Object>, T> factory;

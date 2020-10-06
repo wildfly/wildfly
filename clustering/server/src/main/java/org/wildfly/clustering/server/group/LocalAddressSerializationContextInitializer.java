@@ -35,9 +35,8 @@ import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 @MetaInfServices(SerializationContextInitializer.class)
 public class LocalAddressSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.infinispan.remoting.transport.proto";
+    public LocalAddressSerializationContextInitializer() {
+        super("org.infinispan.remoting.transport.proto");
     }
 
     @Override

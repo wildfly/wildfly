@@ -34,6 +34,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * @author Paul Ferraro
  */
 public class ValueExternalizer<T> implements Externalizer<T> {
+    public static final Externalizer<Void> VOID = new ValueExternalizer<>(null);
 
     private final T value;
 

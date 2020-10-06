@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 import java.net.SocketPermission;
 import java.net.URL;
+import java.util.PropertyPermission;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -163,10 +164,11 @@ public class ExternalMessagingDeploymentTestCase {
     @Deployment
     public static WebArchive createArchive() {
         return create(WebArchive.class, "ClientMessagingDeploymentTestCase.war")
-                .addClass(MessagingServlet.class)
+                .addClasses(MessagingServlet.class, TimeoutUtil.class)
                 .addClasses(QueueMDB.class, TopicMDB.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
-                        new SocketPermission("localhost", "resolve")), "permissions.xml")
+                        new SocketPermission("localhost", "resolve"),
+                        new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 

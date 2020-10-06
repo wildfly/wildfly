@@ -22,27 +22,48 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
  */
 public abstract class AbstractSerializationContextInitializer implements SerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return this.getClass().getPackage().getName() + ".proto";
+    private final String resourceName;
+
+    protected AbstractSerializationContextInitializer() {
+        this.resourceName = this.getClass().getPackage().getName() + ".proto";
     }
 
+    protected AbstractSerializationContextInitializer(String resourceName) {
+        this.resourceName = resourceName;
+    }
+
+    @Deprecated
     @Override
-    public String getProtoFile() {
-        return FileDescriptorSource.getResourceAsString(this.getClass(), "/" + this.getProtoFileName());
+    public final String getProtoFileName() {
+        return null;
+    }
+
+    @Deprecated
+    @Override
+    public final String getProtoFile() {
+        return null;
     }
 
     @Override
     public void registerSchema(SerializationContext context) {
-        context.registerProtoFiles(FileDescriptorSource.fromString(this.getProtoFileName(), this.getProtoFile()));
+        ClassLoader loader = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
+        try {
+            context.registerProtoFiles(FileDescriptorSource.fromResources(loader, this.resourceName));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

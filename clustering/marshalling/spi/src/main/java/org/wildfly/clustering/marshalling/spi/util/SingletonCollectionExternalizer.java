@@ -22,38 +22,30 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
 
 /**
+ * Externalizer for singleton collections.
  * @author Paul Ferraro
  */
-public class SingletonCollectionExternalizer<T extends Collection<Object>> implements Externalizer<T> {
+public class SingletonCollectionExternalizer<T extends Collection<Object>> extends ObjectExternalizer<T> {
+    private static final Function<Collection<Object>, Object> ACCESSOR = new Function<Collection<Object>, Object>() {
+        @Override
+        public Object apply(Collection<Object> collection) {
+            return collection.iterator().next();
+        }
+    };
 
-    private final Function<Object, T> factory;
-
+    @SuppressWarnings("unchecked")
     public SingletonCollectionExternalizer(Function<Object, T> factory) {
-        this.factory = factory;
-    }
-
-    @Override
-    public void writeObject(ObjectOutput output, T collection) throws IOException {
-        output.writeObject(collection.iterator().next());
-    }
-
-    @Override
-    public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.factory.apply(input.readObject());
+        super((Class<T>) factory.apply(null).getClass(), factory, accessor());
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public Class<T> getTargetClass() {
-        return (Class<T>) this.factory.apply(null).getClass();
+    public static <T extends Collection<Object>> Function<T, Object> accessor() {
+        return (Function<T, Object>) ACCESSOR;
     }
 }

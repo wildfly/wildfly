@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
@@ -111,7 +112,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_30.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(ProtocolVersion.class));
+                return builder.setValidator(new EnumValidator<>(ProtocolVersion.class, EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO))));
             }
         },
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),

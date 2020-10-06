@@ -32,9 +32,8 @@ import org.wildfly.clustering.marshalling.spi.MarshallingExternalizerProvider;
  */
 public class MarshallingSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.wildfly.clustering.marshalling.spi.proto";
+    public MarshallingSerializationContextInitializer() {
+        super("org.wildfly.clustering.marshalling.spi.proto");
     }
 
     @Override

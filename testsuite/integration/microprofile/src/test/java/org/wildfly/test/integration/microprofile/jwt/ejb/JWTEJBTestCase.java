@@ -65,14 +65,14 @@ public class JWTEJBTestCase {
                 .addClasses(JWTEJBTestCase.class)
                 .addClasses(App.class, BeanEndPoint.class, TargetBean.class)
                 .addAsManifestResource(new FileAsset(
-                        new File("src/test/resources/org/wildfly/test/integration/microprofile/jwt/microprofile-config.properties")),
+                        new File("src/test/resources/jwt/microprofile-config.properties")),
                         "microprofile-config.properties")
                 .addAsManifestResource(
-                        new FileAsset(new File("src/test/resources/org/wildfly/test/integration/microprofile/jwt/public.pem")),
+                        new FileAsset(new File("src/test/resources/jwt/public.pem")),
                         "public.pem");
     }
 
-    private static final String KEY_LOCATION = "src/test/resources/org/wildfly/test/integration/microprofile/jwt/private.pem";
+    private static final String KEY_LOCATION = "src/test/resources/jwt/private.pem";
 
     private static final String ROOT_PATH = "/rest/Sample/";
     private static final String SUBSCRIPTION = "subscription";

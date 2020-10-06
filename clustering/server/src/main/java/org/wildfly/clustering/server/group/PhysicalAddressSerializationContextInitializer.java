@@ -34,9 +34,8 @@ import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 @MetaInfServices(SerializationContextInitializer.class)
 public class PhysicalAddressSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.jgroups.stack.proto";
+    public PhysicalAddressSerializationContextInitializer() {
+        super("org.jgroups.stack.proto");
     }
 
     @Override

@@ -30,9 +30,8 @@ import org.wildfly.clustering.marshalling.protostream.AbstractSerializationConte
  */
 public class IOSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public String getProtoFileName() {
-        return "org.infinispan.commons.io.proto";
+    public IOSerializationContextInitializer() {
+        super("org.infinispan.commons.io.proto");
     }
 
     @Override
