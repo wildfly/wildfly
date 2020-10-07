@@ -646,14 +646,14 @@ factory is no more active on the security-domain. Type _help security disable-ht
 for a complete description of the command.
 
 [[mp-cli-script]]
-== Evolving standard configurations with support for Microprofile
+== Evolving standard configurations with support for MicroProfile
 
 The CLI script _JBOSS_HOME/docs/examples/enable-microprofile.cli_ can be applied to a default standalone configuration
-to add support for Microprofile.
+to add support for MicroProfile.
 
 Impact on updated configuration:
 
-* Addition of Microprofile subsystems. 
+* Addition of MicroProfile subsystems. 
 * Removal of _security_ subsystem.
 * Removal of _ManagementRealm_.
 * Elytron security used for management and application entry points.

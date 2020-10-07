@@ -1,0 +1,198 @@
+[[Bootable_Guide]]
+= Bootable JAR Guide
+WildFly team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 3
+:toc-title: Bootable JAR Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+ifdef::env-github[:imagesdir: images/]
+
+// ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2020 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+[[wildfly_bootable_JAR_development]]
+= WildFly bootable JAR application development
+
+This document details the steps to follow in order to develop a WildFly application
+packaged as a bootable JAR. A bootable JAR can be run both on bare-metal and cloud platforms.
+
+Developing an application packaged as a bootable JAR is not different from developing an application for a traditional
+WildFly server installation using Maven.
+The extra steps required to package your application inside a bootable JAR are handled by the 
+https://github.com/wildfly-extras/wildfly-jar-maven-plugin[_org.wildfly.plugins:wildfly-jar-maven-plugin_] Maven plugin.
+
+This document contains the minimal information set required to build and run a WildFly bootable JAR. 
+Complete information on the Maven plugin usage can be found in the bootable JAR https://docs.wildfly.org/bootablejar/[documentation].
+
+[[wildfly-jar-maven-plugin-pom-configuration]]
+== Adding the bootable JAR Maven plugin to your pom file
+
+This is done by adding an extra build step to your application deployment Maven pom.xml file.
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-jar-maven-plugin</artifactId>
+      <configuration>
+        ...
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+The next chapter covers the plugin configuration items that are required to identify the WildFly server version and content.
+
+[[wildfly-jar-maven-plugin-galleon-configuration]]
+== Galleon configuration
+
+The Bootable JAR Maven plugin depends on https://docs.wildfly.org/galleon/[Galleon] to construct the WildFly server contained in the JAR file. 
+
+Galleon is configured thanks to the Maven plugin ```<configuration>``` element.
+
+The first required piece of information that Galleon needs is a reference to the WildFly Galleon feature-pack. 
+The WildFly Galleon feature-pack is a maven artifact that contains everything needed to dynamically provision a server. 
+This feature-pack, as well as the feature-packs on which its depends,
+are deployed in public maven repositories. 
+
+When the bootable JAR Maven plugin builds a JAR, WildFly feature-packs are retrieved and 
+their content is assembled to create the server contained in the JAR.
+
+Once you have identified a WildFly Galleon feature-pack, you need to select a set of 
+link:#wildfly_layers[WildFly Layers] that are used to compose the server.
+
+The set of Galleon layers to include is driven by the needs of the application you are developing.
+The list of link:#wildfly_layers[WildFly Layers] provides details on 
+the server features that each layer brings. Make sure that the API and server features you are using (eg: JAX-RS, Eclipse MicroProfile Config, datasources)
+are provided by the layers you are choosing.
+
+If you decide not to specify Galleon layers, a server containing all MicroProfile subsystems is
+provisioned. (The server configuration is identical to the ```standalone-microprofile.xml``` configuration
+in the traditional WildFly server zip.)
+
+Maven Plugin configuration extract example:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-jar-maven-plugin</artifactId>
+      <configuration>
+        <feature-pack-location>wildfly@maven(org.jboss.universe:community-universe)</feature-pack-location> (1)
+        <layers>
+          <layer>jaxrs-server</layer> (2)
+        </layers>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+(1) In this plugin configuration extract, we are retrieving the latest WildFly Galleon feature-pack installed in the
+ ```org.jboss.universe:community-universe``` Galleon universe. In case you would like to provision a specific version of the server,
+you would need to specify the server version, for example ```wildfly@maven(org.jboss.universe:community-universe)#21.0.0.Final```
+
+(2) The link:#gal.jaxrs-server[jaxrs-server layer] and all its dependencies are provisioned. 
+
+include::_galleon/Galleon_layers.adoc[]
+
+[[wildfly-jar-maven-plugin-additional-configuration]]
+== Additional configuration
+
+The plugin allows you to specify additional configuration items:
+
+* A set of WildFly CLI scripts to execute to fine tune the server configuration. 
+* Some extra content to be copied inside the bootable JAR (e.g.: server keystore).
+
+Check https://docs.wildfly.org/bootablejar[this documentation] for more details on how to configure execution of
+CLI scripts and to package extra content.
+
+[[wildfly-jar-maven-plugin-build]]
+== Packaging your application
+
+Call ``` mvn package```  to package both your application and the bootable JAR in the file ```<project build directory>/<project final name>-bootable.jar```
+
+In order to speed-up the development of your application (avoid rebuilding the JAR each time your application is re-compiled), 
+the Maven plugin offers a _development_ mode that allows you to build and start the bootable JAR only once.
+
+Check https://docs.wildfly.org/bootablejar[this documentation] for more details on the _development_ mode.
+
+[[wildfly-jar-maven-plugin-run]]
+== Running your application
+
+Call ```java -jar <path to bootable JAR> <arguments>```
+
+In additon, you can use the ```wildfly-jar:run``` and ```wildfly-jar:start``` plugin goals to launch the bootable JAR.
+
+[[wildfly-bootable-jar-arguments]]
+=== Bootable JAR arguments
+
+The following arguments can be used when starting the bootable JAR:
+
+|===
+|Option |Description
+
+|-b[interface]=<value>
+|Set system property jboss.bind.address.<interface> to the given value
+
+|-b=<value>
+|Set system property jboss.bind.address to the given value
+
+|-D<name>[=<value>] 
+|Set a system property. The system properties are set by the server. They are not set by the bootable JAR JVM.
+
+|--help
+|Display help then exit
+
+|--deployment=<path to WAR/JAR/EAR file or exploded deployment directory>
+|Application to install in the hollow JAR. Adding a deployment to an bootable JAR already containing a deployment is invalid.
+
+|--display-galleon-config
+|Display the content of the Galleon configuration used to build this bootable JAR.
+
+|--install-dir=<path to directory to install server in>
+|By default a new TEMP directory is created. TEMP directory location is controlled by the Java VM (call to ```Files.createTempDirectory```).
+
+|--properties=<url>
+|Load system properties from the given url
+
+|-S<name>[=value]
+|Set a security property
+
+|-secmgr
+|Activate and install the `WildFlySecurityManager`.
+
+|-u=<value>
+|Set system property jboss.default.multicast.address to the given value.
+
+|--version
+|Print version and exit.
+
+|===
