@@ -125,10 +125,25 @@ final class AccessLogService implements Service<AccessLogService> {
             callbackHandle.remove();
             callbackHandle = null;
         }
-        if( logReceiver instanceof DefaultAccessLogReceiver ) {
-            IoUtils.safeClose((DefaultAccessLogReceiver) logReceiver);
+        if (logReceiver instanceof DefaultAccessLogReceiver) {
+            final Thread loggerStreamCloser = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        IoUtils.safeClose((DefaultAccessLogReceiver) logReceiver);
+                    } finally {
+                        logReceiver = null;
+                        context.complete();
+                    }
+
+                }
+            }, "Access Log Shutdown Thread");
+            context.asynchronous();
+            loggerStreamCloser.start();
+        } else {
+            logReceiver = null;
         }
-        logReceiver = null;
     }
 
     protected AccessLogHandler configureAccessLogHandler(HttpHandler handler) {
