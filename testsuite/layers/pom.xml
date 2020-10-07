@@ -2023,6 +2023,43 @@
                             </execution>
 
                             <execution>
+                                <id>messaging-activemq-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/messaging-activemq</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>messaging-activemq</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
+                            <execution>
                                 <id>microprofile-platform-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2784,6 +2821,7 @@
                                                 <layer>ee-security</layer>
                                                 <layer>ejb</layer>
                                                 <layer>ejb-lite</layer>
+                                                <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
@@ -2792,14 +2830,13 @@
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
-                                                <layer>messaging-activemq</layer>
-                                                <layer>remote-activemq</layer>
+                                                <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
                                                 <layer>jpa</layer>
                                                 <layer>jsf</layer>
-                                                <layer>jsonp</layer>
                                                 <layer>jsonb</layer>
+                                                <layer>jsonp</layer>
                                                 <layer>legacy-management</layer>
                                                 <layer>legacy-remoting</layer>
                                                 <layer>legacy-security</layer>
@@ -2807,17 +2844,20 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>management-security-realm</layer>
+                                                <layer>messaging-activemq</layer>
                                                 <layer>microprofile-config</layer>
                                                 <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
+                                                <layer>microprofile-platform</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
                                                 <layer>open-tracing</layer>
-                                                <layer>remoting</layer>
                                                 <layer>pojo</layer>
+                                                <layer>remote-activemq</layer>
+                                                <layer>remoting</layer>
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
@@ -2886,6 +2926,7 @@
                                                 <layer>ee</layer>
                                                 <layer>ee-security</layer>
                                                 <layer>ejb</layer>
+                                                <layer>ejb-dist-cache</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
                                                 <layer>h2-datasource</layer>
@@ -2895,14 +2936,13 @@
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
-                                                <layer>messaging-activemq</layer>
-                                                <layer>remote-activemq</layer>
+                                                <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
                                                 <layer>jpa-distributed</layer>
                                                 <layer>jsf</layer>
-                                                <layer>jsonp</layer>
                                                 <layer>jsonb</layer>
+                                                <layer>jsonp</layer>
                                                 <layer>legacy-management</layer>
                                                 <layer>legacy-remoting</layer>
                                                 <layer>legacy-security</layer>
@@ -2910,17 +2950,19 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>management-security-realm</layer>
-                                                <layer>microprofile-platform</layer>
+                                                <layer>messaging-activemq</layer>
                                                 <layer>microprofile-config</layer>
                                                 <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
+                                                <layer>microprofile-platform</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
                                                 <layer>open-tracing</layer>
                                                 <layer>pojo</layer>
+                                                <layer>remote-activemq</layer>
                                                 <layer>remoting</layer>
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
@@ -2988,7 +3030,7 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/remoting</install-dir>
+                                    <install-dir>${layers.install.dir}/legacy-remoting</install-dir>
                                     <record-state>false</record-state>
                                     <log-time>${galleon.log.time}</log-time>
                                     <offline>true</offline>
