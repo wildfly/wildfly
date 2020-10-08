@@ -56,6 +56,8 @@ final class AccessLogService implements Service<AccessLogService> {
     private final Supplier<Host> host;
     private final Supplier<XnioWorker> worker;
     private final Supplier<PathManager> pathManager;
+    private final int closeRetryCount;
+    private final int closeRetryDelay;
     private final String pattern;
     private final String path;
     private final String pathRelativeTo;
@@ -74,14 +76,14 @@ final class AccessLogService implements Service<AccessLogService> {
     AccessLogService(final Consumer<AccessLogService> serviceConsumer, final Supplier<Host> host,
                      final Supplier<XnioWorker> worker, final Supplier<PathManager> pathManager,
                      final String pattern, final boolean extended, final Predicate predicate) {
-        this(serviceConsumer, host, worker, pathManager, pattern, null, null, null, null, false, extended, predicate);
+        this(serviceConsumer, host, worker, pathManager, pattern, null, null, null, null, false, extended, predicate,-1,-1);
     }
 
     AccessLogService(final Consumer<AccessLogService> serviceConsumer, final Supplier<Host> host,
                      final Supplier<XnioWorker> worker, final Supplier<PathManager> pathManager,
                      final String pattern, final String path, final String pathRelativeTo,
                      final String filePrefix, final String fileSuffix, final boolean rotate,
-                     final boolean extended, final Predicate predicate) {
+                     final boolean extended, final Predicate predicate, int closeRetryCount, int closeRetryDelay) {
         this.serviceConsumer = serviceConsumer;
         this.host = host;
         this.worker = worker;
@@ -95,6 +97,8 @@ final class AccessLogService implements Service<AccessLogService> {
         this.extended = extended;
         this.useServerLog = false;
         this.predicate = predicate == null ? Predicates.truePredicate() : predicate;
+        this.closeRetryCount = closeRetryCount;
+        this.closeRetryDelay = closeRetryDelay;
     }
 
     @Override
@@ -118,7 +122,9 @@ final class AccessLogService implements Service<AccessLogService> {
                         .setOutputDirectory(directory)
                         .setLogBaseName(filePrefix)
                         .setLogNameSuffix(fileSuffix)
-                        .setRotate(rotate);
+                        .setRotate(rotate)
+                        .setCloseRetryDelay(closeRetryDelay)
+                        .setCloseRetryCount(closeRetryCount);
                 if(extended) {
                     builder.setLogFileHeaderGenerator(new ExtendedAccessLogParser.ExtendedAccessLogHeaderGenerator(pattern));
                     extendedPattern = new ExtendedAccessLogParser(getClass().getClassLoader()).parse(pattern);
