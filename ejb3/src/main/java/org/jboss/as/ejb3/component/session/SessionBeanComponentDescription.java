@@ -54,13 +54,13 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Jaikiran Pai
@@ -127,9 +127,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * @param ejbJarDescription  the module description
      */
     public SessionBeanComponentDescription(final String componentName, final String componentClassName,
-                                           final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName,
+                                           final EjbJarDescription ejbJarDescription, final DeploymentUnit deploymentUnit,
                                            final SessionBeanMetaData descriptorData) {
-        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnit, descriptorData);
     }
 
     public void addLocalBusinessInterfaceViews(final Collection<String> classNames) {

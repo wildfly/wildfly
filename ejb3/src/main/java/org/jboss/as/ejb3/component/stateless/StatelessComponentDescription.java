@@ -55,6 +55,7 @@ import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -85,8 +86,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
      * @param ejbModuleDescription the module description
      */
     public StatelessComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription,
-                                         final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData, final boolean defaultSlsbPoolAvailable) {
-        super(componentName, componentClassName, ejbModuleDescription, deploymentUnitServiceName, descriptorData);
+                                         final DeploymentUnit deploymentUnit, final SessionBeanMetaData descriptorData, final boolean defaultSlsbPoolAvailable) {
+        super(componentName, componentClassName, ejbModuleDescription, deploymentUnit, descriptorData);
         this.defaultSlsbPoolAvailable = defaultSlsbPoolAvailable;
     }
 
