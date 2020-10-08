@@ -6,8 +6,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:undertow:preview:14.0"
-           targetNamespace="urn:jboss:domain:undertow:preview:14.0"
+           xmlns="urn:jboss:domain:undertow:preview:15.0"
+           targetNamespace="urn:jboss:domain:undertow:preview:15.0"
            xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
@@ -443,6 +443,8 @@
         <xs:attribute name="use-server-log" use="optional" type="xs:string" default="false"/>
         <xs:attribute name="extended" use="optional" type="xs:string" default="false" />
         <xs:attribute name="predicate" use="optional" type="xs:string" />
+        <xs:attribute name="close-retry-count" use="optional" type="xs:int" default="150" />
+        <xs:attribute name="close-retry-delay" use="optional" type="xs:int" default="200" />
     </xs:complexType>
     <xs:complexType name="consoleAccessLogType">
         <xs:sequence minOccurs="0">

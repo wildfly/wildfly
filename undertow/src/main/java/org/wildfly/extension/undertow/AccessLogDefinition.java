@@ -4,6 +4,7 @@
  */
 package org.wildfly.extension.undertow;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,7 +20,9 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
@@ -96,7 +99,25 @@ class AccessLogDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
+    protected static final SimpleAttributeDefinition CLOSE_RETRY_COUNT = new SimpleAttributeDefinitionBuilder(Constants.CLOSE_RETRY_COUNT, ModelType.INT, true)
+            .setRequired(false)
+            .setDefaultValue(new ModelNode(150))
+            .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(1))
+            .setRestartAllServices()
+            .setStability(Stability.PREVIEW)
+            .build();
+
+    protected static final SimpleAttributeDefinition CLOSE_RETRY_DELAY = new SimpleAttributeDefinitionBuilder(Constants.CLOSE_RETRY_DELAY, ModelType.INT, true)
+            .setRequired(false)
+            .setDefaultValue(new ModelNode(200))
+            .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(1))
+            .setRestartAllServices()
+            .setStability(Stability.PREVIEW)
+            .build();
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             WORKER,
             PATTERN,
@@ -107,7 +128,9 @@ class AccessLogDefinition extends PersistentResourceDefinition {
             USE_SERVER_LOG,
             RELATIVE_TO,
             EXTENDED,
-            PREDICATE
+            PREDICATE,
+            CLOSE_RETRY_COUNT,
+            CLOSE_RETRY_DELAY
     );
     private final List<AccessConstraintDefinition> accessConstraints;
 
