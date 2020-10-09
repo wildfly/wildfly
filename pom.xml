@@ -374,7 +374,7 @@
         <version.org.javassist>3.23.2-GA</version.org.javassist>
         <version.org.jberet>1.3.7.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
-        <version.org.jboss.arquillian.core>1.4.0.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.6.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.ejb-client>4.0.34.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
@@ -443,7 +443,7 @@
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.14.3</version.org.testng>
-        <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.core>14.0.0.Beta1</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.2.Final</version.org.wildfly.http-client>
@@ -8663,12 +8663,6 @@
                         <groupId>org.jboss.sasl</groupId>
                         <artifactId>jboss-sasl</artifactId>
                     </exclusion>
-                    <!-- TODO remove this exclusion once this depends on Jakarta Inject -->
-                    <!-- superseded by jakarta.inject:jakarta.inject-api -->
-                    <exclusion>
-                        <groupId>javax.inject</groupId>
-                        <artifactId>javax.inject</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -8680,12 +8674,6 @@
                     <exclusion>
                         <groupId>org.jboss.sasl</groupId>
                         <artifactId>jboss-sasl</artifactId>
-                    </exclusion>
-                    <!-- TODO remove this exclusion once this depends on Jakarta Inject -->
-                    <!-- superseded by jakarta.inject:jakarta.inject-api -->
-                    <exclusion>
-                        <groupId>javax.inject</groupId>
-                        <artifactId>javax.inject</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
