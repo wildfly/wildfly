@@ -92,6 +92,8 @@
                             </feature-packs>
                             <plugin-options>
                                 <jboss-maven-dist/>
+                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
+                                <jboss-maven-provisioning-repo>${project.basedir}/../feature-pack/target/jakarta-transform-maven-repo</jboss-maven-provisioning-repo>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                             </plugin-options>
                         </configuration>
