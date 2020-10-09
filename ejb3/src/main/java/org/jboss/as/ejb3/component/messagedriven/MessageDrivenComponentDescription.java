@@ -57,6 +57,7 @@ import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.suspend.SuspendController;
@@ -97,9 +98,9 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
      * @param defaultResourceAdapterName The default resource adapter name for this message driven bean. Cannot be null or empty string.
      */
     public MessageDrivenComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
-                                             final ServiceName deploymentUnitServiceName, final String messageListenerInterfaceName, final Properties activationProps,
+                                             final DeploymentUnit deploymentUnit, final String messageListenerInterfaceName, final Properties activationProps,
                                              final String defaultResourceAdapterName, final MessageDrivenBeanMetaData descriptorData, final boolean defaultMdbPoolAvailable) {
-        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnit, descriptorData);
         if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty()) {
             throw EjbLogger.ROOT_LOGGER.stringParamCannotBeNullOrEmpty("Message listener interface");
         }

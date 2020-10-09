@@ -62,6 +62,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.StatefulBMTInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -145,9 +146,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
      * @param ejbJarDescription  the module description
      */
     public StatefulComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
-                                        final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
-        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
-        this.deploymentUnitServiceName = deploymentUnitServiceName;
+                                        final DeploymentUnit deploymentUnit, final SessionBeanMetaData descriptorData) {
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnit, descriptorData);
+        this.deploymentUnitServiceName = deploymentUnit.getServiceName();
         addInitMethodInvokingInterceptor();
     }
 

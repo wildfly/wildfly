@@ -90,8 +90,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      * @param ejbJarDescription  the module description
      */
     public SingletonComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
-                                         final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
-        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
+                                         final DeploymentUnit deploymentUnit, final SessionBeanMetaData descriptorData) {
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnit, descriptorData);
 
         getConfigurators().add(new ComponentConfigurator() {
             @Override
