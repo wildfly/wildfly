@@ -1,0 +1,34 @@
+[[Galleon_Guide]]
+= Galleon Provisioning Guide
+WildFly developer team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 2
+:toc-title: Galleon Provisioning Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 14
+:sectlinks:
+:idseparator: -
+:include-depth: 2
+
+ifdef::env-github[:outfilesuffix: .adoc]
+
+
+ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2020 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+
+:numbered:
+
+
+////
+:leveloffset: 1
+////
+
+
+include::_galleon/Galleon_provisioning.adoc[]

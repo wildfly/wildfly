@@ -42,13 +42,13 @@ public class SingletonDeploymentDescriptorTestCase extends SingletonDeploymentTe
         super(MODULE_NAME, DEPLOYMENT_NAME);
     }
 
-    @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
+    @Deployment(name = SINGLETON_DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
-    @Deployment(name = DEPLOYMENT_HELPER_2, managed = false, testable = false)
+    @Deployment(name = SINGLETON_DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();

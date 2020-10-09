@@ -6,17 +6,39 @@ ifdef::env-github[:imagesdir: images/]
 
 image:splash_wildflylogo_small.png[WildFly, align="center"]
 
-Welcome to the WildFly Documentation. The documentation for WildFly is
-split into two categories:
+Welcome to the WildFly documentation. The documentation for WildFly is
+split into multiple categories:
+
+* _Installation Guides_ for those wanting to understand the flexibility 
+that WildFly offers when it comes to server installation and application deployment.
 
 * _Administrator Guides_ for those wanting to understand how to install
-and configure the server
+and configure the server.
 
 * _Developer Guides_ for those wanting to understand how to develop
-applications for the server
+applications for the server.
 
-* _Model Reference_ the WildFly Model Reference provides information about all subsystem
-configuration options generated directly from the management model.
+* _Model Reference_ for those wanting information about all
+of configuration options available via the WildFly management model.
+
+* _Security Guide_ for those wanting to understand how to secure the WildFly server and applications.
+
+* _Client Guide_ for those wanting to understand configuration of WildFly clients.
+
+* _Quickstarts_ for those wanting to jump into code and start using WildFly.
+
+[[installation-guides]]
+== Installation Guides
+
+* The link:Installation_Guide{outfilesuffix}[Installation Guide] help you identify 
+the kind of WildFly installation that best fits your application's deployment needs:
+a WildFly zip installation, a WildFly server provisioned with Galleon or a WildFly bootable JAR.
+
+* The link:Bootable_Guide{outfilesuffix}[Bootable JAR Guide] shows you how to package your application and the WildFly server
+into a bootable JAR.
+
+* The link:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] shows you how to 
+provision a customized WildFly server using Galleon.
 
 [[administrator-guides]]
 == Administrator Guides
@@ -24,27 +46,22 @@ configuration options generated directly from the management model.
 * The link:Getting_Started_Guide{outfilesuffix}[Getting Started Guide] shows you
 how to install and start the server, how to configure logging, how to
 deploy an application, how to deploy a datasource, and how to get
-started using the command line interface and web management interface
+started using the command line interface and web management interface.
 
 * The link:Admin_Guide{outfilesuffix}[Admin Guide] provides detailed information
-on using the CLI and Web Management interface, how to use the domain
-configuration, and shows you how to configure key subsystems
+on using the CLI and web management interface, shows you how to administer a WildFly managed
+domain, and shows you how to configure key subsystems.
 
 * The link:High_Availability_Guide{outfilesuffix}[High Availability Guide] shows
-you how to create a cluster, how configure the web container and EJB
-container for clustering, and shows you how to configure load balancing
-and failover
-
-== Model Reference
-
-* The link:wildscribe[WildFly model reference^] provides information about all subsystem
-configuration options generated directly from the management model.
+you how to create a cluster, how to configure the web container and EJB
+container for clustering and how to configure load balancing
+and failover.
 
 [[developer-guides]]
 == Developer Guides
 
 * The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
-Started Developing Applications Guide] shows you how to build Java EE
+Started Developing Applications Guide] shows you how to build Jakarta EE
 applications and deploy them to WildFly. The guide starts by showing you
 the simplest _helloworld_ application using just Servlet and CDI, and
 then adds in JSF, persistence and transactions, EJB, Bean Validation,
@@ -70,13 +87,18 @@ into WildFly.
 
 * The link:Testsuite{outfilesuffix}[WildFly Testsuite] guide walks you through testing WildFly
 
+== Model Reference
+
+* The link:wildscribe[WildFly model reference^] provides information about all standalone server and managed domain
+configuration options, using information generated directly from the WildFly management model.
+
 == Security Guide
 
-* The link:WildFly_Elytron_Security{outfilesuffix}[WildFly Elytron Security] guide walks you through new security layer of of WildFly
+* The link:WildFly_Elytron_Security{outfilesuffix}[WildFly Elytron Security] guide walks you through WildFly's new security layer.
 
 == Client Guide
 
-* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you through new wildfly client and how to use it.
+* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you through the new Wildfly client and how to use it.
 
 [[quickstarts]]
 == Quickstarts
@@ -84,7 +106,7 @@ into WildFly.
 WildFly comes with a number of quickstarts, examples which introduce to
 a particular technology or feature of the application server. The
 link:https://github.com/jboss-developer/jboss-developer-shared-resources/blob/master/guides/CONTRIBUTING.md#contribute-a-quickstart[Contributing a Quickstart] section
-of the documentation details the available quickstarts
+of the documentation details the available quickstarts.
 
 [[more-resources]]
 == More Resources

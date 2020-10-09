@@ -18,9 +18,13 @@ package org.jboss.as.test.layers;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
-import static org.jboss.as.test.layers.LayersTest.recursiveDelete;
+import java.util.List;
 
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -83,10 +87,45 @@ public class LayersTestCase {
         "org.wildfly.bootable-jar"
         };
 
+    /**
+     * A HashMap to configure a banned module.
+     * They key is the banned module name, the value is an optional List with the installation names that are allowed to
+     * provision the banned module. This installations will be ignored.
+     *
+     * Notice the allowed installation names does not distinguish between different parent names, e.g test-all-layers here means
+     * allowing root/test-all-layers and servletRoot/test-all-layers.
+     */
+    private static final HashMap<String, List<String>> BANNED_MODULES_CONF = new HashMap<String, List<String>>(){{
+        put("org.jboss.as.security", Arrays.asList("test-all-layers-jpa-distributed", "test-all-layers", "legacy-security", "test-standalone-reference"));
+    }};
+
+    public static String root;
+    public static String servletRoot;
+
+    @BeforeClass
+    public static void setUp() {
+        root = System.getProperty("layers.install.root");
+        servletRoot = System.getProperty("servlet.layers.install.root");
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        Boolean delete = Boolean.getBoolean("layers.delete.installations");
+        if(delete) {
+            File[] installations = new File(root).listFiles(File::isDirectory);
+            for(File f : installations) {
+                LayersTest.recursiveDelete(f.toPath());
+            }
+            installations = new File(servletRoot).listFiles(File::isDirectory);
+            for(File f : installations) {
+                LayersTest.recursiveDelete(f.toPath());
+            }
+        }
+    }
+
     @Test
     public void testServlet() throws Exception {
-        String root = System.getProperty("servlet.layers.install.root");
-        LayersTest.test(root, new HashSet<>(Arrays.asList(NOT_REFERENCED)),
+        LayersTest.test(servletRoot, new HashSet<>(Arrays.asList(NOT_REFERENCED)),
                 new HashSet<>(Arrays.asList(NOT_USED)));
     }
 
@@ -95,13 +134,14 @@ public class LayersTestCase {
         // TODO, no more testing than provisioning and execution of layers for now.
         String root = System.getProperty("layers.install.root");
         LayersTest.testExecution(root);
-        // Deleting the provisioned layers
-        File[] installations = new File(root).listFiles(File::isDirectory);
-        Boolean delete = Boolean.getBoolean("layers.delete.installations");
-        if (delete) {
-            for (File f : installations) {
-                recursiveDelete(f.toPath());
-            }
-        }
+    }
+
+    @Test
+    public void checkBannedModules() throws Exception {
+        final HashMap<String, String> results = LayersTest.checkBannedModules(root, BANNED_MODULES_CONF);
+        HashMap<String, String> servletResults = LayersTest.checkBannedModules(servletRoot, BANNED_MODULES_CONF);
+
+        results.putAll(servletResults);
+        Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
     }
 }
