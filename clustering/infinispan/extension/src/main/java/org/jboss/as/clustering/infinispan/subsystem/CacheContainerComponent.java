@@ -32,7 +32,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public enum CacheContainerComponent implements ResourceServiceNameFactory {
 
-    MODULE("module"),
+    MODULES("modules"),
     TRANSPORT(JGroupsTransportResourceDefinition.PATH),
     ;
     private final String component;

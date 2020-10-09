@@ -67,8 +67,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeStartElement(XMLElement.CACHE_CONTAINER.getLocalName());
                     writer.writeAttribute(XMLAttribute.NAME.getLocalName(), containerName);
 
-                    writeAttributes(writer, container, EnumSet.allOf(CacheContainerResourceDefinition.Attribute.class));
-                    writeAttributes(writer, container, EnumSet.allOf(CacheContainerResourceDefinition.ExecutorAttribute.class));
+                    writeAttributes(writer, container, CacheContainerResourceDefinition.Attribute.class);
+                    writeAttributes(writer, container, CacheContainerResourceDefinition.ListAttribute.class);
+                    writeAttributes(writer, container, CacheContainerResourceDefinition.ExecutorAttribute.class);
 
                     if (container.hasDefined(JGroupsTransportResourceDefinition.PATH.getKeyValuePair())) {
                         writer.writeStartElement(XMLElement.TRANSPORT.getLocalName());
@@ -174,6 +175,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeAttribute(XMLAttribute.NAME.getLocalName(), remoteContainerName);
 
                     writeAttributes(writer, remoteContainer, EnumSet.complementOf(EnumSet.of(RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES)));
+                    writeAttributes(writer, remoteContainer, RemoteCacheContainerResourceDefinition.ListAttribute.class);
 
                     writeThreadPoolElements(XMLElement.ASYNC_THREAD_POOL, ThreadPoolResourceDefinition.CLIENT, writer, remoteContainer);
 
@@ -234,7 +236,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     private static void writeCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writer.writeAttribute(XMLAttribute.NAME.getLocalName(), name);
-        writeAttributes(writer, cache, EnumSet.allOf(CacheResourceDefinition.Attribute.class));
+        writeAttributes(writer, cache, CacheResourceDefinition.Attribute.class);
+        writeAttributes(writer, cache, CacheResourceDefinition.ListAttribute.class);
     }
 
     private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {

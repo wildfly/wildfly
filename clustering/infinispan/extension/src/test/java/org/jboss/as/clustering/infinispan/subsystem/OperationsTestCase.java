@@ -224,22 +224,22 @@ public class OperationsTestCase extends OperationTestCaseBase {
         PathAddress address = getCacheContainerAddress("minimal");
         String alias = "alias0";
 
-        ModelNode operation = Operations.createListAddOperation(address, CacheContainerResourceDefinition.Attribute.ALIASES, alias);
+        ModelNode operation = Operations.createListAddOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, alias);
         ModelNode result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.Attribute.ALIASES, 0);
+        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals(new ModelNode(alias), result.get(RESULT));
 
-        operation = Operations.createListRemoveOperation(address, CacheContainerResourceDefinition.Attribute.ALIASES, 0);
+        operation = Operations.createListRemoveOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.Attribute.ALIASES, 0);
+        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
@@ -251,7 +251,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.Attribute.ALIASES, 0);
+        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         /* This currently fails due to WFCORE-626, requires wildfly-core-1.0.0.Beta4
@@ -263,7 +263,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.Attribute.ALIASES, 0);
+        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());

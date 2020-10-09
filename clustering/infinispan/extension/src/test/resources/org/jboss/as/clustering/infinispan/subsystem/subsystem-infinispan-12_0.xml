@@ -23,7 +23,7 @@
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" module="org.infinispan" statistics-enabled="true">
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan org.infinispan.commons" statistics-enabled="true">
         <transport channel="maximal-channel" lock-timeout="120000"/>
         <blocking-thread-pool min-threads="11"
                               max-threads="12"
@@ -39,7 +39,7 @@
                               keepalive-time="34"/>
         <expiration-thread-pool min-threads="41"
                                 keepalive-time="42"/>
-        <local-cache name="local" module="org.infinispan" statistics-enabled="true">
+        <local-cache name="local" modules="org.infinispan org.infinispan.commons" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="20000"/>
@@ -48,7 +48,7 @@
                 <write-behind modification-queue-size="2048"/>
             </file-store>
         </local-cache>
-        <invalidation-cache name="invalid" statistics-enabled="true">
+        <invalidation-cache name="invalid" modules="org.infinispan" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000" size-unit="BYTES"/>
@@ -109,7 +109,7 @@
                             default-remote-cluster="primary-site"
                             key-size-estimate="512"
                             max-retries="2"
-                            module="org.infinispan"
+                            modules="org.infinispan org.infinispan.commons"
                             name="my-remote-container"
                             protocol-version="2.5"
                             socket-timeout="1000"

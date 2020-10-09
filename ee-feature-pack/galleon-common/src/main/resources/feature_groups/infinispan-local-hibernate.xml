@@ -3,7 +3,7 @@
     <feature spec="subsystem.infinispan">
         <feature spec="subsystem.infinispan.cache-container">
             <param name="cache-container" value="hibernate"/>
-            <param name="module" value="org.infinispan.hibernate-cache"/>
+            <param name="modules" value="[org.infinispan.hibernate-cache]"/>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="entity"/>
                 <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">

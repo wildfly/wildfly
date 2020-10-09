@@ -45,6 +45,7 @@ import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.TransactionConfiguration;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.util.AggregatedClassLoader;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -89,7 +90,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     private final Map<String, List<SupplierDependency<OutboundSocketBinding>>> clusters = new HashMap<>();
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ExecutorFactoryConfiguration>> threadPools = new EnumMap<>(ThreadPoolResourceDefinition.class);
     private final SupplierDependency<ModuleLoader> loader;
-    private final SupplierDependency<Module> module;
+    private final SupplierDependency<List<Module>> modules;
     private final Properties properties = new Properties();
     private final SupplierDependency<ConnectionPoolConfiguration> connectionPool;
     private final SupplierDependency<SecurityConfiguration> security;
@@ -111,7 +112,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         super(RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, address);
         this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.threadPools.put(ThreadPoolResourceDefinition.CLIENT, new ServiceSupplierDependency<>(ThreadPoolResourceDefinition.CLIENT.getServiceName(address)));
-        this.module = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.MODULE.getServiceName(address));
+        this.modules = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.MODULES.getServiceName(address));
         this.connectionPool = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.CONNECTION_POOL.getServiceName(address));
         this.security = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.SECURITY.getServiceName(address));
         this.transaction = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.TRANSACTION.getServiceName(address));
@@ -157,7 +158,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<Configuration> configuration = new CompositeDependency(this.loader, this.module, this.connectionPool, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
+        Consumer<Configuration> configuration = new CompositeDependency(this.loader, this.modules, this.connectionPool, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
@@ -194,11 +195,16 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                 .tcpKeepAlive(this.tcpKeepAlive)
                 .valueSizeEstimate(this.valueSizeEstimate);
 
-        ClassLoader loader = this.module.get().getClassLoader();
+        List<Module> modules = this.modules.get();
+        List<ClassLoader> loaders = new ArrayList<>(modules.size());
+        for (Module module : modules) {
+            loaders.add(module.getClassLoader());
+        }
+        ClassLoader loader = loaders.size() > 1 ? new AggregatedClassLoader(loaders) : loaders.get(0);
         Marshaller marshaller = this.createMarshaller(loader);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", name, marshaller.getClass().getName());
         builder.marshaller(marshaller);
-
+        builder.classLoader(loader);
         builder.connectionPool().read(this.connectionPool.get());
         builder.asyncExecutorFactory().read(this.threadPools.get(ThreadPoolResourceDefinition.CLIENT).get());
 

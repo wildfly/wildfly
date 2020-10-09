@@ -41,7 +41,7 @@ public enum InfinispanModel implements Model {
     VERSION_8_0_0(8, 0, 0), // WildFly 14-15, EAP 7.2
     VERSION_9_0_0(9, 0, 0), // WildFly 16
     VERSION_10_0_0(10, 0, 0), // WildFly 17
-    VERSION_11_0_0(11, 0, 0), // WildFly 18-19
+    VERSION_11_0_0(11, 0, 0), // WildFly 18-19, EAP 7.3
     VERSION_11_1_0(11, 1, 0), // EAP 7.3.4
     VERSION_12_0_0(12, 0, 0), // WildFly 20
     VERSION_13_0_0(13, 0, 0), // WildFly 21

@@ -144,9 +144,9 @@
                 <xs:documentation>Indicates the default cache for this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="module" type="xs:string" default="org.jboss.as.clustering.infinispan">
+        <xs:attribute name="modules" type="tns:list" default="org.jboss.as.clustering.infinispan">
             <xs:annotation>
-                <xs:documentation>Defines the module whose class loader should be used when building this cache container.</xs:documentation>
+                <xs:documentation>Defines the set of modules associated with this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
@@ -260,10 +260,10 @@
                 <xs:documentation>Uniquely identifies this cache within its cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="module" type="xs:string">
+        <xs:attribute name="modules" type="tns:list">
             <xs:annotation>
                 <xs:documentation>
-                    Defines the module whose class loader should be used when building this cache, if different from the enclosing cache container.
+                    Defines the set of modules associated with cache, if different from the enclosing cache container.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -1292,9 +1292,9 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="module" type="xs:string" default="org.jboss.as.clustering.infinispan">
+        <xs:attribute name="modules" type="tns:list" default="org.jboss.as.clustering.infinispan">
             <xs:annotation>
-                <xs:documentation>Defines the module whose class loader should be used when configuring remote cache container marshaller.</xs:documentation>
+                <xs:documentation>Defines the set of modules associated with the configuration of the remote cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="name" type="xs:string" use="required">

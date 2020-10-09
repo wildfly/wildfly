@@ -26,7 +26,7 @@
         <transport-thread-pool min-threads="10" max-threads="10" queue-length="1000"/>
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" module="org.infinispan" statistics-enabled="true">
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan" statistics-enabled="true">
         <transport channel="maximal-channel" lock-timeout="120000"/>
         <async-operations-thread-pool min-threads="11"
                                       max-threads="12"
@@ -54,7 +54,7 @@
                                keepalive-time="64"/>
         <expiration-thread-pool min-threads="71"
                                 keepalive-time="72"/>
-        <local-cache name="local" module="org.infinispan" statistics-enabled="true">
+        <local-cache name="local" modules="org.infinispan" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="20000"/>
@@ -161,7 +161,7 @@
                             default-remote-cluster="primary-site"
                             key-size-estimate="512"
                             max-retries="2"
-                            module="org.infinispan"
+                            modules="org.infinispan"
                             name="my-remote-container"
                             protocol-version="2.5"
                             socket-timeout="1000"

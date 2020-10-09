@@ -33,12 +33,15 @@ import org.jboss.msc.service.ServiceName;
  */
 public class ModulesServiceConfigurator extends AbstractModulesServiceConfigurator<List<Module>> {
 
-    public ModulesServiceConfigurator(ServiceName name, Attribute attribute) {
+    private final List<Module> defaultModules;
+
+    public ModulesServiceConfigurator(ServiceName name, Attribute attribute, List<Module> defaultModules) {
         super(name, attribute, ModelNode::asListOrEmpty);
+        this.defaultModules = defaultModules;
     }
 
     @Override
     public List<Module> apply(List<Module> modules) {
-        return modules;
+        return modules.isEmpty() ? this.defaultModules : modules;
     }
 }

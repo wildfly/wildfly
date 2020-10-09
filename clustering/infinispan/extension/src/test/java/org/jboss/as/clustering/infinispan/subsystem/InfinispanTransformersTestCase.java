@@ -97,6 +97,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 return InfinispanModel.VERSION_5_0_0;
             case EAP_7_2_0:
                 return InfinispanModel.VERSION_8_0_0;
+            case EAP_7_3_0:
+                return InfinispanModel.VERSION_11_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -386,9 +388,14 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH);
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
+        List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
+
+        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
+            rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.ListAttribute.MODULES.getName());
+        }
 
         if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES.getName()));
+            rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES.getName());
         }
 
         if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
@@ -396,13 +403,17 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         }
 
         if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName(), RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES.getName()));
+            rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName());
 
             if (!InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
                 PathAddress storeAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH, MixedKeyedJDBCStoreResourceDefinition.PATH);
                 config.addFailedAttribute(storeAddress.append(BinaryTableResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
                 config.addFailedAttribute(storeAddress.append(StringTableResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             }
+        }
+
+        if (!rejectedRemoteContainerAttributes.isEmpty()) {
+            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(rejectedRemoteContainerAttributes.toArray(new String[rejectedRemoteContainerAttributes.size()])));
         }
 
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
