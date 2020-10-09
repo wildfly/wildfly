@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -44,6 +45,7 @@ import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.jboss.as.clustering.logging.ClusteringLogger;
+import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleLoader;
@@ -72,6 +74,7 @@ import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
@@ -94,15 +97,15 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.spi.group.Group<Address>, MembershipListener, Runnable, Function<GroupListener, ExecutorService> {
 
-    enum MarshallingVersion implements Function<MarshallingConfigurationContext, MarshallingConfiguration> {
+    enum MarshallingVersion implements Function<Map.Entry<ClassResolver, ClassLoader>, MarshallingConfiguration> {
         VERSION_1() {
             @Override
-            public MarshallingConfiguration apply(MarshallingConfigurationContext context) {
+            public MarshallingConfiguration apply(Map.Entry<ClassResolver, ClassLoader> entry) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
-                ClassLoader userLoader = context.getClassLoader();
+                ClassLoader userLoader = entry.getValue();
                 ClassLoader loader = WildFlySecurityManager.getClassLoaderPrivileged(ChannelCommandDispatcherFactory.class);
                 ClassLoader[] loaders = userLoader.equals(loader) ? new ClassLoader[] { userLoader } : new ClassLoader[] { userLoader, loader };
-                config.setClassResolver(ModularClassResolver.getInstance(context.getModuleLoader()));
+                config.setClassResolver(entry.getKey());
                 config.setClassTable(new DynamicClassTable(loaders));
                 config.setObjectTable(new ExternalizerObjectTable(loaders));
                 return config;
@@ -260,21 +263,9 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     private ByteBufferMarshaller createMarshaller(ClassLoader loader) {
         try {
-            return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder().register(loader).build());
+            return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassResolver(this.loader)).require(loader).build());
         } catch (NoSuchElementException e) {
-            ModuleLoader moduleLoader = this.loader;
-            MarshallingConfigurationContext marshallingConfigurationContext = new MarshallingConfigurationContext() {
-                @Override
-                public ClassLoader getClassLoader() {
-                    return loader;
-                }
-
-                @Override
-                public ModuleLoader getModuleLoader() {
-                    return moduleLoader;
-                }
-            };
-            return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, marshallingConfigurationContext), loader);
+            return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, new AbstractMap.SimpleImmutableEntry<>(ModularClassResolver.getInstance(this.loader), loader)), loader);
         }
     }
 

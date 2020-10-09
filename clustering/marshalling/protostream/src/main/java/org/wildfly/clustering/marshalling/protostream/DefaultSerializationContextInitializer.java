@@ -29,7 +29,6 @@ import org.infinispan.protostream.SerializationContextInitializer;
  * @author Paul Ferraro
  */
 public enum DefaultSerializationContextInitializer implements SerializationContextInitializer {
-    LANG(new LangSerializationContextInitializer()),
     ANY(new AnySerializationContextInitializer()),
     NET(new NetSerializationContextInitializer()),
     SQL(new SQLSerializationContextInitializer()),

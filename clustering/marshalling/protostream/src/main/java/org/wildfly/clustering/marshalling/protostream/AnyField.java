@@ -39,9 +39,10 @@ import org.jboss.modules.Module;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
+ * A set of fields used by {@link AnyMarshaller}.
  * @author Paul Ferraro
  */
-public enum AnyField implements MarshallerProvider, Field {
+public enum AnyField implements MarshallerProvider, Field<Object> {
     BOOLEAN(Boolean.class) {
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
@@ -235,7 +236,7 @@ public enum AnyField implements MarshallerProvider, Field {
         }
     },
     IDENTIFIED_OBJECT(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassMarshaller.ID);
+        private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ID);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
@@ -244,7 +245,7 @@ public enum AnyField implements MarshallerProvider, Field {
     },
     IDENTIFIED_ENUM(Void.class) {
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassMarshaller.ID);
+        private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ID);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
@@ -252,7 +253,7 @@ public enum AnyField implements MarshallerProvider, Field {
         }
     },
     IDENTIFIED_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassMarshaller.ID, ObjectMarshaller.INSTANCE);
+        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ID, ObjectMarshaller.INSTANCE);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
@@ -260,7 +261,7 @@ public enum AnyField implements MarshallerProvider, Field {
         }
     },
     OBJECT(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassMarshaller.ANY);
+        private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ANY);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
@@ -269,7 +270,7 @@ public enum AnyField implements MarshallerProvider, Field {
     },
     ENUM(Void.class) {
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassMarshaller.ANY);
+        private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ANY);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
@@ -277,7 +278,7 @@ public enum AnyField implements MarshallerProvider, Field {
         }
     },
     FIELD_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassMarshaller.FIELD, ObjectMarshaller.INSTANCE);
+        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.FIELD, ObjectMarshaller.INSTANCE);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
@@ -285,7 +286,7 @@ public enum AnyField implements MarshallerProvider, Field {
         }
     },
     ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassMarshaller.ANY, ObjectMarshaller.INSTANCE);
+        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ANY, ObjectMarshaller.INSTANCE);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
@@ -293,47 +294,11 @@ public enum AnyField implements MarshallerProvider, Field {
         }
     },
     MULTI_DIMENSIONAL_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassMarshaller.ARRAY, ObjectMarshaller.INSTANCE);
+        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ARRAY, ObjectMarshaller.INSTANCE);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
             return this.marshaller;
-        }
-    },
-    IDENTIFIED_CLASS(Void.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return ClassMarshaller.ID;
-        }
-    },
-    NAMED_CLASS(Void.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return ClassMarshaller.NAME;
-        }
-    },
-    FIELD_CLASS(Void.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return ClassMarshaller.FIELD;
-        }
-    },
-    LOADED_CLASS(Void.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return ClassMarshaller.LOADED;
-        }
-    },
-    ARRAY_CLASS(Void.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return ClassMarshaller.ARRAY;
-        }
-    },
-    OBJECT_CLASS(Void.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return ClassMarshaller.OBJECT;
         }
     },
     PROXY(Void.class) {
@@ -343,7 +308,7 @@ public enum AnyField implements MarshallerProvider, Field {
             ClassLoader loader = (module != null) ? module.getClassLoader() : WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             Class<?>[] interfaceClasses = new Class<?>[reader.readUInt32()];
             for (int i = 0; i < interfaceClasses.length; ++i) {
-                interfaceClasses[i] = ClassMarshaller.ANY.readFrom(context, reader);
+                interfaceClasses[i] = ClassField.ANY.readFrom(context, reader);
             }
             InvocationHandler handler = (InvocationHandler) ObjectMarshaller.INSTANCE.readFrom(context, reader);
             return Proxy.newProxyInstance(loader, interfaceClasses, handler);
@@ -355,7 +320,7 @@ public enum AnyField implements MarshallerProvider, Field {
             Class<?>[] interfaceClasses = value.getClass().getInterfaces();
             writer.writeUInt32NoTag(interfaceClasses.length);
             for (Class<?> interfaceClass : interfaceClasses) {
-                ClassMarshaller.ANY.writeTo(context, writer, interfaceClass);
+                ClassField.ANY.writeTo(context, writer, interfaceClass);
             }
             ObjectMarshaller.INSTANCE.writeTo(context, writer, Proxy.getInvocationHandler(value));
         }
@@ -369,7 +334,7 @@ public enum AnyField implements MarshallerProvider, Field {
                     Class<?>[] interfaceClasses = value.getClass().getInterfaces();
                     size = OptionalInt.of(size.getAsInt() + moduleSize.getAsInt() + Predictable.unsignedIntSize(interfaceClasses.length));
                     for (Class<?> interfaceClass : interfaceClasses) {
-                        OptionalInt interfaceSize = ClassMarshaller.ANY.size(context, interfaceClass);
+                        OptionalInt interfaceSize = ClassField.ANY.size(context, interfaceClass);
                         size = size.isPresent() && interfaceSize.isPresent() ? OptionalInt.of(size.getAsInt() + interfaceSize.getAsInt()) : OptionalInt.empty();
                     }
                 }
@@ -380,7 +345,7 @@ public enum AnyField implements MarshallerProvider, Field {
     THROWABLE(Throwable.class) {
         @Override
         public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            Class<?> targetClass = ClassMarshaller.ANY.readFrom(context, reader);
+            Class<?> targetClass = ClassField.ANY.readFrom(context, reader);
 
             return new ExceptionMarshaller<>(targetClass.asSubclass(Throwable.class)).readFrom(context, reader);
         }
@@ -390,7 +355,7 @@ public enum AnyField implements MarshallerProvider, Field {
             Throwable exception = (Throwable) value;
             @SuppressWarnings("unchecked")
             Class<Throwable> exceptionClass = (Class<Throwable>) exception.getClass();
-            ClassMarshaller.ANY.writeTo(context, writer, exceptionClass);
+            ClassField.ANY.writeTo(context, writer, exceptionClass);
 
             new ExceptionMarshaller<>(exceptionClass).writeTo(context, writer, exception);
         }
@@ -400,7 +365,7 @@ public enum AnyField implements MarshallerProvider, Field {
             Throwable exception = (Throwable) value;
             @SuppressWarnings("unchecked")
             Class<Throwable> exceptionClass = (Class<Throwable>) exception.getClass();
-            OptionalInt classSize = ClassMarshaller.ANY.size(context, exceptionClass);
+            OptionalInt classSize = ClassField.ANY.size(context, exceptionClass);
             OptionalInt exceptionSize = new ExceptionMarshaller<>(exceptionClass).size(context, exception);
             return classSize.isPresent() && exceptionSize.isPresent() ? OptionalInt.of(classSize.getAsInt() + exceptionSize.getAsInt()) : OptionalInt.empty();
         }

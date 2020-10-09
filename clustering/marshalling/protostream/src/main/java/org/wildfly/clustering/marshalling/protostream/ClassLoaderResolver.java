@@ -22,28 +22,38 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+import java.io.InvalidClassException;
+
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.wildfly.clustering.marshalling.MarshallingTester;
-import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferTestMarshaller;
+import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
+ * Resolves classes from a specific {@link ClassLoader}.
  * @author Paul Ferraro
  */
-public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
+public class ClassLoaderResolver implements ClassResolver {
 
-    private final ImmutableSerializationContext context;
+    private final ClassLoader loader;
 
-    public ProtoStreamTesterFactory() {
-        this.context = new SerializationContextBuilder(new ClassLoaderResolver(this.getClass().getClassLoader())).build();
-    }
-
-    public ProtoStreamTesterFactory(ClassLoader loader) {
-        this.context = new SerializationContextBuilder(new ClassLoaderResolver(loader)).load(loader).build();
+    public ClassLoaderResolver(ClassLoader loader) {
+        this.loader = loader;
     }
 
     @Override
-    public <T> MarshallingTester<T> createTester() {
-        return new MarshallingTester<>(new ByteBufferTestMarshaller<>(new ProtoStreamByteBufferMarshaller(this.context)));
+    public void annotate(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
+        // Nothing to annotate
+    }
+
+    @Override
+    public Class<?> resolve(ImmutableSerializationContext context, RawProtoStreamReader reader, String className) throws IOException {
+        try {
+            return this.loader.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            InvalidClassException exception = new InvalidClassException(e.getMessage());
+            exception.initCause(e);
+            throw exception;
+        }
     }
 }

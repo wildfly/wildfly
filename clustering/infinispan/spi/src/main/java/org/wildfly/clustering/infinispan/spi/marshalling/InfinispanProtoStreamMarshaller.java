@@ -22,9 +22,9 @@
 
 package org.wildfly.clustering.infinispan.spi.marshalling;
 
-import org.jboss.modules.Module;
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.infinispan.spi.metadata.MetadataSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ClassResolver;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 
 /**
@@ -32,7 +32,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
  */
 public class InfinispanProtoStreamMarshaller extends ProtoStreamMarshaller {
 
-    public InfinispanProtoStreamMarshaller(Module module) {
-        super(new SerializationContextBuilder().register(new MetadataSerializationContextInitializer()).register(module.getClassLoader()));
+    public InfinispanProtoStreamMarshaller(ClassResolver resolver, ClassLoader loader) {
+        super(new SerializationContextBuilder(resolver).register(new MetadataSerializationContextInitializer()).require(loader));
     }
 }

@@ -5,62 +5,6 @@ package java.lang;
 /**
  * @TypeId(1)
  */
-message Boolean {
-	required	bool	value	= 1;
-}
-
-/**
- * @TypeId(2)
- */
-message Byte {
-	required	sint32	value	= 1;
-}
-
-/**
- * @TypeId(3)
- */
-message Short {
-	required	sint32	value	= 1;
-}
-
-/**
- * @TypeId(4)
- */
-message Integer {
-	required	sint32	value	= 1;
-}
-
-/**
- * @TypeId(5)
- */
-message Long {
-	required	sint64	value	= 1;
-}
-
-/**
- * @TypeId(6)
- */
-message Float {
-	required	float	value	= 1;
-}
-
-/**
- * @TypeId(7)
- */
-message Double {
-	required	double	value	= 1;
-}
-
-/**
- * @TypeId(8)
- */
-message Character {
-	required	uint32	value	= 1;
-}
-
-/**
- * @TypeId(9)
- */
-message String {
-	required	string	value	= 1;
+message Class {
+	required	string	name	= 1;
 }

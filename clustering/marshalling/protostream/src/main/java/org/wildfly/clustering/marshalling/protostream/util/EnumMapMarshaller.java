@@ -34,7 +34,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.AnyField;
-import org.wildfly.clustering.marshalling.protostream.ClassMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassField;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -48,7 +48,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     @SuppressWarnings("unchecked")
     @Override
     public EnumMap<E, Object> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        Class<E> enumClass = (Class<E>) ClassMarshaller.ANY.readFrom(context, reader);
+        Class<E> enumClass = (Class<E>) ClassField.ANY.readFrom(context, reader);
         EnumMap<E, Object> map = new EnumMap<>(enumClass);
         BitSet keys = BitSet.valueOf(AnyField.BYTE_ARRAY.cast(byte[].class).readFrom(context, reader));
         E[] enumValues = enumClass.getEnumConstants();
@@ -63,7 +63,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, EnumMap<E, Object> map) throws IOException {
         Class<?> enumClass = this.findEnumClass(map);
-        ClassMarshaller.ANY.writeTo(context, writer, enumClass);
+        ClassField.ANY.writeTo(context, writer, enumClass);
         Object[] enumValues = enumClass.getEnumConstants();
         // Represent EnumMap keys as a BitSet
         BitSet keys = new BitSet(enumValues.length);
@@ -79,7 +79,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     @Override
     public OptionalInt size(ImmutableSerializationContext context, EnumMap<E, Object> map) {
         Class<?> enumClass = this.findEnumClass(map);
-        OptionalInt size = ClassMarshaller.ANY.size(context, enumClass);
+        OptionalInt size = ClassField.ANY.size(context, enumClass);
         if (size.isPresent()) {
             Object[] enumValues = enumClass.getEnumConstants();
             // Determine number of bytes in BitSet

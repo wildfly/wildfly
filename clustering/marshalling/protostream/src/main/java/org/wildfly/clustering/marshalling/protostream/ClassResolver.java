@@ -22,28 +22,33 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.wildfly.clustering.marshalling.MarshallingTester;
-import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferTestMarshaller;
+import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
+ * Resolver for class instances.
  * @author Paul Ferraro
  */
-public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
+public interface ClassResolver extends Predictable<Class<?>> {
+    /**
+     * Writes any additional context necessary to resolve the specified class.
+     * @param context a serialization context
+     * @param writer a ProtoStream writer
+     * @param targetClass the class to be annotated
+     * @throws IOException
+     */
+    void annotate(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException;
 
-    private final ImmutableSerializationContext context;
-
-    public ProtoStreamTesterFactory() {
-        this.context = new SerializationContextBuilder(new ClassLoaderResolver(this.getClass().getClassLoader())).build();
-    }
-
-    public ProtoStreamTesterFactory(ClassLoader loader) {
-        this.context = new SerializationContextBuilder(new ClassLoaderResolver(loader)).load(loader).build();
-    }
-
-    @Override
-    public <T> MarshallingTester<T> createTester() {
-        return new MarshallingTester<>(new ByteBufferTestMarshaller<>(new ProtoStreamByteBufferMarshaller(this.context)));
-    }
+    /**
+     * Resolves a class with the specified name from the specified reader.
+     * @param context a serialization context
+     * @param reader a ProtoStream reader
+     * @param className a class name
+     * @return a resolved class instance
+     * @throws IOException
+     */
+    Class<?> resolve(ImmutableSerializationContext context, RawProtoStreamReader reader, String className) throws IOException;
 }
