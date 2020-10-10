@@ -27,8 +27,8 @@ import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
+//import org.jboss.arquillian.junit.Arquillian;
+//import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
@@ -43,8 +43,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+//import org.junit.Test;
+//import org.junit.runner.RunWith;
 import org.wildfly.common.function.ExceptionSupplier;
 
 
@@ -55,8 +55,8 @@ import javax.naming.Context;
  * @author Richard Achmatowicz
  */
 
-@ServerSetup(TwoConnectorsEJBFailoverTestCase.ServerSetupTask.class)
-@RunWith(Arquillian.class)
+//@ServerSetup(TwoConnectorsEJBFailoverTestCase.ServerSetupTask.class)
+//@RunWith(Arquillian.class)
 public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;
@@ -112,7 +112,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
     /*
      * Run a failover test where the client communicates with the server via HTTP Upgrade over port 8080/8081
      */
-    @Test
+//    @Test
     public void testEJBClientUsingHttpUpgradeProtocol() throws Exception {
         log.infof(MODULE_NAME+ " : testing failover with client using HTTP Upgrade");
         test(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(false)));
@@ -121,7 +121,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
     /*
      * Run a failover test where the client communicates with the server via legacy Remoting protocol over port 4447/4448
      */
-    @Test
+//    @Test
     public void testEJBClientUsingLegacyRemotingProtocol() throws Exception {
         log.infof(MODULE_NAME + " : testing failover with client using legacy Remoting");
         test(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(true)));
