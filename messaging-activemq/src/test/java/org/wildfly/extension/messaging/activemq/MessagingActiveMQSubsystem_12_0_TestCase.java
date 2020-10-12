@@ -270,7 +270,14 @@ public class MessagingActiveMQSubsystem_12_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
                                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                                 ServerDefinition.DISK_SCAN_PERIOD,
-                                ServerDefinition.GLOBAL_MAX_MEMORY_SIZE
+                                ServerDefinition.GLOBAL_MAX_MEMORY_SIZE,
+                                ServerDefinition.NETWORK_CHECK_LIST,
+                                ServerDefinition.NETWORK_CHECK_NIC,
+                                ServerDefinition.NETWORK_CHECK_PERIOD,
+                                ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                                ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                                ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                                ServerDefinition.NETWORK_CHECK_URL_LIST
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
@@ -321,7 +328,15 @@ public class MessagingActiveMQSubsystem_12_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
                                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                                 ServerDefinition.DISK_SCAN_PERIOD,
-                                ServerDefinition.GLOBAL_MAX_MEMORY_SIZE
+                                ServerDefinition.GLOBAL_MAX_MEMORY_SIZE,
+                                ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
+                                ServerDefinition.NETWORK_CHECK_LIST,
+                                ServerDefinition.NETWORK_CHECK_NIC,
+                                ServerDefinition.NETWORK_CHECK_PERIOD,
+                                ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                                ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                                ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                                ServerDefinition.NETWORK_CHECK_URL_LIST
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
@@ -335,11 +350,28 @@ public class MessagingActiveMQSubsystem_12_0_TestCase extends AbstractSubsystemB
                             ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                             ServerDefinition.DISK_SCAN_PERIOD,
                             ServerDefinition.GLOBAL_MAX_MEMORY_SIZE,
-                            ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT));
+                            ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
+                            ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
+                            ServerDefinition.NETWORK_CHECK_LIST,
+                            ServerDefinition.NETWORK_CHECK_NIC,
+                            ServerDefinition.NETWORK_CHECK_PERIOD,
+                            ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                            ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                            ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                            ServerDefinition.NETWORK_CHECK_URL_LIST));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
-            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
+                    ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
+                    ServerDefinition.NETWORK_CHECK_LIST,
+                    ServerDefinition.NETWORK_CHECK_NIC,
+                    ServerDefinition.NETWORK_CHECK_PERIOD,
+                    ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                    ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                    ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                    ServerDefinition.NETWORK_CHECK_URL_LIST
+            ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.JGROUPS_BROADCAST_GROUP_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
@@ -443,6 +475,15 @@ public class MessagingActiveMQSubsystem_12_0_TestCase extends AbstractSubsystemB
                     ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                     ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
                     ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
+                    ServerDefinition.NETWORK_CHECK_LIST,
+                    ServerDefinition.NETWORK_CHECK_NIC,
+                    ServerDefinition.NETWORK_CHECK_PERIOD,
+                    ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                    ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                    ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                    ServerDefinition.NETWORK_CHECK_URL_LIST
+            ));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();

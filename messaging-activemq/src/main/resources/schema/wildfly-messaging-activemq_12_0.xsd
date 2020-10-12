@@ -291,6 +291,18 @@
             </xs:element>
             <!-- end of server attribute groups -->
 
+            <xs:element maxOccurs="1" minOccurs="0" name="network-isolation">
+                <xs:complexType>
+                    <xs:attribute name="network-check-nic" type="xs:string" />
+                    <xs:attribute name="network-check-period" type="xs:long" />
+                    <xs:attribute name="network-check-timeout" type="xs:long" />
+                    <xs:attribute name="network-check-list" type="xs:string" />
+                    <xs:attribute name="network-check-url-list" type="xs:string" />
+                    <xs:attribute name="network-check-ping-command" type="xs:string" />
+                    <xs:attribute name="network-check-ping6-command" type="xs:string" />
+                </xs:complexType>
+            </xs:element>
+
             <xs:choice>
                 <xs:element name="live-only" minOccurs="0" maxOccurs="1">
                     <xs:complexType>

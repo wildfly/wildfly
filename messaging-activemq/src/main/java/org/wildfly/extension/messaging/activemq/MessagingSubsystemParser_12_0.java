@@ -228,7 +228,15 @@ public class MessagingSubsystemParser_12_0 extends PersistentResourceXMLParser {
                                         ServerDefinition.MEMORY_MEASURE_INTERVAL,
                                         ServerDefinition.MEMORY_WARNING_THRESHOLD,
                                         CommonAttributes.INCOMING_INTERCEPTORS,
-                                        CommonAttributes.OUTGOING_INTERCEPTORS)
+                                        CommonAttributes.OUTGOING_INTERCEPTORS,
+                                        //Network Isolation
+                                        ServerDefinition.NETWORK_CHECK_LIST,
+                                        ServerDefinition.NETWORK_CHECK_NIC,
+                                        ServerDefinition.NETWORK_CHECK_PERIOD,
+                                        ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                                        ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                                        ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                                        ServerDefinition.NETWORK_CHECK_URL_LIST)
                                 .addChild(
                                         builder(LiveOnlyDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
