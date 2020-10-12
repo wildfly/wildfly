@@ -113,6 +113,15 @@
                  disk-scan-period="10000"
                  file-open-timeout="7"/>
 
+       <network-isolation
+            network-check-list="127.0.0.1,[::1]"
+            network-check-nic="localhost"
+            network-check-period="10000"
+            network-check-ping-command="ping"
+            network-check-ping6-command="ping6"
+            network-check-timeout="10000"
+            network-check-url-list="127.0.0.1"/>
+
         <replication-colocated>
             <master />
         </replication-colocated>

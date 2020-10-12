@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
+import org.apache.activemq.artemis.core.server.NetworkHealthCheck;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -57,6 +58,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import static org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators.LONG_INSTANCE;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationMasterDefinition;
@@ -773,6 +775,84 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckNic
+     */
+    public static final SimpleAttributeDefinition NETWORK_CHECK_NIC = create("network-check-nic", STRING)
+            .setAttributeGroup("network-isolation")
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckPeriod
+     */
+    public static final SimpleAttributeDefinition NETWORK_CHECK_PERIOD = create("network-check-period", LONG)
+            .setAttributeGroup("network-isolation")
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setDefaultValue(new ModelNode(5000L))
+            .setRequired(false)
+            .setValidator(LONG_INSTANCE)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckTimeout
+     */
+    public static final SimpleAttributeDefinition NETWORK_CHECK_TIMEOUT = create("network-check-timeout", LONG)
+            .setAttributeGroup("network-isolation")
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setDefaultValue(new ModelNode(1000L))
+            .setRequired(false)
+            .setValidator(LONG_INSTANCE)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckList
+     */
+    public static final SimpleAttributeDefinition NETWORK_CHECK_LIST = create("network-check-list", STRING)
+            .setAttributeGroup("network-isolation")
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckURLList
+     */
+    public static final SimpleAttributeDefinition NETWORK_CHECK_URL_LIST = create("network-check-url-list", STRING)
+            .setAttributeGroup("network-isolation")
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ANetworkHealthCheck#IPV4_DEFAULT_COMMAND
+     */
+    public static final SimpleAttributeDefinition NETWORK_CHECK_PING_COMMAND = create("network-check-ping-command", STRING)
+            .setAttributeGroup("network-isolation")
+            .setDefaultValue(new ModelNode("ping -c 1 -t %d %s"))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see NetworkHealthCheck#IPV6_DEFAULT_COMMAND
+     */
+    public static final SimpleAttributeDefinition NETWORK_CHECK_PING6_COMMAND = create("network-check-ping6-command", STRING)
+            .setAttributeGroup("network-isolation")
+            .setDefaultValue(new ModelNode("ping6 -c 1 %2$s"))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTES = {PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
             THREAD_POOL_MAX_SIZE, SECURITY_DOMAIN, ELYTRON_DOMAIN, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL,
             OVERRIDE_IN_VM_SECURITY, WILD_CARD_ROUTING_ENABLED, MANAGEMENT_ADDRESS, MANAGEMENT_NOTIFICATION_ADDRESS,
@@ -791,7 +871,9 @@ public class ServerDefinition extends PersistentResourceDefinition {
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_FILE_OPEN_TIMEOUT, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
-            GLOBAL_MAX_DISK_USAGE, DISK_SCAN_PERIOD, GLOBAL_MAX_MEMORY_SIZE
+            GLOBAL_MAX_DISK_USAGE, DISK_SCAN_PERIOD, GLOBAL_MAX_MEMORY_SIZE,
+            NETWORK_CHECK_NIC, NETWORK_CHECK_PERIOD, NETWORK_CHECK_TIMEOUT,
+            NETWORK_CHECK_LIST, NETWORK_CHECK_URL_LIST, NETWORK_CHECK_PING_COMMAND, NETWORK_CHECK_PING6_COMMAND
     };
 
     private final boolean registerRuntimeOnly;

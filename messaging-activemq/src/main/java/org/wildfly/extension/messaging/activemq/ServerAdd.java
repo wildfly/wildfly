@@ -91,6 +91,13 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_COUNTER_SAMPLE_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_EXPIRY_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_EXPIRY_THREAD_PRIORITY;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_LIST;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_NIC;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_PERIOD;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_PING6_COMMAND;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_PING_COMMAND;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_TIMEOUT;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_URL_LIST;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.OVERRIDE_IN_VM_SECURITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PAGE_MAX_CONCURRENT_IO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSISTENCE_ENABLED;
@@ -648,6 +655,21 @@ class ServerAdd extends AbstractAddStepHandler {
             configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
             configuration.getWildcardConfiguration().setRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
+            if (model.hasDefined(NETWORK_CHECK_NIC.getName())
+                    || model.hasDefined(NETWORK_CHECK_PERIOD.getName())
+                    || model.hasDefined(NETWORK_CHECK_TIMEOUT.getName())
+                    || model.hasDefined(NETWORK_CHECK_LIST.getName())
+                    || model.hasDefined(NETWORK_CHECK_URL_LIST.getName())
+                    || model.hasDefined(NETWORK_CHECK_PING_COMMAND.getName())
+                    || model.hasDefined(NETWORK_CHECK_PING6_COMMAND.getName())) {
+                configuration.setNetworCheckNIC(NETWORK_CHECK_NIC.resolveModelAttribute(context, model).asStringOrNull());
+                configuration.setNetworkCheckList(NETWORK_CHECK_LIST.resolveModelAttribute(context, model).asStringOrNull());
+                configuration.setNetworkCheckPeriod(NETWORK_CHECK_PERIOD.resolveModelAttribute(context, model).asLong());
+                configuration.setNetworkCheckPing6Command(NETWORK_CHECK_PING6_COMMAND.resolveModelAttribute(context, model).asString());
+                configuration.setNetworkCheckPingCommand(NETWORK_CHECK_PING_COMMAND.resolveModelAttribute(context, model).asString());
+                configuration.setNetworkCheckTimeout(NETWORK_CHECK_TIMEOUT.resolveModelAttribute(context, model).asInt());
+                configuration.setNetworkCheckURLList(NETWORK_CHECK_URL_LIST.resolveModelAttribute(context, model).asStringOrNull());
+            }
             processStorageConfiguration(context, model, configuration);
             HAPolicyConfigurationBuilder.getInstance().addHAPolicyConfiguration(context, configuration, model);
 
