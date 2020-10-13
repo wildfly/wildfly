@@ -22,12 +22,9 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.BinaryRequirement;
@@ -38,9 +35,9 @@ import org.wildfly.clustering.service.UnaryRequirement;
  * A capability reference recorder that registers a given requirement conditionally based the attribute value.
  * @author Paul Ferraro
  */
-public class PredicateCapabilityReference extends AbstractCapabilityReference {
+public class PredicateCapabilityReference extends ResourceCapabilityReference {
     private static final Predicate<ModelNode> BOOLEAN = ModelNode::asBoolean;
-    private final Function<PathAddress, String[]> requirementNameResolver;
+
     private final Predicate<ModelNode> predicate;
 
     /**
@@ -49,7 +46,7 @@ public class PredicateCapabilityReference extends AbstractCapabilityReference {
      * @param requirement the requirement of the specified capability
      */
     public PredicateCapabilityReference(Capability capability, Requirement requirement) {
-        this(capability, requirement, new SimpleCapabilityNameResolver(), BOOLEAN);
+        this(capability, requirement, BOOLEAN);
     }
 
     /**
@@ -59,7 +56,8 @@ public class PredicateCapabilityReference extends AbstractCapabilityReference {
      * @param predicate a predicate that determines for which values the requirement should be registered
      */
     public PredicateCapabilityReference(Capability capability, Requirement requirement, Predicate<ModelNode> predicate) {
-        this(capability, requirement, new SimpleCapabilityNameResolver(), predicate);
+        super(capability, requirement);
+        this.predicate = predicate;
     }
 
     /**
@@ -80,7 +78,8 @@ public class PredicateCapabilityReference extends AbstractCapabilityReference {
      * @param predicate a predicate that determines for which values the requirement should be registered
      */
     public PredicateCapabilityReference(Capability capability, UnaryRequirement requirement, UnaryCapabilityNameResolver requirementNameResolver, Predicate<ModelNode> predicate) {
-        this(capability, (Requirement) requirement, requirementNameResolver, predicate);
+        super(capability, requirement, requirementNameResolver);
+        this.predicate = predicate;
     }
 
     /**
@@ -91,7 +90,7 @@ public class PredicateCapabilityReference extends AbstractCapabilityReference {
      * @param predicate a predicate that determines for which values the requirement should be registered
      */
     public PredicateCapabilityReference(Capability capability, BinaryRequirement requirement, BinaryCapabilityNameResolver requirementNameResolver) {
-        this(capability, (Requirement) requirement, requirementNameResolver, BOOLEAN);
+        this(capability, requirement, requirementNameResolver, BOOLEAN);
     }
 
     /**
@@ -102,12 +101,7 @@ public class PredicateCapabilityReference extends AbstractCapabilityReference {
      * @param predicate a predicate that determines for which values the requirement should be registered
      */
     public PredicateCapabilityReference(Capability capability, BinaryRequirement requirement, BinaryCapabilityNameResolver requirementNameResolver, Predicate<ModelNode> predicate) {
-        this(capability, (Requirement) requirement, requirementNameResolver, predicate);
-    }
-
-    private PredicateCapabilityReference(Capability capability, Requirement requirement, Function<PathAddress, String[]> requirementNameResolver, Predicate<ModelNode> predicate) {
-        super(capability, requirement);
-        this.requirementNameResolver = requirementNameResolver;
+        super(capability, requirement, requirementNameResolver);
         this.predicate = predicate;
     }
 
@@ -115,7 +109,7 @@ public class PredicateCapabilityReference extends AbstractCapabilityReference {
     public void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
         for (String value : values) {
             if (this.predicate.test(new ModelNode(value))) {
-                context.registerAdditionalCapabilityRequirement(this.getRequirementName(context), this.getDependentName(context), attributeName);
+                super.addCapabilityRequirements(context, resource, attributeName, value);
             }
         }
     }
@@ -124,25 +118,8 @@ public class PredicateCapabilityReference extends AbstractCapabilityReference {
     public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
         for (String value : values) {
             if (this.predicate.test(new ModelNode(value))) {
-                context.deregisterCapabilityRequirement(this.getRequirementName(context), this.getDependentName(context));
+                super.removeCapabilityRequirements(context, resource, attributeName, value);
             }
         }
-    }
-
-    private String getRequirementName(OperationContext context) {
-        String[] parts = this.requirementNameResolver.apply(context.getCurrentAddress());
-        return (parts.length > 0) ? RuntimeCapability.buildDynamicCapabilityName(this.getBaseRequirementName(), parts) : this.getBaseRequirementName();
-    }
-
-    @Override
-    public String[] getRequirementPatternSegments(String name, PathAddress address) {
-        String[] segments = this.requirementNameResolver.apply(address);
-        for (int i = 0; i < segments.length; ++i) {
-            String segment = segments[i];
-            if (segment.charAt(0) == '$') {
-                segments[i] = segment.substring(1);
-            }
-        }
-        return segments;
     }
 }

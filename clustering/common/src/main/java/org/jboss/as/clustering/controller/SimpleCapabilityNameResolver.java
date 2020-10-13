@@ -31,6 +31,7 @@ import org.jboss.as.controller.PathAddress;
  * @author Paul Ferraro
  */
 public class SimpleCapabilityNameResolver implements Function<PathAddress, String[]> {
+    public static final Function<PathAddress, String[]> EMPTY = new SimpleCapabilityNameResolver();
 
     private final String[] names;
 
