@@ -35,7 +35,7 @@
     Maintain separation between the artifact id and the version to help prevent
     merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>21.0.0.Final</version>
+    <version>22.0.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -75,7 +75,7 @@
         <!-- Version of WildFly
         note: a SNAPSHOT version *requires* checkout of WildFly at https://github.com/wildfly/wildfly and build through "mvn clean install"
         -->
-        <version.server>21.0.0.Final</version.server>
+        <version.server>22.0.0.Beta1-SNAPSHOT</version.server>
         <!-- Version of the maven plugin used to build BOMs -->
         <version.bom-builder-plugin>2.0.0.Final</version.bom-builder-plugin>
         <!-- Protocol to use for communication with remote maven repositories.
