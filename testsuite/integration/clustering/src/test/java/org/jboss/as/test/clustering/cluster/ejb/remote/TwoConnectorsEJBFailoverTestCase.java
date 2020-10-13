@@ -43,7 +43,9 @@ import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -106,6 +108,19 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
         return props ;
     }
 
+    @BeforeClass
+    public static void beforeClass() {
+        // set ejb client discovery timeout to 60 seconds
+        System.setProperty("org.jboss.ejb.client.discovery.timeout", "60");
+        // set the secondary timeout to much shorter 100 milliseconds
+        System.setProperty("org.jboss.ejb.client.discovery.additional-node-timeout", "100");
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        System.clearProperty("org.jboss.ejb.client.discovery.timeout");
+        System.clearProperty("org.jboss.ejb.client.discovery.additional-node-timeout");
+    }
 
     /*
      * Run a failover test where the client communicates with the server via HTTP Upgrade over port 8080/8081
@@ -225,15 +240,11 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
                     .setup("/socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447)")
                     .setup("/subsystem=remoting/connector=remoting-connector:add(socket-binding=remoting, security-realm=ApplicationRealm)")
                     .setup("/subsystem=remoting/connector=remoting-connector/property=SSL_ENABLED:add(value=false)")
-                    .setup("/system-property=org.jboss.ejb.client.discovery.timeout:add(value=5)")
-                    .setup("/system-property=org.jboss.ejb.client.discovery.additional-node-timeout:add(value=1000)")
                     // this step results in a capabilities error if the list is not formatted correctly for CLI
                     .setup("/subsystem=ejb3/service=remote:list-add(name=connectors, value=remoting-connector)")
                     .teardown("/subsystem=ejb3/service=remote:list-remove(name=connectors, value=remoting-connector)")
                     .teardown("/subsystem=remoting/connector=remoting-connector:remove")
                     .teardown("/socket-binding-group=standard-sockets/socket-binding=remoting:remove")
-                    .teardown("/system-property=org.jboss.ejb.client.discovery.timeout:remove")
-                    .teardown("/system-property=org.jboss.ejb.client.discovery.additional-node-timeout:remove")
             ;
         }
     }
