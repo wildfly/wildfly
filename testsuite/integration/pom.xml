@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.0.Final-SNAPSHOT</version>
+        <version>22.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -331,7 +331,7 @@
             </activation>
             <properties>
                 <version.org.jboss.arquillian.core>1.6.0.Final</version.org.jboss.arquillian.core>
-                <version.org.wildfly.arquillian>3.0.0.Final</version.org.wildfly.arquillian>
+                <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
                 <version.org.wildfly.jar.plugin>2.0.0.Beta8</version.org.wildfly.jar.plugin>        
             </properties>            
             <modules>
