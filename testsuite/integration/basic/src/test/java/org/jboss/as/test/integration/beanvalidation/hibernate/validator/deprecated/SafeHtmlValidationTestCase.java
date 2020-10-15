@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.beanvalidation.hibernate.validator.depreca
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Set;
 import javax.validation.ConstraintViolation;
@@ -39,6 +40,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,6 +49,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class SafeHtmlValidationTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        assumeTrue(System.getProperty("ts.ee9") == null);
+    }
 
     @Deployment
     public static Archive<?> deploy() {
