@@ -14,6 +14,12 @@
             <includes>
                 <include>${server.output.dir.prefix}-${server.output.dir.version}/**</include>
             </includes>
+            <excludes>
+                <exclude>${server.output.dir.prefix}-${server.output.dir.version}/welcome-content/**</exclude>
+                <exclude>${server.output.dir.prefix}-${server.output.dir.version}/standalone/data/**</exclude>
+                <exclude>${server.output.dir.prefix}-${server.output.dir.version}/standalone/log/**</exclude>
+                <exclude>${server.output.dir.prefix}-${server.output.dir.version}/standalone/tmp/**</exclude>
+            </excludes>
         </fileSet>
     </fileSets>
 </assembly>

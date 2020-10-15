@@ -216,6 +216,61 @@
                         </dependencies>
                     </plugin>
                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>keytool</executable>
+                                    <workingDirectory>
+                                        ${basedir}/target/${project.build.finalName}/standalone/configuration/
+                                    </workingDirectory>
+                                    <arguments>
+                                        <argument>-genkey</argument>
+                                        <argument>-alias</argument>
+                                        <argument>wcc</argument>
+                                        <argument>-dname</argument>
+                                        <argument>CN=localhost, O=PSI</argument>
+                                        <argument>-keyalg</argument>
+                                        <argument>RSA</argument>
+                                        <argument>-keystore</argument>
+                                        <argument>wcc.keystore</argument>
+                                        <argument>-storepass</argument>
+                                        <argument>wildfly</argument>
+                                        <argument>-validity</argument>
+                                        <argument>3650</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>2.0.2.Final</version>
+                        <executions>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>start</goal>
+                                    <goal>execute-commands</goal>
+                                    <goal>shutdown</goal>
+                                </goals>
+                                <configuration>
+                                    <jboss-home>${basedir}/target/${project.build.finalName}</jboss-home>
+                                    <scripts>
+                                        <script>hardening.cli</script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <executions>

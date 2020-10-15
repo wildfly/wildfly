@@ -1,0 +1,28 @@
+# [P] Remove Example Content
+/subsystem=datasources/data-source=ExampleDS:remove
+/subsystem=ee/service=default-bindings:undefine-attribute(name=datasource)
+
+/subsystem=undertow/server=default-server/host=default-host/location="/":remove
+/subsystem=undertow/configuration=handler/file=welcome-content:remove
+
+# [P] Disable Deployment Scanner
+/subsystem=deployment-scanner/scanner=default:write-attribute(name="scan-enabled",value=false)
+
+# [P] Disable stacktrace in response body
+/subsystem=undertow/servlet-container=default:write-attribute(name="stack-trace-on-error",value="none")
+
+# [P] Enable SSL Connector
+# remove default https listener
+/subsystem=undertow/server=default-server/https-listener=https:remove
+
+# create WCC_SSL_Realm
+/core-service=management/security-realm=WCC_SSL_Realm:add
+/core-service=management/security-realm=WCC_SSL_Realm/server-identity=ssl:add(\
+    keystore-path="wcc.keystore",\
+    keystore-relative-to="jboss.server.config.dir",\
+    keystore-password="wildfly")
+
+# create https listener
+/subsystem=undertow/server=default-server/https-listener=httpsListener:add(\
+    socket-binding="https",\
+    security-realm="WCC_SSL_Realm")
