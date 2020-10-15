@@ -217,37 +217,43 @@
                     </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <artifactId>keytool-maven-plugin</artifactId>
+                        <version>1.5</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>keytool-api-1.7</artifactId>
+                                <version>1.5</version>
+                            </dependency>
+                        </dependencies>
                         <executions>
                             <execution>
-                                <phase>package</phase>
+                                <phase>generate-test-resources</phase>
+                                <id>clean-keystore</id>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>clean</goal>
                                 </goals>
-                                <configuration>
-                                    <executable>keytool</executable>
-                                    <workingDirectory>
-                                        ${basedir}/target/${project.build.finalName}/standalone/configuration/
-                                    </workingDirectory>
-                                    <arguments>
-                                        <argument>-genkey</argument>
-                                        <argument>-alias</argument>
-                                        <argument>wcc</argument>
-                                        <argument>-dname</argument>
-                                        <argument>CN=localhost, O=PSI</argument>
-                                        <argument>-keyalg</argument>
-                                        <argument>RSA</argument>
-                                        <argument>-keystore</argument>
-                                        <argument>wcc.keystore</argument>
-                                        <argument>-storepass</argument>
-                                        <argument>wildfly</argument>
-                                        <argument>-validity</argument>
-                                        <argument>3650</argument>
-                                    </arguments>
-                                </configuration>
+                            </execution>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>genkey-keystore</id>
+                                <goals>
+                                    <goal>generateKeyPair</goal>
+                                </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <keystore>${basedir}/target/${project.build.finalName}/standalone/configuration/wcc.keystore</keystore>
+                            <dname>CN=localhost, OU=WCC, O=PSI, C=PL</dname>
+                            <storetype>PKCS12</storetype>
+                            <keypass>wildfly</keypass>
+                            <storepass>wildfly</storepass>
+                            <alias>wcc</alias>
+                            <keyalg>RSA</keyalg>
+                            <keysize>2048</keysize>
+                            <validity>3650</validity>
+                            <verbose>true</verbose>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
