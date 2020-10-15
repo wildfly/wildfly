@@ -19,9 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
+package org.jboss.as.test.integration.beanvalidation.hibernate.validator.deprecated;
 
 import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.SafeHtml;
+import org.jboss.as.test.integration.beanvalidation.hibernate.validator.CustomConstraint;
 
 /**
  * @author Madhumita Sadhukhan
@@ -37,6 +39,9 @@ public class Employee {
 
     @Email
     private String email;
+
+    @SafeHtml
+    private String website;
 
     public String getEmpId() {
         return empId;
@@ -68,5 +73,13 @@ public class Employee {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 }
