@@ -458,6 +458,8 @@
         <!-- Apache xml-resolver -->
         <version.xom>1.2.10</version.xom>
 
+        <!-- Allow insecure repositories -->
+        <insecure.repositories>WARN</insecure.repositories>
 
     </properties>
 
