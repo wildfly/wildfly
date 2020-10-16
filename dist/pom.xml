@@ -228,32 +228,38 @@
                         </dependencies>
                         <executions>
                             <execution>
-                                <phase>generate-test-resources</phase>
-                                <id>clean-keystore</id>
-                                <goals>
-                                    <goal>clean</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <phase>generate-test-resources</phase>
+                                <phase>prepare-package</phase>
                                 <id>genkey-keystore</id>
                                 <goals>
                                     <goal>generateKeyPair</goal>
                                 </goals>
+                                <configuration>
+                                    <keystore>${basedir}/target/${project.build.finalName}/standalone/configuration/wcc.keystore</keystore>
+                                    <dname>CN=localhost, OU=WCC, O=PSI, C=PL</dname>
+                                    <keypass>wildfly</keypass>
+                                    <storepass>wildfly</storepass>
+                                    <alias>wcc</alias>
+                                    <keyalg>RSA</keyalg>
+                                    <keysize>2048</keysize>
+                                    <validity>3650</validity>
+                                    <verbose>true</verbose>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <id>export-crt</id>
+                                <goals>
+                                    <goal>exportCertificate</goal>
+                                </goals>
+                                <configuration>
+                                    <file>${basedir}/target/${project.build.finalName}/standalone/configuration/wcc.crt</file>
+                                    <keystore>${basedir}/target/${project.build.finalName}/standalone/configuration/wcc.keystore</keystore>
+                                    <storepass>wildfly</storepass>
+                                    <alias>wcc</alias>
+                                    <verbose>true</verbose>
+                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <keystore>${basedir}/target/${project.build.finalName}/standalone/configuration/wcc.keystore</keystore>
-                            <dname>CN=localhost, OU=WCC, O=PSI, C=PL</dname>
-                            <storetype>PKCS12</storetype>
-                            <keypass>wildfly</keypass>
-                            <storepass>wildfly</storepass>
-                            <alias>wcc</alias>
-                            <keyalg>RSA</keyalg>
-                            <keysize>2048</keysize>
-                            <validity>3650</validity>
-                            <verbose>true</verbose>
-                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
