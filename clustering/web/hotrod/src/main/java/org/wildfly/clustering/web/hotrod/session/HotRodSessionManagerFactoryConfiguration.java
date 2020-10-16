@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.hotrod.session;
 
+import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
 /**
@@ -31,5 +32,5 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends HotRodSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, HotRodSessionMetaDataFactoryConfiguration {
+public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends DistributableSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, HotRodSessionMetaDataFactoryConfiguration {
 }

@@ -75,8 +75,7 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC>  
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        String containerName = this.configuration.getContainerName();
-        this.cacheConfigurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), containerName, this.getDeploymentName(), this.getConfigurationName(), new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy())).configure(support);
+        this.cacheConfigurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), this.configuration.getContainerName(), this.getDeploymentName(), this.configuration.getConfigurationName(), new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy())).configure(support);
         this.cache = new ServiceSupplierDependency<>(this.cacheConfigurator.getServiceName());
         return this;
     }
@@ -99,16 +98,6 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC>  
     @Override
     public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
         return this.configuration.getAttributePersistenceStrategy();
-    }
-
-    @Override
-    public String getContainerName() {
-        return this.configuration.getContainerName();
-    }
-
-    @Override
-    public String getConfigurationName() {
-        return this.configuration.getConfigurationName();
     }
 
     @Override
