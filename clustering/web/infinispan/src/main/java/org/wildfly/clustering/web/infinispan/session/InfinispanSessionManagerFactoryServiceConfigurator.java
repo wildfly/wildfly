@@ -167,16 +167,6 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, L
     }
 
     @Override
-    public String getContainerName() {
-        return this.configuration.getContainerName();
-    }
-
-    @Override
-    public String getCacheName() {
-        return this.configuration.getCacheName();
-    }
-
-    @Override
     public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
         return this.configuration.getAttributePersistenceStrategy();
     }
