@@ -53,7 +53,7 @@ public class EjbProxyBeanMetaDataClassNormalizer implements BeanMetaDataClassNor
 
     @Override
     public <T> Class<? super T> normalize(Class<T> clazz) {
-        if (EjbProxy.class.isAssignableFrom(clazz)) {
+        if (EjbProxy.class.isAssignableFrom(clazz) && clazz.getSuperclass() != Object.class) {
             return clazz.getSuperclass();
         }
         return clazz;
