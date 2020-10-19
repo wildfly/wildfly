@@ -17,7 +17,6 @@
 package org.jboss.as.jpa.hibernate5.scan;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedInputStream;
@@ -130,21 +129,16 @@ public class ScannerTests {
     public void testGetBytesFromInputStream() throws Exception {
         File file = buildLargeJar();
 
-        long start = System.currentTimeMillis();
         InputStream stream = new BufferedInputStream(
                 new FileInputStream(file));
         int oldLength =  getBytesFromInputStream(stream).length;
         stream.close();
-        long oldTime = System.currentTimeMillis() - start;
 
-        start = System.currentTimeMillis();
         stream = new BufferedInputStream(new FileInputStream(file));
         int newLength = ArchiveHelper.getBytesFromInputStream(stream).length;
         stream.close();
-        long newTime = System.currentTimeMillis() - start;
 
         assertEquals(oldLength, newLength);
-        assertTrue(oldTime > newTime);
     }
 
     // This is the old getBytesFromInputStream from JarVisitorFactory before
