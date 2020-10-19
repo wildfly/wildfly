@@ -19,15 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
+package org.jboss.as.test.integration.beanvalidation.hibernate.validator.deprecated;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Set;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorFactory;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -35,7 +33,6 @@ import javax.validation.ValidatorFactory;
 
 import org.hibernate.validator.HibernateValidator;
 import org.hibernate.validator.HibernateValidatorConfiguration;
-import org.hibernate.validator.HibernateValidatorFactory;
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -46,31 +43,26 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that bootstrapping works correctly for Hibernate Validator.
- *
- * @author Madhumita Sadhukhan
+ * Tests that including a cross-site script attack triggers the @SafeHtml validation rule.
  */
 @RunWith(Arquillian.class)
-public class BootStrapValidationTestCase {
+public class SafeHtmlValidationTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "testbootstrapvalidation.war");
-        war.addPackage(BootStrapValidationTestCase.class.getPackage());
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, "testsafehtml.war");
+        war.addPackage(SafeHtmlValidationTestCase.class.getPackage());
         war.addAsManifestResource(createPermissionsXmlAsset(
                 HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
         ), "permissions.xml");
         return war;
     }
 
+    /**
+     * Ensure that including a cross-site script attack triggers the @SafeHtml validation rule
+     */
     @Test
-    public void testBootstrapAsServiceDefault() {
-        HibernateValidatorFactory factory = (HibernateValidatorFactory) Validation.buildDefaultValidatorFactory();
-        assertNotNull(factory);
-    }
-
-    @Test
-    public void testCustomConstraintValidatorFactory() {
+    public void testSafeHTML() {
         HibernateValidatorConfiguration configuration = Validation.byProvider(HibernateValidator.class).configure();
         assertNotNull(configuration);
 
@@ -79,50 +71,12 @@ public class BootStrapValidationTestCase {
 
         Employee emp = new Employee();
         // create employee
-        emp.setEmpId("M1234");
-        emp.setFirstName("MADHUMITA");
-        emp.setLastName("SADHUKHAN");
-        emp.setEmail("madhu@redhat.com");
+        emp.setFirstName("Joe");
+        emp.setLastName("Cocker");
+        emp.setEmail("none@jboss.org");
+        emp.setWebsite("<script> Cross-site scripting http://en.wikipedia.org/wiki/Joe_Cocker <script/>.");
 
         Set<ConstraintViolation<Employee>> constraintViolations = validator.validate(emp);
         assertEquals("Wrong number of constraints", constraintViolations.size(), 1);
-        assertEquals("Created by default factory", constraintViolations.iterator().next().getMessage());
-
-        // get a new factory using a custom configuration
-        configuration.constraintValidatorFactory(new CustomConstraintValidatorFactory(configuration
-                .getDefaultConstraintValidatorFactory()));
-
-        factory = configuration.buildValidatorFactory();
-        validator = factory.getValidator();
-        constraintViolations = validator.validate(emp);
-        assertEquals("Wrong number of constraints", constraintViolations.size(), 1);
-        assertEquals("Created by custom factory", constraintViolations.iterator().next().getMessage());
-    }
-
-    /**
-     * A custom constraint validator factory.
-     */
-    private static class CustomConstraintValidatorFactory implements ConstraintValidatorFactory {
-
-        private final ConstraintValidatorFactory delegate;
-
-        CustomConstraintValidatorFactory(ConstraintValidatorFactory delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> key) {
-            if (key == CustomConstraint.Validator.class) {
-                return (T) new CustomConstraint.Validator("Created by custom factory");
-            }
-
-            return delegate.getInstance(key);
-        }
-
-        @Override
-        public void releaseInstance(ConstraintValidator<?, ?> instance) {
-            delegate.releaseInstance(instance);
-        }
     }
 }
