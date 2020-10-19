@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.jmx;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
@@ -89,6 +90,19 @@ public class ModelControllerMBeanTestCase {
                 failedInfos.put(name, e);
             }
         }
+
+        // https://issues.redhat.com/browse/WFLY-13977:
+        // There are some MBeans which only live a short time, such as the active operations.
+        // They may be returned from the original queryNames() call, and then don't exist
+        // in the check so they get added to failedInfos. Remove from failedInfos the ones
+        // which are not there in a fresh queryNames() call
+        Set<ObjectName> currentNames = connection.queryNames(RESOLVED_MODEL_FILTER, null);
+        for (ObjectName name : new HashMap<>(failedInfos).keySet()) {
+            if (!currentNames.contains(name)) {
+                failedInfos.remove(name);
+            }
+        }
+
         Assert.assertTrue(failedInfos.toString(), failedInfos.isEmpty());
     }
 
