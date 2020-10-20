@@ -184,6 +184,9 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
 
             stop(target);
 
+            // Allow sufficient time for client to receive new topology
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+
             result = bean.increment();
             // Bean should failover to other node
             failoverTarget = result.getNode();
