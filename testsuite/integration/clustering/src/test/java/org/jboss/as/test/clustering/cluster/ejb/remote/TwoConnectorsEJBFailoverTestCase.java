@@ -60,7 +60,7 @@ import org.wildfly.common.function.ExceptionSupplier;
 public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
+    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(8000);
     private static final String MODULE_NAME = TwoConnectorsEJBFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -110,16 +110,20 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
 
     @BeforeClass
     public static void beforeClass() {
-        // set ejb client discovery timeout to 60 seconds
-        System.setProperty("org.jboss.ejb.client.discovery.timeout", "60");
+        // set ejb client discovery timeout to 25 seconds
+        System.setProperty("org.jboss.ejb.client.discovery.timeout", "25");
         // set the secondary timeout to much shorter 100 milliseconds
         System.setProperty("org.jboss.ejb.client.discovery.additional-node-timeout", "100");
+        System.setProperty("org.jboss.ejb.client.discovery.blacklist.timeout", "1000");
+        System.setProperty("org.jboss.ejb.client.destination-recheck-interval", "1000");
     }
 
     @AfterClass
     public static void afterClass() {
         System.clearProperty("org.jboss.ejb.client.discovery.timeout");
         System.clearProperty("org.jboss.ejb.client.discovery.additional-node-timeout");
+        System.clearProperty("org.jboss.ejb.client.discovery.blacklist.timeout");
+        System.clearProperty("org.jboss.ejb.client.destination-recheck-interval");
     }
 
     /*
@@ -196,6 +200,9 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             }
 
             stop(target);
+
+            // Allow sufficient time for client to receive new topology
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
 
             result = bean.increment();
             // Bean should failover to other node
