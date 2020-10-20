@@ -576,6 +576,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>io.reactivex.rxjava3</groupId>
+      <artifactId>rxjava</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>io.smallrye</groupId>
       <artifactId>smallrye-health</artifactId>
       <licenses>
@@ -2223,17 +2234,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jipijapa-hibernate5-3-legacy</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>jipijapa-spi</artifactId>
       <licenses>
         <license>
@@ -2399,6 +2399,17 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-infinispan-spi</artifactId>
       <licenses>
         <license>
@@ -2454,7 +2465,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
+      <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2465,7 +2476,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+      <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2630,40 +2641,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-cmp</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-configadmin</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-connector</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-datasources-agroal</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2697,28 +2675,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-iiop-openjdk</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jacorb</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jaxr</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2784,29 +2740,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jsr77</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-mail</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-messaging</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2983,17 +2917,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-transactions</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-web</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3641,22 +3564,6 @@
         <license>
           <name>BSD 3-Clause No Nuclear License</name>
           <url>https://spdx.org/licenses/BSD-3-Clause-No-Nuclear-License.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.spec.javax.transaction</groupId>
-      <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-v20.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
