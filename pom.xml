@@ -35,7 +35,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>21.0.1.Final-SNAPSHOT</version>
+    <version>21.0.0-1-PSI</version>
 
     <packaging>pom</packaging>
 
@@ -159,8 +159,8 @@
         <maven.min.version>3.6.0</maven.min.version>
 
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
-        <modular.jdk.args></modular.jdk.args>
-        <modular.jdk.props></modular.jdk.props>
+        <modular.jdk.args/>
+        <modular.jdk.props/>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
@@ -182,7 +182,7 @@
         <!-- First, prefix to add to the standard maven child project whose output should be used.
              An empty value means no prefix.
              Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
-        <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+        <testsuite.default.build.project.prefix/>
         <wildfly.build.output.dir>${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
@@ -197,8 +197,8 @@
         <maven.redhat.repository.url>${maven.repository.protocol}://maven.repository.redhat.com/ga/</maven.redhat.repository.url>
 
         <!-- Surefire args -->
-        <surefire.extra.args></surefire.extra.args>
-        <surefire.jpda.args></surefire.jpda.args>
+        <surefire.extra.args/>
+        <surefire.jpda.args/>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=512m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
 
         <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
@@ -444,7 +444,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>13.0.1.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>13.0.2-1-PSI</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.2.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.13.Final</version.org.wildfly.naming-client>
@@ -9189,7 +9189,7 @@
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <excludes>**/*$logger.java,**/*$bundle.java,**/*$___Marshaller_*.java,**/*SerializationContextInitializerImpl.java</excludes>
                         <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
-                        <useFile></useFile>
+                        <useFile/>
                     </configuration>
                 </plugin>
 
@@ -9310,7 +9310,7 @@
                                             <exclude>xml-apis:xml-apis</exclude>
                                         </excludes>
                                     </bannedDependencies>
-                                    <dependencyConvergence></dependencyConvergence>
+                                    <dependencyConvergence/>
                                 </rules>
                             </configuration>
                         </execution>
@@ -9336,7 +9336,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -9349,7 +9349,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -9362,7 +9362,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -9375,7 +9375,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -9390,7 +9390,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -9403,7 +9403,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -9419,7 +9419,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -9435,7 +9435,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -9448,7 +9448,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -9529,9 +9529,9 @@
                         <sourceHighlighter>coderay</sourceHighlighter>
                         <attributes>
                             <icons>font</icons>
-                            <pagenums></pagenums>
+                            <pagenums/>
                             <version>${project.version}</version>
-                            <idprefix></idprefix>
+                            <idprefix/>
                             <idseparator>-</idseparator>
                             <allow-uri-read>true</allow-uri-read>
                             <wildflyVersion>13</wildflyVersion>
@@ -9769,34 +9769,34 @@
                                 <inherited>false</inherited>
                                 <configuration>
                                     <target>
-                                        <taskdef classname="org.jacoco.ant.ReportTask" name="report"></taskdef>
+                                        <taskdef classname="org.jacoco.ant.ReportTask" name="report"/>
                                         <echo>Creating JaCoCo test coverage reports...</echo>
-                                        <mkdir dir="${basedir}/target/coverage-report"></mkdir>
+                                        <mkdir dir="${basedir}/target/coverage-report"/>
                                         <report>
                                             <executiondata>
                                                 <fileset dir="${basedir}">
-                                                    <include name="**/target/jacoco.exec"></include>
+                                                    <include name="**/target/jacoco.exec"/>
                                                 </fileset>
                                             </executiondata>
                                             <structure name="WildFly project">
                                                 <classfiles>
                                                     <fileset dir="${jboss.dist}/modules">
-                                                        <include name="**/*.jar"></include>
+                                                        <include name="**/*.jar"/>
                                                         <!-- Excludes solve "Can't add different class with same name: ..." -->
-                                                        <exclude name="**/jaxb-jxc*.jar"></exclude>
-                                                        <exclude name="**/jaxb-xjc*.jar"></exclude>
-                                                        <exclude name="**/openjdk-orb*.jar"></exclude>
-                                                        <exclude name="**/jboss-marshalling*.jar"></exclude>
-                                                        <exclude name="**/hornetq-core-client*.jar"></exclude>
-                                                        <exclude name="**/jipijapa-hibernate4-3*.jar"></exclude>
-                                                        <exclude name="**/jipijapa-hibernate5*.jar"></exclude>
-                                                        <exclude name="**/infinispan-commons*.jar"></exclude>
-                                                        <exclude name="**/jboss-logmanager*.jar"></exclude>
-                                                        <exclude name="**/wildfly-common*.jar"></exclude>
-                                                        <exclude name="**/wildfly-elytron*.jar"></exclude>
-                                                        <exclude name="**/jaxb*.jar"></exclude>
-                                                        <exclude name="**/jaxb*.jar"></exclude>
-                                                        <exclude name="**/jaxb*.jar"></exclude>
+                                                        <exclude name="**/jaxb-jxc*.jar"/>
+                                                        <exclude name="**/jaxb-xjc*.jar"/>
+                                                        <exclude name="**/openjdk-orb*.jar"/>
+                                                        <exclude name="**/jboss-marshalling*.jar"/>
+                                                        <exclude name="**/hornetq-core-client*.jar"/>
+                                                        <exclude name="**/jipijapa-hibernate4-3*.jar"/>
+                                                        <exclude name="**/jipijapa-hibernate5*.jar"/>
+                                                        <exclude name="**/infinispan-commons*.jar"/>
+                                                        <exclude name="**/jboss-logmanager*.jar"/>
+                                                        <exclude name="**/wildfly-common*.jar"/>
+                                                        <exclude name="**/wildfly-elytron*.jar"/>
+                                                        <exclude name="**/jaxb*.jar"/>
+                                                        <exclude name="**/jaxb*.jar"/>
+                                                        <exclude name="**/jaxb*.jar"/>
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">
@@ -9805,9 +9805,9 @@
                                                     </dirset>
                                                 </sourcefiles>
                                             </structure>
-                                            <html destdir="${basedir}/target/coverage-report/html"></html>
-                                            <xml destfile="${basedir}/target/coverage-report/coverage-report.xml"></xml>
-                                            <csv destfile="${basedir}/target/coverage-report/coverage-report.csv"></csv>
+                                            <html destdir="${basedir}/target/coverage-report/html"/>
+                                            <xml destfile="${basedir}/target/coverage-report/coverage-report.xml"/>
+                                            <csv destfile="${basedir}/target/coverage-report/coverage-report.csv"/>
                                         </report>
                                     </target>
                                 </configuration>
@@ -9833,7 +9833,7 @@
                 </property>
             </activation>
             <properties>
-                <surefire.jacoco.args></surefire.jacoco.args>
+                <surefire.jacoco.args/>
             </properties>
         </profile>
         <profile>
