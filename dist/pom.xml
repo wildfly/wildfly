@@ -216,6 +216,31 @@
                         </dependencies>
                     </plugin>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>backup-logging-properties</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <overwrite>true</overwrite>
+                                    <outputDirectory>${basedir}/target/</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/target/${project.build.finalName}/standalone/configuration</directory>
+                                            <includes>
+                                                <include>logging.properties</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>keytool-maven-plugin</artifactId>
                         <version>1.5</version>

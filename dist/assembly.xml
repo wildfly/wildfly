@@ -19,7 +19,16 @@
                 <exclude>${server.output.dir.prefix}-${server.output.dir.version}/standalone/data/**</exclude>
                 <exclude>${server.output.dir.prefix}-${server.output.dir.version}/standalone/log/**</exclude>
                 <exclude>${server.output.dir.prefix}-${server.output.dir.version}/standalone/tmp/**</exclude>
+                <exclude>${server.output.dir.prefix}-${server.output.dir.version}/standalone/configuration/standalone_xml_history/**</exclude>
+                <exclude>${server.output.dir.prefix}-${server.output.dir.version}/standalone/configuration/logging.properties</exclude>
             </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>${server.output.dir.prefix}-${server.output.dir.version}/standalone/configuration/</outputDirectory>
+            <includes>
+                <include>logging.properties</include>
+            </includes>
         </fileSet>
     </fileSets>
 </assembly>
