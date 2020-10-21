@@ -120,7 +120,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
 
             Predicate predicate = null;
             if (model.hasDefined(PREDICATE.getName())) {
-                String predicateString = model.get(PREDICATE.getName()).asString();
+                String predicateString = PREDICATE.resolveModelAttribute(context, model).asString();
                 predicate = PredicateParser.parse(predicateString, getClass().getClassLoader());
             }
 
