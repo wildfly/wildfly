@@ -1960,11 +1960,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     this.parseInvalidationNearCache(reader, address, operations);
                     break;
                 }
-                case PROPERTY: {
-                    ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
-                    readElement(reader, operation, RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES);
-                    break;
-                }
                 case REMOTE_CLUSTERS: {
                     this.parseRemoteClusters(reader, address, operations);
                     break;
@@ -1976,6 +1971,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case TRANSACTION: {
                     if (this.schema.since(InfinispanSchema.VERSION_8_0)) {
                         this.parseRemoteTransaction(reader, address, operations);
+                        break;
+                    }
+                }
+                case PROPERTY: {
+                    if (schema.since(InfinispanSchema.VERSION_11_0) || (this.schema.since(InfinispanSchema.VERSION_9_1) && !this.schema.since(InfinispanSchema.VERSION_10_0))) {
+                        ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
+                        readElement(reader, operation, RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES);
                         break;
                     }
                 }

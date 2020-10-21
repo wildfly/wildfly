@@ -158,7 +158,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
-            if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
+            if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version) || (InfinispanModel.VERSION_11_1_0.requiresTransformation(version) && !InfinispanModel.VERSION_12_0_0.requiresTransformation(version))) {
                 builder.getAttributeBuilder()
                         .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROPERTIES.getDefinition())
                         .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.PROPERTIES.getDefinition())
