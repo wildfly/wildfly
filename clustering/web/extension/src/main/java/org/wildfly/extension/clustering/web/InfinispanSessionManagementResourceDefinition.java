@@ -49,7 +49,7 @@ public class InfinispanSessionManagementResourceDefinition extends SessionManage
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
                         .setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.SESSION_MANAGEMENT_PROVIDER, InfinispanDefaultCacheRequirement.CACHE))
+                        .setCapabilityReference(new CapabilityReference(Capability.SESSION_MANAGEMENT_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION))
                         ;
             }
         },
@@ -57,7 +57,7 @@ public class InfinispanSessionManagementResourceDefinition extends SessionManage
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.SESSION_MANAGEMENT_PROVIDER, InfinispanCacheRequirement.CACHE, CACHE_CONTAINER))
+                        .setCapabilityReference(new CapabilityReference(Capability.SESSION_MANAGEMENT_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER))
                         ;
             }
         },

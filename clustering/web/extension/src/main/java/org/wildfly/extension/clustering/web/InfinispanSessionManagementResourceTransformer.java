@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,28 +22,26 @@
 
 package org.wildfly.extension.clustering.web;
 
-import org.jboss.as.clustering.controller.Model;
+import java.util.function.Consumer;
+
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
- * Enumerates the model versions for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public enum DistributableWebModel implements Model {
+public class InfinispanSessionManagementResourceTransformer implements Consumer<ModelVersion> {
 
-    VERSION_1_0_0(1, 0, 0), // WildFly 17
-    VERSION_2_0_0(2, 0, 0), // WildFly 18
-    ;
-    public static final DistributableWebModel CURRENT = VERSION_2_0_0;
+    private final ResourceTransformationDescriptionBuilder parent;
 
-    private final ModelVersion version;
-
-    DistributableWebModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
+    InfinispanSessionManagementResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
+        this.parent = parent;
     }
 
     @Override
-    public ModelVersion getVersion() {
-        return this.version;
+    public void accept(ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH);
+
+        new RankedAffinityResourceTransformer(builder).accept(version);
     }
 }

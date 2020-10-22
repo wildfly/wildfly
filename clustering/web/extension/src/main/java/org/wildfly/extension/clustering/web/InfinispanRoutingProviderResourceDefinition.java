@@ -32,7 +32,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
 
 /**
  * Definition of the /subsystem=distributable-web/routing=infinispan resource.
@@ -48,7 +48,7 @@ public class InfinispanRoutingProviderResourceDefinition extends RoutingProvider
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
                         .setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.ROUTING_PROVIDER, InfinispanRequirement.CONTAINER))
+                        .setCapabilityReference(new CapabilityReference(Capability.ROUTING_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION))
                         ;
             }
         },
@@ -56,7 +56,7 @@ public class InfinispanRoutingProviderResourceDefinition extends RoutingProvider
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.ROUTING_PROVIDER, InfinispanCacheRequirement.CACHE, CACHE_CONTAINER))
+                        .setCapabilityReference(new CapabilityReference(Capability.ROUTING_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER))
                         ;
             }
         },
