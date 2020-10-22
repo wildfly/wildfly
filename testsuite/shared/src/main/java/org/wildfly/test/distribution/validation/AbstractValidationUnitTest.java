@@ -493,6 +493,8 @@ public class AbstractValidationUnitTest {
         result = result.replace("${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
         result = result.replace("${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}", "UP");
         result = result.replace("${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}", "UP");
+        result = result.replace("${jboss.messaging.connector.host:localhost}", "localhost");
+        result = result.replace("${jboss.messaging.connector.port:61616}", "61616");
         return result;
     }
 }
