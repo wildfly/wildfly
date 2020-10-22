@@ -150,6 +150,11 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
     }
 
     @Override
+    public boolean isSuspended() {
+        return suspended;
+    }
+
+    @Override
     public void suspend() {
         final List<DeploymentRepositoryListener> listeners;
         final Set<DeploymentModuleIdentifier> moduleIdentifiers;

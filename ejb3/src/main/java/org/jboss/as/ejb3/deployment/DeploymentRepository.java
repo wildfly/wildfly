@@ -43,6 +43,8 @@ public interface DeploymentRepository {
 
     void resume();
 
+    boolean isSuspended();
+
     /**
      * Returns all deployments. These deployments may not be in a started state, i.e. not all components might be ready to receive invocations.
      *
