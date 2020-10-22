@@ -268,24 +268,37 @@ public class AbstractValidationUnitTest {
         } catch (MalformedURLException e) {
             throw new IllegalStateException(e);
         }
-        String fileName = xsdName;
-        int index = fileName.lastIndexOf("/");
-        if(index == -1) {
-            index = fileName.lastIndexOf("\\");
-        }
-        if(index != -1) {
-            fileName = fileName.substring(index + 1);
-        }
-        // Search
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (url == null)
+
+        if (url == null && xsdName != null) {
+            String fileName = xsdName;
+            int index = fileName.lastIndexOf("/");
+            if(index == -1) {
+                index = fileName.lastIndexOf("\\");
+            }
+            if(index != -1) {
+                fileName = fileName.substring(index + 1);
+            }
+            // Search
+            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             url = classLoader.getResource("docs/schema/" + fileName);
-        if (url == null)
-            url = classLoader.getResource("docs/" + fileName);
-        if (url == null)
-            url = classLoader.getResource("schema/" + fileName);
-        if (url == null)
-            url = classLoader.getResource(fileName);
+            if (url == null)
+                url = classLoader.getResource("docs/" + fileName);
+            if (url == null)
+                url = classLoader.getResource("schema/" + fileName);
+            if (url == null)
+                url = classLoader.getResource(fileName);
+            if (url == null) {
+                final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
+                final File schema = new File(schemaDir, fileName);
+                if (schema.exists()) {
+                    try {
+                        url = schema.toURI().toURL();
+                    } catch (MalformedURLException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
+        }
         assertNotNull(xsdName + " not found", url);
         return url;
     }
