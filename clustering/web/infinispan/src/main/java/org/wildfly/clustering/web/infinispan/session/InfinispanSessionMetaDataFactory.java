@@ -147,8 +147,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     }
 
     private boolean delete(String id, Flag... flags) {
-        SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
-        this.creationMetaDataCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(key);
+        this.creationMetaDataCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionCreationMetaDataKey(id));
         this.accessMetaDataCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionAccessMetaDataKey(id));
         return true;
     }

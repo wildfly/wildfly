@@ -116,8 +116,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     @Override
     public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, C context) {
-        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, names);
-        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
+        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, names)), context);
         return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.withFlags(Flag.FORCE_RETURN_VALUE), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 
