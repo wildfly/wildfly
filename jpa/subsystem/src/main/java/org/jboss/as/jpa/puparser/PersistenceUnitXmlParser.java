@@ -49,6 +49,19 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 public class PersistenceUnitXmlParser extends MetaDataElementParser {
     // cache the trace enabled flag
     private static final boolean traceEnabled = ROOT_LOGGER.isTraceEnabled();
+    private static final Version DEFAULT_VERSION;
+
+    static {
+        Version defaultVersion;
+        try {
+            // Try and load a jakarta namespace JPA API class to see if we're EE 8 or a later EE
+            PersistenceUnitXmlParser.class.getClassLoader().loadClass("jakarta.persistence.SharedCacheMode");
+            defaultVersion = Version.JPA_3_0;
+        } catch (Throwable t) {
+            defaultVersion = Version.JPA_2_2;
+        }
+        DEFAULT_VERSION = defaultVersion;
+    }
 
     public static PersistenceUnitMetadataHolder parse(final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
 
@@ -82,20 +95,14 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     versionString = reader.getAttributeValue(i);
                 }
             }
-            if ("1.0".equals(versionString)) {
-                version = Version.JPA_1_0;
-            } else if ("1".equals(versionString)) {
-                version = Version.JPA_1_0;
-            } else if ("2.0".equals(versionString)) {
-                version = Version.JPA_2_0;
-            } else if ("2.1".equals(versionString)) {
-                version = Version.JPA_2_1;
-            } else if ("2.2".equals(versionString)) {
-                version = Version.JPA_2_2;
-            } else if ("2".equals(versionString)) {
-                version = Version.JPA_2_0;
-            } else {
-                version = Version.JPA_2_1;
+
+            version = Version.forVersion(versionString);
+            if (version == Version.UNKNOWN) {
+                // Try shorthand values, "1", "2" etc
+                version = Version.forVersion(versionString + ".0");
+                if (version == Version.UNKNOWN) {
+                    version = DEFAULT_VERSION;
+                }
             }
         }
 
@@ -158,15 +165,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         pu.setValidationMode(ValidationMode.AUTO);
         pu.setSharedCacheMode(SharedCacheMode.UNSPECIFIED);
         pu.setPersistenceProviderClassName(Configuration.PROVIDER_CLASS_DEFAULT);
-        if (version.equals(Version.JPA_1_0)) {
-            pu.setPersistenceXMLSchemaVersion("1.0");
-        } else if (version.equals(Version.JPA_2_0)) {
-            pu.setPersistenceXMLSchemaVersion("2.0");
-        } else if (version.equals(Version.JPA_2_1)) {
-            pu.setPersistenceXMLSchemaVersion("2.1");
-        } else {
-            pu.setPersistenceXMLSchemaVersion("2.2");
-        }
+        pu.setPersistenceXMLSchemaVersion(version.getVersion());
 
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
