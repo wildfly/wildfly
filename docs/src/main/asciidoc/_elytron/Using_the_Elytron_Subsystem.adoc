@@ -2369,6 +2369,41 @@ the first handshake in order to receive the `NewSessionTicket` that can be used 
 change once https://bugs.openjdk.java.net/browse/JDK-8209953[JDK-8209953] is resolved.
 
 
+=== Configuring SSLv2Hello
+
+Older JDK versions use ``SSLv2Hello`` during the initial SSL handshake message
+where the SSL/TLS version that will be used for the rest of the communication is
+negotiated.
+
+Using ``SSLv2Hello`` is discouraged, therefore newer JDK versions disable this protocol
+on the client by default. However, they do provide the ability to re-enable it if necessary.
+
+``SSLv2Hello`` can be configured as a supported protocol for the server SSL context as follows:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/server-ssl-context=server-context:add(protocols=[SSLv2Hello,TLSv1], ...)
+----
+
+Similarly, it can be configured as a supported protocol for the client SSL context as follows:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/client-ssl-context=client-context:add(protocols=[SSLv2Hello,TLSv1], ...)
+----
+
+==== WARNING:
+
+* The use of ``SSLv2Hello`` is strongly discouraged.
+
+* ``SSLv2Hello`` cannot be configured by itself, as its purpose is to determine
+which encryption protocols are supported by the server it connects to. It always
+needs to be configured along side another encryption protocol.
+
+* Additionally, IBM JDK does not support specifying ``SSLv2Hello`` in its client, although a
+server side connection always accepts this protocol.
+
+
 === Default SSLContext
 
 Many libraries that can be used within deployments may require SSL configuration for any connections they establish, these libraries tend to be configurable by the caller or if no configuration is provided fall back to using the default `SSLContext` for the process available from: -
