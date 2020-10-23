@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.wildfly.extension.clustering.web;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
- * Dynamic name mapper that uses a static mapping.
  * @author Paul Ferraro
  */
-public class SimpleCapabilityNameResolver implements Function<PathAddress, String[]> {
-    public static final Function<PathAddress, String[]> EMPTY = new SimpleCapabilityNameResolver();
+public class RankedAffinityResourceTransformer implements Consumer<ModelVersion> {
 
-    private final String[] names;
+    private final ResourceTransformationDescriptionBuilder parent;
 
-    public SimpleCapabilityNameResolver(String... names) {
-        this.names = names;
+    RankedAffinityResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
+        this.parent = parent;
     }
 
     @Override
-    public String[] apply(PathAddress address) {
-        return this.names;
+    public void accept(ModelVersion version) {
+        if (DistributableWebModel.VERSION_2_0_0.requiresTransformation(version)) {
+            this.parent.rejectChildResource(RankedAffinityResourceDefinition.PATH);
+        }
     }
 }

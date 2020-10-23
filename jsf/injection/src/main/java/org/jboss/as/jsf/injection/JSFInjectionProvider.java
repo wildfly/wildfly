@@ -31,8 +31,9 @@ import org.jboss.as.web.common.WebInjectionContainer;
  */
 public class JSFInjectionProvider extends DiscoverableInjectionProvider {
 
-    public static final String JAVAX_FACES = "javax.faces";
-    public static final String COM_SUN_FACES = "com.sun.faces";
+    public static final String JAVAX_FACES = "javax.faces.";
+    public static final String COM_SUN_FACES = "com.sun.faces.";
+    public static final String COM_SUN_FACES_TEST = "com.sun.faces.test.";
     private final WebInjectionContainer instanceManager;
 
     public JSFInjectionProvider() {
@@ -55,9 +56,10 @@ public class JSFInjectionProvider extends DiscoverableInjectionProvider {
     @Override
     public void invokePostConstruct(final Object managedBean) throws InjectionProviderException {
         if(managedBean.getClass().getName().startsWith(JAVAX_FACES) ||
-                managedBean.getClass().getName().startsWith(COM_SUN_FACES)) {
+                (managedBean.getClass().getName().startsWith(COM_SUN_FACES) && !managedBean.getClass().getName().startsWith(COM_SUN_FACES_TEST))) {
             //some internal JSF instances are not destroyed properly, and they do not need to have
             //lifecycle callbacks anyway, so we don't use the instance manager to create them
+            // avoid excluding elements from the JSF test suite (tests fail because objects are not injected)
             return;
         }
         if(instanceManager == null) {
