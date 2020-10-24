@@ -815,9 +815,9 @@
                                 </goals>
                                 <phase>generate-resources</phase>
                                 <configuration>
-                                    <!-- Override to drop the jboss-maven-dist plugin option -->
-                                    <plugin-options combine.self="override">
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    <plugin-options combine.self="append">
+                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
+                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -832,6 +832,9 @@
                                 <id>default-test</id>
                                 <phase>test</phase>
                                 <configuration>
+                                     <systemPropertyVariables>
+                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                    </systemPropertyVariables>
                                     <excludes>
                                         <!-- Requires legacy security -->
                                         <exclude>org/jboss/as/test/smoke/mgmt/resourceadapter/ResourceAdapterOperationsUnitTestCase.java</exclude>

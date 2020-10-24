@@ -90,6 +90,8 @@
                             <offline>true</offline>
                             <plugin-options>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <jboss-maven-provisioning-repo>${project.basedir}/../feature-pack/target/jakarta-transform-maven-repo</jboss-maven-provisioning-repo>
+                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>                               
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
