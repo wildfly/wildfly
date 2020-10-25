@@ -83,7 +83,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     @Test
-    public void testHostMasterr() throws Exception {
+    public void testHostMaster() throws Exception {
         parseXml("domain/configuration/host-master.xml");
     }
 
