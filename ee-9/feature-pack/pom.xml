@@ -979,6 +979,12 @@
             <scope>test</scope>
         </dependency>-->
 
+        <!-- Misc -->
+        <dependency>
+            <groupId>org.jboss.spec.javax.xml.rpc</groupId>
+            <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
+        </dependency>
+
     </dependencies>
 
     <profiles>
