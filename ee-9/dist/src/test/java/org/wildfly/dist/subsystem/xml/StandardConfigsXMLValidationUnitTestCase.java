@@ -78,13 +78,13 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     @Test
-    public void testHostWorker() throws Exception {
-        parseXml("domain/configuration/host-worker.xml");
+    public void testHostSlave() throws Exception {
+        parseXml("domain/configuration/host-slave.xml");
     }
 
     @Test
-    public void testHostCoordinator() throws Exception {
-        parseXml("domain/configuration/host-coordinator.xml");
+    public void testHostMasterr() throws Exception {
+        parseXml("domain/configuration/host-master.xml");
     }
 
     @Test
