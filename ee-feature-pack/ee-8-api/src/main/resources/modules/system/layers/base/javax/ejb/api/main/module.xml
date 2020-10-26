@@ -27,7 +27,7 @@
         <!-- This dep is for javax.naming -->
         <module name="javax.api" />
         <module name="javax.transaction.api"/>
-        <module name="javax.xml.rpc.api"/>
+        <module name="javax.xml.rpc.api.internal"/>
     </dependencies>
 
     <resources>
