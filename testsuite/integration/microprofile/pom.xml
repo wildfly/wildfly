@@ -135,6 +135,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- MicroProfile Reactive Messaging Kafka Connector Test Dependenciesz-->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
         <!-- Other test dependencies -->
         <dependency>
             <groupId>io.rest-assured</groupId>
@@ -310,6 +318,7 @@
                                                 <layer>ejb</layer>
                                                 <!-- TODO - keep the reactive ones here or put in own execution? -->
                                                 <layer>microprofile-reactive-messaging</layer>
+                                                <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
@@ -430,6 +439,10 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>microprofile-platform</layer>
                                                 <layer>ejb</layer>
+                                                <!-- TODO - keep the reactive ones here or put in own execution? -->
+                                                <layer>microprofile-reactive-messaging</layer>
+                                                <layer>microprofile-reactive-messaging-kafka</layer>
+                                                <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -643,6 +656,7 @@
                                         <layer>microprofile-fault-tolerance</layer>
                                         <!-- TODO - keep the reactive ones here or put in own execution? -->
                                         <layer>microprofile-reactive-messaging</layer>
+                                        <layer>microprofile-reactive-messaging-kafka</layer>
                                         <layer>h2-default-datasource</layer>
                                     </layers>
                                 </configuration>
