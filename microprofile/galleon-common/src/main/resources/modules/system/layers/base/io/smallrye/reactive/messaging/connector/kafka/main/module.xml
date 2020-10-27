@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2020, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.messaging.connector.kafka">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-kafka}"/>
+    </resources>
+    <dependencies>
+        <module name="io.opentelemetry.api"/>
+        <module name="io.opentelemetry.context"/>
+        <module name="io.reactivex.rxjava2.rxjava"/>
+        <module name="io.smallrye.config" services="import"/>
+        <module name="io.smallrye.reactive.converters.api"/>
+        <module name="io.smallrye.reactive.messaging"/>
+        <module name="io.smallrye.reactive.mutiny"/>
+        <module name="io.smallrye.reactive.mutiny.reactive-streams-operators"/>
+        <module name="io.smallrye.reactive.mutiny.vertx-core"/>
+        <module name="io.smallrye.reactive.mutiny.vertx-kafka-client"/>
+        <module name="io.vertx.client.kafka"/>
+        <module name="io.vertx.core"/>
+        <module name="javax.annotation.api"/>
+        <module name="javax.enterprise.api" />
+        <module name="org.apache.kafka.client" export="true" services="export"/>
+        <module name="org.eclipse.microprofile.reactive-messaging.api"/>
+        <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>
+        <module name="org.eclipse.microprofile.reactive-streams-operators.core" services="import"/>
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.jboss.logging" />
+        <module name="org.jboss.weld.api"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+        <module name="org.reactivestreams"/>
+        <module name="org.wildfly.reactive.messaging.kafka-config" optional="true" export="true" services="export"/>
+        <module name="org.slf4j"/>
+    </dependencies>
+</module>

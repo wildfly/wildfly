@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-microprofile</artifactId>
+        <artifactId>wildfly-microprofile-reactive-messaging-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,12 +36,13 @@
     </parent>
 
 
-    <artifactId>wildfly-microprofile-reactive-messaging-parent</artifactId>
-    <name>WildFly: MicroProfile Reactive Messaging Parent</name>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-microprofile-reactive-messaging-kafka-config</artifactId>
+    <name>WildFly: MicroProfile Reactive Messaging Kafka Config</name>
 
-    <modules>
-        <module>extension</module>
-        <module>kafka-config</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>

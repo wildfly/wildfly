@@ -37,5 +37,7 @@
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="java.logging"/>
         <module name="javax.enterprise.api" />
+        <!-- Needed by the temporary smallrye-reactive-messaging-api -->
+        <module name="io.opentelemetry.api"/>
     </dependencies>
 </module>

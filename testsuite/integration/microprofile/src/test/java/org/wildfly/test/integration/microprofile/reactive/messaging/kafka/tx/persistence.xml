@@ -21,27 +21,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-microprofile</artifactId>
-        <!--
-        Maintain separation between the artifact id and the version to help prevent
-        merge conflicts between commits changing the GA and those changing the V.
-        -->
-        <version>23.0.0.Beta1-SNAPSHOT</version>
-    </parent>
-
-
-    <artifactId>wildfly-microprofile-reactive-messaging-parent</artifactId>
-    <name>WildFly: MicroProfile Reactive Messaging Parent</name>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>extension</module>
-        <module>kafka-config</module>
-    </modules>
-</project>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.2">
+    <persistence-unit name="test">
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+        </properties>
+    </persistence-unit>
+</persistence>
