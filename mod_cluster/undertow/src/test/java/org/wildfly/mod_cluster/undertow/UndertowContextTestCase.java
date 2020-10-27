@@ -43,13 +43,12 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.core.ApplicationListeners;
 import io.undertow.servlet.core.ManagedListener;
 import org.jboss.modcluster.container.Context;
-import org.jboss.modcluster.container.Host;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 public class UndertowContextTestCase {
     private final Deployment deployment = mock(Deployment.class);
-    private final Host host = mock(Host.class);
+    private final UndertowHost host = mock(UndertowHost.class);
     private final Context context = new UndertowContext(this.deployment, this.host);
 
     @Test

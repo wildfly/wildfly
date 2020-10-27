@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
@@ -103,5 +104,9 @@ public class UndertowHost implements Host {
     @Override
     public String toString() {
         return this.host.getName();
+    }
+
+    boolean isSuspended() {
+        return this.host.getSuspendState() == SuspendController.State.SUSPENDED;
     }
 }
