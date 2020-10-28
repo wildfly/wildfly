@@ -47,6 +47,11 @@ public class CompositeImmutableSession implements ImmutableSession {
     }
 
     @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
     public ImmutableSessionAttributes getAttributes() {
         return this.attributes;
     }
