@@ -29,6 +29,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -96,6 +97,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     private final SC context;
     private final SpecificationProvider<S, SC, AL> provider;
     private final Runnable startTask;
+    private final Consumer<ImmutableSession> closeTask;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
@@ -114,6 +116,14 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         this.context = configuration.getServletContext();
         this.provider = configuration.getSpecificationProvider();
         this.startTask = configuration.getStartTask();
+        this.closeTask = new Consumer<ImmutableSession>() {
+            @Override
+            public void accept(ImmutableSession session) {
+                if (session.isValid()) {
+                    configuration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
+                }
+            }
+        };
     }
 
     @Override
@@ -187,7 +197,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         }
         this.expirationScheduler.cancel(id);
 
-        return new ValidSession<>(this.factory.createSession(id, value, this.context), this.expirationScheduler);
+        return new ValidSession<>(this.factory.createSession(id, value, this.context), this.closeTask);
     }
 
     @Override
@@ -196,7 +206,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         if (entry == null) return null;
         Session<LC> session = this.factory.createSession(id, entry, this.context);
         session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
-        return new ValidSession<>(session, this.expirationScheduler);
+        return new ValidSession<>(session, this.closeTask);
     }
 
     @Override

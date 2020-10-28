@@ -22,9 +22,10 @@
 
 package org.wildfly.clustering.web.cache.session;
 
-import org.wildfly.clustering.ee.Scheduler;
+import java.util.function.Consumer;
+
 import org.wildfly.clustering.web.cache.logging.Logger;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionMetaData;
@@ -35,11 +36,11 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  */
 public class ValidSession<L> implements Session<L> {
     private final Session<L> session;
-    private final Scheduler<String, ImmutableSessionMetaData> scheduler;
+    private final Consumer<ImmutableSession> closeTask;
 
-    public ValidSession(Session<L> session, Scheduler<String, ImmutableSessionMetaData> scheduler) {
+    public ValidSession(Session<L> session, Consumer<ImmutableSession> closeTask) {
         this.session = session;
-        this.scheduler = scheduler;
+        this.closeTask = closeTask;
     }
 
     private void validate() {
@@ -84,10 +85,7 @@ public class ValidSession<L> implements Session<L> {
 
     @Override
     public void close() {
-        boolean valid = this.session.isValid();
         this.session.close();
-        if (valid) {
-            this.scheduler.schedule(this.session.getId(), this.session.getMetaData());
-        }
+        this.closeTask.accept(this.session);
     }
 }
