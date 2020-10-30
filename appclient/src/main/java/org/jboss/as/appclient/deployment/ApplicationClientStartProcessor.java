@@ -24,17 +24,12 @@ package org.jboss.as.appclient.deployment;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import javax.security.auth.callback.CallbackHandler;
-
 import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
 import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.appclient.service.ApplicationClientStartService;
-import org.jboss.as.appclient.service.DefaultApplicationClientCallbackHandler;
-import org.jboss.as.appclient.service.RealmCallbackWrapper;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -66,20 +61,6 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         final ApplicationClientMetaData appClientData = deploymentUnit.getAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        //setup the callback handler
-        final CallbackHandler callbackHandler;
-        if (appClientData != null && appClientData.getCallbackHandler() != null && !appClientData.getCallbackHandler().isEmpty()) {
-            try {
-                final Class<?> callbackClass = ClassLoadingUtils.loadClass(appClientData.getCallbackHandler(), module);
-                callbackHandler = new RealmCallbackWrapper((CallbackHandler) callbackClass.newInstance());
-            } catch (ClassNotFoundException e) {
-                throw AppClientLogger.ROOT_LOGGER.couldNotLoadCallbackClass(appClientData.getCallbackHandler());
-            } catch (Exception e) {
-                throw AppClientLogger.ROOT_LOGGER.couldNotCreateCallbackHandler(appClientData.getCallbackHandler());
-            }
-        } else {
-            callbackHandler = new DefaultApplicationClientCallbackHandler();
-        }
 
         Boolean activate = deploymentUnit.getAttachment(AppClientAttachments.START_APP_CLIENT);
         if (activate == null || !activate) {
