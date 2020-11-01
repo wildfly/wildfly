@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,42 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+
+package org.wildfly.clustering.ee;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
- * Represents a web session.
+ * Strategy for managing the creation and destruction of objects.
  * @author Paul Ferraro
  */
-public interface Session<L> extends ImmutableSession, AutoCloseable {
+public interface Manager<K, V> extends BiFunction<K, Function<Runnable, V>, V> {
     /**
-     * {@inheritDoc}
+     * Returns the value associated with the specified key, creating it from the specified factory, if necessary.
+     * @param key the key of the managed value
+     * @param factory a factory for creating the value from a close task
+     * @return a managed value
      */
     @Override
-    SessionMetaData getMetaData();
-
-    /**
-     * Invalidates this session.
-     * @throws IllegalStateException if this session was already invalidated.
-     */
-    void invalidate();
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    SessionAttributes getAttributes();
-
-    /**
-     * Indicates that the application thread is finished with this session.
-     * This method is intended to be invoked within the context of a batch.
-     */
-    @Override
-    void close();
-
-    /**
-     * Returns the local context of this session.
-     * The local context is *not* replicated to other nodes in the cluster.
-     * @return a local context
-     */
-    L getLocalContext();
+    V apply(K key, Function<Runnable, V> factory);
 }

@@ -32,6 +32,8 @@ import org.wildfly.clustering.ee.hotrod.RemoteCacheMutatorFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaData;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.InvalidatableSessionMetaData;
+import org.wildfly.clustering.web.cache.session.MutableSessionAccessMetaData;
+import org.wildfly.clustering.web.cache.session.MutableSessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionAccessMetaData;
 import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionCreationMetaDataEntry;
