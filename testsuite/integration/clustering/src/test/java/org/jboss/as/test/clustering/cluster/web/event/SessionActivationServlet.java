@@ -63,8 +63,13 @@ public class SessionActivationServlet extends HttpServlet {
     }
 
     @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.getServletContext().log(String.format("[%s] %s", request.getMethod(), request.getRequestURI()));
+        super.service(request, response);
+    }
+
+    @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getServletContext().log(request.getRequestURI() + ":PUT");
         HttpSession session = request.getSession();
         SessionActivationListener listener = new ImmutableSessionActivationListener(true);
         session.setAttribute(IMMUTABLE_ATTRIBUTE_NAME, listener);
@@ -76,7 +81,6 @@ public class SessionActivationServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getServletContext().log(request.getRequestURI() + ":GET");
         HttpSession session = request.getSession();
         ((SessionActivationListener) session.getAttribute(IMMUTABLE_ATTRIBUTE_NAME)).assertActive();
         ((SessionActivationListener) session.getAttribute(MUTABLE_ATTRIBUTE_NAME)).assertActive();
@@ -84,11 +88,8 @@ public class SessionActivationServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getServletContext().log(request.getRequestURI() + ":DELETE");
         HttpSession session = request.getSession();
-        request.getServletContext().log(request.getRequestURI() + ":removeAttribute(" + IMMUTABLE_ATTRIBUTE_NAME + ")");
         session.removeAttribute(IMMUTABLE_ATTRIBUTE_NAME);
-        request.getServletContext().log(request.getRequestURI() + ":removeAttribute(" + MUTABLE_ATTRIBUTE_NAME + ")");
         session.removeAttribute(MUTABLE_ATTRIBUTE_NAME);
     }
 

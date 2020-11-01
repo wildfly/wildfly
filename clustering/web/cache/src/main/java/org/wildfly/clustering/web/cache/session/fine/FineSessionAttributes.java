@@ -24,11 +24,11 @@ package org.wildfly.clustering.web.cache.session.fine;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 
@@ -52,7 +52,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
     private final Map<NK, Map<String, UUID>> namesCache;
     private final Function<UUID, K> keyFactory;
     private final Map<K, V> attributeCache;
-    private final Map<K, Optional<Object>> mutations = new ConcurrentHashMap<>();
+    private final Map<K, Optional<Object>> mutations = new HashMap<>();
     private final Marshaller<Object, V> marshaller;
     private final MutatorFactory<K, V> mutatorFactory;
     private final Immutability immutability;
@@ -79,17 +79,21 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         UUID attributeId = this.names.get(name);
         if (attributeId == null) return null;
 
-        this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapRemoveFunction<>(name) : new ConcurrentMapRemoveFunction<>(name)));
+        synchronized (this.mutations) {
+            this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapRemoveFunction<>(name) : new ConcurrentMapRemoveFunction<>(name)));
 
-        K key = this.keyFactory.apply(attributeId);
-        Object result = this.read(this.attributeCache.remove(key));
-        if (result != null) {
-            this.mutations.remove(key);
-            if (this.properties.isPersistent()) {
-                this.notifier.postActivate(result);
+            K key = this.keyFactory.apply(attributeId);
+
+            Object result = this.read(this.attributeCache.remove(key));
+            if (result != null) {
+                this.mutations.remove(key);
+
+                if (this.properties.isPersistent()) {
+                    this.notifier.postActivate(result);
+                }
             }
+            return result;
         }
-        return result;
     }
 
     @Override
@@ -102,41 +106,45 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         }
 
         UUID attributeId = this.names.get(name);
-        if (attributeId == null) {
-            UUID newAttributeId = createUUID();
-            this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapPutFunction<>(name, newAttributeId) : new ConcurrentMapPutFunction<>(name, newAttributeId)));
-            attributeId = this.names.get(name);
-        }
 
-        K key = this.keyFactory.apply(attributeId);
-        V value = this.write(attribute);
-
-        if (this.properties.isPersistent()) {
-            this.notifier.prePassivate(attribute);
-        }
-
-        Object result = this.read(this.attributeCache.put(key, value));
-
-        if (this.properties.isPersistent()) {
-            this.notifier.postActivate(attribute);
-
-            if (result != attribute) {
-                this.notifier.postActivate(result);
+        synchronized (this.mutations) {
+            if (attributeId == null) {
+                UUID newAttributeId = createUUID();
+                this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapPutFunction<>(name, newAttributeId) : new ConcurrentMapPutFunction<>(name, newAttributeId)));
+                attributeId = this.names.get(name);
             }
-        }
 
-        if (this.properties.isTransactional()) {
-            // Add an empty value to prevent any subsequent mutable getAttribute(...) from triggering a redundant mutation on close.
-            this.mutations.put(key, Optional.empty());
-        } else {
-            // If the object is mutable, we need to indicate trigger a mutation on close
-            if (this.immutability.test(attribute)) {
-                this.mutations.remove(key);
+            K key = this.keyFactory.apply(attributeId);
+            V value = this.write(attribute);
+
+            if (this.properties.isPersistent()) {
+                this.notifier.prePassivate(attribute);
+            }
+
+            Object result = this.read(this.attributeCache.put(key, value));
+
+            if (this.properties.isTransactional()) {
+                // Add an empty value to prevent any subsequent mutable getAttribute(...) from triggering a redundant mutation on close.
+                this.mutations.put(key, Optional.empty());
             } else {
-                this.mutations.put(key, Optional.of(attribute));
+                // If the object is mutable, we need to indicate trigger a mutation on close
+                if (this.immutability.test(attribute)) {
+                    this.mutations.remove(key);
+                } else {
+                    this.mutations.put(key, Optional.of(attribute));
+                }
             }
+
+            if (this.properties.isPersistent()) {
+                this.notifier.postActivate(attribute);
+
+                if (result != attribute) {
+                    this.notifier.postActivate(result);
+                }
+            }
+
+            return result;
         }
-        return result;
     }
 
     @Override
@@ -144,27 +152,28 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         UUID attributeId = this.names.get(name);
         if (attributeId == null) return null;
 
-        K key = this.keyFactory.apply(attributeId);
+        synchronized (this.mutations) {
+            K key = this.keyFactory.apply(attributeId);
 
-        // Return mutable value if present, this preserves referential integrity when this member is not an owner.
-        Optional<Object> mutableValue = this.mutations.get(key);
-        if ((mutableValue != null) && mutableValue.isPresent()) {
-            return mutableValue.get();
-        }
-
-        V value = this.attributeCache.get(key);
-        Object result = this.read(value);
-        if (result != null) {
-            if (this.properties.isPersistent()) {
-                this.notifier.postActivate(result);
+            // Return mutable value if present, this preserves referential integrity when this member is not an owner.
+            Optional<Object> mutableValue = this.mutations.get(key);
+            if ((mutableValue != null) && mutableValue.isPresent()) {
+                return mutableValue.get();
             }
 
-            // If the object is mutable, we need to trigger a mutation on close
-            if (!this.immutability.test(result)) {
-                this.mutations.putIfAbsent(key, Optional.of(result));
+            Object result = this.read(this.attributeCache.get(key));
+            if (result != null) {
+                if (this.properties.isPersistent()) {
+                    this.notifier.postActivate(result);
+                }
+
+                // If the object is mutable, we need to trigger a mutation on close
+                if (!this.immutability.test(result)) {
+                    this.mutations.putIfAbsent(key, Optional.of(result));
+                }
             }
+            return result;
         }
-        return result;
     }
 
     @Override
@@ -175,16 +184,17 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
     @Override
     public void close() {
         this.notifier.close();
-
-        for (Map.Entry<K, Optional<Object>> entry : this.mutations.entrySet()) {
-            Optional<Object> optional = entry.getValue();
-            if (optional.isPresent()) {
-                K key = entry.getKey();
-                V value = this.write(optional.get());
-                this.mutatorFactory.createMutator(key, value).mutate();
+        synchronized (this.mutations) {
+            for (Map.Entry<K, Optional<Object>> entry : this.mutations.entrySet()) {
+                Optional<Object> optional = entry.getValue();
+                if (optional.isPresent()) {
+                    K key = entry.getKey();
+                    V value = this.write(optional.get());
+                    this.mutatorFactory.createMutator(key, value).mutate();
+                }
             }
+            this.mutations.clear();
         }
-        this.mutations.clear();
     }
 
     private void setNames(Map<String, UUID> names) {
