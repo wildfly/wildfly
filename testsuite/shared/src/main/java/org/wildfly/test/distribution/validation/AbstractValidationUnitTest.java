@@ -20,36 +20,54 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.dist.legacy.subsystem.xml;
+package org.wildfly.test.distribution.validation;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+
+import org.jboss.metadata.parser.util.XMLResourceResolver;
+import org.w3c.dom.Document;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -64,12 +82,13 @@ public class AbstractValidationUnitTest {
     private static final String JBOSS_DIST_PROP_NAME = "jboss.dist";
     private static final String FUTURE_SCHEMA_PROP_NAME = "jboss.test.xml.validation.future.schemas";
 
-    private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<String>();
-    private static final Set<String> FUTURE_SCHEMA_FILES = new HashSet<String>();
-    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
-    private static final Map<String, File> CURRENT_JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
-    private static Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
-    private static Map<String, String> OUTDATED_NAMESPACES = new HashMap<>();
+    private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<>();
+    private static final Set<String> FUTURE_SCHEMA_FILES = new HashSet<>();
+    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<>();
+    private static final Map<String, File> CURRENT_JBOSS_SCHEMAS_MAP = new HashMap<>();
+    private static final Source[] SCHEMA_SOURCES;
+    private static final Map<String, String> NAMESPACE_MAP = new HashMap<>();
+    private static final Map<String, String> OUTDATED_NAMESPACES = new HashMap<>();
 
 
     private static final File JBOSS_DIST_DIR;
@@ -78,7 +97,9 @@ public class AbstractValidationUnitTest {
         // exclude JBoss EJB specific files which redefine the javaee namespace
         // triggering the https://issues.apache.org/jira/browse/XERCESJ-1130 bug
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-2_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-2_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-spec-2_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-spec-2_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-cache_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-container-interceptors_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-delivery-active_1_0.xsd");
@@ -87,6 +108,7 @@ public class AbstractValidationUnitTest {
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-clustering_1_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_1.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_2.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-pool_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-resource-adapter-binding_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_1_0.xsd");
@@ -135,7 +157,7 @@ public class AbstractValidationUnitTest {
 
             final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
 
-            final File[] xsds = schemaDir.listFiles(new SchemaFilter(EXCLUDED_SCHEMA_FILES.toArray(new String[EXCLUDED_SCHEMA_FILES.size()])));
+            final File[] xsds = schemaDir.listFiles(new SchemaFilter(EXCLUDED_SCHEMA_FILES.toArray(new String[0])));
             for (File xsd : xsds) {
                 JBOSS_SCHEMAS_MAP.put(xsd.getName(), xsd);
             }
@@ -178,21 +200,15 @@ public class AbstractValidationUnitTest {
                 }
             }
         }
+
+        final List<Source> sources = new LinkedList<>();
+        for (File file : CURRENT_JBOSS_SCHEMAS_MAP.values()) {
+            sources.add(new StreamSource(file));
+        }
+        SCHEMA_SOURCES = sources.toArray(new Source[0]);
     }
 
-    static final EntityResolver DEFAULT_ENTITY_RESOLVER = new EntityResolver() {
-        @Override
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-            if (systemId == null)
-                fail("Failed to resolve schema: systemId is null");
-            int lastSlash = systemId.lastIndexOf('/');
-            if (lastSlash > 0)
-                systemId = systemId.substring(lastSlash + 1);
-            URL xsdUrl = discoverXsd(systemId);
-            return new InputSource(xsdUrl.openStream());
-        }
-    };
-
+    @SuppressWarnings("Convert2Lambda")
     static final LSResourceResolver DEFAULT_RESOURCE_RESOLVER = new LSResourceResolver() {
         @Override
         public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
@@ -233,23 +249,6 @@ public class AbstractValidationUnitTest {
         return JBOSS_DIST_DIR;
     }
 
-    private static Map<String, File> getSchemas(boolean currentSchemaOnly) {
-        assertFalse("No schemas found under " + getBaseDir().getAbsolutePath(), JBOSS_SCHEMAS_MAP.isEmpty());
-        if(currentSchemaOnly) {
-            return CURRENT_JBOSS_SCHEMAS_MAP;
-        }
-        return JBOSS_SCHEMAS_MAP;
-    }
-
-    /**
-     * A collections of the schema files.
-     *
-     * @return a collection of the schema files.
-     */
-    static Collection<File> jbossSchemaFiles(boolean currentSchemasOnly) {
-        return getSchemas(currentSchemasOnly).values();
-    }
-
     /**
      * Attempts to discover the path to the XSD file.
      *
@@ -266,27 +265,40 @@ public class AbstractValidationUnitTest {
             if (file != null) {
                 url = file.toURI().toURL();
             }
-        } catch (IOException e) {
-            url = null;
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException(e);
         }
-        String fileName = xsdName;
-        int index = fileName.lastIndexOf("/");
-        if(index == -1) {
-            index = fileName.lastIndexOf("\\");
-        }
-        if(index != -1) {
-            fileName = fileName.substring(index + 1);
-        }
-        // Search
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (url == null)
+
+        if (url == null && xsdName != null) {
+            String fileName = xsdName;
+            int index = fileName.lastIndexOf("/");
+            if(index == -1) {
+                index = fileName.lastIndexOf("\\");
+            }
+            if(index != -1) {
+                fileName = fileName.substring(index + 1);
+            }
+            // Search
+            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             url = classLoader.getResource("docs/schema/" + fileName);
-        if (url == null)
-            url = classLoader.getResource("docs/" + fileName);
-        if (url == null)
-            url = classLoader.getResource("schema/" + fileName);
-        if (url == null)
-            url = classLoader.getResource(fileName);
+            if (url == null)
+                url = classLoader.getResource("docs/" + fileName);
+            if (url == null)
+                url = classLoader.getResource("schema/" + fileName);
+            if (url == null)
+                url = classLoader.getResource(fileName);
+            if (url == null) {
+                final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
+                final File schema = new File(schemaDir, fileName);
+                if (schema.exists()) {
+                    try {
+                        url = schema.toURI().toURL();
+                    } catch (MalformedURLException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
+        }
         assertNotNull(xsdName + " not found", url);
         return url;
     }
@@ -297,10 +309,6 @@ public class AbstractValidationUnitTest {
     private static class SchemaFilter implements FilenameFilter {
         private static final Pattern PATTERN = Pattern.compile("(jboss|wildfly)-.*\\.xsd$");
         private final String[] exclusions;
-
-        SchemaFilter() {
-            this.exclusions = new String[0];
-        }
 
         SchemaFilter(final String[] exclusions) {
             this.exclusions = exclusions;
@@ -334,22 +342,22 @@ public class AbstractValidationUnitTest {
         }
 
         @Override
-        public void error(SAXParseException e) throws SAXException {
+        public void error(SAXParseException e) {
             fail(formatMessage(e));
         }
 
         @Override
-        public void fatalError(SAXParseException e) throws SAXException {
+        public void fatalError(SAXParseException e) {
             fail(formatMessage(e));
         }
 
         @Override
-        public void warning(SAXParseException e) throws SAXException {
+        public void warning(SAXParseException e) {
             System.out.println(formatMessage(e));
         }
 
         private String formatMessage(SAXParseException e) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(e.getLineNumber()).append(':').append(e.getColumnNumber());
             if (e.getPublicId() != null)
                 sb.append(" publicId='").append(e.getPublicId()).append('\'');
@@ -367,5 +375,126 @@ public class AbstractValidationUnitTest {
             }
             return sb.toString();
         }
+    }
+
+    protected static void jbossXsdsTest() throws Exception {
+        /* The test requires all modules to be loadable. Build a classloader
+           with all modules.
+        */
+        ClassLoader current = Thread.currentThread().getContextClassLoader();
+        try (URLClassLoader cl = initClassLoader()) {
+            Thread.currentThread().setContextClassLoader(cl);
+            for (File xsdFile : JBOSS_SCHEMAS_MAP.values()) {
+                validateXsd(xsdFile);
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
+        }
+    }
+
+    private static void validateXsd(final File xsdFile) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder parser = factory.newDocumentBuilder();
+        Document document = parser.parse(xsdFile);
+
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        schemaFactory.setErrorHandler(new ErrorHandlerImpl());
+        schemaFactory.setResourceResolver(new XMLResourceResolver());
+
+        Schema schema = schemaFactory.newSchema(getXMLSchemaResource());
+        Validator validator = schema.newValidator();
+        validator.validate(new DOMSource(document));
+    }
+
+    private static URL getXMLSchemaResource() {
+        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        final URL resource = classLoader.getResource("schema/XMLSchema.xsd");
+        assertNotNull("Can't locate resource schema/XMLSchema.xsd on " + classLoader, resource);
+        return resource;
+    }
+
+    private static URLClassLoader initClassLoader() throws IOException {
+        String path = System.getProperty("jboss.actual.dist");
+        Path modules = Paths.get(path, "modules/system/layers/base");
+        List<URL> urls = new ArrayList<>();
+        Files.walkFileTree(modules, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                    throws IOException {
+                if (file.toString().endsWith(".jar")) {
+                    urls.add(file.toFile().toURI().toURL());
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        URL[] arr = new URL[urls.size()];
+        urls.toArray(arr);
+        return new URLClassLoader(arr);
+    }
+
+    protected void parseXml(String xmlName) throws SAXException, IOException {
+        final File xmlFile = getXmlFile(xmlName);
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        schemaFactory.setErrorHandler(new ErrorHandlerImpl(xmlFile.toPath()));
+        schemaFactory.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
+        Schema schema = schemaFactory.newSchema(SCHEMA_SOURCES);
+        Validator validator = schema.newValidator();
+        validator.setErrorHandler(new ErrorHandlerImpl(xmlFile.toPath()));
+        validator.setFeature("http://apache.org/xml/features/validation/schema", true);
+        validator.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
+        validator.validate(new StreamSource(xmlFile));
+
+        //noinspection ResultOfMethodCallIgnored
+        xmlFile.delete();
+    }
+
+    private File getXmlFile(String xmlName) throws IOException {
+
+        // Copy the input file to tmp, replacing system prop expressions on non-string fields
+        // so they don't cause validation failures
+        // TODO we should just pass an IS to Validator
+        final File tmp = File.createTempFile(getClass().getSimpleName(), "xml");
+        tmp.deleteOnExit();
+        File target = new File(getBaseDir(), xmlName);
+        try (BufferedWriter writer= Files.newBufferedWriter(tmp.toPath(), StandardCharsets.UTF_8)) {
+            List<String> lines = Files.readAllLines(target.toPath(), StandardCharsets.UTF_8);
+            for (String line : lines) {
+                writer.write(fixExpressions(line));
+                writer.newLine();
+            }
+        }
+        return tmp;
+    }
+
+    private static String fixExpressions(String line) {
+        String result = line.replace("${jboss.management.native.port:9999}", "9999");
+        result = result.replace("${jboss.management.http.port:9990}", "9990");
+        result = result.replace("${jboss.management.https.port:9993}", "9993");
+        result = result.replace("${jboss.domain.master.protocol:remote}", "remote");
+        result = result.replace("${jboss.domain.master.protocol:remote+http}", "remote+http");
+        result = result.replace("${jboss.domain.master.port:9999}", "9999");
+        result = result.replace("${jboss.domain.master.port:9990}", "9990");
+        result = result.replace("${jboss.mail.server.host:localhost}", "localhost");
+        result = result.replace("${jboss.mail.server.port:25}", "25");
+        result = result.replace("${jboss.messaging.group.port:9876}", "9876");
+        result = result.replace("${jboss.socket.binding.port-offset:0}", "0");
+        result = result.replace("${jboss.http.port:8080}", "8080");
+        result = result.replace("${jboss.https.port:8443}", "8443");
+        result = result.replace("${jboss.remoting.port:4447}", "4447");
+        result = result.replace("${jboss.ajp.port:8009}", "8009");
+        result = result.replace("${jboss.mcmp.port:8090}", "8090");
+        result = result.replace("${jboss.deployment.scanner.rollback.on.failure:false}", "false");
+        result = result.replace("${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${wildfly.ejb.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${wildfly.transactions.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}", "UP");
+        result = result.replace("${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}", "UP");
+        result = result.replace("${jboss.messaging.connector.host:localhost}", "localhost");
+        result = result.replace("${jboss.messaging.connector.port:61616}", "61616");
+        return result;
     }
 }
