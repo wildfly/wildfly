@@ -67,6 +67,12 @@ public class SimpleServlet extends HttpServlet {
     }
 
     @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.getServletContext().log(String.format("[%s] %s?%s", request.getMethod(), request.getRequestURI(), request.getQueryString()));
+        super.service(request, response);
+    }
+
+    @Override
     protected void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(true);
         response.addHeader(SESSION_ID_HEADER, session.getId());

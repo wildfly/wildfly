@@ -32,11 +32,13 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 public class SimpleImmutableSession implements ImmutableSession {
 
     private final String id;
+    private final boolean valid;
     private final ImmutableSessionMetaData metaData;
     private final ImmutableSessionAttributes attributes;
 
     public SimpleImmutableSession(ImmutableSession session) {
         this.id = session.getId();
+        this.valid = session.isValid();
         this.metaData = new SimpleImmutableSessionMetaData(session.getMetaData());
         this.attributes = new SimpleImmutableSessionAttributes(session.getAttributes());
     }
@@ -44,6 +46,11 @@ public class SimpleImmutableSession implements ImmutableSession {
     @Override
     public String getId() {
         return this.id;
+    }
+
+    @Override
+    public boolean isValid() {
+        return this.valid;
     }
 
     @Override

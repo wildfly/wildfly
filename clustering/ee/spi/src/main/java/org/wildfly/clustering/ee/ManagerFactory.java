@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,34 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod.session;
+package org.wildfly.clustering.ee;
 
-import java.time.Duration;
-
-import org.wildfly.clustering.ee.Mutator;
-import org.wildfly.clustering.web.cache.session.SessionAccessMetaData;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /**
  * @author Paul Ferraro
  */
-public class MutableSessionAccessMetaData implements SessionAccessMetaData {
-
-    private final SessionAccessMetaData metaData;
-    private final Mutator mutator;
-
-    public MutableSessionAccessMetaData(SessionAccessMetaData metaData, Mutator mutator) {
-        this.metaData = metaData;
-        this.mutator = mutator;
-    }
-
+public interface ManagerFactory<K, V> extends BiFunction<Consumer<V>, Consumer<V>, Manager<K, V>> {
+    /**
+     * Creates a manager using the specified creation and close tasks.
+     * @param createTask a task to run on a newly created value
+     * @param closeTask a task to run on a value to be closed/dereferenced.
+     */
     @Override
-    public Duration getLastAccessedDuration() {
-        return this.metaData.getLastAccessedDuration();
-    }
-
-    @Override
-    public void setLastAccessedDuration(Duration duration) {
-        this.metaData.setLastAccessedDuration(duration);
-        this.mutator.mutate();
-    }
+    Manager<K, V> apply(Consumer<V> createTask, Consumer<V> closeTask);
 }

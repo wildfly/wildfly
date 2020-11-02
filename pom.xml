@@ -149,6 +149,7 @@
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
         <galleon.log.time>true</galleon.log.time>
+        <galleon.offline>true</galleon.offline>
 
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>

@@ -60,7 +60,7 @@ public class ImmutableSessionActivationNotifierTestCase {
     }
 
     @Test
-    public void prePassivate() {
+    public void test() {
         Map<String, Listener> listeners = new TreeMap<>();
         listeners.put("listener1", this.listener1);
         listeners.put("listener2", this.listener2);
@@ -69,20 +69,68 @@ public class ImmutableSessionActivationNotifierTestCase {
         when(this.filter.getAttributes(Listener.class)).thenReturn(listeners);
 
         Session session = mock(Session.class);
-        Consumer<Session> notifier1 = mock(Consumer.class);
-        Consumer<Session> notifier2 = mock(Consumer.class);
+        Consumer<Session> prePassivateNotifier1 = mock(Consumer.class);
+        Consumer<Session> prePassivateNotifier2 = mock(Consumer.class);
+        Consumer<Session> postActivateNotifier1 = mock(Consumer.class);
+        Consumer<Session> postActivateNotifier2 = mock(Consumer.class);
 
         when(this.provider.createHttpSession(same(this.session), same(this.context))).thenReturn(session);
-        when(this.provider.prePassivateNotifier(same(this.listener1))).thenReturn(notifier1);
-        when(this.provider.prePassivateNotifier(same(this.listener2))).thenReturn(notifier2);
+        when(this.provider.prePassivateNotifier(same(this.listener1))).thenReturn(prePassivateNotifier1);
+        when(this.provider.prePassivateNotifier(same(this.listener2))).thenReturn(prePassivateNotifier2);
+        when(this.provider.postActivateNotifier(same(this.listener1))).thenReturn(postActivateNotifier1);
+        when(this.provider.postActivateNotifier(same(this.listener2))).thenReturn(postActivateNotifier2);
 
+        // verify pre-passivate before post-activate is a no-op
         this.notifier.prePassivate();
 
-        verify(this.provider, never()).postActivateNotifier(this.listener1);
-        verify(this.provider, never()).postActivateNotifier(this.listener2);
+        verify(prePassivateNotifier1, never()).accept(session);
+        verify(prePassivateNotifier2, never()).accept(session);
+        verify(postActivateNotifier1, never()).accept(session);
+        verify(postActivateNotifier2, never()).accept(session);
 
-        verify(notifier1).accept(session);
-        verify(notifier2).accept(session);
+        // verify initial post-activate
+        this.notifier.postActivate();
+
+        verify(prePassivateNotifier1, never()).accept(session);
+        verify(prePassivateNotifier2, never()).accept(session);
+        verify(postActivateNotifier1).accept(session);
+        verify(postActivateNotifier2).accept(session);
+
+        reset(postActivateNotifier1, postActivateNotifier2);
+
+        // verify subsequent post-activate is a no-op
+        this.notifier.postActivate();
+
+        verify(prePassivateNotifier1, never()).accept(session);
+        verify(prePassivateNotifier2, never()).accept(session);
+        verify(postActivateNotifier1, never()).accept(session);
+        verify(postActivateNotifier2, never()).accept(session);
+
+        // verify pre-passivate following post-activate
+        this.notifier.prePassivate();
+
+        verify(prePassivateNotifier1).accept(session);
+        verify(prePassivateNotifier2).accept(session);
+        verify(postActivateNotifier1, never()).accept(session);
+        verify(postActivateNotifier2, never()).accept(session);
+
+        reset(prePassivateNotifier1, prePassivateNotifier2);
+
+        // verify subsequent pre-passivate is a no-op
+        this.notifier.prePassivate();
+
+        verify(prePassivateNotifier1, never()).accept(session);
+        verify(prePassivateNotifier2, never()).accept(session);
+        verify(postActivateNotifier1, never()).accept(session);
+        verify(postActivateNotifier2, never()).accept(session);
+
+        // verify post-activate following pre-passivate
+        this.notifier.postActivate();
+
+        verify(prePassivateNotifier1, never()).accept(session);
+        verify(prePassivateNotifier2, never()).accept(session);
+        verify(postActivateNotifier1).accept(session);
+        verify(postActivateNotifier2).accept(session);
     }
 
     @Test

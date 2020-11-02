@@ -56,15 +56,15 @@ public class CompositeSession<L> extends CompositeImmutableSession implements Se
     }
 
     @Override
+    public boolean isValid() {
+        return this.metaData.isValid();
+    }
+
+    @Override
     public void invalidate() {
         if (this.metaData.invalidate()) {
             this.remover.remove(this.getId());
         }
-    }
-
-    @Override
-    public boolean isValid() {
-        return this.metaData.isValid();
     }
 
     @Override

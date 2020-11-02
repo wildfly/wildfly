@@ -53,7 +53,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
         this.immutability = immutability;
         this.properties = properties;
         this.notifier = notifier;
-        if (this.properties.isPersistent()) {
+        if (this.notifier != null) {
             this.notifier.postActivate();
         }
     }
@@ -92,10 +92,9 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
 
     @Override
     public void close() {
-        if (this.properties.isPersistent()) {
+        if (this.notifier != null) {
             this.notifier.prePassivate();
         }
-
         if (this.dirty.compareAndSet(true, false)) {
             this.mutator.mutate();
         }

@@ -170,8 +170,6 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
-            this.nonTxWait.run();
-
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
@@ -198,8 +196,6 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 }
             }
 
-            this.nonTxWait.run();
-
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
@@ -224,8 +220,6 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                     Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
-
-            this.nonTxWait.run();
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -263,8 +257,6 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 }
             }
 
-            this.nonTxWait.run();
-
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
@@ -293,8 +285,6 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                     }
                 }
             }
-
-            this.nonTxWait.run();
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -326,8 +316,6 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 }
             }
 
-            this.nonTxWait.run();
-
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
@@ -338,8 +326,6 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                     Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
-
-            this.nonTxWait.run();
 
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -376,14 +362,10 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                         Assert.assertEquals(request.getMethod(), value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                     }
 
-                    this.nonTxWait.run();
-
                     try (CloseableHttpResponse response = client.execute(request)) {
                         Assert.assertEquals(request.getMethod(), HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                         Assert.assertEquals(request.getMethod(), value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                     }
-
-                    this.nonTxWait.run();
 
                     // Remove attribute so we can try again on another non-owner
                     try (CloseableHttpResponse response = client.execute(new HttpPut(uri))) {
