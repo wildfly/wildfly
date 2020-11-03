@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.microprofile.reactive.messaging.deployment;
 
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.List;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
@@ -40,23 +42,44 @@ import org.jboss.modules.ModuleDependencySpec;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.extension.microprofile.reactive.messaging._private.MicroProfileReactiveMessagingLogger;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProcessor {
 
+    // TODO Set to false for EAP https://issues.redhat.com/browse/JBEAP-20660
+    private final boolean allowExperimental = true;
+
+    private static final String EXPERIMENTAL_PROPERTY = "jboss.as.reactive.messaging.experimental";
+
     private static final List<DotName> REACTIVE_MESSAGING_ANNOTATIONS;
+    private static final List<DotName> BANNED_REACTIVE_MESSAGING_ANNOTATIONS;
     static {
         List<DotName> annotations = new ArrayList<>();
         String rmPackage = "org.eclipse.microprofile.reactive.messaging.";
         annotations.add(DotName.createSimple(rmPackage + "Incoming"));
         annotations.add(DotName.createSimple(rmPackage + "Outgoing"));
         REACTIVE_MESSAGING_ANNOTATIONS = Collections.unmodifiableList(annotations);
+
+        List<DotName> banned = new ArrayList<>();
+        banned.add(DotName.createSimple(rmPackage + "Channel"));
+        banned.add(DotName.createSimple(rmPackage + "OnOverflow"));
+        String smallryePackage = "io.smallrye.reactive.messaging.annotations.";
+        banned.add(DotName.createSimple(smallryePackage + "Blocking"));
+        banned.add(DotName.createSimple(smallryePackage + "Broadcast"));
+        banned.add(DotName.createSimple(smallryePackage + "Channel"));
+        banned.add(DotName.createSimple(smallryePackage + "ConnectorAttribute"));
+        banned.add(DotName.createSimple(smallryePackage + "ConnectorAttributes"));
+        banned.add(DotName.createSimple(smallryePackage + "Incomings"));
+        banned.add(DotName.createSimple(smallryePackage + "Merge"));
+        banned.add(DotName.createSimple(smallryePackage + "OnOverflow"));
+        BANNED_REACTIVE_MESSAGING_ANNOTATIONS = Collections.unmodifiableList(banned);
     }
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isReactiveMessagingDeployment(deploymentUnit)) {
             addModuleDependencies(deploymentUnit);
@@ -109,15 +132,31 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         }
     }
 
-    private boolean isReactiveMessagingDeployment(DeploymentUnit deploymentUnit) {
+    private boolean isReactiveMessagingDeployment(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        final boolean allowExperimentalAnnotations = allowExperimentalAnnotations();
+
         CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+
+        // Check the experimental annotations first
+        for (DotName dotName : BANNED_REACTIVE_MESSAGING_ANNOTATIONS) {
+            if (!index.getAnnotations(dotName).isEmpty()) {
+                if (allowExperimentalAnnotations) {
+                    MicroProfileReactiveMessagingLogger.LOGGER.debugf("Deployment '%s' is a MicroProfile Reactive Messaging deployment – @%s annotation found.", deploymentUnit.getName(), dotName);
+                    return true;
+                } else {
+                    throw MicroProfileReactiveMessagingLogger.LOGGER.experimentalAnnotationNotAllowed(dotName);
+                }
+            }
+        }
+
         for (DotName dotName : REACTIVE_MESSAGING_ANNOTATIONS) {
             if (!index.getAnnotations(dotName).isEmpty()) {
                 MicroProfileReactiveMessagingLogger.LOGGER.debugf("Deployment '%s' is a MicroProfile Reactive Messaging deployment – @%s annotation found.", deploymentUnit.getName(), dotName);
                 return true;
             }
         }
-        MicroProfileReactiveMessagingLogger.LOGGER.debugf("Deployment '%s' is not a MicroProfile Fault Tolerance deployment.", deploymentUnit.getName());
+
+        MicroProfileReactiveMessagingLogger.LOGGER.debugf("Deployment '%s' is not a MicroProfile Reactive Messaging deployment.", deploymentUnit.getName());
         return false;
     }
 
@@ -125,5 +164,18 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         // This is needed following https://issues.redhat.com/browse/WFLY-13641 / https://github.com/wildfly/wildfly/pull/13406
         moduleDependency.addImportFilter(s -> s.equals("META-INF"), true);
         return moduleDependency;
+    }
+
+    private boolean allowExperimentalAnnotations() throws DeploymentUnitProcessingException {
+        final boolean experimental;
+        if (WildFlySecurityManager.isChecking()) {
+            experimental = WildFlySecurityManager.doChecked((PrivilegedAction<Boolean>) () -> Boolean.getBoolean(EXPERIMENTAL_PROPERTY));
+        } else {
+            experimental = Boolean.getBoolean(EXPERIMENTAL_PROPERTY);
+        }
+        if (experimental && !allowExperimental) {
+            throw MicroProfileReactiveMessagingLogger.LOGGER.experimentalPropertyNotAllowed(EXPERIMENTAL_PROPERTY);
+        }
+        return experimental;
     }
 }
