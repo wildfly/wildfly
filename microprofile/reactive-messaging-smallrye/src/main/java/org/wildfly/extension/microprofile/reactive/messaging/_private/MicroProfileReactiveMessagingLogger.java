@@ -25,6 +25,7 @@ package org.wildfly.extension.microprofile.reactive.messaging._private;
 import static org.jboss.logging.Logger.Level.INFO;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.jandex.DotName;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -55,4 +56,10 @@ public interface MicroProfileReactiveMessagingLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 3, value = "Intermediate module %s is not present. Skipping recursively adding modules from it")
     void intermediateModuleNotPresent(String intermediateModuleName);
+
+    @Message(id = 4, value = "Use of -D%s=true is not allowed in this setup")
+    DeploymentUnitProcessingException experimentalPropertyNotAllowed(String experimentalProperty);
+
+    @Message(id = 5, value = "Use of @%s is not allowed in this setup")
+    DeploymentUnitProcessingException experimentalAnnotationNotAllowed(DotName dotName);
 }
