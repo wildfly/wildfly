@@ -43,6 +43,8 @@
 
     <properties>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
+        <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
+        <mp.license.directory>${basedir}/../../microprofile/galleon-common/src/license</mp.license.directory>
         <full.common.resources.directory>${basedir}/../../ee-feature-pack/common/src/main/resources</full.common.resources.directory>
         <full.galleon-common.resources.directory>${basedir}/../../ee-feature-pack/galleon-common/src/main/resources</full.galleon-common.resources.directory>
         <full.common.license.directory>${basedir}/../../ee-feature-pack/common/src/license</full.common.license.directory>
@@ -186,6 +188,22 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>copy-mp-galleon-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${mp.galleon.common.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-resources</id>
                         <phase>process-resources</phase>
                         <goals>
@@ -223,6 +241,19 @@
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedArtifacts>infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-galleon-pack|wildfly-servlet-galleon-pack|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-ee-8-api|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned</excludedArtifacts>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>update-licenses-xml-mp</id>
+                        <goals>
+                            <goal>insert-versions</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+                            <licensesConfigFile>${mp.license.directory}/microprofile-feature-pack-licenses.xml</licensesConfigFile>
+                            <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
+                            <excludedArtifacts>wildfly-core-galleon-pack|wildfly-servlet-galleon-pack|wildfly-ee-galleon-pack</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -278,6 +309,14 @@
         </dependency>
 
         <!-- module and copy artifact dependencies -->
+
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
+            <version>${full.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -1036,6 +1075,7 @@
                                                 <exclude>sun.jdk:jconsole</exclude>
                                                 <!-- Ignore the shared resource poms as those we want their
                                                      transitives. Those poms ban transitives at their level -->
+                                                <exclude>${full.maven.groupId}:wildfly-mp-feature-pack-galleon-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-common</exclude>
                                             </excludes>

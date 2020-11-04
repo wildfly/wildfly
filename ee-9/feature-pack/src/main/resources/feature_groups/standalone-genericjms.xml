@@ -23,6 +23,7 @@
                 </feature>
             </feature>
         </feature>
+        <exclude spec="subsystem.microprofile-jwt-smallrye"/>
     </feature-group>
 
     <feature spec="interface">

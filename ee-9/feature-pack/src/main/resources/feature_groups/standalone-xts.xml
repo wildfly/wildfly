@@ -3,6 +3,7 @@
 
     <feature-group name="standalone">
         <exclude spec="subsystem.batch-jberet"/>
+        <exclude spec="subsystem.microprofile-jwt-smallrye"/>
     </feature-group>
 
     <feature spec="interface">

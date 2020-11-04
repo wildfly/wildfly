@@ -11,4 +11,5 @@
     </feature-group>
 
     <feature-group name="basic-ha-profile"/>
+    <feature spec="subsystem.microprofile-jwt-smallrye"/>
 </feature-group-spec>

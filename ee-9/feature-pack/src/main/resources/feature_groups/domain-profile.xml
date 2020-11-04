@@ -5,4 +5,5 @@
 
     <feature-group name="basic-profile"/>
     <feature-group name="infinispan-local"/>
+    <feature spec="subsystem.microprofile-jwt-smallrye"/>
 </feature-group-spec>

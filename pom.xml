@@ -1218,6 +1218,12 @@
             </dependency>
 
             <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
+                <version>${full.maven.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-naming</artifactId>
                 <version>${ee.maven.version}</version>

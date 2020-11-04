@@ -68,55 +68,55 @@ limitations under the License.
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/smallrye/openapi/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/openapi/api/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/smallrye/jwt/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/bitbucket/jose4j/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
-      <exists>false</exists>
+      <exists>true</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-txn_5_0.xsd</location>

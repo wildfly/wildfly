@@ -286,6 +286,103 @@
             </build>
         </profile>
 
+        <!-- Test against the ee 9 feature pack -->
+        <!-- TODO convert this to a bootable jar setup once a release
+             of the wildfly jar plugin with transformation support is available -->
+        <profile>
+            <id>ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>microprofile-jwt-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>${galleon.offline}</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
+                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <!-- Call the file standalone-microprofile.xml as that is what
+                                                 arquillian.xml says to use for testing in the default maven profile-->
+                                            <name>standalone-microprofile.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>microprofile-jwt</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                <module.path>${project.build.directory}/wildfly/modules</module.path>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>test</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Profile to turn off execution of this module's tests if the testsuite is being run
              against an external dist (i.e. by using the jboss.dist property to point to one)
              and that dist does not include the full set of MP functionality. -->
