@@ -17,6 +17,9 @@
                 <key-store-ssl-certificate key-store-name="keystore">
                     <key-store-clear-password password="123456" />
                 </key-store-ssl-certificate>
+                <providers>
+                    <global/>
+                </providers>
             </ssl-context>
         </ssl-contexts>
         <ssl-context-rules>
