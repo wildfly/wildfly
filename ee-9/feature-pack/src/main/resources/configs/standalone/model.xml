@@ -4,5 +4,6 @@
     <packages>
         <package name="product.conf" optional="true"/>
         <package name="misc.standalone"/>
+        <package name="org.wildfly.deployment.transformation"/>
     </packages>
 </config>
