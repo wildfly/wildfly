@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly-ee-9@maven(org.jboss.universe:community-universe):current">
+<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly-preview@maven(org.jboss.universe:community-universe):current">
 
     <dependencies>
         <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">

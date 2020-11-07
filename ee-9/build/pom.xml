@@ -39,19 +39,19 @@
 
     <artifactId>wildfly-ee-9-build</artifactId>
 
-    <name>WildFly: EE 9 Full Thin Server Build</name>
+    <name>WildFly: EE 9 Preview Thin Server Build</name>
     <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+            <artifactId>wildfly-preview-feature-pack</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+            <artifactId>wildfly-preview-feature-pack</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -83,7 +83,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+                                    <artifactId>wildfly-preview-feature-pack</artifactId>
                                     <version>${project.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>

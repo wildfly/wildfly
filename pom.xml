@@ -1007,20 +1007,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-9-galleon-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-9-galleon-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ejb3</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -1257,6 +1243,20 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-pojo</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
             </dependency>
 
             <dependency>
@@ -9675,7 +9675,7 @@
                 <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
                 <!-- No separate web dist -->
                 <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
-                <testsuite.ee.galleon.pack.artifactId>wildfly-ee-9-galleon-pack</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
             </properties>
             <build>

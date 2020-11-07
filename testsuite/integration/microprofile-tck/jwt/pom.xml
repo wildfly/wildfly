@@ -340,7 +340,7 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+                                            <artifactId>wildfly-preview-feature-pack</artifactId>
                                             <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>

@@ -35,10 +35,10 @@
         <version>22.0.0.Beta1-SNAPSHOT</version>
     </parent>
     
-    <artifactId>wildfly-ee-9-galleon-pack</artifactId>
+    <artifactId>wildfly-preview-feature-pack</artifactId>
 
-    <name>WildFly: EE 9 Full Galleon Pack</name>
-    <description>Galleon feature pack providing full platform Jakarta EE 9 functionality</description>
+    <name>WildFly: EE 9 Preview Galleon Feature Pack</name>
+    <description>Tech Preview Galleon feature pack providing full platform Jakarta EE 9 functionality</description>
     <packaging>pom</packaging>
 
     <properties>
