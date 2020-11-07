@@ -172,6 +172,12 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-galleon-plugins</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- module and copy artifact dependencies -->
 
         <dependency>
