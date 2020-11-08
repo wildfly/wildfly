@@ -12,9 +12,8 @@
         <param name="default-sfsb-cache" value="distributable"/>
     </feature>
 
-    <origin name="org.wildfly:wildfly-servlet-galleon-pack">
-        <feature-group name="private-interface"/>
-    </origin>
+    <feature-group name="private-interface"/>
+
     <feature-group name="infinispan-dist-ejb"/>
     <feature-group name="jgroups-all"/>
     <packages>
