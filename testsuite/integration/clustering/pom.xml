@@ -618,8 +618,30 @@
                                     <includes>
                                         <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</exclude>
+                                    </excludes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>single</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <!-- Single node clustering tests for containers with manual lifecycle. -->
+                            <execution>
+                                <id>ts.surefire.clustering.single.manual</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <runOrder>alphabetical</runOrder>
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables combine.children="append">
+                                        <wildfly1>wildfly-1</wildfly1>
+                                        <arquillian.launch>node-non-ha</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
@@ -870,6 +892,23 @@
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
                                         <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.web-passivation</id>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <runOrder>alphabetical</runOrder>
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>node-non-ha</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1194,6 +1233,44 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- Provision datasources-web-server with web-passivation -->
+                            <execution>
+                                <id>web-passivation-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-web-passivation</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>web-passivation</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <!-- Update server profile with shared configuration changes -->
@@ -1366,6 +1443,10 @@
                                 <id>ts.surefire.clustering.single</id>
                                 <phase>none</phase>
                             </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single.manual</id>
+                                <phase>none</phase>
+                            </execution>
                             <!-- Run the ts.surefire.clustering.microprofile execution but exclude incompatible tests -->
                             <execution>
                                 <id>ts.surefire.clustering.microprofile</id>
@@ -1480,6 +1561,19 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.web-passivation</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <wildfly1>wildfly-web-passivation</wildfly1>
+                                        <module.path>${project.build.directory}/wildfly-web-passivation/modules</module.path>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -1577,6 +1671,10 @@
                                 <id>ts.surefire.clustering.single</id>
                                 <phase>none</phase>
                             </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single.manual</id>
+                                <phase>none</phase>
+                            </execution>
                             <!-- Tests against the standalone-microprofile-ha.xml config -->
                             <execution>
                                 <id>ts.surefire.clustering.microprofile</id>
@@ -1640,6 +1738,28 @@
             </dependencies>
             <build>
                 <plugins>
+                    <!-- Single backslashes needs to be converted in four backslashes to correctly process Windows paths
+                    on variables passed by property files on Bootable JAR execution CLI sessions. -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.bootable.configure-windows-paths</id>
+                                <goals>
+                                    <goal>regex-property</goal>
+                                </goals>
+                                <phase>generate-test-sources</phase>
+                                <configuration>
+                                    <name>bootable.web-passivation.cache.path</name>
+                                    <value>${project.build.testOutputDirectory}</value>
+                                    <regex>\\</regex>
+                                    <replacement>\\\\\\\\</replacement>
+                                    <failIfNoMatch>false</failIfNoMatch>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -1778,6 +1898,47 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Package a web-passivation server -->
+                            <execution>
+                                <id>bootable-jar-web-passivation-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-resources</phase>
+                                <configuration>
+                                    <output-file-name>test-wildfly-web-passivation.jar</output-file-name>
+                                    <hollowJar>true</hollowJar>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                    <cli-sessions>
+                                        <cli-session>
+                                            <properties-file>
+                                                ${project.build.testOutputDirectory}/clustering-web-passivation.properties
+                                            </properties-file>
+                                            <script-files>
+                                                <script>clustering-web-passivation.cli</script>
+                                            </script-files>
+                                        </cli-session>
+                                    </cli-sessions>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>web-passivation</layer>
+                                    </layers>
+                                </configuration>
+                            </execution>
+
                             <!-- Package a load balancer -->
                             <execution>
                                 <id>bootable-jar-load-balancer-packaging</id>
@@ -1846,6 +2007,10 @@
                                 <id>ts.surefire.clustering.single</id>
                                 <phase>none</phase>
                             </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single.manual</id>
+                                <phase>none</phase>
+                            </execution>
                             <!-- Run the ts.surefire.clustering.microprofile execution but exclude incompatible tests -->
                             <execution>
                                 <id>ts.surefire.clustering.microprofile</id>
@@ -1885,6 +2050,26 @@
                                         <install.dir.load.balancer>${project.build.directory}/wildfly-jpa-dist-load-balancer-1</install.dir.load.balancer>
                                         <bootable.jar>${project.build.directory}/test-wildfly-jpa-distributed.jar</bootable.jar>
                                         <bootable.jar.load.balancer>${project.build.directory}/test-wildfly-cloud-profile-load-balancer.jar</bootable.jar.load.balancer>
+                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>
+                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                        </classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.web-passivation</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <install.dir.1>${project.build.directory}/wildfly-web-passivation</install.dir.1>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-web-passivation.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
                                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
