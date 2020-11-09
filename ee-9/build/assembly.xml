@@ -11,7 +11,7 @@
             <directory>target</directory>
             <outputDirectory/>
             <includes>
-                <include>${server.output.dir.prefix}-${server.output.dir.version}/**</include>
+                <include>${server.output.dir.prefix}-preview-${server.output.dir.version}/**</include>
             </includes>
         </fileSet>
     </fileSets>

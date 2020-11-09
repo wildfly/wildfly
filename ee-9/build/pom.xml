@@ -37,7 +37,7 @@
         <version>22.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ee-9-build</artifactId>
+    <artifactId>wildfly-preview-build</artifactId>
 
     <name>WildFly: EE 9 Preview Thin Server Build</name>
     <packaging>pom</packaging>
@@ -63,7 +63,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-${server.output.dir.version}</finalName>
+        <finalName>${server.output.dir.prefix}-preview-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.jboss.galleon</groupId>

@@ -269,12 +269,12 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <release-name>${ee.dist.product.release.name}</release-name>
+                            <release-name>${preview.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <task-properties>
                                 <jakarta.transform.artifacts>true</jakarta.transform.artifacts>
                                 <jakarta.transform.modules>false</jakarta.transform.modules>
-                                <product.release.version>${ee.dist.product.release.version}</product.release.version>
+                                <product.release.version>${preview.dist.product.release.version}</product.release.version>
                             </task-properties>
                             <jakarta-transform>true</jakarta-transform>
                             <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->

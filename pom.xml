@@ -987,22 +987,8 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-9-build</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
                 <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-9-dist</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -1243,6 +1229,20 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-pojo</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-build</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-dist</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -9672,7 +9672,7 @@
                 </property>
             </activation>
             <properties>
-                <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+                <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
                 <!-- No separate web dist -->
                 <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>

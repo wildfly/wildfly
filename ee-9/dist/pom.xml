@@ -37,7 +37,7 @@
         <version>22.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ee-9-dist</artifactId>
+    <artifactId>wildfly-preview-dist</artifactId>
     <name>WildFly: EE 9 Preview Distribution</name>
     <packaging>jar</packaging>
     <dependencies>
@@ -82,7 +82,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-${server.output.dir.version}</finalName>
+        <finalName>${server.output.dir.prefix}-preview-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.jboss.galleon</groupId>
@@ -205,7 +205,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <fpGroupId>${project.groupId}</fpGroupId>
-                                    <fpArtifactId>wildfly-ee-galleon-pack</fpArtifactId>
+                                    <fpArtifactId>wildfly-preview-feature-pack</fpArtifactId>
                                     <fpVersion>${project.version}</fpVersion>
                                 </configuration>
                             </execution>

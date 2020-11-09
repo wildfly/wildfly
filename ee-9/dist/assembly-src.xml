@@ -12,7 +12,7 @@
     <fileSets>
         <fileSet>
             <directory>..</directory>
-            <outputDirectory>${server.output.dir.prefix}-${server.output.dir.version}-src</outputDirectory>
+            <outputDirectory>${server.output.dir.prefix}-preview-${server.output.dir.version}-src</outputDirectory>
             <includes>
                 <include>**/*.xml</include>
                 <include>**/src/**</include>

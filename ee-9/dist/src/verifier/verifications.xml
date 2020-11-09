@@ -20,12 +20,12 @@ limitations under the License.
 <!--
     1) bin/product.conf exists
     2) bin/product.conf has a slot property with a value equal to the value of the
-       'ee.dist.product.slot' property
+       'preview.dist.product.slot' property
     3) jboss-modules.jar must exist
     4) standalone/configuration/standalone.xml must exist
-    5) modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/dir/META-INF/MANIFEST.MF exists
+    5) modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/dir/META-INF/MANIFEST.MF exists
     6) JBoss-Product-Release-Name key in manifest.mf above has value equal to the value of the
-       'ee.dist.product.release.name' property
+       'preview.dist.product.release.name' property
     7) JBoss-Product-Release-Version key in manifest.mf has value starting with the value of the
        'verifier.product.release.version' property
     8) Various modules provided by the feature pack that provides the complete MicroProfile feature set are not present
@@ -35,99 +35,99 @@ limitations under the License.
 -->
   <files>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/bin/product.conf</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/bin/product.conf</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/bin/product.conf</location>
-      <contains>slot=${ee.dist.product.slot}</contains>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/bin/product.conf</location>
+      <contains>slot=${preview.dist.product.slot}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/dir/META-INF/MANIFEST.MF</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/dir/META-INF/MANIFEST.MF</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/dir/META-INF/MANIFEST.MF</location>
-      <contains>JBoss-Product-Release-Name: ${ee.dist.product.release.name}</contains>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/dir/META-INF/MANIFEST.MF</location>
+      <contains>JBoss-Product-Release-Name: ${preview.dist.product.release.name}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/dir/META-INF/MANIFEST.MF</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/dir/META-INF/MANIFEST.MF</location>
       <contains>JBoss-Product-Release-Version: ${verifier.product.release.version}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/jboss-modules.jar</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/jboss-modules.jar</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/standalone/configuration/standalone.xml</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/standalone/configuration/standalone.xml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/server/main/wildfly-server-${version.org.wildfly.core}.jar</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/server/main/wildfly-server-${version.org.wildfly.core}.jar</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/smallrye/openapi/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/openapi/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/openapi/api/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/openapi/api/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/smallrye/jwt/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/jwt/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/bitbucket/jose4j/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/bitbucket/jose4j/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-txn_5_0.xsd</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/docs/schema/wildfly-txn_5_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-undertow_10_0.xsd</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/docs/schema/wildfly-undertow_10_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-io_3_0.xsd</location>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/docs/schema/wildfly-io_3_0.xsd</location>
       <exists>true</exists>
     </file>
   </files>
