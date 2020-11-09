@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
-    <!-- [wildfly] Spring Session is not shipped with WildFly -->
+    <!-- [wildfly] (CVE-2019-10158) Spring Session is not shipped with WildFly -->
+    <!-- [wildfly] (CVE-2016-0750, CVE-2017-15089, CVE-2019-10174) WildFly 21 ships with Infinispan 11.0.4 which does not have this vulnerability  -->
     <suppress>
         <notes><![CDATA[
    file name: protostream-4.3.4.Final.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.infinispan\.protostream/protostream@.*$</packageUrl>
         <cve>CVE-2019-10158</cve>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10174</cve>
     </suppress>
 
     <!-- [wildfly] Apache ActiveMQ is not shipped with wildfly ('ActiveMQ Artemis' is not 'ActiveMQ') -->
