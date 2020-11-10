@@ -127,8 +127,4 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializab
         }
         instance.getComponent().setRollbackOnly();
     }
-
-    EjbComponentInstance getEjbComponentInstance() {
-        return instance;
-    }
 }
