@@ -24,8 +24,10 @@ package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
+import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -111,5 +113,45 @@ public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurr
      */
     public ManagedExecutorRuntimeStats getRuntimeStats() {
         return runtimeStats;
+    }
+
+    /**
+     * Life cycle operations disabled for handing out to application components.
+     */
+    @Override
+    public final void shutdown() {
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
+    }
+
+    /**
+     * Life cycle operations disabled for handing out to application components.
+     */
+    @Override
+    public final List<Runnable> shutdownNow() {
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
+    }
+
+    /**
+     * Life cycle operations disabled for handing out to application components.
+     */
+    @Override
+    public final boolean isShutdown() {
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
+    }
+
+    /**
+     * Life cycle operations disabled for handing out to application components.
+     */
+    @Override
+    public final boolean isTerminated() {
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
+    }
+
+    /**
+     * Life cycle operations disabled for handing out to application components.
+     */
+    @Override
+    public final boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
     }
 }

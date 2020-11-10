@@ -1175,4 +1175,7 @@ public interface EeLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 127, value = "Invalid '%s' name segment for env, name can't start with '/' prefix, prefix has been removed")
     void invalidNamePrefix(String name);
+
+    @Message(id = 128, value = "Lifecycle operation not supported")
+    IllegalStateException lifecycleOperationNotSupported();
 }
