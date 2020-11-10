@@ -22,56 +22,18 @@
 
 package org.wildfly.dist.legacy.subsystem.xml;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.io.File;
-import java.net.URL;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
-import org.jboss.metadata.parser.util.XMLResourceResolver;
 import org.junit.Test;
-import org.w3c.dom.Document;
+import org.wildfly.test.distribution.validation.AbstractValidationUnitTest;
 
 /**
  * A XSDValidationUnitTestCase.
  *
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
- * @version $Revision: 1.1 $
  */
 public class XSDValidationUnitTestCase extends AbstractValidationUnitTest {
     @Test
     public void testJBossXsds() throws Exception {
-        for (File xsdFile : jbossSchemaFiles(false))
-            validateXsd(xsdFile);
-    }
-
-    private void validateXsd(final File xsdFile) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder parser = factory.newDocumentBuilder();
-        Document document = parser.parse(xsdFile);
-
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        schemaFactory.setErrorHandler(new ErrorHandlerImpl());
-        schemaFactory.setResourceResolver(new XMLResourceResolver());
-
-        Schema schema = schemaFactory.newSchema(resource("schema/XMLSchema.xsd"));
-        Validator validator = schema.newValidator();
-        validator.validate(new DOMSource(document));
-    }
-
-    private URL resource(final String name) {
-        final ClassLoader classLoader = getClass().getClassLoader();
-        final URL resource = classLoader.getResource(name);
-        assertNotNull("Can't locate resource " + name + " on " + classLoader, resource);
-        return resource;
+        jbossXsdsTest();
     }
 }
