@@ -64,7 +64,11 @@ public class LayersTestCase {
         // injected by server in UndertowHttpManagementService
         "org.jboss.as.domain-http-error-context",
         // injected by logging
+        "org.apache.logging.log4j.api",
+        // injected by logging
         "org.jboss.logging.jul-to-slf4j-stub",
+        // injected by logging
+        "org.jboss.logmanager.log4j2",
         // injected by logging
         "org.slf4j.ext",
         // injected by logging
