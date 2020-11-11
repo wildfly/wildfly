@@ -393,10 +393,19 @@ final class AssociationImpl implements Association, AutoCloseable {
             @Override
             public void listenerAdded(final DeploymentRepository repository) {
                 List<EJBModuleIdentifier> list = new ArrayList<>();
-                for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
-                    EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
-                    list.add(ejbModuleIdentifier);
+
+                if (!repositoryIsSuspended()) {
+                    // only send out the initial list if the deployment repository (i.e. the server + clean transaction state) is not in a suspended state
+                    for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
+                        EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
+                        list.add(ejbModuleIdentifier);
+                    }
+                    EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending initial module availability to connecting client: server is not suspended");
+                } else {
+                    // send out empty list if the deploymentRepository is suspended
+                    EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending empty initial module availability to connecting client: server is suspended");
                 }
+
                 moduleAvailabilityListener.moduleAvailable(list);
             }
 
@@ -424,6 +433,11 @@ final class AssociationImpl implements Association, AutoCloseable {
             public void deploymentResumed(DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
+
+            private boolean repositoryIsSuspended() {
+                return deploymentRepository.isSuspended();
+            }
+
         };
         deploymentRepository.addListener(listener);
         return () -> deploymentRepository.removeListener(listener);

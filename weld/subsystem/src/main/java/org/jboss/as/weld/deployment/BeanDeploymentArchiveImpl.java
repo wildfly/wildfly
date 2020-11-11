@@ -239,11 +239,12 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
             return true;
         }
 
+        final String thatIdentifier = that.getModule().getName();
         // basic check whether the module is our dependency
         for (DependencySpec dependency : module.getDependencies()) {
             if (dependency instanceof ModuleDependencySpec) {
                 ModuleDependencySpec moduleDependency = (ModuleDependencySpec) dependency;
-                if (moduleDependency.getIdentifier().equals(that.getModule().getIdentifier())) {
+                if (moduleDependency.getName().equals(thatIdentifier)) {
                     return true;
                 }
             }
@@ -254,7 +255,7 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
                 ModuleDependencySpec moduleDependency = (ModuleDependencySpec) dependency;
                 // moduleDependency might be an alias - try to load it to get lined module
                 Module module = loadModule(moduleDependency);
-                if (module != null && module.getIdentifier().equals(that.getModule().getIdentifier())) {
+                if (module != null && module.getName().equals(thatIdentifier)) {
                     return true;
                 }
             }
