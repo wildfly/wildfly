@@ -63,7 +63,7 @@ public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements Regi
     @Override
     public void register(ManagementResourceRegistration registration) {
         for (Metric<C> metric : this.metrics) {
-            registration.registerReadOnlyAttribute(metric.getDefinition(), this);
+            registration.registerMetric(metric.getDefinition(), this);
         }
     }
 
