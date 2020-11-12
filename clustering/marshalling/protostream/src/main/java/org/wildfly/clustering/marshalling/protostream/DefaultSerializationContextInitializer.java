@@ -37,7 +37,6 @@ public enum DefaultSerializationContextInitializer implements SerializationConte
     ATOMIC(new AtomicSerializationContextInitializer()),
     CONCURRENT(new ConcurrentSerializationContextInitializer()),
     MARSHALLING(new MarshallingSerializationContextInitializer()),
-    MODULE(new ModulesSerializationContextInitializer()),
     ;
     private final SerializationContextInitializer initializer;
 
