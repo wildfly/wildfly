@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
+    <!-- [wildfly] The "exampleDS" that uses H2 is removed during hardening -->
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <cve>CVE-2018-10054</cve>
+    </suppress>
+
     <!-- [wildfly] Does not apply to WildFly version 21 -->
     <suppress>
         <notes><![CDATA[
