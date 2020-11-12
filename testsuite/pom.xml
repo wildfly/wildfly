@@ -490,6 +490,14 @@
                 <module>layers</module>
             </modules>
         </profile>
+        <profile>
+            <id>ee9.module.profile</id>
+            <activation><property><name>ts.ee9</name></property></activation>
+            <modules>
+                <module>integration</module>
+                <module>layers</module>
+            </modules>
+        </profile>
 
 
         <!--

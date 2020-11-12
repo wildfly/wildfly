@@ -1,0 +1,133 @@
+<!--
+  ~ Copyright 2020 Red Hat, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly-preview@maven(org.jboss.universe:community-universe):current">
+
+    <dependencies>
+        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">
+            <name>org.wildfly.core:wildfly-core-galleon-pack</name>
+            <packages inherit="false">
+                <exclude name="product.conf"/>
+            </packages>
+            <default-configs inherit="false"/>
+        </dependency>
+    </dependencies>
+    <default-packages>
+        <package name="modules.all"/>
+        <package name="docs"/>
+        <package name="docs.licenses.merge"/>
+        <!-- appclient is not referenced from standalone nor domain configuration models.-->
+        <package name="appclient"/>
+        <package name="bin"/>
+    </default-packages>
+    <package-schemas>
+        <group name="org.jboss.metadata"/>
+        <group name="org.wildfly"/>
+    </package-schemas>
+
+    <config name="standalone.xml" model="standalone"/>
+    <config name="standalone-ha.xml" model="standalone"/>
+    <config name="standalone-full.xml" model="standalone"/>
+    <config name="standalone-full-ha.xml" model="standalone"/>
+    <config name="standalone-load-balancer.xml" model="standalone"/>
+    <config name="standalone-microprofile.xml" model="standalone"/>
+    <config name="standalone-microprofile-ha.xml" model="standalone"/>
+    <config name="domain.xml" model="domain"/>
+    <config name="host.xml" model="host"/>
+    <config name="host-master.xml" model="host"/>
+    <config name="host-slave.xml" model="host"/>
+
+    <plugins>
+        <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
+    </plugins>
+
+    <generate-feature-specs>
+        <extensions>
+            <standalone>
+                <extension>org.jboss.as.clustering.infinispan</extension>
+                <extension>org.jboss.as.clustering.jgroups</extension>
+                <extension>org.jboss.as.connector</extension>
+                <extension>org.jboss.as.ee</extension>
+                <extension>org.jboss.as.ejb3</extension>
+                <extension>org.jboss.as.jaxrs</extension>
+                <extension>org.jboss.as.jdr</extension>
+                <extension>org.jboss.as.jpa</extension>
+                <extension>org.jboss.as.jsf</extension>
+                <extension>org.jboss.as.mail</extension>
+                <extension>org.jboss.as.modcluster</extension>
+                <extension>org.jboss.as.naming</extension>
+                <extension>org.jboss.as.pojo</extension>
+                <extension>org.jboss.as.sar</extension>
+                <extension>org.jboss.as.transactions</extension>
+                <extension>org.jboss.as.webservices</extension>
+                <extension>org.jboss.as.weld</extension>
+                <extension>org.jboss.as.xts</extension>
+                <extension>org.wildfly.extension.batch.jberet</extension>
+                <extension>org.wildfly.extension.bean-validation</extension>
+                <extension>org.wildfly.extension.clustering.singleton</extension>
+                <extension>org.wildfly.extension.clustering.web</extension>
+                <extension>org.wildfly.extension.ee-security</extension>
+                <extension>org.wildfly.extension.messaging-activemq</extension>
+                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
+                <extension>org.wildfly.extension.rts</extension>
+                <extension>org.wildfly.extension.undertow</extension>
+                <extension>org.wildfly.iiop-openjdk</extension>
+            </standalone>
+            <domain>
+                <extension>org.jboss.as.clustering.infinispan</extension>
+                <extension>org.jboss.as.clustering.jgroups</extension>
+                <extension>org.jboss.as.connector</extension>
+                <extension>org.jboss.as.ee</extension>
+                <extension>org.jboss.as.ejb3</extension>
+                <extension>org.jboss.as.jaxrs</extension>
+                <extension>org.jboss.as.jdr</extension>
+                <extension>org.jboss.as.jpa</extension>
+                <extension>org.jboss.as.jsf</extension>
+                <extension>org.jboss.as.mail</extension>
+                <extension>org.jboss.as.modcluster</extension>
+                <extension>org.jboss.as.naming</extension>
+                <extension>org.jboss.as.pojo</extension>
+                <extension>org.jboss.as.sar</extension>
+                <extension>org.jboss.as.transactions</extension>
+                <extension>org.jboss.as.webservices</extension>
+                <extension>org.jboss.as.weld</extension>
+                <extension>org.jboss.as.xts</extension>
+                <extension>org.wildfly.extension.batch.jberet</extension>
+                <extension>org.wildfly.extension.bean-validation</extension>
+                <extension>org.wildfly.extension.clustering.singleton</extension>
+                <extension>org.wildfly.extension.clustering.web</extension>
+                <extension>org.wildfly.extension.ee-security</extension>
+                <extension>org.wildfly.extension.messaging-activemq</extension>
+                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
+                <extension>org.wildfly.extension.rts</extension>
+                <extension>org.wildfly.extension.undertow</extension>
+                <extension>org.wildfly.iiop-openjdk</extension>
+            </domain>
+        </extensions>
+    </generate-feature-specs>
+</build>

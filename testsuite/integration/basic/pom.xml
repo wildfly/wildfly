@@ -3477,6 +3477,205 @@
             </build>
         </profile>
 
+        <!-- Test against ee-9 -->
+        <profile>
+            <id>ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the standard test executions. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-full.surefire</id>
+                                <!--<phase>none</phase>-->
+                                <configuration>
+                                    <excludes>
+                                        <!-- Requires embedded messaging broker -->
+                                        <!-- TODO some may not need the broker, just a different test setup -->
+                                        <exclude>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/ResourceRefTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/injection/resource/substitution/ResourceInjectionSubstitutionTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/remotelookup/LookupTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/MDBRoleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/callerprincipal/GetCallerPrincipalTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/runas/ejb2mdb/RunAsEjbMdbTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/runas/mdb/RunAsMDBUnitTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/MDBWhichDependsOnTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/transaction/mdb/timeout/MessageDriven*TimeoutTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/**/*TestCase.java</exclude><!-- TODO be more precise about what is excluded -->
+                                        <!-- Requires legacy security -->
+                                        <exclude>org/jboss/as/test/integration/ejb/security/LdapLegacyTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/RunAsPrincipalCustomDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/securitydomain/EJBContextMultipleSDTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/callerprincipal/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithSecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/security/workmanager/WildFlyActivationRaWithWMSecurityDomainWorkManagerTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredHTTPEndpointEmptyMgmtUsersTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
+                                        <!-- Requires picketlink -->
+                                        <exclude>org/jboss/as/test/integration/ws/authentication/policy/AuthenticationPolicyContextTestCase.java</exclude>
+                                        <!-- Requires JSR77 -->
+                                        <exclude>org/jboss/as/test/integration/jsr77/*TestCase.java</exclude>
+                                        <!-- TODO figure out the problem -->
+                                        <exclude>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</exclude><!-- probably mdb -->
+                                        <exclude>org/jboss/as/test/integration/ejb/pool/lifecycle/PooledEJBLifecycleTestCase.java</exclude><!-- probably mdb -->
+                                        <exclude>org/jboss/as/test/integration/ejb/security/In*Ann*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/SaslLegacyMechanismConfigurationTestCase.java</exclude><!-- wants legacy security but the EE9 remoting config is probably wrong too -->
+                                        <exclude>org/jboss/as/test/integration/ejb/security/SingleMethodsAnn*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jmx/full/JMXFilterTestCase.java</exclude><!-- Uses jsr77 subsystem as test subject -->
+                                        <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude><!-- use of unmanaged (exploded) deployments?? -->
+                                        <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude><!-- Problem is probably MDB use -->
+                                        <!-- EE 8 vs EE 9 differences beyond javax->jakarta -->
+                                        <exclude>org/jboss/as/test/integration/ejb/security/LifecycleTestCase.java</exclude><!-- EJBContext.getCallerIdentity was removed -->
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-web.surefire</id>
+                                <!--<phase>none</phase>-->
+                                <configuration>
+                                    <excludes>
+                                        <!-- Repeat the standard excludes for this execution as combine-children="append" doesn't work
+                                             FIXME. Sort this so this is not needed -->
+                                        <!-- truststore setting used in LDAPs testing is affected by some other test -->
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
+                                        <!-- 2nd run tests are run in other execution. -->
+                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                        <!-- Tests which need FULL config. -->
+                                        <exclude>org/jboss/as/test/integration/ee/remotelookup/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/injection/resource/substitution/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/**/jts/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/*/security/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/**/mdb/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
+                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
+                                        <exclude>org/jboss/as/test/integration/management/cli/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxrs/cfg/**/ResteasyAttributeTestCase.java</exclude>
+
+                                        <!-- Add EE9-specific excludes -->
+                                        <!-- Need to handle addition of JBoss Modules that use EE 8 -->
+                                        <exclude>org/jboss/as/test/integration/ee/globalmodules/GlobalModulesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/interceptor/serverside/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/extensions/cdiportableextensions/ExtensionTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/dependency/StaticCdiModulesDependencyTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/deployment/*Test.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/converter/MicroProfileConfigConvertersTestCase.java</exclude>
+                                        <!-- Test involves server side EE 9 types propagating to @RunAsClient EE 8 test -->
+                                        <exclude>org/jboss/as/test/integration/ejb/transaction/exception/TxExceptionEjbClientTestCase.java</exclude>
+                                        <!-- Requires legacy security -->
+                                        <exclude>org/jboss/as/test/integration/ejb/container/interceptor/security/SwitchIdentityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/container/interceptor/security/api/SwitchIdentityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/anno/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/basic/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/aselytron/SecurityDomainAsElytronSecurityRealmTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/auditing/CustomAuditProviderModuleTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/cli/JsseTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/xacml/*XACMLAuthorizationModuleTestCase.java</exclude>
+                                        <exclude>org/wildfly/test/elytron/intermediate/*TestCase.java</exclude>
+                                        <!-- No agroal -->
+                                        <exclude>org/wildfly/test/integration/agroal/*TestCase.java</exclude>
+                                        <!-- No Hibernate 5.0 module -->
+                                        <exclude>org/jboss/as/test/integration/deployment/moduleslisting/DeploymentModulesListTestCase.java</exclude>
+                                        <!-- TODO figure out the problem -->
+                                        <exclude>org/jboss/as/test/integration/batch/repository/JdbcRepositoryTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/batch/transaction/BatchTransactionTimeoutTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/appclient/basic/SimpleApplicationClientTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/descriptor/ejbnamewildcard/EJBNameWildcardTestCase.java</exclude><!-- use of @Test(expected = EJBAccessException.class) ??? -->
+                                        <exclude>org/jboss/as/test/integration/ejb/mapbased/MapBasedInitialContextEjbClientTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/remote/security/*RemoteIdentityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/stateful/persistencecontext/StatefulUnitTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/stateless/callerprincipal/Ejb2GetCallerPrincipalTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/BeanManagedTransactionsTestCase.java</exclude><!-- use of @Test(expected = EJBException.class) ??? -->
+                                        <exclude>org/jboss/as/test/integration/jdr/mgmt/JdrReportManagmentTestCase.java</exclude><!-- WFLY-13884 -->
+                                        <exclude>org/jboss/as/test/integration/jsf/beanvalidation/cdi/BeanValidationCdiIntegrationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/doctype/DoctypeDeclTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/jsf23/JSF23SanityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/managedbean/gc/GCPreDestroyTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/testurl/ForbiddenUrlTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
+                                        <exclude>org/jboss/as/test/integration/weld/ejb/SessionObjectReferenceTestCase.java</exclude>
+                                        <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase.java</exclude><!-- No JWT. TODO why would JWT work in the normal profile? -->
+                                        <exclude>org/wildfly/test/integration/web/annotationsmodule/EarModuleDeploymentTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <configuration>
+                                    <!-- we just use the existing config unchanged -->
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-ldap.surefire</id>
+                                <!-- We just turn this execution off because none of the included tests work -->
+                                <phase>none</phase>
+                                <configuration>
+                                <excludes>
+                                    <!-- Requires legacy security -->
+                                    <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
+                                    <!-- Need to handle addition of JBoss Modules that use EE 8 -->
+                                    <exclude>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</exclude>
+                                </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 
 </project>

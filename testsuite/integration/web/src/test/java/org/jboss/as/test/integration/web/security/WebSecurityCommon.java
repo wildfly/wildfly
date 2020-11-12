@@ -43,7 +43,7 @@ public class WebSecurityCommon {
      * @return true if 'elytron' property is defined, false otherwise.
      */
     public static boolean isElytron() {
-        return System.getProperty("elytron") != null;
+        return System.getProperty("elytron") != null || System.getProperty("ts.ee9") != null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebSecurityCommon.class);

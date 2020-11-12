@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-rts" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="standalone">
+        <exclude spec="subsystem.microprofile-jwt-smallrye"/>
+    </feature-group>
+
+    <feature spec="interface">
+        <param name="interface" value="unsecure"/>
+        <param name="inet-address" value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+    </feature>
+
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <feature-group name="iiop-sockets"/>
+        <feature-group name="messaging-remote-sockets"/>
+    </feature>
+
+    <feature-group name="iiop-openjdk"/>
+    <feature-group name="messaging-remote-activemq"/>
+
+    <feature spec="subsystem.ejb3">
+        <feature spec="subsystem.ejb3.service.iiop">
+            <param name="enable-by-default" value="false"/>
+            <param name="use-qualified-name" value="false"/>
+        </feature>
+    </feature>
+    <feature-group name="ejb3-mdb"/>
+
+
+    <feature spec="subsystem.rts">
+        <param name="host-feature" value="default-host"/>
+        <param name="socket-binding" value="http"/>
+        <param name="server" value="default-server"/>
+    </feature>
+
+</feature-group-spec>

@@ -583,6 +583,43 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Test against ee-9 -->
+        <profile>
+            <id>ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the standard test executions. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ws-integration-default.surefire</id>
+                                <configuration>
+                                    <excludes>
+                                        <!-- Other security issues -->
+                                        <exclude>org/jboss/as/test/integration/ws/authentication/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/authentication/policy/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSBearerSecurityPropagationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSTrustTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>

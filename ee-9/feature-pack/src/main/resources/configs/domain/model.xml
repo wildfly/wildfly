@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+
+<config xmlns="urn:jboss:galleon:config:1.0" model="domain">
+    <packages>
+        <package name="product.conf" optional="true"/>
+        <package name="misc.domain"/>
+        <package name="org.wildfly.deployment.transformation"/>
+    </packages>
+</config>

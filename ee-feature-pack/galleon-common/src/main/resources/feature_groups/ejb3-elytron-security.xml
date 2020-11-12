@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="ejb3-elytron-security" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- Map legacy security-domain 'other' to the Elytron ApplicationDomain -->
+    <feature spec="subsystem.ejb3">
+        <feature spec="subsystem.ejb3.application-security-domain">
+            <param name="application-security-domain" value="other" />
+            <param name="security-domain" value="ApplicationDomain"/>
+        </feature>
+    </feature>
+</feature-group-spec>
