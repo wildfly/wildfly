@@ -75,6 +75,7 @@
     <config name="host.xml" model="host"/>
     <config name="host-master.xml" model="host"/>
     <config name="host-slave.xml" model="host"/>
+    <config name="standalone-bdew.xml" model="standalone"/>
 
 
     <generate-feature-specs>
