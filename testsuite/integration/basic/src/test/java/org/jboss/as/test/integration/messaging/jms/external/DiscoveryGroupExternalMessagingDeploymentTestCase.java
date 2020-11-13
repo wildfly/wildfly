@@ -76,7 +76,10 @@ import org.junit.runner.RunWith;
 public class DiscoveryGroupExternalMessagingDeploymentTestCase {
 
     public static final boolean SKIP = AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
-                return Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6);
+                boolean badIPv6System = Util.checkForWindows() ||
+                                // https://issues.redhat.com/browse/WFLY-14070
+                                "true".equals(System.getenv().get("GITHUB_ACTIONS"));
+                return badIPv6System && (Util.getIpStackType() == StackType.IPv6);
             });
     public static final String QUEUE_LOOKUP = "java:/jms/DependentMessagingDeploymentTestCase/myQueue";
     public static final String TOPIC_LOOKUP = "java:/jms/DependentMessagingDeploymentTestCase/myTopic";
