@@ -96,6 +96,8 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
                     if (reference == null) {
                         try {
                             reference = cv.createInstance();
+                        } catch (RuntimeException e) {
+                            throw e;
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -202,6 +204,8 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
       if (t instanceof Exception) {
          if (t instanceof InvocationTargetException) {
             throw (Exception) t;
+         } else if (t instanceof SecurityException) {
+             throw (Exception) t;
          } else {
             SOAPFaultException ex = findSoapFaultException(t);
             if (ex != null) {
