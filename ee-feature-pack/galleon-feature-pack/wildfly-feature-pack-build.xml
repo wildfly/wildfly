@@ -61,6 +61,10 @@
     <config name="host-master.xml" model="host"/>
     <config name="host-slave.xml" model="host"/>
 
+    <plugins>
+        <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
+    </plugins>
+
     <generate-feature-specs>
         <extensions>
             <standalone>

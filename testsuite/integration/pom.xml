@@ -341,6 +341,22 @@
             </modules>
         </profile>
 
+        <!-- Test against the EE 9 feature pack -->
+        <profile>
+            <id>ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <modules>
+                <module>basic</module>
+                <module>clustering</module>
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+            </modules>
+        </profile>
+
     </profiles>
 
 

@@ -69,6 +69,7 @@
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
         <module>ee-security</module>
+        <module>ee-9</module>
         <module>ejb3</module>
         <module>galleon-pack</module>
         <module>iiop-openjdk</module>
@@ -232,7 +233,7 @@
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
-        <version.org.wildfly.galleon-plugins>4.2.8.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>5.0.0.Beta1</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
@@ -445,7 +446,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>14.0.0.Beta1</version.org.wildfly.core>
+        <version.org.wildfly.core>14.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.2.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.13.Final</version.org.wildfly.naming-client>
@@ -986,6 +987,12 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ejb3</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -1183,6 +1190,12 @@
             </dependency>
 
             <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
+                <version>${full.maven.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-naming</artifactId>
                 <version>${ee.maven.version}</version>
@@ -1216,6 +1229,34 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-pojo</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-build</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-dist</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
             </dependency>
 
             <dependency>
@@ -8752,6 +8793,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>transformer</artifactId>
+                <version>${version.org.wildfly.galleon-plugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly.transaction</groupId>
                 <artifactId>wildfly-transaction-client</artifactId>
                 <version>${version.org.wildfly.transaction.client}</version>
@@ -9597,6 +9650,40 @@
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
+        </profile>
+
+        <profile>
+            <id>ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+                <!-- No separate web dist -->
+                <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Disable the surefire tests (at least the default ones) for all modules except for
+                             those where this profile turns them on.  This profile is meant to be an
+                             entirely alternative testsuite execution so there's no point running the normal
+                             tests, which get plenty of exercise elsewhere. -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
         <profile>

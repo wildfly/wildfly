@@ -85,7 +85,10 @@ public class HealthReporterService implements Service<HealthReporter> {
         final boolean defaultServerProceduresDisabled = ConfigProvider.getConfig().getOptionalValue("mp.health.disable-default-procedures", Boolean.class).orElse(false);
         healthReporter = new HealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus, defaultServerProceduresDisabled);
 
-        modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
+        // we use a SuperUserClient for the local model controller client so that the server checks can be performed when RBAC is enabled.
+        // a doPriviledged block is not needed as these calls are initiated from the management endpoint.
+        // The user accessing the management endpoints must be authenticated (if security-enabled is true) but the server checks are not executed on their behalf.
+        modelControllerClient = modelControllerClientFactory.get().createSuperUserClient(managementExecutor.get(), true);
 
         if (!defaultServerProceduresDisabled) {
             healthReporter.addServerReadinessCheck(new ServerStateCheck(modelControllerClient), Thread.currentThread().getContextClassLoader());

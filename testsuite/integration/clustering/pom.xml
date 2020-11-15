@@ -1624,7 +1624,6 @@
             </build>
         </profile>
 
-
         <!-- Test against bootable jar -->
         <profile>
             <id>bootablejar.profile</id>
@@ -1894,6 +1893,62 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Test against EE 9 dist -->
+        <profile>
+            <id>ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+                <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.surefire.clustering.ha</id>
+                                <!--<phase>none</phase>-->
+                                <configuration>
+                                    <excludes>
+                                        <!-- This next section is a duplication of the usual excludes from the ts.clustering.cluster.ha.profile.
+                                             TODO figure out how to avoid this -->
+                                        <exclude>${test-group}/**/ejb/stateful/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/group/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/jms/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/sso/remote/*TestCase.java</exclude>
+                                        <!-- These are run by ts.clustering.cluster.byteman.profile -->
+                                        <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
+                                        <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
+
+                                        <!-- Requires legacy security subsystem -->
+                                        <exclude>${test-group}/web/authentication/*TestCase.java</exclude>
+                                        <!-- TODO see why these aren't working and fix or exclude with a clear explanation -->
+                                        <exclude>${test-group}/ejb/remote/GlobalAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
+                                        <exclude>${test-group}/ejb/remote/ThreadAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
+                                        <exclude>${test-group}/jsf/JSFFailoverTestCase.java</exclude> <!-- test hard-codes javax package; need to parameterize -->
+                                        <exclude>${test-group}/sso/*TestCase.java</exclude><!-- Perhaps ElytronSSOServerSetupTask needs to deal with the EJB application-security-domain too? -->
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <!--<phase>none</phase>-->
+                                <configuration>
+                                    <excludes>
+                                        <!-- TODO see why these aren't working and fix or exclude with a clear explanation -->
+                                        <exclude>${test-group}/sso/remote/*TestCase.java</exclude><!-- Perhaps ElytronSSOServerSetupTask needs to deal with the EJB application-security-domain too? -->
+                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
