@@ -576,7 +576,8 @@ public abstract class AbstractSecurityContextPropagationTestBase {
                 .addClasses(EntryServlet.class, WhoAmIServlet.class, WhoAmI.class, ReAuthnType.class, SeccontextUtil.class)
                 .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("authenticate"),
                         new ElytronPermission("getPrivateCredentials"), new ElytronPermission("getSecurityDomain"),
-                        new SocketPermission(TestSuiteEnvironment.getServerAddressNode1() + ":8180", "connect,resolve")),
+                        new SocketPermission(TestSuiteEnvironment.getServerAddressNode1() + ":8180", "connect,resolve"),
+                        new RuntimePermission("accessClassInPackage.sun.misc")),
                         "permissions.xml")
                 .addAsWebInfResource(Utils.getJBossWebXmlAsset("seccontext-web"), "jboss-web.xml");
     }
