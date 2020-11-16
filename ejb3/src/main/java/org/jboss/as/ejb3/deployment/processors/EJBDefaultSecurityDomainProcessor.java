@@ -131,11 +131,15 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                 }
             }
 
+            final boolean useDefaultElytronMapping;
             // Only apply a default domain to the whole deployment if no legacy domain was defined.
             if (!legacyDomainDefined && selectedElytronDomainName == null && defaultDomainMapping != null) {
                 selectedElytronDomainName = defaultSecurityDomain;
                 selectedElytronDomainConfig = defaultDomainMapping;
                 elytronDomainServiceName = defaultElytronDomainServiceName;
+                useDefaultElytronMapping = true;
+            } else {
+                useDefaultElytronMapping = false;
             }
 
             // If this EJB deployment is associated with an Elytron security domain, set up the security domain mapping
@@ -154,8 +158,24 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                     if (componentDescription instanceof EJBComponentDescription) {
                         EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
                         String definedSecurityDomain = ejbComponentDescription.getDefinedSecurityDomain();
+
+                        /*
+                         * Only apply the Elytron domain if one of the following is true:
+                         *  - No security domain was defined within the deployment so the default is being applied to all components.
+                         *  - No security domain is defined on the component but the subsystem default maps to the same as used
+                         *    for other beans in the deployment.
+                         *  - The security domain defined on the EJB Component matches the name mapped to the Elytron domain.
+                         *
+                         * Otherwise EJBComponents will be in one of the following states:
+                         *  - No associated security domain.
+                         *  - Using configured domain as PicketBox domain.
+                         *  - Fallback to subsystem defined default PicketBox domain.
+                         */
+
                         // The component may have had a legacy SecurityDomain defined.
-                        if (definedSecurityDomain == null || selectedElytronDomainName.equals(definedSecurityDomain)) {
+                        if (useDefaultElytronMapping
+                                || (definedSecurityDomain == null && selectedElytronDomainConfig == defaultDomainMapping)
+                                || selectedElytronDomainName.equals(definedSecurityDomain)) {
                             ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
                             ejbComponentDescription.setSecurityDomainServiceName(elytronDomainServiceName);
                             ejbComponentDescription.setRequiresJacc(selectedElytronDomainConfig.isEnableJacc());
