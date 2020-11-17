@@ -1,6 +1,15 @@
 [[wildfly_layers]]
 === WildFly Layers
 
+A Galleon layer is a name that identifies a server capability (e.g.: jaxrs, 
+ejb, microprofile-config, jpa) or an aggregation of such capabilities. A layer captures a server capability in the form of:
+
+* A piece of server XML configuration (e.g.: extension, configured subsystem, interfaces) that describes the capability.
+* A set of modules and other filesystem content that implements the capability.
+
+When you are using a layer, it delivers these pieces of information in order for 
+Galleon to assemble a server containing only the required configuration and modules. 
+
 In the tables below we provide basic information about all of the layers WildFly provides.
 
 Besides the layer names and a brief description of each, the tables below detail the various dependency relationships
