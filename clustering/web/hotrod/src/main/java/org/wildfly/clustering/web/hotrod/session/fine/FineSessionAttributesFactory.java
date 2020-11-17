@@ -33,6 +33,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheMap;
 import org.wildfly.clustering.ee.hotrod.RemoteCacheMutatorFactory;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
@@ -117,7 +118,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     @Override
     public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, C context) {
         SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, names)), context);
-        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.withFlags(Flag.FORCE_RETURN_VALUE), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
+        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), new RemoteCacheMap<>(this.attributeCache), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 
     @Override
