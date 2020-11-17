@@ -110,7 +110,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
     private static final String TEST_CLIENT_2_DN = "CN=Test Client 2, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
     private static final String AS_7_DN = "CN=AS7, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
 
-    private static final String SHA_1_RSA = "SHA1withRSA";
+    private static final String SHA_256_RSA = "SHA256withRSA";
 
     private static KeyStore loadKeyStore() throws Exception{
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -122,7 +122,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         return SelfSignedX509CertificateAndSigningKey.builder()
                 .setDn(new X500Principal(DN))
                 .setKeyAlgorithmName("RSA")
-                .setSignatureAlgorithmName(SHA_1_RSA)
+                .setSignatureAlgorithmName(SHA_256_RSA)
                 .build();
     }
 
