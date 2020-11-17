@@ -1,9 +1,14 @@
+embed-server --server-config=${config}
+
 # [P] Remove Example Content
 /subsystem=datasources/data-source=ExampleDS:remove
 /subsystem=ee/service=default-bindings:undefine-attribute(name=datasource)
 
-/subsystem=undertow/server=default-server/host=default-host/location="/":remove
-/subsystem=undertow/configuration=handler/file=welcome-content:remove
+# microprofile has not welcome content
+if (outcome == success) of /subsystem=undertow/configuration=handler/file=welcome-content:read-resource
+  /subsystem=undertow/server=default-server/host=default-host/location="/":remove
+  /subsystem=undertow/configuration=handler/file=welcome-content:remove
+end-if
 
 # [P] Disable Deployment Scanner
 /subsystem=deployment-scanner/scanner=default:write-attribute(name="scan-enabled",value=false)
@@ -26,3 +31,5 @@
 /subsystem=undertow/server=default-server/https-listener=httpsListener:add(\
     socket-binding="https",\
     security-realm="WCC_SSL_Realm")
+
+stop-embedded-server

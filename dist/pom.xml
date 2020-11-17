@@ -187,6 +187,22 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>init-build-properties</id>
+                                <goals>
+                                    <goal>hostname</goal>
+                                </goals>
+                                <configuration>
+                                    <hostnameProperty>current-hostname</hostnameProperty>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.wildfly.galleon-plugins</groupId>
                         <artifactId>wildfly-galleon-maven-plugin</artifactId>
                         <executions>
@@ -214,31 +230,6 @@
                                 <scope>runtime</scope>
                             </dependency>
                         </dependencies>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>backup-logging-properties</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>prepare-package</phase>
-                                <configuration>
-                                    <overwrite>true</overwrite>
-                                    <outputDirectory>${basedir}/target/</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${basedir}/target/${project.build.finalName}/standalone/configuration</directory>
-                                            <includes>
-                                                <include>logging.properties</include>
-                                            </includes>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
@@ -290,19 +281,222 @@
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>2.0.2.Final</version>
+                        <configuration>
+                            <jboss-home>${basedir}/target/${project.build.finalName}</jboss-home>
+                            <offline>true</offline>
+                        </configuration>
                         <executions>
                             <execution>
+                                <id>hardening-standalone</id>
                                 <phase>prepare-package</phase>
                                 <goals>
-                                    <goal>start</goal>
                                     <goal>execute-commands</goal>
-                                    <goal>shutdown</goal>
                                 </goals>
                                 <configuration>
-                                    <jboss-home>${basedir}/target/${project.build.finalName}</jboss-home>
                                     <scripts>
                                         <script>hardening.cli</script>
                                     </scripts>
+                                    <systemProperties>
+                                        <config>standalone.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-standalone-full</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-full.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-standalone-full-ha</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-full-ha.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-standalone-ha</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-ha.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-standalone-microprofile</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-microprofile.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-standalone-microprofile-ha</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-microprofile-ha.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-standalone-bdew</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-bdew.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-domain-host</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening-domain-host.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <host-config>host.xml</host-config>
+                                        <host-name>master</host-name>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-domain-host-master</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening-domain-host.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <host-config>host-master.xml</host-config>
+                                        <host-name>master</host-name>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-domain-host-slave</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening-domain-host.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <host-config>host-slave.xml</host-config>
+                                        <host-name>${current-hostname}</host-name>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-domain-default</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening-domain.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <profile>default</profile>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-domain-ha</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening-domain.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <profile>ha</profile>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-domain-full</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening-domain.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <profile>full</profile>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>hardening-domain-full-ha</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening-domain.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <profile>full-ha</profile>
+                                    </systemProperties>
                                 </configuration>
                             </execution>
                         </executions>

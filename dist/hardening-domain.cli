@@ -1,0 +1,26 @@
+embed-host-controller
+
+# [P] Remove Example Content
+/profile=${profile}/subsystem=datasources/data-source=ExampleDS:remove
+/profile=${profile}/subsystem=ee/service=default-bindings:undefine-attribute(name=datasource)
+
+/profile=${profile}/subsystem=undertow/server=default-server/host=default-host/location="/":remove
+/profile=${profile}/subsystem=undertow/configuration=handler/file=welcome-content:remove
+
+# [P] Disable Deployment Scanner
+#No deployment scanner in domain mode
+
+# [P] Disable stacktrace in response body
+/profile=${profile}/subsystem=undertow/servlet-container=default:write-attribute(name="stack-trace-on-error",value="none")
+
+# [P] Enable SSL Connector
+# remove default https listener
+/profile=${profile}/subsystem=undertow/server=default-server/https-listener=https:remove
+
+# create WCC_SSL_Realm
+# WCC_SSL_Realm is created in host
+
+# create https listener
+/profile=${profile}/subsystem=undertow/server=default-server/https-listener=httpsListener:add(socket-binding="https", security-realm="WCC_SSL_Realm")
+
+stop-embedded-host-controller

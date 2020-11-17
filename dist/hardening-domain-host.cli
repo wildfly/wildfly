@@ -1,0 +1,6 @@
+embed-host-controller --host-config=${host-config}
+
+# create WCC_SSL_Realm
+/host=${host-name}/core-service=management/security-realm=WCC_SSL_Realm:add
+
+stop-embedded-host-controller
