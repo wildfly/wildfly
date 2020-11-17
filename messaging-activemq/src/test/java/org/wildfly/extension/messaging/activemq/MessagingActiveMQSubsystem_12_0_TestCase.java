@@ -1,23 +1,17 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2020 Red Hat, Inc.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -76,20 +70,20 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_12_0_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_11_0_TestCase() {
+    public MessagingActiveMQSubsystem_12_0_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_11_0.xml");
+        return readResource("subsystem_12_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_11_0.xsd";
+        return "schema/wildfly-messaging-activemq_12_0.xsd";
     }
 
     @Override
@@ -108,9 +102,10 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
         return properties;
     }
 
+    @Test
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     @Test
@@ -133,12 +128,17 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
 
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_11_0_ha-policy.xml");
+        standardSubsystemTest("subsystem_12_0_ha-policy.xml");
     }
 
     ///////////////////////
     // Transformers test //
     ///////////////////////
+    @Test
+    public void testTransformersWildfly21() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_11_0_0);
+    }
+
     @Test
     public void testTransformersWildfly20() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_10_0_0);
@@ -192,7 +192,7 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_11_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_12_0_transform.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                 .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
                 .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
@@ -232,7 +232,7 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_11_0_reject_transform.xml");
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_12_0_reject_transform.xml");
         System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
@@ -270,7 +270,14 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
                                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                                 ServerDefinition.DISK_SCAN_PERIOD,
-                                ServerDefinition.GLOBAL_MAX_MEMORY_SIZE
+                                ServerDefinition.GLOBAL_MAX_MEMORY_SIZE,
+                                ServerDefinition.NETWORK_CHECK_LIST,
+                                ServerDefinition.NETWORK_CHECK_NIC,
+                                ServerDefinition.NETWORK_CHECK_PERIOD,
+                                ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                                ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                                ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                                ServerDefinition.NETWORK_CHECK_URL_LIST
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
@@ -321,7 +328,15 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
                                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                                 ServerDefinition.DISK_SCAN_PERIOD,
-                                ServerDefinition.GLOBAL_MAX_MEMORY_SIZE
+                                ServerDefinition.GLOBAL_MAX_MEMORY_SIZE,
+                                ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
+                                ServerDefinition.NETWORK_CHECK_LIST,
+                                ServerDefinition.NETWORK_CHECK_NIC,
+                                ServerDefinition.NETWORK_CHECK_PERIOD,
+                                ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                                ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                                ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                                ServerDefinition.NETWORK_CHECK_URL_LIST
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
@@ -335,11 +350,28 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
                             ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                             ServerDefinition.DISK_SCAN_PERIOD,
                             ServerDefinition.GLOBAL_MAX_MEMORY_SIZE,
-                            ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT));
+                            ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
+                            ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
+                            ServerDefinition.NETWORK_CHECK_LIST,
+                            ServerDefinition.NETWORK_CHECK_NIC,
+                            ServerDefinition.NETWORK_CHECK_PERIOD,
+                            ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                            ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                            ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                            ServerDefinition.NETWORK_CHECK_URL_LIST));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
-            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
+                    ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
+                    ServerDefinition.NETWORK_CHECK_LIST,
+                    ServerDefinition.NETWORK_CHECK_NIC,
+                    ServerDefinition.NETWORK_CHECK_PERIOD,
+                    ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                    ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                    ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                    ServerDefinition.NETWORK_CHECK_URL_LIST
+            ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.JGROUPS_BROADCAST_GROUP_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
@@ -443,6 +475,15 @@ public class MessagingActiveMQSubsystem_11_0_TestCase extends AbstractSubsystemB
                     ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                     ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
                     ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
+                    ServerDefinition.NETWORK_CHECK_LIST,
+                    ServerDefinition.NETWORK_CHECK_NIC,
+                    ServerDefinition.NETWORK_CHECK_PERIOD,
+                    ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                    ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                    ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                    ServerDefinition.NETWORK_CHECK_URL_LIST
+            ));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();
