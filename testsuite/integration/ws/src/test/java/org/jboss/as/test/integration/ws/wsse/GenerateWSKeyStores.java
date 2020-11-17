@@ -19,16 +19,12 @@ package org.jboss.as.test.integration.ws.wsse;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.InetAddress;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.wildfly.security.x500.GeneralName;
 import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
-import org.wildfly.security.x500.cert.SubjectAlternativeNamesExtension;
 
 /**
  * Generates the keystores and truststore needed for the ws tests
@@ -55,13 +51,12 @@ public class GenerateWSKeyStores {
     }
 
     private static SelfSignedX509CertificateAndSigningKey createSelfSigned() {
-        X500Principal DN = new X500Principal("CN=localhost, OU=JBoss, O=Red Hat, L=Milan, ST=MI, C=IT");
+        X500Principal DN = new X500Principal("CN=Alessio, OU=JBoss, O=Red Hat, L=Milan, ST=MI, C=IT");
 
         return SelfSignedX509CertificateAndSigningKey.builder()
                 .setDn(DN)
                 .setKeyAlgorithmName("RSA")
                 .setSignatureAlgorithmName("SHA256withRSA")
-                .addExtension(new SubjectAlternativeNamesExtension(false, Collections.singletonList(new GeneralName.IPAddress(InetAddress.getLoopbackAddress().getHostAddress()))))
                 .build();
     }
 
