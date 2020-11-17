@@ -117,10 +117,6 @@ public class WSBearerElytronSecurityPropagationTestCase {
     @OperateOnDeployment(BEARER_SERVER_DEP)
     @WrapThreadContextClassLoader
     public void testBearer() throws Exception {
-        // TLSv1.2 seems buggy on JDK-11 (Invalid ECDH ServerKeyExchange signature)
-        String originalProtocols = System.getProperty("https.protocols");
-        System.setProperty("https.protocols", "TLSv1.1");
-
         Bus bus = BusFactory.newInstance().createBus();
         try {
             BusFactory.setThreadDefaultBus(bus);
@@ -132,13 +128,10 @@ public class WSBearerElytronSecurityPropagationTestCase {
             WSTrustTestUtils.setupWsseAndSTSClientBearer((BindingProvider) proxy, bus);
             assertEquals("alice&alice", proxy.sayHello());
 
+        } catch (Exception e) {
+            throw e;
         } finally {
             bus.shutdown(true);
-            if (originalProtocols == null) {
-                System.clearProperty("https.protocols");
-            } else {
-                System.setProperty("https.protocols", originalProtocols);
-            }
         }
     }
 
