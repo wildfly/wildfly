@@ -27,6 +27,8 @@ import static org.jboss.as.webservices.util.ASHelper.getMSCService;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
@@ -81,7 +83,13 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
             synchronized (this) {
                 cv = componentView;
                 if (cv == null) {
-                    cv = getMSCService(componentViewName, ComponentView.class);
+                    SecurityManager sm = System.getSecurityManager();
+                    if (sm == null) {
+                        cv = getMSCService(componentViewName, ComponentView.class);
+                    } else {
+                        cv = AccessController.doPrivileged(
+                                (PrivilegedAction<ComponentView>) () -> getMSCService(componentViewName, ComponentView.class));
+                    }
                     if (cv == null) {
                         throw WSLogger.ROOT_LOGGER.cannotFindComponentView(componentViewName);
                     }
