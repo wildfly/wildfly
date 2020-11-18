@@ -30,6 +30,7 @@
     <resources>
         <artifact name="${org.wildfly:wildfly-messaging-activemq}"/>
         <artifact name="${org.jboss.activemq.artemis.integration:artemis-wildfly-integration}"/>
+        <resource-root path="META-INF"/>
     </resources>
 
     <dependencies>
@@ -42,7 +43,7 @@
         <module name="javax.json.api"/>
         <module name="javax.resource.api" />
         <module name="javax.transaction.api"/>
-        <module name="org.apache.activemq.artemis"/>
+        <module name="org.apache.activemq.artemis" services="import" />
         <module name="org.apache.activemq.artemis.ra"/>
         <module name="org.jboss.common-beans"/>
         <module name="org.jboss.staxmapper"/>

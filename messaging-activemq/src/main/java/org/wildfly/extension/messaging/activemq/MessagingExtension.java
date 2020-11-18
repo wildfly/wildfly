@@ -262,6 +262,7 @@ public class MessagingExtension implements Extension {
     // be removed in the future.
     private static final Logger BASE_AUDIT_LOGGER;
     private static final Logger MESSAGE_AUDIT_LOGGER;
+    private static final Logger RESOURCE_AUDIT_LOGGER;
 
     static {
         // There is no guarantee that the configured loggers will contain the logger names even if they've been
@@ -279,6 +280,12 @@ public class MessagingExtension implements Extension {
         } else {
             MESSAGE_AUDIT_LOGGER = Logger.getLogger("org.apache.activemq.audit.message");
             MESSAGE_AUDIT_LOGGER.setLevel(Level.WARNING);
+        }
+        if (configuredLoggers.contains("org.apache.activemq.audit.resource")) {
+            RESOURCE_AUDIT_LOGGER = null;
+        } else {
+            RESOURCE_AUDIT_LOGGER = Logger.getLogger("org.apache.activemq.audit.resource");
+            RESOURCE_AUDIT_LOGGER.setLevel(Level.WARNING);
         }
     }
 
