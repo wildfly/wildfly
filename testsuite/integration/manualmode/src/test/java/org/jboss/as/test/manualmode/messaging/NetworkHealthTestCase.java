@@ -57,6 +57,7 @@ import org.junit.runner.RunWith;
 public class NetworkHealthTestCase {
 
     private static final String DEFAULT_FULL_JBOSSAS = "default-full-jbossas";
+    private static final String IP_ADDRESS = "192.0.2.0";
 
     @ArquillianResource
     protected static ContainerController container;
@@ -73,7 +74,7 @@ public class NetworkHealthTestCase {
         }
         ManagementClient managementClient = createManagementClient();
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-        ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", "192.0.2.0");
+        ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", IP_ADDRESS);
         executeOperationForSuccess(managementClient, op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-period", 1000);
         executeOperationForSuccess(managementClient, op);
@@ -89,7 +90,7 @@ public class NetworkHealthTestCase {
         try (BufferedReader reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
             String line = null;
             while (!found && (line = reader.readLine()) != null) {
-                found = line.contains("AMQ202002: Ping Address 192.0.2.0 wasnt reacheable.");
+                found = line.contains("AMQ202002") && line.contains(IP_ADDRESS);
             }
             Assert.assertTrue(String.format("Log contains ActiveMQ ping error log message: %n%s", line), found);
         }
@@ -108,7 +109,7 @@ public class NetworkHealthTestCase {
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
                 if(lineNumber > failure) {
-                    Assert.assertFalse(String.format("Log contains ActiveMQ ping error log message: %n%s", line), line.contains("AMQ202002: Ping Address") || line.contains("AMQ201001: Network is unhealthy"));
+                    Assert.assertFalse(String.format("Log contains ActiveMQ ping error log message: %n%s", line), line.contains("AMQ202002") || line.contains("AMQ201001"));
                 }
             }
         }
@@ -137,7 +138,7 @@ public class NetworkHealthTestCase {
         executeOperationForSuccess(managementClient, op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command", "not_existing_command");
         executeOperationForSuccess(managementClient, op);
-        op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", "192.0.2.0");
+        op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", IP_ADDRESS);
         executeOperationForSuccess(managementClient, op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-period", 1000);
         executeOperationForSuccess(managementClient, op);
@@ -153,7 +154,7 @@ public class NetworkHealthTestCase {
         try (BufferedReader reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
             String line = null;
             while (!found && (line = reader.readLine()) != null) {
-                found = line.contains(" AMQ202007: Failed to check Address /192.0.2.0.: java.io.IOException: Cannot run program \"not_existing_command\": error=2") || line.contains("AMQ201001: Network is unhealthy");
+                found = (line.contains(" AMQ202007") && line.contains(IP_ADDRESS) && line.contains("java.io.IOException")) || line.contains("AMQ201001");
             }
             Assert.assertTrue(String.format("Log contains ActiveMQ ping error log message: %n%s", line), found);
         }
