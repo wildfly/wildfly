@@ -89,7 +89,7 @@ public class NetworkHealthTestCase {
         try (BufferedReader reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
             String line = null;
             while (!found && (line = reader.readLine()) != null) {
-                found = line.contains("AMQ202002: Ping Address /192.0.2.0 wasnt reacheable.");
+                found = line.contains("AMQ202002: Ping Address 192.0.2.0 wasnt reacheable.");
             }
             Assert.assertTrue(String.format("Log contains ActiveMQ ping error log message: %n%s", line), found);
         }
