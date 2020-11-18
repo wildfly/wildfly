@@ -130,12 +130,12 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             }
 
             final boolean useDefaultElytronMapping;
-            // Only apply a default domain to the whole deployment if no legacy domain was defined.
-            if (!legacyDomainDefined && selectedElytronDomainName == null && defaultDomainMapping != null) {
+            if (selectedElytronDomainName == null && defaultDomainMapping != null) {
                 selectedElytronDomainName = defaultSecurityDomain;
                 selectedElytronDomainConfig = defaultDomainMapping;
                 elytronDomainServiceName = defaultElytronDomainServiceName;
-                useDefaultElytronMapping = true;
+                // Only apply a default domain to the whole deployment if no legacy domain was defined.
+                useDefaultElytronMapping = !legacyDomainDefined;
             } else {
                 useDefaultElytronMapping = false;
             }
