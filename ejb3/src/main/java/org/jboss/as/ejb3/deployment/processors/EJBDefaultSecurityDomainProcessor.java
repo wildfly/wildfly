@@ -123,8 +123,6 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                         } else if (selectedElytronDomainName.equals(definedSecurityDomain) == false) {
                             throw EjbLogger.ROOT_LOGGER.multipleSecurityDomainsDetected();
                         }
-
-                        ejbComponentDescription.setRequiresJacc(definedDomainMapping.isEnableJacc());
                     } else if (definedSecurityDomain != null) {
                         legacyDomainDefined = true;
                     }
@@ -162,8 +160,6 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                         /*
                          * Only apply the Elytron domain if one of the following is true:
                          *  - No security domain was defined within the deployment so the default is being applied to all components.
-                         *  - No security domain is defined on the component but the subsystem default maps to the same as used
-                         *    for other beans in the deployment.
                          *  - The security domain defined on the EJB Component matches the name mapped to the Elytron domain.
                          *
                          * Otherwise EJBComponents will be in one of the following states:
@@ -174,13 +170,19 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
 
                         // The component may have had a legacy SecurityDomain defined.
                         if (useDefaultElytronMapping
-                                || (definedSecurityDomain == null && selectedElytronDomainConfig == defaultDomainMapping)
                                 || selectedElytronDomainName.equals(definedSecurityDomain)) {
                             ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
                             ejbComponentDescription.setSecurityDomainServiceName(elytronDomainServiceName);
                             ejbComponentDescription.setRequiresJacc(selectedElytronDomainConfig.isEnableJacc());
                             ejbComponentDescription.getConfigurators().add((context, description, configuration) ->
                                             configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName))
+                            );
+                        } else if (definedSecurityDomain == null && defaultDomainMapping != null) {
+                            ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+                            ejbComponentDescription.setSecurityDomainServiceName(defaultElytronDomainServiceName);
+                            ejbComponentDescription.setRequiresJacc(defaultDomainMapping.isEnableJacc());
+                            ejbComponentDescription.getConfigurators().add((context, description, configuration) ->
+                                            configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(defaultElytronDomainServiceName))
                             );
                         }
                     }
