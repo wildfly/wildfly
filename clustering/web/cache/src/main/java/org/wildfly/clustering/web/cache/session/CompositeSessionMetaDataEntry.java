@@ -33,6 +33,10 @@ public class CompositeSessionMetaDataEntry<L> {
     private final SessionAccessMetaData accessMetaData;
     private final AtomicReference<L> localContext;
 
+    public CompositeSessionMetaDataEntry(SessionCreationMetaDataEntry<L> creationMetaDataEntry, SessionAccessMetaData accessMetaData) {
+        this(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
+    }
+
     public CompositeSessionMetaDataEntry(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, AtomicReference<L> localContext) {
         this.creationMetaData = creationMetaData;
         this.accessMetaData = accessMetaData;
