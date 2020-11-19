@@ -106,6 +106,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             String selectedElytronDomainName = null;
             boolean legacyDomainDefined  = false;
 
+            boolean defaultRequired = false;
             for (ComponentDescription componentDescription : componentDescriptions) {
                 if (componentDescription instanceof EJBComponentDescription) {
                     EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
@@ -114,6 +115,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                     // Ensure the EJB components within a deployment are associated with at most one Elytron security domain
 
                     String definedSecurityDomain = ejbComponentDescription.getDefinedSecurityDomain();
+                    defaultRequired = defaultRequired || definedSecurityDomain == null;
                     ApplicationSecurityDomainConfig definedDomainMapping = definedSecurityDomain != null ? knownSecurityDomain.apply(definedSecurityDomain) : null;
 
                     if (definedDomainMapping != null) {
@@ -130,7 +132,11 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             }
 
             final boolean useDefaultElytronMapping;
-            if (selectedElytronDomainName == null && defaultDomainMapping != null) {
+            /*
+             * We only need to fall into the default handling if at least one EJB Component has no defined
+             * security domain.
+             */
+            if (defaultRequired && selectedElytronDomainName == null && defaultDomainMapping != null) {
                 selectedElytronDomainName = defaultSecurityDomain;
                 selectedElytronDomainConfig = defaultDomainMapping;
                 elytronDomainServiceName = defaultElytronDomainServiceName;
@@ -182,7 +188,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                             ejbComponentDescription.setSecurityDomainServiceName(defaultElytronDomainServiceName);
                             ejbComponentDescription.setRequiresJacc(defaultDomainMapping.isEnableJacc());
                             ejbComponentDescription.getConfigurators().add((context, description, configuration) ->
-                                            configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(defaultElytronDomainServiceName))
+                                            configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName))
                             );
                         }
                     }
