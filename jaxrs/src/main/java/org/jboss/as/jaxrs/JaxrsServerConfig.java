@@ -40,6 +40,7 @@ public class JaxrsServerConfig {
     private ModelNode resteasyLanguageMappings;
     private ModelNode resteasyMediaTypeMappings;
     private ModelNode resteasyMediaTypeParamMapping;
+    private ModelNode resteasyOriginalWebApplicationExceptionBehavior;
     private ModelNode resteasyPreferJacksonOverJsonB;
     private ModelNode resteasyProviders;
     private ModelNode resteasyRFC7232Preconditions;
@@ -118,6 +119,12 @@ public class JaxrsServerConfig {
     }
     public ModelNode getResteasyMediaTypeParamMapping() {
         return resteasyMediaTypeParamMapping;
+    }
+    public ModelNode getResteasyOriginalWebApplicationExceptionBehavior() {
+        return resteasyOriginalWebApplicationExceptionBehavior;
+    }
+    public void setResteasyOriginalWebApplicationExceptionBehavior(ModelNode resteasyOriginalWebApplicationExceptionBehavior) {
+        this.resteasyOriginalWebApplicationExceptionBehavior = resteasyOriginalWebApplicationExceptionBehavior;
     }
     public void setResteasyMediaTypeParamMapping(ModelNode resteasyMediaTypeParamMapping) {
         this.resteasyMediaTypeParamMapping = resteasyMediaTypeParamMapping;

@@ -1,13 +1,11 @@
-[[Undertow]]
+[[JAXRS]]
 = JAXRS subsystem configuration
 
-****
-
 The jaxrs subsystem presents RESTful facilities as defined by the Jakarta RESTful Web Services
-project (https://projects.eclipse.org/projects/ee4j.jaxrs) and implemented
-by the RESTEasy project (https://resteasy.github.io). 
+project (https://projects.eclipse.org/proposals/eclipse-project-jax-rs ) and implemented
+by the RESTEasy project (https://resteasy.github.io ).
 
-jaxrs is a key facility and is implemented in the usual out of the box wildfly profiles, such as
+jaxrs is a key facility and is included in the usual out of the box wildfly profiles, such as
 standalone.xml, standalone-full.xml, etc.
 
 *Required extension:*
@@ -23,14 +21,14 @@ jaxrs ships as an empty xml element:
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:jaxrs:2.0"/>
+<subsystem xmlns="urn:jboss:domain:jaxrs:3.0"/>
 ----
-but it can be expanded to configure parameters described in Section 3.4 "Configuration switches"
-of the RESTEasy User Guide (https://resteasy.github.io/docs.html). For example:
+but it can be expanded to configure parameters described in section "Configuration switches"
+of the RESTEasy User Guide (https://resteasy.github.io/docs/ ). For example:
 
 [source,xml,options="nowrap"]
 
-<subsystem xmlns="urn:jboss:domain:jaxrs:2.0">
+<subsystem xmlns="urn:jboss:domain:jaxrs:3.0">
     <resteasy-add-charset>true</resteasy-add-charset>
     <resteasy-gzip-max-input>17</resteasy-gzip-max-input>
     <resteasy-jndi-resources>
@@ -65,6 +63,11 @@ Parameters "resteasy.disable.providers" and "resteasy.providers" are lists of cl
 syntax shown in the example, and "resteasy-jndi-resources" is a list of JNDI names.
 "resteasy-language-mappings" and "resteasy-media-type-mappings" are maps, using the syntax
 shown in the example.
+
+*Note.* A new RESTEasy parameter, "resteasy.original.webapplicationexception.behavior", has been added
+to revert a behavior change in how RESTEasy handles WebApplicationExceptions thrown by Clients running
+in JAX-RS resource methods. For more information, see section "ResteasyWebApplicationException" in 
+Chapter "Exception Handling" of the RESTEasy User Guide (https://resteasy.github.io/docs/ ).
 
 Things look a little different in the Command Line Interface. For example,
 
@@ -107,7 +110,7 @@ apply to all deployments.
 that parameter and its value will be passed to subsequent deployments as web.xml context parameters. Existing 
 deployments are not affected.
 
-*Note.* Since there parameters are global, the classes referred in "resteasy.providers" and "resteasy.disable.providers"
+*Note.* Since these parameters are global, the classes referred in "resteasy.providers" and "resteasy.disable.providers"
 must be available to all deployments. In practice, then, they are meant to enable
 or disable RESTEasy providers. Note that they can be used in conjunction with
 "resteasy-use-builtin-providers" to tailor a set of available providers. 

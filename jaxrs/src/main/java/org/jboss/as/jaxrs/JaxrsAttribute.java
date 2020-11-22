@@ -149,6 +149,14 @@ public abstract class JaxrsAttribute {
             .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
             .build();
 
+    public static final SimpleAttributeDefinition RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR, ModelType.BOOLEAN)
+          .setRequired(false)
+          .setAllowExpression(true)
+          .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+          .setDefaultValue(ModelNode.FALSE)
+          .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+          .build();
+
     public static final SimpleAttributeDefinition RESTEASY_PREFER_JACKSON_OVER_JSONB = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB, ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
@@ -227,6 +235,7 @@ public abstract class JaxrsAttribute {
             RESTEASY_LANGUAGE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_PARAM_MAPPING,
+            RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
             RESTEASY_PREFER_JACKSON_OVER_JSONB,
             RESTEASY_PROVIDERS,
             RESTEASY_RFC7232_PRECONDITIONS,
@@ -247,6 +256,7 @@ public abstract class JaxrsAttribute {
             RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE,
             RESTEASY_GZIP_MAX_INPUT,
             RESTEASY_MEDIA_TYPE_PARAM_MAPPING,
+            RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
             RESTEASY_PREFER_JACKSON_OVER_JSONB,
             RESTEASY_RFC7232_PRECONDITIONS,
             RESTEASY_ROLE_BASED_SECURITY,

@@ -54,6 +54,8 @@ include::subsystem-configuration/Security.adoc[]
 
 include::subsystem-configuration/Web_services.adoc[]
 
+include::subsystem-configuration/JAXRS.adoc[]
+
 include::subsystem-configuration/Resource_adapters.adoc[]
 
 include::subsystem-configuration/Batch_JSR-352.adoc[]

@@ -41,6 +41,7 @@ public class JaxrsConstants {
     public static final String RESTEASY_LANGUAGE_MAPPINGS = "resteasy-language-mappings";
     public static final String RESTEASY_MEDIA_TYPE_MAPPINGS = "resteasy-media-type-mappings";
     public static final String RESTEASY_MEDIA_TYPE_PARAM_MAPPING = "resteasy-media-type-param-mapping";
+    public static final String RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR = "resteasy-original-webapplicationexception-behavior";
     public static final String RESTEASY_PREFER_JACKSON_OVER_JSONB = "resteasy-prefer-jackson-over-jsonb";
     public static final String RESTEASY_PROVIDERS = "resteasy-providers";
     public static final String RESTEASY_RFC7232_PRECONDITIONS = "resteasy-rfc7232preconditions";
@@ -65,6 +66,7 @@ public class JaxrsConstants {
         nameToAttributeMap.put(RESTEASY_LANGUAGE_MAPPINGS, JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS);
         nameToAttributeMap.put(RESTEASY_MEDIA_TYPE_MAPPINGS, JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS);
         nameToAttributeMap.put(RESTEASY_MEDIA_TYPE_PARAM_MAPPING, JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING);
+        nameToAttributeMap.put(RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR, JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR);
         nameToAttributeMap.put(RESTEASY_PREFER_JACKSON_OVER_JSONB, JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB);
         nameToAttributeMap.put(RESTEASY_PROVIDERS, JaxrsAttribute.RESTEASY_PROVIDERS);
         nameToAttributeMap.put(RESTEASY_RFC7232_PRECONDITIONS, JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS);
