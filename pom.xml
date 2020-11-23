@@ -258,7 +258,7 @@
         <version.com.beust>1.78</version.com.beust>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.11.3</version.com.fasterxml.jackson>
-        <version.com.github.ben-manes.caffeine>2.8.5</version.com.github.ben-manes.caffeine>
+        <version.com.github.ben-manes.caffeine>2.8.6</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
@@ -370,7 +370,7 @@
         <version.org.hibernate.validator>6.0.21.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <!-- n.b. Infinispan Server version used for integration testing is defined separately in testsuite/integration/clustering/pom.xml -->
-        <version.org.infinispan>11.0.4.Final</version.org.infinispan>
+        <version.org.infinispan>11.0.5.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.3.4.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
