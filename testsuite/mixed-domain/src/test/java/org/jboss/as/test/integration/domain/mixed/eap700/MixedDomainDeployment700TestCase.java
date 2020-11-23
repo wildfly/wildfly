@@ -39,6 +39,9 @@ public class MixedDomainDeployment700TestCase extends MixedDomainDeploymentTest 
     public static void beforeClass() {
         // WFLY-12649 -- embedded broker doesn't start correctly on an EAP 7.0.0 server running on OpenJ9
         Assume.assumeFalse(TestSuiteEnvironment.isJ9Jvm());
+        // WFLY-14022 -- 7.0.0.GA under certain JDK and Linux kernel versions expose ARTEMIS-2800
+        final String value = System.getProperty("ignore.ARTEMIS-2800");
+        Assume.assumeFalse(value != null && (value.isEmpty() || Boolean.parseBoolean(value)));
 
         MixedDomain700TestSuite.initializeDomain();
     }

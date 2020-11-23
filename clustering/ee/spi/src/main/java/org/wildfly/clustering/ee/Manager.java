@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.wildfly.clustering.ee;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.jboss.as.controller.PathAddress;
-
 /**
- * Dynamic name mapper that uses a static mapping.
+ * Strategy for managing the creation and destruction of objects.
  * @author Paul Ferraro
  */
-public class SimpleCapabilityNameResolver implements Function<PathAddress, String[]> {
-    public static final Function<PathAddress, String[]> EMPTY = new SimpleCapabilityNameResolver();
-
-    private final String[] names;
-
-    public SimpleCapabilityNameResolver(String... names) {
-        this.names = names;
-    }
-
+public interface Manager<K, V> extends BiFunction<K, Function<Runnable, V>, V> {
+    /**
+     * Returns the value associated with the specified key, creating it from the specified factory, if necessary.
+     * @param key the key of the managed value
+     * @param factory a factory for creating the value from a close task
+     * @return a managed value
+     */
     @Override
-    public String[] apply(PathAddress address) {
-        return this.names;
-    }
+    V apply(K key, Function<Runnable, V> factory);
 }

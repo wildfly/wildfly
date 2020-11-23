@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
@@ -59,6 +60,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     private final SC context;
     private final Batcher<TransactionBatch> batcher;
     private final Duration stopTimeout;
+    private final Consumer<ImmutableSession> closeTask;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
@@ -72,6 +74,14 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
         this.identifierFactory = configuration.getIdentifierFactory();
         this.batcher = configuration.getBatcher();
         this.stopTimeout = configuration.getStopTimeout();
+        this.closeTask = new Consumer<ImmutableSession>() {
+            @Override
+            public void accept(ImmutableSession session) {
+                if (session.isValid()) {
+                    configuration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
+                }
+            }
+        };
     }
 
     @Override
@@ -124,7 +134,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
             return null;
         }
         this.expirationScheduler.cancel(id);
-        return new ValidSession<>(this.factory.createSession(id, entry, this.context), this.expirationScheduler);
+        return new ValidSession<>(this.factory.createSession(id, entry, this.context), this.closeTask);
     }
 
     @Override
@@ -133,7 +143,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
         if (entry == null) return null;
         Session<LC> session = this.factory.createSession(id, entry, this.context);
         session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
-        return new ValidSession<>(session, this.expirationScheduler);
+        return new ValidSession<>(session, this.closeTask);
     }
 
     @Override

@@ -72,41 +72,41 @@ public abstract class AbstractSessionActivationTestCase extends AbstractClusteri
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
             // Verify all operations on primary owner
-            this.execute(client, new HttpPut(uri1));
+            this.execute(client, new HttpPut(uri1), false);
 
-            this.execute(client, new HttpGet(uri1));
+            this.execute(client, new HttpGet(uri1), false);
 
-            this.execute(client, new HttpDelete(uri1));
+            this.execute(client, new HttpDelete(uri1), false);
 
             // Verify all operations on both backup owner and non-owner
-            this.execute(client, new HttpPut(uri2));
+            this.execute(client, new HttpPut(uri2), true);
 
-            this.execute(client, new HttpGet(uri2));
+            this.execute(client, new HttpGet(uri2), false);
 
-            this.execute(client, new HttpDelete(uri2));
+            this.execute(client, new HttpDelete(uri2), false);
 
-            this.execute(client, new HttpPut(uri3));
+            this.execute(client, new HttpPut(uri3), true);
 
-            this.execute(client, new HttpGet(uri3));
+            this.execute(client, new HttpGet(uri3), false);
 
-            this.execute(client, new HttpDelete(uri3));
+            this.execute(client, new HttpDelete(uri3), false);
         }
     }
 
-    private void execute(HttpClient client, HttpUriRequest request) throws IOException {
-        HttpResponse response = client.execute(request);
-        try {
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-        } finally {
-            HttpClientUtils.closeQuietly(response);
-        }
-
-        if (!this.transactional) {
+    private void execute(HttpClient client, HttpUriRequest request, boolean failover) throws IOException {
+        if (failover && !this.transactional) {
             try {
                 Thread.sleep(GRACE_TIME_TO_REPLICATE);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
+        }
+
+        HttpResponse response = client.execute(request);
+        try {
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+        } finally {
+            HttpClientUtils.closeQuietly(response);
         }
     }
 }

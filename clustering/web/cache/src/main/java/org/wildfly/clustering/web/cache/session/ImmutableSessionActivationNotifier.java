@@ -23,6 +23,7 @@
 package org.wildfly.clustering.web.cache.session;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -42,6 +43,7 @@ public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActiv
     private final ImmutableSession session;
     private final C context;
     private final SessionAttributesFilter filter;
+    private final AtomicBoolean active = new AtomicBoolean(false);
 
     public ImmutableSessionActivationNotifier(HttpSessionActivationListenerProvider<S, C, L> provider, ImmutableSession session, C context) {
         this(provider, session, context, new ImmutableSessionAttributesFilter(session));
@@ -56,12 +58,16 @@ public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActiv
 
     @Override
     public void prePassivate() {
-        this.notify(this.provider::prePassivateNotifier);
+        if (this.active.compareAndSet(true, false)) {
+            this.notify(this.provider::prePassivateNotifier);
+        }
     }
 
     @Override
     public void postActivate() {
-        this.notify(this.provider::postActivateNotifier);
+        if (this.active.compareAndSet(false, true)) {
+            this.notify(this.provider::postActivateNotifier);
+        }
     }
 
     private void notify(Function<L, Consumer<S>> notifierFactory) {

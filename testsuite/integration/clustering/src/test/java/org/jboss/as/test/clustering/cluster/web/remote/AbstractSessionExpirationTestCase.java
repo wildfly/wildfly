@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.jboss.as.test.clustering.cluster.web.remote;
 
-import java.util.function.Function;
-
-import org.jboss.as.controller.PathAddress;
+import org.infinispan.transaction.TransactionMode;
+import org.jboss.as.test.clustering.cluster.web.expiration.SessionExpirationTestCase;
+import org.junit.ClassRule;
+import org.junit.rules.TestRule;
 
 /**
- * Dynamic name mapper that uses a static mapping.
  * @author Paul Ferraro
  */
-public class SimpleCapabilityNameResolver implements Function<PathAddress, String[]> {
-    public static final Function<PathAddress, String[]> EMPTY = new SimpleCapabilityNameResolver();
+public abstract class AbstractSessionExpirationTestCase extends SessionExpirationTestCase {
 
-    private final String[] names;
+    @ClassRule
+    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
 
-    public SimpleCapabilityNameResolver(String... names) {
-        this.names = names;
-    }
-
-    @Override
-    public String[] apply(PathAddress address) {
-        return this.names;
+    public AbstractSessionExpirationTestCase() {
+        super(TransactionMode.NON_TRANSACTIONAL);
     }
 }

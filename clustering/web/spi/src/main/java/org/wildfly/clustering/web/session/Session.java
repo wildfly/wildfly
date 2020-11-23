@@ -33,12 +33,6 @@ public interface Session<L> extends ImmutableSession, AutoCloseable {
     SessionMetaData getMetaData();
 
     /**
-     * Indicates whether or not this session is valid.
-     * @return true, if this session is valid, false otherwise
-     */
-    boolean isValid();
-
-    /**
      * Invalidates this session.
      * @throws IllegalStateException if this session was already invalidated.
      */
