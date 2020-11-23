@@ -51,7 +51,7 @@
         <full.ee-9-api.license.directory>${basedir}/src/license</full.ee-9-api.license.directory>
 
 
-        <version.com.sun.faces>3.0.0.SP01</version.com.sun.faces>
+        <version.com.sun.faces>3.0.0.SP02</version.com.sun.faces>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0-RC1</version.jakarta.authorization.jakarta-authorization-api>
