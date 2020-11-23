@@ -28,7 +28,7 @@ end-if
     keystore-password="wildfly")
 
 # create https listener
-/subsystem=undertow/server=default-server/https-listener=httpsListener:add(\
+/subsystem=undertow/server=default-server/https-listener=https:add(\
     socket-binding="https",\
     security-realm="WCC_SSL_Realm")
 

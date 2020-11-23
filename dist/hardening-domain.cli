@@ -21,6 +21,6 @@ embed-host-controller
 # WCC_SSL_Realm is created in host
 
 # create https listener
-/profile=${profile}/subsystem=undertow/server=default-server/https-listener=httpsListener:add(socket-binding="https", security-realm="WCC_SSL_Realm")
+/profile=${profile}/subsystem=undertow/server=default-server/https-listener=https:add(socket-binding="https", security-realm="WCC_SSL_Realm")
 
 stop-embedded-host-controller
