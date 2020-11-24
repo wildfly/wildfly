@@ -25,6 +25,7 @@ package org.jboss.as.connector.deployers.ra;
 import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME;
 
 import org.jboss.as.connector.deployers.ds.processors.DriverProcessor;
+import org.jboss.as.connector.deployers.ds.processors.DriverManagerAdapterProcessor;
 import org.jboss.as.connector.deployers.ds.processors.StructureDriverProcessor;
 import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
@@ -55,6 +56,9 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class RaDeploymentActivator {
+
+    public static final int CONFIGURE_JDBC_DRIVER_MANAGER_ADAPTER = 0x0180;
+
     private final boolean appclient;
     private final MdrService mdrService = new MdrService();
 
@@ -104,6 +108,7 @@ public class RaDeploymentActivator {
         updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_ADMINISTERED_OBJECT,
                 new AdministeredObjectDefinitionAnnotationProcessor());
         updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_RAR_CONFIG, new RarDependencyProcessor(appclient));
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, CONFIGURE_JDBC_DRIVER_MANAGER_ADAPTER, new DriverManagerAdapterProcessor());
         if (!appclient)
             updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RAR_SERVICES_DEPS, new RaXmlDependencyProcessor());
         updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_CONNECTION_FACTORY,
