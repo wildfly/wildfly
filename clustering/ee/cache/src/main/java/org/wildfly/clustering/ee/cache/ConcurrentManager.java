@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Manager;
 
@@ -39,43 +40,47 @@ import org.wildfly.clustering.ee.Manager;
  */
 public class ConcurrentManager<K, V> implements Manager<K, V> {
 
-    private final Map<K, Map.Entry<Integer, V>> objects = new ConcurrentHashMap<>();
-    private final BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>> addFunction = new BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>>() {
+    private final Map<K, Map.Entry<Integer, VolatileReference<V>>> objects = new ConcurrentHashMap<>();
+    private final BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>> addFunction = new BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>>() {
         @Override
-        public Map.Entry<Integer, V> apply(K id, Map.Entry<Integer, V> entry) {
-            return entry != null ? new AbstractMap.SimpleImmutableEntry<>(Integer.valueOf(entry.getKey().intValue() + 1), entry.getValue()) : new VolatileEntry<>(new Integer(0));
+        public Map.Entry<Integer, VolatileReference<V>> apply(K id, Map.Entry<Integer, VolatileReference<V>> entry) {
+            Integer count = (entry != null) ? Integer.valueOf(entry.getKey().intValue() + 1) : new Integer(0);
+            VolatileReference<V> reference = (entry != null) ? entry.getValue() : new VolatileReference<>();
+            return new AbstractMap.SimpleImmutableEntry<>(count, reference);
         }
     };
     private final Consumer<V> createTask;
-    private final BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>> removeFunction;
+    private final BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>> removeFunction;
 
     public ConcurrentManager(Consumer<V> createTask, Consumer<V> closeTask) {
         this.createTask = createTask;
-        this.removeFunction = new BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>>() {
+        this.removeFunction = new BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>>() {
             @Override
-            public Map.Entry<Integer, V> apply(K key, Map.Entry<Integer, V> entry) {
+            public Map.Entry<Integer, VolatileReference<V>> apply(K key, Map.Entry<Integer, VolatileReference<V>> entry) {
                 int count = entry.getKey().intValue();
-                V value = entry.getValue();
+                VolatileReference<V> reference = entry.getValue();
                 if (count == 0) {
+                    V value = reference.get();
                     if (value != null) {
                         closeTask.accept(value);
                     }
                     // Returning null will remove the map entry
                     return null;
                 }
-                return new AbstractMap.SimpleImmutableEntry<>(Integer.valueOf(count - 1), value);
+                return new AbstractMap.SimpleImmutableEntry<>(Integer.valueOf(count - 1), reference);
             }
         };
     }
 
     @Override
     public V apply(K key, Function<Runnable, V> factory) {
-        Map.Entry<Integer, V> entry = this.objects.compute(key, this.addFunction);
-        if (entry.getValue() == null) {
-            synchronized (entry) {
-                if (entry.getValue() == null) {
-                    Map<K, Map.Entry<Integer, V>> objects = this.objects;
-                    BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>> removeFunction = this.removeFunction;
+        Map.Entry<Integer, VolatileReference<V>> entry = this.objects.compute(key, this.addFunction);
+        VolatileReference<V> reference = entry.getValue();
+        if (reference.get() == null) {
+            synchronized (reference) {
+                if (reference.get() == null) {
+                    Map<K, Map.Entry<Integer, VolatileReference<V>>> objects = this.objects;
+                    BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>> removeFunction = this.removeFunction;
                     Runnable closeTask = new Runnable() {
                         @Override
                         public void run() {
@@ -85,50 +90,27 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
                     V value = factory.apply(closeTask);
                     if (value != null) {
                         this.createTask.accept(value);
-                        entry.setValue(value);
+                        reference.accept(value);
                     } else {
                         closeTask.run();
                     }
                 }
             }
         }
-        return entry.getValue();
+        return reference.get();
     }
 
-    /**
-     * Like {@link AbstractMap.SimpleEntry}, but uses a volatile value reference, which lets us use double checked locking to lazily initialize value.
-     * @param <K> the entry key type
-     * @param <V> the entry value type
-     */
-    private static class VolatileEntry<K, V> implements Map.Entry<K, V> {
+    public static class VolatileReference<V> implements Supplier<V>, Consumer<V> {
+        private volatile V value = null;
 
-        private final K key;
-        private volatile V value;
-
-        VolatileEntry(K key) {
-            this(key, null);
-        }
-
-        VolatileEntry(K key, V value) {
-            this.key = key;
+        @Override
+        public void accept(V value) {
             this.value = value;
         }
 
         @Override
-        public K getKey() {
-            return this.key;
-        }
-
-        @Override
-        public V getValue() {
+        public V get() {
             return this.value;
-        }
-
-        @Override
-        public V setValue(V value) {
-            V previous = this.value;
-            this.value = value;
-            return previous;
         }
     }
 }
