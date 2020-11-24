@@ -19,19 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.metrics.internal;
+package org.wildfly.extension.metrics.api;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.wildfly.extension.metrics.internal.PrometheusExporter.getPrometheusMetricName;
+import static org.wildfly.extension.metrics.api.WildFlyMetricMetadata.Type;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,43 +46,34 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.metrics.internal.WildFlyMetricRegistry.MetricID;
 
 public class MetricCollector {
 
-
-    private final boolean exposeAnySubsystem;
-    private String globalPrefix;
-    private final List<String> exposedSubsystems;
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
-    private final WildFlyMetricRegistry wildFlyMetricRegistry;
 
-    public MetricCollector(LocalModelControllerClient modelControllerClient, ProcessStateNotifier processStateNotifier, WildFlyMetricRegistry wildFlyMetricRegistry, List<String> exposedSubsystems, String globalPrefix) {
+    public MetricCollector(LocalModelControllerClient modelControllerClient, ProcessStateNotifier processStateNotifier) {
         this.modelControllerClient = modelControllerClient;
         this.processStateNotifier = processStateNotifier;
-        this.wildFlyMetricRegistry = wildFlyMetricRegistry;
-        this.exposedSubsystems = exposedSubsystems;
-        this.exposeAnySubsystem = exposedSubsystems.remove("*");
-        this.globalPrefix = globalPrefix;
     }
 
     // collect metrics from the resources
-    public MetricRegistration collectResourceMetrics(final Resource resource,
+    public void collectResourceMetrics(final Resource resource,
                                                      ImmutableManagementResourceRegistration managementResourceRegistration,
-                                                     Function<PathAddress, PathAddress> resourceAddressResolver) {
-        MetricRegistration registration = new MetricRegistration(wildFlyMetricRegistry);
-        collectResourceMetrics0(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, registration);
+                                                     Function<PathAddress, PathAddress> resourceAddressResolver, List<String> exposedSubsystems, boolean exposeAnySubsystem, String prefix,
+                                                     MetricRegistration metricRegistration) {
+        collectResourceMetrics0(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, metricRegistration,
+                exposeAnySubsystem, exposedSubsystems, prefix);
         // Defer the actual registration until the server is running and they can be collected w/o errors
         PropertyChangeListener listener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ControlledProcessState.State.RUNNING == evt.getNewValue()) {
-                    registration.register();
+                    metricRegistration.register();
                 } else if (ControlledProcessState.State.STOPPING == evt.getNewValue()) {
                     // Unregister so if this is a reload they won't still be around in a static cache in MetricsRegistry
                     // and cause problems when the server is starting
-                    registration.unregister();
+                    metricRegistration.unregister();
                     processStateNotifier.removePropertyChangeListener(this);
                 }
 
@@ -94,17 +82,16 @@ public class MetricCollector {
         this.processStateNotifier.addPropertyChangeListener(listener);
         // If server is already running, we won't get a change event so register now
         if (ControlledProcessState.State.RUNNING == this.processStateNotifier.getCurrentState()) {
-            registration.register();
+            metricRegistration.register();
         }
-        return registration;
     }
 
     private void collectResourceMetrics0(final Resource current,
                                          ImmutableManagementResourceRegistration managementResourceRegistration,
                                          PathAddress address,
                                          Function<PathAddress, PathAddress> resourceAddressResolver,
-                                         MetricRegistration registration) {
-        if (!isExposingMetrics(address)) {
+                                         MetricRegistration metricRegistration, boolean exposeAnySubsystem, List<String> exposedSubsystems, String prefix) {
+        if (!isExposingMetrics(address, exposeAnySubsystem, exposedSubsystems)) {
             return;
         }
 
@@ -129,14 +116,13 @@ public class MetricCollector {
             PathAddress resourceAddress = resourceAddressResolver.apply(address);
             MeasurementUnit unit = attributeAccess.getAttributeDefinition().getMeasurementUnit();
             boolean isCounter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
-            MetricMetadata metricMetadata = new MetricMetadata(attributeName, resourceAddress, globalPrefix);
             String attributeDescription = resourceDescription.get(ATTRIBUTES, attributeName, DESCRIPTION).asStringOrNull();
+            WildFlyMetricMetadata metadata = new WildFlyMetricMetadata(attributeName, resourceAddress, prefix, attributeDescription, unit,
+            isCounter ? Type.COUNTER : Type.GAUGE);
+            final WildFlyMetric metric = new WildFlyMetric(modelControllerClient, resourceAddress, attributeName);
 
-            MetricTag[] tags = createTags(metricMetadata);
-            MetricID metricID = new MetricID(metricMetadata.metricName, tags);
-
-            registration.addRegistrationTask(() -> registerMetric(metricMetadata, resourceAddress, attributeName, unit, attributeDescription, isCounter, tags));
-            registration.addUnregistrationTask(metricID);
+            metricRegistration.addRegistrationTask(() -> metricRegistration.registerMetric(metadata, metric));
+            metricRegistration.addUnregistrationTask(metadata.getMetricID());
         }
 
         for (String type : current.getChildTypes()) {
@@ -144,31 +130,13 @@ public class MetricCollector {
                 for (Resource.ResourceEntry entry : current.getChildren(type)) {
                     final PathElement pathElement = entry.getPathElement();
                     final PathAddress childAddress = address.append(pathElement);
-                    collectResourceMetrics0(entry, managementResourceRegistration, childAddress, resourceAddressResolver, registration);
+                    collectResourceMetrics0(entry, managementResourceRegistration, childAddress, resourceAddressResolver, metricRegistration, exposeAnySubsystem, exposedSubsystems, prefix);
                 }
             }
         }
     }
 
-    private void registerMetric(MetricMetadata metricMetadata, PathAddress address, String attributeName, MeasurementUnit unit, String description, boolean isCounter, MetricTag[] tags) {
-        final WildFlyMetric metric = new WildFlyMetric(modelControllerClient, address, attributeName);
-        final WildFlyMetricMetadata metadata = new WildFlyMetricMetadata(metricMetadata.metricName, description, unit, isCounter? WildFlyMetricMetadata.Type.COUNTER : WildFlyMetricMetadata.Type.GAUGE);
-        synchronized (wildFlyMetricRegistry) {
-            wildFlyMetricRegistry.register(metadata, metric, tags);
-        }
-    }
-
-    private MetricTag[] createTags(MetricMetadata metadata) {
-        MetricTag[] tags = new MetricTag[metadata.labelNames.size()];
-        for (int i = 0; i < metadata.labelNames.size(); i++) {
-            String name = metadata.labelNames.get(i);
-            String value = metadata.labelValues.get(i);
-            tags[i] = new MetricTag(name, value);
-        }
-        return tags;
-    }
-
-    private boolean isExposingMetrics(PathAddress address) {
+    private boolean isExposingMetrics(PathAddress address, boolean exposeAnySubsystem, List<String> exposedSubsystems) {
         // root resource
         if (address.size() == 0) {
             return true;
@@ -204,91 +172,5 @@ public class MetricCollector {
             }
         }
         return false;
-    }
-
-    public static final class MetricRegistration {
-
-        private final List<Runnable> registrationTasks = new ArrayList<>();
-        private final List<MetricID> unregistrationTasks = new ArrayList<>();
-        private final WildFlyMetricRegistry registry;
-
-        MetricRegistration(WildFlyMetricRegistry registry) {
-            this.registry = registry;
-        }
-
-        public synchronized void register() { // synchronized to avoid registering same thing twice. Shouldn't really be possible; just being cautious
-            for (Runnable task : registrationTasks) {
-                task.run();
-            }
-            // This object will last until undeploy or server stop,
-            // so clean up and save memory
-            registrationTasks.clear();
-        }
-
-        public void unregister() {
-            for (MetricID id : unregistrationTasks) {
-                registry.remove(id);
-            }
-        }
-
-        private synchronized void addRegistrationTask(Runnable task) {
-            registrationTasks.add(task);
-        }
-
-        private void addUnregistrationTask(MetricID metricID) {
-            unregistrationTasks.add(metricID);
-        }
-    }
-
-    private static class MetricMetadata {
-
-
-        private final String metricName;
-        private final List<String> labelNames;
-        private final List<String> labelValues;
-
-        MetricMetadata(String attributeName, PathAddress address, String globalPrefix) {
-            String metricPrefix = "";
-            labelNames = new ArrayList<>();
-            labelValues = new ArrayList<>();
-            for (PathElement element: address) {
-                String key = element.getKey();
-                String value = element.getValue();
-                // prepend the subsystem or statistics name to the attribute
-                if (key.equals(SUBSYSTEM) || key.equals("statistics")) {
-                    metricPrefix += value + "-";
-                    continue;
-                }
-                labelNames.add(getPrometheusMetricName(key));
-                labelValues.add(value);
-            }
-            // if the resource address defines a deployment (without subdeployment),
-            if (labelNames.contains(DEPLOYMENT)  && !labelNames.contains(SUBDEPLOYMENT)) {
-                labelNames.add(SUBDEPLOYMENT);
-                labelValues.add(labelValues.get(labelNames.indexOf(DEPLOYMENT)));
-            }
-            if (globalPrefix != null && !globalPrefix.isEmpty()) {
-                metricPrefix = globalPrefix + "-" + metricPrefix;
-            }
-            metricName = getPrometheusMetricName(metricPrefix + attributeName);
-        }
-    }
-
-    public static class MetricTag {
-        private String key;
-        private String value;
-
-        public MetricTag(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getValue() {
-            return value;
-        }
     }
 }

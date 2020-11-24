@@ -29,6 +29,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.wildfly.extension.metrics.api.Metric;
+import org.wildfly.extension.metrics.api.MetricID;
+import org.wildfly.extension.metrics.api.MetricMetadata;
 
 public class PrometheusExporter {
 
@@ -55,15 +58,15 @@ public class PrometheusExporter {
 
         StringBuilder out = new StringBuilder();
 
-        for (Map.Entry<WildFlyMetricRegistry.MetricID, Metric> entry : registry.getMetrics().entrySet()) {
-            WildFlyMetricRegistry.MetricID metricID = entry.getKey();
+        for (Map.Entry<MetricID, Metric> entry : registry.getMetrics().entrySet()) {
+            MetricID metricID = entry.getKey();
             String metricName = metricID.getName();
-            WildFlyMetricMetadata metadata = registry.getMetricMetadata().get(metricName);
+            MetricMetadata metadata = registry.getMetricMetadata().get(metricName);
             String prometheusMetricName = toPrometheusMetricName(metricID, metadata);
             OptionalDouble metricValue = entry.getValue().getValue();
             // if the metric does not return a value, we skip printing the HELP and TYPE
             if (!metricValue.isPresent()) {
-                break;
+                continue;
             }
             if (!alreadyExportedMetrics.contains(metricName)) {
                 out.append("# HELP " + prometheusMetricName + " " + metadata.getDescription());
@@ -72,7 +75,7 @@ public class PrometheusExporter {
                 out.append(LF);
                 alreadyExportedMetrics.add(metricName);
             }
-            double scaledValue = scaleToBaseUnit(metricValue.getAsDouble(), metadata.getUnit());
+            double scaledValue = scaleToBaseUnit(metricValue.getAsDouble(), metadata.getMeasurementUnit());
             out.append(prometheusMetricName + metricID.getTagsAsAString() + " " + scaledValue);
             out.append(LF);
         }
@@ -84,10 +87,10 @@ public class PrometheusExporter {
         return value * MeasurementUnit.calculateOffset(unit, unit.getBaseUnits());
     }
 
-    private String toPrometheusMetricName(WildFlyMetricRegistry.MetricID metricID, WildFlyMetricMetadata metadata) {
+    private String toPrometheusMetricName(MetricID metricID, MetricMetadata metadata) {
         String prometheusName = metricID.getName();
         // change the Prometheus name depending on type and measurement unit
-        if (metadata.getType() == WildFlyMetricMetadata.Type.COUNTER) {
+        if (metadata.getType() == MetricMetadata.Type.COUNTER) {
             prometheusName += "_total";
         } else {
             // if it's a gauge, let's add the base unit to the prometheus name

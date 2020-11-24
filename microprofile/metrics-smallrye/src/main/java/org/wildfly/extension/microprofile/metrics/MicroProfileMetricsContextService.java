@@ -22,17 +22,20 @@
 
 package org.wildfly.extension.microprofile.metrics;
 
-import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.HTTP_CONTEXT_SERVICE;
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.METRICS_HTTP_CONTEXT_CAPABILITY;
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY;
 
 import java.util.Map;
 import java.util.function.Supplier;
 
+import io.smallrye.metrics.MetricRegistries;
 import io.smallrye.metrics.MetricsRequestHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -47,27 +50,11 @@ public class MicroProfileMetricsContextService implements Service {
 
     private final Supplier<MetricsContextService> metricsContextService;
     private final MetricsRequestHandler metricsRequestHandler = new MetricsRequestHandler();
-    private final HttpHandler microProfileMetricsHandler = new HttpHandler() {
-        @Override
-        public void handleRequest(HttpServerExchange exchange) throws Exception {
-            String requestPath = exchange.getRequestPath();
-            String method = exchange.getRequestMethod().toString();
-            HeaderValues acceptHeaders = exchange.getRequestHeaders().get(Headers.ACCEPT);
-
-            metricsRequestHandler.handleRequest(requestPath, method, acceptHeaders == null ? null : acceptHeaders.stream(), (status, message, headers) -> {
-                exchange.setStatusCode(status);
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    exchange.getResponseHeaders().put(new HttpString(entry.getKey()), entry.getValue());
-                }
-                exchange.getResponseSender().send(message);
-            });
-        }
-    };
 
     static void install(OperationContext context) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(HTTP_CONTEXT_SERVICE);
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
 
-        Supplier<MetricsContextService> metricsContextService = serviceBuilder.requires(context.getCapabilityServiceName("org.wildfly.extension.metrics.http-context", MetricsContextService.class));
+        Supplier<MetricsContextService> metricsContextService = serviceBuilder.requires(context.getCapabilityServiceName(METRICS_HTTP_CONTEXT_CAPABILITY, MetricsContextService.class));
 
         Service healthContextService = new MicroProfileMetricsContextService(metricsContextService);
 
@@ -81,11 +68,34 @@ public class MicroProfileMetricsContextService implements Service {
 
     @Override
     public void start(StartContext context) {
-        metricsContextService.get().setOverrideableMetricHandler(microProfileMetricsHandler);
+        metricsContextService.get().setOverrideableMetricHandler(new HttpHandler() {
+            @Override
+            public void handleRequest(HttpServerExchange exchange) throws Exception {
+                String requestPath = exchange.getRequestPath();
+                String method = exchange.getRequestMethod().toString();
+                HeaderValues acceptHeaders = exchange.getRequestHeaders().get(Headers.ACCEPT);
+
+                metricsRequestHandler.handleRequest(requestPath, method, acceptHeaders == null ? null : acceptHeaders.stream(), (status, message, headers) -> {
+                    exchange.setStatusCode(status);
+                    for (Map.Entry<String, String> entry : headers.entrySet()) {
+                        exchange.getResponseHeaders().put(new HttpString(entry.getKey()), entry.getValue());
+                    }
+                    exchange.getResponseSender().send(message);
+                });
+            }
+        });
     }
 
     @Override
     public void stop(StopContext context) {
         metricsContextService.get().setOverrideableMetricHandler(null);
+
+        for (MetricRegistry registry : new MetricRegistry[]{
+                MetricRegistries.get(MetricRegistry.Type.BASE),
+                MetricRegistries.get(MetricRegistry.Type.VENDOR)}) {
+            for (String name : registry.getNames()) {
+                registry.remove(name);
+            }
+        }
     }
 }

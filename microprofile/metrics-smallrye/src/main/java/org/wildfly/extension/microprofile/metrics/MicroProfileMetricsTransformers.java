@@ -36,7 +36,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
-public class MetricsTransformers implements ExtensionTransformerRegistration {
+public class MicroProfileMetricsTransformers implements ExtensionTransformerRegistration {
     @Override
     public String getSubsystemName() {
         return SUBSYSTEM_NAME;

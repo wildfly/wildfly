@@ -23,11 +23,11 @@ package org.wildfly.extension.metrics;
 
 import static org.wildfly.extension.metrics.MetricsSubsystemDefinition.CLIENT_FACTORY_CAPABILITY;
 import static org.wildfly.extension.metrics.MetricsSubsystemDefinition.MANAGEMENT_EXECUTOR;
+import static org.wildfly.extension.metrics.MetricsSubsystemDefinition.METRICS_COLLECTOR_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.metrics.MetricsSubsystemDefinition.PROCESS_STATE_NOTIFIER;
-import static org.wildfly.extension.metrics.MetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE;
 
-import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.LocalModelControllerClient;
@@ -38,8 +38,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.extension.metrics.internal.MetricCollector;
-import org.wildfly.extension.metrics.internal.WildFlyMetricRegistry;
+import org.wildfly.extension.metrics.api.MetricCollector;
 
 /**
  * Service to create a metric collector
@@ -49,46 +48,43 @@ public class MetricsCollectorService implements Service<MetricCollector> {
     private final Supplier<ModelControllerClientFactory> modelControllerClientFactory;
     private final Supplier<Executor> managementExecutor;
     private final Supplier<ProcessStateNotifier> processStateNotifier;
-    private Supplier<WildFlyMetricRegistry> wildFlyMetricRegistry;
-    private final List<String> exposedSubsystems;
-    private final String globalPrefix;
+    private Consumer<MetricCollector> consumer;
 
     private MetricCollector metricCollector;
     private LocalModelControllerClient modelControllerClient;
 
-    static void install(OperationContext context, List<String> exposedSubsystems, String prefix) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(WILDFLY_COLLECTOR_SERVICE);
+    static void install(OperationContext context) {
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName());
+
+        Consumer<MetricCollector> consumer = serviceBuilder.provides(METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName());
         Supplier<ModelControllerClientFactory> modelControllerClientFactory = serviceBuilder.requires(context.getCapabilityServiceName(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class));
         Supplier<Executor> managementExecutor = serviceBuilder.requires(context.getCapabilityServiceName(MANAGEMENT_EXECUTOR, Executor.class));
-        Supplier<WildFlyMetricRegistry> wildflyMetricRegistry = serviceBuilder.requires((WildFlyMetricRegistryService.WILDFLY_METRIC_REGISTRY_SERVICE));
         Supplier<ProcessStateNotifier> processStateNotifier = serviceBuilder.requires(context.getCapabilityServiceName(PROCESS_STATE_NOTIFIER, ProcessStateNotifier.class));
-        MetricsCollectorService service = new MetricsCollectorService(modelControllerClientFactory, managementExecutor, processStateNotifier, wildflyMetricRegistry, exposedSubsystems, prefix);
-        serviceBuilder.setInstance(service)
-                .install();
+
+        MetricsCollectorService service = new MetricsCollectorService(modelControllerClientFactory, managementExecutor, processStateNotifier, consumer);
+        serviceBuilder.setInstance(service).install();
     }
 
     MetricsCollectorService(Supplier<ModelControllerClientFactory> modelControllerClientFactory, Supplier<Executor> managementExecutor,
-                            Supplier<ProcessStateNotifier> processStateNotifier,
-                            Supplier<WildFlyMetricRegistry> wildFlyMetricRegistry,
-                            List<String> exposedSubsystems, String globalPrefix) {
+                            Supplier<ProcessStateNotifier> processStateNotifier, Consumer<MetricCollector> consumer) {
         this.modelControllerClientFactory = modelControllerClientFactory;
         this.managementExecutor = managementExecutor;
         this.processStateNotifier = processStateNotifier;
-        this.wildFlyMetricRegistry = wildFlyMetricRegistry;
-        this.exposedSubsystems = exposedSubsystems;
-        this.globalPrefix = globalPrefix;
+        this.consumer = consumer;
     }
 
     @Override
     public void start(StartContext context) {
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
-
-        this.metricCollector = new MetricCollector(modelControllerClient, processStateNotifier.get(), wildFlyMetricRegistry.get(), exposedSubsystems, globalPrefix);
+        metricCollector = new MetricCollector(modelControllerClient, processStateNotifier.get());
+        consumer.accept(metricCollector);
     }
 
     @Override
     public void stop(StopContext context) {
         modelControllerClient.close();
+        consumer.accept(null);
+        metricCollector = null;
     }
 
     @Override

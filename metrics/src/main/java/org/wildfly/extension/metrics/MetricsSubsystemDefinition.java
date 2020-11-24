@@ -34,29 +34,27 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.metrics.api.MetricCollector;
+import org.wildfly.extension.metrics.internal.WildFlyMetricRegistry;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
 public class MetricsSubsystemDefinition extends PersistentResourceDefinition {
 
-    static final String METRICS_COLLECTOR_CAPABILITY = "org.wildfly.extension.metrics.wildfly-collector";
-
     static final String CLIENT_FACTORY_CAPABILITY ="org.wildfly.management.model-controller-client-factory";
     static final String MANAGEMENT_EXECUTOR ="org.wildfly.management.executor";
     static final String PROCESS_STATE_NOTIFIER = "org.wildfly.management.process-state-notifier";
-
     static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
-    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.metrics.http-context", MetricsContextService.class)
+
+    static final RuntimeCapability<Void> METRICS_HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.metrics.http-context", MetricsContextService.class)
             .addRequirements(HTTP_EXTENSIBILITY_CAPABILITY)
             .build();
-    static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
-
-    static final RuntimeCapability<Void> METRICS_COLLECTOR_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(METRICS_COLLECTOR_CAPABILITY, MetricsCollectorService.class)
+    public static final RuntimeCapability<Void> METRICS_COLLECTOR_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.metrics.wildfly-collector", MetricCollector.class)
             .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR, PROCESS_STATE_NOTIFIER)
             .build();
-    public static final ServiceName WILDFLY_COLLECTOR_SERVICE = METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();
+    public static final RuntimeCapability<Void> METRICS_REGISTRY_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.metrics.registry", WildFlyMetricRegistry.class)
+            .build();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
             .setDefaultValue(ModelNode.TRUE)
@@ -83,7 +81,7 @@ public class MetricsSubsystemDefinition extends PersistentResourceDefinition {
                 MetricsExtension.getResourceDescriptionResolver(MetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MetricsSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MetricsSubsystemAdd.INSTANCE))
-                .setCapabilities(HTTP_CONTEXT_CAPABILITY));
+                .setCapabilities(METRICS_HTTP_CONTEXT_CAPABILITY, METRICS_COLLECTOR_RUNTIME_CAPABILITY, METRICS_REGISTRY_RUNTIME_CAPABILITY));
     }
 
     @Override

@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.microprofile.metrics;
 
-import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.MANAGEMENT_EXECUTOR;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.METRICS_HTTP_CONTEXT_CAPABILITY;
 
 import java.io.IOException;
@@ -66,8 +65,7 @@ public class Subsystem_2_1_ParsingTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
-                METRICS_HTTP_CONTEXT_CAPABILITY,
-                MANAGEMENT_EXECUTOR);
+                METRICS_HTTP_CONTEXT_CAPABILITY);
     }
 
 }

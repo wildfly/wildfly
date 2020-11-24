@@ -194,11 +194,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.metrics</groupId>
-            <artifactId>microprofile-metrics-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
             <artifactId>microprofile-opentracing-api</artifactId>
             <scope>test</scope>
@@ -641,7 +636,6 @@
                                 <!-- microprofile exclusions -->
                                 <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase</exclude>
                                 <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase</exclude>
                                 <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
                                 <exclude>org/wildfly/test/integration/microprofile/opentracing/SimpleRestClientTestCase</exclude>
                                 <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
@@ -2261,10 +2255,6 @@
                                         <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
                                         <!-- Requires EJB -->
                                         <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
-                                        <!-- Requires security -->
-                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/metrics/vendor/MicroProfileVendorMetricsBootTestCase</exclude>
                                         <!-- Requires extra modules -->
                                         <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
                                         <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
@@ -3344,8 +3334,6 @@
                                         <exclude>org/wildfly/test/integration/microprofile/config/smallrye/management/config_source_provider/ConfigSourceProviderFromClassTestCase</exclude>                                        
                                         <!-- Requires security -->
                                         <exclude>org/wildfly/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredEndpointTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/metrics/vendor/MicroProfileVendorMetricsBootTestCase</exclude>                                        
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -3528,7 +3516,6 @@
                                         <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithSecurityDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/security/workmanager/WildFlyActivationRaWithWMSecurityDomainWorkManagerTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/microprofile/health/MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/microprofile/metrics/secured/MicroProfileMetricsSecuredHTTPEndpointEmptyMgmtUsersTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
                                         <!-- Requires picketlink -->
                                         <exclude>org/jboss/as/test/integration/ws/authentication/policy/AuthenticationPolicyContextTestCase.java</exclude>

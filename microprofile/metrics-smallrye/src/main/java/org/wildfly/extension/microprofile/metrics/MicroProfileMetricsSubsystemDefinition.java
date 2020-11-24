@@ -36,30 +36,18 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
 public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDefinition {
 
-    static final String METRICS_COLLECTOR_CAPABILITY = "org.wildfly.extension.microprofile.metrics.wildfly-collector";
-
-    static final String CLIENT_FACTORY_CAPABILITY ="org.wildfly.management.model-controller-client-factory";
-    static final String MANAGEMENT_EXECUTOR ="org.wildfly.management.executor";
-    static final String PROCESS_STATE_NOTIFIER = "org.wildfly.management.process-state-notifier";
-    static final String MP_CONFIG = "org.wildfly.microprofile.config";
-    static final RuntimeCapability<Void> METRICS_COLLECTOR_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(METRICS_COLLECTOR_CAPABILITY, MetricsCollectorService.class)
-            .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR, PROCESS_STATE_NOTIFIER, MP_CONFIG)
-            .build();
-
-    public static final ServiceName WILDFLY_COLLECTOR_SERVICE = METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();
-
     static final String METRICS_HTTP_CONTEXT_CAPABILITY = "org.wildfly.extension.metrics.http-context";
-    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.metrics.http-context", MicroProfileMetricsContextService.class)
-            .addRequirements(METRICS_HTTP_CONTEXT_CAPABILITY)
+    static final String MP_CONFIG = "org.wildfly.microprofile.config";
+
+    static final RuntimeCapability<Void> MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.metrics.http-context", MicroProfileMetricsContextService.class)
+            .addRequirements(METRICS_HTTP_CONTEXT_CAPABILITY, MP_CONFIG)
             .build();
-    static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
 
     /**
      * @deprecated Enable the security is now controlled by the security-enabled attribute of the metrics subsystem.
@@ -91,7 +79,7 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
                 MicroProfileMetricsExtension.getResourceDescriptionResolver(MicroProfileMetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileMetricsSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileMetricsSubsystemAdd.INSTANCE))
-                .setCapabilities(METRICS_COLLECTOR_RUNTIME_CAPABILITY, HTTP_CONTEXT_CAPABILITY));
+                .setCapabilities(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY));
     }
 
     @Override

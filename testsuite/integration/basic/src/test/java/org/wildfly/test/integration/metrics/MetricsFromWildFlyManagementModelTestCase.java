@@ -98,7 +98,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
     @Test
     @InSequence(2)
     @OperateOnDeployment("MetricsFromWildFlyManagementModelTestCase")
-    public void testAffterDeployment(@ArquillianResource URL url) throws Exception {
+    public void testMetricsAfterDeployment(@ArquillianResource URL url) throws Exception {
         // test the request-count metric on the deployment's undertow resources
         checkRequestCount(0, true);
         performCall(url);
@@ -106,7 +106,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
         performCall(url);
         checkRequestCount(3, true);
 
-        // the request-count in the http-listner will have the same value
+        // the request-count in the http-listener will have the same value
         checkRequestCount(3, false);
 
     }

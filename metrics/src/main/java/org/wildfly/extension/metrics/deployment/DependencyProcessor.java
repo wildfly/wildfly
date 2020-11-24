@@ -34,7 +34,7 @@ public class DependencyProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
-        phaseContext.addDeploymentDependency(MetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE, DeploymentMetricProcessor.METRICS_COLLECTOR);
+        phaseContext.addDeploymentDependency(MetricsSubsystemDefinition.METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName(), DeploymentMetricProcessor.METRICS_COLLECTOR);
     }
 
     @Override

@@ -21,39 +21,56 @@
  */
 package org.wildfly.extension.metrics;
 
+import static org.wildfly.extension.metrics.MetricsSubsystemDefinition.METRICS_REGISTRY_RUNTIME_CAPABILITY;
+import static org.wildfly.extension.metrics._private.MetricsLogger.LOGGER;
+
+import java.io.IOException;
+import java.util.function.Consumer;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.metrics.internal.WildFlyMetricRegistry;
+import org.wildfly.extension.metrics.internal.jmx.JmxMetricCollector;
 
 /**
- * Service to create a metric collector
+ * Service to create a registry for WildFly (and JMX) metrics.
  */
-public class WildFlyMetricRegistryService implements Service {
+public class WildFlyMetricRegistryService implements Service<WildFlyMetricRegistry> {
 
-    public static final ServiceName WILDFLY_METRIC_REGISTRY_SERVICE = ServiceName.JBOSS.append(MetricsExtension.SUBSYSTEM_NAME, "registry");
-
+    private final Consumer<WildFlyMetricRegistry> consumer;
     private WildFlyMetricRegistry registry;
 
     static void install(OperationContext context) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(WILDFLY_METRIC_REGISTRY_SERVICE);
-        serviceBuilder.setInstance(new WildFlyMetricRegistryService()).install();
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(METRICS_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());
+
+        Consumer<WildFlyMetricRegistry> registry = serviceBuilder.provides(METRICS_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());
+        serviceBuilder.setInstance(new WildFlyMetricRegistryService(registry)).install();
     }
 
-    WildFlyMetricRegistryService() {
+    WildFlyMetricRegistryService(Consumer<WildFlyMetricRegistry> consumer) {
+        this.consumer = consumer;
     }
 
     @Override
     public void start(StartContext context) {
-        this.registry = new WildFlyMetricRegistry();
+        registry = new WildFlyMetricRegistry();
+        JmxMetricCollector jmxMetricCollector = new JmxMetricCollector(registry);
+        try {
+            jmxMetricCollector.init();
+        } catch (IOException e) {
+            throw LOGGER.failedInitializeJMXRegistrar(e);
+        }
+        consumer.accept(registry);
     }
 
     @Override
     public void stop(StopContext context) {
-        this.registry.close();
+        consumer.accept(null);
+        registry.close();
+        registry = null;
     }
 
     @Override

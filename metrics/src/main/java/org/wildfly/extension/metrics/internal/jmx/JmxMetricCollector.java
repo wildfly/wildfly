@@ -45,9 +45,8 @@ import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.wildfly.extension.metrics.internal.Metric;
-import org.wildfly.extension.metrics.internal.MetricCollector;
-import org.wildfly.extension.metrics.internal.WildFlyMetricMetadata;
+import org.wildfly.extension.metrics.api.Metric;
+import org.wildfly.extension.metrics.api.MetricMetadata;
 import org.wildfly.extension.metrics.internal.WildFlyMetricRegistry;
 
 public class JmxMetricCollector {
@@ -82,14 +81,14 @@ public class JmxMetricCollector {
                 Set<ObjectName> objectNames = mbs.queryNames(ObjectName.getInstance(query), null);
                 for (ObjectName objectName : objectNames) {
                     // fill the tags from the object names fields
-                    List<MetricCollector.MetricTag> tags = new ArrayList<>(metadata.getTagsToFill().size());
+                    List<MetricMetadata.MetricTag> tags = new ArrayList<>(metadata.getTagsToFill().size());
                     for (String key : metadata.getTagsToFill()) {
                         String value = objectName.getKeyProperty(key);
-                        tags.add(new MetricCollector.MetricTag(key, value));
+                        tags.add(new MetricMetadata.MetricTag(key, value));
                     }
-                    expandedConfigs.add(new JmxMetricMetadata(metadata.getName(),
+                    expandedConfigs.add(new JmxMetricMetadata(metadata.getMetricName(),
                             metadata.getDescription(),
-                            metadata.getUnit(),
+                            metadata.getMeasurementUnit(),
                             metadata.getType(),
                             objectName.getCanonicalName() + "/" + attribute,
                             Collections.emptyList(),
@@ -105,11 +104,11 @@ public class JmxMetricCollector {
         configs.addAll(expandedConfigs);
 
         for (JmxMetricMetadata config : configs) {
-            register(registry, config, config.getTags());
+            register(registry, config);
         }
     }
 
-    void register(WildFlyMetricRegistry registry, JmxMetricMetadata config, List<MetricCollector.MetricTag> tags) {
+    void register(WildFlyMetricRegistry registry, JmxMetricMetadata config) {
         Metric metric = new Metric() {
             @Override
             public OptionalDouble getValue() {
@@ -120,7 +119,7 @@ public class JmxMetricCollector {
                 }
             }
         };
-        registry.register(config, metric, tags.toArray(new MetricCollector.MetricTag[0]));
+        registry.register(config, metric);
     }
 
     private List<JmxMetricMetadata> findMetadata(String propertiesFile) throws IOException {
@@ -146,7 +145,7 @@ public class JmxMetricCollector {
         return parsedMetrics.entrySet()
                 .stream()
                 .map(this::metadataOf)
-                .sorted(Comparator.comparing(e -> e.getName()))
+                .sorted(Comparator.comparing(e -> e.getMetricName()))
                 .collect(Collectors.toList());
     }
 
@@ -174,7 +173,7 @@ public class JmxMetricCollector {
         JmxMetricMetadata metadata = new JmxMetricMetadata(name,
                 entryProperties.get("description"),
                 unit,
-                WildFlyMetricMetadata.Type.valueOf(entryProperties.get("type").toUpperCase()),
+                MetricMetadata.Type.valueOf(entryProperties.get("type").toUpperCase()),
                 entryProperties.get("mbean"),
                 tagsToFill,
                 Collections.emptyList());

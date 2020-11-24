@@ -30,7 +30,7 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Add dependencies required by deployment unit to access the Metrics API (programmatically or using CDI).
@@ -43,7 +43,7 @@ public class DependencyProcessor implements DeploymentUnitProcessor {
 
         addModuleDependencies(deploymentUnit);
 
-        phaseContext.addDeploymentDependency(MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE, DeploymentMetricProcessor.METRICS_COLLECTOR);
+        phaseContext.addDeploymentDependency(ServiceName.parse("org.wildfly.extension.metrics.wildfly-collector"), DeploymentMetricProcessor.METRICS_COLLECTOR);
     }
 
     @Override

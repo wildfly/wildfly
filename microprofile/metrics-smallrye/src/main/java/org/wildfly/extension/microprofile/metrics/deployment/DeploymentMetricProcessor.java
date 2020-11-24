@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.metrics.deployment;
 
+import java.util.List;
+
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -29,21 +31,29 @@ import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.wildfly.extension.microprofile.metrics.MetricCollector;
+import org.wildfly.extension.metrics.api.MetricCollector;
 
 public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
 
     static final AttachmentKey<MetricCollector> METRICS_COLLECTOR = AttachmentKey.create(MetricCollector.class);
 
-    private Resource rootResource;
-    private ManagementResourceRegistration managementResourceRegistration;
+    private boolean exposeAnySubsystem;
+    private List<String> exposedSubsystems;
+    private String prefix;
+
+    public DeploymentMetricProcessor(boolean exposeAnySubsystem, List<String> exposedSubsystems, String prefix) {
+        this.exposeAnySubsystem = exposeAnySubsystem;
+        this.exposedSubsystems = exposedSubsystems;
+        this.prefix = prefix;
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
-        rootResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
-        managementResourceRegistration = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+        Resource rootResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+        ManagementResourceRegistration managementResourceRegistration = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
 
-        DeploymentMetricService.install(phaseContext.getServiceTarget(), phaseContext.getDeploymentUnit(), rootResource, managementResourceRegistration);
+        DeploymentMetricService.install(phaseContext.getServiceTarget(), phaseContext.getDeploymentUnit(), rootResource, managementResourceRegistration,
+                exposeAnySubsystem, exposedSubsystems, prefix);
     }
 
     @Override
