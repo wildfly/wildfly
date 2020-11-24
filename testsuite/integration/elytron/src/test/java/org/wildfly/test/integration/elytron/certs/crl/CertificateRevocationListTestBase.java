@@ -155,7 +155,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
                 SelfSignedX509CertificateAndSigningKey.builder()
                         .setDn(issuerDN)
                         .setKeyAlgorithmName("RSA")
-                        .setSignatureAlgorithmName("SHA1withRSA")
+                        .setSignatureAlgorithmName("SHA256withRSA")
                         .addExtension(false, "BasicConstraints","CA:true,pathlen:2147483647")
                         .build();
         X509Certificate issuerCertificate = issuerSelfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
@@ -169,7 +169,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
 
         X509Certificate ladybirdCertificate = new X509CertificateBuilder().setIssuerDn(issuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(ladybirdPublicKey)
                 .setSerialNumber(new BigInteger("3"))
@@ -185,7 +185,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
 
         X509Certificate checkedGoodCertificate = new X509CertificateBuilder().setIssuerDn(issuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(checkedGoodPublicKey)
                 .setSerialNumber(new BigInteger("16"))
@@ -204,7 +204,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
 
         X509Certificate checkedRevokedCertificate = new X509CertificateBuilder().setIssuerDn(issuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(checkedRevokedPublicKey)
                 .setSerialNumber(new BigInteger("17"))
@@ -242,7 +242,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
         caBlankCrlBuilder.addCRLEntry(revoked.getSerialNumber(), currentDate, CRLReason.unspecified);
 
         X509CRLHolder caBlankCrlHolder = caBlankCrlBuilder.setNextUpdate(nextYear).build(
-                new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(
+                new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(
                         issuerSelfSignedX509CertificateAndSigningKey.getSigningKey()));
 
         PemWriter caBlankCrlOutput = new PemWriter(new OutputStreamWriter(new FileOutputStream(CA_BLANK_PEM_CRL)));
