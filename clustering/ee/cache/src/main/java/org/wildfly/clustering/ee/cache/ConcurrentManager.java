@@ -43,7 +43,10 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
     private final BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>> addFunction = new BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>>() {
         @Override
         public Map.Entry<Integer, V> apply(K id, Map.Entry<Integer, V> entry) {
-            return entry != null ? new AbstractMap.SimpleImmutableEntry<>(Integer.valueOf(entry.getKey().intValue() + 1), entry.getValue()) : new VolatileEntry<>(new Integer(0));
+            if (entry == null) return new VolatileEntry<>(new Integer(0));
+            Integer count = Integer.valueOf(entry.getKey().intValue() + 1);
+            V value = entry.getValue();
+            return (value != null) ? new AbstractMap.SimpleImmutableEntry<>(count, value) : new VolatileEntry<>(count);
         }
     };
     private final Consumer<V> createTask;
