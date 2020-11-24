@@ -79,12 +79,12 @@ public class EjbOverHttpWrongCredentialsTestCase {
         jar.addClasses(EjbOverHttpTestCase.class);
         jar.addAsManifestResource("META-INF/jboss-ejb-client-profile.xml", "jboss-ejb-client.xml")
                 .addAsManifestResource("ejb-http-wildfly-config-wrong.xml", "wildfly-config.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write",
-                        "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write",
-                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
-                        new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0")) + ":" + serverPort,
-                                "connect,resolve")),
+                .addAsManifestResource(
+                        createPermissionsXmlAsset(
+                                createFilePermission("read,write,delete",
+                                        "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
+                                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0")) + ":" + serverPort,
+                                        "connect,resolve")),
                         "permissions.xml");
         return jar;
     }
