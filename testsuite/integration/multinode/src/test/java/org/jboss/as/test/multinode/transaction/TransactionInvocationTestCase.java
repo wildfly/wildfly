@@ -40,6 +40,10 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import java.io.IOException;
+import java.util.Arrays;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A simple EJB Remoting transaction context propagation in JTS style from one AS7 server to another.
@@ -69,6 +73,11 @@ public class TransactionInvocationTestCase {
         jar.addClasses(ClientEjb.class, TransactionalRemote.class, TransactionInvocationTestCase.class,
                 TransactionalStatefulRemote.class);
         jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write,delete",
+                        "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
+                        createFilePermission("read,write,delete",
+                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-"))),
+                        "permissions.xml");
         return jar;
     }
 

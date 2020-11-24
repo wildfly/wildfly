@@ -22,9 +22,11 @@
 
 package org.jboss.as.test.multinode.transaction.nooutbound;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.net.SocketPermission;
+import java.util.Arrays;
 import java.util.PropertyPermission;
 
 import javax.ejb.EJBException;
@@ -68,6 +70,10 @@ public class TransactionContextRemoteCallTestCase {
                     TransactionContextRemoteCallTestCase.class)
             .addAsManifestResource(new StringAsset("Dependencies: org.wildfly.http-client.transaction\n"), "MANIFEST.MF")
             .addAsManifestResource(createPermissionsXmlAsset(
+                    createFilePermission("read,write,delete",
+                            "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
+                    createFilePermission("read,write,delete",
+                            "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
                     new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0")) + ":" + serverPort, "connect,resolve"),
                     new PropertyPermission("node1", "read")
                 ), "permissions.xml");
