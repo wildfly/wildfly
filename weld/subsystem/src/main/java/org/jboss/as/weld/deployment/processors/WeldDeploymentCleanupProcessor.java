@@ -18,12 +18,10 @@ package org.jboss.as.weld.deployment.processors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,7 +34,6 @@ import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.util.Utils;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -74,39 +71,26 @@ public class WeldDeploymentCleanupProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        // extract all service controllers and store them as attachment for WeldDeploymentCleanupProcessor to use
-        List<ServiceController> serviceControllers = new ArrayList<>();
-
-        // add controllers from top level deployment
-        for (ServiceName serviceName : getComponentStartServiceNames(deploymentUnit)) {
-            ServiceController<?> controller = deploymentUnit.getServiceRegistry().getService(serviceName);
-            if (controller != null) {
-                serviceControllers.add(controller);
-            }
+        // add dependency on our WeldBootstrapService and WeldStartService to ensure this goes after them
+        ServiceBuilder<?> weldStartCompletionServiceBuilder = serviceTarget.addService(weldStartCompletionServiceName);
+        final Supplier<WeldBootstrapService> bootstrapSupplier = weldStartCompletionServiceBuilder.requires(weldBootstrapServiceName);
+        weldStartCompletionServiceBuilder.requires(weldStartServiceName);
+        // require component start services from top level deployment
+        for (ServiceName componentStartSN : getComponentStartServiceNames(deploymentUnit)) {
+            weldStartCompletionServiceBuilder.requires(componentStartSN);
         }
-
-        // add controllers from sub-deployments
+        // require component start services from sub-deployments
         final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
         for (DeploymentUnit sub : subDeployments) {
             ServiceRegistry registry = sub.getServiceRegistry();
             List<ServiceName> componentStartServiceNames = getComponentStartServiceNames(sub);
-
-            for (ServiceName name : componentStartServiceNames) {
-                ServiceController<?> serviceController = registry.getService(name);
-                if (serviceController != null) {
-                    serviceControllers.add(serviceController);
-                }
+            for (ServiceName componentStartSN : componentStartServiceNames) {
+                weldStartCompletionServiceBuilder.requires(componentStartSN);
             }
         }
 
-        // pass on service controllers so that we can do StabilityMonitor.awaitStability() on those with our service
-        // we also add dependency on our WeldBootstrapService and WeldStartService to ensure this goes after them
-        ServiceBuilder<?> weldStartCompletionServiceBuilder = serviceTarget.addService(weldStartCompletionServiceName);
-        final Supplier<WeldBootstrapService> bootstrapSupplier = weldStartCompletionServiceBuilder.requires(weldBootstrapServiceName);
-        final Supplier<ExecutorService> executorServiceSupplier = weldStartCompletionServiceBuilder.requires(Services.JBOSS_SERVER_EXECUTOR);
-        weldStartCompletionServiceBuilder.requires(weldStartServiceName);
-        weldStartCompletionServiceBuilder.setInstance(new WeldStartCompletionService(bootstrapSupplier, executorServiceSupplier,
-                WeldDeploymentProcessor.getSetupActions(deploymentUnit), module.getClassLoader(), serviceControllers));
+        weldStartCompletionServiceBuilder.setInstance(new WeldStartCompletionService(bootstrapSupplier,
+                WeldDeploymentProcessor.getSetupActions(deploymentUnit), module.getClassLoader()));
         weldStartCompletionServiceBuilder.install();
     }
 
