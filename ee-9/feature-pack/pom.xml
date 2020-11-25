@@ -271,6 +271,7 @@
                             <task-properties>
                                 <jakarta.transform.artifacts>true</jakarta.transform.artifacts>
                                 <jakarta.transform.modules>false</jakarta.transform.modules>
+                                <jakarta.transform.artifacts.suffix>-ee9</jakarta.transform.artifacts.suffix>
                                 <product.release.version>${preview.dist.product.release.version}</product.release.version>
                             </task-properties>
                             <jakarta-transform>true</jakarta-transform>
