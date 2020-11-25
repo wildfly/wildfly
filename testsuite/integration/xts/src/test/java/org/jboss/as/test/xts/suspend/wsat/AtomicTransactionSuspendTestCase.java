@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.xts.suspend.wsat;
 
+import org.apache.commons.lang.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
@@ -49,20 +50,39 @@ public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
     @TargetsContainer(EXECUTOR_SERVICE_CONTAINER)
     @Deployment(name = EXECUTOR_SERVICE_ARCHIVE_NAME, testable = false)
     public static WebArchive getExecutorServiceArchive() {
-        return getExecutorServiceArchiveBase().addClasses(AtomicTransactionExecutionService.class,
-                AtomicTransactionRemoteService.class, TransactionParticipant.class)
-                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
-                        new SocketPermission(serverHostPort, "connect, resolve")
-                ), "permissions.xml");
+        WebArchive war = getExecutorServiceArchiveBase().addClasses(AtomicTransactionExecutionService.class,
+                AtomicTransactionRemoteService.class, TransactionParticipant.class);
+
+        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
+            war.addAsManifestResource(
+                    PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve"),
+                            new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp")),
+                    "permissions.xml");
+        } else {
+            war.addAsManifestResource(
+                    PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve")),
+                    "permissions.xml");
+        }
+
+        return war;
     }
 
     @TargetsContainer(REMOTE_SERVICE_CONTAINER)
     @Deployment(name = REMOTE_SERVICE_ARCHIVE_NAME, testable = false)
     public static WebArchive getRemoteServiceArchive() {
-        return getRemoteServiceArchiveBase().addClasses(AtomicTransactionRemoteService.class, TransactionParticipant.class)
-                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
-                        new SocketPermission(serverHostPort, "connect, resolve")
-                ), "permissions.xml");
+        WebArchive war = getRemoteServiceArchiveBase().addClasses(AtomicTransactionRemoteService.class,
+                TransactionParticipant.class);
+        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
+            war.addAsManifestResource(
+                    PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve"),
+                            new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp")),
+                    "permissions.xml");
+        } else {
+            war.addAsManifestResource(
+                    PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve")),
+                    "permissions.xml");
+        }
+        return war;
     }
 
     protected void assertParticipantInvocations(List<String> invocations) {
