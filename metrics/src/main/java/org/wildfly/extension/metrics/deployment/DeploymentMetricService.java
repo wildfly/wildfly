@@ -70,12 +70,14 @@ public class DeploymentMetricService implements Service {
     public void start(StartContext startContext) {
         registration = new BaseMetricRegistration(wildflyMetricRegistry.get());
 
+        /*
         metricCollector.get().collectResourceMetrics(rootResource,
                 managementResourceRegistration,
                 // prepend the deployment address to the subsystem resource address
                 address -> deploymentAddress.append(address),
                 exposedSubsystems, exposeAnySubsystem, prefix,
                 registration);
+                         */
     }
 
     @Override
