@@ -21,6 +21,7 @@
  */
 package org.wildfly.test.security.common.elytron;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -42,6 +43,7 @@ public class SimpleTrustManager extends AbstractConfigurableElement implements T
     private final Boolean softFail;
     private final Ocsp ocsp;
     private final CertificateRevocationList crl;
+    private final List<CertificateRevocationList> crls;
 
     private SimpleTrustManager(Builder builder) {
         super(builder);
@@ -52,6 +54,7 @@ public class SimpleTrustManager extends AbstractConfigurableElement implements T
         this.onlyLeafCert = builder.onlyLeafCert;
         this.ocsp = builder.ocsp;
         this.crl = builder.crl;
+        this.crls = builder.crls;
     }
 
     @Override
@@ -65,7 +68,21 @@ public class SimpleTrustManager extends AbstractConfigurableElement implements T
 
         // Already appends ',' after itself if defined.
         if (crl != null) {
+            cliLine.append("certificate-revocation-list=");
             cliLine.append(crl.asString());
+            cliLine.append(", ");
+        }
+
+        // certificate-revocation-list and certificate-revocation-lists are mutually exclusive
+        else if (crls != null) {
+            cliLine.append("certificate-revocation-lists=[");
+            for (int i = 0; i < crls.size(); i++) {
+                cliLine.append(crls.get(i).asString());
+
+                // only append comma as long as there is another CRL to add to list
+                if (i != crls.size() - 1) cliLine.append(", ");
+            }
+            cliLine.append("], ");
         }
 
         if (StringUtils.isNotBlank(keyStore)) {
@@ -122,6 +139,7 @@ public class SimpleTrustManager extends AbstractConfigurableElement implements T
         private Boolean softFail;
         private Ocsp ocsp;
         private CertificateRevocationList crl;
+        private List<CertificateRevocationList> crls;
 
         private Builder() {
         }
@@ -158,6 +176,11 @@ public class SimpleTrustManager extends AbstractConfigurableElement implements T
 
         public Builder withCrl(CertificateRevocationList crl) {
             this.crl = crl;
+            return this;
+        }
+
+        public Builder withCrls(List<CertificateRevocationList> crls) {
+            this.crls = crls;
             return this;
         }
 

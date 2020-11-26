@@ -471,6 +471,30 @@ The following example configuration specifies that the default filtering should 
 
  <certificate-revocation-list />:: The presence of this element enabled checking the peer's certificate against a certificate revocation list, this element defines both a path to the certificate revocation list and also specifies the maximum number of non-self-issued intermediate certificates that may exist in a certification path
 
+ <certificate-revocation-lists />:: This element enables checking the peer's certificate against multiple certificate revocation lists. This element defines a list of certificate revocation list objects which define a path to the certificate revocation list,
+ and also the base path of the certificate revocation list file.
+
+NOTE: The certificate-revocation-list element can be substituted by a certificate-revocation-lists element which in turn allows the
+configuration of multiple certificate revocation lists as follows.
+
+[source,xml,options="nowrap"]
+----
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.4">
+        <ssl-contexts>
+            <default-ssl-context name="..."/>
+            <ssl-context name="...">
+                ...
+                <certificate-revocation-lists>
+                    <certificate-revocation-list path="..." relative-to="..." />
+                    <certificate-revocation-list path="..." relative-to="..." />
+                </certificate-revocation-lists>
+            </ssl-context>
+        </ssl-contexts>
+    </authentication-client>
+</configuration>
+----
+
 [[Providers]]
 == <providers />
 
