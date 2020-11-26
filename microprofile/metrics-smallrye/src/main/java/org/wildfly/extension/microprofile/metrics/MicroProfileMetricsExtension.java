@@ -28,6 +28,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -55,7 +56,7 @@ public class MicroProfileMetricsExtension implements Extension {
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
 
-    private static final MicroProfileMetricsParser_2_0 CURRENT_PARSER = new MicroProfileMetricsParser_2_0();
+    private static final PersistentResourceXMLParser CURRENT_PARSER = new MicroProfileMetricsParser_2_0();
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);

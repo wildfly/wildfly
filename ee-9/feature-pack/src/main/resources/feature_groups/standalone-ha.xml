@@ -22,8 +22,7 @@
     <feature-group name="management-interfaces"/>
     <feature-group name="access-control"/>
     <feature-group name="health"/>
-    <!-- WFLY-14108 do not forget to put it back -->
-    <!-- <feature-group name="metrics" /> -->
+    <feature-group name="metrics" />
 
     <feature-group name="servlet-unsecured-standalone-profile"/>
     <feature-group name="basic-ha-profile"/>

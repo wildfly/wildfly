@@ -24,7 +24,7 @@ package org.wildfly.test.integration.microprofile.metrics.application;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.shared.ServerReload.reloadIfRequired;
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -78,13 +78,13 @@ public class MicroProfileMetricsApplicationTestCase {
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             managementClient.getControllerClient().execute(enableStatistics(true));
-            reloadIfRequired(managementClient);
+            executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             managementClient.getControllerClient().execute(enableStatistics(false));
-            reloadIfRequired(managementClient);
+            executeReloadAndWaitForCompletion(managementClient);
         }
 
         private ModelNode enableStatistics(boolean enabled) {

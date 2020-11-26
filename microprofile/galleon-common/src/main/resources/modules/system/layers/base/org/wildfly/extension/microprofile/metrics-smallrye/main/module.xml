@@ -44,6 +44,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.wildfly.extension.metrics" />
         <module name="org.wildfly.extension.microprofile.config-smallrye" />
         <module name="javax.enterprise.api" />
         <module name="javax.annotation.api" />

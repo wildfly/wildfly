@@ -161,77 +161,86 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         )),
         WILDFLY_17_0("WildFly17.0", WILDFLY_16_0),
         WILDFLY_18_0("WildFly18.0", WILDFLY_17_0),
-
-        EAP62("EAP62", Arrays.asList(
-                "org.jboss.as.appclient",
-                "org.jboss.as.clustering.infinispan",
-                "org.jboss.as.clustering.jgroups",
-                "org.jboss.as.cmp",
-                "org.jboss.as.configadmin",
-                "org.jboss.as.connector",
-                "org.jboss.as.deployment-scanner",
-                "org.jboss.as.ee",
-                "org.jboss.as.ejb3",
-                "org.jboss.as.jacorb",
-                "org.jboss.as.jaxr",
-                "org.jboss.as.jaxrs",
-                "org.jboss.as.jdr",
-                "org.jboss.as.jmx",
-                "org.jboss.as.jpa",
-                "org.jboss.as.jsf",
-                "org.jboss.as.jsr77",
-                "org.jboss.as.logging",
-                "org.jboss.as.mail",
-                "org.jboss.as.messaging",
-                "org.jboss.as.modcluster",
-                "org.jboss.as.naming",
-                "org.jboss.as.pojo",
-                "org.jboss.as.remoting",
-                "org.jboss.as.sar",
-                "org.jboss.as.security",
-                "org.jboss.as.threads",
-                "org.jboss.as.transactions",
-                "org.jboss.as.web",
-                "org.jboss.as.webservices",
-                "org.jboss.as.weld",
-                "org.jboss.as.xts",
-                // This module was added in EAP70, but we move it to the EAP62 extension list to allow the test passing
-                // without adding it to the host-exclude section. We don't want to expose it in the host-exclude.
-                "org.wildfly.extension.mod_cluster"
+        WILDFLY_19_0("WildFly19.0", WILDFLY_18_0,Arrays.asList(
+                "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+                "org.wildfly.extension.microprofile.jwt-smallrye",
+                "org.wildfly.extension.microprofile.openapi-smallrye"
         )),
-        EAP63("EAP63", EAP62, Arrays.asList(
-                "org.wildfly.extension.picketlink"
+        WILDFLY_20_0("WildFly20.0", WILDFLY_19_0),
+        WILDFLY_21_0("WildFly21.0", WILDFLY_20_0),
+        WILDFLY_22_0("WildFly22.0", WILDFLY_21_0, Arrays.asList(
+                "org.wildfly.extension.metrics"
         )),
-        EAP64("EAP64", EAP63),
-        EAP64z("EAP64z", EAP64),
-        EAP70("EAP70", EAP64z, Arrays.asList(
-                "org.wildfly.extension.batch.jberet",
-                "org.wildfly.extension.bean-validation",
-                "org.wildfly.extension.clustering.singleton",
-                "org.wildfly.extension.io",
-                "org.wildfly.extension.messaging-activemq",
-                "org.wildfly.extension.request-controller",
-                "org.wildfly.extension.rts",
-                "org.wildfly.extension.security.manager",
-                "org.wildfly.extension.undertow",
-                "org.wildfly.iiop-openjdk"
-        )),
-        EAP71("EAP71", EAP70, Arrays.asList(
-                "org.wildfly.extension.core-management",
-                "org.wildfly.extension.discovery",
-                "org.wildfly.extension.elytron"
-        )),
-        EAP72("EAP72", EAP71, Arrays.asList(
-                "org.wildfly.extension.datasources-agroal",
-                "org.wildfly.extension.microprofile.opentracing-smallrye",
-                "org.wildfly.extension.microprofile.health-smallrye",
-                "org.wildfly.extension.microprofile.config-smallrye",
-                "org.wildfly.extension.ee-security"
-        )),
-        EAP73("EAP73", EAP72, Arrays.asList(
-                "org.wildfly.extension.microprofile.metrics-smallrye",
-                "org.wildfly.extension.clustering.web"
-        ));
+                EAP62("EAP62", Arrays.asList(
+                        "org.jboss.as.appclient",
+                        "org.jboss.as.clustering.infinispan",
+                        "org.jboss.as.clustering.jgroups",
+                        "org.jboss.as.cmp",
+                        "org.jboss.as.configadmin",
+                        "org.jboss.as.connector",
+                        "org.jboss.as.deployment-scanner",
+                        "org.jboss.as.ee",
+                        "org.jboss.as.ejb3",
+                        "org.jboss.as.jacorb",
+                        "org.jboss.as.jaxr",
+                        "org.jboss.as.jaxrs",
+                        "org.jboss.as.jdr",
+                        "org.jboss.as.jmx",
+                        "org.jboss.as.jpa",
+                        "org.jboss.as.jsf",
+                        "org.jboss.as.jsr77",
+                        "org.jboss.as.logging",
+                        "org.jboss.as.mail",
+                        "org.jboss.as.messaging",
+                        "org.jboss.as.modcluster",
+                        "org.jboss.as.naming",
+                        "org.jboss.as.pojo",
+                        "org.jboss.as.remoting",
+                        "org.jboss.as.sar",
+                        "org.jboss.as.security",
+                        "org.jboss.as.threads",
+                        "org.jboss.as.transactions",
+                        "org.jboss.as.web",
+                        "org.jboss.as.webservices",
+                        "org.jboss.as.weld",
+                        "org.jboss.as.xts",
+                        // This module was added in EAP70, but we move it to the EAP62 extension list to allow the test passing
+                        // without adding it to the host-exclude section. We don't want to expose it in the host-exclude.
+                        "org.wildfly.extension.mod_cluster"
+                )),
+                EAP63("EAP63", EAP62, Arrays.asList(
+                        "org.wildfly.extension.picketlink"
+                )),
+                EAP64("EAP64", EAP63),
+                EAP64z("EAP64z", EAP64),
+                EAP70("EAP70", EAP64z, Arrays.asList(
+                        "org.wildfly.extension.batch.jberet",
+                        "org.wildfly.extension.bean-validation",
+                        "org.wildfly.extension.clustering.singleton",
+                        "org.wildfly.extension.io",
+                        "org.wildfly.extension.messaging-activemq",
+                        "org.wildfly.extension.request-controller",
+                        "org.wildfly.extension.rts",
+                        "org.wildfly.extension.security.manager",
+                        "org.wildfly.extension.undertow",
+                        "org.wildfly.iiop-openjdk"
+                )),
+                EAP71("EAP71", EAP70, Arrays.asList(
+                        "org.wildfly.extension.core-management",
+                        "org.wildfly.extension.discovery",
+                        "org.wildfly.extension.elytron"
+                )),
+                EAP72("EAP72", EAP71, Arrays.asList(
+                        "org.wildfly.extension.datasources-agroal",
+                        "org.wildfly.extension.microprofile.opentracing-smallrye",
+                        "org.wildfly.extension.microprofile.health-smallrye",
+                        "org.wildfly.extension.microprofile.config-smallrye",
+                        "org.wildfly.extension.ee-security"
+                )),
+                EAP73("EAP73", EAP72, Arrays.asList(
+                        "org.wildfly.extension.microprofile.metrics-smallrye",
+                        "org.wildfly.extension.clustering.web"
+                ));
 
         private final String name;
         private final Set<String> extensions = new HashSet<>();

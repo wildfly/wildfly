@@ -119,8 +119,7 @@
         </feature>
     </feature-group>
     <feature-group name="health"/>
-    <!-- WFLY-14108 do not forget to put it back -->
-    <!-- <feature-group name="metrics" /> -->
+   <feature-group name="metrics" />
 
     <!-- <feature-group name="elytron-permissions-workaround"/> -->
 </feature-group-spec>
