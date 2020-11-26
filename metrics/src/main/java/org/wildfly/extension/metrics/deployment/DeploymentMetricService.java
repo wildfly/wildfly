@@ -72,14 +72,12 @@ public class DeploymentMetricService implements Service {
 
         System.out.println(">>> Start metric registration for " + deploymentAddress);
 
-        /*
         metricCollector.get().collectResourceMetrics(rootResource,
                 managementResourceRegistration,
                 // prepend the deployment address to the subsystem resource address
                 address -> deploymentAddress.append(address),
                 exposedSubsystems, exposeAnySubsystem, prefix,
                 registration);
-                         */
         System.out.println(">>> End metric registration for " + deploymentAddress);
 
     }

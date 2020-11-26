@@ -62,8 +62,8 @@ public class MetricCollector {
                                                      ImmutableManagementResourceRegistration managementResourceRegistration,
                                                      Function<PathAddress, PathAddress> resourceAddressResolver, List<String> exposedSubsystems, boolean exposeAnySubsystem, String prefix,
                                                      MetricRegistration metricRegistration) {
-        collectResourceMetrics0(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, metricRegistration,
-                exposeAnySubsystem, exposedSubsystems, prefix);
+        //collectResourceMetrics0(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, metricRegistration,
+        //        exposeAnySubsystem, exposedSubsystems, prefix);
         // Defer the actual registration until the server is running and they can be collected w/o errors
         PropertyChangeListener listener = new PropertyChangeListener() {
             @Override
