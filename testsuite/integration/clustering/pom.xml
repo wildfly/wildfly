@@ -925,6 +925,8 @@
                                     <excludes>
                                         <!-- Skip byteman tests -->
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
+                                        <!-- Skip modcluster tests -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/modcluster/ModClusterProxyListOptionTestCase.java</exclude>
                                         <!-- Uses TopologyChangeListener EJB -->
                                         <exclude>org/jboss/as/test/clustering/cluster/affinity/RankedAffinityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/cdi/CdiFailoverTestCase.java</exclude>
