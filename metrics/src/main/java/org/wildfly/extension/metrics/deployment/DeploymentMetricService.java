@@ -70,6 +70,8 @@ public class DeploymentMetricService implements Service {
     public void start(StartContext startContext) {
         registration = new BaseMetricRegistration(wildflyMetricRegistry.get());
 
+        System.out.println(">>> Start metric registration for " + deploymentAddress);
+
         /*
         metricCollector.get().collectResourceMetrics(rootResource,
                 managementResourceRegistration,
@@ -78,6 +80,8 @@ public class DeploymentMetricService implements Service {
                 exposedSubsystems, exposeAnySubsystem, prefix,
                 registration);
                          */
+        System.out.println(">>> End metric registration for " + deploymentAddress);
+
     }
 
     @Override

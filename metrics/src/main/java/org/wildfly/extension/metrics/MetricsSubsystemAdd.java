@@ -75,7 +75,7 @@ class MetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 // TODO use proper Phase constants for these DUPs
                 processorTarget.addDeploymentProcessor(MetricsExtension.SUBSYSTEM_NAME, DEPENDENCIES, DEPENDENCIES_MICROPROFILE_METRICS - 1, new DependencyProcessor());
-                processorTarget.addDeploymentProcessor(MetricsExtension.SUBSYSTEM_NAME, INSTALL, POST_MODULE_MICROPROFILE_METRICS + 1, new DeploymentMetricProcessor(exposeAnySubsystem, exposedSubsystems, prefix));
+                processorTarget.addDeploymentProcessor(MetricsExtension.SUBSYSTEM_NAME, INSTALL, POST_MODULE_MICROPROFILE_METRICS - 1, new DeploymentMetricProcessor(exposeAnySubsystem, exposedSubsystems, prefix));
             }
         }, RUNTIME);
 
