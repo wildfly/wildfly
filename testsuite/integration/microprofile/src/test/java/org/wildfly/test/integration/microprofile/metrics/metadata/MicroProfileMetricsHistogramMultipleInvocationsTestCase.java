@@ -16,6 +16,13 @@
 
 package org.wildfly.test.integration.microprofile.metrics.metadata;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
+import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricSubValueFromJSONOutput;
+
+import java.net.URL;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -39,13 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.metrics.TestApplication;
 import org.wildfly.test.integration.microprofile.metrics.metadata.resources.MicroProfileMetricsHistogramResource;
-
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricSubValueFromJSONOutput;
 
 /**
  * Regression test for SmallRye Metrics issue:

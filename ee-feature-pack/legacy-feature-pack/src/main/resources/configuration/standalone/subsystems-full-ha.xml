@@ -29,7 +29,8 @@
         <subsystem supplement="ha">messaging-activemq.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem>microprofile-health-smallrye.xml</subsystem>
-        <subsystem>microprofile-metrics-smallrye.xml</subsystem>
+        <!-- WFLY-14108 maybe replace by a metric.xml... -->
+        <!-- <subsystem>microprofile-metrics-smallrye.xml</subsystem> -->
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem supplement="${mod_cluster.supplement}">mod_cluster.xml</subsystem>
         <subsystem>naming.xml</subsystem>

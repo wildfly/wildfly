@@ -42,8 +42,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.microprofile.metrics.application.resource.ResourceMeteredTimed;
 import org.wildfly.test.integration.microprofile.metrics.TestApplication;
+import org.wildfly.test.integration.microprofile.metrics.application.resource.ResourceMeteredTimed;
 
 
 /**

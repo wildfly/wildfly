@@ -22,13 +22,10 @@
 
 package org.wildfly.test.integration.microprofile.metrics.secured;
 
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -38,26 +35,32 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({MicroProfileMetricsSecuredEndpointSetupTask.class})
-public class MicroProfileMetricsSecuredEndpointTestCase {
+@ServerSetup({MicroProfileMetricsSecuredEndpointSetupTask.class, EmptyMgmtUsersSetupTask.class})
+public class MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase {
+
     @ContainerResource
     ManagementClient managementClient;
 
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileEnabled(); // Elytron has different behavior than PicketBox
+        // https://issues.jboss.org/browse/WFLY-10861?focusedCommentId=13623626&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-13623626
+    }
+
     @Deployment
     public static Archive<?> deployment() {
-        final Archive<?> deployment = ShrinkWrap.create(JavaArchive.class, "MicroProfileMetricsSecuredEndpointTestCase.jar")
-                .addClasses(MicroProfileMetricsSecuredEndpointSetupTask.class);
+        final Archive<?> deployment = ShrinkWrap.create(JavaArchive.class, "MicroProfileMetricsSecuredEndpointEmptyMgmtUsersTestCase.jar")
+                .addClasses(MicroProfileMetricsSecuredEndpointSetupTask.class, EmptyMgmtUsersSetupTask.class);
         return deployment;
     }
 
@@ -70,28 +73,7 @@ public class MicroProfileMetricsSecuredEndpointTestCase {
             assertEquals(401, resp.getStatusLine().getStatusCode());
             String content = EntityUtils.toString(resp.getEntity());
             resp.close();
-            assertTrue("'401 - Unauthorized' message is expected", content.contains("401 - Unauthorized"));
         }
     }
 
-    @Test
-    public void securedHTTPEndpoint() throws Exception {
-        final String endpointURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + "/metrics";
-
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("testSuite", "testSuitePassword"));
-            HttpClientContext hcContext = HttpClientContext.create();
-            hcContext.setCredentialsProvider(credentialsProvider);
-
-            CloseableHttpResponse resp = client.execute(new HttpGet(endpointURL), hcContext);
-            assertEquals(200, resp.getStatusLine().getStatusCode());
-            String content = EntityUtils.toString(resp.getEntity());
-            resp.close();
-            // MicroProfile Metrics 2.0 has changed its Prometheus conversion format from "base:x" to "base_x"
-            String expectedMetric = "base_jvm_uptime_seconds";
-            assertTrue(expectedMetric + " metric is expected in the response", content.contains(expectedMetric));
-        }
-    }
 }

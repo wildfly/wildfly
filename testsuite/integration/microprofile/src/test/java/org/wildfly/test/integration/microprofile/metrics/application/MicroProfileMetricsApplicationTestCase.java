@@ -60,8 +60,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.microprofile.metrics.application.resource.ResourceSimple;
 import org.wildfly.test.integration.microprofile.metrics.TestApplication;
+import org.wildfly.test.integration.microprofile.metrics.application.resource.ResourceSimple;
 
 /**
  * Test application metrics that are provided by a deployment.

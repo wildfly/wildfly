@@ -5,7 +5,8 @@
 
     <feature-group name="basic-profile"/>
     <feature-group name="health"/>
-    <feature-group name="metrics" />
+    <!-- WFLY-14108 do not forget to put it back -->
+    <!-- <feature-group name="metrics" /> -->
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
 
 </feature-group-spec>

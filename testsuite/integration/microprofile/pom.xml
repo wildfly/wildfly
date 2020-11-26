@@ -586,6 +586,8 @@
                                 </goals>
                                 <phase>process-test-resources</phase>
                                 <configuration>
+                                    <!-- content that is installed in wildfly home -->
+                                    <extraServerContent>${wildfly.dir}</extraServerContent>
                                     <output-file-name>test-wildfly.jar</output-file-name>
                                     <hollowJar>true</hollowJar>
                                     <record-state>false</record-state>

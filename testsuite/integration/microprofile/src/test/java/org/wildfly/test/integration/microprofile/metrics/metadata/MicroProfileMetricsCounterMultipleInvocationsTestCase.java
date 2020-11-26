@@ -20,14 +20,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
 
+import java.io.StringReader;
 import java.net.URL;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.hornetq.utils.json.JSONObject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -103,13 +107,15 @@ public class MicroProfileMetricsCounterMultipleInvocationsTestCase {
       }
 
       String jsonString = getJSONMetrics(managementClient, "application/helloCounter", true);
-      JSONObject jsonObject = new JSONObject(jsonString);
+      JsonReader reader = Json.createReader(new StringReader(jsonString));
+      JsonObject jsonObject = reader.readObject();
 
       int helloCounter = jsonObject.getInt("helloCounter");
       Assert.assertEquals("Unexpected value of 'helloCounter'", 5, helloCounter);
 
       jsonString = getJSONMetrics(managementClient, "application/customCounter", true);
-      jsonObject = new JSONObject(jsonString);
+      reader = Json.createReader(new StringReader(jsonString));
+      jsonObject = reader.readObject();
       int customCounter = jsonObject.getInt("customCounter");
       Assert.assertEquals("Unexpected value of 'customCounter'", 10, customCounter);
    }

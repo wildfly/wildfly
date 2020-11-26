@@ -16,13 +16,13 @@
 
 package org.wildfly.test.integration.microprofile.metrics.application.resource;
 
-import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.annotation.Metered;
-import org.eclipse.microprofile.metrics.annotation.Timed;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
+
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 
 /**
  * REST end-point for Metered and Timed annotation testing, used in MicroProfileMetricsDifferentFormatsValueTestCase

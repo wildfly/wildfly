@@ -16,12 +16,12 @@
 
 package org.wildfly.test.integration.microprofile.metrics.application.resource;
 
-import org.eclipse.microprofile.metrics.annotation.Counted;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
+
+import org.eclipse.microprofile.metrics.annotation.Counted;
 
 @Path("/hello")
 public class ResourceSimple {
