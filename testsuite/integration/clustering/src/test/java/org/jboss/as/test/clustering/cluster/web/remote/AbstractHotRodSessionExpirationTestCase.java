@@ -30,12 +30,12 @@ import org.junit.rules.TestRule;
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractSessionExpirationTestCase extends SessionExpirationTestCase {
+public abstract class AbstractHotRodSessionExpirationTestCase extends SessionExpirationTestCase {
 
     @ClassRule
     public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
 
-    public AbstractSessionExpirationTestCase() {
+    public AbstractHotRodSessionExpirationTestCase() {
         super(TransactionMode.NON_TRANSACTIONAL);
     }
 }
