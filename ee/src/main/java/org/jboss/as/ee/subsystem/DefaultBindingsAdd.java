@@ -36,6 +36,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class DefaultBindingsAdd extends AbstractBoottimeAddStepHandler {
 
+    public static final int STRUCTURE_EE_DEFAULT_BINDINGS_CONFIG = 0x1B01;
+
     private final DefaultBindingsConfigurationProcessor defaultBindingsConfigurationProcessor;
 
     public DefaultBindingsAdd(DefaultBindingsConfigurationProcessor defaultBindingsConfigurationProcessor) {
@@ -73,7 +75,7 @@ public class DefaultBindingsAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_DEFAULT_BINDINGS_CONFIG, defaultBindingsConfigurationProcessor);
+                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, STRUCTURE_EE_DEFAULT_BINDINGS_CONFIG, defaultBindingsConfigurationProcessor);
             }
         }, OperationContext.Stage.RUNTIME);
     }
