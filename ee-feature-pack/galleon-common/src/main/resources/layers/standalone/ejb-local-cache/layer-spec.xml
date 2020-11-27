@@ -4,7 +4,7 @@
         <layer name="transactions"/>
     </dependencies>
     <feature spec="subsystem.ejb3">
-        <param name="default-stateful-bean-access-timeout" value="3000"/>
+        <param name="default-stateful-bean-access-timeout" value="5000"/>
         <param name="default-sfsb-cache" value="simple"/>
     </feature>
     <!-- Infinispan cache configuration used for local SFSB caching -->
