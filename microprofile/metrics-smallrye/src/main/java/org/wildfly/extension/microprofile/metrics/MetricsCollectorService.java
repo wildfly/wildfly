@@ -76,7 +76,10 @@ public class MetricsCollectorService implements Service<MetricCollector> {
 
     @Override
     public void start(StartContext context) {
-        modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
+        // we use a SuperUserClient for the local model controller client so that the metrics collect can be performed when RBAC is enabled.
+        // a doPriviledged block is not needed as these calls are initiated from the management endpoint.
+        // The user accessing the management endpoints must be authenticated (if security-enabled is true) but the metrics collect are not executed on their behalf.
+        modelControllerClient = modelControllerClientFactory.get().createSuperUserClient(managementExecutor.get(), true);
 
         this.metricCollector = new MetricCollector(modelControllerClient, processStateNotifier.get(), exposedSubsystems, globalPrefix);
     }
