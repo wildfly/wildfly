@@ -69,7 +69,7 @@ import org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory;
 
 public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final AttachmentKey<Tracer> ATTACHMENT_KEY = AttachmentKey.create(Tracer.class);
+    static final AttachmentKey<Tracer> ATTACHMENT_KEY = AttachmentKey.create(Tracer.class);
 
     @Override
     public void deploy(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {

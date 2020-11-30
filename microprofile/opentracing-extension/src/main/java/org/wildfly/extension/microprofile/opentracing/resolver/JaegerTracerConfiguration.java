@@ -43,6 +43,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.microprofile.opentracing.WildflyJaegerMetricsFactory;
 import org.wildfly.microprofile.opentracing.smallrye.TracerConfiguration;
 
 /**
@@ -113,6 +114,7 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
                 .withTraceId128Bit(traceId128Bit)
                 .withTracerTags(tracerTags)
                 .getTracerBuilder()
+                    .withMetricsFactory(new WildflyJaegerMetricsFactory())
                     .withManualShutdown()
                     .build();
     }
