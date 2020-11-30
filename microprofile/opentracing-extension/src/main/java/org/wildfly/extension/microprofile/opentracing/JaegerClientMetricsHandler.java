@@ -109,13 +109,15 @@ public class JaegerClientMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         Tracer tracer = deploymentUnit.getAttachment(TracingDeploymentProcessor.ATTACHMENT_KEY);
         if (tracer == null || !(tracer instanceof JaegerTracer)) {
-            context.getFailureDescription().set(TracingExtensionLogger.ROOT_LOGGER.notManagedJaegerTracer());
+            TracingExtensionLogger.ROOT_LOGGER.debug(TracingExtensionLogger.ROOT_LOGGER.notManagedJaegerTracer());
+            context.getResult().set(new ModelNode(0));
             return;
         }
 
         Metrics metrics = ((JaegerTracer) tracer).getMetrics();
         if (metrics == null || !(metrics.traceStartedSampled instanceof WildflyJaegerMetricsFactory.Metric)) {
-            context.getFailureDescription().set(TracingExtensionLogger.ROOT_LOGGER.notManagedJaegerTracer());
+            TracingExtensionLogger.ROOT_LOGGER.debug(TracingExtensionLogger.ROOT_LOGGER.notManagedJaegerTracer());
+            context.getResult().set(new ModelNode(0));
             return;
         }
 
