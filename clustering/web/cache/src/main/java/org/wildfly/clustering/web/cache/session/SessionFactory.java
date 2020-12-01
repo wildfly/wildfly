@@ -35,11 +35,14 @@ import org.wildfly.clustering.web.session.Session;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface SessionFactory<SC, MV, AV, LC> extends ImmutableSessionFactory<MV, AV>, Creator<String, Map.Entry<MV, AV>, Void>, Remover<String> {
+public interface SessionFactory<SC, MV, AV, LC> extends ImmutableSessionFactory<MV, AV>, Creator<String, Map.Entry<MV, AV>, Void>, Remover<String>, AutoCloseable {
     @Override
     SessionMetaDataFactory<MV> getMetaDataFactory();
     @Override
     SessionAttributesFactory<SC, AV> getAttributesFactory();
 
     Session<LC> createSession(String id, Map.Entry<MV, AV> entry, SC context);
+
+    @Override
+    void close();
 }

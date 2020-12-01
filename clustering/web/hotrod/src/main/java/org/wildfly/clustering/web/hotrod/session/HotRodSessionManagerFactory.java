@@ -118,6 +118,7 @@ public class HotRodSessionManagerFactory<S, SC, AL, MC, LC> implements SessionMa
     @Override
     public void close() {
         this.expirationScheduler.close();
+        this.sessionFactory.close();
     }
 
     private SessionAttributesFactory<SC, ?> createSessionAttributesFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration) {
