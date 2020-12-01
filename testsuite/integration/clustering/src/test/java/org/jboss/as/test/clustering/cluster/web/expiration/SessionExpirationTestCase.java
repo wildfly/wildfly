@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.cluster.web.expiration;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -373,7 +374,7 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
             }
 
             // This should not trigger any events
-            response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL2, "a", "7")));
+            response = client.execute(new HttpGet(SessionOperationServlet.createGetAndSetURI(baseURL2, "a", "7")));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertTrue(response.containsHeader(SessionOperationServlet.RESULT));
@@ -434,25 +435,39 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
             // Trigger timeout of sessionId
             Thread.sleep(AbstractClusteringTestCase.GRACE_TIME_TO_REPLICATE);
 
+            boolean destroyed = false;
+            String newSessionId = null;
             // Timeout should trigger session destroyed event, attribute removed event, and valueUnbound binding event
-            response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(this.transactional ? baseURL2 : baseURL1, "a")));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(response.containsHeader(SessionOperationServlet.RESULT));
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.CREATED_SESSIONS));
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS));
-                Assert.assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES));
-                Assert.assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES));
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES));
-                Assert.assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES));
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES));
-                Assert.assertEquals(sessionId, response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());
-                Assert.assertEquals(response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue(), response.getFirstHeader(SessionOperationServlet.CREATED_SESSIONS).getValue());
-                Assert.assertEquals("7", response.getFirstHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+            for (URL baseURL : Arrays.asList(baseURL1, baseURL2)) {
+                if (!destroyed) {
+                    response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL, "a", sessionId)));
+                    try {
+                        Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                        Assert.assertFalse(response.containsHeader(SessionOperationServlet.RESULT));
+                        Assert.assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
+                        Assert.assertEquals(newSessionId == null, response.containsHeader(SessionOperationServlet.CREATED_SESSIONS));
+                        if (newSessionId == null) {
+                            newSessionId = response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue();
+                        } else {
+                            Assert.assertEquals(newSessionId, response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue());
+                        }
+                        destroyed = response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS);
+                        Assert.assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES));
+                        Assert.assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES));
+                        Assert.assertEquals(destroyed, response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES));
+                        Assert.assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES));
+                        Assert.assertEquals(destroyed, response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES));
+                        if (destroyed) {
+                            Assert.assertEquals(sessionId, response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());
+                            Assert.assertEquals("a", response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
+                            Assert.assertEquals("7", response.getFirstHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES).getValue());
+                        }
+                    } finally {
+                        HttpClientUtils.closeQuietly(response);
+                    }
+                }
             }
+            Assert.assertTrue(destroyed);
         }
     }
 }
