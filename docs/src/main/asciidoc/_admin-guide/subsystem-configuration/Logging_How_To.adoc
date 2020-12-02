@@ -74,3 +74,16 @@ link:Class_Loading_in_WildFly.html#src-557206_ClassLoadinginWildFly-JBossDeploym
 
 This only works for logging in your deployment. Server logs will
 continue to use the logging subsystem configuration.
+
+[[how-do-i-log4j2]]
+== How do I use my own log4j2 implementation?
+
+If you want to use your own log4j2 implementation, such as log4j-core, then you need to do the following two steps.
+
+1. Disable the adding of the logging dependencies to all your deployments with the
+<<add-logging-api-dependencies, add-logging-api-dependencies>> attribute *OR* exclude the `org.apache.logging.log4j.api`
+in a link:Developer_Guide.html#jboss-deployment-structure-file[jboss-deployment-structure.xml].
+2. Then you would need to include the log4j-api and a log4j2 implementation library in your deployment.
+
+IMPORTANT: This only works for logging in your deployment. Server logs will continue to use the logging subsystem
+           configuration.
