@@ -161,6 +161,13 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         )),
         WILDFLY_17_0("WildFly17.0", WILDFLY_16_0),
         WILDFLY_18_0("WildFly18.0", WILDFLY_17_0),
+        WILDFLY_19_0("WildFly19.0", WILDFLY_18_0, Arrays.asList(
+                "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+                "org.wildfly.extension.microprofile.jwt-smallrye",
+                "org.wildfly.extension.microprofile.openapi-smallrye"
+        )),
+        WILDFLY_20_0("WildFly20.0", WILDFLY_19_0),
+        WILDFLY_21_0("WildFly21.0", WILDFLY_20_0),
 
         EAP62("EAP62", Arrays.asList(
                 "org.jboss.as.appclient",
