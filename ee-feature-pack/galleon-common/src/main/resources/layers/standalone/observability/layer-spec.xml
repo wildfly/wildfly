@@ -4,6 +4,5 @@
         <layer name="metrics" optional="true"/>
         <layer name="microprofile-config" optional="true"/>
         <layer name="open-tracing" optional="true"/>
-        <layer name="microprofile-health" optional="true"/>
     </dependencies>
 </layer-spec>

@@ -21,7 +21,8 @@
     <feature-group name="management-audit"/>
     <feature-group name="management-interfaces"/>
     <feature-group name="access-control"/>
-    <feature-group name="health"/>
+    <!-- WFLY-14151  do not forget to put it back -->
+    <!--<feature-group name="health"/>-->
     <feature-group name="metrics" />
 
     <feature-group name="servlet-standalone-profile"/>

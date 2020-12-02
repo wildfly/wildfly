@@ -27,7 +27,8 @@
         <subsystem>messaging-activemq.xml</subsystem>
         <subsystem>metrics.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
-        <subsystem>microprofile-health-smallrye.xml</subsystem>
+        <!-- WFLY-14151  replace by a health.xml... -->
+        <!-- <subsystem>microprofile-health-smallrye.xml</subsystem> -->
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>

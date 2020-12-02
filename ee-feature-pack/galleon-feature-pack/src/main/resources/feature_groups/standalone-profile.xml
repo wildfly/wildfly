@@ -4,7 +4,8 @@
     <feature-group name="servlet-standalone-profile"/>
 
     <feature-group name="basic-profile"/>
-    <feature-group name="health"/>
+    <!-- WFLY-14151  do not forget to put it back -->
+    <!--<feature-group name="health"/>-->
     <feature-group name="metrics" />
 
 </feature-group-spec>
