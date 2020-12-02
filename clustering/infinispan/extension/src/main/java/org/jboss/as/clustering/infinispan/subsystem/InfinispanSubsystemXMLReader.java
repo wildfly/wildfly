@@ -1975,7 +1975,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     }
                 }
                 case PROPERTY: {
-                    if (schema.since(InfinispanSchema.VERSION_11_0) || (this.schema.since(InfinispanSchema.VERSION_9_1) && !this.schema.since(InfinispanSchema.VERSION_10_0))) {
+                    if (this.schema.since(InfinispanSchema.VERSION_11_0) || (this.schema.since(InfinispanSchema.VERSION_9_1) && !this.schema.since(InfinispanSchema.VERSION_10_0))) {
                         ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
                         readElement(reader, operation, RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES);
                         break;
