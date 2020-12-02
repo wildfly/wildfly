@@ -39,6 +39,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -47,6 +48,7 @@ import org.junit.runner.RunWith;
  *
  * @author jdenise@redhat.com
  */
+@Ignore("WFLY-14145")
 @RunWith(Arquillian.class)
 public class SecurityCommandsTestCase {
 
