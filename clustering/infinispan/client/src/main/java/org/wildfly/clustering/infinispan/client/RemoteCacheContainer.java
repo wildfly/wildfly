@@ -24,7 +24,6 @@ package org.wildfly.clustering.infinispan.client;
 
 import java.util.function.Function;
 
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
@@ -57,12 +56,6 @@ public interface RemoteCacheContainer extends org.infinispan.client.hotrod.Remot
      * @return administration utility
      */
     RemoteCacheManagerAdmin administration();
-
-    @Override
-    <K, V> RemoteCache<K, V> getCache();
-
-    @Override
-    <K, V> RemoteCache<K, V> getCache(String cacheName);
 
     /**
      * Registers a factory for creating a near cache for a given cache.
