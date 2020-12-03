@@ -195,7 +195,7 @@ public class JaegerClientMetricsHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private static ServiceName resolveDeploymentUnitServiceName(OperationContext context, ModelNode operation) {
-        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+        PathAddress address = context.getCurrentAddress();
 
         if (address.getElement(1).getKey().equals(ModelDescriptionConstants.SUBDEPLOYMENT)) {
             return Services.deploymentUnitName(
