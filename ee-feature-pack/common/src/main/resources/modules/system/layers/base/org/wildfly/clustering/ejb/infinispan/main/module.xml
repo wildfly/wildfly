@@ -36,6 +36,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.ejb.api"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.protostream"/>
