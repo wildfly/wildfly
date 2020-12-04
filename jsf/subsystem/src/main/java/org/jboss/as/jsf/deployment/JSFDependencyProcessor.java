@@ -64,15 +64,21 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit tl = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        //Set default when no default version has been set on the war file
+        String jsfVersion = JsfVersionMarker.getVersion(tl).equals(JsfVersionMarker.NONE)? JSFModuleIdFactory.getInstance().getDefaultSlot() : JsfVersionMarker.getVersion(tl);
+        String defaultJsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
+
         if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
+            if (jsfVersion.equals(defaultJsfVersion) && !moduleIdFactory.isValidJSFSlot(jsfVersion)) {
+                throw JSFLogger.ROOT_LOGGER.invalidDefaultJSFImpl(defaultJsfVersion);
+            }
             addJSFAPI(JsfVersionMarker.JSF_2_0, moduleSpecification, moduleLoader);
             return;
         }
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) && !DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        //Set default when no default version has been set on the war file
-        String jsfVersion = JsfVersionMarker.getVersion(tl).equals(JsfVersionMarker.NONE)? JSFModuleIdFactory.getInstance().getDefaultSlot() : JsfVersionMarker.getVersion(tl);
+
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
             //if JSF is provided by the application we leave it alone
             return;
@@ -80,7 +86,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         //TODO: we should do that same check that is done in com.sun.faces.config.FacesInitializer
         //and only add the dependency if JSF is actually needed
 
-        String defaultJsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
+
         if (!moduleIdFactory.isValidJSFSlot(jsfVersion)) {
             JSFLogger.ROOT_LOGGER.unknownJSFVersion(jsfVersion, defaultJsfVersion);
             jsfVersion = defaultJsfVersion;

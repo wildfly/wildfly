@@ -460,7 +460,6 @@
         <!-- Apache xml-resolver -->
         <version.xom>1.2.10</version.xom>
 
-
     </properties>
 
     <dependencyManagement>

@@ -412,6 +412,11 @@
             <artifactId>wildfly-jaxrs</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-jsf</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- To be able to start a 'remote' broker -->
         <dependency>
             <groupId>org.apache.activemq</groupId>
