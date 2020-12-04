@@ -50,6 +50,10 @@ include::subsystem-configuration/MicroProfile_OpenTracing_SmallRye.adoc[]
 
 include::subsystem-configuration/MicroProfile_Fault_Tolerance_SmallRye.adoc[]
 
+include::subsystem-configuration/MicroProfile_Reactive_Streams_Operators_SmallRye.adoc[]
+
+include::subsystem-configuration/MicroProfile_Reactive_Messsaging_SmallRye.adoc[]
+
 include::subsystem-configuration/Security.adoc[]
 
 include::subsystem-configuration/Web_services.adoc[]
