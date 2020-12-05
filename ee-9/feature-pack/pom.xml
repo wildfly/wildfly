@@ -54,6 +54,7 @@
         <version.com.sun.faces>3.0.0.SP02</version.com.sun.faces>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
+        <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0-RC2</version.jakarta.ejb.jakarta-ejb-api>
@@ -61,14 +62,13 @@
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.interceptor.jakarata-interceptors-api>2.0.0</version.jakarta.interceptor.jakarata-interceptors-api>
+        <version.jakarta.interceptor.jakarta-interceptors-api>2.0.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
         <version.jakarta.mail>2.0.0</version.jakarta.mail>
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
-        <version.jakarta.security.auth.message.jakarta-security-auth-message-api>2.0.0-RC1</version.jakarta.security.auth.message.jakarta-security-auth-message-api>
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>5.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
@@ -378,7 +378,7 @@
         <dependency>
             <groupId>jakarta.interceptor</groupId>
             <artifactId>jakarta.interceptor-api</artifactId>
-            <version>${version.jakarta.interceptor.jakarata-interceptors-api}</version>
+            <version>${version.jakarta.interceptor.jakarta-interceptors-api}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -394,9 +394,9 @@
             <scope>provided</scope>
         </dependency>-->
         <dependency>
-            <groupId>jakarta.security.auth.message</groupId>
-            <artifactId>jakarta.security.auth.message-api</artifactId>
-            <version>${version.jakarta.security.auth.message.jakarta-security-auth-message-api}</version>
+            <groupId>jakarta.authentication</groupId>
+            <artifactId>jakarta.authentication-api</artifactId>
+            <version>${version.jakarta.authentication.jakarta-authentication-api}</version>
             <scope>provided</scope>
         </dependency>
 
