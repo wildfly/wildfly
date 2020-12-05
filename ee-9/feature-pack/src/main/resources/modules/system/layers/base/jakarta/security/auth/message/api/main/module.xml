@@ -31,6 +31,6 @@
 
     <resources>
         <!--<artifact name="${org.jboss.spec.javax.security.auth.message:jboss-jaspi-api_1.1_spec}"/>-->
-        <artifact name="${jakarta.security.auth.message:jakarta.security.auth.message-api}"/>
+        <artifact name="${jakarta.authentication:jakarta.authentication-api}"/>
     </resources>
 </module>
