@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -78,22 +79,33 @@ public class LoggingUtil {
     public static boolean hasLogMessage(String logFileName, String logMessage, Predicate<String>... filters) throws Exception {
 
         Path logPath = LoggingUtil.getInServerLogPath(logFileName);
-        return isMessageInLogFile(logPath, logMessage, filters);
+        return isMessageInLogFile(logPath, logMessage, 0, filters);
     }
 
     @SafeVarargs
     public static boolean hasLogMessage(ManagementClient managementClient, String handlerName, String logMessage, Predicate<String>... filters) throws Exception {
 
         Path logPath = LoggingUtil.getLogPath(managementClient, "file-handler", handlerName);
-        return isMessageInLogFile(logPath, logMessage, filters);
+        return isMessageInLogFile(logPath, logMessage, 0, filters);
     }
 
     @SafeVarargs
-    private static boolean isMessageInLogFile(Path logPath, String logMessage, Predicate<String>... filters) throws Exception{
+    public static boolean hasLogMessage(ManagementClient managementClient, String handlerName, String logMessage, long offset, Predicate<String>... filters) throws Exception {
+
+        Path logPath = LoggingUtil.getLogPath(managementClient, "file-handler", handlerName);
+        return isMessageInLogFile(logPath, logMessage, offset, filters);
+    }
+
+    @SafeVarargs
+    private static boolean isMessageInLogFile(Path logPath, String logMessage, long offset, Predicate<String>... filters) throws Exception{
         boolean found = false;
         try (BufferedReader fileReader = Files.newBufferedReader(logPath)) {
             String line = "";
+            long count = 0;
             while ((line = fileReader.readLine()) != null) {
+                if (count++ < offset) {
+                    continue;
+                }
                 if (line.contains(logMessage)) {
                     found = true;
                     for (int i = 0; found && filters != null && i < filters.length; i++) {
@@ -138,5 +150,11 @@ public class LoggingUtil {
             }
         }
 
+    }
+
+    public static long countLines(Path logPath) throws Exception {
+        try(Stream<String> lines = Files.lines(logPath)) {
+            return lines.count();
+        }
     }
 }
