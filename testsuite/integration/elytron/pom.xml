@@ -143,21 +143,18 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <version>${version.org.bouncycastle}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcmail-jdk15on</artifactId>
-            <version>${version.org.bouncycastle}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>${version.org.bouncycastle}</version>
             <scope>test</scope>
         </dependency>
 
