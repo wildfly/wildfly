@@ -23,8 +23,8 @@
 package org.wildfly.test.integration.microprofile.metrics.base;
 
 import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricValueFromJSONOutput;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getJSONMetrics;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getMetricValueFromJSONOutput;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

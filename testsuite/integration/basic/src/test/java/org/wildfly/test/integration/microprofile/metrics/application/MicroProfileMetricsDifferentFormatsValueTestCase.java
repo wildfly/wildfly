@@ -17,10 +17,10 @@
 
 package org.wildfly.test.integration.microprofile.metrics.application;
 
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricSubValueFromJSONOutput;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricValueFromPrometheusOutput;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getPrometheusMetrics;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getJSONMetrics;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getMetricSubValueFromJSONOutput;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getMetricValueFromPrometheusOutput;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getPrometheusMetrics;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;

@@ -44,8 +44,8 @@ import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
-import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricSubValueFromJSONOutput;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getJSONMetrics;
+import static org.wildfly.test.microprofile.util.MetricsHelper.getMetricSubValueFromJSONOutput;
 
 /**
  * Regression test for SmallRye Metrics issue:
