@@ -23,7 +23,10 @@
 package org.wildfly.test.integration.microprofile.config.smallrye.converter;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import org.eclipse.microprofile.config.spi.Converter;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -32,6 +35,7 @@ import org.jboss.as.test.module.util.TestModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.wildfly.galleon.plugin.transformer.JakartaTransformer;
 
 /**
  * Add a config-source with a custom class in the microprofile-config subsystem.
@@ -54,9 +58,17 @@ public class SetupTask implements ServerSetupTask {
                         HighPriorityStringConverter2.class)
                 .addAsServiceProvider(Converter.class, Return101Converter.class, Return102Converter.class,
                         HighPriorityStringConverter1.class, HighPriorityStringConverter2.class);
-        configSourceServiceLoad.as(ZipExporter.class).exportTo(moduleFile);
         URL url = MicroProfileConfigConvertersTestCase.class.getResource("module.xml");
         File moduleXmlFile = new File(url.toURI());
+        if (Boolean.getBoolean("ts.ee9") || Boolean.getBoolean("ts.bootable.ee9")) {
+            try (InputStream src = configSourceServiceLoad.as(ZipExporter.class).exportAsInputStream()) {
+                try (InputStream target = JakartaTransformer.transform(null, src, "config-converters.jar", false, null)) {
+                    Files.copy(target, moduleFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        } else {
+            configSourceServiceLoad.as(ZipExporter.class).exportTo(moduleFile);
+        }
         testModule = new TestModule(TEST_MODULE_NAME, moduleXmlFile);
         testModule.addJavaArchive(moduleFile);
         testModule.create();
