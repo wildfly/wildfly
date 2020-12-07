@@ -108,14 +108,14 @@ Next we will briefly discuss each of these entries. Remember the `to` channel is
 
 `mp.messaging.outgoing.to.topic=my-topic` says that we will send data to the Kafka topic called `my-topic`.
 
-`mp.messaging.outgoing.to.value.serializer=org.apache.kafka.common.serialization.IntegerSerializer` tells the connector to use `IntegerSerializer` to serialize the values output by the `send()` method when writing to the topic. Kafka provides serializers for the standard Java types. Note that presently it is not possible to implement your own serializers in your WildFly application to serialize something more complex.
+`mp.messaging.outgoing.to.value.serializer=org.apache.kafka.common.serialization.IntegerSerializer` tells the connector to use `IntegerSerializer` to serialize the values output by the `send()` method when writing to the topic. Kafka provides serializers for the standard Java types. You may implement your own serializer by writing a class implementing `org.apache.kafka.common.serialization.Serializer` and including it in the deployment.
 
 `mp.messaging.incoming.from.connector=smallrye-kafka` says that we want to use Kafka to back the `from` channel. As above, the value `smallrye-kafka` is SmallRye Reactive Messaging specific.
 
 `mp.messaging.incoming.from.topic=my-topic` says that we will read data from the Kafka topic called `my-topic`.
 
 
-`mp.messaging.incoming.from.value.deserializer=org.apache.kafka.common.serialization.IntegerDeserializer` tells the connector to use `IntegerDeserializer` to deserialize the values from the topic before calling the `receive()` method. As before, it is not currently possibly to implement your own deserializers in WildFly.
+`mp.messaging.incoming.from.value.deserializer=org.apache.kafka.common.serialization.IntegerDeserializer` tells the connector to use `IntegerDeserializer` to deserialize the values from the topic before calling the `receive()` method. You may implement your own deserializer by writing a class implementing `org.apache.kafka.common.serialization.Deserializer` and including it in the deployment.
 
 In addition to the above, Apache Kafka, and SmallRye Reactive Messaging's Kafka connector understand a lot more properties. These can be found in the SmallRye Reactive Messaging Kafka connector https://smallrye.io/smallrye-reactive-messaging/smallrye-reactive-messaging/{smallrye-reactive-messaging-version}/kafka/kafka.html[documentation], and in the Apache Kafka documentation for the https://kafka.apache.org/documentation/#producerconfigs[producers] and the https://kafka.apache.org/documentation/#consumerconfigs[consumers].
 
