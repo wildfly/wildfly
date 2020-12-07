@@ -29,7 +29,6 @@
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.naming"/>
-        <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.wildfly.extension.bean-validation"/>
@@ -140,25 +139,6 @@
             <jpa default-datasource=""/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:2.0"/>
-        <subsystem xmlns="urn:jboss:domain:security:2.0">
-            <security-domains>
-                <security-domain name="other" cache-type="default">
-                    <authentication>
-                        <login-module code="Client" flag="required"/>
-                    </authentication>
-                </security-domain>
-                <security-domain name="jboss-web-policy" cache-type="default">
-                    <authorization>
-                        <policy-module code="Client" flag="required"/>
-                    </authorization>
-                </security-domain>
-                <security-domain name="jboss-ejb-policy" cache-type="default">
-                    <authorization>
-                        <policy-module code="Client" flag="required"/>
-                    </authorization>
-                </security-domain>
-            </security-domains>
-        </subsystem>
         <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
             <deployment-permissions>
                 <maximum-set>
