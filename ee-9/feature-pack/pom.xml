@@ -82,6 +82,7 @@
         <!-- Not available on maven central yet
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0-RC2</version.org.glassfish.jakarta.enterprise.concurrent>
         -->
+        <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <version.org.hibernate.validator>7.0.0.Alpha6</version.org.hibernate.validator>
         <version.org.jboss.metadata>14.0.0.Alpha1</version.org.jboss.metadata>
@@ -504,8 +505,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.el</groupId>
-            <artifactId>jboss-el-api_3.0_spec</artifactId>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>jboss-el-api_4.0_spec</artifactId>
+            <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec}</version>
             <scope>provided</scope>
         </dependency>
 

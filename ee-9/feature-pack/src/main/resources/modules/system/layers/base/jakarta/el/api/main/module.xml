@@ -24,6 +24,6 @@
 
 <module xmlns="urn:jboss:module:1.5" name="jakarta.el.api">
     <resources>
-        <artifact name="${org.jboss.spec.javax.el:jboss-el-api_3.0_spec}"/>
+        <artifact name="${org.jboss.spec.jakarta.el:jboss-el-api_4.0_spec}"/>
     </resources>
 </module>
