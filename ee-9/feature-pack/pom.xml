@@ -85,12 +85,8 @@
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <version.org.hibernate.validator>7.0.0.Alpha6</version.org.hibernate.validator>
         <version.org.jboss.metadata>14.0.0.Alpha1</version.org.jboss.metadata>
-        <version.org.jboss.weld.weld>4.0.0.Beta5</version.org.jboss.weld.weld>
-        <!-- TODO in the main pom this is a different version from the rest of weld. Why? -->
-        <!-- It's just a test dep so don't override it for now
-        <version.org.jboss.weld.se.weld-se-core>${version.org.jboss.weld.weld}</version.org.jboss.weld.se.weld-se-core>
-        -->
-        <version.org.jboss.weld.weld-api>4.0.Beta1</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>4.0.0.CR1</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>4.0.CR1</version.org.jboss.weld.weld-api>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
@@ -1008,13 +1004,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!--<dependency>
-            <groupId>org.jboss.weld.se</groupId>
-            <artifactId>weld-se-core</artifactId>
-            <version>${version.org.jboss.weld.se.weld-se-core}</version>
-            <scope>test</scope>
-        </dependency>-->
 
         <!-- Misc -->
         <dependency>
