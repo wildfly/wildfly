@@ -39,7 +39,7 @@ import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 import org.wildfly.extension.microprofile.health._private.MicroProfileHealthLogger;
 
 
-public class HealthReporter {
+public class MicroProfileHealthReporter {
 
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";
@@ -70,7 +70,7 @@ public class HealthReporter {
     }
 
 
-    public HealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus, boolean defaultServerProceduresDisabled) {
+    public MicroProfileHealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus, boolean defaultServerProceduresDisabled) {
         this.emptyDeploymentLivenessCheck  = new EmptyDeploymentCheckStatus("empty-liveness-checks", emptyLivenessChecksStatus);
         this.emptyDeploymentReadinessCheck  = new EmptyDeploymentCheckStatus("empty-readiness-checks", emptyReadinessChecksStatus);
         this.defaultServerProceduresDisabled = defaultServerProceduresDisabled;

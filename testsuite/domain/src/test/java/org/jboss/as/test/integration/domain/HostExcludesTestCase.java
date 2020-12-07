@@ -169,6 +169,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         WILDFLY_20_0("WildFly20.0", WILDFLY_19_0),
         WILDFLY_21_0("WildFly21.0", WILDFLY_20_0),
         WILDFLY_22_0("WildFly22.0", WILDFLY_21_0, Arrays.asList(
+                "org.wildfly.extension.health",
                 "org.wildfly.extension.metrics"
         )),
                 EAP62("EAP62", Arrays.asList(

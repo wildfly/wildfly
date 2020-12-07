@@ -32,7 +32,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
-import org.wildfly.extension.microprofile.health.HealthReporter;
+import org.wildfly.extension.microprofile.health.MicroProfileHealthReporter;
 import org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition;
 import org.wildfly.extension.microprofile.health._private.MicroProfileHealthLogger;
 
@@ -57,7 +57,7 @@ public class DeploymentProcessor implements DeploymentUnitProcessor {
                     WELD_CAPABILITY_NAME);
         }
         if (weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
-            final HealthReporter healthReporter = (HealthReporter) phaseContext.getServiceRegistry().getService(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_SERVICE).getValue();
+            final MicroProfileHealthReporter healthReporter = (MicroProfileHealthReporter) phaseContext.getServiceRegistry().getService(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_SERVICE).getValue();
 
             weldCapability.registerExtensionInstance(new CDIExtension(healthReporter, module), deploymentUnit);
         }

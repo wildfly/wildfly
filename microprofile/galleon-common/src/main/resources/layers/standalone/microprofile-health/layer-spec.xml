@@ -26,6 +26,7 @@
     <dependencies>
         <layer name="management"/>
         <layer name="microprofile-config"/>
+        <layer name="health"/>
     </dependencies>
     <feature spec="subsystem.microprofile-health-smallrye">
         <param name="security-enabled" value="false"/>

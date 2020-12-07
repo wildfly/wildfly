@@ -118,7 +118,6 @@
             </feature>
         </feature>
     </feature-group>
-    <!-- WFLY-14151  do not forget to put it back -->
-    <!--<feature-group name="health"/>-->
+    <feature-group name="health"/>
     <feature-group name="metrics" />
 </feature-group-spec>

@@ -4,8 +4,7 @@
     <feature-group name="servlet-unsecured-standalone-profile"/>
 
     <feature-group name="basic-profile"/>
-    <!-- WFLY-14151  do not forget to put it back -->
-    <!--<feature-group name="health"/>-->
+    <feature-group name="health"/>
     <feature-group name="metrics" />
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
 

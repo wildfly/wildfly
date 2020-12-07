@@ -72,6 +72,7 @@
         <module>ee-9</module>
         <module>ejb3</module>
         <module>galleon-pack</module>
+        <module>health</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -1037,6 +1038,12 @@
                 <artifactId>wildfly-galleon-pack</artifactId>
                 <version>${full.maven.version}</version>
                 <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-health</artifactId>
+                <version>${ee.maven.version}</version>
             </dependency>
 
             <dependency>
