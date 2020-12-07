@@ -106,7 +106,7 @@ org.jboss.as.jpa org.hibernate |The presence of an @PersistenceUnit or
 <persistence-context-ref> in a deployment descriptor..
 
 |Logging Subsystem |org.jboss.logging org.apache.commons.logging
-org.apache.log4j org.slf4j org.jboss.logging.jul-to-slf4j-stub |  | 
+org.apache.log4j org.apache.logging.log4j.api org.slf4j org.jboss.logging.jul-to-slf4j-stub |  | 
 
 |SAR Subsystem |  |org.jboss.logging org.jboss.modules |The deployment
 is a SAR archive
