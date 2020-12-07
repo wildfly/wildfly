@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.server.deployment.Phase.STRUCTURE_EE_DEFAULT_BINDINGS_CONFIG;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,8 +37,6 @@ import org.jboss.dmr.ModelNode;
  * @author Eduardo Martins
  */
 public class DefaultBindingsAdd extends AbstractBoottimeAddStepHandler {
-
-    public static final int STRUCTURE_EE_DEFAULT_BINDINGS_CONFIG = 0x1B01;
 
     private final DefaultBindingsConfigurationProcessor defaultBindingsConfigurationProcessor;
 
