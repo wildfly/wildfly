@@ -61,6 +61,7 @@ final class DeploymentModelBuilderJAXWS_POJO extends AbstractDeploymentModelBuil
             }
             if (ecm != null) {
                 ep.setEndpointConfig(ecm.getConfig(pojoEndpointClassName));
+                markWeldDeployment(unit, ep);
             }
         }
     }
