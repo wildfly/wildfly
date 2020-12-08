@@ -172,6 +172,40 @@ final class AssociationImpl implements Association, AutoCloseable {
             return CancelHandle.NULL;
         }
 
+        final Component component = componentView.getComponent();
+
+        try {
+            component.waitForComponentStart();
+        } catch (RuntimeException e) {
+            invocationRequest.writeException(new EJBException(e));
+            return CancelHandle.NULL;
+        }
+
+        final EJBLocator<?> actualLocator;
+
+        if (component instanceof StatefulSessionComponent) {
+            if (ejbLocator.isStateless()) {
+                final SessionID sessionID = ((StatefulSessionComponent) component).createSessionRemote();
+                try {
+                    invocationRequest.convertToStateful(sessionID);
+                } catch (IllegalArgumentException e) {
+                    // cannot convert (old protocol)
+                    invocationRequest.writeNotStateful();
+                    return CancelHandle.NULL;
+                }
+                actualLocator = ejbLocator.withSession(sessionID);
+            } else {
+                actualLocator = ejbLocator;
+            }
+        } else {
+            if (ejbLocator.isStateful()) {
+                invocationRequest.writeNotStateful();
+                return CancelHandle.NULL;
+            } else {
+                actualLocator = ejbLocator;
+            }
+        }
+
         final boolean isAsync = componentView.isAsynchronous(invokedMethod);
 
         final boolean oneWay = isAsync && invokedMethod.getReturnType() == void.class;
@@ -214,7 +248,7 @@ final class AssociationImpl implements Association, AutoCloseable {
 
             try {
                 final Map<String, Object> contextDataHolder = new HashMap<>();
-                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag, contextDataHolder);
+                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag, actualLocator, contextDataHolder);
                 attachments.putAll(contextDataHolder);
             } catch (EJBComponentUnavailableException ex) {
                 // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
@@ -253,7 +287,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             }
             // invocation was successful
             if (! oneWay) try {
-                updateAffinities(invocationRequest, attachments, ejbLocator, componentView);
+                updateAffinities(invocationRequest, attachments, actualLocator, componentView);
                 requestContent.writeInvocationResult(result);
             } catch (Throwable ioe) {
                 EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
@@ -556,7 +590,7 @@ final class AssociationImpl implements Association, AutoCloseable {
         }
     }
 
-    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, Map<String, Object> contextDataHolder) throws Exception {
+    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, final EJBLocator<?> ejbLocator, Map<String, Object> contextDataHolder) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -590,7 +624,6 @@ final class AssociationImpl implements Association, AutoCloseable {
             }
         }
         // add the session id to the interceptor context, if it's a stateful ejb locator
-        final EJBLocator<?> ejbLocator = content.getEJBLocator();
         if (ejbLocator.isStateful()) {
             interceptorContext.putPrivateData(SessionID.class, ejbLocator.asStateful().getSessionId());
         }
