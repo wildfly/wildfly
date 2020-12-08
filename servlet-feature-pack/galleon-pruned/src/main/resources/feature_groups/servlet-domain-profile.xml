@@ -4,6 +4,6 @@
 
     <feature-group name="servlet-unsecured-domain-profile"/>
     <feature-group name="undertow-legacy-security"/>
-    <feature-group name="security"/>
+    <feature-group name="servlet-picketbox-security"/>
 
 </feature-group-spec>

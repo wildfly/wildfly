@@ -26,11 +26,9 @@
         </include>
     </feature-group>
 
-    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
-        <feature-group name="management-interfaces">
-            <feature spec="core-service.management.management-interface.http-interface">
-                <param name="console-enabled" value="false"/>
-            </feature>
-        </feature-group>
-    </origin>
+    <feature-group name="management-interfaces">
+        <feature spec="core-service.management.management-interface.http-interface">
+            <param name="console-enabled" value="false"/>
+        </feature>
+    </feature-group>
 </feature-group-spec>
