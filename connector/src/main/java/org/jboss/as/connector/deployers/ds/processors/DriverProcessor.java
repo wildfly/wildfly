@@ -25,9 +25,13 @@ package org.jboss.as.connector.deployers.ds.processors;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYER_JDBC_LOGGER;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Driver;
+import java.util.Enumeration;
 import java.util.List;
 
+import org.jboss.as.connector._drivermanager.DriverManagerAdapter;
 import org.jboss.as.connector.services.driver.DriverService;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
@@ -42,6 +46,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.common.Assert;
 
 /**
  * Deploy any JDBC drivers in a deployment unit.
@@ -110,5 +115,25 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
     /** {@inheritDoc} */
     @Override
     public void undeploy(final DeploymentUnit context) {
+        try {
+            /**
+             * https://issues.redhat.com/browse/WFLY-14114
+             *
+             * This hack allows to deregister all drivers registered by this module. See comments in {@link DriverManagerAdapterProcessor}
+             */
+            final Module module = context.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+            Class<?> driverManagerAdapterClass = module.getClassLoader().loadClass(DriverManagerAdapter.class.getName());
+
+            Method getDriversMethod = driverManagerAdapterClass.getDeclaredMethod("getDrivers");
+            Enumeration<Driver> drivers = (Enumeration<Driver>) getDriversMethod.invoke(null, null);
+
+            Method deregisterDriverMethod = driverManagerAdapterClass.getDeclaredMethod("deregisterDriver", Driver.class);
+            while (drivers.hasMoreElements()) {
+                Driver driver = drivers.nextElement();
+                deregisterDriverMethod.invoke(null, driver);
+            }
+        } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            Assert.unreachableCode();
+        }
     }
 }
