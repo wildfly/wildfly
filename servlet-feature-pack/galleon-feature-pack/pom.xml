@@ -49,9 +49,6 @@
         <galleon-common.resources.directory>${basedir}/../galleon-common/src/main/resources</galleon-common.resources.directory>
         <galleon-pruned.resources.directory>${basedir}/../galleon-pruned/src/main/resources</galleon-pruned.resources.directory>
         <pruned.resources.directory>${basedir}/../pruned/src/main/resources</pruned.resources.directory>
-        <common.license.directory>${basedir}/../common/src/license</common.license.directory>
-        <ee-8-api.license.directory>${basedir}/../ee-8-api/src/license</ee-8-api.license.directory>
-        <pruned.license.directory>${basedir}/../pruned/src/license</pruned.license.directory>
     </properties>
 
     <dependencies>
@@ -221,9 +218,8 @@
                         <configuration>
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFiles>
-                                <licensesConfigFile>${common.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${ee-8-api.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${pruned.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-ee-8-api-licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/servlet-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedArtifacts>wildfly-core-galleon-pack|wildfly-servlet-feature-pack-common|wildfly-servlet-feature-pack-ee-8-api|wildfly-servlet-feature-pack-galleon-common|wildfly-servlet-feature-pack-galleon-pruned</excludedArtifacts>

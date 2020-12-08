@@ -22,20 +22,13 @@
 
 <build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly-ee@maven(org.jboss.universe:community-universe):current">
 
-    <transitive>
+    <dependencies>
         <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">
             <name>org.wildfly.core:wildfly-core-galleon-pack</name>
-        </dependency>
-    </transitive>
-    <dependencies>
-        <dependency group-id="org.wildfly" artifact-id="wildfly-servlet-galleon-pack">
-            <name>org.wildfly:wildfly-servlet-galleon-pack</name>
             <packages inherit="false">
                 <exclude name="product.conf"/>
             </packages>
-            <default-configs inherit="false">
-                <include name="standalone-load-balancer.xml" model="standalone"/>
-            </default-configs>
+            <default-configs inherit="false"/>
         </dependency>
     </dependencies>
     <default-packages>
@@ -71,6 +64,7 @@
                 <extension>org.jboss.as.clustering.infinispan</extension>
                 <extension>org.jboss.as.clustering.jgroups</extension>
                 <extension>org.jboss.as.connector</extension>
+                <extension>org.jboss.as.ee</extension>
                 <extension>org.jboss.as.ejb3</extension>
                 <extension>org.jboss.as.jaxrs</extension>
                 <extension>org.jboss.as.jdr</extension>
@@ -79,8 +73,10 @@
                 <extension>org.jboss.as.jsr77</extension>
                 <extension>org.jboss.as.mail</extension>
                 <extension>org.jboss.as.modcluster</extension>
+                <extension>org.jboss.as.naming</extension>
                 <extension>org.jboss.as.pojo</extension>
                 <extension>org.jboss.as.sar</extension>
+                <extension>org.jboss.as.security</extension>
                 <extension>org.jboss.as.transactions</extension>
                 <extension>org.jboss.as.webservices</extension>
                 <extension>org.jboss.as.weld</extension>
@@ -95,12 +91,14 @@
                 <extension>org.wildfly.extension.metrics</extension>
                 <extension>org.wildfly.extension.picketlink</extension>
                 <extension>org.wildfly.extension.rts</extension>
+                <extension>org.wildfly.extension.undertow</extension>
                 <extension>org.wildfly.iiop-openjdk</extension>
             </standalone>
             <domain>
                 <extension>org.jboss.as.clustering.infinispan</extension>
                 <extension>org.jboss.as.clustering.jgroups</extension>
                 <extension>org.jboss.as.connector</extension>
+                <extension>org.jboss.as.ee</extension>
                 <extension>org.jboss.as.ejb3</extension>
                 <extension>org.jboss.as.jaxrs</extension>
                 <extension>org.jboss.as.jdr</extension>
@@ -109,8 +107,10 @@
                 <extension>org.jboss.as.jsr77</extension>
                 <extension>org.jboss.as.mail</extension>
                 <extension>org.jboss.as.modcluster</extension>
+                <extension>org.jboss.as.naming</extension>
                 <extension>org.jboss.as.pojo</extension>
                 <extension>org.jboss.as.sar</extension>
+                <extension>org.jboss.as.security</extension>
                 <extension>org.jboss.as.transactions</extension>
                 <extension>org.jboss.as.webservices</extension>
                 <extension>org.jboss.as.weld</extension>
@@ -123,6 +123,7 @@
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.picketlink</extension>
                 <extension>org.wildfly.extension.rts</extension>
+                <extension>org.wildfly.extension.undertow</extension>
                 <extension>org.wildfly.iiop-openjdk</extension>
             </domain>
         </extensions>

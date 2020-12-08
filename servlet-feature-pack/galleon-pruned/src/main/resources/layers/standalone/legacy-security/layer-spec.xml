@@ -5,5 +5,5 @@
         <layer name="vault"/>
         <layer name="naming"/>
     </dependencies>
-    <feature-group name="security"/>
+    <feature-group name="servlet-picketbox-security"/>
 </layer-spec>

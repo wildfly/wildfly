@@ -21,9 +21,7 @@
 
 <feature-group-spec name="servlet-host-master" xmlns="urn:jboss:galleon:feature-group:1.0">
 
-    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
-        <feature-group name="host-master"/>
-    </origin>
+    <feature-group name="core-host-master"/>
 
     <feature spec="host">
         <param name="host" value="master"/>
