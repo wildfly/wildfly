@@ -54,7 +54,7 @@ public class JaxrsTransformers implements ExtensionTransformerRegistration {
     private static void registerTransformers_3_0_0(SubsystemTransformerRegistration subsystemRegistration) {
        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
        AttributeTransformationDescriptionBuilder attributeBuilder = builder.getAttributeBuilder();
-       DiscardAttributeValueChecker checker = new DiscardAttributeValueChecker(false, false, ModelNode.FALSE);
+       DiscardAttributeValueChecker checker = new DiscardAttributeValueChecker(false, false, ModelNode.TRUE);
        attributeBuilder.setDiscard(checker, JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR);
        attributeBuilder.addRejectCheck(RejectAttributeChecker.ALL, JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR);
        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, JaxrsExtension.MODEL_VERSION_2_0_0);
@@ -76,7 +76,6 @@ public class JaxrsTransformers implements ExtensionTransformerRegistration {
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING);
-        checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_PROVIDERS);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS);

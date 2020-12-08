@@ -31,24 +31,24 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
  * @author <a href="mailto:alessio.soldano@jboss.com>Alessio Soldano</a>
  * @author <a href="rsigal@redhat.com>Ron Sigal</a>
  */
-public class JaxrsSubsystem20MinimalTestCase extends AbstractSubsystemBaseTest {
+public class JaxrsSubsystem30MinimalTestCase extends AbstractSubsystemBaseTest {
 
-    public JaxrsSubsystem20MinimalTestCase() {
+    public JaxrsSubsystem30MinimalTestCase() {
         super(JaxrsExtension.SUBSYSTEM_NAME, new JaxrsExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jaxrs-2.0_minimal.xml");
+        return readResource("jaxrs-3.0_minimal.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-jaxrs_2_0.xsd";
+        return "schema/jboss-as-jaxrs_3_0.xsd";
     }
 
     @Override
     public void testSubsystem() throws Exception {
-       standardSubsystemTest(null, false);
+        standardSubsystemTest(null);
     }
 }

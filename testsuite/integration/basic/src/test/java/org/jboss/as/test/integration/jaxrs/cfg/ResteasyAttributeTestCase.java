@@ -196,6 +196,7 @@ public class ResteasyAttributeTestCase {
         setAttributeValue(JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS, map);
         map.clear();
 
+        setAttributeValue(JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR, VALUE_EXPRESSION_BOOLEAN_TRUE);
         setAttributeValue(JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, VALUE_EXPRESSION_BOOLEAN_TRUE);
         setAttributeValue(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, VALUE_EXPRESSION_STRING);
 

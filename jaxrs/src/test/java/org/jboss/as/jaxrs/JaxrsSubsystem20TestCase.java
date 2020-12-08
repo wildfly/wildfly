@@ -49,6 +49,6 @@ public class JaxrsSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
     @Override
     public void testSubsystem() throws Exception {
-        standardSubsystemTest(null);
+       standardSubsystemTest(null, false);
     }
 }
