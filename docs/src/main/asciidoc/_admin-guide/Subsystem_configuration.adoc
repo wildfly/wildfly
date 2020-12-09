@@ -66,6 +66,8 @@ include::subsystem-configuration/Deployment_Scanner.adoc[]
 
 include::subsystem-configuration/Core_Management.adoc[]
 
+include::subsystem-configuration/JAXRS.adoc[]
+
 include::subsystem-configuration/Simple_configuration_subsystems.adoc[]
 
 :leveloffset: -1
