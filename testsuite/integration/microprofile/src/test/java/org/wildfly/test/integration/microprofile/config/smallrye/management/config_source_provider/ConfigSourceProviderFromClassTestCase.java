@@ -43,8 +43,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroProfileConfigTestCase;
-import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.CustomConfigSource;
 import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
+import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.CustomConfigSource;
 
 /**
  * Load a ConfigSource from a class (in a module).

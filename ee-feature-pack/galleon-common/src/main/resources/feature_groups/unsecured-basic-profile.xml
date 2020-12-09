@@ -39,7 +39,6 @@
     <feature-group name="jaxrs"/>
     <feature spec="subsystem.jdr"/>
     <feature spec="subsystem.weld"/>
-    <feature spec="subsystem.microprofile-config-smallrye"/>
     <feature spec="subsystem.pojo"/>
     <feature spec="subsystem.sar"/>
     <feature-group name="mail"/>

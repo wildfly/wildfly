@@ -3,6 +3,5 @@
     <dependencies>
         <layer name="metrics" optional="true"/>
         <layer name="health" optional="true" />
-        <layer name="microprofile-config" optional="true"/>
     </dependencies>
 </layer-spec>

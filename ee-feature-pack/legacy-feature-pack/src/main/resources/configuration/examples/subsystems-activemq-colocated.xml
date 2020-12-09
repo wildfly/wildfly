@@ -29,7 +29,6 @@
         <subsystem>mail.xml</subsystem>
         <subsystem>messaging-activemq-colocated.xml</subsystem>
         <subsystem>metrics.xml</subsystem>
-        <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>

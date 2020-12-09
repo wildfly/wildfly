@@ -164,11 +164,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.config</groupId>
-            <artifactId>microprofile-config-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
             <scope>test</scope>
@@ -445,8 +440,6 @@
                 <configuration>
                     <runOrder>alphabetical</runOrder>
                     <environmentVariables>
-                        <!-- dummy env property for MicroProfile Config testing -->
-                        <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
                         <TEST_PROP>JMXPropertyEditorsTestCase-WFLY-12899</TEST_PROP>
                     </environmentVariables>
                     <systemPropertyVariables combine.children="append">
@@ -3553,7 +3546,6 @@
                                         <exclude>org/jboss/as/test/integration/weld/modules/dependency/StaticCdiModulesDependencyTest.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/*Test.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/config/smallrye/converter/MicroProfileConfigConvertersTestCase.java</exclude>
                                         <!-- Test involves server side EE 9 types propagating to @RunAsClient EE 8 test -->
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/exception/TxExceptionEjbClientTestCase.java</exclude>
                                         <!-- Requires legacy security -->

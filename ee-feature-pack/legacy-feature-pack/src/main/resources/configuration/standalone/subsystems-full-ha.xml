@@ -29,7 +29,6 @@
         <subsystem>mail.xml</subsystem>
         <subsystem supplement="ha">messaging-activemq.xml</subsystem>
         <subsystem>metrics.xml</subsystem>
-        <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem supplement="${mod_cluster.supplement}">mod_cluster.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>

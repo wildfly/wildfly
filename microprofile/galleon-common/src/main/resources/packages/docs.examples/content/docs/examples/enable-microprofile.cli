@@ -33,6 +33,13 @@ echo INFO: Removing security subsystem and ManagementRealm.
 
 echo INFO: Adding microprofile subsystems.
 
+if (outcome != success) of /subsystem=microprofile-config-smallrye:read-resource
+  /extension=org.wildfly.extension.microprofile.config-smallrye:add
+  /subsystem=microprofile-config-smallrye:add
+else
+  echo INFO: microprofile-config-smallrye already in configuration, subsystem not added.
+end-if
+
 if (outcome != success) of /subsystem=microprofile-fault-tolerance-smallrye:read-resource
   /extension=org.wildfly.extension.microprofile.fault-tolerance-smallrye:add
   /subsystem=microprofile-fault-tolerance-smallrye:add
