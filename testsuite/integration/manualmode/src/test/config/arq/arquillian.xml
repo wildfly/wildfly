@@ -22,6 +22,23 @@
             </configuration>
         </container>
 
+        <container qualifier="graceless-server" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=graceless-server</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args} --graceless</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
         <container qualifier="default-full-jbossas" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly</property>
