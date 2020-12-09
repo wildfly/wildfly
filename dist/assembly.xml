@@ -26,6 +26,7 @@
                 <exclude>${server.output.dir.prefix}-${server.output.dir.version}/domain/tmp/**</exclude>
                 <exclude>${server.output.dir.prefix}-${server.output.dir.version}/domain/configuration/domain_xml_history/**</exclude>
                 <exclude>${server.output.dir.prefix}-${server.output.dir.version}/domain/configuration/host_xml_history/**</exclude>
+                <exclude>${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/jacorb/**</exclude>
             </excludes>
         </fileSet>
     </fileSets>
