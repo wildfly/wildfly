@@ -435,8 +435,8 @@
         <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.3.1</version.org.opensaml.opensaml>
         <version.org.ow2.asm>7.1</version.org.ow2.asm>
-		<!-- WildFly overrides the picketbox version from core to use MRRC variants -->
-		<version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
+        <!-- WildFly overrides the picketbox version from core to use MRRC variants -->
+        <version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP12-redhat-00009</version.org.picketlink>
         <version.org.picketlink.bindings>2.5.5.SP12-redhat-00012</version.org.picketlink.bindings>
