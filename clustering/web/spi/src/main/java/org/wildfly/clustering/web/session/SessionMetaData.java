@@ -30,10 +30,11 @@ import java.time.Instant;
  */
 public interface SessionMetaData extends ImmutableSessionMetaData {
     /**
-     * Sets the instant in time that this session was last accessed.
-     * @param the instant this session was last accessed
+     * Sets the time this session was last accessed.
+     * @param the start time of the last request
+     * @param the end time of the last request
      */
-    void setLastAccessedTime(Instant instant);
+    void setLastAccess(Instant startTime, Instant endTime);
 
     /**
      * Set the time interval as a duration, after which this session will expire.
