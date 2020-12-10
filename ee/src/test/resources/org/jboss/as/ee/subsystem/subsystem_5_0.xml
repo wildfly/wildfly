@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:ee:6.0" >
+<subsystem xmlns="urn:jboss:domain:ee:5.0" >
     <global-modules>
         <module name="org.jboss.logging" slot="main"/>
         <module name="org.apache.log4j" annotations="true" meta-inf="true" services="false"/>

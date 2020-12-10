@@ -58,6 +58,8 @@ public class EETransformers implements ExtensionTransformerRegistration {
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getCurrentSubsystemVersion());
 
+        registerTransformers6_0(chainedBuilder.createBuilder(EESubsystemModel.Version.v6_0_0, EESubsystemModel.Version.v5_0_0));
+
         registerTransformers5_0(chainedBuilder.createBuilder(EESubsystemModel.Version.v5_0_0, EESubsystemModel.Version.v4_0_0));
 
         // 4.0.0 --> 3.0.0
@@ -89,7 +91,8 @@ public class EETransformers implements ExtensionTransformerRegistration {
                 EESubsystemModel.Version.v1_0_0,
                 EESubsystemModel.Version.v1_1_0,
                 EESubsystemModel.Version.v3_0_0,
-                EESubsystemModel.Version.v4_0_0
+                EESubsystemModel.Version.v4_0_0,
+                EESubsystemModel.Version.v5_0_0
         });
 
     }
@@ -98,6 +101,9 @@ public class EETransformers implements ExtensionTransformerRegistration {
         ManagedExecutorServiceResourceDefinition.registerTransformers5_0(builder);
         ManagedScheduledExecutorServiceResourceDefinition.registerTransformers5_0(builder);
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.GLOBAL_DIRECTORY));
+    }
+
+    private static void registerTransformers6_0(ResourceTransformationDescriptionBuilder builder) {
     }
 
     /**
