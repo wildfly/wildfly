@@ -258,7 +258,7 @@
         <version.com.beust>1.78</version.com.beust>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.11.3</version.com.fasterxml.jackson>
-        <version.com.github.ben-manes.caffeine>2.8.6</version.com.github.ben-manes.caffeine>
+        <version.com.github.ben-manes.caffeine>2.8.8</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
@@ -296,7 +296,7 @@
         <version.io.opentracing.tracerresolver>0.1.5</version.io.opentracing.tracerresolver>
         <version.io.opentracing.servlet>0.2.3</version.io.opentracing.servlet>
         <version.io.reactivex.rxjava2>2.2.19</version.io.reactivex.rxjava2>
-        <version.io.reactivex.rxjava3>3.0.4</version.io.reactivex.rxjava3>
+        <version.io.reactivex.rxjava3>3.0.8</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <version.io.smallrye.smallrye-config>1.6.2</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>4.3.2</version.io.smallrye.smallrye-fault-tolerance>
@@ -369,7 +369,7 @@
         <version.org.hibernate.validator>6.0.21.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <!-- n.b. Infinispan Server version used for integration testing is defined separately in testsuite/integration/clustering/pom.xml -->
-        <version.org.infinispan>11.0.7.Final</version.org.infinispan>
+        <version.org.infinispan>11.0.8.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.3.4.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
