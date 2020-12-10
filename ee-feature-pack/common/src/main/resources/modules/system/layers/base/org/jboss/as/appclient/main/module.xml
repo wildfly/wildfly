@@ -70,6 +70,7 @@
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security" optional="true"/>
+        <module name="org.wildfly.extension.elytron" optional="true" />
         <module name="org.wildfly.security.elytron-private" services="import"/>
         <module name="org.jboss.as.version"/>
         <module name="org.picketbox"/>
