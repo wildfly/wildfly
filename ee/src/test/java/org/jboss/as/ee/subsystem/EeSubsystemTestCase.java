@@ -102,7 +102,12 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-ee:" + controllerVersion.getMavenGavVersion());
         final KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        final FailedOperationTransformationConfig config =  new FailedOperationTransformationConfig();
+        final FailedOperationTransformationConfig config =  new FailedOperationTransformationConfig()
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ManagedExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD_AD))
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD_AD));
+
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, legacyVersion, xmlOps, config);
     }
 

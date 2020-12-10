@@ -11,6 +11,7 @@
             <param name="managed-executor-service" value="default"/>
             <param name="context-service" value="default"/>
             <param name="jndi-name" value="java:jboss/ee/concurrency/executor/default"/>
+            <param name="hung-task-termination-period" value="0"/>
             <param name="hung-task-threshold" value="60000"/>
             <param name="keepalive-time" value="5000"/>
         </feature>
@@ -18,6 +19,7 @@
             <param name="managed-scheduled-executor-service" value="default"/>
             <param name="context-service" value="default"/>
             <param name="jndi-name" value="java:jboss/ee/concurrency/scheduler/default"/>
+            <param name="hung-task-termination-period" value="0"/>
             <param name="hung-task-threshold" value="60000"/>
             <param name="keepalive-time" value="3000"/>
         </feature>

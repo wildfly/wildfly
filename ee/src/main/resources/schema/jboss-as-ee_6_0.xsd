@@ -229,6 +229,7 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="thread-priority" type="priorityType"/>
+        <xs:attribute name="hung-task-termination-period" type="hungTaskTerminationPeriodType" default="0"/>
         <xs:attribute name="hung-task-threshold" type="hungTaskThresholdType" default="0"/>
         <xs:attribute name="long-running-tasks" type="longRunningTasksType" default="false"/>
         <xs:attribute name="core-threads" type="coreThreadsType">
@@ -284,6 +285,7 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="thread-priority" type="priorityType"/>
+        <xs:attribute name="hung-task-termination-period" type="hungTaskTerminationPeriodType" default="0"/>
         <xs:attribute name="hung-task-threshold" type="hungTaskThresholdType" default="0"/>
         <xs:attribute name="long-running-tasks" type="longRunningTasksType" default="false"/>
         <xs:attribute name="core-threads" type="coreThreadsType"/>
@@ -348,6 +350,17 @@
         <xs:restriction base="xs:integer">
             <xs:minInclusive value="1"/>
             <xs:maxInclusive value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="hungTaskTerminationPeriodType">
+        <xs:annotation>
+            <xs:documentation>
+                The period, in milliseconds, to attempt automatic hung tasks termination, by cancelling such tasks. If value is 0, which is the default, hung tasks are never cancelled.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:long">
+            <xs:minInclusive value="0"/>
         </xs:restriction>
     </xs:simpleType>
 

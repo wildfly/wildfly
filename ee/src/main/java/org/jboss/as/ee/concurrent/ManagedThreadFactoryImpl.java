@@ -24,6 +24,7 @@ package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedThread;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.internal.ManagedFutureTask;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -35,8 +36,8 @@ import java.security.PrivilegedAction;
 
 /**
  * {@link ManagedThreadFactory} implementation ensuring {@link SecurityIdentity} propagation into new threads.
- *
  * @author <a href="mailto:jkalina@redhat.com">Jan Kalina</a>
+ * @author emmartins
  */
 public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl {
 
@@ -83,6 +84,22 @@ public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurren
         return t;
     }
 
+    @Override
+    public void taskStarting(Thread t, ManagedFutureTask task) {
+        super.taskStarting(t, task);
+        if (t instanceof ManagedThread) {
+            ((ManagedThread)t).task = task;
+        }
+    }
+
+    @Override
+    public void taskDone(Thread t) {
+        super.taskDone(t);
+        if (t instanceof ManagedThread) {
+            ((ManagedThread)t).task = null;
+        }
+    }
+
     private final class CreateThreadAction implements PrivilegedAction<AbstractManagedThread> {
         private final Runnable r;
         private final ContextHandle contextHandleForSetup;
@@ -94,7 +111,34 @@ public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurren
 
         @Override
         public AbstractManagedThread run() {
-            return ManagedThreadFactoryImpl.super.createThread(r, contextHandleForSetup);
+            return new ManagedThread(r, contextHandleForSetup);
+        }
+    }
+
+    /**
+     * Managed thread extension, to allow canceling the task running in the thread.
+     * @author emmartins
+     */
+    public class ManagedThread extends org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl.ManagedThread {
+        volatile ManagedFutureTask task = null;
+        /**
+         *
+         * @param target
+         * @param contextHandleForSetup
+         */
+        public ManagedThread(Runnable target, ContextHandle contextHandleForSetup) {
+            super(target, contextHandleForSetup);
+        }
+        /**
+         * Cancel the task running in the thread.
+         * @return
+         */
+        boolean cancelTask() {
+            final ManagedFutureTask task = this.task;
+            if (task != null) {
+                return task.cancel(true);
+            }
+            return false;
         }
     }
 }

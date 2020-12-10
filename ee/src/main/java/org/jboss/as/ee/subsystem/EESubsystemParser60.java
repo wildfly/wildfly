@@ -427,6 +427,9 @@ class EESubsystemParser60 implements XMLStreamConstants, XMLElementReader<List<M
                 case THREAD_PRIORITY:
                     ManagedExecutorServiceResourceDefinition.THREAD_PRIORITY_AD.parseAndSetParameter(value, addOperation, reader);
                     break;
+                case HUNG_TASK_TERMINATION_PERIOD:
+                    ManagedExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
                 case HUNG_TASK_THRESHOLD:
                     ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.parseAndSetParameter(value, addOperation, reader);
                     break;
@@ -506,6 +509,9 @@ class EESubsystemParser60 implements XMLStreamConstants, XMLElementReader<List<M
                     break;
                 case THREAD_PRIORITY:
                     ManagedScheduledExecutorServiceResourceDefinition.THREAD_PRIORITY_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                case HUNG_TASK_TERMINATION_PERIOD:
+                    ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD_AD.parseAndSetParameter(value, addOperation, reader);
                     break;
                 case HUNG_TASK_THRESHOLD:
                     ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.parseAndSetParameter(value, addOperation, reader);

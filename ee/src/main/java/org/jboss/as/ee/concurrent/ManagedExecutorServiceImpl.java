@@ -39,7 +39,7 @@ import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
  * @author Stuart Douglas
  * @author emmartins
  */
-public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl {
+public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl implements ManagedExecutorWithHungThreads {
 
     private final ControlPoint controlPoint;
     private final ManagedExecutorRuntimeStats runtimeStats;

@@ -25,8 +25,8 @@ package org.jboss.as.ee.concurrent.service;
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedExecutorServiceAdapter;
-import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.concurrent.ManagedExecutorServiceImpl;
+import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
@@ -36,7 +36,9 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Service responsible for creating, starting and stopping a ManagedExecutorServiceImpl.
@@ -52,6 +54,7 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
     private final String name;
     private final InjectedValue<ManagedThreadFactoryImpl> managedThreadFactoryInjectedValue;
     private final long hungTaskThreshold;
+    private final long hungTaskTerminationPeriod;
     private final boolean longRunningTasks;
     private final int corePoolSize;
     private final int maxPoolSize;
@@ -64,11 +67,15 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
     private final Integer threadPriority;
     private final InjectedValue<RequestController> requestController = new InjectedValue<>();
     private ControlPoint controlPoint;
+    private final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService;
+
+    private Future hungTasksPeriodicTerminationFuture;
 
     /**
      * @param name
      * @param jndiName
      * @param hungTaskThreshold
+     * @param hungTaskTerminationPeriod
      * @param longRunningTasks
      * @param corePoolSize
      * @param maxPoolSize
@@ -80,11 +87,12 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
      * @param threadPriority
      * @see ManagedExecutorServiceImpl#ManagedExecutorServiceImpl(String, org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl, long, boolean, int, int, long, java.util.concurrent.TimeUnit, long, int, org.glassfish.enterprise.concurrent.ContextServiceImpl, org.glassfish.enterprise.concurrent.AbstractManagedExecutorService.RejectPolicy, org.wildfly.extension.requestcontroller.ControlPoint)
      */
-    public ManagedExecutorServiceService(String name, String jndiName, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, AbstractManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority) {
+    public ManagedExecutorServiceService(String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, AbstractManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
         super(jndiName);
         this.name = name;
         this.managedThreadFactoryInjectedValue = new InjectedValue<>();
         this.hungTaskThreshold = hungTaskThreshold;
+        this.hungTaskTerminationPeriod = hungTaskTerminationPeriod;
         this.longRunningTasks = longRunningTasks;
         this.corePoolSize = corePoolSize;
         this.maxPoolSize = maxPoolSize;
@@ -94,6 +102,7 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
         this.queueCapacity = queueCapacity;
         this.rejectPolicy = rejectPolicy;
         this.threadPriority = threadPriority;
+        this.hungTasksPeriodicTerminationService = hungTasksPeriodicTerminationService;
     }
 
     @Override
@@ -110,11 +119,17 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
             controlPoint = requestController.getValue().getControlPoint(name, "managed-executor-service");
         }
         executorService = new ManagedExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, contextService.getOptionalValue(), rejectPolicy, controlPoint);
+        if (hungTaskThreshold > 0 && hungTaskTerminationPeriod > 0) {
+            hungTasksPeriodicTerminationFuture = hungTasksPeriodicTerminationService.get().startHungTaskPeriodicTermination(executorService, hungTaskTerminationPeriod);
+        }
     }
 
     @Override
     void stopValue(StopContext context) {
         if (executorService != null) {
+            if (hungTasksPeriodicTerminationFuture != null) {
+                hungTasksPeriodicTerminationFuture.cancel(true);
+            }
             executorService.shutdownNow();
             executorService.getManagedThreadFactory().stop();
             this.executorService = null;
