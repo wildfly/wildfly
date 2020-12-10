@@ -46,6 +46,15 @@
         <!-- These properties control what layers are provisioned if galleon provision occurs -->
         <ts.microprofile-tck-provisioning.base.layer>datasources-web-server</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>microprofile-config</ts.microprofile-tck-provisioning.decorator.layer>
+
+        <!--
+            Arquillian does not propagate the system properties the TCK needs when starting the server. Create a
+            convenience property we can use for the microprofile.jvm.args later. (the values come from the surefire
+            plugin configuration below)
+        -->
+        <mp.tck.properties>-Dmp.tck.prop.dummy=dummy -Dcustomer.hobby=Tennis -Dconfig_ordinal=120</mp.tck.properties>
+
+
     </properties>
 
     <dependencies>
@@ -82,16 +91,25 @@
                     </suiteXmlFiles>
                     <!-- These env variables are required for org.eclipse.microprofile.config.tck.CDIPropertyNameMatchingTest -->
                     <environmentVariables>
+                        <MP_TCK_ENV_DUMMY>dummy</MP_TCK_ENV_DUMMY>
                         <my_int_property>45</my_int_property>
                         <MY_BOOLEAN_PROPERTY>true</MY_BOOLEAN_PROPERTY>
                         <my_string_property>haha</my_string_property>
                         <MY_STRING_PROPERTY>woohoo</MY_STRING_PROPERTY>
+                        <config_ordinal>45</config_ordinal>
+                        <customer_name>Bob</customer_name>
                     </environmentVariables>
+                    <systemProperties>
+                        <!-- We have put these values into mp.tck.properties above -->
+                        <mp.tck.prop.dummy>dummy</mp.tck.prop.dummy>
+                        <customer.hobby>Tennis</customer.hobby>
+                        <config_ordinal>120</config_ordinal>
+                    </systemProperties>
                     <systemPropertyVariables>
                         <!-- Pass the my_string_property and MY_STRING_PROPERTY as sysprop to exclude them from the
                              ConfigProviderTest#testEnvironmentConfigSource that does not deal with case-sensitive environment variables on Windows
                         -->
-                        <microprofile.jvm.args>${microprofile.jvm.args} -Dmy_string_property=haha -DMY_STRING_PROPERTY=woohoo</microprofile.jvm.args>
+                        <microprofile.jvm.args>${microprofile.jvm.args} ${mp.tck.properties} -Dmy_string_property=haha -DMY_STRING_PROPERTY=woohoo</microprofile.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

@@ -59,7 +59,7 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public SmallRyeConfigBuilder getBuilder() {
                 // The builder will take into account the config-sources available when the Config object is created.
                 // any config-sources added or modified subsequently will not be taken into account.
-                return new SmallRyeConfigBuilder() {
+                SmallRyeConfigBuilder builder = new SmallRyeConfigBuilder() {
                     @Override
                     public SmallRyeConfigBuilder forClassLoader(ClassLoader classLoader) {
                         SmallRyeConfigBuilder builder = super.forClassLoader(classLoader);
@@ -74,6 +74,8 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         return builder;
                     }
                 };
+                builder.addDefaultInterceptors();
+                return builder;
             }
         });
     }
