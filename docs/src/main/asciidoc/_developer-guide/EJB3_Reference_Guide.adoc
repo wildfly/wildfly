@@ -186,8 +186,8 @@ The timer is will be started once at the specified time.
 
 In case of a server restart the timeout method of a persistent timer
 will only be called directly if the specified time is elapsed. +
-If the timer is not persistent (since EJB3.1 see 18.2.3) it will be not
-longer available if JBoss is restarted or the application is redeployed.
+If the timer is not persistent, it will no longer be available 
+if JBoss is restarted or the application is redeployed.
 
 [[recurring-timer]]
 === Recurring timer
@@ -201,9 +201,8 @@ execution.
 In case of server downtime for a persistent timer, the timeout method
 will be called only once if one, or more than one, interval is
 elapsed. +
-If the timer is not persistent (since EJB3.1 see 18.2.3) it will not
-longer be active after the server is restarted or the application is
-redeployed.
+If the timer is not persistent, it will no longer be active 
+after the server is restarted or the application is redeployed.
 
 [[calendar-timer]]
 === Calendar timer

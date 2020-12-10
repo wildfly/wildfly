@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -128,7 +128,7 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 17, value = "Invalid handler chain file: %s")
     void invalidHandlerChainFile(String fileName);
 
-    String WS_SPEC_REF_5_3_2_4_2 = ". See section 5.3.2.4.2 of \"Web Services for Java EE, Version 1.4\".";
+    String WS_SPEC_REF_5_3_2_4_2 = ". See section 5.3.2.4.2 of \"Jakarta Enterprise Web Services 2.0\".";
 
     @LogMessage(level = ERROR)
     @Message(id = 18, value = "Web service method %s must not be static or final" + WS_SPEC_REF_5_3_2_4_2)

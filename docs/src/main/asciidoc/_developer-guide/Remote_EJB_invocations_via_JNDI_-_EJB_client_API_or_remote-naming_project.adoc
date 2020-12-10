@@ -342,7 +342,7 @@ public class FooBean implements Foo {
 
 Then the " `Foo`" remote view is exposed under the
 `java:jboss/exported/` namespace under the following JNDI name scheme
-(which is similar to that mandated by EJB3.1 spec for `java:global/`
+(which is similar to that mandated by Jakarta Enterprise Beans 3.2 spec for `java:global/`
 namespace):
 link:/pages/createpage.action?spaceKey=WFLY&title=app-name&linkCreation=true&fromPageId=557285[app-name]
 
