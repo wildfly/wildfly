@@ -4,7 +4,7 @@
         <layer name="web-server"/>
         <layer name="transactions"/>
     </dependencies>
-    <feature-group name="distributable-web"/>
+    <feature-group name="distributable-web-local"/>
     <feature-group name="infinispan-local-web"/>
     <packages>
         <!-- The distributable-web subsystem doesn't assume undertow,

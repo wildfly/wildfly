@@ -17,9 +17,6 @@
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="sso"/>
             </feature>
-            <feature spec="subsystem.infinispan.cache-container.local-cache">
-                <param name="local-cache" value="routing"/>
-            </feature>
         </feature>
     </feature>
 </feature-group-spec>

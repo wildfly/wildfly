@@ -13,8 +13,6 @@
 
     <feature spec="subsystem.discovery"/>
 
-    <feature-group name="distributable-web"/>
-
     <feature spec="subsystem.ee">
         <feature spec="subsystem.ee.context-service">
             <param name="context-service" value="default"/>
