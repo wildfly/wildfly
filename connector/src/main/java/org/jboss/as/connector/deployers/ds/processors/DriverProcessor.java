@@ -115,25 +115,33 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
     /** {@inheritDoc} */
     @Override
     public void undeploy(final DeploymentUnit context) {
-        try {
-            /**
-             * https://issues.redhat.com/browse/WFLY-14114
-             *
-             * This hack allows to deregister all drivers registered by this module. See comments in {@link DriverManagerAdapterProcessor}
-             */
-            final Module module = context.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-            Class<?> driverManagerAdapterClass = module.getClassLoader().loadClass(DriverManagerAdapter.class.getName());
+        /**
+         * https://issues.redhat.com/browse/WFLY-14114
+         *
+         * This hack allows to deregister all drivers registered by this module. See comments in {@link DriverManagerAdapterProcessor}
+         */
+        final Module module = context.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final ServicesAttachment servicesAttachment = context.getAttachment(Attachments.SERVICES);
+        if (module != null && servicesAttachment != null) {
+            final List<String> driverNames = servicesAttachment.getServiceImplementations(Driver.class.getName());
+            if (!driverNames.isEmpty()) {
+                try {
+                    Class<?> driverManagerAdapterClass = module.getClassLoader().loadClass(DriverManagerAdapter.class.getName());
 
-            Method getDriversMethod = driverManagerAdapterClass.getDeclaredMethod("getDrivers");
-            Enumeration<Driver> drivers = (Enumeration<Driver>) getDriversMethod.invoke(null, null);
+                    Method getDriversMethod = driverManagerAdapterClass.getDeclaredMethod("getDrivers");
+                    Enumeration<Driver> drivers = (Enumeration<Driver>) getDriversMethod.invoke(null, null);
 
-            Method deregisterDriverMethod = driverManagerAdapterClass.getDeclaredMethod("deregisterDriver", Driver.class);
-            while (drivers.hasMoreElements()) {
-                Driver driver = drivers.nextElement();
-                deregisterDriverMethod.invoke(null, driver);
+                    Method deregisterDriverMethod = driverManagerAdapterClass.getDeclaredMethod("deregisterDriver", Driver.class);
+                    while (drivers.hasMoreElements()) {
+                        Driver driver = drivers.nextElement();
+                        if(driverNames.contains(driver.getClass().getName())) {
+                            deregisterDriverMethod.invoke(null, driver);
+                        }
+                    }
+                } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    Assert.unreachableCode();
+                }
             }
-        } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            Assert.unreachableCode();
         }
     }
 }
