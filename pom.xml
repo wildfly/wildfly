@@ -272,7 +272,7 @@
         <version.com.nimbus.jose-jwt>8.11</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
-        <version.com.sun.activation.jakarta.activation>1.2.1</version.com.sun.activation.jakarta.activation>
+        <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
         <version.com.sun.faces>2.3.14.SP02</version.com.sun.faces>
         <version.com.sun.istack>3.0.10</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
