@@ -40,6 +40,9 @@ public interface InvalidatableSessionMetaData extends SessionMetaData, AutoClose
      */
     boolean invalidate();
 
+    /**
+     * Signals the end of the transient lifecycle of this session, typically triggered at the end of a given request.
+     */
     @Override
     void close();
 }
