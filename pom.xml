@@ -9761,6 +9761,20 @@
         </profile>
 
         <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable the default surefire test execution for all modules except for
+                     those where this profile turns them back on. -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
+
+        <profile>
             <id>victims-scan</id>
             <activation>
                 <property>
