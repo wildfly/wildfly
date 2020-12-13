@@ -47,6 +47,8 @@
         <version.org.jboss.byteman>4.0.6</version.org.jboss.byteman>
         <version.org.infinispan.server>11.0.8.Final</version.org.infinispan.server>
         <ts.surefire.clustering.ha.additionalExcludes>nothing-by-default</ts.surefire.clustering.ha.additionalExcludes>
+        <!-- Disable the default surefire test execution. All profiles use custom executions. -->
+        <surefire.default-test.phase>none</surefire.default-test.phase>
     </properties>
 
     <dependencies>
@@ -165,33 +167,6 @@
     </dependencies>
 
     <profiles>
-        <!-- Skip the default 'test' surefire goal if using -Dts.noClustering -->
-        <profile>
-            <id>ts.clustering.integration.tests.skip.profile</id>
-            <activation>
-                <property>
-                    <name>ts.noClustering</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-                            <!-- Disable default-test surefire execution which would fail otherwise. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
 
         <!-- Common step to prepare servers in use by all non-Galleon tests -->
         <profile>
@@ -373,14 +348,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
                             <!-- Multi-node clustering tests -->
                             <execution>
                                 <id>ts.surefire.clustering.ha</id>
@@ -455,14 +422,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
                             <!-- Multi-node clustering tests -->
                             <execution>
                                 <id>ts.surefire.clustering.ha-infinispan-server</id>
@@ -527,14 +486,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
                             <!-- Multi-node clustering tests -->
                             <execution>
                                 <id>ts.surefire.clustering.fullha</id>
@@ -598,14 +549,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
                             <!-- Single node clustering tests. -->
                             <execution>
                                 <id>ts.surefire.clustering.single</id>
@@ -1343,10 +1286,6 @@
                         <executions>
                             <!-- Disable the test executions that are not compatible with this profile. -->
                             <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
                                 <id>ts.surefire.clustering.ha</id>
                                 <phase>none</phase>
                             </execution>
@@ -1553,10 +1492,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <!-- Disable the test executions that are not compatible with this profile. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>ts.surefire.clustering.ha</id>
                                 <phase>none</phase>
@@ -1822,10 +1757,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <!-- Disable the test executions that are not compatible with this profile. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>ts.surefire.clustering.ha</id>
                                 <phase>none</phase>

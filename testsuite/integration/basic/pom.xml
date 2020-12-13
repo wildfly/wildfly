@@ -34,6 +34,8 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
+        <!-- Disable the default surefire test execution. -->
+        <surefire.default-test.phase>none</surefire.default-test.phase>
     </properties>
 
     <dependencies>
@@ -741,14 +743,6 @@
                         <!-- Here we just have executions -->
                         <executions combine.children="append">
 
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>test</phase>
@@ -998,6 +992,7 @@
                                         </includes>
                                     </configuration>
                                 </execution>
+                                <!-- Disable the other standard executions -->
                                 <execution>
                                     <id>basic-integration-default-web.surefire</id>
                                     <phase>none</phase>
@@ -1074,10 +1069,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <!-- Disable the standard test executions. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>none</phase>
@@ -2035,10 +2026,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <!-- Disable the standard test executions. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>none</phase>
@@ -3295,10 +3282,6 @@
                         <executions>
                             <!-- Disable the standard test executions. -->
                             <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>none</phase>
                             </execution>
@@ -3496,11 +3479,6 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <!-- Disable the standard test executions. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <!--<phase>none</phase>-->

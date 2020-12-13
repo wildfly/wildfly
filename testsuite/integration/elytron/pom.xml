@@ -554,10 +554,9 @@
                             </systemPropertyVariables>
                         </configuration>
                         <executions>
-                            <!-- Re-enable the defaut test execution but exclude tests incompatible with this configxf. -->
+                            <!-- Run the default test execution but exclude tests incompatible with this config. -->
                             <execution>
                                 <id>default-test</id>
-                                <phase>test</phase>
                                 <configuration>
                                     <excludes combine-children="append">
                                         <!-- Needs batch -->
@@ -685,13 +684,9 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <!-- Enable the default tests (which the parent pom turns off for this profile) -->
+                            <!-- Configure the default tests -->
                             <execution>
                                 <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
                                         <install.dir>${project.build.directory}/${wildfly.instance.name}</install.dir>

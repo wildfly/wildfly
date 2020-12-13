@@ -167,30 +167,32 @@
                         <id>default-test</id>
                         <configuration>
                             <excludes>
+                                <!-- In this module default-test runs against standalone-microprofile.xml
+                                     Exclude tests from that execution that require functionality not in that config. -->
                                 <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase.java</exclude>
                             </excludes>
                         </configuration>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
                     </execution>
+                    <!-- An execution analogous to default-test but separately customizable -->
                     <execution>
                         <id>layers-test</id>
+                        <!-- Disabled by default; relevant profiles enable it -->
                         <phase>none</phase>
                         <goals>
                             <goal>test</goal>
                         </goals>
                     </execution>
+                    <!-- An execution analogous to default-test but uses standalone.xml -->
                     <execution>
+                        <id>standalone-enabled-microprofile-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
                         <configuration>
                             <systemPropertyVariables>
                                 <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                             </systemPropertyVariables>
                         </configuration>
-                        <id>standalone-enabled-microprofile-test</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -287,7 +289,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <!-- Enable the layers-test surefire execution -->
+                        <!-- Enable the layers-test surefire execution; disable others. -->
                         <executions>
                             <execution>
                                 <id>layers-test</id>
@@ -406,7 +408,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <!-- Enable the layers-test surefire execution -->
+                        <!-- Enable the layers-test surefire execution, disable others -->
                         <executions>
                             <execution>
                                 <id>layers-test</id>
@@ -490,7 +492,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <!--Re-enable the default surefire execution. -->
+                            <!--Re-enable the default surefire execution, disable others. -->
                             <execution>
                                 <id>default-test</id>
                                 <phase>test</phase>
