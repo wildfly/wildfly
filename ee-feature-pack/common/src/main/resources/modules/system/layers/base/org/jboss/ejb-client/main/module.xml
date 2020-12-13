@@ -20,13 +20,16 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.ejb-client">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ejb-client">
 
     <resources>
         <artifact name="${org.jboss:jboss-ejb-client}"/>
     </resources>
 
     <dependencies>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <module name="javax.transaction.api"/>
         <module name="javax.api"/>
         <module name="javax.ejb.api"/>
         <module name="javax.interceptor.api"/>
@@ -42,7 +45,7 @@
         <module name="org.jboss.marshalling.river"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="javax.transaction.api"/>
-
         <module name="org.jboss.modules"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

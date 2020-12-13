@@ -22,15 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.ejb.api">
-    <dependencies>
-        <!-- This dep is for javax.naming -->
-        <module name="javax.api" />
-        <module name="javax.transaction.api"/>
-    </dependencies>
+<module xmlns="urn:jboss:module:1.9" name="jakarta.ejb.api">
 
     <resources>
         <!--<artifact name="${org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec}"/>-->
         <artifact name="${jakarta.ejb:jakarta.ejb-api}"/>
     </resources>
+
+    <dependencies>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <!-- This dep is for javax.naming -->
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+    </dependencies>
 </module>

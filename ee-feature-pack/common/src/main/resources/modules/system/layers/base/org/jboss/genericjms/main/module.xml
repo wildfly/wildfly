@@ -20,23 +20,27 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.genericjms">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.genericjms">
+
     <resources>
        <resource-root path="."/>
         <artifact name="${org.jboss.genericjms:generic-jms-ra-jar}"/>
     </resources>
+
     <dependencies>
-        <module name="javax.api" slot="main"/>
+        <module name="java.naming"/>
+        <module name="javax.transaction.api"/>
+        <module name="javax.api"/>
         <!-- WFLY-4656 export the JMS API module,  otherwise MDB using this RA will not found JMS classes -->
-        <module name="javax.jms.api" slot="main" export="true"/>
-        <module name="javax.resource.api" slot="main"/>
-        <module name="org.jboss.logging" slot="main"/>
+        <module name="javax.jms.api" export="true"/>
+        <module name="javax.resource.api"/>
+        <module name="org.jboss.logging"/>
 
         <!--
              This module is used to provide the provider-specific classes
              containing the JMS implementation (and any of their dependencies)
              used by the generic JMS resource adapter
         -->
-        <module name="org.jboss.genericjms.provider" slot="main" optional="true"/>
+        <module name="org.jboss.genericjms.provider" optional="true"/>
     </dependencies>
 </module>

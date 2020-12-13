@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.eclipse.jdt.ecj">
+<module xmlns="urn:jboss:module:1.9" name="org.eclipse.jdt.ecj">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -31,4 +31,7 @@
         <artifact name="${org.eclipse.jdt.core.compiler:ecj}"/>
     </resources>
 
+    <dependencies>
+        <module name="java.compiler"/>
+    </dependencies>
 </module>

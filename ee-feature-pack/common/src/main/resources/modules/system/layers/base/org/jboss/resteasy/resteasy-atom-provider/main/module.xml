@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-atom-provider">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-atom-provider">
 
     <resources>
         <artifact name="${org.jboss.resteasy:resteasy-atom-provider}"/>
@@ -38,5 +38,6 @@
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
         <module name="org.jboss.logging"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

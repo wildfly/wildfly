@@ -22,13 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.servlet.jstl.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.servlet.jstl.api">
     <dependencies>
         <!-- org.xml.sax -->
-        <module name="javax.api" export="false"/>
-        <module name="javax.servlet.api" export="false"/>
-        <module name="javax.servlet.jsp.api" export="false"/>
-        <module name="org.apache.xalan" export="false"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+        <module name="javax.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.servlet.jsp.api"/>
+        <module name="org.apache.xalan"/>
+        <module name="java.xml"/>
     </dependencies>
 
     <resources>

@@ -22,14 +22,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.xml.soap.api">
-    <dependencies>
-        <module name="javax.activation.api" export="true"/>
-        <module name="javax.api"/>
-        <module name="org.jboss.modules"/>
-    </dependencies>
+<module xmlns="urn:jboss:module:1.9" name="jakarta.xml.soap.api">
 
     <resources>
         <artifact name="${org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.4_spec}"/>
     </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="javax.activation.api" export="true"/>
+        <module name="javax.api"/>
+        <module name="org.jboss.modules"/>
+        <module name="java.xml"/>
+    </dependencies>
 </module>

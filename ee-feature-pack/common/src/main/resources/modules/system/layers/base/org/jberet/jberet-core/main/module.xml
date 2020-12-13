@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jberet.jberet-core">
+<module xmlns="urn:jboss:module:1.9" name="org.jberet.jberet-core">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,6 +33,11 @@
     </resources>
 
     <dependencies>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.scripting"/>
+        <module name="java.sql"/>
         <module name="javax.api"/>
         <module name="javax.batch.api"/>
         <module name="javax.inject.api"/>
@@ -43,5 +49,6 @@
         <module name="org.wildfly.security.elytron-private"/>
         <module name="com.google.guava"/>
         <module name="com.h2database.h2" optional="true"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

@@ -22,13 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="jakarta.mail.api">
-    <dependencies>
-        <module name="javax.activation.api" />
-        <module name="javax.api"/>
-    </dependencies>
+<module xmlns="urn:jboss:module:1.9" name="jakarta.mail.api">
 
     <resources>
         <artifact name="${com.sun.mail:jakarta.mail}"/>
     </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.security.sasl"/>
+        <module name="javax.activation.api" />
+        <module name="javax.api"/>
+        <module name="java.xml"/>
+    </dependencies>
 </module>

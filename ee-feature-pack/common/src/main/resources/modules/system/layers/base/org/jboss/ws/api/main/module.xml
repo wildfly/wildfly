@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.ws.api">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.api">
 
     <resources>
         <artifact name="${org.jboss.ws:jbossws-api}"/>
@@ -35,6 +35,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.ws.jaxws-client" services="import"/>
+        <module name="java.xml"/>
     </dependencies>
 
 </module>

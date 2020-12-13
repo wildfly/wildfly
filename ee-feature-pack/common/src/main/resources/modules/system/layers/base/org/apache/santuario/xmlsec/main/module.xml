@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.santuario.xmlsec">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.santuario.xmlsec">
 
     <exports>
         <exclude path="javax/**"/>
@@ -31,18 +31,19 @@
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
-
     <resources>
         <artifact name="${org.apache.santuario:xmlsec}"/>
     </resources>
 
     <dependencies>
-      <module name="javax.api" />
-      <module name="org.apache.commons.logging" />
-      <module name="org.apache.commons.codec" />
-      <module name="org.apache.xalan" />
-      <module name="org.slf4j" />
+      <module name="javax.api"/>
+      <module name="org.apache.commons.logging"/>
+      <module name="org.apache.commons.codec"/>
+      <module name="org.apache.xalan"/>
+      <module name="org.slf4j"/>
       <module name="javax.xml.bind.api" services="import"/>
       <module name="com.sun.xml.bind" services="import"/>
+      <module name="java.xml"/>
+      <module name="java.xml.crypto"/>
     </dependencies>
 </module>

@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.jdr">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jdr">
+
     <properties>
         <property name="jboss.api" value="private"/>
         <property name="jboss.require-java-version" value="1.7"/>
@@ -40,6 +41,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.management"/>
         <module name="javax.api"/>
         <module name="org.apache.commons.cli"/>
         <module name="org.apache.commons.io"/>
@@ -56,5 +58,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.vfs"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

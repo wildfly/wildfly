@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.clustering.jgroups">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.clustering.jgroups">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -36,6 +37,8 @@
     </resources>
 
     <dependencies>
+        <module name="java.management"/>
+        <module name="java.sql"/>
         <module name="javax.api"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.controller"/>
@@ -54,5 +57,6 @@
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

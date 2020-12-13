@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.security.negotiation">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.security.negotiation">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -35,6 +35,9 @@
     </resources>
 
     <dependencies>
+        <module name="java.management" />
+        <module name="java.naming" />
+        <module name="java.security.jgss" />
         <module name="io.undertow.core" />
         <module name="javax.api"/>
         <module name="javax.servlet.api"/>

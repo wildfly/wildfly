@@ -22,8 +22,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.narayana.txframework">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.narayana.txframework">
     <!-- This module is deprecated and subject to being removed in a subsequent release. -->
+
     <properties>
         <property name="jboss.api" value="deprecated"/>
     </properties>
@@ -40,5 +41,6 @@
         <module name="org.jboss.weld.core" />
         <module name="javax.servlet.api" />
         <module name="javax.interceptor.api"  export="true" />
+        <module name="java.xml"/>
     </dependencies>
 </module>

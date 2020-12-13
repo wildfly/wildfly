@@ -14,7 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<module xmlns="urn:jboss:module:1.8" name="io.opentracing.opentracing-api">
+<module xmlns="urn:jboss:module:1.9" name="io.opentracing.opentracing-api">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

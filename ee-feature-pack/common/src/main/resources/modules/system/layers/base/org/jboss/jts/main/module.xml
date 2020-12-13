@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.jts">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.jts">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,6 +33,12 @@
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+        <module name="javax.transaction.api"/>
         <module name="sun.jdk"/>
         <module name="org.omg.api" />
         <module name="org.jboss.logging"/>
@@ -55,5 +62,7 @@
 
         <!-- For the ContextPropagationAsyncHandler used with the context propagation feature pack -->
         <module name="org.wildfly.reactive.dep.jts" services="import" optional="true"/>
+        <module name="java.xml"/>
+        <module name="jdk.jconsole"/>
     </dependencies>
 </module>

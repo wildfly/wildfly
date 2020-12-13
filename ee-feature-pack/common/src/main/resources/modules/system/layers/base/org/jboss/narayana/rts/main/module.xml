@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.narayana.rts">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.narayana.rts">
     <resources>
         <artifact name="${org.jboss.narayana.rts:restat-api}"/>
         <artifact name="${org.jboss.narayana.rts:restat-util}"/>
@@ -53,5 +53,6 @@
              Prior to WFLY-5922 they were exported by javax.ejb.api. -->
         <module name="javax.rmi.api"/>
         <module name="org.omg.api"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

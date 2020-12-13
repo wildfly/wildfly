@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="io.undertow.servlet">
+<module xmlns="urn:jboss:module:1.9" name="io.undertow.servlet">
     <resources>
         <artifact name="${io.undertow:undertow-servlet}"/>
     </resources>
@@ -37,5 +37,6 @@
         <module name="org.jboss.logging"/>
         <module name="io.undertow.core" />
         <module name="org.jboss.xnio"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

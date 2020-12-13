@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.extension.messaging-activemq">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.messaging-activemq">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -34,16 +35,21 @@
     </resources>
 
     <dependencies>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+
         <!-- io.undertow.core is required only if http-acceptor are used -->
         <module name="io.undertow.core" optional="true" />
-        <module name="io.netty" />
+        <module name="io.netty"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.jms.api"/>
         <module name="javax.json.api"/>
-        <module name="javax.resource.api" />
+        <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
-        <module name="org.apache.activemq.artemis" services="import" />
+        <module name="org.apache.activemq.artemis" services="import"/>
         <module name="org.apache.activemq.artemis.ra"/>
         <module name="org.jboss.common-beans"/>
         <module name="org.jboss.staxmapper"/>
@@ -65,7 +71,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.ironjacamar.impl"/>
         <module name="org.jboss.ironjacamar.api"/>
-        <module name="org.jboss.as.connector" />
+        <module name="org.jboss.as.connector"/>
         <!-- Use of legacy security domain ends up using this module's class loader. -->
         <module name="org.jboss.as.security" optional="true"/>
         <module name="org.jboss.as.security-plugins"/>
@@ -73,13 +79,13 @@
         <module name="org.jboss.jts"/>
         <module name="org.picketbox"/>
         <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="org.wildfly.naming-client" services="import" />
+        <module name="org.wildfly.naming-client" services="import"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.weld.core"/>
         <!-- org.jboss.xnio is required only if http-acceptor are used -->
-        <module name="org.jboss.xnio" optional="true" />
+        <module name="org.jboss.xnio" optional="true"/>
         <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
-        <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true" />
+        <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.service"/>
@@ -87,5 +93,7 @@
         <module name="org.wildfly.transaction.client"/>
         <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
         <module name="org.hornetq.client" />
+
+        <module name="java.xml"/>
     </dependencies>
 </module>

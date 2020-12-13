@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.security.xacml">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.security.xacml">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,8 +33,12 @@
     </resources>
 
     <dependencies>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
         <module name="javax.api"/>
         <module name="sun.jdk"/>
         <module name="javax.xml.bind.api"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

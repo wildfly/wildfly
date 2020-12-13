@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.jboss.as.weld.jpa">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.weld.jpa">
 
     <properties>
         <property name="jboss.api" value="private"/>

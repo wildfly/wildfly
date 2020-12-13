@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.clustering.server">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.server">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -36,6 +37,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.management"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.protostream"/>

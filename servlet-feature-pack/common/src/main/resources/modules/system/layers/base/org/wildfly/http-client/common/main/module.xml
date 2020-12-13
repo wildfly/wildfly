@@ -22,13 +22,15 @@
   ~ 2110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.http-client.common">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.http-client.common">
 
     <resources>
         <artifact name="${org.wildfly.wildfly-http-client:wildfly-http-client-common}"/>
     </resources>
 
     <dependencies>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
         <module name="javax.api"/>
         <module name="org.jboss.xnio" />
         <module name="org.wildfly.client.config"/>

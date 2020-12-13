@@ -22,12 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.batch.api">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.batch.api">
+
     <resources>
         <!--<artifact name="${org.jboss.spec.javax.batch:jboss-batch-api_1.0_spec}"/>-->
         <artifact name="${jakarta.batch:jakarta.batch-api}"/>
     </resources>
+
     <dependencies>
+        <module name="java.logging"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
     </dependencies>    

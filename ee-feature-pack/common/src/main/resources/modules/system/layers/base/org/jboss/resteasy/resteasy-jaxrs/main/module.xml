@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="org.jboss.resteasy.resteasy-jaxrs">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-jaxrs">
 
     <resources>
         <artifact name="${org.jboss.resteasy:resteasy-jaxrs}" />
@@ -30,6 +30,10 @@
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.activation.api"/>
@@ -47,6 +51,7 @@
         <module name="org.jboss.resteasy.resteasy-validator-provider" optional="true" services="export" export="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.reactivestreams"/>
-        <module name="org.eclipse.microprofile.config.api" optional="true"/>
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

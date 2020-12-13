@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.extension.undertow">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.undertow">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -36,6 +36,10 @@
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
         <module name="io.undertow.core" services="import"/>
         <module name="io.undertow.servlet" services="import"/>
         <module name="io.undertow.jsp"/>

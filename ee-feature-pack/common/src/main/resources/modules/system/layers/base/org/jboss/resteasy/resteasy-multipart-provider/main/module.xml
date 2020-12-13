@@ -22,13 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-multipart-provider">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-multipart-provider">
 
     <resources>
         <artifact name="${org.jboss.resteasy:resteasy-multipart-provider}"/>
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
         <module name="javax.xml.bind.api"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
@@ -39,5 +40,6 @@
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.logging"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

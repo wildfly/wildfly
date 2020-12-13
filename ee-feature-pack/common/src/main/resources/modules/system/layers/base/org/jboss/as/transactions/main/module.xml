@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.transactions">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.transactions">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -36,6 +37,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.management"/>
         <module name="javax.api"/>
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
@@ -71,5 +73,7 @@
         <!-- Only used if the org.jboss.remoting.endpoint capability is present,
              in which case this module will also be present. -->
         <module name="org.jboss.remoting" optional="true"/>
+
+        <module name="java.xml"/>
     </dependencies>
 </module>

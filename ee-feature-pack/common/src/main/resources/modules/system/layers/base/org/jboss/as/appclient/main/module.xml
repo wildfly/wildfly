@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.appclient">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.appclient">
+
     <properties>
         <property name="jboss.api" value="private"/>
         <property name="jboss.require-java-version" value="1.7"/>
@@ -39,6 +40,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.logging"/>
         <module name="javax.api"/>
         <module name="org.apache.xalan" services="import"/>
         <module name="org.apache.xerces" services="import"/>
@@ -75,6 +77,7 @@
         <module name="org.picketbox"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.appclient"/>
-        <module name="org.wildfly.common" />
+        <module name="org.wildfly.common"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

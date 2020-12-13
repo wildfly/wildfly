@@ -22,12 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.wsdl4j.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.wsdl4j.api">
     <resources>
         <artifact name="${wsdl4j:wsdl4j}"/>
     </resources>
 
     <dependencies>
-      <module name="javax.api" />
+      <module name="javax.api"/>
+      <module name="java.xml"/>
     </dependencies>
 </module>

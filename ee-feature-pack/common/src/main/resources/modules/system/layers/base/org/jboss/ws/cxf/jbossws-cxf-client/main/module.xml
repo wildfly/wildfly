@@ -22,10 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.ws.cxf.jbossws-cxf-client">
-
-    <resources>
-    </resources>
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.cxf.jbossws-cxf-client">
 
     <dependencies>
         <!-- JAXB API + REF IMPL -->

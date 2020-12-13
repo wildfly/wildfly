@@ -20,7 +20,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.ejb3">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.ejb3">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -31,6 +31,12 @@
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <module name="java.sql"/>
+        <module name="javax.transaction.api"/>
         <module name="org.wildfly.http-client.ejb" services="import"/>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
@@ -117,5 +123,7 @@
         <module name="org.jboss.as.weld.common" optional="true"/>
         <module name="org.hibernate.validator" optional="true"/>
         <module name="org.hibernate.validator.cdi" optional="true"/>
+
+        <module name="java.xml"/>
     </dependencies>
 </module>

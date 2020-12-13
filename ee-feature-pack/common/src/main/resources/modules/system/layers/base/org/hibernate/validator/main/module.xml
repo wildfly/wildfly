@@ -22,13 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="org.hibernate.validator">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.validator">
 
   <resources>
     <artifact name="${org.hibernate.validator:hibernate-validator}"/>
   </resources>
 
   <dependencies>
+    <module name="java.desktop"/>
+    <module name="java.scripting"/>
     <module name="com.fasterxml.classmate"/>
     <module name="javax.persistence.api"/>
     <module name="javax.validation.api"/>
@@ -41,5 +43,6 @@
     <module name="org.jsoup"/>
     <module name="org.apache.xerces" services="import"/>
     <module name="sun.jdk" services="import"/>
+    <module name="java.xml"/>
   </dependencies>
 </module>

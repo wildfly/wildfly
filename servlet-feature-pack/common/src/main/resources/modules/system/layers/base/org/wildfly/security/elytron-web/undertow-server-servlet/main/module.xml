@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.6" name="org.wildfly.security.elytron-web.undertow-server-servlet" version="${org.wildfly.security.elytron-web:undertow-server-servlet}">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.security.elytron-web.undertow-server-servlet" version="${org.wildfly.security.elytron-web:undertow-server-servlet}">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

@@ -22,8 +22,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="javax.xml.bind.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.xml.bind.api">
 
+    <resources>
+        <artifact name="${org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec}"/>
+    </resources>
 
     <dependencies>
         <module name="javax.activation.api" export="true"/>
@@ -31,8 +34,4 @@
         <module name="com.sun.xml.bind" services="import"/>
         <module name="javax.api"/>
     </dependencies>
-
-    <resources>
-        <artifact name="${org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec}"/>
-    </resources>
 </module>

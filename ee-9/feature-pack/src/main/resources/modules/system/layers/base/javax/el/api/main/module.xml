@@ -16,4 +16,4 @@
   ~ limitations under the License.
   -->
 
-<module-alias xmlns="urn:jboss:module:1.5" name="javax.el.api" target-name="jakarta.el.api"/>
+<module-alias xmlns="urn:jboss:module:1.9" name="javax.el.api" target-name="jakarta.el.api"/>

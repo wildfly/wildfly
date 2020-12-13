@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.jaxbintros">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.jaxbintros">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -37,5 +38,6 @@
         <module name="com.sun.xml.bind" services="import"/>
         <module name="org.apache.commons.logging"/>
         <module name="org.apache.commons.beanutils"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.ws.security">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.ws.security">
+
     <resources>
         <artifact name="${org.apache.wss4j:wss4j-bindings}"/>
         <artifact name="${org.apache.wss4j:wss4j-policy}"/>
@@ -34,17 +35,20 @@
     </resources>
 
     <dependencies>
-      <module name="javax.api" />
+      <module name="java.security.jgss"/>
+      <module name="javax.api"/>
       <module name="javax.xml.bind.api" services="import"/>
       <module name="com.sun.xml.bind" services="import"/>
       <module name="com.sun.xml.messaging.saaj" export="true" services="export"/>
-      <module name="org.apache.commons.codec" />
-      <module name="org.apache.commons.logging" />
-      <module name="org.apache.neethi" />
-      <module name="org.apache.santuario.xmlsec" />
-      <module name="org.apache.xalan" />
-      <module name="org.joda.time" />
-      <module name="org.opensaml" />
-      <module name="org.slf4j" />
+      <module name="org.apache.commons.codec"/>
+      <module name="org.apache.commons.logging"/>
+      <module name="org.apache.neethi"/>
+      <module name="org.apache.santuario.xmlsec"/>
+      <module name="org.apache.xalan"/>
+      <module name="org.joda.time"/>
+      <module name="org.opensaml"/>
+      <module name="org.slf4j"/>
+      <module name="java.xml"/>
+      <module name="java.xml.crypto"/>
     </dependencies>
 </module>
