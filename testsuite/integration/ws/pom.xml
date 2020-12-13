@@ -238,9 +238,6 @@
                             <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
                                 <phase>none</phase>
                             </execution>
 

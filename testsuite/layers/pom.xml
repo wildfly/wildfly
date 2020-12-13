@@ -58,7 +58,8 @@
              Provisioning executions using the wildfly-test-galleon-pack are handled separately from others. -->
         <provisioning.phase>none</provisioning.phase>
         <provisioning.phase.preview.excluded>none</provisioning.phase.preview.excluded>
-        <surefire.phase>none</surefire.phase>
+        <!-- Don't run the default surefire execution unless a profile enables it -->
+        <surefire.default-test.phase>none</surefire.default-test.phase>
     </properties>
 
     <profiles>
@@ -73,7 +74,7 @@
                 <!-- Turn on normal plugin execution by changing the phase props from 'none' -->
                 <provisioning.phase>compile</provisioning.phase>
                 <provisioning.phase.preview.excluded>compile</provisioning.phase.preview.excluded>
-                <surefire.phase>test</surefire.phase>
+                <surefire.default-test.phase>test</surefire.default-test.phase>
             </properties>
         </profile>
 
@@ -2493,12 +2494,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-test</id>
-                                <phase>${surefire.phase}</phase>
-                            </execution>
-                        </executions>
                         <configuration>
                             <systemPropertyVariables>
                                 <!-- maven.local.repo is set in parent pom.xml, system property surefire.system.args -->
