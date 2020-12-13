@@ -21,6 +21,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -30,7 +31,10 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.transaction.api"/>
         <module name="com.github.ben-manes.caffeine"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
@@ -48,5 +52,6 @@
         <module name="org.jgroups" optional="true"/>
         <module name="org.reactivestreams"/>
         <module name="sun.jdk" optional="true"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.security-plugins">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.security-plugins">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,6 +32,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.naming"/>
         <module name="javax.security.jacc.api"/>
         <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.logging"/>
@@ -42,5 +43,6 @@
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="sun.jdk"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

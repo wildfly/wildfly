@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="com.github.fge.btf">
+<module xmlns="urn:jboss:module:1.9" name="com.github.fge.btf">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -31,5 +31,4 @@
     <resources>
         <artifact name="${com.github.fge:btf}"/>
     </resources>
-
 </module>

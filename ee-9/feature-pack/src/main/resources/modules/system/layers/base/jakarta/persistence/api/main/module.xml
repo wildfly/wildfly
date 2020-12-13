@@ -22,13 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="jakarta.persistence.api">
-    <dependencies>
-        <!-- PersistenceUnitInfo needs javax.sql.DataSource -->
-        <module name="javax.api" export="true"/>
-    </dependencies>
+<module xmlns="urn:jboss:module:1.9" name="jakarta.persistence.api">
 
     <resources>
         <artifact name="${jakarta.persistence:jakarta.persistence-api}"/>
     </resources>
+
+    <dependencies>
+        <!-- java.instrument export due to jdeps result -->
+        <module name="java.instrument" export="true"/>
+        <module name="java.logging"/>
+        <!-- PersistenceUnitInfo needs javax.sql.DataSource -->
+        <module name="java.sql" export="true"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+    </dependencies>
 </module>

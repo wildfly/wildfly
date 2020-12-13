@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.xml.rpc.api.internal">
+<module xmlns="urn:jboss:module:1.9" name="javax.xml.rpc.api.internal">
     <!--
       This module providing the JAX-RPC API classes is meant only for internal use
       by WildFly modules that have a compile time dependency on JAX-RPC classes.
@@ -46,4 +46,8 @@
         <artifact name="${org.jboss.spec.javax.xml.rpc:jboss-jaxrpc-api_1.1_spec}"/>
     </resources>
 
+    <dependencies>
+        <module name="java.rmi"/>
+        <module name="java.xml"/>
+    </dependencies>
 </module>

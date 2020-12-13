@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.3" name="org.apache.activemq.artemis.journal">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.journal">
+
     <resources>
         <resource-root path="lib"/>
         <artifact name="${org.apache.activemq:artemis-commons}"/>
@@ -31,9 +32,12 @@
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
         <!-- required for ARTEMIS-298 -->
         <module name="com.google.guava"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.json.api"/>
         <module name="org.apache.commons.beanutils" />
         <module name="org.jboss.logging"/>

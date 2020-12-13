@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.activemq.artemis">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis">
+
     <resources>
         <artifact name="${org.apache.activemq:artemis-core-client}"/>
         <artifact name="${org.apache.activemq:artemis-selector}"/>
@@ -35,12 +36,18 @@
         <artifact name="${org.apache.activemq:artemis-jms-server}"/>
         <artifact name="${org.apache.activemq:artemis-service-extensions}"/>
         <artifact name="${org.apache.activemq:artemis-tools}"/>
-
     </resources>
 
     <dependencies>
+        <module name="java.management"/>
+        <module name="java.management.rmi"/>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <module name="java.sql"/>
+        <module name="java.security.jgss"/>
+        <module name="javax.transaction.api"/>
         <module name="com.google.guava"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.jms.api" />
         <module name="javax.json.api"/>
         <module name="org.apache.commons.beanutils" />
@@ -69,5 +76,6 @@
         <module name="org.apache.activemq.artemis.protocol.amqp" services="import" optional="true"/>
         <module name="org.apache.activemq.artemis.protocol.hornetq" services="import" optional="true"/>
         <module name="org.apache.activemq.artemis.protocol.stomp" services="import" optional="true"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

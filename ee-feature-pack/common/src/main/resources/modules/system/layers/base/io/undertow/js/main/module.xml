@@ -22,14 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="io.undertow.js">
+<module xmlns="urn:jboss:module:1.9" name="io.undertow.js">
 
     <resources>
         <artifact name="${io.undertow.js:undertow-js}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.naming"/>
+        <module name="java.scripting"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.servlet.api"/>
         <module name="javax.enterprise.api" />
         <module name="org.jboss.logging"/>

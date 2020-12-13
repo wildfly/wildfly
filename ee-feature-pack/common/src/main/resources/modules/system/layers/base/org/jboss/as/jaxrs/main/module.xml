@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.jaxrs">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jaxrs">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -36,7 +37,8 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.logging"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="javax.servlet.api"/>
@@ -71,5 +73,6 @@
         <module name="org.jboss.resteasy.resteasy-yaml-provider" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

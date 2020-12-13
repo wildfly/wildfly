@@ -22,12 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.activemq.artemis.protocol.amqp">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.protocol.amqp">
+
     <resources>
         <artifact name="${org.apache.activemq:artemis-amqp-protocol}"/>
     </resources>
 
     <dependencies>
+        <module name="java.security.jgss"/>
+        <module name="java.security.sasl"/>
+        <module name="javax.transaction.api"/>
         <module name="javax.jms.api"/>
         <module name="org.apache.qpid.proton"/>
         <module name="io.netty"/>

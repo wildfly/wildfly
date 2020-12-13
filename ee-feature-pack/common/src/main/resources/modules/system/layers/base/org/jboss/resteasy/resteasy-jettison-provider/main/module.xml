@@ -22,12 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-jettison-provider">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-jettison-provider">
     <!-- This module is deprecated and subject to being removed in a subsequent release. -->
+
     <properties>
         <property name="jboss.api" value="deprecated"/>
     </properties>
-
 
     <resources>
         <artifact name="${org.jboss.resteasy:resteasy-jettison-provider}"/>
@@ -36,12 +36,13 @@
     <dependencies>
         <module name="org.codehaus.jettison"/>
         <module name="javax.xml.bind.api"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
         <module name="org.jboss.logging"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

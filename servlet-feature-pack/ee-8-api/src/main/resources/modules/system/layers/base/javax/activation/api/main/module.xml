@@ -22,9 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.activation.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.activation.api">
     <dependencies>
-        <module name="javax.api" />
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.datatransfer"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.mail.api" optional="true">
             <imports><include path="META-INF"/></imports>
         </module>

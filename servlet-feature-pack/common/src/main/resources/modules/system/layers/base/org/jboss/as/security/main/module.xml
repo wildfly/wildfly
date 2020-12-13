@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.security">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.security">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -36,7 +36,10 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.naming"/>
+        <module name="java.security.sasl"/>
+        <module name="java.xml"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.security.jacc.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.transaction.api"/>

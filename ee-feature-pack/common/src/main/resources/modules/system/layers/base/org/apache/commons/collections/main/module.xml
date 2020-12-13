@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.commons.collections">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.commons.collections">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,5 +33,6 @@
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
     </dependencies>
 </module>

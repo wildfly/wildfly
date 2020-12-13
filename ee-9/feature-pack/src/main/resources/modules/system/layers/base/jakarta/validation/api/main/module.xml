@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="jakarta.validation.api">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.validation.api">
+
     <resources>
         <artifact name="${jakarta.validation:jakarta.validation-api}"/>
     </resources>

@@ -25,7 +25,8 @@
 <!-- Hibernate Search Engine: the fulltext indexing and query capabilities
      without the ORM integration bits. This is reused by several other project
      outside of the Hibernate group. -->
-<module xmlns="urn:jboss:module:1.7" name="org.hibernate.search.engine">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.engine">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -34,6 +35,9 @@
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.management"/>
+        <module name="java.sql"/>
         <module name="javax.transaction.api"/>
         <module name="org.hibernate.commons-annotations"/>
         <module name="org.apache.lucene" export="true"/>
@@ -61,5 +65,7 @@
         <!-- For naming -->
         <module name="javax.api" />
         <module name="org.jboss.as.naming" />
+
+        <module name="java.xml"/>
     </dependencies>
 </module>

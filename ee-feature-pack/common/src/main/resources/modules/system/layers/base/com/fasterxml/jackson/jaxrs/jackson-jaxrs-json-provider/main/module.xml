@@ -21,7 +21,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider">
+<module xmlns="urn:jboss:module:1.9" name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider">
      <resources>
         <artifact name="${com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider}"/>
         <artifact name="${com.fasterxml.jackson.jaxrs:jackson-jaxrs-base}"/>
@@ -29,7 +29,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.ws.rs.api"/>
         <module name="javax.xml.bind.api"/>
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>

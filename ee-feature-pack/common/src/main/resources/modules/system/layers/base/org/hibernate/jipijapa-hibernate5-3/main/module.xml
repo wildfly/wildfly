@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="org.hibernate.jipijapa-hibernate5-3">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.jipijapa-hibernate5-3">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,7 +34,7 @@
 
     <dependencies>
         <module name="org.hibernate"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.persistence.api"/>

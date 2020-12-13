@@ -21,6 +21,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan.persistence.jdbc">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -30,7 +31,10 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.transaction.api"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="org.infinispan"/>

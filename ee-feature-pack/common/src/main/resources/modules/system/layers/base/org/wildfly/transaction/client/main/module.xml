@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.wildfly.transaction.client">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.transaction.client">
+
     <exports>
         <exclude path="org/wildfly/transaction/client/_private" />
     </exports>
@@ -33,6 +34,7 @@
 
     <dependencies>
         <!-- Sorted alphabetically -->
+        <module name="java.naming"/>
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
 
@@ -52,6 +54,7 @@
         <module name="org.wildfly.naming-client"/>
         <module name="org.wildfly.security.elytron"/>
     </dependencies>
+
     <provides>
         <service name="org.wildfly.transaction.client.spi.RemoteTransactionProvider">
             <with-class name="org.wildfly.httpclient.transaction.HttpRemoteTransactionProvider"/>

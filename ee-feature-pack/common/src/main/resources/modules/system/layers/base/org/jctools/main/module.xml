@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.jctools">
+<module xmlns="urn:jboss:module:1.9" name="org.jctools">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -34,5 +35,6 @@
 
     <dependencies>
         <module name="sun.jdk"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>
