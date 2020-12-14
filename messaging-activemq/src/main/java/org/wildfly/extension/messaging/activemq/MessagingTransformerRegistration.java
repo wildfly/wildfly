@@ -52,6 +52,7 @@ import org.jboss.dmr.ModelNode;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
+import org.wildfly.extension.messaging.activemq.jms.JMSTopicControlHandler;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
 /**
@@ -97,6 +98,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.NETWORK_CHECK_PING_COMMAND);
         rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.NETWORK_CHECK_TIMEOUT);
         rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.NETWORK_CHECK_URL_LIST);
+        server.addChildResource(MessagingExtension.JMS_TOPIC_PATH).discardOperations(JMSTopicControlHandler.PAUSE, JMSTopicControlHandler.RESUME);
+        server.addChildResource(MessagingExtension.JMS_TOPIC_PATH).getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, CommonAttributes.PAUSED).end();
     }
 
     private static void registerTransformers_WF_21(ResourceTransformationDescriptionBuilder subsystem) {

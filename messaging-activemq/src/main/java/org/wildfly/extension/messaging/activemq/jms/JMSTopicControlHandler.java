@@ -73,6 +73,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
@@ -101,6 +102,8 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     private static final String LIST_DURABLE_SUBSCRIPTIONS = "list-durable-subscriptions";
     private static final String LIST_ALL_SUBSCRIPTIONS_AS_JSON = "list-all-subscriptions-as-json";
     private static final String LIST_ALL_SUBSCRIPTIONS = "list-all-subscriptions";
+    public static final String PAUSE = "pause";
+    public static final String RESUME = "resume";
 
     private static final AttributeDefinition CLIENT_ID = create(CommonAttributes.CLIENT_ID)
             .setRequired(true)
@@ -108,6 +111,9 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
             .build();
     private static final AttributeDefinition SUBSCRIPTION_NAME = createNonEmptyStringAttribute("subscription-name");
     private static final AttributeDefinition QUEUE_NAME = createNonEmptyStringAttribute(CommonAttributes.QUEUE_NAME);
+    private static final AttributeDefinition PERSIST = create("persist", ModelType.BOOLEAN, true)
+            .setDefaultValue(ModelNode.FALSE)
+            .build();
 
     private static final AttributeDefinition[] SUBSCRIPTION_REPLY_PARAMETER_DEFINITIONS = new AttributeDefinition[] {
             createNonEmptyStringAttribute("queueName"),
@@ -194,6 +200,12 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
             } else if (REMOVE_MESSAGES.equals(operationName)) {
                 String filter = resolveFilter(context, operation);
                 context.getResult().set(removeMessages(filter, control, managementService));
+            } else if (PAUSE.equals(operationName)) {
+                pause(control, PERSIST.resolveModelAttribute(context, operation).asBoolean());
+                context.getResult();
+            } else if (RESUME.equals(operationName)) {
+                resume(control);
+                context.getResult();
             } else {
                 // Bug
                 throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
@@ -260,6 +272,13 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         registry.registerOperationHandler(runtimeOnlyOperation(REMOVE_MESSAGES, resolver)
                 .setParameters(FILTER)
                 .setReplyType(INT)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(PAUSE, resolver)
+                .setParameters(PERSIST)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(RESUME, resolver)
                 .build(),
                 this);
     }
@@ -345,11 +364,10 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
       return jmsMessages;
    }
 
-   private String listSubscribersInfosAsJSON(final DurabilityType durability, AddressControl addressControl, ManagementService managementService)  {
+   private String listSubscribersInfosAsJSON(final DurabilityType durability, AddressControl addressControl, ManagementService managementService) {
+      javax.json.JsonArrayBuilder array = JsonLoader.createArrayBuilder();
       try {
          List<QueueControl> queues = JMSTopicReadAttributeHandler.getQueues(durability, addressControl, managementService);
-         javax.json.JsonArrayBuilder array = JsonLoader.createArrayBuilder();
-
          for (QueueControl queue : queues) {
             String clientID = null;
             String subName = null;
@@ -381,12 +399,36 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
 
             array.add(info);
          }
-
-         return array.build().toString();
       } catch (Exception e) {
-         throw new RuntimeException(e);
+         rethrow(e);
+      }
+      return array.build().toString();
+   }
+
+   private void pause(AddressControl control, boolean persist) {
+       try {
+       control.pause(persist);
+       } catch (Exception e) {
+         rethrow(e);
       }
    }
+
+    private void resume(AddressControl control) {
+        try {
+            control.resume();
+        } catch (Exception e) {
+            rethrow(e);
+        }
+    }
+
+    private boolean isPaused(AddressControl control) {
+        try {
+            return control.isPaused();
+        } catch (Exception e) {
+            rethrow(e);
+        }
+        return false;
+    }
 
    static String toJSON(final Map<String, Object>[] messages) {
       JsonArrayBuilder array = JsonLoader.createArrayBuilder();
@@ -399,5 +441,10 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
    private static String createFilterFromJMSSelector(final String selectorStr) throws ActiveMQException {
       return selectorStr == null || selectorStr.trim().length() == 0 ? null : SelectorTranslator.convertToActiveMQFilterString(selectorStr);
    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Throwable> void rethrow(Throwable t) throws T {
+        throw (T) t;
+    }
 
 }
