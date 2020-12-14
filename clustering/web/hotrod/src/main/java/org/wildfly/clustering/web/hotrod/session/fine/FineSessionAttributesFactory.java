@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.infinispan.client.hotrod.Flag;
@@ -55,7 +56,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, UUID>> {
+public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, AtomicReference<Map<String, UUID>>> {
 
     private final RemoteCache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
     private final RemoteCache<SessionAttributeKey, V> attributeCache;
@@ -76,12 +77,12 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @Override
-    public Map<String, UUID> createValue(String id, Void context) {
-        return Collections.emptyMap();
+    public AtomicReference<Map<String, UUID>> createValue(String id, Void context) {
+        return new AtomicReference<>(Collections.emptyMap());
     }
 
     @Override
-    public Map<String, UUID> findValue(String id) {
+    public AtomicReference<Map<String, UUID>> findValue(String id) {
         Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (names != null) {
             for (Map.Entry<String, UUID> nameEntry : names.entrySet()) {
@@ -99,9 +100,9 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
                 this.remove(id);
                 return null;
             }
-            return names;
+            return new AtomicReference<>(names);
         }
-        return Collections.emptyMap();
+        return new AtomicReference<>(Collections.emptyMap());
     }
 
     @Override
@@ -116,13 +117,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, C context) {
+    public SessionAttributes createSessionAttributes(String id, AtomicReference<Map<String, UUID>> names, ImmutableSessionMetaData metaData, C context) {
         SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, names)), context);
         return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), new RemoteCacheMap<>(this.attributeCache), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, UUID> names) {
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, AtomicReference<Map<String, UUID>> names) {
         return new FineImmutableSessionAttributes<>(names, getKeyFactory(id), this.attributeCache, this.marshaller);
     }
 

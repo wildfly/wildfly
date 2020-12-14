@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
@@ -63,7 +64,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(sync = false)
-public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, UUID>> {
+public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, AtomicReference<Map<String, UUID>>> {
 
     private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
     private final Cache<SessionAttributeKey, V> attributeCache;
@@ -84,21 +85,21 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @Override
-    public Map<String, UUID> createValue(String id, Void context) {
-        return Collections.emptyMap();
+    public AtomicReference<Map<String, UUID>> createValue(String id, Void context) {
+        return new AtomicReference<>(Collections.emptyMap());
     }
 
     @Override
-    public Map<String, UUID> findValue(String id) {
+    public AtomicReference<Map<String, UUID>> findValue(String id) {
         return this.getValue(id, true);
     }
 
     @Override
-    public Map<String, UUID> tryValue(String id) {
+    public AtomicReference<Map<String, UUID>> tryValue(String id) {
         return this.getValue(id, false);
     }
 
-    private Map<String, UUID> getValue(String id, boolean purgeIfInvalid) {
+    private AtomicReference<Map<String, UUID>> getValue(String id, boolean purgeIfInvalid) {
         Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (names != null) {
             for (Map.Entry<String, UUID> nameEntry : names.entrySet()) {
@@ -118,9 +119,9 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
                 }
                 return null;
             }
-            return names;
+            return new AtomicReference<>(names);
         }
-        return Collections.emptyMap();
+        return new AtomicReference<>(Collections.emptyMap());
     }
 
     @Override
@@ -144,13 +145,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, C context) {
+    public SessionAttributes createSessionAttributes(String id, AtomicReference<Map<String, UUID>> names, ImmutableSessionMetaData metaData, C context) {
         SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, names)), context);
         return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, UUID> names) {
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, AtomicReference<Map<String, UUID>> names) {
         return new FineImmutableSessionAttributes<>(names, getKeyFactory(id), this.attributeCache, this.marshaller);
     }
 
