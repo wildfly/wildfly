@@ -27,12 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.MetadataValue;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.near.NearCacheService;
+import org.wildfly.clustering.infinispan.client.NearCacheFactory;
 import org.wildfly.clustering.infinispan.client.near.CaffeineNearCacheService;
 import org.wildfly.clustering.infinispan.client.near.SimpleKeyWeigher;
 import org.wildfly.clustering.web.hotrod.session.coarse.SessionAttributesKey;
@@ -49,7 +50,7 @@ import com.github.benmanes.caffeine.cache.RemovalListener;
  * A near-cache factory based on max-active-sessions.
  * @author Paul Ferraro
  */
-public class SessionManagerNearCacheFactory<K, V> implements Function<ClientListenerNotifier, NearCacheService<K, V>>, Supplier<Cache<K, MetadataValue<V>>>, RemovalListener<Object, Object> {
+public class SessionManagerNearCacheFactory<K, V> implements NearCacheFactory<K, V>, Supplier<Cache<K, MetadataValue<V>>>, RemovalListener<Object, Object> {
 
     private final Integer maxActiveSessions;
     private final SessionAttributePersistenceStrategy strategy;
@@ -61,8 +62,13 @@ public class SessionManagerNearCacheFactory<K, V> implements Function<ClientList
     }
 
     @Override
-    public NearCacheService<K, V> apply(ClientListenerNotifier notifier) {
+    public NearCacheService<K, V> createService(ClientListenerNotifier notifier) {
         return new CaffeineNearCacheService<>(this, notifier);
+    }
+
+    @Override
+    public NearCacheMode getMode() {
+        return (this.maxActiveSessions != null) && (this.maxActiveSessions.intValue() == 0) ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED;
     }
 
     @Override

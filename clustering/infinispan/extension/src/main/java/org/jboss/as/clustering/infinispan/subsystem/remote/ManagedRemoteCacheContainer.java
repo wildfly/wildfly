@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.transaction.TransactionManager;
 
@@ -31,9 +30,8 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
-import org.infinispan.client.hotrod.near.NearCacheService;
 import org.infinispan.commons.marshall.Marshaller;
+import org.wildfly.clustering.infinispan.client.NearCacheFactory;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
 
@@ -62,7 +60,7 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     }
 
     @Override
-    public <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, Function<ClientListenerNotifier, NearCacheService<K, V>> factory) {
+    public <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, NearCacheFactory<K, V> factory) {
         return this.manager.registerNearCacheFactory(cacheName, factory);
     }
 
