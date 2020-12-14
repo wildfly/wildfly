@@ -25,10 +25,10 @@ package org.wildfly.clustering.ee.cache;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Manager;
 
@@ -40,25 +40,25 @@ import org.wildfly.clustering.ee.Manager;
  */
 public class ConcurrentManager<K, V> implements Manager<K, V> {
 
-    private final Map<K, Map.Entry<Integer, VolatileReference<V>>> objects = new ConcurrentHashMap<>();
-    private final BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>> addFunction = new BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>>() {
+    private final Map<K, Map.Entry<Integer, AtomicReference<V>>> objects = new ConcurrentHashMap<>();
+    private final BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> addFunction = new BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>>() {
         @Override
-        public Map.Entry<Integer, VolatileReference<V>> apply(K id, Map.Entry<Integer, VolatileReference<V>> entry) {
+        public Map.Entry<Integer, AtomicReference<V>> apply(K id, Map.Entry<Integer, AtomicReference<V>> entry) {
             Integer count = Integer.valueOf((entry != null) ? entry.getKey().intValue() + 1 : 0);
-            VolatileReference<V> reference = (entry != null) ? entry.getValue() : new VolatileReference<>();
+            AtomicReference<V> reference = (entry != null) ? entry.getValue() : new AtomicReference<>();
             return new AbstractMap.SimpleImmutableEntry<>(count, reference);
         }
     };
     private final Consumer<V> createTask;
-    private final BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>> removeFunction;
+    private final BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> removeFunction;
 
     public ConcurrentManager(Consumer<V> createTask, Consumer<V> closeTask) {
         this.createTask = createTask;
-        this.removeFunction = new BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>>() {
+        this.removeFunction = new BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>>() {
             @Override
-            public Map.Entry<Integer, VolatileReference<V>> apply(K key, Map.Entry<Integer, VolatileReference<V>> entry) {
+            public Map.Entry<Integer, AtomicReference<V>> apply(K key, Map.Entry<Integer, AtomicReference<V>> entry) {
                 int count = entry.getKey().intValue();
-                VolatileReference<V> reference = entry.getValue();
+                AtomicReference<V> reference = entry.getValue();
                 if (count == 0) {
                     V value = reference.get();
                     if (value != null) {
@@ -74,13 +74,13 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
 
     @Override
     public V apply(K key, Function<Runnable, V> factory) {
-        Map.Entry<Integer, VolatileReference<V>> entry = this.objects.compute(key, this.addFunction);
-        VolatileReference<V> reference = entry.getValue();
+        Map.Entry<Integer, AtomicReference<V>> entry = this.objects.compute(key, this.addFunction);
+        AtomicReference<V> reference = entry.getValue();
         if (reference.get() == null) {
             synchronized (reference) {
                 if (reference.get() == null) {
-                    Map<K, Map.Entry<Integer, VolatileReference<V>>> objects = this.objects;
-                    BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>> removeFunction = this.removeFunction;
+                    Map<K, Map.Entry<Integer, AtomicReference<V>>> objects = this.objects;
+                    BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> removeFunction = this.removeFunction;
                     Runnable closeTask = new Runnable() {
                         @Override
                         public void run() {
@@ -90,7 +90,7 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
                     V value = factory.apply(closeTask);
                     if (value != null) {
                         this.createTask.accept(value);
-                        reference.accept(value);
+                        reference.set(value);
                     } else {
                         closeTask.run();
                     }
@@ -98,19 +98,5 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
             }
         }
         return reference.get();
-    }
-
-    public static class VolatileReference<V> implements Supplier<V>, Consumer<V> {
-        private volatile V value = null;
-
-        @Override
-        public void accept(V value) {
-            this.value = value;
-        }
-
-        @Override
-        public V get() {
-            return this.value;
-        }
     }
 }
