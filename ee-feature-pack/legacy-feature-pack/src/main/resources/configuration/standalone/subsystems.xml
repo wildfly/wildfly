@@ -14,6 +14,7 @@
         <subsystem>ee-security.xml</subsystem>
         <subsystem>ejb3.xml</subsystem>
         <subsystem supplement="standalone-wildfly">elytron.xml</subsystem>
+        <subsystem>health.xml</subsystem>
         <subsystem>infinispan.xml</subsystem>
         <subsystem>io.xml</subsystem>
         <subsystem>jaxrs.xml</subsystem>
@@ -25,7 +26,6 @@
         <subsystem>mail.xml</subsystem>
         <subsystem>metrics.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
-        <subsystem>microprofile-health-smallrye.xml</subsystem>
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>

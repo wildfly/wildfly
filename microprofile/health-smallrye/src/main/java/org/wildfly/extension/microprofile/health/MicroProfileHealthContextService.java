@@ -31,65 +31,56 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.extension.health.HealthContextService;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
-public class HealthContextService implements Service {
+public class MicroProfileHealthContextService implements Service {
 
-    private static final String CONTEXT_NAME = "health";
+    private final Supplier<MicroProfileHealthReporter> healthReporter;
+    private Supplier<HealthContextService> healthContextService;
 
-    private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
-    private final boolean securityEnabled;
-    private final Supplier<HealthReporter> healthReporter;
-
-
-    static void install(OperationContext context, boolean securityEnabled) {
+    static void install(OperationContext context) {
         ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(HTTP_CONTEXT_SERVICE);
 
-        Supplier<ExtensibleHttpManagement> extensibleHttpManagement = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class));
-        Supplier<HealthReporter> healthReporter = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_CAPABILITY, HealthReporter.class));
+        Supplier<HealthContextService> healthContextService = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_HTTP_CONTEXT_CAPABILITY, HealthContextService.class));
+        Supplier<MicroProfileHealthReporter> healthReporter = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.MICROPROFILE_HEALTH_REPORTER_CAPABILITY, MicroProfileHealthReporter.class));
 
-        Service healthContextService = new HealthContextService(extensibleHttpManagement, securityEnabled, healthReporter);
-
-        serviceBuilder.setInstance(healthContextService)
+        serviceBuilder.setInstance(new MicroProfileHealthContextService(healthContextService, healthReporter))
                 .install();
     }
 
-    HealthContextService(Supplier<ExtensibleHttpManagement> extensibleHttpManagement, boolean securityEnabled, Supplier<HealthReporter> healthReporter) {
-        this.extensibleHttpManagement = extensibleHttpManagement;
-        this.securityEnabled = securityEnabled;
+    private MicroProfileHealthContextService(Supplier<HealthContextService> healthContextService, Supplier<MicroProfileHealthReporter> healthReporter) {
+        this.healthContextService = healthContextService;
         this.healthReporter = healthReporter;
     }
 
     @Override
     public void start(StartContext context) {
-        // access to the /health endpoint is unsecured
-        extensibleHttpManagement.get().addManagementHandler(CONTEXT_NAME, securityEnabled,
-                new HealthCheckHandler(healthReporter.get()));
+        healthContextService.get().setOverrideableHealthHandler(new HealthCheckHandler(healthReporter.get()));
     }
 
     @Override
     public void stop(StopContext context) {
-        extensibleHttpManagement.get().removeContext(CONTEXT_NAME);
+        healthContextService.get().setOverrideableHealthHandler(null);
     }
 
     private class HealthCheckHandler implements HttpHandler {
-        private final HealthReporter healthReporter;
+        private final MicroProfileHealthReporter healthReporter;
 
-        public static final String HEALTH = "/" + CONTEXT_NAME;
+        public static final String HEALTH = "/health" ;
 
         public static final String HEALTH_LIVE = HEALTH + "/live";
 
         public static final String HEALTH_READY = HEALTH + "/ready";
 
 
-        public HealthCheckHandler(HealthReporter healthReporter) {
+        public HealthCheckHandler(MicroProfileHealthReporter healthReporter) {
             this.healthReporter = healthReporter;
         }
 

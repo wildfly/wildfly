@@ -38,6 +38,8 @@ include::subsystem-configuration/Messaging.adoc[]
 
 include::subsystem-configuration/Metrics.adoc[]
 
+include::subsystem-configuration/Health.adoc[]
+
 include::subsystem-configuration/MicroProfile_Config_SmallRye.adoc[]
 
 include::subsystem-configuration/MicroProfile_Health.adoc[]

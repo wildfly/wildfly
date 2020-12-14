@@ -5,6 +5,7 @@
         <include name="cloud-server"/>
         <include name="h2-default-datasource"/>
         <include name="microprofile-fault-tolerance"/>
+        <include name="microprofile-health"/>
         <include name="microprofile-jwt"/>
         <include name="microprofile-metrics"/>
         <include name="microprofile-openapi"/>

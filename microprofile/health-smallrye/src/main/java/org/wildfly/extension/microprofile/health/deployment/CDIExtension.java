@@ -45,14 +45,14 @@ import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
 import org.jboss.modules.Module;
-import org.wildfly.extension.microprofile.health.HealthReporter;
+import org.wildfly.extension.microprofile.health.MicroProfileHealthReporter;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 public class CDIExtension implements Extension {
 
-    private final HealthReporter reporter;
+    private final MicroProfileHealthReporter reporter;
     private final Module module;
 
     static final class HealthLiteral extends AnnotationLiteral<Health> implements Health {
@@ -71,7 +71,7 @@ public class CDIExtension implements Extension {
     private HealthCheck defaultReadinessCheck;
 
 
-    public CDIExtension(HealthReporter healthReporter, Module module) {
+    public CDIExtension(MicroProfileHealthReporter healthReporter, Module module) {
         this.reporter = healthReporter;
         this.module = module;
 
@@ -79,7 +79,7 @@ public class CDIExtension implements Extension {
 
     /**
      * Get CDI <em>instances</em> of HealthCheck and
-     * add them to the {@link HealthReporter}.
+     * add them to the {@link MicroProfileHealthReporter}.
      */
     private void afterDeploymentValidation(@Observes final AfterDeploymentValidation avd, BeanManager bm) {
         instance = bm.createInstance();
@@ -109,7 +109,7 @@ public class CDIExtension implements Extension {
     /**
      * Called when the deployment is undeployed.
      * <p>
-     * Remove all the instances of {@link HealthCheck} from the {@link HealthReporter}.
+     * Remove all the instances of {@link HealthCheck} from the {@link MicroProfileHealthReporter}.
      */
     public void beforeShutdown(@Observes final BeforeShutdown bs) {
         removeHealthCheck(healthChecks, reporter::removeHealthCheck);

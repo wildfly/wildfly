@@ -40,6 +40,13 @@ else
   echo INFO: microprofile-fault-tolerance-smallrye already in configuration, subsystem not added.
 end-if
 
+if (outcome != success) of /subsystem=microprofile-health-smallrye:read-resource
+  /extension=org.wildfly.extension.microprofile.health-smallrye:add
+  /subsystem=microprofile-health-smallrye:add(security-enabled=false, empty-liveness-checks-status="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}", empty-readiness-checks-status="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}")
+else
+  echo INFO: microprofile-health-smallrye already in configuration, subsystem not added.
+end-if
+
 if (outcome != success) of /subsystem=microprofile-jwt-smallrye:read-resource
   /extension=org.wildfly.extension.microprofile.jwt-smallrye:add
   /subsystem=microprofile-jwt-smallrye:add

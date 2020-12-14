@@ -72,6 +72,7 @@
         <module>ee-9</module>
         <module>ejb3</module>
         <module>galleon-pack</module>
+        <module>health</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -1041,6 +1042,12 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-health</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-iiop-openjdk</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -1158,9 +1165,9 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-health-smallrye</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>

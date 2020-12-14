@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature-group-spec name="health" xmlns="urn:jboss:galleon:feature-group:1.0">
-    <feature spec="subsystem.microprofile-health-smallrye">
-      <param name="security-enabled" value="false"/>
-      <param name="empty-liveness-checks-status" value="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}" />
-      <param name="empty-readiness-checks-status" value="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}" />
+    <feature spec="subsystem.health">
+        <param name="security-enabled" value="false"/>
     </feature>
 </feature-group-spec>

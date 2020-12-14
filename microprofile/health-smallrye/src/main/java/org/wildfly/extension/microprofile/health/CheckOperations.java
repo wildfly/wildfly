@@ -60,22 +60,22 @@ public class CheckOperations extends AbstractRuntimeOnlyHandler {
             .setRuntimeOnly()
             .build();
 
-    private final Function<HealthReporter, SmallRyeHealth> healthOperation;
+    private final Function<MicroProfileHealthReporter, SmallRyeHealth> healthOperation;
 
-    public CheckOperations(Function<HealthReporter, SmallRyeHealth> healthOperation) {
+    public CheckOperations(Function<MicroProfileHealthReporter, SmallRyeHealth> healthOperation) {
         this.healthOperation = healthOperation;
     }
 
     static void register(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerOperationHandler(CHECK_DEFINITION, new CheckOperations((HealthReporter h) -> h.getHealth()));
-        resourceRegistration.registerOperationHandler(CHECK_LIVE_DEFINITION, new CheckOperations((HealthReporter h) -> h.getLiveness()));
-        resourceRegistration.registerOperationHandler(CHECK_READY_DEFINITION, new CheckOperations((HealthReporter h) -> h.getReadiness()));
+        resourceRegistration.registerOperationHandler(CHECK_DEFINITION, new CheckOperations((MicroProfileHealthReporter h) -> h.getHealth()));
+        resourceRegistration.registerOperationHandler(CHECK_LIVE_DEFINITION, new CheckOperations((MicroProfileHealthReporter h) -> h.getLiveness()));
+        resourceRegistration.registerOperationHandler(CHECK_READY_DEFINITION, new CheckOperations((MicroProfileHealthReporter h) -> h.getReadiness()));
     }
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
-        ServiceName serviceName = context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_CAPABILITY, HealthReporter.class);
-        HealthReporter reporter = (HealthReporter) context.getServiceRegistry(false).getService(serviceName).getValue();
+        ServiceName serviceName = context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.MICROPROFILE_HEALTH_REPORTER_CAPABILITY, MicroProfileHealthReporter.class);
+        MicroProfileHealthReporter reporter = (MicroProfileHealthReporter) context.getServiceRegistry(false).getService(serviceName).getValue();
 
         SmallRyeHealth health = healthOperation.apply(reporter);
         ModelNode result = ModelNode.fromJSONString(health.getPayload().toString());

@@ -1,4 +1,26 @@
-package org.wildfly.extension.microprofile.health;
+
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2020, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.wildfly.extension.health;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_ERRORS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -17,14 +39,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.List;
 
-import org.eclipse.microprofile.health.HealthCheck;
-import org.eclipse.microprofile.health.HealthCheckResponse;
-import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
-class ServerReadinessProbes {
+class ServerProbes {
 
     private static final ModelNode READ_SERVER_STATE_ATTRIBUTE;
     private static final ModelNode READ_BOOT_ERRORS;
@@ -44,49 +63,51 @@ class ServerReadinessProbes {
         READ_DEPLOYMENTS_STATUS.get(OP).set(READ_ATTRIBUTE_OPERATION);
         READ_DEPLOYMENTS_STATUS.get(OP_ADDR).add(DEPLOYMENT, "*");
         READ_DEPLOYMENTS_STATUS.get(NAME).set(STATUS);
-
     }
 
     /**
      * Check that the server-state attribute value is "running"
      */
-    static class ServerStateCheck implements HealthCheck {
+    static class ServerStateCheck implements ServerProbe {
 
         private LocalModelControllerClient modelControllerClient;
 
-        ServerStateCheck(LocalModelControllerClient modelControllerClient) {
+        public ServerStateCheck(LocalModelControllerClient modelControllerClient) {
             this.modelControllerClient = modelControllerClient;
         }
 
         @Override
-        public HealthCheckResponse call() {
+        public Outcome getOutcome() {
             ModelNode response = modelControllerClient.execute(READ_SERVER_STATE_ATTRIBUTE);
 
-            HealthCheckResponseBuilder check = HealthCheckResponse.named("server-state");
-
             if (!SUCCESS.equals(response.get(OUTCOME).asStringOrNull())) {
-                return check.down().build();
+                return Outcome.FAILURE;
             }
             if (response.hasDefined(FAILURE_DESCRIPTION)) {
-                return check.down()
-                        .withData(FAILURE_DESCRIPTION, response.get(FAILURE_DESCRIPTION).asString())
-                        .build();
+                ModelNode data = new ModelNode();
+                data.add(FAILURE_DESCRIPTION, response.get(FAILURE_DESCRIPTION).asString());
+                return new Outcome(false, data);
             }
             ModelNode result = response.get(RESULT);
             if (!result.isDefined()) {
-                return check.down().build();
+                return Outcome.FAILURE;
             }
             String value = result.asString();
-            return check.state("running".equals(value))
-                    .withData(VALUE, value)
-                    .build();
+            ModelNode data = new ModelNode();
+            data.add(VALUE, value);
+            return new Outcome("running".equals(value), data);
+        }
+
+        @Override
+        public String getName() {
+            return "server-state";
         }
     }
 
     /**
      * Check that /core-service=management:read-boot-errors does not report any errors.
      */
-    static class NoBootErrorsCheck implements HealthCheck {
+    static class NoBootErrorsCheck implements ServerProbe {
 
         private LocalModelControllerClient modelControllerClient;
 
@@ -95,36 +116,42 @@ class ServerReadinessProbes {
         }
 
         @Override
-        public HealthCheckResponse call() {
+        public Outcome getOutcome() {
             ModelNode response = modelControllerClient.execute(READ_BOOT_ERRORS);
-            HealthCheckResponseBuilder check = HealthCheckResponse.named(BOOT_ERRORS);
 
             if (!SUCCESS.equals(response.get(OUTCOME).asStringOrNull())) {
-                return check.down().build();
+                return Outcome.FAILURE;
             }
             if (response.hasDefined(FAILURE_DESCRIPTION)) {
-                return check.down()
-                        .withData(FAILURE_DESCRIPTION, response.get(FAILURE_DESCRIPTION).asString())
-                        .build();
+                ModelNode data = new ModelNode();
+                data.add(FAILURE_DESCRIPTION, response.get(FAILURE_DESCRIPTION).asString());
+                return new Outcome(false, data);
             }
             ModelNode result = response.get(RESULT);
             if (!result.isDefined()) {
-                return check.down().build();
+                return Outcome.FAILURE;
             }
             List<ModelNode> errors = result.asList();
             if (errors.isEmpty()) {
-                return check.up().build();
+                return Outcome.SUCCESS;
             }
-            return check.down()
-                    .withData(BOOT_ERRORS, result.toJSONString(true))
-                    .build();
+
+            ModelNode data = new ModelNode();
+            data.add(BOOT_ERRORS, result.toJSONString(true));
+            return new Outcome(false, data);
+        }
+
+        @Override
+        public String getName() {
+            return "boot-errors";
         }
     }
+
 
     /**
      * Check that all deployments status are OK
      */
-    static class DeploymentsStatusCheck implements HealthCheck {
+    static class DeploymentsStatusCheck implements ServerProbe {
 
         private LocalModelControllerClient modelControllerClient;
 
@@ -133,48 +160,54 @@ class ServerReadinessProbes {
         }
 
         @Override
-        public HealthCheckResponse call() {
+        public Outcome getOutcome() {
+
             ModelNode responses = modelControllerClient.execute(READ_DEPLOYMENTS_STATUS);
-            HealthCheckResponseBuilder check = HealthCheckResponse.named("deployments-status");
 
             if (!SUCCESS.equals(responses.get(OUTCOME).asStringOrNull())) {
-                return check.down().build();
+                return Outcome.FAILURE;
             }
             if (!responses.get(RESULT).isDefined()) {
-                return check.down().build();
+                return Outcome.FAILURE;
             }
 
+            ModelNode data = new ModelNode();
             boolean globalStatus = true;
             for (ModelNode response : responses.get(RESULT).asList()) {
                 boolean deploymentUp = false;
-                String data = null;
+                String info = null;
 
                 if (!SUCCESS.equals(response.get(OUTCOME).asStringOrNull())) {
-                    data = "DMR Query failed";
+                    info = "DMR Query failed";
                 } else if (response.hasDefined(FAILURE_DESCRIPTION)) {
-                    data = response.get(FAILURE_DESCRIPTION).asString();
+                    info = response.get(FAILURE_DESCRIPTION).asString();
                 }
                 ModelNode result = response.get(RESULT);
                 if (!result.isDefined()) {
-                    data = "status undefined";
+                    info = "status undefined";
                 }
                 String value = result.asString();
                 if ("OK".equals(value)) {
                     deploymentUp = true;
                 }
-                if (data == null) {
-                    data = value;
+                if (info == null) {
+                    info = value;
                 }
 
                 PathAddress address = PathAddress.pathAddress(response.get(OP_ADDR));
                 String deploymentName = address.getElement(0).getValue();
-                check.withData(deploymentName, data);
+                data.add(deploymentName, info);
                 globalStatus = globalStatus && deploymentUp;
             }
 
-            return check.state(globalStatus)
-                    .build();
+            return new Outcome(globalStatus, data);
+        }
+
+        @Override
+        public String getName() {
+            return "deployments-status";
         }
     }
+
 
 }

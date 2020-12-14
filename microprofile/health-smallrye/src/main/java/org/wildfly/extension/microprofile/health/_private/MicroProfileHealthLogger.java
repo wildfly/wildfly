@@ -36,7 +36,7 @@ import org.jboss.logging.annotations.MessageLogger;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
-@MessageLogger(projectCode = "WFLYHEALTH", length = 4)
+@MessageLogger(projectCode = "WFLYMPHEALTH", length = 4)
 public interface MicroProfileHealthLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
