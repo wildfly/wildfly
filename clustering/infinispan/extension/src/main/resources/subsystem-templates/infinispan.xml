@@ -12,7 +12,6 @@
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
                 <local-cache name="sso"/>
-                <local-cache name="routing"/>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">

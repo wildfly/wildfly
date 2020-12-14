@@ -44,7 +44,7 @@
         <subsystem>core-management.xml</subsystem>
         <subsystem>datasources.xml</subsystem>
         <subsystem>discovery.xml</subsystem>
-        <subsystem>distributable-web.xml</subsystem>
+        <subsystem supplement="ha">distributable-web.xml</subsystem>
         <subsystem>ee.xml</subsystem>
         <subsystem>ee-security.xml</subsystem>
         <subsystem supplement="ha">ejb3.xml</subsystem>
@@ -120,7 +120,7 @@
         <subsystem>core-management.xml</subsystem>
         <subsystem>datasources.xml</subsystem>
         <subsystem>discovery.xml</subsystem>
-        <subsystem>distributable-web.xml</subsystem>
+        <subsystem supplement="ha">distributable-web.xml</subsystem>
         <subsystem supplement="full">ee.xml</subsystem>
         <subsystem>ee-security.xml</subsystem>
         <subsystem supplement="full-ha">ejb3.xml</subsystem>
