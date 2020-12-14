@@ -337,12 +337,12 @@ public class HttpManagementConstantHeadersTestCase {
     */
    private boolean checkIfMetricsUsable() throws IOException {
       if (Boolean.getBoolean("ts.layers")) {
-         ModelNode metricsReadOp = Operations.createReadResourceOperation(PathAddress.pathAddress(SUBSYSTEM, "microprofile-metrics-smallrye"));
+         ModelNode metricsReadOp = Operations.createReadResourceOperation(PathAddress.pathAddress(SUBSYSTEM, "metrics"));
          ModelNode result = managementClient.getControllerClient().execute(metricsReadOp);
          if (!result.get(OUTCOME).asString().equals(SUCCESS)) {
             return false;
          }
       }
-      return true;
+      return false;
    }
 }

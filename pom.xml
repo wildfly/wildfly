@@ -86,6 +86,7 @@
         <module>legacy/web</module>
         <module>mail</module>
         <module>messaging-activemq</module>
+        <module>metrics</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
@@ -1112,6 +1113,12 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-metrics</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -1163,9 +1170,9 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-metrics-smallrye</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>

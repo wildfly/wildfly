@@ -27,9 +27,9 @@
         <subsystem>jsr77.xml</subsystem>
         <subsystem>mail.xml</subsystem>
         <subsystem>messaging-activemq-colocated.xml</subsystem>
+        <subsystem>metrics.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem>microprofile-health-smallrye.xml</subsystem>
-        <subsystem>microprofile-metrics-smallrye.xml</subsystem>
         <subsystem>microprofile-opentracing-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>

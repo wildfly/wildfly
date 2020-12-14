@@ -1,13 +1,39 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2020, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.wildfly.extension.microprofile.metrics.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR;
 
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.ServerService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -16,8 +42,9 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.extension.microprofile.metrics.MetricCollector;
-import org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition;
+import org.wildfly.extension.metrics.MetricCollector;
+import org.wildfly.extension.metrics.MetricRegistration;
+import org.wildfly.extension.microprofile.metrics.MicroProfileVendorMetricRegistry;
 
 public class DeploymentMetricService implements Service {
 
@@ -26,37 +53,69 @@ public class DeploymentMetricService implements Service {
     private final ManagementResourceRegistration managementResourceRegistration;
     private PathAddress deploymentAddress;
     private final Supplier<MetricCollector> metricCollector;
-    private MetricCollector.MetricRegistration registration;
+    private Supplier<Executor> managementExecutor;
+    private final boolean exposeAnySubsystem;
+    private final List<String> exposedSubsystems;
+    private final String prefix;
+    private MetricRegistration registration;
 
-    public static void install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Resource rootResource, ManagementResourceRegistration managementResourceRegistration) {
+    public static void install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Resource rootResource, ManagementResourceRegistration managementResourceRegistration, boolean exposeAnySubsystem, List<String> exposedSubsystems, String prefix) {
         PathAddress deploymentAddress = createDeploymentAddressPrefix(deploymentUnit);
 
-        ServiceBuilder<?> sb = serviceTarget.addService(deploymentUnit.getServiceName().append("metrics"));
-        Supplier<MetricCollector> metricCollector = sb.requires(MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE);
+        ServiceBuilder<?> sb = serviceTarget.addService(deploymentUnit.getServiceName().append("microprofile-metrics"));
+        Supplier<MetricCollector> metricCollector = sb.requires(WILDFLY_COLLECTOR);
+        Supplier<Executor> managementExecutor = sb.requires(ServerService.EXECUTOR_CAPABILITY.getCapabilityServiceName());
 
         /*
          * The deployment metric service depends on the deployment complete service name to ensure that the metrics from
          * the deployment are collected and registered once the deployment services have all be properly installed.
          */
         sb.requires(DeploymentCompleteServiceProcessor.serviceName(deploymentUnit.getServiceName()));
-        sb.setInstance(new DeploymentMetricService(rootResource, managementResourceRegistration, deploymentAddress, metricCollector))
+        sb.setInstance(new DeploymentMetricService(rootResource, managementResourceRegistration, deploymentAddress, metricCollector, managementExecutor,
+                exposeAnySubsystem, exposedSubsystems, prefix))
                 .install();
     }
 
-    private DeploymentMetricService(Resource rootResource, ManagementResourceRegistration managementResourceRegistration, PathAddress deploymentAddress, Supplier<MetricCollector> metricCollector) {
+    private DeploymentMetricService(Resource rootResource, ManagementResourceRegistration managementResourceRegistration, PathAddress deploymentAddress, Supplier<MetricCollector> metricCollector,
+                                    Supplier<Executor> managementExecutor, boolean exposeAnySubsystem, List<String> exposedSubsystems, String prefix) {
         this.rootResource = rootResource;
         this.managementResourceRegistration = managementResourceRegistration;
         this.deploymentAddress = deploymentAddress;
         this.metricCollector = metricCollector;
+        this.managementExecutor = managementExecutor;
+        this.exposeAnySubsystem = exposeAnySubsystem;
+        this.exposedSubsystems = exposedSubsystems;
+        this.prefix = prefix;
     }
 
     @Override
     public void start(StartContext startContext) {
-        registration = metricCollector.get().collectResourceMetrics(rootResource,
-                managementResourceRegistration,
-                // prepend the deployment address to the subsystem resource address
-                address -> deploymentAddress.append(address));
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    registration = new MetricRegistration(new MicroProfileVendorMetricRegistry());
 
+                    metricCollector.get().collectResourceMetrics(rootResource,
+                            managementResourceRegistration,
+                            // prepend the deployment address to the subsystem resource address
+                            address -> deploymentAddress.append(address),
+                            exposeAnySubsystem, exposedSubsystems, prefix,
+                            registration);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    throw t;
+                }
+                startContext.complete();
+            }
+        };
+        try {
+            managementExecutor.get().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            startContext.asynchronous();
+        }
     }
 
     @Override
