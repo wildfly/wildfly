@@ -33,7 +33,7 @@ import org.infinispan.protostream.RawProtoStreamWriter;
  * Provides a {@link ProtoStreamMarshaller}.
  * @author Paul Ferraro
  */
-public interface MarshallerProvider extends ProtoStreamMarshaller<Object> {
+public interface ProtoStreamMarshallerProvider extends ProtoStreamMarshaller<Object> {
     ProtoStreamMarshaller<?> getMarshaller();
 
     @Override

@@ -30,10 +30,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SingleFieldMarshaller;
 
@@ -41,7 +41,7 @@ import org.wildfly.clustering.marshalling.protostream.SingleFieldMarshaller;
  * Marshallers for java.util.Optional* instances.
  * @author Paul Ferraro
  */
-public enum OptionalMarshaller implements MarshallerProvider {
+public enum OptionalMarshaller implements ProtoStreamMarshallerProvider {
 
     OBJECT(ObjectMarshaller.INSTANCE, Optional::empty, Optional::isPresent, Optional::get, Optional::of),
     DOUBLE(PrimitiveMarshaller.DOUBLE.cast(Double.class), OptionalDouble::empty, OptionalDouble::isPresent, OptionalDouble::getAsDouble, OptionalDouble::of),

@@ -40,8 +40,8 @@ import java.util.TreeSet;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.AnyField;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
-import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.SingleFieldMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
@@ -50,7 +50,7 @@ import org.wildfly.common.function.Functions;
 /**
  * @author Paul Ferraro
  */
-public enum UtilMarshaller implements MarshallerProvider {
+public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     ARRAY_DEQUE(new CollectionMarshaller<>(ArrayDeque::new)),
     ARRAY_LIST(new CollectionMarshaller<>(ArrayList::new)),
     BIT_SET(new SingleFieldMarshaller<>(AnyField.BYTE_ARRAY.cast(byte[].class), BitSet::new, BitSet::isEmpty, BitSet::toByteArray, BitSet::valueOf)),
@@ -91,11 +91,11 @@ public enum UtilMarshaller implements MarshallerProvider {
     ;
     private final ProtoStreamMarshaller<?> marshaller;
 
-    UtilMarshaller(ProtoStreamMarshaller<?> marshaller) {
+    UtilMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
         this.marshaller = marshaller;
     }
 
-    UtilMarshaller(Externalizer<?> externalizer) {
+    UtilMarshallerProvider(Externalizer<?> externalizer) {
         this(new ExternalizerMarshaller<>(externalizer));
     }
 

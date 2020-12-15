@@ -32,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
-import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.CollectionMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.SortedSetMarshaller;
@@ -40,7 +40,7 @@ import org.wildfly.clustering.marshalling.protostream.util.SortedSetMarshaller;
 /**
  * @author Paul Ferraro
  */
-public enum ConcurrentMarshaller implements MarshallerProvider {
+public enum ConcurrentMarshallerProvider implements ProtoStreamMarshallerProvider {
     CONCURRENT_HASH_MAP(new ConcurrentMapMarshaller<>(ConcurrentHashMap::new)),
     CONCURRENT_HASH_SET(new CollectionMarshaller<>(ConcurrentHashMap::newKeySet)),
     CONCURRENT_LINKED_DEQUE(new CollectionMarshaller<>(ConcurrentLinkedDeque::new)),
@@ -53,11 +53,11 @@ public enum ConcurrentMarshaller implements MarshallerProvider {
     private final ProtoStreamMarshaller<Object> marshaller;
 
     @SuppressWarnings("unchecked")
-    ConcurrentMarshaller(ProtoStreamMarshaller<?> marshaller) {
+    ConcurrentMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
         this.marshaller = (ProtoStreamMarshaller<Object>) marshaller;
     }
 
-    ConcurrentMarshaller(Externalizer<?> externalizer) {
+    ConcurrentMarshallerProvider(Externalizer<?> externalizer) {
         this(new ExternalizerMarshaller<>(externalizer));
     }
 

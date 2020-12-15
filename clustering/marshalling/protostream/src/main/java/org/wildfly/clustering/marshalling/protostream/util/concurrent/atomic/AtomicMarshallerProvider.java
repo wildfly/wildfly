@@ -29,10 +29,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SingleFieldMarshaller;
 
@@ -40,7 +40,7 @@ import org.wildfly.clustering.marshalling.protostream.SingleFieldMarshaller;
  * ProtoStream optimized marshallers for java.util.concurrent.atomic types.
  * @author Paul Ferraro
  */
-public enum AtomicMarshaller implements MarshallerProvider {
+public enum AtomicMarshallerProvider implements ProtoStreamMarshallerProvider {
     BOOLEAN(PrimitiveMarshaller.BOOLEAN.cast(Boolean.class), AtomicBoolean::new, AtomicBoolean::get, AtomicBoolean::new),
     INTEGER(PrimitiveMarshaller.INTEGER.cast(Integer.class), AtomicInteger::new, AtomicInteger::get, AtomicInteger::new),
     LONG(PrimitiveMarshaller.LONG.cast(Long.class), AtomicLong::new, AtomicLong::get, AtomicLong::new),
@@ -48,7 +48,7 @@ public enum AtomicMarshaller implements MarshallerProvider {
     ;
     private final ProtoStreamMarshaller<?> marshaller;
 
-    <T, V> AtomicMarshaller(ScalarMarshaller<V> marshaller, Supplier<T> defaultFactory, Function<T, V> function, Function<V, T> factory) {
+    <T, V> AtomicMarshallerProvider(ScalarMarshaller<V> marshaller, Supplier<T> defaultFactory, Function<T, V> function, Function<V, T> factory) {
         this.marshaller = new SingleFieldMarshaller<>(marshaller, defaultFactory, function, factory);
     }
 
