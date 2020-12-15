@@ -27,7 +27,6 @@
         <subsystem>mail.xml</subsystem>
         <subsystem>messaging-activemq.xml</subsystem>
         <subsystem>metrics.xml</subsystem>
-        <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>picketlink-federation.xml</subsystem>
         <subsystem>picketlink-identity-management.xml</subsystem>
