@@ -30,7 +30,6 @@ import java.util.function.Consumer;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
@@ -38,10 +37,10 @@ import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.common.function.Functions;
 
 /**
  * Generic HotRod-based session manager implementation - independent of cache mapping strategy.
@@ -54,13 +53,12 @@ import org.wildfly.clustering.web.session.SessionManager;
 public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
     private final Registrar<SessionExpirationListener> expirationRegistrar;
     private final SessionExpirationListener expirationListener;
-    private final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final SC context;
     private final Batcher<TransactionBatch> batcher;
     private final Duration stopTimeout;
-    private final Consumer<ImmutableSession> closeTask;
+    private final Consumer<ImmutableSession> closeTask = Functions.discardingConsumer();
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
@@ -69,19 +67,10 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
         this.factory = factory;
         this.expirationRegistrar = configuration.getExpirationRegistrar();
         this.expirationListener = configuration.getExpirationListener();
-        this.expirationScheduler = configuration.getExpirationScheduler();
         this.context = configuration.getServletContext();
         this.identifierFactory = configuration.getIdentifierFactory();
         this.batcher = configuration.getBatcher();
         this.stopTimeout = configuration.getStopTimeout();
-        this.closeTask = new Consumer<ImmutableSession>() {
-            @Override
-            public void accept(ImmutableSession session) {
-                if (session.isValid()) {
-                    configuration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
-                }
-            }
-        };
     }
 
     @Override
@@ -133,7 +122,6 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
             this.factory.remove(id);
             return null;
         }
-        this.expirationScheduler.cancel(id);
         return new ValidSession<>(this.factory.createSession(id, entry, this.context), this.closeTask);
     }
 

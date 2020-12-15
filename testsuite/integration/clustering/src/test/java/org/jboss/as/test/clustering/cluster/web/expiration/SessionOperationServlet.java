@@ -66,7 +66,15 @@ public class SessionOperationServlet extends HttpServlet {
         return createGetURI(baseURL, name, null);
     }
 
-    public static URI createGetURI(URL baseURL, String name, String value) throws URISyntaxException {
+    public static URI createGetURI(URL baseURL, String name, String sessionId) throws URISyntaxException {
+        StringBuilder builder = appendParameter(buildURI(GET), NAME, name);
+        if (sessionId != null) {
+            appendParameter(builder, SESSION_ID, sessionId);
+        }
+        return baseURL.toURI().resolve(builder.toString());
+    }
+
+    public static URI createGetAndSetURI(URL baseURL, String name, String value) throws URISyntaxException {
         StringBuilder builder = appendParameter(buildURI(GET), NAME, name);
         if (value != null) {
             appendParameter(builder, VALUE, value);
@@ -108,7 +116,9 @@ public class SessionOperationServlet extends HttpServlet {
         String operation = getRequiredParameter(req, OPERATION);
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID, session.getId());
-        //System.out.println(String.format("%s?%s;jsessionid=%s", req.getRequestURL(), req.getQueryString(), session.getId()));
+
+        req.getServletContext().log(String.format("%s?%s;jsessionid=%s", req.getRequestURL(), req.getQueryString(), session.getId()));
+
         if (operation.equals(SET)) {
             String name = getRequiredParameter(req, NAME);
             String[] values = req.getParameterValues(VALUE);
@@ -143,8 +153,13 @@ public class SessionOperationServlet extends HttpServlet {
             throw new ServletException("Unrecognized operation: " + operation);
         }
 
-        String requestedSessionId = req.getRequestedSessionId();
-        String targetSessionId = (requestedSessionId != null) ? requestedSessionId : session.getId();
+        String targetSessionId = req.getParameter(SESSION_ID);
+        if (targetSessionId == null) {
+            targetSessionId = req.getRequestedSessionId();
+        }
+        if (targetSessionId == null) {
+            targetSessionId = session.getId();
+        }
 
         setHeader(resp, CREATED_SESSIONS, RecordingWebListener.createdSessions);
         setHeader(resp, DESTROYED_SESSIONS, RecordingWebListener.destroyedSessions);
