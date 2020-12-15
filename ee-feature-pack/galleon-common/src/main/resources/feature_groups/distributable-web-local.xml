@@ -15,10 +15,7 @@
             <param name="cache-container" value="web"/>
             <param name="cache" value="sso"/>
         </feature>
-        <feature spec="subsystem.distributable-web.routing.local">
-            <param name="cache-container" value="web"/>
-            <param name="cache" value="routing"/>
-        </feature>
+        <feature spec="subsystem.distributable-web.routing.local"/>
     </feature>
 
 </feature-group-spec>
