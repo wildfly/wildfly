@@ -35,8 +35,8 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.spi.util.concurrent.atomic.AtomicExternalizerProvider;
 
 import protostream.com.google.protobuf.CodedOutputStream;
@@ -45,7 +45,7 @@ import protostream.com.google.protobuf.CodedOutputStream;
  * ProtoStream optimized marshallers for java.util.concurrent.atomic types.
  * @author Paul Ferraro
  */
-public enum AtomicMarshaller implements MarshallerProvider {
+public enum AtomicMarshallerProvider implements ProtoStreamMarshallerProvider {
     BOOLEAN(AtomicBoolean.class) {
         private final ProtoStreamMarshaller<AtomicBoolean> marshaller = new ExternalizerMarshaller<>(AtomicExternalizerProvider.ATOMIC_BOOLEAN.cast(AtomicBoolean.class));
 
@@ -98,7 +98,7 @@ public enum AtomicMarshaller implements MarshallerProvider {
     ;
     private final Class<?> targetClass;
 
-    AtomicMarshaller(Class<?> targetClass) {
+    AtomicMarshallerProvider(Class<?> targetClass) {
         this.targetClass = targetClass;
     }
 

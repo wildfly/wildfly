@@ -43,7 +43,7 @@ import protostream.com.google.protobuf.CodedOutputStream;
  * A set of fields used by {@link AnyMarshaller}.
  * @author Paul Ferraro
  */
-public enum AnyField implements MarshallerProvider, Field<Object> {
+public enum AnyField implements ProtoStreamMarshallerProvider, Field<Object> {
     BOOLEAN(Boolean.class) {
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {

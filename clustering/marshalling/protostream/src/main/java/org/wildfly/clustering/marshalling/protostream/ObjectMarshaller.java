@@ -39,7 +39,7 @@ import protostream.com.google.protobuf.CodedOutputStream;
 /**
  * @author Paul Ferraro
  */
-public enum ObjectMarshaller implements MarshallerProvider {
+public enum ObjectMarshaller implements ProtoStreamMarshallerProvider {
     INSTANCE;
 
     @Override
