@@ -7,6 +7,7 @@
         <include name="microprofile-fault-tolerance"/>
         <include name="microprofile-jwt"/>
         <include name="microprofile-openapi"/>
+        <include name="microprofile-opentracing"/>
         <include name="undertow-legacy-https"/>
         <exclude name="management-security-realm"/>
     </layers>

@@ -54,21 +54,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-mock</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>opentracing-tracerresolver</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
         </dependency>
@@ -186,16 +171,6 @@
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-opentracing</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

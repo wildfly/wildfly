@@ -82,6 +82,7 @@ public class SimpleRestClientTestCase {
 
             // the third span is the traced endpoint, child of the client request
             String targetUrl = url.toString() + "opentracing/traced";
+            System.out.println("We are trying to open " + targetUrl);
             WebTarget target = restClient.target(targetUrl);
 
             try (Response response = target.request().get()) {

@@ -58,7 +58,6 @@ public class ResteasyProvidersTestCase {
         war.addAsWebInfResource(new StringAsset(WEB_XML), "web.xml");
         war.addAsWebInfResource(new StringAsset(BEANS_XML), "beans.xml");
         war.addClasses(Services.class, ResponseContextProviderFilter.class, TestResponse.class, EndpointService.class);
-        war.addAsResource(new StringAsset("Dependencies: org.apache.commons.lang3\n"), "META-INF/MANIFEST.MF");
         return war;
     }
 

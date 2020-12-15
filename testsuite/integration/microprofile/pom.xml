@@ -124,6 +124,28 @@
             <artifactId>nimbus-jose-jwt</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- MicroProfile Opentracing Test Dependencies -->
+        <dependency>
+            <groupId>io.jaegertracing</groupId>
+            <artifactId>jaeger-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-mock</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-tracerresolver</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-opentracing</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -609,6 +631,7 @@
                                         <layer>microprofile-openapi</layer>
                                         <layer>microprofile-jwt</layer>
                                         <layer>microprofile-fault-tolerance</layer>
+                                        <layer>microprofile-opentracing</layer>
                                     </layers>
                                 </configuration>
                             </execution>

@@ -1125,15 +1125,15 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>

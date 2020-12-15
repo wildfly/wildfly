@@ -8,6 +8,7 @@
     <feature spec="profile">
         <param name="profile" value="ha"/>
         <feature spec="subsystem.microprofile-jwt-smallrye"/>
+        <feature-group name="microprofile-opentracing-jaeger"/>
     </feature>
     <feature-group name="domain-host-excludes"/>
 

@@ -28,6 +28,6 @@
         <layer name="microprofile-jwt" optional="true"/>
         <layer name="microprofile-metrics" optional="true"/>
         <layer name="microprofile-openapi" optional="true"/>
-        <layer name="open-tracing" optional="true"/>
+        <layer name="microprofile-opentracing" optional="true"/>
     </dependencies>
 </layer-spec>

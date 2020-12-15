@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-opentracing">
+    <dependencies>
+        <layer name="open-tracing"/>
+    </dependencies>
+</layer-spec>

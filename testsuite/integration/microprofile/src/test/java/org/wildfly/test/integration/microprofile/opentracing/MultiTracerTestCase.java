@@ -69,6 +69,7 @@ public class MultiTracerTestCase {
     public static class SetupTask implements ServerSetupTask {
 
         private static final PathAddress OT_SUBSYSTEM = PathAddress.parseCLIStyleAddress("/subsystem=microprofile-opentracing-smallrye");
+        private boolean isEmptySubsystem = true;
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
@@ -78,18 +79,34 @@ public class MultiTracerTestCase {
             ModelNode tags = addTracer.get("tags");
             tags.get("tracer-tag").set("test");
             Utils.applyUpdate(addTracer, managementClient.getControllerClient());
-            tags = new ModelNode();
-            tags.get("tracer-tag").set("initial");
-            ModelNode updateTracer = Operations.createWriteAttributeOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger").toModelNode(), "tags", tags);
-            Utils.applyUpdate(updateTracer, managementClient.getControllerClient());
+            isEmptySubsystem = !managementClient.getControllerClient().execute(Operations.createReadAttributeOperation(OT_SUBSYSTEM.toModelNode(), "default-tracer")).get("result").isDefined();
+            if (isEmptySubsystem) {
+                addTracer = Operations.createAddOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger").toModelNode());
+                addTracer.get("sampler-type").set("const");
+                addTracer.get("sampler-param").set(1.0D);
+                tags = addTracer.get("tags");
+                tags.get("tracer-tag").set("initial");
+                Utils.applyUpdate(addTracer, managementClient.getControllerClient());
+                Utils.applyUpdate(Operations.createWriteAttributeOperation(OT_SUBSYSTEM.toModelNode(), "default-tracer", "jaeger"), managementClient.getControllerClient());
+            } else {
+                tags = new ModelNode();
+                tags.get("tracer-tag").set("initial");
+                ModelNode updateTracer = Operations.createWriteAttributeOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger").toModelNode(), "tags", tags);
+                Utils.applyUpdate(updateTracer, managementClient.getControllerClient());
+            }
             executeReloadAndWaitForCompletion(managementClient, 100000);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             Utils.applyUpdate(Operations.createRemoveOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger-test").toModelNode()), managementClient.getControllerClient());
-            ModelNode updateTracer = Operations.createUndefineAttributeOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger").toModelNode(), "tags");
-            Utils.applyUpdate(updateTracer, managementClient.getControllerClient());
+            if (isEmptySubsystem) {
+                Utils.applyUpdate(Operations.createUndefineAttributeOperation(OT_SUBSYSTEM.toModelNode(), "default-tracer"), managementClient.getControllerClient());
+                Utils.applyUpdate(Operations.createRemoveOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger").toModelNode()), managementClient.getControllerClient());
+            } else {
+                ModelNode updateTracer = Operations.createUndefineAttributeOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger").toModelNode(), "tags");
+                Utils.applyUpdate(updateTracer, managementClient.getControllerClient());
+            }
             executeReloadAndWaitForCompletion(managementClient, 100000);
         }
 
