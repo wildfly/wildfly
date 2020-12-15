@@ -35,16 +35,16 @@ import org.infinispan.protostream.SerializationContext;
  * Provides marshallers whose {@link BaseMarshaller#getJavaClass()} defines an abstract class.
  * @author Paul Ferraro
  */
-public class AbstractMarshallerProvider implements SerializationContext.MarshallerProvider {
+public class MarshallerProvider implements SerializationContext.MarshallerProvider {
 
     private final Map<String, BaseMarshaller<?>> marshallerByName = new HashMap<>();
     private final Map<Class<?>, BaseMarshaller<?>> marshallerByType = new IdentityHashMap<>();
 
-    public AbstractMarshallerProvider(BaseMarshaller<?>... marshallers) {
+    public MarshallerProvider(BaseMarshaller<?>... marshallers) {
         this(Arrays.asList(marshallers));
     }
 
-    public AbstractMarshallerProvider(Iterable<? extends BaseMarshaller<?>> marshallers) {
+    public MarshallerProvider(Iterable<? extends BaseMarshaller<?>> marshallers) {
         for (BaseMarshaller<?> marshaller : marshallers) {
             this.marshallerByName.put(marshaller.getTypeName(), marshaller);
             this.marshallerByType.put(marshaller.getJavaClass(), marshaller);

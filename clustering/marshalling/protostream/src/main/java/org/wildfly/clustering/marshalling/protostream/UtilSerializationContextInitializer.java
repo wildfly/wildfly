@@ -39,6 +39,6 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new AbstractMarshallerProvider(EnumSet.allOf(UtilMarshallerProvider.class)));
+        context.registerMarshallerProvider(new MarshallerProvider(EnumSet.allOf(UtilMarshallerProvider.class)));
     }
 }
