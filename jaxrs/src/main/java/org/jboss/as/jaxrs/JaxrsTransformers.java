@@ -23,20 +23,31 @@
 package org.jboss.as.jaxrs;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Jaxrs transformers.
  *
  * @author <a href="mailto:rsigal@redhat.com">Ron Sigal</a>
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class JaxrsTransformers implements ExtensionTransformerRegistration {
+    private static final String BYPASS_TRANSFORMER = "org.wildfly.jaxrs.unsupported.bypass.2.0.0.transformer";
+
+    // WildFly 8-10, JBoss EAP 7.0
+    private static final ModelVersion MODEL_VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
+    // WildFly 11-21, JBoss EAP 7.1-7.3. Note that as of WildFly 19 the model should have been bumped but was missed.
+    // See https://issues.redhat.com/browse/WFLY-14210 for details.
+    private final ModelVersion MODEL_VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -45,12 +56,29 @@ public class JaxrsTransformers implements ExtensionTransformerRegistration {
 
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
-        registerTransformers_2_0_0(subsystemRegistration);
+        final ModelVersion[] modelVersions;
+        final ModelVersion target;
+        if (isByPassTransformers()) {
+            target = MODEL_VERSION_1_0_0;
+            modelVersions = new ModelVersion[] {MODEL_VERSION_1_0_0};
+        } else {
+            target = MODEL_VERSION_2_0_0;
+            modelVersions = new ModelVersion[] {MODEL_VERSION_2_0_0, MODEL_VERSION_1_0_0};
+        }
+        ChainedTransformationDescriptionBuilder chainedBuilder =
+                TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
+
+        // Differences between 3.0.0 and 2.0.0
+        ResourceTransformationDescriptionBuilder builder300 =
+                chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), target);
+        registerTransformers_3_0_0(builder300);
+
+        // Create chained transformers.
+        chainedBuilder.buildAndRegister(subsystemRegistration, modelVersions);
     }
 
-    private static void registerTransformers_2_0_0(SubsystemTransformerRegistration subsystemRegistration) {
-        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        AttributeTransformationDescriptionBuilder attributeBuilder = builder.getAttributeBuilder();
+    private static void registerTransformers_3_0_0(final ResourceTransformationDescriptionBuilder builder) {
+        final AttributeTransformationDescriptionBuilder attributeBuilder = builder.getAttributeBuilder();
         checkAttribute(attributeBuilder, JaxrsAttribute.JAXRS_2_0_REQUEST_MATCHING);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_ADD_CHARSET);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_BUFFER_EXCEPTION_ENTITY);
@@ -72,11 +100,19 @@ public class JaxrsTransformers implements ExtensionTransformerRegistration {
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_USE_CONTAINER_FORM_PARAMS);
         checkAttribute(attributeBuilder, JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING);
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, JaxrsExtension.MODEL_VERSION_1_0_0);
+        attributeBuilder.end();
     }
 
     private static void checkAttribute(AttributeTransformationDescriptionBuilder builder, AttributeDefinition attribute) {
         builder.setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, attribute)
-               .addRejectCheck(RejectAttributeChecker.DEFINED, attribute);
+                .addRejectCheck(RejectAttributeChecker.DEFINED, attribute);
+    }
+
+    private static boolean isByPassTransformers() {
+        final String value = WildFlySecurityManager.getPropertyPrivileged(BYPASS_TRANSFORMER, null);
+        if (value == null) {
+            return false;
+        }
+        return value.isEmpty() || Boolean.parseBoolean(value);
     }
 }
