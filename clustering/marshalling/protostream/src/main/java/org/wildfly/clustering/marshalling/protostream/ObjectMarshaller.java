@@ -37,7 +37,7 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
 /**
  * @author Paul Ferraro
  */
-public enum ObjectMarshaller implements MarshallerProvider {
+public enum ObjectMarshaller implements ProtoStreamMarshallerProvider {
     INSTANCE;
 
     @Override

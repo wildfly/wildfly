@@ -35,14 +35,14 @@ import java.util.TreeSet;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
-import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
 /**
  * @author Paul Ferraro
  */
-public enum UtilMarshaller implements MarshallerProvider {
+public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     ARRAY_DEQUE(new BoundedCollectionMarshaller<>(ArrayDeque.class, ArrayDeque::new)),
     ARRAY_LIST(new BoundedCollectionMarshaller<>(ArrayList.class, ArrayList::new)),
     BIT_SET(UtilExternalizerProvider.BIT_SET),
@@ -84,11 +84,11 @@ public enum UtilMarshaller implements MarshallerProvider {
     private final ProtoStreamMarshaller<Object> marshaller;
 
     @SuppressWarnings("unchecked")
-    UtilMarshaller(ProtoStreamMarshaller<?> marshaller) {
+    UtilMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
         this.marshaller = (ProtoStreamMarshaller<Object>) marshaller;
     }
 
-    UtilMarshaller(Externalizer<?> externalizer) {
+    UtilMarshallerProvider(Externalizer<?> externalizer) {
         this(new ExternalizerMarshaller<>(externalizer));
     }
 

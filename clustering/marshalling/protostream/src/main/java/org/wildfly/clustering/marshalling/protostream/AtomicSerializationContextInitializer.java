@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.EnumSet;
 
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.AtomicMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.AtomicMarshallerProvider;
 
 /**
  * Initializer that registers protobuf schema for java.util.concurrent.atomic.* classes.
@@ -39,8 +39,8 @@ public class AtomicSerializationContextInitializer extends AbstractSerialization
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        for (ProtoStreamMarshaller<Object> marshaller : EnumSet.allOf(AtomicMarshaller.class)) {
-            context.registerMarshaller(marshaller);
+        for (ProtoStreamMarshallerProvider provider : EnumSet.allOf(AtomicMarshallerProvider.class)) {
+            context.registerMarshaller(provider.getMarshaller());
         }
     }
 }

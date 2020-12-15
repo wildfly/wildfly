@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.EnumSet;
 
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.util.UtilMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.UtilMarshallerProvider;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
 /**
@@ -40,7 +40,7 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new AbstractMarshallerProvider(EnumSet.allOf(UtilMarshaller.class)));
+        context.registerMarshallerProvider(new AbstractMarshallerProvider(EnumSet.allOf(UtilMarshallerProvider.class)));
         // These might be implemented as enums
         context.registerMarshallerProvider(new ExternalizerMarshallerProvider(UtilExternalizerProvider.NATURAL_ORDER_COMPARATOR));
         context.registerMarshallerProvider(new ExternalizerMarshallerProvider(UtilExternalizerProvider.REVERSE_ORDER_COMPARATOR));
