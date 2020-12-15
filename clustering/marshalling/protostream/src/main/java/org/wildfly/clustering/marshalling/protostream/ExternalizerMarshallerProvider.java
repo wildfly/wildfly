@@ -33,7 +33,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * @author Paul Ferraro
  */
 @Deprecated
-public class ExternalizerMarshallerProvider extends AbstractMarshallerProvider {
+public class ExternalizerMarshallerProvider extends MarshallerProvider {
 
     public ExternalizerMarshallerProvider(Externalizer<?>... externalizers) {
         this(Arrays.asList(externalizers));
