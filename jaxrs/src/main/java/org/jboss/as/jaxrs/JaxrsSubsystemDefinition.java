@@ -81,7 +81,6 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
                     RuntimePackageDependency.required(JSON_API.getName()),
                     RuntimePackageDependency.optional(RESTEASY_ATOM.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JAXRS.getName()),
-                    RuntimePackageDependency.optional(RESTEASY_CLIENT_MICROPROFILE.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JAXB.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JACKSON2.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JSON_P_PROVIDER.getName()),
@@ -92,7 +91,6 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
                     RuntimePackageDependency.optional(RESTEASY_CRYPTO.getName()),
                     RuntimePackageDependency.optional(JACKSON_DATATYPE_JDK8.getName()),
                     RuntimePackageDependency.optional(JACKSON_DATATYPE_JSR310.getName()),
-                    RuntimePackageDependency.optional(MP_REST_CLIENT.getName()),
                     // The following ones are optional dependencies located in org.jboss.as.jaxrs module.xml
                     // To be provisioned, they need to be explicitly added as optional packages.
                     RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-jettison-provider"),
