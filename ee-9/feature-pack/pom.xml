@@ -206,6 +206,9 @@
                             <resources>
                                 <resource>
                                     <directory>${mp.galleon.common.resources.directory}</directory>
+                                    <excludes>
+                                        <exclude>layers/standalone/jaxrs</exclude>
+                                    </excludes>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>

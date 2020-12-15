@@ -10,6 +10,7 @@
         <include name="microprofile-metrics"/>
         <include name="microprofile-openapi"/>
         <include name="microprofile-opentracing"/>
+        <include name="microprofile-rest-client"/>
         <include name="undertow-legacy-https"/>
         <exclude name="management-security-realm"/>
     </layers>
