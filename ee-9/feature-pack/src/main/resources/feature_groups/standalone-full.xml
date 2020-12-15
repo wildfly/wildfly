@@ -3,6 +3,7 @@
 
     <feature-group name="standalone-full-x-messaging"/>
     <feature-group name="messaging-remote-activemq"/>
+    <feature-group name="microprofile-opentracing-jaeger"/>
     <feature spec="socket-binding-group">
         <param name="socket-binding-group" value="standard-sockets" />
         <feature-group name="messaging-remote-sockets"/>

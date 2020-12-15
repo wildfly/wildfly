@@ -163,6 +163,7 @@ public class SubsystemConfigurationTestCase {
     public static class SetupTask implements ServerSetupTask {
 
         private static final PathAddress OT_SUBSYSTEM = PathAddress.parseCLIStyleAddress("/subsystem=microprofile-opentracing-smallrye");
+        private ModelNode defaultName;
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
@@ -178,6 +179,7 @@ public class SubsystemConfigurationTestCase {
             addTracer.get("tracer_id_128bit").set(true);
             addTracer.get("sender-binding").set(OUTBOUND_BINDING);
             Utils.applyUpdate(addTracer, managementClient.getControllerClient());
+            defaultName = managementClient.getControllerClient().execute(Operations.createReadAttributeOperation(OT_SUBSYSTEM.toModelNode(), "default-tracer")).get("result");
             // undefine default tracer configuration in order to get NoopTracer configuration
             Utils.applyUpdate(Operations.createUndefineAttributeOperation(OT_SUBSYSTEM.toModelNode(), ("default-tracer")), managementClient.getControllerClient());
             executeReloadAndWaitForCompletion(managementClient, TimeoutUtil.adjust(100000));
@@ -186,7 +188,9 @@ public class SubsystemConfigurationTestCase {
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             // recover default tracer configuration
-            Utils.applyUpdate(Operations.createWriteAttributeOperation(OT_SUBSYSTEM.toModelNode(), "default-tracer", "jaeger"), managementClient.getControllerClient());
+            if (defaultName.isDefined()) {
+                Utils.applyUpdate(Operations.createWriteAttributeOperation(OT_SUBSYSTEM.toModelNode(), "default-tracer", defaultName.asString()), managementClient.getControllerClient());
+            }
             Utils.applyUpdate(Operations.createRemoveOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger-test").toModelNode()), managementClient.getControllerClient());
             Utils.applyUpdate(Operations.createRemoveOperation(OUTBOUND_BINDING_ADDRESS), managementClient.getControllerClient());
             executeReloadAndWaitForCompletion(managementClient, TimeoutUtil.adjust(100000));

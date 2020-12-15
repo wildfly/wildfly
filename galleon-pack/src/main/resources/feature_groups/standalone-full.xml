@@ -6,5 +6,6 @@
     </origin>
 
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
+    <feature-group name="microprofile-opentracing-jaeger"/>
 
 </feature-group-spec>
