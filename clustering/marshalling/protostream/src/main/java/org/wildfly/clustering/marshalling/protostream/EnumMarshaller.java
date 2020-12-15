@@ -22,15 +22,19 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
  * ProtoStream marshaller for enums.
  * @author Paul Ferraro
  */
-public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protostream.EnumMarshaller<E>, Predictable<E> {
+public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protostream.EnumMarshaller<E>, ProtoStreamMarshaller<E> {
 
     private final Class<E> enumClass;
     private final E[] values;
@@ -64,5 +68,19 @@ public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protost
     @Override
     public OptionalInt size(ImmutableSerializationContext context, E value) {
         return OptionalInt.of(Predictable.unsignedIntSize(value.ordinal()));
+    }
+
+    @Override
+    public E readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        int ordinal = reader.readUInt32();
+        if (reader.readTag() != 0) {
+            throw new StreamCorruptedException();
+        }
+        return this.decode(ordinal);
+    }
+
+    @Override
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, E value) throws IOException {
+        writer.writeUInt32NoTag(this.encode(value));
     }
 }
