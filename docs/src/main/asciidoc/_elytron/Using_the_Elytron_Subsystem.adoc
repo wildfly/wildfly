@@ -2708,6 +2708,43 @@ default:
 /subsystem=elytron/policy=policy-provider-a:add(custom-policy=\[{name=policy-provider-a, class-name=MyPolicyProviderA, module=x.y.z}\])
 ----
 
+[[create-an-elytron-case-principal-transformer]]
+=== Create an Elytron Case Principal Transformer
+
+Principal transformers can take a name and map it to another representation of the name or perform
+some normalisation. A ``case-principal-transformer`` converts a principal to upper or lower case.
+As an example, we might want to convert our principal to upper case if the identities in our realm
+are stored in upper case.
+
+Adding a ``case-principal-transformer`` that converts a principal to upper/lower case takes the
+general form:
+
+[source,options="nowrap]
+----
+/subsystem=elytron/case-principal-transformer=transformerName:add(upper-case="...")
+----
+
+In particular, a ``case-principal-transformer`` has the following attribute:
+
+* ``upper-case`` - A boolean value to indicate whether the principal should be converted to upper case.
+Indicating ``false`` for this attribute converts the principal to lower case.
+
+For example, the following ``case-principal-transformer`` could be configured to specify that
+a principal should be transformed to lower case:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/case-principal-transformer=transformer1:add(upper-case="false")
+----
+
+On the other hand, a ``case-principal-transformer`` could be configured by omitting the
+``upper-case`` attribute, which is then set to ``true`` by default:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/case-principal-transformer=transformer2:add()
+----
+
 :leveloffset: +1
 
 include::Subsystem_Component_Documentation.adoc[]
