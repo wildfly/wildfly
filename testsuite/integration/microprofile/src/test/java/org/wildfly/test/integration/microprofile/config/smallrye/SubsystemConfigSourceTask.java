@@ -131,10 +131,14 @@ public class SubsystemConfigSourceTask implements ServerSetupTask {
 //        File propertiesDir = new File(MicroProfileConfigTestCase.class.getResource(CUSTOM_FILE_PROPERTY_NAME).toURI()).getParentFile();
         // TODO workaround due to the https://issues.jboss.org/browse/WFWIP-57
         File propertiesDir = new File(MicroProfileConfigTestCase.class.getResource("microprofile-config.properties").toURI()).getParentFile();
-        addDirConfigSource(mgmtCli, "dirProp1", propertiesDir.getAbsolutePath() + File.separator + "fileProperty1");
-        addDirConfigSource(mgmtCli, "dirProp2", propertiesDir.getAbsolutePath() + File.separator + "fileProperty2", 200);
-        addDirConfigSource(mgmtCli, "dirProp3", propertiesDir.getAbsolutePath() + File.separator + "fileProperty3", 350);
-        addDirConfigSource(mgmtCli, "dirProp4", propertiesDir.getAbsolutePath() + File.separator + "fileProperty4", 450);
+        // Prefix these so that they get alphabetically sorted after the 'propertiesProp*' ones. This is because SM Config
+        // 2.x changed the sorting order of sources with the same ordinal to take into account the order they are added
+        // (previously they were sorted according to the underlying implementation name). IterableRegistry in the
+        // MP Config subsystem has been updated to order config sources by name.
+        addDirConfigSource(mgmtCli, "zDirProp1", propertiesDir.getAbsolutePath() + File.separator + "fileProperty1");
+        addDirConfigSource(mgmtCli, "zDirProp2", propertiesDir.getAbsolutePath() + File.separator + "fileProperty2", 200);
+        addDirConfigSource(mgmtCli, "zDirProp3", propertiesDir.getAbsolutePath() + File.separator + "fileProperty3", 350);
+        addDirConfigSource(mgmtCli, "zDirProp4", propertiesDir.getAbsolutePath() + File.separator + "fileProperty4", 450);
     }
 
     @Override

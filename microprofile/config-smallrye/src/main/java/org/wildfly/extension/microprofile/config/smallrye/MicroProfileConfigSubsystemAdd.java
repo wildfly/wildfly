@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
-import io.smallrye.config.SmallRyeConfigBuilder;
-import io.smallrye.config.SmallRyeConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
@@ -36,6 +34,9 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.SubsystemDeploymentProcessor;
+
+import io.smallrye.config.SmallRyeConfigBuilder;
+import io.smallrye.config.SmallRyeConfigProviderResolver;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
