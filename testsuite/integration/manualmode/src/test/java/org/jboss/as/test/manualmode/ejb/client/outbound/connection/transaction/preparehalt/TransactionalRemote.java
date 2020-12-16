@@ -27,4 +27,6 @@ import javax.ejb.Remote;
 @Remote
 public interface TransactionalRemote {
     void enlistOnePersistentXAResource();
+    void intermittentCommitFailure();
+    void intermittentCommitFailureTwoPhase();
 }
