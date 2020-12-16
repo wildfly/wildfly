@@ -1,8 +1,0 @@
-package org.wildfly.clustering.marshalling.spi;
-
-/**
- * @TypeId(129)
- */
-message Module {
-	optional	bytes	name	= 1;
-}

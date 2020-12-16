@@ -105,20 +105,6 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
         AnyField field = AnyField.fromJavaType(valueClass);
         if (field != null) return field;
 
-        if (value instanceof Class) {
-            Class<?> targetClass = (Class<?>) value;
-            if (targetClass == Object.class) return AnyField.OBJECT_CLASS;
-            AnyField classField = AnyField.fromJavaType(targetClass);
-            if (classField != null) return AnyField.FIELD_CLASS;
-            if (targetClass.isArray()) return AnyField.ARRAY_CLASS;
-            try {
-                BaseMarshaller<?> marshaller = context.getMarshaller(targetClass);
-                return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_CLASS : AnyField.NAMED_CLASS;
-            } catch (IllegalArgumentException e) {
-                return AnyField.LOADED_CLASS;
-            }
-        }
-
         if (value instanceof Enum) {
             Enum<?> enumValue = (Enum<?>) value;
             BaseMarshaller<?> marshaller = context.getMarshaller(enumValue.getDeclaringClass());

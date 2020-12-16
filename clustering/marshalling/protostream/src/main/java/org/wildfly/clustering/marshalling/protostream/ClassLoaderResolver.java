@@ -22,19 +22,38 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.SerializationContext;
+import java.io.IOException;
+import java.io.InvalidClassException;
+
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
+ * Resolves classes from a specific {@link ClassLoader}.
  * @author Paul Ferraro
  */
-public class ModulesSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class ClassLoaderResolver implements ClassResolver {
 
-    public ModulesSerializationContextInitializer() {
-        super("org.jboss.modules.proto");
+    private final ClassLoader loader;
+
+    public ClassLoaderResolver(ClassLoader loader) {
+        this.loader = loader;
     }
 
     @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(ModuleMarshaller.INSTANCE);
+    public void annotate(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
+        // Nothing to annotate
+    }
+
+    @Override
+    public Class<?> resolve(ImmutableSerializationContext context, RawProtoStreamReader reader, String className) throws IOException {
+        try {
+            return this.loader.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            InvalidClassException exception = new InvalidClassException(e.getMessage());
+            exception.initCause(e);
+            throw exception;
+        }
     }
 }

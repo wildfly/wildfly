@@ -22,16 +22,7 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-import java.io.StreamCorruptedException;
-import java.util.EnumSet;
-import java.util.OptionalInt;
-
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.impl.WireFormat;
 
 /**
  * Initializer that registers protobuf schema for java.lang.* classes.
@@ -39,58 +30,15 @@ import org.infinispan.protostream.impl.WireFormat;
  */
 public class LangSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    public LangSerializationContextInitializer() {
+    private final ClassResolver resolver;
+
+    public LangSerializationContextInitializer(ClassResolver resolver) {
         super("java.lang.proto");
+        this.resolver = resolver;
     }
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        for (AnyField field : EnumSet.allOf(AnyField.class)) {
-            Class<?> fieldClass = field.getJavaClass();
-            if (fieldClass != Void.class) {
-                context.registerMarshaller(new AnyFieldProtoStreamMarshaller(field));
-            }
-        }
-    }
-
-    private static class AnyFieldProtoStreamMarshaller implements ProtoStreamMarshaller<Object> {
-        private final AnyField field;
-
-        AnyFieldProtoStreamMarshaller(AnyField field) {
-            this.field = field;
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            OptionalInt size = this.field.size(context, value);
-            return size.isPresent() ? OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(this.field.getIndex() << 3 | WireFormat.WIRETYPE_VARINT)) : OptionalInt.empty();
-        }
-
-        @Override
-        public String getTypeName() {
-            return this.field.getTypeName();
-        }
-
-        @Override
-        public Class<? extends Object> getJavaClass() {
-            return this.field.getJavaClass();
-        }
-
-        @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            if (WireFormat.getTagFieldNumber(reader.readTag()) != this.field.getIndex()) {
-                throw new StreamCorruptedException();
-            }
-            Object result = this.field.readFrom(context, reader);
-            if (reader.readTag() != 0) {
-                throw new StreamCorruptedException();
-            }
-            return result;
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object object) throws IOException {
-            this.field.writeTo(context, writer, object);
-        }
+        context.registerMarshaller(new ClassMarshaller(this.resolver));
     }
 }

@@ -23,52 +23,55 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.io.StreamCorruptedException;
-import java.nio.charset.StandardCharsets;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoadException;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
  * @author Paul Ferraro
  */
-public enum ModuleMarshaller implements ProtoStreamMarshaller<Module> {
-    INSTANCE;
+public class FieldProtoStreamMarshaller<T> implements ProtoStreamMarshaller<T> {
+
+    private final Field<T> field;
+
+    public FieldProtoStreamMarshaller(Field<T> field) {
+        this.field = field;
+    }
 
     @Override
-    public Module readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        String moduleName = new String(reader.readByteArray(), StandardCharsets.UTF_8);
+    public String getTypeName() {
+        return this.field.getTypeName();
+    }
+
+    @Override
+    public Class<? extends T> getJavaClass() {
+        return this.field.getJavaClass();
+    }
+
+    @Override
+    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        if (WireFormat.getTagFieldNumber(reader.readTag()) != this.field.getIndex()) {
+            throw new StreamCorruptedException();
+        }
+        T result = this.field.readFrom(context, reader);
         if (reader.readTag() != 0) {
             throw new StreamCorruptedException();
         }
-        try {
-            return Module.getBootModuleLoader().loadModule(moduleName);
-        } catch (ModuleLoadException e) {
-            InvalidObjectException exception = new InvalidObjectException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
+        return result;
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Module module) throws IOException {
-        byte[] name = module.getName().getBytes(StandardCharsets.UTF_8);
-        writer.writeUInt32NoTag(name.length);
-        writer.writeRawBytes(name, 0, name.length);
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T object) throws IOException {
+        this.field.writeTo(context, writer, object);
     }
 
     @Override
-    public OptionalInt size(ImmutableSerializationContext context, Module value) {
-        return OptionalInt.of(Predictable.stringSize(value.getName()));
-    }
-
-    @Override
-    public Class<? extends Module> getJavaClass() {
-        return Module.class;
+    public OptionalInt size(ImmutableSerializationContext context, T value) {
+        OptionalInt size = this.field.size(context, value);
+        return size.isPresent() ? OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(this.field.getIndex() << 3 | WireFormat.WIRETYPE_VARINT)) : OptionalInt.empty();
     }
 }

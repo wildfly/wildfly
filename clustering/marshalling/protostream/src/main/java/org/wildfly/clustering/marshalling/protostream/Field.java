@@ -25,6 +25,6 @@ package org.wildfly.clustering.marshalling.protostream;
 /**
  * @author Paul Ferraro
  */
-public interface Field {
+public interface Field<T> extends ProtoStreamMarshaller<T> {
     int getIndex();
 }

@@ -28,8 +28,8 @@ import java.io.OutputStream;
 
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.jboss.modules.Module;
 import org.wildfly.clustering.infinispan.marshalling.AbstractMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassResolver;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 
@@ -40,12 +40,8 @@ public class ProtoStreamMarshaller extends AbstractMarshaller {
 
     private final ProtoStreamByteBufferMarshaller marshaller;
 
-    public ProtoStreamMarshaller(Module module) {
-        this(module.getClassLoader());
-    }
-
-    public ProtoStreamMarshaller(ClassLoader loader) {
-        this(new SerializationContextBuilder().register(loader));
+    public ProtoStreamMarshaller(ClassResolver resolver, ClassLoader loader) {
+        this(new SerializationContextBuilder(resolver).require(loader));
     }
 
     protected ProtoStreamMarshaller(SerializationContextBuilder builder) {
