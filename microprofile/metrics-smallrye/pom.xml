@@ -100,7 +100,7 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-config-smallrye</artifactId>
             <exclusions>
                 <exclusion>
@@ -114,7 +114,7 @@
             <artifactId>smallrye-metrics</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-undertow</artifactId>
             <exclusions>
                 <exclusion>
