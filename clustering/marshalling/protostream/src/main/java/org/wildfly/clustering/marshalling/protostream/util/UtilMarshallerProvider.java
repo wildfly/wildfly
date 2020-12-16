@@ -30,11 +30,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
@@ -67,10 +74,10 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     LINKED_HASH_SET(new HashSetMarshaller<>(LinkedHashSet.class, LinkedHashSet::new)),
     LINKED_LIST(new UnboundedCollectionMarshaller<>(LinkedList.class, LinkedList::new)),
     LOCALE(UtilExternalizerProvider.LOCALE),
-    OPTIONAL(OptionalMarshaller.OBJECT),
-    OPTIONAL_DOUBLE(OptionalMarshaller.DOUBLE),
-    OPTIONAL_INT(OptionalMarshaller.INT),
-    OPTIONAL_LONG(OptionalMarshaller.LONG),
+    OPTIONAL(new OptionalMarshaller<>(Optional.class, Optional::isPresent, Optional.empty(), WireFormat.WIRETYPE_LENGTH_DELIMITED, ObjectMarshaller.INSTANCE, Optional::get, Optional::of)),
+    OPTIONAL_DOUBLE(new OptionalMarshaller<>(OptionalDouble.class, OptionalDouble::isPresent, OptionalDouble.empty(), WireFormat.WIRETYPE_FIXED64, PrimitiveMarshaller.DOUBLE.cast(Double.class), OptionalDouble::getAsDouble, OptionalDouble::of)),
+    OPTIONAL_INT(new OptionalMarshaller<>(OptionalInt.class, OptionalInt::isPresent, OptionalInt.empty(), WireFormat.WIRETYPE_VARINT, PrimitiveMarshaller.INTEGER.cast(Integer.class), OptionalInt::getAsInt, OptionalInt::of)),
+    OPTIONAL_LONG(new OptionalMarshaller<>(OptionalLong.class, OptionalLong::isPresent, OptionalLong.empty(), WireFormat.WIRETYPE_VARINT, PrimitiveMarshaller.LONG.cast(Long.class), OptionalLong::getAsLong, OptionalLong::of)),
     SIMPLE_ENTRY(new MapEntryMarshaller<>(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry::new)),
     SIMPLE_IMMUTABLE_ENTRY(new MapEntryMarshaller<>(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry::new)),
     SINGLETON_LIST(new SingletonCollectionMarshaller<>(Collections::singletonList)),

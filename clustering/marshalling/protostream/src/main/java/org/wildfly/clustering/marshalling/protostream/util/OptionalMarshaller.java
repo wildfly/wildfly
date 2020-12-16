@@ -23,156 +23,81 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import java.util.OptionalLong;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
-import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 import protostream.com.google.protobuf.CodedOutputStream;
-
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
  * ProtoStream optimized marshallers for optional types.
  * @author Paul Ferraro
  */
-public enum OptionalMarshaller implements ProtoStreamMarshallerProvider {
-    INT(OptionalInt.class) {
-        @Override
-        public OptionalInt readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            OptionalInt result = OptionalInt.empty();
-            int tag = reader.readTag();
-            while (tag != 0) {
-                int field = WireFormat.getTagFieldNumber(tag);
-                switch (field) {
-                    case 1: {
-                        result = OptionalInt.of(reader.readSInt32());
-                        break;
-                    }
-                    default: {
-                        reader.skipField(tag);
-                    }
-                }
-                tag = reader.readTag();
-            }
-            return result;
-        }
+public class OptionalMarshaller<T, V> implements ProtoStreamMarshaller<T> {
 
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            OptionalInt optional = (OptionalInt) value;
-            if (optional.isPresent()) {
-                writer.writeSInt64(1, optional.getAsInt());
-            }
-        }
+    private static final int VALUE = 1;
 
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            OptionalInt optional = (OptionalInt) value;
-            return OptionalInt.of(optional.isPresent() ? CodedOutputStream.computeSInt32Size(1, optional.getAsInt()) : 0);
-        }
-    },
-    LONG(OptionalLong.class) {
-        @Override
-        public OptionalLong readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            OptionalLong result = OptionalLong.empty();
-            int tag = reader.readTag();
-            while (tag != 0) {
-                int field = WireFormat.getTagFieldNumber(tag);
-                switch (field) {
-                    case 1: {
-                        result = OptionalLong.of(reader.readSInt64());
-                        break;
-                    }
-                    default: {
-                        reader.skipField(tag);
-                    }
-                }
-                tag = reader.readTag();
-            }
-            return result;
-        }
+    private final Class<T> targetClass;
+    private final Predicate<T> present;
+    private final T empty;
+    private final int wireType;
+    private final ProtoStreamMarshaller<V> marshaller;
+    private final Function<T, V> function;
+    private final Function<V, T> factory;
 
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            OptionalLong optional = (OptionalLong) value;
-            if (optional.isPresent()) {
-                writer.writeSInt64(1, optional.getAsLong());
-            }
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            OptionalLong optional = (OptionalLong) value;
-            return OptionalInt.of(optional.isPresent() ? CodedOutputStream.computeSInt64Size(1, optional.getAsLong()) : 0);
-        }
-    },
-    DOUBLE(OptionalDouble.class) {
-        @Override
-        public OptionalDouble readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            OptionalDouble result = OptionalDouble.empty();
-            int tag = reader.readTag();
-            while (tag != 0) {
-                int field = WireFormat.getTagFieldNumber(tag);
-                switch (field) {
-                    case 1: {
-                        result = OptionalDouble.of(reader.readDouble());
-                        break;
-                    }
-                    default: {
-                        reader.skipField(tag);
-                    }
-                }
-                tag = reader.readTag();
-            }
-            return result;
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            OptionalDouble optional = (OptionalDouble) value;
-            if (optional.isPresent()) {
-                writer.writeDouble(1, optional.getAsDouble());
-            }
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            OptionalDouble optional = (OptionalDouble) value;
-            return OptionalInt.of(optional.isPresent() ? Double.BYTES + 1 : 0);
-        }
-    },
-    OBJECT(Optional.class) {
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        private final ProtoStreamMarshaller<Optional> marshaller = new FunctionalMarshaller<>(Optional.class, ObjectMarshaller.INSTANCE, value -> value.orElse(null), Optional::ofNullable);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    }
-    ;
-    private final Class<?> targetClass;
-
-    OptionalMarshaller(Class<?> targetClass) {
+    public OptionalMarshaller(Class<T> targetClass, Predicate<T> present, T empty, int wireType, ProtoStreamMarshaller<V> marshaller, Function<T, V> function, Function<V, T> factory) {
         this.targetClass = targetClass;
+        this.present = present;
+        this.empty = empty;
+        this.wireType = wireType;
+        this.marshaller = marshaller;
+        this.function = function;
+        this.factory = factory;
     }
 
     @Override
-    public Class<? extends Object> getJavaClass() {
+    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        T result = this.empty;
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            switch (WireFormat.getTagFieldNumber(tag)) {
+                case VALUE:
+                    V value = this.marshaller.readFrom(context, reader);
+                    result = this.factory.apply(value);
+                    break;
+                default:
+                    reading = (tag != 0) && reader.skipField(tag);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T optional) throws IOException {
+        if (this.present.test(optional)) {
+            V value = this.function.apply(optional);
+            writer.writeTag(VALUE, this.wireType);
+            this.marshaller.writeTo(context, writer, value);
+        }
+    }
+
+    @Override
+    public OptionalInt size(ImmutableSerializationContext context, T object) {
+        if (!this.present.test(object)) return OptionalInt.of(0);
+        V value = this.function.apply(object);
+        OptionalInt size = this.marshaller.size(context, value);
+        return size.isPresent() ? OptionalInt.of(size.getAsInt() + CodedOutputStream.computeTagSize(VALUE)) : OptionalInt.empty();
+    }
+
+    @Override
+    public Class<? extends T> getJavaClass() {
         return this.targetClass;
-    }
-
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this;
     }
 }
