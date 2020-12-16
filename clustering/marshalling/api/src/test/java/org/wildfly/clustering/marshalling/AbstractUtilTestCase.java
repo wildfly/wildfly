@@ -24,7 +24,9 @@ package org.wildfly.clustering.marshalling;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneOffset;
 import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -107,14 +109,15 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testCalendar() throws IOException {
         MarshallingTester<Calendar> tester = this.factory.createTester();
-        // Validate default calendar
-        tester.test(Calendar.getInstance());
-        // Validate Gregorian calendar w/locale
-        tester.test(new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).build());
-        // Validate Japanese Imperial calendar
-        tester.test(Calendar.getInstance(TimeZone.getTimeZone("Asia/Tokyo"), Locale.JAPAN));
+        LocalDateTime time = LocalDateTime.now();
+        // Validate default calendar w/date only
+        tester.test(new Calendar.Builder().setDate(time.getYear(), time.getMonthValue(), time.getDayOfMonth()).build());
+        // Validate Gregorian calendar w/locale and date + time
+        tester.test(new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).setDate(time.getYear(), time.getMonthValue(), time.getDayOfMonth()).setTimeOfDay(time.getHour(), time.getMinute(), time.getSecond()).build());
+        // Validate Japanese Imperial calendar w/full date/time
+        tester.test(new Calendar.Builder().setLocale(Locale.JAPAN).setTimeZone(TimeZone.getTimeZone("Asia/Tokyo")).setInstant(Date.from(time.toInstant(ZoneOffset.UTC))).build());
         // Validate Buddhist calendar
-        tester.test(Calendar.getInstance(TimeZone.getTimeZone("Asia/Bangkok"), Locale.forLanguageTag("th_TH")));
+        tester.test(new Calendar.Builder().setLocale(Locale.forLanguageTag("th_TH")).setTimeZone(TimeZone.getTimeZone("Asia/Bangkok")).build());
     }
 
     @Test
@@ -127,6 +130,7 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testDate() throws IOException {
         MarshallingTester<Date> tester = this.factory.createTester();
+        tester.test(Date.from(Instant.EPOCH));
         tester.test(Date.from(Instant.now()));
     }
 
