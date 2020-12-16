@@ -652,7 +652,7 @@
                                     <log-time>${galleon.log.time}</log-time>
                                     <offline>true</offline>
                                     <!-- content that is installed in wildfly home -->
-                                    <extraServerContent>${wildfly.dir}</extraServerContent>
+                                    <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
                                     <plugin-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>

@@ -42,6 +42,8 @@
         <!-- These properties control what layers are provisioned if galleon slimmed provisioning occurs -->
         <ts.microprofile-tck-provisioning.base.layer>jaxrs-server</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>observability</ts.microprofile-tck-provisioning.decorator.layer>
+        <!-- properties to enable plugins shared by various bootable profiles -->
+        <bootable-jar-generate-properties-file.phase>none</bootable-jar-generate-properties-file.phase>
     </properties>
     <dependencies>
         <dependency>
@@ -276,6 +278,74 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>com.internetitem</groupId>
+                <artifactId>write-properties-file-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-properties-file</id>
+                        <phase>${bootable-jar-generate-properties-file.phase}</phase>
+                        <goals>
+                            <goal>write-properties-file</goal>
+                        </goals>
+                        <configuration>
+                            <filename>wiremock-bootable-cli.properties</filename>
+                            <properties>
+                                <property>
+                                    <name>wiremock.jar.path</name>
+                                    <value>${project.build.directory}/wildfly/wiremock/wiremock.jar</value>
+                                </property>
+                                <property>
+                                    <name>wiremock.junit.jar.path</name>
+                                    <value>${project.build.directory}/wildfly/wiremock/junit.jar</value>
+                                </property>
+                                <property>
+                                    <name>module.xml.path</name>
+                                    <value>${basedir}/module.xml</value>
+                                </property>
+                                <property>
+                                    <name>beans.xml.path</name>
+                                    <value>${basedir}/beans.xml</value>
+                                </property>
+                            </properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <executions>
+                    <!-- Override the bootable jar packaging from the parent to add res-client tck specific settings -->
+                    <execution>
+                        <id>bootable-jar-microprofile-tck-packaging</id>
+                        <configuration>
+                            <cli-sessions>
+                                <cli-session>
+                                    <script-files>
+                                        <script>wiremock-bootable.cli</script>
+                                    </script-files>
+                                    <properties-file>${project.build.outputDirectory}/wiremock-bootable-cli.properties</properties-file>
+                                </cli-session>
+                            </cli-sessions>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
+                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
+                                    <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                                    <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
+                                    but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
+                                    provision it. -->
+                                    <included-packages>
+                                        <package>org.apache.commons.lang3</package>
+                                    </included-packages>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -348,6 +418,47 @@
             <properties>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- Disable the default provisioning -->
+                                <id>mp-server-provisioning</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- Disable the default module addition -->
+                                <id>add-wiremock-module</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>bootablejar.ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Enable bootable jar packaging -->
+                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
             </properties>
             <build>
                 <plugins>
@@ -374,70 +485,13 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>com.internetitem</groupId>
-                        <artifactId>write-properties-file-maven-plugin</artifactId>
-                        <version>1.0.1</version>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
+                            <!--Disable the default surefire execution until WFLY-14136 is sorted. -->
                             <execution>
-                                <id>generate-properties-file</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>write-properties-file</goal>
-                                </goals>
-                                <configuration>
-                                    <filename>wiremock-bootable-cli.properties</filename>
-                                    <properties>
-                                        <property>
-                                            <name>wiremock.jar.path</name>
-                                            <value>${project.build.directory}/wildfly/wiremock/wiremock.jar</value>
-                                        </property>
-                                        <property>
-                                            <name>wiremock.junit.jar.path</name>
-                                            <value>${project.build.directory}/wildfly/wiremock/junit.jar</value>
-                                        </property>
-                                        <property>
-                                            <name>module.xml.path</name>
-                                            <value>${basedir}/module.xml</value>
-                                        </property>
-                                        <property>
-                                            <name>beans.xml.path</name>
-                                            <value>${basedir}/beans.xml</value>
-                                        </property>
-                                    </properties>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Override the bootable jar packaging from the parent to add res-client tck specific settings -->
-                            <execution>
-                                <id>bootable-jar-microprofile-tck-packaging</id>
-                                <configuration>
-                                    <cli-sessions>
-                                        <cli-session>
-                                            <script-files>
-                                                <script>wiremock-bootable.cli</script>
-                                            </script-files>
-                                            <properties-file>${project.build.outputDirectory}/wiremock-bootable-cli.properties</properties-file>
-                                        </cli-session>
-                                    </cli-sessions>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
-                                            <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
-                                            <version>${ts.microprofile-tck-provisioning.fp.version}</version>
-                                            <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
-                                                     but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
-                                                     provision it. -->
-                                            <included-packages>
-                                                <package>org.apache.commons.lang3</package>
-                                            </included-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                </configuration>
+                                <id>default-test</id>
+                                <phase>none</phase>
                             </execution>
                         </executions>
                     </plugin>

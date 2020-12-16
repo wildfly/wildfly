@@ -105,7 +105,7 @@ public class NonHaWebSessionPersistenceTestCase {
 
             NodeUtil.stop(this.controller, CONTAINER_SINGLE);
             NodeUtil.start(this.controller, CONTAINER_SINGLE);
-            if (Boolean.getBoolean("ts.bootable")) {
+            if (Boolean.getBoolean("ts.bootable") || Boolean.getBoolean("ts.bootable.ee9")) {
                 NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
             }
 

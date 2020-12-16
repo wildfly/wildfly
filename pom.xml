@@ -236,6 +236,7 @@
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
         <version.org.wildfly.galleon-plugins>5.0.0.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.jar.plugin>3.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
@@ -9683,6 +9684,19 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        
+        <profile>
+            <id>bootable.ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
+            </properties>
         </profile>
 
         <profile>
