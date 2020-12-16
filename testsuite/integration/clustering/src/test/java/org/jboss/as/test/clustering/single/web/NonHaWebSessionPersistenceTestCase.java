@@ -19,7 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.web;
+package org.jboss.as.test.clustering.single.web;
+
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.CONTAINER_SINGLE;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,19 +34,20 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.clustering.single.web.Mutable;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.arquillian.api.WildFlyContainerController;
+import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,12 +57,16 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-public class NonHaWebSessionPersistenceTestCase extends AbstractClusteringTestCase {
-
+public class NonHaWebSessionPersistenceTestCase {
     private static final String MODULE_NAME = NonHaWebSessionPersistenceTestCase.class.getSimpleName();
 
+    @ArquillianResource
+    private WildFlyContainerController controller;
+
+    @ArquillianResource
+    private Deployer deployer;
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_SINGLE)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClasses(SimpleServlet.class, Mutable.class);
@@ -66,23 +74,19 @@ public class NonHaWebSessionPersistenceTestCase extends AbstractClusteringTestCa
         return war;
     }
 
-    @Override
+    @Before
     public void beforeTestMethod() {
-        // TODO rethink how this can be done faster with one less stopping (eg. make this test last)
-        stop(NODE_1);
-
-        start(CONTAINER_SINGLE);
-        deploy(DEPLOYMENT_1);
+        NodeUtil.start(this.controller, CONTAINER_SINGLE);
+        NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
     }
 
-    @Override
+    @After
     public void afterTestMethod() {
-        undeploy(DEPLOYMENT_1);
-        stop(CONTAINER_SINGLE);
+        NodeUtil.undeploy(this.deployer, DEPLOYMENT_1);
+        NodeUtil.stop(this.controller, CONTAINER_SINGLE);
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT_1)
     public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws IOException, URISyntaxException {
 
         URI url = SimpleServlet.createURI(baseURL);
@@ -99,8 +103,11 @@ public class NonHaWebSessionPersistenceTestCase extends AbstractClusteringTestCa
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
-            stop(CONTAINER_SINGLE);
-            start(CONTAINER_SINGLE);
+            NodeUtil.stop(this.controller, CONTAINER_SINGLE);
+            NodeUtil.start(this.controller, CONTAINER_SINGLE);
+            if (Boolean.getBoolean("ts.bootable")) {
+                NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
+            }
 
             response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
