@@ -17,8 +17,12 @@
 
 package org.jboss.as.jpa.hibernate5;
 
+import static org.jboss.logging.Logger.Level.INFO;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
@@ -31,8 +35,17 @@ import org.jboss.logging.annotations.MessageLogger;
 public interface JpaLogger extends BasicLogger {
 
     /**
-     * A logger with the category {@code org.jboss.jpa}.
+     * A logger with the category {@code org.jipijapa}.
      */
     JpaLogger JPA_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jipijapa");
+
+    /**
+     * Inform that the Hibernate second level cache is enabled.
+     *
+     * @param puUnitName the persistence unit name
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 20253, value = "Second level cache enabled for %s")
+    void secondLevelCacheIsEnabled(Object puUnitName);
 
 }
