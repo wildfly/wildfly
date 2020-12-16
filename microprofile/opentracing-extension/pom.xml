@@ -39,7 +39,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
         </dependency>
 
@@ -73,7 +73,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
             <exclusions>
                 <exclusion>
@@ -84,7 +84,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-config-smallrye</artifactId>
         </dependency>
         <dependency>
@@ -99,7 +99,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-weld-common</artifactId>
             <exclusions>
                 <exclusion>
