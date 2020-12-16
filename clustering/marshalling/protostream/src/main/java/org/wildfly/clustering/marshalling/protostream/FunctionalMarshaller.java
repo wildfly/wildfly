@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.util.OptionalInt;
 import java.util.function.Function;
 
@@ -31,34 +32,41 @@ import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
- * Generic marshaller for a object wrapper.
  * @author Paul Ferraro
  */
-public class FunctionalObjectMarshaller<T> implements ProtoStreamMarshaller<T> {
+public class FunctionalMarshaller<T, V> implements ProtoStreamMarshaller<T> {
 
     private final Class<T> targetClass;
-    private final Function<Object, T> reader;
-    private final Function<T, Object> writer;
+    private final ProtoStreamMarshaller<V> marshaller;
+    private final Function<T, V> function;
+    private final Function<V, T> factory;
 
-    public FunctionalObjectMarshaller(Class<T> targetClass, Function<Object, T> reader, Function<T, Object> writer) {
+    public FunctionalMarshaller(Class<T> targetClass, ProtoStreamMarshaller<V> marshaller, Function<T, V> function, Function<V, T> factory) {
         this.targetClass = targetClass;
-        this.reader = reader;
-        this.writer = writer;
+        this.marshaller = marshaller;
+        this.function = function;
+        this.factory = factory;
     }
 
     @Override
     public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.reader.apply(ObjectMarshaller.INSTANCE.readFrom(context, reader));
+        V value = this.marshaller.readFrom(context, reader);
+        if (reader.readTag() != 0) {
+            throw new StreamCorruptedException();
+        }
+        return this.factory.apply(value);
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-        ObjectMarshaller.INSTANCE.writeTo(context, writer, this.writer.apply(this.targetClass.cast(value)));
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T object) throws IOException {
+        V value = this.function.apply(object);
+        this.marshaller.writeTo(context, writer, value);
     }
 
     @Override
-    public OptionalInt size(ImmutableSerializationContext context, Object value) {
-        return ObjectMarshaller.INSTANCE.size(context, this.writer.apply(this.targetClass.cast(value)));
+    public OptionalInt size(ImmutableSerializationContext context, T object) {
+        V value = this.function.apply(object);
+        return this.marshaller.size(context, value);
     }
 
     @Override

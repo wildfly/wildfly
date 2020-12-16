@@ -32,7 +32,8 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
-import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -149,7 +150,7 @@ public enum OptionalMarshaller implements ProtoStreamMarshallerProvider {
     },
     OBJECT(Optional.class) {
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        private final ProtoStreamMarshaller<Optional> marshaller = new FunctionalObjectMarshaller<>(Optional.class, Optional::ofNullable, value -> value.orElse(null));
+        private final ProtoStreamMarshaller<Optional> marshaller = new FunctionalMarshaller<>(Optional.class, ObjectMarshaller.INSTANCE, value -> value.orElse(null), Optional::ofNullable);
 
         @Override
         public ProtoStreamMarshaller<?> getMarshaller() {
