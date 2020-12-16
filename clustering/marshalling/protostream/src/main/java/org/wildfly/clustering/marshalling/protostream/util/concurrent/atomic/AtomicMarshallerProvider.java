@@ -38,48 +38,19 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
  * @author Paul Ferraro
  */
 public enum AtomicMarshallerProvider implements ProtoStreamMarshallerProvider {
-    BOOLEAN(AtomicBoolean.class) {
-        private final ProtoStreamMarshaller<AtomicBoolean> marshaller = new FunctionalMarshaller<>(AtomicBoolean.class, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class), AtomicBoolean::get, AtomicBoolean::new);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    INTEGER(AtomicInteger.class) {
-        private final ProtoStreamMarshaller<AtomicInteger> marshaller = new FunctionalMarshaller<>(AtomicInteger.class, PrimitiveMarshaller.INTEGER.cast(Integer.class), AtomicInteger::get, AtomicInteger::new);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    LONG(AtomicLong.class) {
-        private final ProtoStreamMarshaller<AtomicLong> marshaller = new FunctionalMarshaller<>(AtomicLong.class, PrimitiveMarshaller.LONG.cast(Long.class), AtomicLong::get, AtomicLong::new);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    REFERENCE(AtomicReference.class) {
-        @SuppressWarnings("rawtypes")
-        private final ProtoStreamMarshaller<AtomicReference> marshaller = new FunctionalMarshaller<>(AtomicReference.class, ObjectMarshaller.INSTANCE, AtomicReference::get, AtomicReference::new);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    }
+    BOOLEAN(new FunctionalMarshaller<>(AtomicBoolean.class, PrimitiveMarshaller.BOOLEAN.cast(Boolean.class), AtomicBoolean::get, AtomicBoolean::new)),
+    INTEGER(new FunctionalMarshaller<>(AtomicInteger.class, PrimitiveMarshaller.INTEGER.cast(Integer.class), AtomicInteger::get, AtomicInteger::new)),
+    LONG(new FunctionalMarshaller<>(AtomicLong.class, PrimitiveMarshaller.LONG.cast(Long.class), AtomicLong::get, AtomicLong::new)),
+    REFERENCE(new FunctionalMarshaller<>(AtomicReference.class, ObjectMarshaller.INSTANCE, AtomicReference::get, AtomicReference::new)),
     ;
-    private final Class<?> targetClass;
+    private final ProtoStreamMarshaller<?> marshaller;
 
-    AtomicMarshallerProvider(Class<?> targetClass) {
-        this.targetClass = targetClass;
+    AtomicMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
     }
 
     @Override
-    public Class<? extends Object> getJavaClass() {
-        return this.targetClass;
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }
