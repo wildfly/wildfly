@@ -21,26 +21,14 @@
  */
 package org.wildfly.test.integration.microprofile.opentracing;
 
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
-
 import java.net.URI;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.shared.ServerSnapshot;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -48,10 +36,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import org.wildfly.test.integration.microprofile.opentracing.application.SimpleJaxRs;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -62,17 +47,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-14199")
 public class OnOffOpenTracingTestCase {
-
-    @ContainerResource
-    ManagementClient managementClient;
 
     @ArquillianResource
     private URL url;
 
     private static final String DEPLOYMENT = "deployment";
-    private static final PathAddress OT_SUBSYSTEM = PathAddress.parseCLIStyleAddress("/subsystem=microprofile-opentracing-smallrye");
 
     private static final String WEB_XML =
               "<web-app version=\"3.1\" xmlns=\"http://xmlns.jcp.org/xml/ns/javaee\"\n"
@@ -85,7 +65,7 @@ public class OnOffOpenTracingTestCase {
             + "</web-app>";
 
     @Deployment(name = DEPLOYMENT)
-    public static Archive createContainer1Deployment() {
+    public static Archive<?> createContainer1Deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war");
         war.addClass(SimpleJaxRs.class);
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
@@ -94,78 +74,14 @@ public class OnOffOpenTracingTestCase {
         return war;
     }
 
-    private AutoCloseable serverSnapshot;
-
-    @Before
-    public void before() throws Exception {
-        serverSnapshot = ServerSnapshot.takeSnapshot(managementClient);
-    }
-
-    @After
-    public void after() throws Exception {
-        serverSnapshot.close();
-    }
-
-    private void removeOpentracingSubsystem() throws Exception {
-        Utils.applyUpdate(Operations.createRemoveOperation(OT_SUBSYSTEM.toModelNode()), managementClient.getControllerClient());
-        executeReloadAndWaitForCompletion(managementClient, 100000);
-    }
-
-    private void addOpentracingSubsystem() throws Exception {
-        Utils.applyUpdate(Operations.createAddOperation(OT_SUBSYSTEM.toModelNode()), managementClient.getControllerClient());
-        ModelNode addTracer = Operations.createAddOperation(OT_SUBSYSTEM.append("jaeger-tracer", "jaeger").toModelNode());
-        addTracer.get("sampler-type").set("const");
-        addTracer.get("sampler-param").set(1.0D);
-        Utils.applyUpdate(addTracer, managementClient.getControllerClient());
-        executeReloadAndWaitForCompletion(managementClient, 100000);
-    }
-
-    private void enableServletStackTraceOnError() throws Exception {
-        ModelControllerClient client = managementClient.getControllerClient();
-
-        ModelNode operation = createOpNode("subsystem=undertow/servlet-container=default",
-                ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
-        operation.get("name").set("stack-trace-on-error");
-        operation.get("value").set("all");
-
-        Utils.applyUpdate(operation, client);
-
-        executeReloadAndWaitForCompletion(managementClient, 100000);
-    }
-
     @Test
-    @OperateOnDeployment(DEPLOYMENT)
     public void testOpenTracingMultinodeServer() throws Exception {
         URI requestUri = new URI(url.toString() + "rest" + SimpleJaxRs.GET_TRACER);
-
-        // In case the server does not listen on localhost, enable stack-traces for deployments to be included in the
-        // HTTP response as we check its content later in this test case.
-        enableServletStackTraceOnError();
 
         // Perform request to the deployment on server where OpenTracing is enabled. Deployment has to have a JaegerTracer instance available.
         String response = Utils.makeCall(requestUri, 200);
         Assert.assertNotEquals(SimpleJaxRs.TRACER_NOT_INITIALIZED, response);
         Assert.assertTrue(response.contains("Tracer instance is: JaegerTracer"));
-
-        // Remove OpenTracing subsystem to disable it.
-        removeOpentracingSubsystem();
-
-        try {
-            // Perform request to the deployment on server where OpenTracing is disabled. Deployment must not have a Tracer instance available.
-            // Actually 500 internal server error is responded with NoClassDefFoundError.
-            response = Utils.makeCall(requestUri, 500);
-            Assert.assertTrue(
-                    "HTTP response did not contain expected exception indicating that opentracing Tracer is not available.",
-                    response.matches("(?s).*java\\.lang\\.NoClassDefFoundError: L*io.opentracing.Tracer.*"));
-            // really dots because openjdk uses '/' whereas ibmjdk uses '.'      ---^        ---^
-        } finally {
-            addOpentracingSubsystem();
-        }
-
-        // And again perform request to the deployment on the server where OpenTracing is enabled.
-        response = Utils.makeCall(requestUri, 200);
-        Assert.assertNotEquals(SimpleJaxRs.TRACER_NOT_INITIALIZED, response);
-        Assert.assertTrue(response, response.contains("Tracer instance is: JaegerTracer"));
     }
 
 }
