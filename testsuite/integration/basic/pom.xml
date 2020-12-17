@@ -40,6 +40,8 @@
         <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
         <bootable-jar-legacy-security-packaging.phase>none</bootable-jar-legacy-security-packaging.phase>
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
+        <!-- Disable the default surefire test execution. -->
+        <surefire.default-test.phase>none</surefire.default-test.phase>
     </properties>
 
     <dependencies>
@@ -1090,14 +1092,6 @@
                         <!-- Here we just have executions -->
                         <executions combine.children="append">
 
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>test</phase>
@@ -1347,6 +1341,7 @@
                                         </includes>
                                     </configuration>
                                 </execution>
+                                <!-- Disable the other standard executions -->
                                 <execution>
                                     <id>basic-integration-default-web.surefire</id>
                                     <phase>none</phase>
@@ -1423,10 +1418,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <!-- Disable the standard test executions. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>none</phase>
@@ -2384,10 +2375,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <!-- Disable the standard test executions. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>none</phase>
@@ -3534,10 +3521,6 @@
                         <executions>
                             <!-- Disable the standard test executions. -->
                             <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>none</phase>
                             </execution>
@@ -3642,11 +3625,6 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <!-- Disable the standard test executions. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <!--<phase>none</phase>-->
