@@ -45,6 +45,7 @@ import javax.faces.event.NamedEvent;
 import javax.faces.render.FacesBehaviorRenderer;
 import javax.faces.render.FacesRenderer;
 import javax.faces.validator.FacesValidator;
+import javax.faces.view.facelets.FaceletsResourceResolver;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +72,8 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
         MANAGED_BEAN(ManagedBean.class),
         NAMED_EVENT(NamedEvent.class),
         FACES_BEHAVIOR(FacesBehavior.class),
-        FACES_BEHAVIOR_RENDERER(FacesBehaviorRenderer.class);
+        FACES_BEHAVIOR_RENDERER(FacesBehaviorRenderer.class),
+        FACELETS_RESOURCE_RESOLVER(FaceletsResourceResolver.class);
 
         private final Class<? extends Annotation> annotationClass;
         private final DotName indexName;
