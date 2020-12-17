@@ -3,6 +3,7 @@ package org.wildfly.test.integration.microprofile.opentracing;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.tracerresolver.TracerFactory;
 import io.opentracing.mock.MockSpan;
@@ -75,7 +76,7 @@ public class SimpleRestClientTestCase {
 
         // test
         // the first span
-        try (Scope ignored = tracer.buildSpan("existing-span").startActive(true)) {
+        try (Scope ignored = tracer.activateSpan(tracer.buildSpan("existing-span").start())) {
 
             // the second span is the client request, as a child of `existing-span`
             Client restClient = ClientTracingRegistrar.configure(ClientBuilder.newBuilder()).build();
@@ -89,6 +90,7 @@ public class SimpleRestClientTestCase {
                 // just a sanity check
                 Assert.assertEquals(200, response.getStatus());
             }
+            tracer.activeSpan().finish();
         }
 
         // verify
