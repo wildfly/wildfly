@@ -234,6 +234,22 @@ JMS endpoints can easily be created through the CLI:
 }
 ----
 
+
+Pausing and resuming Queues and Topics
+
+When a queue is paused, it will receive messages but will not deliver them. When it's resumed, it'll begin delivering the queued messages, if any.
+When a topic is paused, it will receive messages but will not deliver them. Newly added subscribers will be paused too until the topic is resumed. When it is resumed, delivering will occur again. The `persist` parameter ensure that the topic stays paused on the restart of the server.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/jms-queue=myQueue:pause()
+----
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/jms-topic=myTopic:pause()
+----
+
 A number of additional commands to maintain the JMS subsystem are
 available as well:
 

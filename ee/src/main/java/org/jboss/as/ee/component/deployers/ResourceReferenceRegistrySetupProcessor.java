@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component.deployers;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.concurrent.deployers.injection.ContextServiceResourceReferenceProcessor;
 import org.jboss.as.ee.concurrent.deployers.injection.ManagedExecutorServiceResourceReferenceProcessor;
 import org.jboss.as.ee.concurrent.deployers.injection.ManagedScheduledExecutorServiceResourceReferenceProcessor;
@@ -45,10 +46,21 @@ public class ResourceReferenceRegistrySetupProcessor implements DeploymentUnitPr
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if(deploymentUnit.getParent() == null) {
             final EEResourceReferenceProcessorRegistry registry = new EEResourceReferenceProcessorRegistry();
-            registry.registerResourceReferenceProcessor(ContextServiceResourceReferenceProcessor.INSTANCE);
-            registry.registerResourceReferenceProcessor(ManagedExecutorServiceResourceReferenceProcessor.INSTANCE);
-            registry.registerResourceReferenceProcessor(ManagedScheduledExecutorServiceResourceReferenceProcessor.INSTANCE);
-            registry.registerResourceReferenceProcessor(ManagedThreadFactoryResourceReferenceProcessor.INSTANCE);
+            final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+            if (eeModuleDescription != null) {
+                if (eeModuleDescription.getDefaultResourceJndiNames().getContextService() != null) {
+                    registry.registerResourceReferenceProcessor(ContextServiceResourceReferenceProcessor.INSTANCE);
+                }
+                if (eeModuleDescription.getDefaultResourceJndiNames().getManagedExecutorService() != null) {
+                    registry.registerResourceReferenceProcessor(ManagedExecutorServiceResourceReferenceProcessor.INSTANCE);
+                }
+                if (eeModuleDescription.getDefaultResourceJndiNames().getManagedScheduledExecutorService() != null) {
+                    registry.registerResourceReferenceProcessor(ManagedScheduledExecutorServiceResourceReferenceProcessor.INSTANCE);
+                }
+                if (eeModuleDescription.getDefaultResourceJndiNames().getManagedThreadFactory() != null) {
+                    registry.registerResourceReferenceProcessor(ManagedThreadFactoryResourceReferenceProcessor.INSTANCE);
+                }
+            }
             deploymentUnit.putAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY, registry);
         } else{
             deploymentUnit.putAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY, deploymentUnit.getParent().getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY));

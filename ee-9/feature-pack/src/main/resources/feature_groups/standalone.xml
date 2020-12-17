@@ -22,4 +22,5 @@
     <feature-group name="standalone-profile"/>
 
     <feature-group name="infinispan-local"/>
+    <feature-group name="microprofile-opentracing-jaeger"/>
 </feature-group-spec>

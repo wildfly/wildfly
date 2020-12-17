@@ -15,15 +15,14 @@ message Any {
 		Float	float	= 6;
 		Double	double	= 7;
 		Character	char	= 8;
-		bytes	boolean_array	= 9;
-		bytes	byte_array	= 10;
-		uint32	short_array	= 11;
-		uint32	integer_array	= 12;
-		uint32	long_array	= 13;
-		uint32	float_array	= 14;
-		uint32	double_array	= 15;
-		String	char_array	= 16;
-		String	string	= 17;
-		String	module	= 18;
+		String	string	= 9;
+		bytes	boolean_array	= 10;
+		bytes	byte_array	= 11;
+		uint32	short_array	= 12;
+		uint32	integer_array	= 13;
+		uint32	long_array	= 14;
+		uint32	float_array	= 15;
+		uint32	double_array	= 16;
+		String	char_array	= 17;
 	}
 }

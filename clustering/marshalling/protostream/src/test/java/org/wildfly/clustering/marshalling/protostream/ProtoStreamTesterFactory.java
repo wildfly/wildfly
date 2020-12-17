@@ -35,11 +35,11 @@ public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
     private final ImmutableSerializationContext context;
 
     public ProtoStreamTesterFactory() {
-        this.context = new SerializationContextBuilder().build();
+        this.context = new SerializationContextBuilder(new ClassLoaderResolver(this.getClass().getClassLoader())).build();
     }
 
     public ProtoStreamTesterFactory(ClassLoader loader) {
-        this.context = new SerializationContextBuilder().register(loader).build();
+        this.context = new SerializationContextBuilder(new ClassLoaderResolver(loader)).load(loader).build();
     }
 
     @Override

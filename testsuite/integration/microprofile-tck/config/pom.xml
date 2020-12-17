@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>22.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-config</artifactId>
@@ -45,7 +45,7 @@
         <ts.elytron.cli>${jbossas.ts.dir}/shared/enable-elytron.cli</ts.elytron.cli>
         <!-- These properties control what layers are provisioned if galleon provision occurs -->
         <ts.microprofile-tck-provisioning.base.layer>datasources-web-server</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer>observability</ts.microprofile-tck-provisioning.decorator.layer>
+        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-config</ts.microprofile-tck-provisioning.decorator.layer>
     </properties>
 
     <dependencies>
@@ -125,6 +125,19 @@
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
             </properties>
         </profile>
+        
+        <profile>
+            <id>bootablejar.ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Enable bootable jar packaging -->
+                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+            </properties>
+        </profile>
 
         <profile>
             <id>ee9.test.profile</id>
@@ -139,5 +152,31 @@
             </properties>
         </profile>
 
+        <!-- Profile to turn off execution of this module's tests if the testsuite is being run
+             against an external dist (i.e. by using the jboss.dist property to point to one)
+             and that dist does not include the full set of MP functionality. -->
+        <profile>
+            <id>disable.microprofile.profile</id>
+            <activation>
+                <property>
+                    <name>disable.microprofile.tests</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Disable the surefire tests -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

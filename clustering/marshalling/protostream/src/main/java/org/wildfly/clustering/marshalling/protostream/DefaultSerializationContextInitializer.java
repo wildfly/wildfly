@@ -29,7 +29,6 @@ import org.infinispan.protostream.SerializationContextInitializer;
  * @author Paul Ferraro
  */
 public enum DefaultSerializationContextInitializer implements SerializationContextInitializer {
-    LANG(new LangSerializationContextInitializer()),
     ANY(new AnySerializationContextInitializer()),
     NET(new NetSerializationContextInitializer()),
     SQL(new SQLSerializationContextInitializer()),
@@ -38,7 +37,6 @@ public enum DefaultSerializationContextInitializer implements SerializationConte
     ATOMIC(new AtomicSerializationContextInitializer()),
     CONCURRENT(new ConcurrentSerializationContextInitializer()),
     MARSHALLING(new MarshallingSerializationContextInitializer()),
-    MODULE(new ModulesSerializationContextInitializer()),
     ;
     private final SerializationContextInitializer initializer;
 

@@ -470,7 +470,7 @@ link:#gal.vault[vault] +
 link:#gal.base-server[base-server] +
 
 |[[gal.web-clustering]]web-clustering
-|Infinispan-based web session clustering.
+|Support for distributable web applications. Configures a non-local Infinispan-based container web cache for data session handling suitable to clustering environments.
 |
 link:#gal.transactions[transactions] +
 link:#gal.web-server[web-server] +
@@ -481,6 +481,12 @@ management interface. Not required to use a HAL console obtained independently
 and configured to connect to the server.
 |
 link:#gal.management[management] +
+
+|[[gal.web-passivation]]web-passivation
+|Support for distributable web applications. Configures a local Infinispan-based container web cache for data session handling suitable to single node environments.
+|
+link:#gal.transactions[transactions] +
+link:#gal.web-server[web-server] +
 
 |[[gal.web-server]]web-server
 |A servlet container.

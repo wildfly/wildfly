@@ -36,6 +36,10 @@ include::subsystem-configuration/Undertow.adoc[]
 
 include::subsystem-configuration/Messaging.adoc[]
 
+include::subsystem-configuration/Metrics.adoc[]
+
+include::subsystem-configuration/Health.adoc[]
+
 include::subsystem-configuration/MicroProfile_Config_SmallRye.adoc[]
 
 include::subsystem-configuration/MicroProfile_Health.adoc[]
@@ -65,6 +69,8 @@ include::subsystem-configuration/JMX.adoc[]
 include::subsystem-configuration/Deployment_Scanner.adoc[]
 
 include::subsystem-configuration/Core_Management.adoc[]
+
+include::subsystem-configuration/JAXRS.adoc[]
 
 include::subsystem-configuration/Simple_configuration_subsystems.adoc[]
 

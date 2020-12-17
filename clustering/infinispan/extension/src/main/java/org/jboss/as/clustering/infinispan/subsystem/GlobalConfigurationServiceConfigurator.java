@@ -53,6 +53,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
@@ -61,6 +62,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
 import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -117,10 +119,11 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.transport().read(this.transport.get());
 
         Module module = this.module.get();
-        Marshaller marshaller = this.createMarshaller(module);
+        ClassLoader loader = module.getClassLoader();
+        Marshaller marshaller = this.createMarshaller(loader);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", this.name, marshaller.getClass().getName());
         builder.serialization().marshaller(marshaller);
-        builder.classLoader(module.getClassLoader());
+        builder.classLoader(loader);
 
         builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());
         builder.listenerThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.LISTENER).get());
@@ -162,11 +165,12 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
-    private Marshaller createMarshaller(Module module) {
+    private Marshaller createMarshaller(ClassLoader loader) {
+        ModuleLoader moduleLoader = this.loader.get();
         try {
-            return new InfinispanProtoStreamMarshaller(module);
+            return new InfinispanProtoStreamMarshaller(new ModuleClassResolver(moduleLoader), loader);
         } catch (NoSuchElementException e) {
-            return new JBossMarshaller(this.loader.get(), module);
+            return new JBossMarshaller(ModularClassResolver.getInstance(moduleLoader), loader);
         }
     }
 }

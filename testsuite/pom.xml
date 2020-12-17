@@ -59,7 +59,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>22.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -191,6 +191,10 @@
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources/filtered</directory>
+                <filtering>true</filtering>
             </testResource>
             <testResource>
                 <directory>src/test/java</directory>
@@ -627,6 +631,8 @@
             <properties>
                 <jboss.args>-secmgr</jboss.args>
                 <jboss.domain.server.args>-secmgr</jboss.domain.server.args>
+                <!-- Re-enable the default surefire execution -->
+                <surefire.default-test.phase>test</surefire.default-test.phase>
             </properties>
         </profile>
 

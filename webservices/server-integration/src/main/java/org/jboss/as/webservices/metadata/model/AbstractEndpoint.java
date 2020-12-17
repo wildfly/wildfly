@@ -29,6 +29,7 @@ import org.jboss.msc.service.ServiceName;
 public abstract class AbstractEndpoint {
 
     public static final String COMPONENT_VIEW_NAME = AbstractEndpoint.class.getPackage().getName() + "ComponentViewName";
+    public static final String WELD_DEPLOYMENT = AbstractEndpoint.class.getPackage().getName() + ".WeldDeployment";
     private final String name;
     private final String className;
     private final ServiceName viewName;

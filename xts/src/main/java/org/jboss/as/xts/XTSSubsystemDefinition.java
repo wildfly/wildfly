@@ -87,6 +87,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
                 XTSExtension.getResourceDescriptionResolver(null),
                 XTSSubsystemAdd.INSTANCE,
                 XTSSubsystemRemove.INSTANCE);
+        setDeprecated(ModelVersion.create(3,0,0));
     }
 
     /**

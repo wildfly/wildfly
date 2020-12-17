@@ -34,6 +34,7 @@ public class ElytronSSOServerSetupTask extends CLIServerSetupTask {
         boolean hasApplicationSecurityDomain = Boolean.getBoolean("ts.layers")
                 || Boolean.getBoolean("ts.standalone.microprofile")
                 || Boolean.getBoolean("ts.bootable")
+                || Boolean.getBoolean("ts.bootable.ee9")
                 || Boolean.getBoolean("ts.ee9");
         NodeBuilder nb = this.builder.node(AbstractClusteringTestCase.TWO_NODES)
                 .setup("/subsystem=elytron/filesystem-realm=sso:add(path=sso-realm, relative-to=jboss.server.data.dir)")

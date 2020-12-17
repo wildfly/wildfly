@@ -35,29 +35,22 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.metrics.MetricsSubsystemDefinition;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
 public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDefinition {
 
-    static final String METRICS_COLLECTOR_CAPABILITY = "org.wildfly.extension.microprofile.metrics.wildfly-collector";
-
-    static final String CLIENT_FACTORY_CAPABILITY ="org.wildfly.management.model-controller-client-factory";
-    static final String MANAGEMENT_EXECUTOR ="org.wildfly.management.executor";
-    static final String PROCESS_STATE_NOTIFIER = "org.wildfly.management.process-state-notifier";
     static final String MP_CONFIG = "org.wildfly.microprofile.config";
-    static final RuntimeCapability<Void> METRICS_COLLECTOR_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(METRICS_COLLECTOR_CAPABILITY, MetricsCollectorService.class)
-            .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR, PROCESS_STATE_NOTIFIER, MP_CONFIG)
-            .build();
+    public static final ServiceName WILDFLY_COLLECTOR = ServiceName.parse("org.wildfly.extension.metrics.wildfly-collector");
+    static final String METRICS_HTTP_CONTEXT_CAPABILITY = "org.wildfly.extension.metrics.http-context";
 
-    public static final ServiceName WILDFLY_COLLECTOR_SERVICE = METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();
-
-    static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
-    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.metrics.http-context", MetricsContextService.class)
-            .addRequirements(HTTP_EXTENSIBILITY_CAPABILITY)
+    static final RuntimeCapability<Void> MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.metrics.http-context", MicroProfileMetricsContextService.class)
+            .addRequirements(METRICS_HTTP_CONTEXT_CAPABILITY, MP_CONFIG)
             .build();
-    static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
+    static final RuntimeCapability<Void> MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY = RuntimeCapability.Builder.of(MetricsSubsystemDefinition.METRICS_HTTP_SECURITY_CAPABILITY, Boolean.class)
+            .build();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
             .setDefaultValue(ModelNode.TRUE)
@@ -84,7 +77,7 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
                 MicroProfileMetricsExtension.getResourceDescriptionResolver(MicroProfileMetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileMetricsSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileMetricsSubsystemAdd.INSTANCE))
-                .setCapabilities(METRICS_COLLECTOR_RUNTIME_CAPABILITY, HTTP_CONTEXT_CAPABILITY));
+                .setCapabilities(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY));
     }
 
     @Override

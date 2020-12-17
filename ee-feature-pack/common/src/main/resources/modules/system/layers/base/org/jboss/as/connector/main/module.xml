@@ -28,6 +28,7 @@
     </properties>
 
     <exports>
+        <exclude path="org/jboss/as/connector/_drivermanager"/>
         <exclude path="org/jboss/as/connector/logging"/>
     </exports>
 

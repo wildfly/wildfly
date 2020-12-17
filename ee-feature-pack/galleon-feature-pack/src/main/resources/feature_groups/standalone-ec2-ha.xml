@@ -118,8 +118,8 @@
             </feature>
         </feature>
     </feature-group>
-    <feature-group name="health"/>
-    <feature-group name="metrics" />
+   <feature-group name="health"/>
+   <feature-group name="metrics" />
 
     <!-- <feature-group name="elytron-permissions-workaround"/> -->
 </feature-group-spec>

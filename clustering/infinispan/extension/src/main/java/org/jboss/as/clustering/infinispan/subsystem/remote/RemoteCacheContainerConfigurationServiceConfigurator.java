@@ -63,6 +63,7 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
@@ -71,6 +72,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -192,7 +194,8 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                 .tcpKeepAlive(this.tcpKeepAlive)
                 .valueSizeEstimate(this.valueSizeEstimate);
 
-        Marshaller marshaller = this.createMarshaller();
+        ClassLoader loader = this.module.get().getClassLoader();
+        Marshaller marshaller = this.createMarshaller(loader);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", name, marshaller.getClass().getName());
         builder.marshaller(marshaller);
 
@@ -222,12 +225,12 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         return builder.build();
     }
 
-    private Marshaller createMarshaller() {
-        Module module = this.module.get();
+    private Marshaller createMarshaller(ClassLoader loader) {
+        ModuleLoader moduleLoader = this.loader.get();
         try {
-            return new ProtoStreamMarshaller(module);
+            return new ProtoStreamMarshaller(new ModuleClassResolver(moduleLoader), loader);
         } catch (NoSuchElementException e) {
-            return new JBossMarshaller(this.loader.get(), module);
+            return new JBossMarshaller(ModularClassResolver.getInstance(moduleLoader), loader);
         }
     }
 }

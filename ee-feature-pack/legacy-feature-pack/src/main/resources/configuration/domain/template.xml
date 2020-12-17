@@ -89,6 +89,8 @@
                 <extension module="org.wildfly.extension.discovery"/>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing-smallrye" />
@@ -104,6 +106,8 @@
                 <extension module="org.wildfly.extension.discovery"/>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing-smallrye" />
@@ -116,6 +120,8 @@
                 <extension module="org.wildfly.extension.clustering.web"/>
                 <extension module="org.wildfly.extension.datasources-agroal" />
                 <extension module="org.wildfly.extension.ee-security"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing-smallrye" />
@@ -128,6 +134,8 @@
                 <extension module="org.wildfly.extension.clustering.web"/>
                 <extension module="org.wildfly.extension.datasources-agroal" />
                 <extension module="org.wildfly.extension.ee-security"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing-smallrye" />
@@ -139,6 +147,8 @@
             <excluded-extensions>
                 <extension module="org.wildfly.extension.clustering.web"/>
                 <extension module="org.wildfly.extension.datasources-agroal" />
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing-smallrye" />
@@ -149,6 +159,8 @@
             <host-release id="WildFly14.0"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.clustering.web"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
                 <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
             </excluded-extensions>
         </host-exclude>
@@ -156,6 +168,50 @@
             <host-release id="WildFly15.0"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.clustering.web"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly16.0">
+            <host-release id="WildFly16.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly17.0">
+            <host-release id="WildFly17.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly18.0">
+            <host-release id="WildFly18.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly19.0">
+            <host-release id="WildFly19.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly20.0">
+            <host-release id="WildFly20.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly21.0">
+            <host-release id="WildFly21.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
             </excluded-extensions>
         </host-exclude>
     </host-excludes>

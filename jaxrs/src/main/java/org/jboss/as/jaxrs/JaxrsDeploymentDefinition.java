@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.Servlet;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -90,7 +91,7 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
                 .setReadOnly()
                 .setRuntimeOnly()
                 .setReplyType(ModelType.LIST)
-                .setDeprecated(JaxrsExtension.MODEL_VERSION_2_0_0)
+                .setDeprecated(ModelVersion.create(2, 0, 0))
                 .setReplyParameters(JAXRS_RESOURCE).build();
 
 

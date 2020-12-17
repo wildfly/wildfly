@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
@@ -60,6 +61,7 @@ import java.util.Set;
 public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
 
     public static final String FACES_ANNOTATIONS_SC_ATTR =  "org.jboss.as.jsf.FACES_ANNOTATIONS";
+    private static final String MANAGED_ANNOTATION_PARAMETER = "managed";
 
     private enum FacesAnnotation {
         FACES_COMPONENT(FacesComponent.class),
@@ -119,6 +121,14 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
                     }
                     discoveredClasses.add(annotatedClass);
                 } else {
+                    if (annotation == FacesAnnotation.FACES_VALIDATOR || annotation == FacesAnnotation.FACES_CONVERTER || annotation == FacesAnnotation.FACES_BEHAVIOR) {
+                        // Support for Injection into JSF Managed Objects allows to inject FacesValidator, FacesConverter and FacesBehavior if managed = true
+                        // JSF 2.3 spec chapter 5.9.1 - JSF Objects Valid for @Inject Injection
+                        AnnotationValue value = annotationInstance.value(MANAGED_ANNOTATION_PARAMETER);
+                        if (value != null && value.asBoolean()) {
+                            continue;
+                        }
+                    }
                     throw new DeploymentUnitProcessingException(JSFLogger.ROOT_LOGGER.invalidAnnotationLocation(annotation, target));
                 }
             }

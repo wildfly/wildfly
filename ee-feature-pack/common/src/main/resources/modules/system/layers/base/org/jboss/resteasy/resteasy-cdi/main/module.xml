@@ -42,6 +42,6 @@
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
         <module name="org.jboss.logging"/>
-        <module name="org.eclipse.microprofile.restclient"/>
+        <module name="org.eclipse.microprofile.restclient" optional="true"/>
     </dependencies>
 </module>

@@ -23,188 +23,66 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.InvalidClassException;
-import java.lang.reflect.Array;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.jboss.modules.Module;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
- * Various strategies for marshalling a Class.
+ * Generic marshaller for instances of {@link Class}.
  * @author Paul Ferraro
  */
-public enum ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
-    ANY() {
-        @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return (Class<?>) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-        }
+public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, targetClass);
-        }
+    private final Field<Class<?>> field;
+    private final Field<Class<?>>[] fields = ClassField.values();
 
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Class<?> value) {
-            return ObjectMarshaller.INSTANCE.size(context, value);
-        }
-    },
-    ARRAY() {
-        @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            int dimensions = reader.readUInt32();
-            Class<?> targetClass = ClassMarshaller.ANY.readFrom(context, reader);
-            for (int i = 0; i < dimensions; ++i) {
-                targetClass = Array.newInstance(targetClass, 0).getClass();
-            }
-            return targetClass;
-        }
+    public ClassMarshaller(ClassResolver resolver) {
+        this.field = new ClassResolverField(resolver, this.fields.length);
+    }
 
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
-            int dimensions = 0;
-            Class<?> componentClass = targetClass;
-            while (componentClass.isArray() && !componentClass.getComponentType().isPrimitive()) {
-                componentClass = componentClass.getComponentType();
-                dimensions += 1;
-            }
-            writer.writeUInt32NoTag(dimensions);
-            ClassMarshaller.ANY.writeTo(context, writer, componentClass);
-        }
+    @Override
+    public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        int tag = reader.readTag();
+        if (tag == 0) return null;
+        int index = WireFormat.getTagFieldNumber(tag);
+        Field<Class<?>> field = index == this.field.getIndex() ? this.field : this.fields[index];
+        return field.readFrom(context, reader);
+    }
 
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Class<?> targetClass) {
-            int dimensions = 0;
-            Class<?> componentClass = targetClass;
-            while (componentClass.isArray() && !componentClass.getComponentType().isPrimitive()) {
-                componentClass = componentClass.getComponentType();
-                dimensions += 1;
-            }
-            return OptionalInt.of(Predictable.unsignedIntSize(dimensions) + ClassMarshaller.ANY.size(context, componentClass).getAsInt());
-        }
-    },
-    FIELD() {
-        @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return AnyField.fromIndex(reader.readUInt32()).getJavaClass();
-        }
+    @Override
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
+        Field<Class<?>> field = this.getField(context, targetClass);
+        writer.writeTag(field.getIndex(), WireFormat.WIRETYPE_VARINT);
+        field.writeTo(context, writer, targetClass);
+    }
 
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> value) throws IOException {
-            writer.writeUInt32NoTag(AnyField.fromJavaType(value).getIndex());
-        }
+    @Override
+    public OptionalInt size(ImmutableSerializationContext context, Class<?> targetClass) {
+        Field<Class<?>> field = this.getField(context, targetClass);
+        OptionalInt size = field.size(context, targetClass);
+        return size.isPresent() ? OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(field.getIndex() << 3 | WireFormat.WIRETYPE_VARINT)) : OptionalInt.empty();
+    }
 
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Class<?> value) {
-            return OptionalInt.of(Predictable.unsignedIntSize(AnyField.fromJavaType(value).getIndex()));
+    Field<Class<?>> getField(ImmutableSerializationContext context, Class<?> targetClass) {
+        if (targetClass == Object.class) return ClassField.OBJECT;
+        AnyField classField = AnyField.fromJavaType(targetClass);
+        if (classField != null) return ClassField.FIELD;
+        if (targetClass.isArray()) return ClassField.ARRAY;
+        try {
+            BaseMarshaller<?> marshaller = context.getMarshaller(targetClass);
+            return context.getDescriptorByName(marshaller.getTypeName()).getTypeId() != null ? ClassField.ID : ClassField.NAME;
+        } catch (IllegalArgumentException e) {
+            // If class does not represent a registered type, then use resolver-based marshalling.
+            return this.field;
         }
-    },
-    ID() {
-        @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            int typeId = reader.readUInt32();
-            String typeName = context.getDescriptorByTypeId(typeId).getFullName();
-            BaseMarshaller<?> marshaller = context.getMarshaller(typeName);
-            return marshaller.getJavaClass();
-        }
+    }
 
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> value) throws IOException {
-            BaseMarshaller<?> marshaller = context.getMarshaller(value);
-            String typeName = marshaller.getTypeName();
-            int typeId = context.getDescriptorByName(typeName).getTypeId();
-            writer.writeUInt32NoTag(typeId);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Class<?> value) {
-            BaseMarshaller<?> marshaller = context.getMarshaller(value);
-            String typeName = marshaller.getTypeName();
-            int typeId = context.getDescriptorByName(typeName).getTypeId();
-            return OptionalInt.of(Predictable.unsignedIntSize(typeId));
-        }
-    },
-    LOADED() {
-        @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            String className = AnyField.STRING.cast(String.class).readFrom(context, reader);
-            Module module = (Module) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-            PrivilegedExceptionAction<Class<?>> action = new PrivilegedExceptionAction<Class<?>>() {
-                @Override
-                public Class<?> run() throws ClassNotFoundException {
-                    return (module != null) ? module.getClassLoader().loadClass(className) : Class.forName(className);
-                }
-            };
-            try {
-                return WildFlySecurityManager.doUnchecked(action);
-            } catch (PrivilegedActionException e) {
-                InvalidClassException exception = new InvalidClassException(className, e.getException().getMessage());
-                exception.initCause(e.getException());
-                throw exception;
-            }
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
-            AnyField.STRING.writeTo(context, writer, targetClass.getName());
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, Module.forClass(targetClass));
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Class<?> targetClass) {
-            return OptionalInt.of(AnyField.STRING.size(context, targetClass.getName()).getAsInt() + ObjectMarshaller.INSTANCE.size(context, Module.forClass(targetClass)).getAsInt());
-        }
-    },
-    NAME() {
-        @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            String typeName = AnyField.STRING.cast(String.class).readFrom(context, reader);
-            BaseMarshaller<?> marshaller = context.getMarshaller(typeName);
-            return marshaller.getJavaClass();
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> value) throws IOException {
-            BaseMarshaller<?> marshaller = context.getMarshaller(value);
-            String typeName = marshaller.getTypeName();
-            AnyField.STRING.writeTo(context, writer, typeName);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Class<?> value) {
-            BaseMarshaller<?> marshaller = context.getMarshaller(value);
-            String typeName = marshaller.getTypeName();
-            return AnyField.STRING.size(context, typeName);
-        }
-    },
-    OBJECT() {
-        @Override
-        public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return Object.class;
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> value) throws IOException {
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Class<?> value) {
-            return OptionalInt.of(0);
-        }
-    },
-    ;
-
-    @SuppressWarnings("unchecked")
     @Override
     public Class<? extends Class<?>> getJavaClass() {
-        return (Class<? extends Class<?>>) (Class<?>) Class.class;
+        return this.field.getJavaClass();
     }
 }

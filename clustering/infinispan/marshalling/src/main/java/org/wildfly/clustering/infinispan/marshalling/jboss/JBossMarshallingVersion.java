@@ -32,10 +32,8 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.marshalling.ByteBufferExternalizer;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.DefaultExternalizerProviders;
@@ -46,14 +44,15 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author Paul Ferraro
  */
-public enum JBossMarshallingVersion implements Function<Map.Entry<ModuleLoader, Module>, MarshallingConfiguration> {
+public enum JBossMarshallingVersion implements Function<Map.Entry<ClassResolver, ClassLoader>, MarshallingConfiguration> {
     VERSION_1() {
         @Override
-        public MarshallingConfiguration apply(Map.Entry<ModuleLoader, Module> entry) {
+        public MarshallingConfiguration apply(Map.Entry<ClassResolver, ClassLoader> entry) {
             MarshallingConfiguration config = new MarshallingConfiguration();
-            config.setClassResolver(ModularClassResolver.getInstance(entry.getKey()));
-            config.setClassTable(new DynamicClassTable(entry.getValue().getClassLoader()));
-            config.setObjectTable(new ExternalizerObjectTable(loadExternalizers(entry.getValue())));
+            ClassLoader loader = entry.getValue();
+            config.setClassResolver(entry.getKey());
+            config.setClassTable(new DynamicClassTable(loader));
+            config.setObjectTable(new ExternalizerObjectTable(loadExternalizers(loader)));
             return config;
         }
     },
@@ -61,12 +60,12 @@ public enum JBossMarshallingVersion implements Function<Map.Entry<ModuleLoader, 
     public static final JBossMarshallingVersion CURRENT = VERSION_1;
 
     @SuppressWarnings("unchecked")
-    static List<Externalizer<Object>> loadExternalizers(Module module) {
+    static List<Externalizer<Object>> loadExternalizers(ClassLoader loader) {
         List<Externalizer<Object>> loadedExternalizers = WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<Externalizer<Object>>>() {
             @Override
             public List<Externalizer<Object>> run() {
                 List<Externalizer<Object>> externalizers = new LinkedList<>();
-                for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, module.getClassLoader())) {
+                for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
                     externalizers.add(externalizer);
                 }
                 return externalizers;

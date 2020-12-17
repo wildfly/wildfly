@@ -5,5 +5,7 @@
 
     <feature-group name="basic-profile"/>
     <feature-group name="infinispan-local"/>
+    <feature-group name="microprofile-opentracing-jaeger"/>
+    <feature spec="subsystem.microprofile-config-smallrye"/>
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
 </feature-group-spec>

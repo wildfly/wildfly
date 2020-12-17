@@ -72,5 +72,7 @@
         <module name="io.undertow.servlet"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="javax.transaction.api"/>
+        <!-- Only used if capability org.wildfly.weld is available-->
+        <module name="org.jboss.as.weld.common" optional="true"/>
     </dependencies>
 </module>

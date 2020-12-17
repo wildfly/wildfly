@@ -62,5 +62,6 @@
         <module name="org.wildfly.clustering.web.cache" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

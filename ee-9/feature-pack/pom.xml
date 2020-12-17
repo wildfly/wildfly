@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>22.0.0.Final-SNAPSHOT</version>
     </parent>
     
     <artifactId>wildfly-preview-feature-pack</artifactId>
@@ -51,24 +51,24 @@
         <full.ee-9-api.license.directory>${basedir}/src/license</full.ee-9-api.license.directory>
 
 
-        <version.com.sun.faces>3.0.0.SP02</version.com.sun.faces>
+        <version.com.sun.faces>3.0.0.SP03</version.com.sun.faces>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
+        <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
-        <version.jakarta.ejb.jakarta-ejb-api>4.0.0-RC2</version.jakarta.ejb.jakarta-ejb-api>
+        <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.interceptor.jakarata-interceptors-api>2.0.0</version.jakarta.interceptor.jakarata-interceptors-api>
+        <version.jakarta.interceptor.jakarta-interceptors-api>2.0.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
         <version.jakarta.mail>2.0.0</version.jakarta.mail>
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
-        <version.jakarta.security.auth.message.jakarta-security-auth-message-api>2.0.0-RC1</version.jakarta.security.auth.message.jakarta-security-auth-message-api>
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>5.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
@@ -82,15 +82,12 @@
         <!-- Not available on maven central yet
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0-RC2</version.org.glassfish.jakarta.enterprise.concurrent>
         -->
+        <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
-        <version.org.hibernate.validator>7.0.0.Alpha6</version.org.hibernate.validator>
+        <version.org.hibernate.validator>7.0.0.CR1</version.org.hibernate.validator>
         <version.org.jboss.metadata>14.0.0.Alpha1</version.org.jboss.metadata>
-        <version.org.jboss.weld.weld>4.0.0.Beta5</version.org.jboss.weld.weld>
-        <!-- TODO in the main pom this is a different version from the rest of weld. Why? -->
-        <!-- It's just a test dep so don't override it for now
-        <version.org.jboss.weld.se.weld-se-core>${version.org.jboss.weld.weld}</version.org.jboss.weld.se.weld-se-core>
-        -->
-        <version.org.jboss.weld.weld-api>4.0.Beta1</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>4.0.0.CR1</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>4.0.CR1</version.org.jboss.weld.weld-api>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
@@ -116,6 +113,20 @@
     <build>
         <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
         <plugins>
+            <plugin>
+                <!-- Feature pack generation is vulnerable to leftover files in the target
+                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -195,6 +206,9 @@
                             <resources>
                                 <resource>
                                     <directory>${mp.galleon.common.resources.directory}</directory>
+                                    <excludes>
+                                        <exclude>layers/standalone/jaxrs</exclude>
+                                    </excludes>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -378,7 +392,7 @@
         <dependency>
             <groupId>jakarta.interceptor</groupId>
             <artifactId>jakarta.interceptor-api</artifactId>
-            <version>${version.jakarta.interceptor.jakarata-interceptors-api}</version>
+            <version>${version.jakarta.interceptor.jakarta-interceptors-api}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -394,9 +408,9 @@
             <scope>provided</scope>
         </dependency>-->
         <dependency>
-            <groupId>jakarta.security.auth.message</groupId>
-            <artifactId>jakarta.security.auth.message-api</artifactId>
-            <version>${version.jakarta.security.auth.message.jakarta-security-auth-message-api}</version>
+            <groupId>jakarta.authentication</groupId>
+            <artifactId>jakarta.authentication-api</artifactId>
+            <version>${version.jakarta.authentication.jakarta-authentication-api}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -504,8 +518,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.el</groupId>
-            <artifactId>jboss-el-api_3.0_spec</artifactId>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>jboss-el-api_4.0_spec</artifactId>
+            <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -1008,13 +1023,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!--<dependency>
-            <groupId>org.jboss.weld.se</groupId>
-            <artifactId>weld-se-core</artifactId>
-            <version>${version.org.jboss.weld.se.weld-se-core}</version>
-            <scope>test</scope>
-        </dependency>-->
 
         <!-- Misc -->
         <dependency>

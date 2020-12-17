@@ -28,6 +28,7 @@ import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
@@ -57,6 +58,8 @@ final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuild
             final String jmsEndpointAddress = jmsEndpoint.getSoapAddress();
             WSLogger.ROOT_LOGGER.tracef("JMS address: %s", jmsEndpointAddress);
             newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
+            Endpoint ep =newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
+            markWeldDeployment(unit, ep);
         }
     }
 

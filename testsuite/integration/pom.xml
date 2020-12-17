@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>22.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -289,6 +289,10 @@
                     <exists>${ts.elytron.cli}</exists>
                 </file>
             </activation>
+            <properties>
+                <!-- Re-enable the default surefire execution -->
+                <surefire.default-test.phase>test</surefire.default-test.phase>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -330,12 +334,27 @@
                 </property>
             </activation>
             <properties>
-                <version.org.wildfly.jar.plugin>2.0.1.Final</version.org.wildfly.jar.plugin>        
-            </properties>            
+                <!-- Re-enable the default surefire execution -->
+                <surefire.default-test.phase>test</surefire.default-test.phase>
+            </properties>
             <modules>
                 <module>basic</module>
                 <module>clustering</module>
                 <module>elytron</module>
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>bootablejar.ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>           
+            <modules>
+                <module>basic</module>
+                <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
             </modules>

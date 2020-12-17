@@ -41,6 +41,7 @@ import org.jgroups.JChannel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
@@ -56,7 +57,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  * Builds a channel-based {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, ChannelCommandDispatcherFactoryConfiguration, MarshallingConfigurationContext, Supplier<AutoCloseableCommandDispatcherFactory> {
+public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, ChannelCommandDispatcherFactoryConfiguration, Supplier<AutoCloseableCommandDispatcherFactory> {
 
     private final String group;
 
@@ -99,11 +100,6 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     }
 
     @Override
-    public ClassLoader getClassLoader() {
-        return this.module.get().getClassLoader();
-    }
-
-    @Override
     public ModuleLoader getModuleLoader() {
         return this.loader.get();
     }
@@ -115,7 +111,7 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
 
     @Override
     public ByteBufferMarshaller getMarshaller() {
-        return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder().register(this.getClassLoader()).build());
+        return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassResolver(this.getModuleLoader())).load(this.module.get().getClassLoader()).build());
     }
 
     @Override

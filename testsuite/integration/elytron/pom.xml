@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>22.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -143,21 +143,18 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <version>${version.org.bouncycastle}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcmail-jdk15on</artifactId>
-            <version>${version.org.bouncycastle}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>${version.org.bouncycastle}</version>
             <scope>test</scope>
         </dependency>
 
@@ -430,7 +427,10 @@
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <phase>process-test-resources</phase>
+                                <!-- run in test-compile instead of process-test-resources
+                                     as getting correct execution order of different process-test-resources
+                                     executions has proven problematic when different profiles are used. -->
+                                <phase>test-compile</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -557,10 +557,9 @@
                             </systemPropertyVariables>
                         </configuration>
                         <executions>
-                            <!-- Re-enable the defaut test execution but exclude tests incompatible with this configxf. -->
+                            <!-- Run the default test execution but exclude tests incompatible with this config. -->
                             <execution>
                                 <id>default-test</id>
-                                <phase>test</phase>
                                 <configuration>
                                     <excludes combine-children="append">
                                         <!-- Needs batch -->
@@ -655,7 +654,7 @@
                                     <log-time>${galleon.log.time}</log-time>
                                     <offline>true</offline>
                                     <!-- content that is installed in wildfly home -->
-                                    <extraServerContent>${wildfly.dir}</extraServerContent>
+                                    <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
                                     <plugin-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -688,13 +687,9 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <!-- Enable the default tests (which the parent pom turns off for this profile) -->
+                            <!-- Configure the default tests -->
                             <execution>
                                 <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
                                         <install.dir>${project.build.directory}/${wildfly.instance.name}</install.dir>

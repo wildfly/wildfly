@@ -33,6 +33,13 @@ echo INFO: Removing security subsystem and ManagementRealm.
 
 echo INFO: Adding microprofile subsystems.
 
+if (outcome != success) of /subsystem=microprofile-config-smallrye:read-resource
+  /extension=org.wildfly.extension.microprofile.config-smallrye:add
+  /subsystem=microprofile-config-smallrye:add
+else
+  echo INFO: microprofile-config-smallrye already in configuration, subsystem not added.
+end-if
+
 if (outcome != success) of /subsystem=microprofile-fault-tolerance-smallrye:read-resource
   /extension=org.wildfly.extension.microprofile.fault-tolerance-smallrye:add
   /subsystem=microprofile-fault-tolerance-smallrye:add
@@ -40,11 +47,25 @@ else
   echo INFO: microprofile-fault-tolerance-smallrye already in configuration, subsystem not added.
 end-if
 
+if (outcome != success) of /subsystem=microprofile-health-smallrye:read-resource
+  /extension=org.wildfly.extension.microprofile.health-smallrye:add
+  /subsystem=microprofile-health-smallrye:add(security-enabled=false, empty-liveness-checks-status="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}", empty-readiness-checks-status="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}")
+else
+  echo INFO: microprofile-health-smallrye already in configuration, subsystem not added.
+end-if
+
 if (outcome != success) of /subsystem=microprofile-jwt-smallrye:read-resource
   /extension=org.wildfly.extension.microprofile.jwt-smallrye:add
   /subsystem=microprofile-jwt-smallrye:add
 else
   echo INFO: microprofile-jwt-smallrye already in configuration, subsystem not added.
+end-if
+
+if (outcome != success) of /subsystem=microprofile-metrics-smallrye:read-resource
+  /extension=org.wildfly.extension.microprofile.metrics-smallrye:add
+  /subsystem=microprofile-metrics-smallrye:add(exposed-subsystems=["*"], prefix="${wildfly.metrics.prefix:wildfly}", security-enabled=false)
+else
+  echo INFO: microprofile-metrics-smallrye already in configuration, subsystem not added.
 end-if
 
 if (outcome != success) of /subsystem=microprofile-openapi-smallrye:read-resource

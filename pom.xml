@@ -35,7 +35,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>22.0.0.Beta1-SNAPSHOT</version>
+    <version>22.0.0.Final-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -72,6 +72,7 @@
         <module>ee-9</module>
         <module>ejb3</module>
         <module>galleon-pack</module>
+        <module>health</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -86,6 +87,7 @@
         <module>legacy/web</module>
         <module>mail</module>
         <module>messaging-activemq</module>
+        <module>metrics</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
@@ -211,6 +213,15 @@
         <testsuite.ee.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.ee.galleon.pack.artifactId>
         <testsuite.ee.galleon.pack.version>${full.maven.version}</testsuite.ee.galleon.pack.version>
 
+        <!-- Properties that set the phase used for different plugin executions.
+             Profiles can override the values here to enable/disable executions.
+             A value of 'none' disables the execution; to enable set the value to the
+             normal phase for the goal.
+             This setup allows the bulk of the execution configuration to be in the
+             default build config (and thus shared in different profiles) while
+             still being easily disabled in profiles where it is not wanted. -->
+        <surefire.default-test.phase>test</surefire.default-test.phase>
+
         <!--
             *Plugin* Dependency versions. Please keep alphabetical.
 
@@ -228,12 +239,13 @@
         <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
         <version.help.plugin>2.2</version.help.plugin>
         <version.jacoco.plugin>0.8.2</version.jacoco.plugin><!-- TODO property does not follow verion.groupId format -->
-        <version.org.jboss.galleon>4.2.6.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>4.2.7.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
-        <version.org.wildfly.galleon-plugins>5.0.0.Beta2</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>5.0.0.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.jar.plugin>3.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
@@ -258,7 +270,7 @@
         <version.com.beust>1.78</version.com.beust>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.11.3</version.com.fasterxml.jackson>
-        <version.com.github.ben-manes.caffeine>2.8.6</version.com.github.ben-manes.caffeine>
+        <version.com.github.ben-manes.caffeine>2.8.8</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
@@ -272,19 +284,19 @@
         <version.com.nimbus.jose-jwt>8.11</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
-        <version.com.sun.activation.jakarta.activation>1.2.1</version.com.sun.activation.jakarta.activation>
-        <version.com.sun.faces>2.3.14.SP01</version.com.sun.faces>
+        <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
+        <version.com.sun.faces>2.3.14.SP02</version.com.sun.faces>
         <version.com.sun.istack>3.0.10</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
         <version.commons-cli>1.3.1</version.commons-cli>
-        <version.commons-codec>1.14</version.commons-codec>
+        <version.commons-codec>1.15</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-digester>1.8.1</version.commons-digester>
-        <version.commons-lang3>3.10</version.commons-lang3>
+        <version.commons-lang3>3.11</version.commons-lang3>
         <version.dom4j>2.1.3</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
-        <version.groovy-all>2.4.7</version.groovy-all>
+        <version.groovy-all>2.4.21</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
         <version.io.agroal>1.3</version.io.agroal>
         <version.io.jaegertracing>0.34.3</version.io.jaegertracing>
@@ -296,14 +308,14 @@
         <version.io.opentracing.tracerresolver>0.1.5</version.io.opentracing.tracerresolver>
         <version.io.opentracing.servlet>0.2.3</version.io.opentracing.servlet>
         <version.io.reactivex.rxjava2>2.2.19</version.io.reactivex.rxjava2>
-        <version.io.reactivex.rxjava3>3.0.4</version.io.reactivex.rxjava3>
+        <version.io.reactivex.rxjava3>3.0.8</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <version.io.smallrye.smallrye-config>1.6.2</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-fault-tolerance>4.3.1</version.io.smallrye.smallrye-fault-tolerance>
+        <version.io.smallrye.smallrye-fault-tolerance>4.3.2</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>2.2.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>2.0.13</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>2.4.4</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.open-api>2.0.14</version.io.smallrye.open-api>
+        <version.io.smallrye.open-api>2.0.16</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>1.3.4</version.io.smallrye.opentracing>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
@@ -331,7 +343,7 @@
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
         <version.org.apache.lucene>5.5.5</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>2.3.6</version.org.apache.myfaces.core>
+        <version.org.apache.myfaces.core>2.3.7</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.openjpa>2.4.2</version.org.apache.openjpa>
         <version.org.apache.qpid.proton>0.33.2</version.org.apache.qpid.proton>
@@ -342,7 +354,6 @@
         <version.org.apache.ws.xmlschema>2.2.5</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
         <version.org.bitbucket.jose4j>0.7.0</version.org.bitbucket.jose4j>
-        <version.org.bouncycastle>1.65</version.org.bouncycastle>
         <version.org.bytebuddy>1.9.11</version.org.bytebuddy>
         <version.org.codehaus.jackson>1.9.13.redhat-00007</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.4.0</version.org.codehaus.jettison>
@@ -370,7 +381,7 @@
         <version.org.hibernate.validator>6.0.21.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <!-- n.b. Infinispan Server version used for integration testing is defined separately in testsuite/integration/clustering/pom.xml -->
-        <version.org.infinispan>11.0.5.Final</version.org.infinispan>
+        <version.org.infinispan>11.0.8.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.3.4.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
@@ -378,11 +389,11 @@
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.arquillian.core>1.6.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
-        <version.org.jboss.ejb-client>4.0.36.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>4.0.37.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.8.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.console>3.2.11.Final</version.org.jboss.hal.console>
+        <version.org.jboss.hal.console>3.2.12.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.4.25.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
@@ -392,7 +403,7 @@
         <version.org.jboss.mod_cluster>1.4.1.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.10.6.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.4.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>3.13.2.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.14.0.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.6.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
@@ -414,31 +425,30 @@
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>2.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>
         <version.org.jboss.spec.javax.websockets>2.0.0.Final</version.org.jboss.spec.javax.websockets>
         <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.1_spec>2.0.1.Final</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.1_spec>
-        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>
+        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>2.0.1.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>
         <version.org.jboss.weld.weld>3.1.5.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>3.1.SP3</version.org.jboss.weld.weld-api>
-        <version.org.jboss.weld.se.weld-se-core>3.0.5.Final</version.org.jboss.weld.se.weld-se-core>
         <version.org.jboss.ws.api>1.1.2.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.common>3.3.3.Final</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.3.2.Final</version.org.jboss.ws.common.tools>
         <version.org.jboss.ws.cxf>5.4.2.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
-        <version.org.jboss.ws.spi>3.3.0.Final</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.spi>3.3.1.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
-        <version.org.jgroups>4.2.9.Final</version.org.jgroups>
+        <version.org.jgroups>4.2.10.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.3.0.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>1.0.15.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.jvnet.staxex>1.7.8</version.org.jvnet.staxex>
-        <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
+        <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.3.1</version.org.opensaml.opensaml>
         <version.org.ow2.asm>7.1</version.org.ow2.asm>
-		<!-- WildFly overrides the picketbox version from core to use MRRC variants -->
-		<version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
+        <!-- WildFly overrides the picketbox version from core to use MRRC variants -->
+        <version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP12-redhat-00009</version.org.picketlink>
         <version.org.picketlink.bindings>2.5.5.SP12-redhat-00012</version.org.picketlink.bindings>
@@ -446,9 +456,9 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>14.0.0.Beta2</version.org.wildfly.core>
+        <version.org.wildfly.core>14.0.0.Beta4</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
-        <version.org.wildfly.http-client>1.1.2.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>1.1.4.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.13.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>1.1.13.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.26</version.org.yaml.snakeyaml>
@@ -459,7 +469,6 @@
         <version.xml-resolver>1.2</version.xml-resolver>
         <!-- Apache xml-resolver -->
         <version.xom>1.2.10</version.xom>
-
 
     </properties>
 
@@ -1043,6 +1052,12 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-health</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-iiop-openjdk</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -1115,14 +1130,20 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
+                <artifactId>wildfly-metrics</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
+                <version>${full.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
@@ -1132,9 +1153,9 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-config-smallrye</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
@@ -1154,9 +1175,9 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-health-smallrye</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
@@ -1166,9 +1187,9 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-metrics-smallrye</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
@@ -5648,24 +5669,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcmail-jdk15on</artifactId>
-                <version>${version.org.bouncycastle}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15on</artifactId>
-                <version>${version.org.bouncycastle}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
-                <version>${version.org.bouncycastle}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
                 <version>${version.org.codehaus.jackson}</version>
@@ -5874,7 +5877,7 @@
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-core</artifactId>
-                <version>${version.org.jboss.weld.se.weld-se-core}</version>
+                <version>${version.org.jboss.weld.weld}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -9608,6 +9611,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- Surefire runs a 'default-test' execution by default.
+                             Configure it here to use a property to set the phase for that execution.
+                             Default value of the property is the normal 'test' phase
+                             (see 'properties' declarations in this pom.)
+                             Profiles can set the property to 'none' to disable this execution -->
+                        <id>default-test</id>
+                        <phase>${surefire.default-test.phase}</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -9671,25 +9685,23 @@
                 <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
+                <!-- Disable the surefire tests (at least the default ones) for all modules except for
+                     those where this profile turns them back on. -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <!-- Disable the surefire tests (at least the default ones) for all modules except for
-                             those where this profile turns them on.  This profile is meant to be an
-                             entirely alternative testsuite execution so there's no point running the normal
-                             tests, which get plenty of exercise elsewhere. -->
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+        </profile>
+        
+        <profile>
+            <id>bootable.ee9.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
+            </properties>
         </profile>
 
         <profile>
@@ -9699,24 +9711,11 @@
                     <name>ts.layers</name>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <!-- Disable the surefire tests (at least the default ones) for all modules except for
-                             those where this profile turns them on.  This profile is meant to be an
-                             entirely alternative testsuite execution so there's no point running the normal
-                             tests, which get plenty of exercise elsewhere. -->
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <!-- Disable the default surefire test execution for all modules except for
+                     those where this profile turns them back on. -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
         </profile>
 
         <profile>
@@ -9726,24 +9725,53 @@
                     <name>ts.standalone.microprofile</name>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <!-- Disable the surefire tests (at least the default ones) for all modules except for
-                             those where this profile turns them on.  This profile is meant to be an
-                             entirely alternative testsuite execution so there's no point running the normal
-                             tests, which get plenty of exercise elsewhere. -->
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <!-- Disable the default surefire test execution for all modules except for
+                     those where this profile turns them back on. -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>elytron.profile</id>
+            <activation>
+                <property>
+                    <name>elytron</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable the default surefire test execution for all modules except for
+                     those where this profile turns them back on. -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>security.manager.profile</id>
+            <activation>
+                <property>
+                    <name>security.manager</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable the default surefire tests  for all modules except for
+                     those where this profile turns them on. -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable the default surefire test execution for all modules except for
+                     those where this profile turns them back on. -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
         </profile>
 
         <profile>

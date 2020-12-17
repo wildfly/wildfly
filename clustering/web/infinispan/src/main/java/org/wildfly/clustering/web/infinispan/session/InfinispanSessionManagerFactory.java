@@ -194,6 +194,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
     public void close() {
         this.listener.close();
         this.scheduler.close();
+        this.factory.close();
     }
 
     private static class InfinispanMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements InfinispanSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {

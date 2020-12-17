@@ -80,7 +80,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
         }
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
         this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAccessMetaDataKey(id), accessMetaData);
-        return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
+        return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
         if (creationMetaDataEntry != null) {
             SessionAccessMetaData accessMetaData = this.accessMetaDataCache.get(new SessionAccessMetaDataKey(id));
             if (accessMetaData != null) {
-                return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
+                return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
             }
             if (flags.length == 0) {
                 // Purge orphaned entry, making sure not to trigger cache listener

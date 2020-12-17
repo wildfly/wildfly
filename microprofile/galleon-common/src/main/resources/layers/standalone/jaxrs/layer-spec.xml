@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jaxrs">
+    <dependencies>
+        <layer name="microprofile-rest-client" optional="true"/>
+    </dependencies>
+</layer-spec>

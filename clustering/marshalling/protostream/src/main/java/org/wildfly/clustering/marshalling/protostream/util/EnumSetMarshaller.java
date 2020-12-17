@@ -34,7 +34,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.AnyField;
-import org.wildfly.clustering.marshalling.protostream.ClassMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassField;
 import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -48,7 +48,7 @@ public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     @SuppressWarnings("unchecked")
     @Override
     public EnumSet<E> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        Class<E> enumClass = (Class<E>) ClassMarshaller.ANY.readFrom(context, reader);
+        Class<E> enumClass = (Class<E>) ClassField.ANY.readFrom(context, reader);
         EnumSet<E> set = EnumSet.noneOf(enumClass);
         BitSet values = BitSet.valueOf(AnyField.BYTE_ARRAY.cast(byte[].class).readFrom(context, reader));
         E[] enumValues = enumClass.getEnumConstants();
@@ -63,7 +63,7 @@ public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, EnumSet<E> set) throws IOException {
         Class<?> enumClass = this.findEnumClass(set);
-        ClassMarshaller.ANY.writeTo(context, writer, enumClass);
+        ClassField.ANY.writeTo(context, writer, enumClass);
         Object[] enumValues = enumClass.getEnumConstants();
         // Represent EnumSet as a BitSet
         BitSet values = new BitSet(enumValues.length);
@@ -76,7 +76,7 @@ public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     @Override
     public OptionalInt size(ImmutableSerializationContext context, EnumSet<E> set) {
         Class<?> enumClass = this.findEnumClass(set);
-        OptionalInt size = ClassMarshaller.ANY.size(context, enumClass);
+        OptionalInt size = ClassField.ANY.size(context, enumClass);
         Object[] enumValues = enumClass.getEnumConstants();
         // Determine number of bytes in BitSet
         int bytes = enumValues.length / Byte.SIZE;

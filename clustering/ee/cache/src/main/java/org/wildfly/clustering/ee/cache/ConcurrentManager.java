@@ -44,7 +44,7 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
     private final BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>> addFunction = new BiFunction<K, Map.Entry<Integer, VolatileReference<V>>, Map.Entry<Integer, VolatileReference<V>>>() {
         @Override
         public Map.Entry<Integer, VolatileReference<V>> apply(K id, Map.Entry<Integer, VolatileReference<V>> entry) {
-            Integer count = (entry != null) ? Integer.valueOf(entry.getKey().intValue() + 1) : new Integer(0);
+            Integer count = Integer.valueOf((entry != null) ? entry.getKey().intValue() + 1 : 0);
             VolatileReference<V> reference = (entry != null) ? entry.getValue() : new VolatileReference<>();
             return new AbstractMap.SimpleImmutableEntry<>(count, reference);
         }
