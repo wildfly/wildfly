@@ -26,6 +26,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.infinispan.protostream.BaseMarshaller;
@@ -45,7 +46,12 @@ public class MarshallerProvider implements SerializationContext.MarshallerProvid
     }
 
     public MarshallerProvider(Iterable<? extends BaseMarshaller<?>> marshallers) {
-        for (BaseMarshaller<?> marshaller : marshallers) {
+        this(marshallers.iterator());
+    }
+
+    protected MarshallerProvider(Iterator<? extends BaseMarshaller<?>> marshallers) {
+        while (marshallers.hasNext()) {
+            BaseMarshaller<?> marshaller = marshallers.next();
             this.marshallerByName.put(marshaller.getTypeName(), marshaller);
             this.marshallerByType.put(marshaller.getJavaClass(), marshaller);
         }
@@ -60,7 +66,7 @@ public class MarshallerProvider implements SerializationContext.MarshallerProvid
     public BaseMarshaller<?> getMarshaller(Class<?> javaClass) {
         Class<?> targetClass = javaClass;
         Class<?> superClass = javaClass.getSuperclass();
-        // If implementation class has no externalizer, search any abstract superclasses
+        // If implementation class has no marshaller, search any abstract superclasses
         while (!this.marshallerByType.containsKey(targetClass) && (superClass != null) && Modifier.isAbstract(superClass.getModifiers())) {
             targetClass = superClass;
             superClass = targetClass.getSuperclass();
