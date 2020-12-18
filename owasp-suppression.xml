@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
+    <!-- [wildfly] vulnerability concerns jackson-databind -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jackson-mapper-asl-1.9.13.redhat-00007.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.jackson/jackson\-mapper\-asl@.*$</packageUrl>
+        <vulnerabilityName>CVE-2020-25649</vulnerabilityName>
+    </suppress>
+
     <!-- [wildfly] WildFly 21.0.1 ships with hibernate 5.3.20, which has a fix for this vulerability https://hibernate.atlassian.net/browse/HHH-14225?jql=project%20%3D%20HHH%20AND%20fixVersion%20in%20(5.3.20)%20ORDER%20BY%20updated -->
     <suppress>
         <notes><![CDATA[
