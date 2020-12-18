@@ -46,7 +46,8 @@ public class JAXBContextSystemPropInternalTestCase extends JAXBContextTestBase {
         @Override
         protected SystemProperty[] getSystemProperties() {
             return new SystemProperty[] {
-                new DefaultSystemProperty(JAXB_FACTORY_PROP_NAME, DEFAULT_JAXB_FACTORY_CLASS)
+                new DefaultSystemProperty(JAXB_FACTORY_PROP_NAME, DEFAULT_JAXB_FACTORY_CLASS),
+                new DefaultSystemProperty(JAKARTA_FACTORY_PROP_NAME, DEFAULT_JAXB_FACTORY_CLASS)
             };
         }
     }

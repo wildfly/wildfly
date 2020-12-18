@@ -39,14 +39,22 @@ public class JAXBContextUsingPropertiesTestCase extends JAXBContextTestBase {
     @Deployment(name = "app-internal", testable = false)
     public static WebArchive createInternalDeployment() {
         final WebArchive war = JAXBContextTestBase.createInternalDeployment();
-        war.add(new StringAsset(JAXB_FACTORY_PROP_NAME + "=" + DEFAULT_JAXB_FACTORY_CLASS), JAXB_PROPERTIES_FILE);
+        String nl = System.getProperty("line.separator");
+        war.add(new StringAsset(
+                JAXB_FACTORY_PROP_NAME + "=" + DEFAULT_JAXB_FACTORY_CLASS + nl
+                + JAKARTA_FACTORY_PROP_NAME + "=" + DEFAULT_JAXB_FACTORY_CLASS),
+                JAXB_PROPERTIES_FILE);
         return war;
     }
 
     @Deployment(name = "app-custom", testable = false)
     public static WebArchive createCustomDeployment() {
         final WebArchive war = JAXBContextTestBase.createCustomDeployment();
-        war.add(new StringAsset(JAXB_FACTORY_PROP_NAME + "=" + CUSTOM_JAXB_FACTORY_CLASS), JAXB_PROPERTIES_FILE);
+        String nl = System.getProperty("line.separator");
+        war.add(new StringAsset(
+                JAXB_FACTORY_PROP_NAME + "=" + CUSTOM_JAXB_FACTORY_CLASS + nl
+                + JAKARTA_FACTORY_PROP_NAME + "=" + CUSTOM_JAXB_FACTORY_CLASS),
+                JAXB_PROPERTIES_FILE);
         return war;
     }
 

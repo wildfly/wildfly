@@ -53,6 +53,7 @@ public abstract class JAXBContextTestBase {
     protected static final String WEB_APP_CUSTOM_CONTEXT = "jaxb-custom-webapp";
 
     protected static final String JAXB_FACTORY_PROP_NAME = JAXBContextFactory.class.getName();
+    protected static final String JAKARTA_FACTORY_PROP_NAME = JAXBContextFactory.class.getName().replaceFirst("javax.", "jakarta.");
     protected static final String DEFAULT_JAXB_FACTORY_CLASS = "com.sun.xml.bind.v2.JAXBContextFactory";
     protected static final String CUSTOM_JAXB_FACTORY_CLASS = FakeJAXBContextFactory.class.getName();
     protected static final String JAXB_PROPERTIES_FILE = "WEB-INF/classes/org/jboss/as/test/integration/jaxb/bindings/jaxb.properties";
