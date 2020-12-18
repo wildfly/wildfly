@@ -23,7 +23,8 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.function.Function;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -34,29 +35,19 @@ import org.wildfly.clustering.marshalling.Externalizer;
  */
 public class ExternalizerMarshallerProvider extends MarshallerProvider {
 
+    private static final Function<Externalizer<?>, BaseMarshaller<?>> MAPPER = new Function<Externalizer<?>, BaseMarshaller<?>>() {
+        @Override
+        public BaseMarshaller<?> apply(Externalizer<?> externalizer) {
+            Class<?> targetClass = externalizer.getTargetClass();
+            return targetClass.isEnum() ? new EnumMarshaller<>(targetClass.asSubclass(Enum.class)) : new ExternalizerMarshaller<>(externalizer);
+        }
+    };
+
     public ExternalizerMarshallerProvider(Externalizer<?>... externalizers) {
         this(Arrays.asList(externalizers));
     }
 
-    public ExternalizerMarshallerProvider(Iterable<? extends Externalizer<?>> externalizers) {
-        super(new Iterable<BaseMarshaller<?>>() {
-            @Override
-            public Iterator<BaseMarshaller<?>> iterator() {
-                Iterator<? extends Externalizer<?>> iterator = externalizers.iterator();
-                return new Iterator<BaseMarshaller<?>>() {
-                    @Override
-                    public boolean hasNext() {
-                        return iterator.hasNext();
-                    }
-
-                    @Override
-                    public BaseMarshaller<?> next() {
-                        Externalizer<?> externalizer = iterator.next();
-                        Class<?> targetClass = externalizer.getTargetClass();
-                        return targetClass.isEnum() ? new EnumMarshaller<>(targetClass.asSubclass(Enum.class)) : new ExternalizerMarshaller<>(externalizer);
-                    }
-                };
-            }
-        });
+    public ExternalizerMarshallerProvider(Collection<? extends Externalizer<?>> externalizers) {
+        super(ClassPredicate.ABSTRACT, externalizers.stream().map(MAPPER));
     }
 }

@@ -26,10 +26,14 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.SerializationContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Provides marshallers whose {@link BaseMarshaller#getJavaClass()} defines an abstract class.
@@ -37,15 +41,36 @@ import org.infinispan.protostream.SerializationContext;
  */
 public class MarshallerProvider implements SerializationContext.MarshallerProvider {
 
+    public static enum ClassPredicate implements Predicate<Class<?>> {
+        ABSTRACT() {
+            @Override
+            public boolean test(Class<?> superClass) {
+                return Modifier.isAbstract(superClass.getModifiers());
+            }
+        },
+        ;
+    }
+
+    private final Predicate<Class<?>> superClassPredicate;
     private final Map<String, BaseMarshaller<?>> marshallerByName = new HashMap<>();
     private final Map<Class<?>, BaseMarshaller<?>> marshallerByType = new IdentityHashMap<>();
 
-    public MarshallerProvider(BaseMarshaller<?>... marshallers) {
-        this(Arrays.asList(marshallers));
+    public MarshallerProvider(Predicate<Class<?>> superClassPredicate, BaseMarshaller<?>... marshallers) {
+        this(superClassPredicate, Arrays.asList(marshallers));
     }
 
-    public MarshallerProvider(Iterable<? extends BaseMarshaller<?>> marshallers) {
-        for (BaseMarshaller<?> marshaller : marshallers) {
+    public MarshallerProvider(Predicate<Class<?>> superClassPredicate, Iterable<? extends BaseMarshaller<?>> marshallers) {
+        this(superClassPredicate, marshallers.iterator());
+    }
+
+    public MarshallerProvider(Predicate<Class<?>> superClassPredicate, Stream<? extends BaseMarshaller<?>> marshallers) {
+        this(superClassPredicate, marshallers.iterator());
+    }
+
+    private MarshallerProvider(Predicate<Class<?>> superClassPredicate, Iterator<? extends BaseMarshaller<?>> marshallers) {
+        this.superClassPredicate = superClassPredicate;
+        while (marshallers.hasNext()) {
+            BaseMarshaller<?> marshaller = marshallers.next();
             this.marshallerByName.put(marshaller.getTypeName(), marshaller);
             this.marshallerByType.put(marshaller.getJavaClass(), marshaller);
         }
@@ -60,8 +85,9 @@ public class MarshallerProvider implements SerializationContext.MarshallerProvid
     public BaseMarshaller<?> getMarshaller(Class<?> javaClass) {
         Class<?> targetClass = javaClass;
         Class<?> superClass = javaClass.getSuperclass();
-        // If implementation class has no externalizer, search any abstract superclasses
-        while (!this.marshallerByType.containsKey(targetClass) && (superClass != null) && Modifier.isAbstract(superClass.getModifiers())) {
+        // If implementation class has no marshaller, search any superclasses within the same classloader
+        ClassLoader loader = WildFlySecurityManager.getClassLoaderPrivileged(targetClass);
+        while (!this.marshallerByType.containsKey(targetClass) && (superClass != null) && this.superClassPredicate.test(superClass) && WildFlySecurityManager.getClassLoaderPrivileged(superClass) == loader) {
             targetClass = superClass;
             superClass = targetClass.getSuperclass();
         }
