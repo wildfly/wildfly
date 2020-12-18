@@ -116,19 +116,24 @@
             <artifactId>resteasy-jackson2-provider</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- These are required for the client testing. The resteasy-json-binding-provider requires them, but they are
-             not transitive by default. -->
         <dependency>
-            <groupId>jakarta.json.bind</groupId>
-            <artifactId>jakarta.json.bind-api</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-json-binding-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson-provider</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
-            <scope>test</scope>
+            <version>2.0.1</version>
+            <scope>runtime</scope>
         </dependency>
 
     </dependencies>
