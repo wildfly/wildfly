@@ -1,0 +1,125 @@
+[[Keycloak_Integration]]
+= Using Keycloak with WildFly Elytron
+
+When securing deployments using a Keycloak server a set of client side adapters provided by Keycloak need to be 
+installed to WildFly including a new subsystem to support configring the client side adapters.  Depending on how 
+you are installing WildFly you have some different options available to install the adapters.
+
+== Zip Installation
+
+If you have installed a zip distribution of WildFly you can obtain a zip containing the Keycloak adapters directly 
+from the Keycloak project at 
+https://www.keycloak.org/docs/latest/securing_apps/index.html#_jboss_adapter[www.keycloak.org].
+
+Please follow the instructions at the previous link for the installation and configuration, these will guide you to 
+unzip the adapter distribution on top of your WildFly installation and to execute a CLI script to complete the set
+up and define the Keycloak subsystem.
+
+== Galleon Installation
+
+The Keycloak project now also publishes a Galleon feature pack which can be used to install the Keycloak client
+adapters onto a WildFly installation being maintained using Galleon.
+
+More information can be found in the <<Galleon_Guide.adoc#Galleon_Guide,Provisioning WildFly with Galleon>> documentation, but 
+assuming you have provisioned a WildFly installation containing the `web-server` layer with a command similar to 
+the following:
+
+[source]
+----
+galleon.sh install wildfly:current \
+    --layers=web-server --dir=wildfly
+----
+
+The Keycloak adapters can be added to the WildFly installation with the following command:
+
+[source]
+----
+galleon.sh install org.keycloak:keycloak-adapter-galleon-pack:12.0.1 --layers=keycloak-client-oidc --dir=wildfly
+----
+
+[NOTE]
+====
+Unlike the WildFly feature pack the Keycloak feature pack is not part of a universe and so a fully 
+qualified `group:artifact:version` reference to the feature pack is required.
+====
+
+From this point applications can be configured as described on 
+https://www.keycloak.org/docs/latest/securing_apps/index.html#_jboss_adapter[www.keycloak.org]
+in exactly the same way as if you had used the zip approach to install WildFly and the adapters.
+
+== Bootable Jar
+
+The third installation option is if you are creating a bootable jar for your deployment and wish to add the Keycloak
+client adapters to secure the deployment.  More details about bootable jar support can be found in the 
+<<Bootable_Guide.adoc#wildfly_bootable_JAR_development,Bootable JAR Guide>>.
+
+The following is an example plug-in configuration to create a bootable jar for a web application using both the
+`web-server` and `keycloak-client-oidc` layers:
+
+[source,xml,options="nowrap"]
+----
+<plugin>
+    <groupId>org.wildfly.plugins</groupId>
+    <artifactId>wildfly-jar-maven-plugin</artifactId>
+    <version>${version.wildfly.jar.maven.plugin}</version>
+    <configuration>
+        <feature-packs>
+            <feature-pack>
+                <location>wildfly@maven(org.jboss.universe:community-universe):current</location>
+                <inherit-configs>false</inherit-configs>
+                <inherit-packages>false</inherit-packages>
+            </feature-pack>
+            <feature-pack>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-adapter-galleon-pack</artifactId>
+                <version>12.0.1</version>
+                <inherit-configs>false</inherit-configs>
+                <inherit-packages>false</inherit-packages>
+            </feature-pack>
+        </feature-packs>
+        <layers>
+            <layer>web-server</layer>
+            <layer>keycloak-client-oidc</layer>
+        </layers>
+        <context-root>simple-webapp</context-root>
+        <cli-sessions>
+            <cli-session>
+                <script-files>
+                    <script>configure-oidc.cli</script>
+                </script-files>
+            </cli-session>
+        </cli-sessions>
+    </configuration>
+    <executions>
+        <execution>
+            <goals>
+                <goal>package</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+----
+
+A couple of points are worth mentioning here, as with using the CLI the latest version of WildFly in the universe can be
+dynamically selected but the Keycloak feature pack requires the complete `groupId`, `artifactId`, and `version` to be
+specified.
+
+The approaches to configure the web application are the same as described at 
+https://www.keycloak.org/docs/latest/securing_apps/index.html#_jboss_adapter[www.keycloak.org].  In this example a CLI script 
+`configure-oidc.cli` is executed to update the Keycloak subsystem with the relevent configuration.
+
+The contents of this script are:
+
+[source]
+----
+/subsystem=keycloak/secure-deployment=simple-webapp.war:add( \
+    realm=WildFly, \
+    resource=simple-webapp, \
+    public-client=true, \
+    auth-server-url=http://localhost:8080/auth/, \
+    ssl-required=EXTERNAL)
+----
+
+Alternatively the `auth-method` of the web application could have been set to `KEYCLOAK` and adapter configuration
+provided in `keycloak.json` descriptor placed within the `WEB-INF` directory of the deployment. 
+
