@@ -22,13 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.3" name="org.wildfly.naming-client">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.naming-client">
 
     <resources>
         <artifact name="${org.wildfly:wildfly-naming-client}"/>
     </resources>
 
     <dependencies>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.security.jgss"/>
         <module name="javax.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.remoting"/>

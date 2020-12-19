@@ -22,12 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="javax.ws.rs.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.ws.rs.api">
+
     <resources>
         <artifact name="${org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec}"/>
     </resources>
 
     <dependencies>
+        <module name="java.logging" />
         <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
         <module name="javax.xml.bind.api" />
         <module name="javax.api" />

@@ -21,7 +21,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310">
+<module xmlns="urn:jboss:module:1.9" name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310">
      <resources>
         <artifact name="${com.fasterxml.jackson.datatype:jackson-datatype-jsr310}"/>
     </resources>

@@ -21,12 +21,16 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="com.fasterxml.jackson.core.jackson-databind">
+<module xmlns="urn:jboss:module:1.9" name="com.fasterxml.jackson.core.jackson-databind">
+
      <resources>
         <artifact name="${com.fasterxml.jackson.core:jackson-databind}"/>
     </resources>
-
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
         <module name="javax.api"/>
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
