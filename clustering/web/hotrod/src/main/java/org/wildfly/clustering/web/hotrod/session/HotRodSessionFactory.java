@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.Flag;
@@ -38,7 +39,7 @@ import org.infinispan.client.hotrod.event.ClientCacheEntryCustomEvent;
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.Marshaller;
 import org.jboss.as.clustering.context.DefaultExecutorService;
-import org.jboss.as.clustering.context.ExecutorServiceFactory;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Remover;
@@ -71,7 +72,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
     private final ImmutableSessionAttributesFactory<V> attributesFactory;
     private final Remover<String> attributesRemover;
     private final Collection<SessionExpirationListener> listeners = new CopyOnWriteArraySet<>();
-    private final ExecutorService executor = new DefaultExecutorService(this.getClass(), ExecutorServiceFactory.CACHED_THREAD);
+    private final ExecutorService executor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
     private final boolean nearCacheEnabled;
 
     /**
