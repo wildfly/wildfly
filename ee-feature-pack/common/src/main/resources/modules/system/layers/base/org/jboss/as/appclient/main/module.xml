@@ -41,7 +41,7 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.apache.xalan" services="import"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.codehaus.woodstox" services="import"/>

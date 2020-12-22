@@ -23,6 +23,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jsf">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,7 +34,7 @@
 
     <dependencies>
         <module name="javax.annotation.api"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.faces.api" />
         <module name="javax.enterprise.api"/>
         <module name="com.sun.jsf-impl"/>
@@ -55,5 +56,7 @@
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.weld.spi"/>
+
+        <module name="java.xml"/>
     </dependencies>
 </module>

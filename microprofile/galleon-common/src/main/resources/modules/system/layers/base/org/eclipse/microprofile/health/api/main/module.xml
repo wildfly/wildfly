@@ -23,12 +23,14 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.health.api">
+
     <resources>
         <artifact name="${org.eclipse.microprofile.health:microprofile-health-api}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.logging"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api" />
     </dependencies>
 </module>

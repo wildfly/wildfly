@@ -23,11 +23,12 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.openapi.api">
+
     <resources>
         <artifact name="${org.eclipse.microprofile.openapi:microprofile-openapi-api}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
     </dependencies>
 </module>

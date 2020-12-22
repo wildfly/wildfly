@@ -48,7 +48,7 @@
 
     <dependencies>
       <module name="java.scripting"/>
-      <module name="javax.api"/>
+      <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
       <module name="org.slf4j"/>
       <module name="org.apache.santuario.xmlsec"/>
       <module name="org.apache.ws.security" />

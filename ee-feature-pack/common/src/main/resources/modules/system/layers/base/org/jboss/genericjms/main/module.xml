@@ -30,7 +30,7 @@
     <dependencies>
         <module name="java.naming"/>
         <module name="javax.transaction.api"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <!-- WFLY-4656 export the JMS API module,  otherwise MDB using this RA will not found JMS classes -->
         <module name="javax.jms.api" export="true"/>
         <module name="javax.resource.api"/>

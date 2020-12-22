@@ -47,7 +47,7 @@
         <module name="java.security.jgss"/>
         <module name="javax.transaction.api"/>
         <module name="com.google.guava"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.jms.api" />
         <module name="javax.json.api"/>
         <module name="org.apache.commons.beanutils" />

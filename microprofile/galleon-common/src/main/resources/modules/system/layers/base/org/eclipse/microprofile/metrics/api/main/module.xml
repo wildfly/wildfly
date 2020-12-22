@@ -23,6 +23,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.metrics.api">
+
     <resources>
         <artifact name="${org.eclipse.microprofile.metrics:microprofile-metrics-api}"/>
     </resources>

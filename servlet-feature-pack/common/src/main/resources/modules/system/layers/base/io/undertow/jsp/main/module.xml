@@ -35,7 +35,7 @@
         <module name="java.desktop"/>
         <module name="java.naming"/>
         <module name="java.xml"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="sun.jdk"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>

@@ -34,7 +34,7 @@
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
         <module name="org.jboss.resteasy.resteasy-jettison-provider"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="javax.ws.rs.api" services="export"/>

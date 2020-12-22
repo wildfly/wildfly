@@ -37,7 +37,7 @@
         <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
         <module name="com.github.fge.json-patch"/>
         <module name="javax.xml.bind.api"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>

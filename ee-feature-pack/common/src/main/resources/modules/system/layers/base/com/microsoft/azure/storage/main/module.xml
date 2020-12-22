@@ -35,7 +35,7 @@
     <dependencies>
         <module name="java.xml"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <!-- <module name="org.apache.commons.lang"/> -->
         <module name="org.slf4j"/>
     </dependencies>

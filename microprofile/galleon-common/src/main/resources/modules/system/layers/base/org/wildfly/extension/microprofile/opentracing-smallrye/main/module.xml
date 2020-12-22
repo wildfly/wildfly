@@ -16,6 +16,7 @@
   ~ limitations under the License.
   -->
 <module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.microprofile.opentracing-smallrye">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

@@ -16,6 +16,7 @@
   ~ limitations under the License.
   -->
 <module xmlns="urn:jboss:module:1.9" name="org.wildfly.microprofile.opentracing-smallrye">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -25,7 +26,8 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/> <!-- for javax.naming -->
+        <module name="java.naming"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> --> <!-- for javax.naming -->
 
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>

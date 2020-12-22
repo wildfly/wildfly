@@ -30,6 +30,6 @@
         <module name="com.fasterxml.jackson.core.jackson-core"/>
         <module name="com.fasterxml.jackson.core.jackson-databind"/>
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
     </dependencies>
 </module>

@@ -19,6 +19,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.jwt.auth.api">
+
     <resources>
         <artifact name="${org.eclipse.microprofile.jwt:microprofile-jwt-auth-api}"/>
     </resources>

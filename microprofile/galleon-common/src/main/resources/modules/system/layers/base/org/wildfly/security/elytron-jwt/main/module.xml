@@ -19,6 +19,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.wildfly.security.elytron-jwt">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

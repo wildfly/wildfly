@@ -38,7 +38,7 @@
         <module name="java.security.jgss"/>
         <module name="java.sql"/>
         <module name="javax.transaction.api"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>

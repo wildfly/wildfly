@@ -40,7 +40,7 @@
     </resources>
     <dependencies>
             <module name="java.desktop"/>
-            <module name="javax.api"/>
+            <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
             <module name="javax.el.api" services="import" export="true"/>
     </dependencies>
 </module>

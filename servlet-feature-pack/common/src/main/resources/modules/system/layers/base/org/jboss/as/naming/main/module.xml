@@ -34,7 +34,7 @@
     <dependencies>
         <module name="java.naming"/>
         <module name="java.xml"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.wildfly.http-client.naming"/>
         <module name="org.wildfly.common"/>
         <module name="org.jboss.staxmapper"/>

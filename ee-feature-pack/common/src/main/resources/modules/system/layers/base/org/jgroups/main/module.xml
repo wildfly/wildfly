@@ -37,7 +37,7 @@
         <module name="java.security.jgss"/>
         <module name="java.security.sasl"/>
         <module name="java.sql"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.jgroups.azure"/>
         <module name="org.jgroups.kubernetes"/>
         <module name="java.xml"/>

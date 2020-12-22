@@ -36,7 +36,7 @@
         <module name="org.glassfish.jakarta.json"/>
         <module name="javax.json.bind.api" export="true"/>
         <module name="org.eclipse.yasson"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>
         <module name="javax.json.api"/>
         <module name="javax.enterprise.api"/>

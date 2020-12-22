@@ -23,6 +23,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jsf-injection">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

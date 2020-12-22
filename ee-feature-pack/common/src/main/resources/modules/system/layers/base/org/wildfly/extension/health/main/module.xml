@@ -34,7 +34,7 @@
 
     <dependencies>
         <module name="io.undertow.core"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.core-security"/>

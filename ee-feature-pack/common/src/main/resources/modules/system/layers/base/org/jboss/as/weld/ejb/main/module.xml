@@ -55,5 +55,4 @@
         <module name="org.jboss.ejb3"/>
         <module name="org.jboss.ejb-client"/>
     </dependencies>
-
 </module>

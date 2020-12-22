@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-      <module name="javax.api"/>
+      <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
       <module name="java.xml"/>
     </dependencies>
 </module>

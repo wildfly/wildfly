@@ -15,6 +15,7 @@
   ~ limitations under the License.
   -->
 <module xmlns="urn:jboss:module:1.9" name="com.google.code.gson">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -24,6 +25,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.sql"/>
         <module name="javax.sql.api"/>
         <module name="sun.jdk"/>
     </dependencies>

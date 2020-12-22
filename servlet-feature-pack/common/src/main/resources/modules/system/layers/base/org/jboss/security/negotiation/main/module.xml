@@ -39,7 +39,7 @@
         <module name="java.naming" />
         <module name="java.security.jgss" />
         <module name="io.undertow.core" />
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.servlet.api"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.logging"/>

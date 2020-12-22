@@ -21,7 +21,6 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
 <module xmlns="urn:jboss:module:1.9" name="com.sun.xml.bind">
     <properties>
         <property name="jboss.api" value="private"/>
@@ -41,11 +40,11 @@
     </resources>
 
     <dependencies>
-        <module name="java.logging" />
-        <module name="javax.activation.api" />
-        <module name="javax.api" />
-        <module name="javax.xml.bind.api" />
-        <module name="javax.xml.stream.api" />
-        <module name="java.xml" />
+        <module name="java.logging"/>
+        <module name="java.xml"/>
+        <module name="javax.activation.api"/>
+        <module name="javax.api"/>
+        <module name="javax.xml.bind.api"/>
+        <module name="javax.xml.stream.api"/>
     </dependencies>
 </module>

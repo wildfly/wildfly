@@ -43,7 +43,7 @@
         <!-- io.undertow.core is required only if http-acceptor are used -->
         <module name="io.undertow.core" optional="true" />
         <module name="io.netty"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.jms.api"/>
         <module name="javax.json.api"/>

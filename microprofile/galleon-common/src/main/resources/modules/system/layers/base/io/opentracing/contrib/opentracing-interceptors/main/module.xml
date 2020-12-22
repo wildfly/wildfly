@@ -15,6 +15,7 @@
   ~ limitations under the License.
   -->
 <module xmlns="urn:jboss:module:1.9" name="io.opentracing.contrib.opentracing-interceptors">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

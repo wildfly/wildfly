@@ -27,7 +27,7 @@
         <module name="java.desktop"/>
         <module name="java.logging"/>
         <module name="java.datatransfer"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.mail.api" optional="true">
             <imports><include path="META-INF"/></imports>
         </module>

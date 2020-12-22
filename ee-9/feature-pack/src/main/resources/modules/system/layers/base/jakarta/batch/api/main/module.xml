@@ -31,7 +31,7 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
     </dependencies>    
 </module>

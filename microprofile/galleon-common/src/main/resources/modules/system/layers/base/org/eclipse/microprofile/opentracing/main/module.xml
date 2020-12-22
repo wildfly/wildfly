@@ -16,6 +16,7 @@
   ~ limitations under the License.
   -->
 <module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.opentracing">
+
     <resources>
         <artifact name="${org.eclipse.microprofile.opentracing:microprofile-opentracing-api}"/>
     </resources>
