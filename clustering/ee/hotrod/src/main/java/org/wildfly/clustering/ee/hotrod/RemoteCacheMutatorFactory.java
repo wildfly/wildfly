@@ -49,6 +49,6 @@ public class RemoteCacheMutatorFactory<K, V> implements MutatorFactory<K, V> {
 
     @Override
     public Mutator createMutator(K key, V value) {
-        return new RemoteCacheEntryMutator<>(this.cache, this.maxIdle, key, value);
+        return new RemoteCacheEntryMutator<>(this.cache, key, value, this.maxIdle);
     }
 }
