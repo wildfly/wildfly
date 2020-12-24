@@ -25,7 +25,6 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
-import java.nio.charset.StandardCharsets;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
@@ -38,101 +37,15 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferInputStream;
  * This implementation intentionally does not conform to the binary layout prescribed by {@link ObjectInput}.
  * @author Paul Ferraro
  */
-public class ProtoStreamObjectInput implements ObjectInput {
+public class ProtoStreamObjectInput extends ProtoStreamDataInput implements ObjectInput {
 
     private final ImmutableSerializationContext context;
     private final RawProtoStreamReader reader;
 
     public ProtoStreamObjectInput(ImmutableSerializationContext context, RawProtoStreamReader reader) {
+        super(reader);
         this.context = context;
         this.reader = reader;
-    }
-
-    @Override
-    public void readFully(byte[] bytes) throws IOException {
-        this.readFully(bytes, 0, bytes.length);
-    }
-
-    @Override
-    public void readFully(byte[] buffer, int offset, int length) throws IOException {
-        RawProtoStreamReaderImpl reader = (RawProtoStreamReaderImpl) this.reader;
-        for (int i = 0; i < length; ++i) {
-            buffer[i + offset] = reader.getDelegate().readRawByte();
-        }
-    }
-
-    @Override
-    public int skipBytes(int bytes) throws IOException {
-        RawProtoStreamReaderImpl reader = (RawProtoStreamReaderImpl) this.reader;
-        for (int i = 0; i < bytes; ++i) {
-            if (reader.getDelegate().isAtEnd()) return i;
-            reader.getDelegate().skipRawBytes(1);
-        }
-        return bytes;
-    }
-
-    @Override
-    public boolean readBoolean() throws IOException {
-        return this.reader.readBool();
-    }
-
-    @Override
-    public byte readByte() throws IOException {
-        RawProtoStreamReaderImpl reader = (RawProtoStreamReaderImpl) this.reader;
-        return reader.getDelegate().readRawByte();
-    }
-
-    @Override
-    public int readUnsignedByte() throws IOException {
-        return Byte.toUnsignedInt(this.readByte());
-    }
-
-    @Override
-    public short readShort() throws IOException {
-        RawProtoStreamReaderImpl reader = (RawProtoStreamReaderImpl) this.reader;
-        byte a = reader.getDelegate().readRawByte();
-        byte b = reader.getDelegate().readRawByte();
-        return (short) ((a << 8) | (b & 0xff));
-    }
-
-    @Override
-    public int readUnsignedShort() throws IOException {
-        return Short.toUnsignedInt(this.readShort());
-    }
-
-    @Override
-    public char readChar() throws IOException {
-        return (char) this.reader.readUInt32();
-    }
-
-    @Override
-    public int readInt() throws IOException {
-        return this.reader.readSInt32();
-    }
-
-    @Override
-    public long readLong() throws IOException {
-        return this.reader.readSInt64();
-    }
-
-    @Override
-    public float readFloat() throws IOException {
-        return this.reader.readFloat();
-    }
-
-    @Override
-    public double readDouble() throws IOException {
-        return this.reader.readDouble();
-    }
-
-    @Override
-    public String readLine() throws IOException {
-        return this.readUTF();
-    }
-
-    @Override
-    public String readUTF() throws IOException {
-        return new String(this.reader.readByteArray(), StandardCharsets.UTF_8);
     }
 
     @Override
