@@ -1,0 +1,71 @@
+name: Dependency Tree
+
+on:
+  pull_request_target:
+    branches:
+    - master
+env:
+  # The modules to check for dependencies. If there is more than one they are comma separated
+  MODULES_TO_CHECK: servlet-feature-pack,ee-feature-pack
+  # The name of the labels to use if the dependencies are ok
+  DEPS_OK_LABEL_NAME: deps-ok
+  # The name of the labels to use if the dependencies changed
+  DEPS_CHANGED_LABEL_NAME: deps-changed
+  # People/teams to mention in the PR comment if dependencies changed
+  CHANGE_MENTIONS: '@wildfly/prod'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set needed env vars in outputs
+        id: prepare
+        run: |
+          echo "::set-output name=base::${GITHUB_BASE_REF}"
+          echo "::set-output name=modules_to_check::${MODULES_TO_CHECK}"
+          echo "::set-output name=deps_ok_label_name::${DEPS_OK_LABEL_NAME}"
+          echo "::set-output name=deps_changed_label_name::${DEPS_CHANGED_LABEL_NAME}"
+          echo "::set-output name=change_mentions::${CHANGE_MENTIONS}"
+
+      - name: Clone base version
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.prepare.outputs.base }}
+          path: base
+
+      - name: Setup Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 11
+
+      # Run the caching against the base version only
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Clone PR version
+        uses: actions/checkout@v2
+        with:
+          path: pr
+
+      - name: Build base
+        working-directory: base
+        run: |
+          mvn -B install -DskipTests
+
+      - name: Build PR
+        working-directory: pr
+        run: |
+          mvn -B install -DskipTests
+
+      - name: Check versions
+        uses: wildfly/dep-tree-diff@master
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          modules: ${{ steps.prepare.outputs.modules_to_check }}
+          deps-ok-label: ${{ steps.prepare.outputs.deps_ok_label_name }}
+          deps-changed-label: ${{ steps.prepare.outputs.deps_changed_label_name }}
+          tool-change-mentions: ${{ steps.prepare.outputs.change_mentions }}
