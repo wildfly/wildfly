@@ -117,6 +117,11 @@ public class DefaultProtoStreamWriter implements ProtoStreamWriter {
     }
 
     @Override
+    public void writeRawByte(byte value) throws IOException {
+        this.output.writeRawByte(value);
+    }
+
+    @Override
     public void flush() throws IOException {
         this.output.flush();
     }

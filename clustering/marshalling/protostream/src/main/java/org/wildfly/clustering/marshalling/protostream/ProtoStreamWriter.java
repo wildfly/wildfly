@@ -52,4 +52,6 @@ public interface ProtoStreamWriter extends RawProtoStreamWriter {
     void writeDoubleNoTag(double value) throws IOException;
 
     void writeStringNoTag(String value) throws IOException;
+
+    void writeRawByte(byte value) throws IOException;
 }
