@@ -6,7 +6,7 @@ on:
     - master
 env:
   # The modules to check for dependencies. If there is more than one they are comma separated
-  MODULES_TO_CHECK: servlet-feature-pack,ee-feature-pack
+  MODULES_TO_CHECK: ee-feature-pack/common,microprofile/galleon-common,servlet-feature-pack/common
   # The name of the labels to use if the dependencies are ok
   DEPS_OK_LABEL_NAME: deps-ok
   # The name of the labels to use if the dependencies changed
