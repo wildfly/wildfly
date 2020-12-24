@@ -6,14 +6,26 @@ package org.wildfly.clustering.web.cache.session;
  * @TypeId(200)
  */
 message SessionCreationMetaDataEntry {
-	required	sint64	creationTime	= 1;
-	optional	uint32	maxInactiveInterval	= 2;
+	optional	uint64	creationPositiveSeconds	= 1;
+	optional	uint64	creationNegativeSeconds	= 2;
+	optional	uint32	creationMillisOfSecond	= 3;
+	optional	uint32	creationNanosOfSecond	= 4;
+	optional	uint64	maxInactiveIntervalPositiveSeconds	= 5;
+	optional	uint64	maxInactiveIntervalNegativeSeconds	= 6;
+	optional	uint32	maxInactiveIntervalMillisOfSecond	= 7;
+	optional	uint32	maxInactiveIntervalNanosOfSecond	= 8;
 }
 
 /**
  * @TypeId(201)
  */
 message SimpleSessionAccessMetaData {
-	required	uint32	sinceCreation	= 1;
-	optional	uint32	lastAccess	= 2;
+	optional	uint64	sinceCreationPositiveSeconds	= 1;
+	optional	uint64	sinceCreationNegativeSeconds	= 2;
+	optional	uint32	sinceCreationMillisOfSecond	= 3;
+	optional	uint32	sinceCreationNanosOfSecond	= 4;
+	optional	uint64	lastAccessPositiveSeconds	= 5;
+	optional	uint64	lastAccessNegativeSeconds	= 6;
+	optional	uint32	lastAccessMillisOfSecond	= 7;
+	optional	uint32	lastAccessNanosOfSecond	= 8;
 }

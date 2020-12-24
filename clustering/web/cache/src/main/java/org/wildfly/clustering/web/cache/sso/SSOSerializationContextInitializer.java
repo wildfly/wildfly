@@ -22,11 +22,15 @@
 
 package org.wildfly.clustering.web.cache.sso;
 
+import java.util.function.Function;
+
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Any;
+import org.wildfly.clustering.marshalling.protostream.AnyMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -34,8 +38,22 @@ import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 @MetaInfServices(SerializationContextInitializer.class)
 public class SSOSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+    private static final Function<AuthenticationEntry<Object, ?>, Any> ACCESSOR = new Function<AuthenticationEntry<Object, ?>, Any>() {
+        @Override
+        public Any apply(AuthenticationEntry<Object, ?> entry) {
+            return new Any(entry.getAuthentication());
+        }
+    };
+    private static final Function<Any, AuthenticationEntry<Object, ?>> FACTORY = new Function<Any, AuthenticationEntry<Object, ?>>() {
+        @Override
+        public AuthenticationEntry<Object, ?> apply(Any any) {
+            return new AuthenticationEntry<>(any.get());
+        }
+    };
+
+    @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new AuthenticationEntryExternalizer<>()));
+        context.registerMarshaller(new FunctionalMarshaller<>((Class<AuthenticationEntry<Object, ?>>) (Class<?>) AuthenticationEntry.class, AnyMarshaller.INSTANCE, ACCESSOR, FACTORY));
     }
 }

@@ -26,17 +26,17 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
  * Unit test for {@link AuthenticationEntryExternalizer}.
  * @author Paul Ferraro
  */
-public class AuthenticationEntryExternalizerTestCase {
+public class AuthenticationEntryMarshallerTestCase {
 
     @Test
     public void test() throws IOException {
-        new ExternalizerTester<>(new AuthenticationEntryExternalizer<String, Object>()).test(new AuthenticationEntry<>("username"), AuthenticationEntryExternalizerTestCase::assertEquals);
+        new ProtoStreamTesterFactory(AuthenticationEntry.class.getClassLoader()).<AuthenticationEntry<String, Object>>createTester().test(new AuthenticationEntry<>("username"), AuthenticationEntryMarshallerTestCase::assertEquals);
     }
 
     static void assertEquals(AuthenticationEntry<String, Object> entry1, AuthenticationEntry<String, Object> entry2) {

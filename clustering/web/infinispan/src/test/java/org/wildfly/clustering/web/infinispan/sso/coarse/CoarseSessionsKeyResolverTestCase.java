@@ -26,8 +26,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKeyResolver.CoarseSessionsKeyExternalizer;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKeyResolver.CoarseSessionsKeyFormat;
 
 /**
@@ -39,7 +38,7 @@ public class CoarseSessionsKeyResolverTestCase {
     @Test
     public void test() throws IOException {
         CoarseSessionsKey key = new CoarseSessionsKey("ABC123");
-        new ExternalizerTester<>(new CoarseSessionsKeyExternalizer()).test(key);
+        new ProtoStreamTesterFactory(CoarseSessionsKey.class.getClassLoader()).createTester().test(key);
         new KeyFormatTester<>(new CoarseSessionsKeyFormat()).test(key);
     }
 }

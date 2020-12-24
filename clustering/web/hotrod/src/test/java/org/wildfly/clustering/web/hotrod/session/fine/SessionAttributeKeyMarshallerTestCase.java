@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.hotrod.session.coarse;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.hotrod.SessionKeyExternalizer;
+package org.wildfly.clustering.web.hotrod.session.fine;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Externalizer for {@link SessionAttributesKey}.
+ * Unit test for {@link SessionAttributeKeyResolver}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class SessionAttributesKeyExternalizer extends SessionKeyExternalizer<SessionAttributesKey> {
+public class SessionAttributeKeyMarshallerTestCase {
 
-    public SessionAttributesKeyExternalizer() {
-        super(SessionAttributesKey.class, SessionAttributesKey::new);
+    @Test
+    public void test() throws IOException {
+        SessionAttributeKey key = new SessionAttributeKey("test", UUID.randomUUID());
+        new ProtoStreamTesterFactory(SessionAttributeKey.class.getClassLoader()).createTester().test(key);
     }
 }

@@ -20,22 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod.session.coarse;
+package org.wildfly.clustering.web.cache.session;
 
 import java.io.IOException;
+import java.time.Duration;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link SessionAttributesKeyExternalizer}.
+ * Unit test for {@link SessionAccessMetaDataExternalizer}.
  * @author Paul Ferraro
  */
-public class SessionAttributesKeyExternalizerTestCase {
+public class SessionAccessMetaDataMarshallerTestCase {
 
     @Test
     public void test() throws IOException {
-        SessionAttributesKey key = new SessionAttributesKey("test");
-        new ExternalizerTester<>(new SessionAttributesKeyExternalizer()).test(key);
+        SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
+        metaData.setLastAccessDuration(Duration.ofMinutes(1), Duration.ofSeconds(1));
+        new ProtoStreamTesterFactory(SimpleSessionAccessMetaData.class.getClassLoader()).<SimpleSessionAccessMetaData>createTester().test(metaData, SessionAccessMetaDataMarshallerTestCase::assertEquals);
+    }
+
+    static void assertEquals(SimpleSessionAccessMetaData metaData1, SimpleSessionAccessMetaData metaData2) {
+        Assert.assertEquals(metaData1.getSinceCreationDuration(), metaData2.getSinceCreationDuration());
+        Assert.assertEquals(metaData1.getLastAccessDuration(), metaData2.getLastAccessDuration());
     }
 }

@@ -28,13 +28,13 @@ import java.time.Instant;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
  * Unit test for {@link SessionCreationMetaDataEntryExternalizer}.
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataEntryExternalizerTestCase {
+public class SessionCreationMetaDataEntryMarshallerTestCase {
 
     @Test
     public void test() throws IOException {
@@ -42,7 +42,7 @@ public class SessionCreationMetaDataEntryExternalizerTestCase {
         metaData.setMaxInactiveInterval(Duration.ofMinutes(10));
         SessionCreationMetaDataEntry<Object> entry = new SessionCreationMetaDataEntry<>(metaData);
 
-        new ExternalizerTester<>(new SessionCreationMetaDataEntryExternalizer()).test(entry, SessionCreationMetaDataEntryExternalizerTestCase::assertEquals);
+        new ProtoStreamTesterFactory(SessionCreationMetaDataEntry.class.getClassLoader()).<SessionCreationMetaDataEntry<Object>>createTester().test(entry, SessionCreationMetaDataEntryMarshallerTestCase::assertEquals);
     }
 
     static void assertEquals(SessionCreationMetaDataEntry<Object> entry1, SessionCreationMetaDataEntry<Object> entry2) {

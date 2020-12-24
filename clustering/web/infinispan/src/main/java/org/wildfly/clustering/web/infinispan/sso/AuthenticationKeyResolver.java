@@ -26,8 +26,6 @@ import java.util.function.Function;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
 
 /**
@@ -40,13 +38,6 @@ public enum AuthenticationKeyResolver implements Function<String, Authentication
     @Override
     public AuthenticationKey apply(String id) {
         return new AuthenticationKey(id);
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class AuthenticationKeyExternalizer extends SessionKeyExternalizer<AuthenticationKey> {
-        public AuthenticationKeyExternalizer() {
-            super(AuthenticationKey.class, INSTANCE);
-        }
     }
 
     @MetaInfServices(KeyFormat.class)

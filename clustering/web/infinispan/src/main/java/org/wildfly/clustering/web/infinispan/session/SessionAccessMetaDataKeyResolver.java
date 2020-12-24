@@ -26,8 +26,6 @@ import java.util.function.Function;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
 
 /**
@@ -40,13 +38,6 @@ public enum SessionAccessMetaDataKeyResolver implements Function<String, Session
     @Override
     public SessionAccessMetaDataKey apply(String sessionId) {
         return new SessionAccessMetaDataKey(sessionId);
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SessionAccessMetaDataKeyExternalizer extends SessionKeyExternalizer<SessionAccessMetaDataKey> {
-        public SessionAccessMetaDataKeyExternalizer() {
-            super(SessionAccessMetaDataKey.class, INSTANCE);
-        }
     }
 
     @MetaInfServices(KeyFormat.class)
