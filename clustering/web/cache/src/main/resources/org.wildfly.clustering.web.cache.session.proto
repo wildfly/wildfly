@@ -1,19 +1,21 @@
 package org.wildfly.clustering.web.cache.session;
 
-// IDs: 200 - 204
+import "java.time.proto";
+
+// IDs: 205 - 209
 
 /**
- * @TypeId(200)
+ * @TypeId(205)
  */
 message SessionCreationMetaDataEntry {
-	required	sint64	creationTime	= 1;
-	optional	uint32	maxInactiveInterval	= 2;
+	optional	java.time.Instant	creationTime	= 1;
+	optional	java.time.Duration	maxInactiveInterval	= 2;
 }
 
 /**
- * @TypeId(201)
+ * @TypeId(206)
  */
 message SimpleSessionAccessMetaData {
-	required	uint32	sinceCreation	= 1;
-	optional	uint32	lastAccess	= 2;
+	optional	java.time.Duration	sinceCreation	= 1;
+	optional	java.time.Duration	lastAccess	= 2;
 }

@@ -26,8 +26,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeNamesKeyResolver.SessionAttributeNamesKeyExternalizer;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeNamesKeyResolver.SessionAttributeNamesKeyFormat;
 
 /**
@@ -39,7 +38,7 @@ public class SessionAttributeNamesKeyResolverTestCase {
     @Test
     public void test() throws IOException {
         SessionAttributeNamesKey key = new SessionAttributeNamesKey("ABC123");
-        new ExternalizerTester<>(new SessionAttributeNamesKeyExternalizer()).test(key);
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
         new KeyFormatTester<>(new SessionAttributeNamesKeyFormat()).test(key);
     }
 }

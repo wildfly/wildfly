@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,38 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.cache.sso;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
+import org.junit.Assert;
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Externalizer for {@link AuthenticationEntry}.
+ * Unit test for {@link AuthenticationEntryExternalizer}.
  * @author Paul Ferraro
- * @param <V> Authentication persistence type
- * @param <L> Local context type
  */
-@MetaInfServices(Externalizer.class)
-public class AuthenticationEntryExternalizer<V, L> implements Externalizer<AuthenticationEntry<V, L>> {
+public class AuthenticationEntryMarshallerTestCase {
 
-    @Override
-    public void writeObject(ObjectOutput output, AuthenticationEntry<V, L> entry) throws IOException {
-        output.writeObject(entry.getAuthentication());
+    @Test
+    public void test() throws IOException {
+        ProtoStreamTesterFactory.INSTANCE.<AuthenticationEntry<String, Object>>createTester().test(new AuthenticationEntry<>("username"), AuthenticationEntryMarshallerTestCase::assertEquals);
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public AuthenticationEntry<V, L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new AuthenticationEntry<>((V) input.readObject());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<AuthenticationEntry<V, L>> getTargetClass() {
-        return (Class<AuthenticationEntry<V, L>>) (Class<?>) AuthenticationEntry.class;
+    static void assertEquals(AuthenticationEntry<String, Object> entry1, AuthenticationEntry<String, Object> entry2) {
+        Assert.assertEquals(entry1.getAuthentication(), entry2.getAuthentication());
     }
 }

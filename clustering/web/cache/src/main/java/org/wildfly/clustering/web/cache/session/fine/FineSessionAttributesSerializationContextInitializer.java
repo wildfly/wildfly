@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.cache.sso;
+package org.wildfly.clustering.web.cache.session.fine;
 
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
 
 /**
+ * {@link SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
-public class SSOSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class FineSessionAttributesSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(AuthenticationEntry.class, Scalar.ANY, AuthenticationEntry::getAuthentication, AuthenticationEntry::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentSessionAttributeMapPutFunction.class, SessionAttributeMapEntryMarshaller.INSTANCE, ConcurrentSessionAttributeMapPutFunction::getOperand, ConcurrentSessionAttributeMapPutFunction::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentSessionAttributeMapRemoveFunction.class, Scalar.STRING.cast(String.class), ConcurrentSessionAttributeMapRemoveFunction::getOperand, ConcurrentSessionAttributeMapRemoveFunction::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteSessionAttributeMapPutFunction.class, SessionAttributeMapEntryMarshaller.INSTANCE, CopyOnWriteSessionAttributeMapPutFunction::getOperand, CopyOnWriteSessionAttributeMapPutFunction::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteSessionAttributeMapRemoveFunction.class, Scalar.STRING.cast(String.class), CopyOnWriteSessionAttributeMapRemoveFunction::getOperand, CopyOnWriteSessionAttributeMapRemoveFunction::new));
     }
 }

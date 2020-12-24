@@ -20,22 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod.session.coarse;
+package org.wildfly.clustering.web.hotrod.session;
 
 import java.io.IOException;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link SessionAttributesKeyExternalizer}.
+ * Unit test for {@link SessionAccessMetaDataKeyResolver}.
  * @author Paul Ferraro
  */
-public class SessionAttributesKeyExternalizerTestCase {
+public class SessionAccessMetaDataKeyMarshallerTestCase {
 
     @Test
     public void test() throws IOException {
-        SessionAttributesKey key = new SessionAttributesKey("test");
-        new ExternalizerTester<>(new SessionAttributesKeyExternalizer()).test(key);
+        SessionAccessMetaDataKey key = new SessionAccessMetaDataKey("test");
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod.session.fine;
+package org.wildfly.clustering.web.cache.session.fine;
 
-import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapPutFunction;
 
 /**
- * Unit test for {@link SessionAttributeKeyResolver}.
+ * Copy-on-write {@link Map#put(Object, Object)} function for a session attribute.
  * @author Paul Ferraro
  */
-public class SessionAttributeKeyExternalizerTestCase {
+public class CopyOnWriteSessionAttributeMapPutFunction extends CopyOnWriteMapPutFunction<String, UUID> {
 
-    @Test
-    public void test() throws IOException {
-        SessionAttributeKey key = new SessionAttributeKey("test", UUID.randomUUID());
-        new ExternalizerTester<>(new SessionAttributeKeyExternalizer()).test(key);
+    public CopyOnWriteSessionAttributeMapPutFunction(String attributeName, UUID attributeId) {
+        super(new SessionAttributeMapEntry(attributeName, attributeId));
+    }
+
+    public CopyOnWriteSessionAttributeMapPutFunction(Map.Entry<String, UUID> operand) {
+        super(operand);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod.session;
+package org.wildfly.clustering.web.cache.session.fine;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.hotrod.SessionKeyExternalizer;
+import java.util.UUID;
+
+import org.wildfly.clustering.ee.cache.function.ConcurrentMapRemoveFunction;
 
 /**
- * Externalizer for {@link SessionAccessMetaDataKey}
+ * Concurrent {@link java.util.Map#remove(Object)} function for a session attribute.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class SessionAccessMetaDataKeyExternalizer extends SessionKeyExternalizer<SessionAccessMetaDataKey> {
+public class ConcurrentSessionAttributeMapRemoveFunction extends ConcurrentMapRemoveFunction<String, UUID> {
 
-    public SessionAccessMetaDataKeyExternalizer() {
-        super(SessionAccessMetaDataKey.class, SessionAccessMetaDataKey::new);
+    public ConcurrentSessionAttributeMapRemoveFunction(String attributeName) {
+        super(attributeName);
     }
 }

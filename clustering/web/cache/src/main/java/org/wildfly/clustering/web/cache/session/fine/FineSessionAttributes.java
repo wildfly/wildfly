@@ -36,10 +36,6 @@ import java.util.function.Function;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.cache.function.ConcurrentMapPutFunction;
-import org.wildfly.clustering.ee.cache.function.ConcurrentMapRemoveFunction;
-import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapPutFunction;
-import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapRemoveFunction;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
@@ -80,7 +76,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         if (attributeId == null) return null;
 
         synchronized (this.mutations) {
-            this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapRemoveFunction<>(name) : new ConcurrentMapRemoveFunction<>(name)));
+            this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteSessionAttributeMapRemoveFunction(name) : new ConcurrentSessionAttributeMapRemoveFunction(name)));
 
             K key = this.keyFactory.apply(attributeId);
 
@@ -110,7 +106,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         synchronized (this.mutations) {
             if (attributeId == null) {
                 UUID newAttributeId = createUUID();
-                this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapPutFunction<>(name, newAttributeId) : new ConcurrentMapPutFunction<>(name, newAttributeId)));
+                this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteSessionAttributeMapPutFunction(name, newAttributeId) : new ConcurrentSessionAttributeMapPutFunction(name, newAttributeId)));
                 attributeId = this.names.get().get(name);
             }
 

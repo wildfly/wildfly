@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.hotrod.session.fine;
 
+package org.wildfly.clustering.web.infinispan.routing;
+
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.hotrod.SessionKeyExternalizer;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 
 /**
- * Externalizer for {@link SessionAttributeNamesKey}.
+ * {@link SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class SessionAttributeNamesKeyExternalizer extends SessionKeyExternalizer<SessionAttributeNamesKey> {
+@MetaInfServices(SerializationContextInitializer.class)
+public class InfinispanRoutingSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    public SessionAttributeNamesKeyExternalizer() {
-        super(SessionAttributeNamesKey.class, SessionAttributeNamesKey::new);
+    @Override
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(RouteRegistryEntry.class, Scalar.STRING.cast(String.class), RouteRegistryEntry::getKey, RouteRegistryEntry::new));
     }
 }

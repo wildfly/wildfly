@@ -26,7 +26,7 @@ import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.web.hotrod.SessionKeyMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -36,7 +36,7 @@ public class SessionSerializationContextInitializer extends AbstractSerializatio
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new SessionCreationMetaDataKeyExternalizer()));
-        context.registerMarshaller(new ExternalizerMarshaller<>(new SessionAccessMetaDataKeyExternalizer()));
+        context.registerMarshaller(new SessionKeyMarshaller<>(SessionCreationMetaDataKey.class, SessionCreationMetaDataKey::new));
+        context.registerMarshaller(new SessionKeyMarshaller<>(SessionAccessMetaDataKey.class, SessionAccessMetaDataKey::new));
     }
 }

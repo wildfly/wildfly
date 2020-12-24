@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.hotrod.session.coarse;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.hotrod.SessionKeyExternalizer;
+package org.wildfly.clustering.web.infinispan;
+
+import java.io.IOException;
+
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.web.cache.SessionIdentifierMarshaller;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
- * Externalizer for {@link SessionAttributesKey}.
+ * Generic marshaller for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class SessionAttributesKeyExternalizer extends SessionKeyExternalizer<SessionAttributesKey> {
+public class SessionKeyMarshaller<K extends GroupedKey<String>> extends FunctionalScalarMarshaller<K, String> {
 
-    public SessionAttributesKeyExternalizer() {
-        super(SessionAttributesKey.class, SessionAttributesKey::new);
+    public SessionKeyMarshaller(Class<K> targetClass, ExceptionFunction<String, K, IOException> resolver) {
+        super(targetClass, SessionIdentifierMarshaller.INSTANCE, GroupedKey::getId, resolver);
     }
 }

@@ -23,42 +23,18 @@
 package org.wildfly.clustering.web.hotrod;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.function.Function;
 
 import org.wildfly.clustering.infinispan.client.Key;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.Serializer;
-import org.wildfly.clustering.web.cache.SessionIdentifierSerializer;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.web.cache.SessionIdentifierMarshaller;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionKeyExternalizer<K extends Key<String>> implements Externalizer<K> {
-    private static final Serializer<String> IDENTIFIER_SERIALIZER = SessionIdentifierSerializer.INSTANCE;
+public class SessionKeyMarshaller<K extends Key<String>> extends FunctionalScalarMarshaller<K, String> {
 
-    private final Class<K> targetClass;
-    private final Function<String, K> resolver;
-
-    public SessionKeyExternalizer(Class<K> targetClass, Function<String, K> resolver) {
-        this.targetClass = targetClass;
-        this.resolver = resolver;
-    }
-
-    @Override
-    public void writeObject(ObjectOutput output, K key) throws IOException {
-        IDENTIFIER_SERIALIZER.write(output, key.getId());
-    }
-
-    @Override
-    public K readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        String id = IDENTIFIER_SERIALIZER.read(input);
-        return this.resolver.apply(id);
-    }
-
-    @Override
-    public Class<K> getTargetClass() {
-        return this.targetClass;
+    public SessionKeyMarshaller(Class<K> targetClass, ExceptionFunction<String, K, IOException> resolver) {
+        super(targetClass, SessionIdentifierMarshaller.INSTANCE, Key::getId, resolver);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,27 @@
 
 package org.wildfly.clustering.web.cache;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import org.infinispan.protostream.impl.WireFormat;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamDataInput;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamDataOutput;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
+import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.web.IdentifierSerializerProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
+ * Scalar marshaller for a session identifier.
  * @author Paul Ferraro
  */
-public enum SessionIdentifierSerializer implements Serializer<String> {
+public enum SessionIdentifierMarshaller implements ScalarMarshaller<String> {
     INSTANCE;
 
     private final Serializer<String> serializer = loadSerializer();
@@ -61,12 +66,22 @@ public enum SessionIdentifierSerializer implements Serializer<String> {
     }
 
     @Override
-    public void write(DataOutput output, String value) throws IOException {
-        this.serializer.write(output, value);
+    public String readFrom(ProtoStreamReader reader) throws IOException {
+        return this.serializer.read(new ProtoStreamDataInput(reader));
     }
 
     @Override
-    public String read(DataInput input) throws IOException {
-        return this.serializer.read(input);
+    public void writeTo(ProtoStreamWriter writer, String id) throws IOException {
+        this.serializer.write(new ProtoStreamDataOutput(writer), id);
+    }
+
+    @Override
+    public Class<? extends String> getJavaClass() {
+        return String.class;
+    }
+
+    @Override
+    public int getWireType() {
+        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     }
 }

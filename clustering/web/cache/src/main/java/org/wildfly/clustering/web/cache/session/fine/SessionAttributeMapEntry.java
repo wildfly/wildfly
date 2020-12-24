@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.sso.coarse;
+package org.wildfly.clustering.web.cache.session.fine;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.UUID;
 
 /**
+ * {@link java.util.Map.Entry} for a session attribute.
+ * Used to optimize the marshalling of {@link java.util.Map#put(Object, Object)} functions.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class SessionsFilterExternalizer<D, S> extends ValueExternalizer<SessionsFilter<D, S>> {
+public class SessionAttributeMapEntry extends SimpleImmutableEntry<String, UUID> {
+    private static final long serialVersionUID = -6446474741366055972L;
 
-    public SessionsFilterExternalizer() {
-        super(new SessionsFilter<>());
+    public SessionAttributeMapEntry(String key, UUID value) {
+        super(key, value);
     }
 }

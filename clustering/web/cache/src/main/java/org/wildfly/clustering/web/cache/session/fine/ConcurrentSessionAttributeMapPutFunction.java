@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod.sso.coarse;
+package org.wildfly.clustering.web.cache.session.fine;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
+import java.util.Map;
+import java.util.UUID;
+
+import org.wildfly.clustering.ee.cache.function.ConcurrentMapPutFunction;
 
 /**
+ * Concurrent {@link Map#put(Object, Object)} function for a session attribute.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class SessionsFilterExternalizer<D, S> extends ValueExternalizer<SessionsFilter<D, S>> {
+public class ConcurrentSessionAttributeMapPutFunction extends ConcurrentMapPutFunction<String, UUID> {
 
-    public SessionsFilterExternalizer() {
-        super(new SessionsFilter<>());
+    public ConcurrentSessionAttributeMapPutFunction(String attributeName, UUID attributeId) {
+        super(new SessionAttributeMapEntry(attributeName, attributeId));
+    }
+
+    public ConcurrentSessionAttributeMapPutFunction(Map.Entry<String, UUID> operand) {
+        super(operand);
     }
 }

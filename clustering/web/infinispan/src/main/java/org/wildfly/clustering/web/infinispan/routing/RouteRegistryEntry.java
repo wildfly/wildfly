@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.cache.sso;
+package org.wildfly.clustering.web.infinispan.routing;
 
-import java.io.IOException;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import java.util.AbstractMap.SimpleImmutableEntry;
 
 /**
- * Unit test for {@link AuthenticationEntryExternalizer}.
+ * Registry entry for the Infinispan routing provider.
  * @author Paul Ferraro
  */
-public class AuthenticationEntryExternalizerTestCase {
+public class RouteRegistryEntry extends SimpleImmutableEntry<String, Void> {
+    private static final long serialVersionUID = 6829830614436225931L;
 
-    @Test
-    public void test() throws IOException {
-        new ExternalizerTester<>(new AuthenticationEntryExternalizer<String, Object>()).test(new AuthenticationEntry<>("username"), AuthenticationEntryExternalizerTestCase::assertEquals);
-    }
-
-    static void assertEquals(AuthenticationEntry<String, Object> entry1, AuthenticationEntry<String, Object> entry2) {
-        Assert.assertEquals(entry1.getAuthentication(), entry2.getAuthentication());
+    public RouteRegistryEntry(String route) {
+        super(route, null);
     }
 }
