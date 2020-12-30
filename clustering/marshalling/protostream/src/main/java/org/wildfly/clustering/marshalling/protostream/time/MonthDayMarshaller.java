@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.time.Month;
 import java.time.MonthDay;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -46,10 +46,9 @@ public class MonthDayMarshaller implements ProtoStreamMarshaller<MonthDay> {
     @Override
     public MonthDay readFrom(ProtoStreamReader reader) throws IOException {
         MonthDay result = DEFAULT;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             switch (index) {
                 case MONTH_INDEX:
                     result = result.with(MONTHS[reader.readEnum()]);
@@ -58,7 +57,7 @@ public class MonthDayMarshaller implements ProtoStreamMarshaller<MonthDay> {
                     result = result.withDayOfMonth(reader.readUInt32() + 1);
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return result;

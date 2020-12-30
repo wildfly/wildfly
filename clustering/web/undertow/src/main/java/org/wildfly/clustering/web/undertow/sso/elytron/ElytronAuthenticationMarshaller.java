@@ -26,7 +26,7 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -48,10 +48,9 @@ public class ElytronAuthenticationMarshaller implements ProtoStreamMarshaller<El
         String mechanism = DEFAULT_MECHANISM;
         String name = null;
         boolean programmatic = false;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case MECHANISM_INDEX:
                     mechanism = reader.readString();
                     break;
@@ -61,7 +60,7 @@ public class ElytronAuthenticationMarshaller implements ProtoStreamMarshaller<El
                     name = reader.readString();
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return new ElytronAuthentication(mechanism, programmatic, name);

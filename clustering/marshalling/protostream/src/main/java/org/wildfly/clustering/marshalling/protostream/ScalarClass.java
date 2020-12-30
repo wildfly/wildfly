@@ -23,10 +23,11 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Set of scalar marshallers for marshalling a {@link Class}.
@@ -34,7 +35,7 @@ import org.infinispan.protostream.impl.WireFormat;
  */
 public enum ScalarClass implements ScalarMarshaller<Class<?>> {
 
-    ANY(WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+    ANY(WireType.LENGTH_DELIMITED) {
         @Override
         public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
             return reader.readObject(Class.class);
@@ -45,7 +46,7 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
             writer.writeObjectNoTag(value);
         }
     },
-    ID(WireFormat.WIRETYPE_VARINT) {
+    ID(WireType.VARINT) {
         @Override
         public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
             int typeId = reader.readUInt32();
@@ -57,31 +58,28 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Class<?> value) throws IOException {
-            ImmutableSerializationContext context = writer.getSerializationContext();
-            BaseMarshaller<?> marshaller = context.getMarshaller(value);
+            BaseMarshaller<?> marshaller = writer.findMarshaller(value);
             String typeName = marshaller.getTypeName();
-            int typeId = context.getDescriptorByName(typeName).getTypeId();
-            writer.writeUInt32NoTag(typeId);
+            int typeId = writer.getSerializationContext().getDescriptorByName(typeName).getTypeId();
+            writer.writeVarint32(typeId);
         }
     },
-    NAME(WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+    NAME(WireType.LENGTH_DELIMITED) {
         @Override
         public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
-            ImmutableSerializationContext context = reader.getSerializationContext();
-            String typeName = reader.readString();
-            BaseMarshaller<?> marshaller = context.getMarshaller(typeName);
+            String typeName = StandardCharsets.UTF_8.decode(reader.readByteBuffer()).toString();
+            BaseMarshaller<?> marshaller = reader.getSerializationContext().getMarshaller(typeName);
             return marshaller.getJavaClass();
         }
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Class<?> value) throws IOException {
-            ImmutableSerializationContext context = writer.getSerializationContext();
-            BaseMarshaller<?> marshaller = context.getMarshaller(value);
+            BaseMarshaller<?> marshaller = writer.findMarshaller(value);
             String typeName = marshaller.getTypeName();
-            writer.writeStringNoTag(typeName);
+            Scalar.BYTE_BUFFER.writeTo(writer, StandardCharsets.UTF_8.encode(typeName));
         }
     },
-    FIELD(WireFormat.WIRETYPE_VARINT) {
+    FIELD(WireType.VARINT) {
         @Override
         public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
             return AnyField.fromIndex(reader.readUInt32() + 1).getMarshaller().getJavaClass();
@@ -89,13 +87,13 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Class<?> value) throws IOException {
-            writer.writeUInt32NoTag(AnyField.fromJavaType(value).getIndex() - 1);
+            writer.writeVarint32(AnyField.fromJavaType(value).getIndex() - 1);
         }
     },
     ;
-    private final int wireType;
+    private final WireType wireType;
 
-    ScalarClass(int wireType) {
+    ScalarClass(WireType wireType) {
         this.wireType = wireType;
     }
 
@@ -106,7 +104,7 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
     }
 
     @Override
-    public int getWireType() {
+    public WireType getWireType() {
         return this.wireType;
     }
 }

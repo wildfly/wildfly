@@ -25,31 +25,109 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.ProtobufTagMarshaller;
+import org.infinispan.protostream.TagWriter;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
- * A {@link RawProtoStreamWriter} with the additional ability to write an arbitrary embedded object.
+ * A {@link TagWriter} with the additional ability to write an arbitrary embedded object.
  * @author Paul Ferraro
  */
-public interface ProtoStreamWriter extends RawProtoStreamWriter {
+public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
-    ImmutableSerializationContext getSerializationContext();
+    /**
+     * Writes the specified object field using the specified index.
+     * @param index a field index
+     * @param value a value to be written
+     * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
+     */
+    default void writeObject(int index, Object value) throws IOException {
+        this.writeTag(index, WireType.LENGTH_DELIMITED);
+        this.writeObjectNoTag(value);
+    }
 
-    void writeObject(int index, Object value) throws IOException;
-
+    /**
+     * Writes the specified object.  Must be preceded by {{@link #writeTag(int, org.infinispan.protostream.descriptors.WireType)}.
+     * @param value a value to be written
+     * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
+     */
     void writeObjectNoTag(Object value) throws IOException;
 
-    <E extends Enum<E>> void writeEnum(int index, E value) throws IOException;
+    /**
+     * Writes the specified enum field using the specified index.
+     * @param index a field index
+     * @param value an enum to be written
+     * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
+     */
+    default <E extends Enum<E>> void writeEnum(int index, E value) throws IOException {
+        EnumMarshaller<E> marshaller = (EnumMarshaller<E>) this.getSerializationContext().getMarshaller(value.getDeclaringClass());
+        this.writeEnum(index, marshaller.encode(value));
+    }
 
-    void writeBoolNoTag(boolean value) throws IOException;
+    /**
+     * Returns a marshaller suitable of marshalling an object of the specified type.
+     * @param <T> the type of the associated marshaller
+     * @param <V> the type of the object to be marshalled
+     * @param javaClass the type of the value to be written.
+     * @return a marshaller suitable for the specified type
+     * @throws IllegalArgumentException if no suitable marshaller exists
+     */
+    @SuppressWarnings("unchecked")
+    default <T, V extends T> ProtobufTagMarshaller<T> findMarshaller(Class<V> javaClass) {
+        ImmutableSerializationContext context = this.getSerializationContext();
+        Class<?> targetClass = javaClass;
+        IllegalArgumentException exception = null;
+        while (targetClass != null) {
+            try {
+                return (ProtobufTagMarshaller<T>) context.getMarshaller((Class<T>) targetClass);
+            } catch (IllegalArgumentException e) {
+                // If no marshaller was found, check super class
+                if (exception == null) {
+                    exception = e;
+                }
+                targetClass = targetClass.getSuperclass();
+            }
+        }
+        throw exception;
+    }
 
-    void writeSInt32NoTag(int value) throws IOException;
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #writeTag(int, WireType)} instead.
+     */
+    @Deprecated
+    @Override
+    void writeTag(int index, int wireType) throws IOException;
 
-    void writeSInt64NoTag(long value) throws IOException;
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #writeUInt32(int, int)} or {@link #writeSInt32(int, int)}
+     */
+    @Deprecated
+    @Override
+    void writeInt32(int index, int value) throws IOException;
 
-    void writeFloatNoTag(float value) throws IOException;
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #writeUInt64(int, int)} or {@link #writeSInt64(int, int)}
+     */
+    @Deprecated
+    @Override
+    void writeInt64(int index, long value) throws IOException;
 
-    void writeDoubleNoTag(double value) throws IOException;
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #writeSFixed32(int, int)} instead.
+     */
+    @Deprecated
+    @Override
+    void writeFixed32(int index, int value) throws IOException;
 
-    void writeStringNoTag(String value) throws IOException;
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #writeSFixed64(int, int)} instead.
+     */
+    @Deprecated
+    @Override
+    void writeFixed64(int index, long value) throws IOException;
 }

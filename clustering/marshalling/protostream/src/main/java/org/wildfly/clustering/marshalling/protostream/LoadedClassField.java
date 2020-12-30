@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.InvalidClassException;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -51,16 +51,15 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
 
     @Override
     public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
-        String className = reader.readString();
+        String className = Scalar.STRING.cast(String.class).readFrom(reader);
         ClassLoader loader = this.loaderMarshaller.getBuilder();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if ((index >= this.loaderIndex) && (index < this.loaderIndex + this.loaderMarshaller.getFields())) {
                 loader = this.loaderMarshaller.readField(reader, index, loader);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         try {
@@ -74,7 +73,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
 
     @Override
     public void writeTo(ProtoStreamWriter writer, Class<?> targetClass) throws IOException {
-        writer.writeStringNoTag(targetClass.getName());
+        Scalar.STRING.writeTo(writer, targetClass.getName());
         this.loaderMarshaller.writeFields(writer, this.loaderIndex, WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
     }
 
@@ -89,7 +88,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
     }
 
     @Override
-    public int getWireType() {
-        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+    public WireType getWireType() {
+        return WireType.LENGTH_DELIMITED;
     }
 }

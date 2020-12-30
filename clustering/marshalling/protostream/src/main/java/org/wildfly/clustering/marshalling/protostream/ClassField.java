@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Various strategies for marshalling a Class.
@@ -41,14 +41,13 @@ public enum ClassField implements Field<Class<?>> {
         public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
             int dimensions = reader.readUInt32();
             Class<?> componentClass = Object.class;
-            boolean reading = true;
-            while (reading) {
+            while (!reader.isAtEnd()) {
                 int tag = reader.readTag();
-                int index = WireFormat.getTagFieldNumber(tag);
+                int index = WireType.getTagFieldNumber(tag);
                 if (index == ANY.getIndex()) {
                     componentClass = ScalarClass.ANY.readFrom(reader);
                 } else {
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
                 }
             }
             for (int i = 0; i < dimensions; ++i) {
@@ -65,7 +64,7 @@ public enum ClassField implements Field<Class<?>> {
                 componentClass = componentClass.getComponentType();
                 dimensions += 1;
             }
-            writer.writeUInt32NoTag(dimensions);
+            writer.writeVarint32(dimensions);
             if (componentClass != Object.class) {
                 writer.writeTag(ANY.getIndex(), ANY.getMarshaller().getWireType());
                 ScalarClass.ANY.writeTo(writer, componentClass);
@@ -78,8 +77,8 @@ public enum ClassField implements Field<Class<?>> {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_VARINT;
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     ;

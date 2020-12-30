@@ -27,7 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -52,10 +52,9 @@ public class CalendarMarshaller implements ProtoStreamMarshaller<Calendar> {
         Calendar.Builder builder = new Calendar.Builder().setInstant(0);
         int firstDayOfWeek = DEFAULT.getFirstDayOfWeek();
         int minDaysInFirstWeek = DEFAULT.getMinimalDaysInFirstWeek();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case TYPE_INDEX:
                     builder.setCalendarType(reader.readString());
                     break;
@@ -75,7 +74,7 @@ public class CalendarMarshaller implements ProtoStreamMarshaller<Calendar> {
                     minDaysInFirstWeek = reader.readUInt32();
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return builder.setWeekDefinition(firstDayOfWeek, minDaysInFirstWeek).build();

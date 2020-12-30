@@ -25,7 +25,7 @@ package org.wildfly.clustering.infinispan.marshalling.protostream;
 import java.io.IOException;
 
 import org.infinispan.commons.io.ByteBufferImpl;
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -42,15 +42,14 @@ public enum ByteBufferMarshaller implements ProtoStreamMarshaller<ByteBufferImpl
     @Override
     public ByteBufferImpl readFrom(ProtoStreamReader reader) throws IOException {
         ByteBufferImpl buffer = ByteBufferImpl.EMPTY_INSTANCE;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case BUFFER_INDEX:
                     buffer = ByteBufferImpl.create(reader.readByteArray());
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return buffer;

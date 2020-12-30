@@ -25,7 +25,7 @@ package org.wildfly.clustering.server.group;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.IpAddressUUID;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -50,10 +50,9 @@ public class IpAddressUUIDMarshaller implements ProtoStreamMarshaller<IpAddressU
         IpAddressBuilder ipAddressBuilder = IpAddressMarshaller.INSTANCE.getBuilder();
         long low = DEFAULT_LOW_BITS;
         int high = DEFAULT_HIGH_BITS;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index >= IP_ADDRESS_INDEX && index < LOW_INDEX) {
                 ipAddressBuilder = IpAddressMarshaller.INSTANCE.readField(reader, index - IP_ADDRESS_INDEX, ipAddressBuilder);
             } else if (index == LOW_INDEX) {
@@ -61,7 +60,7 @@ public class IpAddressUUIDMarshaller implements ProtoStreamMarshaller<IpAddressU
             } else if (index == HIGH_INDEX) {
                 high = reader.readSFixed32();
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return new DefaultIpAddressUUID(ipAddressBuilder.build(), low, high);

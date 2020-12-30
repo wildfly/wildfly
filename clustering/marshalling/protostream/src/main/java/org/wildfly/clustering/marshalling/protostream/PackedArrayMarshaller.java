@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Marshaller for packed repeated fields, e.g. primitive arrays.
@@ -59,7 +59,7 @@ public class PackedArrayMarshaller<T> implements ScalarMarshaller<Object> {
     @Override
     public void writeTo(ProtoStreamWriter writer, Object array) throws IOException {
         int length = Array.getLength(array);
-        writer.writeUInt32NoTag(length);
+        writer.writeVarint32(length);
         for (int i = 0; i < length; ++i) {
             @SuppressWarnings("unchecked")
             T element = (T) Array.get(array, i);
@@ -73,7 +73,7 @@ public class PackedArrayMarshaller<T> implements ScalarMarshaller<Object> {
     }
 
     @Override
-    public int getWireType() {
-        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+    public WireType getWireType() {
+        return WireType.LENGTH_DELIMITED;
     }
 }

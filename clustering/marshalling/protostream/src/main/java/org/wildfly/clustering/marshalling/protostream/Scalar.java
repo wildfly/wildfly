@@ -24,8 +24,9 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Enumeration of common scalar marshaller implementations.
@@ -50,19 +51,19 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        public WireType getWireType() {
+            return WireType.LENGTH_DELIMITED;
         }
     }),
     BOOLEAN(new ScalarMarshaller<Boolean>() {
         @Override
         public Boolean readFrom(ProtoStreamReader reader) throws IOException {
-            return Boolean.valueOf(reader.readBool());
+            return Boolean.valueOf(reader.readUInt32() != 0);
         }
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Boolean value) throws IOException {
-            writer.writeBoolNoTag(value.booleanValue());
+            writer.writeVarint32(value.booleanValue() ? 1 : 0);
         }
 
         @Override
@@ -71,8 +72,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_VARINT;
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     BYTE(new ScalarMarshaller<Byte>() {
@@ -83,7 +84,9 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Byte value) throws IOException {
-            writer.writeSInt32NoTag(value.byteValue());
+            // Roll the bits in order to move the sign bit from position 31 to position 0, to reduce the wire length of negative numbers.
+            // See https://developers.google.com/protocol-buffers/docs/encoding
+            writer.writeVarint32((value << 1) ^ (value >> (Integer.SIZE - 1)));
         }
 
         @Override
@@ -92,8 +95,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_VARINT;
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     SHORT(new ScalarMarshaller<Short>() {
@@ -104,7 +107,9 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Short value) throws IOException {
-            writer.writeSInt32NoTag(value.shortValue());
+            // Roll the bits in order to move the sign bit from position 31 to position 0, to reduce the wire length of negative numbers.
+            // See https://developers.google.com/protocol-buffers/docs/encoding
+            writer.writeVarint32((value << 1) ^ (value >> (Integer.SIZE - 1)));
         }
 
         @Override
@@ -113,8 +118,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_VARINT;
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     INTEGER(new ScalarMarshaller<Integer>() {
@@ -125,7 +130,9 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Integer value) throws IOException {
-            writer.writeSInt32NoTag(value.intValue());
+            // Roll the bits in order to move the sign bit from position 31 to position 0, to reduce the wire length of negative numbers.
+            // See https://developers.google.com/protocol-buffers/docs/encoding
+            writer.writeVarint32((value << 1) ^ (value >> (Integer.SIZE - 1)));
         }
 
         @Override
@@ -134,8 +141,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_VARINT;
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     LONG(new ScalarMarshaller<Long>() {
@@ -146,7 +153,9 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Long value) throws IOException {
-            writer.writeSInt64NoTag(value.longValue());
+            // Roll the bits in order to move the sign bit from position 63 to position 0, to reduce the wire length of negative numbers.
+            // See https://developers.google.com/protocol-buffers/docs/encoding
+            writer.writeVarint64((value << 1) ^ (value >> (Long.SIZE - 1)));
         }
 
         @Override
@@ -155,8 +164,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_VARINT;
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     FLOAT(new ScalarMarshaller<Float>() {
@@ -167,7 +176,13 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Float value) throws IOException {
-            writer.writeFloatNoTag(value.floatValue());
+            int bits = Float.floatToRawIntBits(value.floatValue());
+            byte[] bytes = new byte[Float.BYTES];
+            for (int i = 0; i < bytes.length; ++i) {
+                int index = i * Byte.SIZE;
+                bytes[i] = (byte) ((bits >> index) & 0xFF);
+            }
+            writer.writeRawBytes(bytes, 0, bytes.length);
         }
 
         @Override
@@ -176,8 +191,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_FIXED32;
+        public WireType getWireType() {
+            return WireType.FIXED32;
         }
     }),
     DOUBLE(new ScalarMarshaller<Double>() {
@@ -188,7 +203,17 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Double value) throws IOException {
-            writer.writeDoubleNoTag(value.doubleValue());
+            long bits = Double.doubleToRawLongBits(value.doubleValue());
+            byte[] bytes = new byte[Double.BYTES];
+            for (int i = 0; i < bytes.length; ++i) {
+                int index = i * Byte.SIZE;
+                if (index < Integer.SIZE) {
+                    bytes[i] = (byte) ((bits >> index) & 0xFF);
+                } else {
+                    bytes[i] = (byte) ((int) (bits >> index) & 0xFF);
+                }
+            }
+            writer.writeRawBytes(bytes, 0, bytes.length);
         }
 
         @Override
@@ -197,8 +222,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_FIXED64;
+        public WireType getWireType() {
+            return WireType.FIXED64;
         }
     }),
     CHARACTER(new ScalarMarshaller<Character>() {
@@ -209,7 +234,7 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Character value) throws IOException {
-            writer.writeUInt32NoTag(value.charValue());
+            writer.writeVarint32(value.charValue());
         }
 
         @Override
@@ -218,8 +243,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_VARINT;
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     BYTE_BUFFER(new ScalarMarshaller<ByteBuffer>() {
@@ -232,7 +257,7 @@ public enum Scalar implements ScalarMarshallerProvider {
         public void writeTo(ProtoStreamWriter writer, ByteBuffer buffer) throws IOException {
             int offset = buffer.arrayOffset();
             int size = buffer.limit() - offset;
-            writer.writeUInt32NoTag(size);
+            writer.writeVarint32(size);
             writer.writeRawBytes(buffer.array(), offset, size);
         }
 
@@ -242,8 +267,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        public WireType getWireType() {
+            return WireType.LENGTH_DELIMITED;
         }
     }),
     BYTE_ARRAY(new ScalarMarshaller<byte[]>() {
@@ -254,7 +279,7 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, byte[] value) throws IOException {
-            writer.writeUInt32NoTag(value.length);
+            writer.writeVarint32(value.length);
             writer.writeRawBytes(value, 0, value.length);
         }
 
@@ -264,19 +289,19 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        public WireType getWireType() {
+            return WireType.LENGTH_DELIMITED;
         }
     }),
     STRING(new ScalarMarshaller<String>() {
         @Override
         public String readFrom(ProtoStreamReader reader) throws IOException {
-            return reader.readString();
+            return StandardCharsets.UTF_8.decode(reader.readByteBuffer()).toString();
         }
 
         @Override
         public void writeTo(ProtoStreamWriter writer, String value) throws IOException {
-            writer.writeStringNoTag(value);
+            BYTE_BUFFER.writeTo(writer, StandardCharsets.UTF_8.encode(value));
         }
 
         @Override
@@ -285,8 +310,8 @@ public enum Scalar implements ScalarMarshallerProvider {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        public WireType getWireType() {
+            return WireType.LENGTH_DELIMITED;
         }
     }),
     ;

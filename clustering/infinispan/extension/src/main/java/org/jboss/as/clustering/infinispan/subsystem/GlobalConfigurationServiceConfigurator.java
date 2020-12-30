@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -46,6 +47,8 @@ import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.globalstate.ConfigurationStorage;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
@@ -129,7 +132,28 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         ClassLoader loader = loaders.size() > 1 ? new AggregatedClassLoader(loaders) : loaders.get(0);
         Marshaller marshaller = this.createMarshaller(loader);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", this.name, marshaller.getClass().getName());
-        builder.serialization().marshaller(marshaller);
+        // Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
+        builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
+            @Deprecated
+            @Override
+            public String getProtoFile() throws UncheckedIOException {
+                return null;
+            }
+
+            @Deprecated
+            @Override
+            public String getProtoFileName() {
+                return null;
+            }
+
+            @Override
+            public void registerMarshallers(SerializationContext context) {
+            }
+
+            @Override
+            public void registerSchema(SerializationContext context) {
+            }
+        });
         builder.classLoader(loader);
 
         builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());

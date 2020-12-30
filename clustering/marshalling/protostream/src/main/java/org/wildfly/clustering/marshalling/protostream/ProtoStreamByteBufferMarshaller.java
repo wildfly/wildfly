@@ -32,7 +32,6 @@ import java.util.OptionalInt;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -48,15 +47,18 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
     @Override
     public OptionalInt size(Object value) {
         SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this.context);
-        writer.writeObjectNoTag(new Any(value));
-        return writer.get();
+        try {
+            writer.writeObjectNoTag(new Any(value));
+            return writer.get();
+        } catch (IOException e) {
+            return OptionalInt.empty();
+        }
     }
 
     @Override
     public boolean isMarshallable(Object object) {
         if ((object == null) || (object instanceof Class)) return true;
         Class<?> targetClass = object.getClass();
-        if ((object instanceof Throwable) && (WildFlySecurityManager.getClassLoaderPrivileged(targetClass) == WildFlySecurityManager.getClassLoaderPrivileged(Throwable.class))) return true;
         if (AnyField.fromJavaType(targetClass) != null) return true;
         if (targetClass.isArray()) {
             for (int i = 0; i < Array.getLength(object); ++i) {
@@ -67,7 +69,13 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
         if (Proxy.isProxyClass(targetClass)) {
             return this.isMarshallable(Proxy.getInvocationHandler(object));
         }
-        return this.context.canMarshall(targetClass);
+        while (targetClass != null) {
+            if (this.context.canMarshall(targetClass)) {
+                return true;
+            }
+            targetClass = targetClass.getSuperclass();
+        }
+        return false;
     }
 
     @Override

@@ -23,13 +23,13 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 
@@ -53,10 +53,9 @@ public class MapMarshaller<T extends Map<Object, Object>> extends AbstractMapMar
         T map = this.factory.get();
         List<Object> keys = new LinkedList<>();
         List<Object> values = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             switch (index) {
                 case KEY_INDEX:
                     keys.add(reader.readObject(Any.class).get());
@@ -65,7 +64,7 @@ public class MapMarshaller<T extends Map<Object, Object>> extends AbstractMapMar
                     values.add(reader.readObject(Any.class).get());
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         Iterator<Object> keyIterator = keys.iterator();

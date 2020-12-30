@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.function.Function;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -59,10 +59,9 @@ public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends Ab
         T map = this.factory.apply(comparator);
         List<Object> keys = new LinkedList<>();
         List<Object> values = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index == KEY_INDEX) {
                 keys.add(reader.readObject(Any.class).get());
             } else if (index == VALUE_INDEX) {
@@ -71,7 +70,7 @@ public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends Ab
                 comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.readField(reader, index - COMPARATOR_INDEX, comparator);
                 map = this.factory.apply(comparator);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         Iterator<Object> keyIterator = keys.iterator();

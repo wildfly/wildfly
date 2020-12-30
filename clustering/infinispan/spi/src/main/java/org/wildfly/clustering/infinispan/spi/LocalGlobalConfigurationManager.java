@@ -25,6 +25,7 @@ package org.wildfly.clustering.infinispan.spi;
 import java.util.EnumSet;
 import java.util.concurrent.CompletableFuture;
 
+import org.infinispan.Cache;
 import org.infinispan.commons.api.CacheContainerAdmin.AdminFlag;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.factories.annotations.Inject;
@@ -32,6 +33,7 @@ import org.infinispan.factories.annotations.SurvivesRestarts;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.globalstate.GlobalConfigurationManager;
+import org.infinispan.globalstate.ScopedState;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
@@ -70,6 +72,29 @@ public class LocalGlobalConfigurationManager implements GlobalConfigurationManag
     @Override
     public CompletableFuture<Void> removeCache(String cacheName, EnumSet<AdminFlag> flags) {
         this.manager.undefineConfiguration(cacheName);
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public CompletableFuture<Void> createTemplate(String name, Configuration configuration, EnumSet<AdminFlag> flags) {
+        this.manager.defineConfiguration(name, configuration);
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public CompletableFuture<Configuration> getOrCreateTemplate(String name, Configuration configuration, EnumSet<AdminFlag> flags) {
+        Configuration config = this.manager.defineConfiguration(name, configuration);
+        return CompletableFuture.completedFuture(config);
+    }
+
+    @Override
+    public Cache<ScopedState, Object> getStateCache() {
+        return this.manager.getCache(CONFIG_STATE_CACHE_NAME);
+    }
+
+    @Override
+    public CompletableFuture<Void> removeTemplate(String name, EnumSet<AdminFlag> flags) {
+        this.manager.undefineConfiguration(name);
         return CompletableFuture.completedFuture(null);
     }
 }

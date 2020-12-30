@@ -25,177 +25,156 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.infinispan.protostream.EnumMarshaller;
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtobufMarshaller;
-import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
-
-import protostream.com.google.protobuf.CodedInputStream;
+import org.infinispan.protostream.ProtobufTagMarshaller;
+import org.infinispan.protostream.ProtobufTagMarshaller.ReadContext;
+import org.infinispan.protostream.TagReader;
 
 /**
- * {@link ProtoStreamWriter} implementation that reads from a {@link CodedInputStream}.
+ * {@link ProtoStreamWriter} implementation that reads from a {@link TagReader}.
  * @author Paul Ferraro
  */
-public class DefaultProtoStreamReader implements ProtoStreamReader {
+public class DefaultProtoStreamReader extends DefaultProtoStreamOperation implements ProtoStreamReader, ReadContext {
 
-    private final ImmutableSerializationContext context;
-    private final CodedInputStream input;
+    private final TagReader reader;
 
-    public DefaultProtoStreamReader(ImmutableSerializationContext context, RawProtoStreamReader reader) {
-        this(context, ((RawProtoStreamReaderImpl) reader).getDelegate());
-    }
-
-    public DefaultProtoStreamReader(ImmutableSerializationContext context, CodedInputStream input) {
-        this.context = context;
-        this.input = input;
+    public DefaultProtoStreamReader(ReadContext context) {
+        super(context);
+        this.reader = context.getReader();
     }
 
     @Override
-    public ImmutableSerializationContext getSerializationContext() {
-        return this.context;
+    public TagReader getReader() {
+        return this.reader;
     }
 
     @Override
     public <T> T readObject(Class<T> targetClass) throws IOException {
-        int limit = this.input.readUInt32();
-        int oldLimit = this.input.pushLimit(limit);
+        int limit = this.reader.readUInt32();
+        int oldLimit = this.reader.pushLimit(limit);
         try {
-            RawProtobufMarshaller<T> marshaller = (RawProtobufMarshaller<T>) this.context.getMarshaller(targetClass);
-            // Avoid redundant wrapping of the RawProtoStreamReader
-            T result = (marshaller instanceof ProtoStreamMarshaller) ? ((ProtoStreamMarshaller<T>) marshaller).readFrom(this) : marshaller.readFrom(this.context, this);
+            ProtobufTagMarshaller<T> marshaller = (ProtobufTagMarshaller<T>) this.getSerializationContext().getMarshaller(targetClass);
+            // Avoid redundant DefaultProtoStreamReader instance, if possible
+            T result = (marshaller instanceof ProtoStreamMarshaller) ? ((ProtoStreamMarshaller<T>) marshaller).readFrom(this) : marshaller.read(this);
             // Ensure marshaller reached limit
-            this.input.checkLastTagWas(0);
+            this.reader.checkLastTagWas(0);
             return result;
         } finally {
-            this.input.popLimit(oldLimit);
+            this.reader.popLimit(oldLimit);
         }
     }
 
     @Override
-    public <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException {
-        EnumMarshaller<E> marshaller = (EnumMarshaller<E>) this.context.getMarshaller(enumClass);
-        int code = this.input.readEnum();
-        return marshaller.decode(code);
-    }
-
-    @Override
-    public int readTag() throws IOException {
-        return this.input.readTag();
-    }
-
-    @Override
-    public void checkLastTagWas(int tag) throws IOException {
-        this.input.checkLastTagWas(tag);
-    }
-
-    @Override
-    public boolean skipField(int tag) throws IOException {
-        return this.input.skipField(tag);
-    }
-
-    @Override
-    public boolean readBool() throws IOException {
-        return this.input.readBool();
-    }
-
-    @Override
-    public int readEnum() throws IOException {
-        return this.input.readEnum();
-    }
-
-    @Override
-    public String readString() throws IOException {
-        return this.input.readString();
-    }
-
-    @Override
-    public byte[] readByteArray() throws IOException {
-        return this.input.readByteArray();
-    }
-
-    @Override
-    public ByteBuffer readByteBuffer() throws IOException {
-        return this.input.readByteBuffer();
-    }
-
-    @Override
-    public double readDouble() throws IOException {
-        return this.input.readDouble();
-    }
-
-    @Override
-    public float readFloat() throws IOException {
-        return this.input.readFloat();
-    }
-
-    @Override
-    public long readInt64() throws IOException {
-        return this.input.readInt64();
-    }
-
-    @Override
-    public long readUInt64() throws IOException {
-        return this.input.readUInt64();
-    }
-
-    @Override
-    public long readSInt64() throws IOException {
-        return this.input.readSInt64();
-    }
-
-    @Override
-    public long readFixed64() throws IOException {
-        return this.input.readFixed64();
-    }
-
-    @Override
-    public long readSFixed64() throws IOException {
-        return this.input.readSFixed64();
-    }
-
-    @Override
-    public long readRawVarint64() throws IOException {
-        return this.input.readRawVarint64();
-    }
-
-    @Override
-    public int readInt32() throws IOException {
-        return this.input.readInt32();
-    }
-
-    @Override
-    public int readUInt32() throws IOException {
-        return this.input.readUInt32();
-    }
-
-    @Override
-    public int readSInt32() throws IOException {
-        return this.input.readSInt32();
-    }
-
-    @Override
-    public int readFixed32() throws IOException {
-        return this.input.readFixed32();
-    }
-
-    @Override
-    public int readSFixed32() throws IOException {
-        return this.input.readSFixed32();
-    }
-
-    @Override
-    public int readRawVarint32() throws IOException {
-        return this.input.readRawVarint32();
-    }
-
-    @Override
     public int pushLimit(int limit) throws IOException {
-        return this.input.pushLimit(limit);
+        return this.reader.pushLimit(limit);
     }
 
     @Override
     public void popLimit(int oldLimit) {
-        this.input.popLimit(oldLimit);
+        this.reader.popLimit(oldLimit);
+    }
+
+    @Override
+    public boolean isAtEnd() throws IOException {
+        return this.reader.isAtEnd();
+    }
+
+    @Override
+    public int readTag() throws IOException {
+        return this.reader.readTag();
+    }
+
+    @Override
+    public void checkLastTagWas(int tag) throws IOException {
+        this.reader.checkLastTagWas(tag);
+    }
+
+    @Override
+    public boolean skipField(int tag) throws IOException {
+        return this.reader.skipField(tag);
+    }
+
+    @Override
+    public boolean readBool() throws IOException {
+        return this.reader.readBool();
+    }
+
+    @Override
+    public int readEnum() throws IOException {
+        return this.reader.readEnum();
+    }
+
+    @Override
+    public int readInt32() throws IOException {
+        return this.reader.readInt32();
+    }
+
+    @Override
+    public int readFixed32() throws IOException {
+        return this.reader.readFixed32();
+    }
+
+    @Override
+    public int readUInt32() throws IOException {
+        return this.reader.readUInt32();
+    }
+
+    @Override
+    public int readSInt32() throws IOException {
+        return this.reader.readSInt32();
+    }
+
+    @Override
+    public int readSFixed32() throws IOException {
+        return this.reader.readSFixed32();
+    }
+
+    @Override
+    public long readInt64() throws IOException {
+        return this.reader.readInt64();
+    }
+
+    @Override
+    public long readFixed64() throws IOException {
+        return this.reader.readFixed64();
+    }
+
+    @Override
+    public long readUInt64() throws IOException {
+        return this.reader.readUInt64();
+    }
+
+    @Override
+    public long readSInt64() throws IOException {
+        return this.reader.readSInt64();
+    }
+
+    @Override
+    public long readSFixed64() throws IOException {
+        return this.reader.readSFixed64();
+    }
+
+    @Override
+    public float readFloat() throws IOException {
+        return this.reader.readFloat();
+    }
+
+    @Override
+    public double readDouble() throws IOException {
+        return this.reader.readDouble();
+    }
+
+    @Override
+    public byte[] readByteArray() throws IOException {
+        return this.reader.readByteArray();
+    }
+
+    @Override
+    public ByteBuffer readByteBuffer() throws IOException {
+        return this.reader.readByteBuffer();
+    }
+
+    @Override
+    public String readString() throws IOException {
+        return this.reader.readString();
     }
 }

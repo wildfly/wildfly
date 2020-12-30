@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -47,10 +47,9 @@ public class SessionCreationMetaDataEntryMarshaller implements ProtoStreamMarsha
     public SessionCreationMetaDataEntry<Object> readFrom(ProtoStreamReader reader) throws IOException {
         Instant creationTime = DEFAULT_CREATION_TIME;
         Duration maxInactiveInterval = DEFAULT_MAX_INACTIVE_INTERVAL;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case CREATION_TIME_INDEX:
                     creationTime = reader.readObject(Instant.class);
                     break;
@@ -58,7 +57,7 @@ public class SessionCreationMetaDataEntryMarshaller implements ProtoStreamMarsha
                     maxInactiveInterval = reader.readObject(Duration.class);
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(creationTime);

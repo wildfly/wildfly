@@ -22,20 +22,32 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.descriptors.WireType;
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.ProtobufTagMarshaller.OperationContext;
 
 /**
- * Marshaller for a field.
- * {@link #writeTo(ProtoStreamWriter, Object)} does not write a field tag, but may write additional tagged fields.
- * Likewise, {@link #readFrom(ProtoStreamReader)} will continue to read fields until a zero tag is reached.
  * @author Paul Ferraro
- * @param <T> the type of this marshaller
  */
-public interface FieldMarshaller<T> extends Marshallable<T> {
+public class DefaultProtoStreamOperation implements ProtoStreamOperation, OperationContext {
 
-    /**
-     * Returns the wire type of the scalar value written by this marshaller.
-     * @return the wire type of the scalar value written by this marshaller.
-     */
-    WireType getWireType();
+    private final OperationContext context;
+
+    public DefaultProtoStreamOperation(OperationContext context) {
+        this.context = context;
+    }
+
+    @Override
+    public ImmutableSerializationContext getSerializationContext() {
+        return this.context.getSerializationContext();
+    }
+
+    @Override
+    public Object getParam(Object key) {
+        return this.context.getParam(key);
+    }
+
+    @Override
+    public void setParam(Object key, Object value) {
+        this.context.setParam(key, value);
+    }
 }
