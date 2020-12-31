@@ -28,5 +28,4 @@
         <role-name>guest</role-name>
     </security-role>
     <session-config/>
-    <distributable/>
 </web-app>
