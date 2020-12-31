@@ -23,7 +23,7 @@
   -->
 
 
-<module xmlns="urn:jboss:module:1.5" name="com.github.ben-manes.caffeine">
+<module xmlns="urn:jboss:module:1.9" name="com.github.ben-manes.caffeine">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,6 +33,8 @@
     </resources>
 
     <dependencies>
+        <module name="java.logging"/>
         <module name="sun.jdk"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

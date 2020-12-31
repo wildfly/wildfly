@@ -22,4 +22,4 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module-alias xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-validator-provider-11" target-name="org.jboss.resteasy.resteasy-validator-provider"/>
+<module-alias xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-validator-provider-11" target-name="org.jboss.resteasy.resteasy-validator-provider"/>

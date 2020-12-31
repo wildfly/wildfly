@@ -22,13 +22,14 @@
   ~ 2110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.http-client.ejb">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.http-client.ejb">
 
     <resources>
         <artifact name="${org.wildfly.wildfly-http-client:wildfly-http-ejb-client}"/>
     </resources>
 
     <dependencies>
+        <module name="java.rmi"/>
         <module name="javax.ejb.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.wildfly.http-client.common"/>

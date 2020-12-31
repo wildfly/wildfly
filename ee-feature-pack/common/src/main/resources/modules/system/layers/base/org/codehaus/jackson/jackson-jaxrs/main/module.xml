@@ -21,7 +21,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="org.codehaus.jackson.jackson-jaxrs">
+<module xmlns="urn:jboss:module:1.9" name="org.codehaus.jackson.jackson-jaxrs">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -34,7 +34,7 @@
         <module name="org.codehaus.jackson.jackson-core-asl"/>
         <module name="org.codehaus.jackson.jackson-mapper-asl"/>
         <module name="org.codehaus.jackson.jackson-xc"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.ws.rs.api"/>
     </dependencies>
 </module>

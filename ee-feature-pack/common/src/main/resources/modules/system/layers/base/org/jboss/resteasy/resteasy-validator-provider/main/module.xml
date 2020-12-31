@@ -22,12 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.3" name="org.jboss.resteasy.resteasy-validator-provider">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-validator-provider">
+
     <resources>
         <artifact name="${org.jboss.resteasy:resteasy-validator-provider}"/>
     </resources>
 
     <dependencies>
+        <module name="java.naming"/>
         <module name="javax.ws.rs.api"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="javax.validation.api"/>

@@ -16,4 +16,4 @@
   ~ limitations under the License.
   -->
 
-<module-alias xmlns="urn:jboss:module:1.5" name="javax.security.auth.message.api" target-name="jakarta.security.auth.message.api"/>
+<module-alias xmlns="urn:jboss:module:1.9" name="javax.security.auth.message.api" target-name="jakarta.security.auth.message.api"/>

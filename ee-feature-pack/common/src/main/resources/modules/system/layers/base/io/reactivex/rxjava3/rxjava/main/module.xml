@@ -23,6 +23,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="io.reactivex.rxjava3.rxjava">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.reactivestreams"/>
         <module name="sun.jdk"/>
     </dependencies>

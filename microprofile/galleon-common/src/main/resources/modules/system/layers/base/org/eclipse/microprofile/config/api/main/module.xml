@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.eclipse.microprofile.config.api">
+<module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.config.api">
+
     <resources>
         <artifact name="${org.eclipse.microprofile.config:microprofile-config-api}"/>
     </resources>

@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.extension.bean-validation">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.bean-validation">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -37,20 +37,21 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.interceptor.api"/>
         <module name="javax.validation.api"/>
         <module name="org.hibernate.validator" optional="true" services="import"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.naming" />
+        <module name="org.jboss.as.naming"/>
         <!-- Only used if capability org.wildfly.weld is available -->
         <module name="org.jboss.as.weld.common" optional="true"/>
         <module name="org.wildfly.security.elytron-private"/>
-        <module name="org.jboss.as.server" />
+        <module name="org.jboss.as.server"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

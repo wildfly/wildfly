@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.web-common">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.web-common">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,6 +32,8 @@
     </resources>
 
     <dependencies>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
         <module name="javax.security.auth.message.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>

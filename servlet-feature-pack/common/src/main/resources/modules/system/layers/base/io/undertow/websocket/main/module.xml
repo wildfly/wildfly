@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="io.undertow.websocket">
+<module xmlns="urn:jboss:module:1.9" name="io.undertow.websocket">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,7 +32,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.servlet.api"/>
         <module name="javax.websocket.api"/>
         <module name="org.jboss.logging"/>

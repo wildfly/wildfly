@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.clustering.ee.cache">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.ee.cache">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -43,5 +44,6 @@
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

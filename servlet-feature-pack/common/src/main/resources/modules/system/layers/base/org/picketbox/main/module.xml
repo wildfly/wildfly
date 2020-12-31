@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.picketbox">
+<module xmlns="urn:jboss:module:1.9" name="org.picketbox">
     <!-- This module is deprecated and subject to being removed in a subsequent release. -->
     <properties>
       <property name="jboss.api" value="deprecated"/>
@@ -35,7 +35,12 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.persistence.api" optional="true"/>
         <module name="javax.resource.api" optional="true"/>
         <module name="javax.security.auth.message.api" optional="true"/>

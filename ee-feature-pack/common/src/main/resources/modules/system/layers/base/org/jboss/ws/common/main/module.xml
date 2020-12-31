@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.ws.common">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.common">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -33,7 +33,9 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>
         <module name="javax.xml.stream.api"/>
         <module name="javax.jws.api"/>
@@ -47,5 +49,6 @@
         <module name="org.jboss.jaxbintros"/>
         <!-- Not supported and the API is not provided in an EE 9 server -->
         <module name="javax.xml.rpc.api" optional="true"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>
