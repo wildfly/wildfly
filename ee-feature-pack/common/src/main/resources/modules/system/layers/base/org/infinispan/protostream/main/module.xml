@@ -33,6 +33,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.logging"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.sql.api"/>
         <module name="org.jboss.logging"/>
