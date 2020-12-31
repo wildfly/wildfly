@@ -19,38 +19,48 @@ enum DayOfWeek {
  * @TypeId(91)
  */
 message Duration {
-	required	sint64	seconds	= 1;
-	required	sint32	nanos	= 2;
+	optional	uint64	positiveSeconds	= 1;
+	optional	uint64	negativeSeconds	= 2;
+	optional	uint32	millisOfSecond	= 3;
+	optional	uint32	nanosOfSecond	= 4;
 }
 
 /**
  * @TypeId(92)
  */
 message Instant {
-	required	sint64	seconds	= 1;
-	required	sint32	nanos	= 2;
+	optional	uint64	positiveEpochSeconds	= 1;
+	optional	uint64	negativeEpochSeconds	= 2;
+	optional	uint32	millisOfSecond	= 3;
+	optional	uint32	nanosOfSecond	= 4;
 }
 
 /**
  * @TypeId(93)
  */
 message LocalDate {
-	required	sint64	day	= 1;
+	required	sint64	epochDay	= 1;
 }
 
 /**
  * @TypeId(94)
  */
 message LocalDateTime {
-	required	LocalDate	date	= 1;
-	required	LocalTime	time	= 2;
+	optional	uint64	positiveEpochSeconds	= 1;
+	optional	uint64	negativeEpochSeconds	= 2;
+	optional	uint32	millisOfSecond	= 3;
+	optional	uint32	nanosOfSecond	= 4;
 }
 
 /**
  * @TypeId(95)
  */
 message LocalTime {
-	required	sint64	nanos	= 1;
+	optional	uint32	hoursOfDay	= 1;
+	optional	uint32	minutesOfDay	= 2;
+	optional	uint32	secondsOfDay	= 3;
+	optional	uint32	millisOfSecond	= 4;
+	optional	uint32	nanosOfSecond	= 5;
 }
 
 /**
@@ -75,48 +85,59 @@ enum Month {
  * @TypeId(97)
  */
 message MonthDay {
-	required	Month	month	= 1;
-	required	uint32	day	= 2;
+	required	uint32	days	= 1;
 }
 
 /**
  * @TypeId(98)
  */
 message OffsetDateTime {
-	required	LocalDateTime	time	= 1;
-	required	ZoneOffset	offset	= 2;
+	optional	uint64	positiveEpochSeconds	= 1;
+	optional	uint64	negativeEpochSeconds	= 2;
+	optional	uint32	millisOfSecond	= 3;
+	optional	uint32	nanosOfSecond	= 4;
+	optional	sint32	hours	= 5;
+	optional	sint32	minutes	= 6;
+	optional	sint32	seconds	= 7;
 }
 
 /**
  * @TypeId(99)
  */
 message OffsetTime {
-	required	LocalTime	time	= 1;
-	required	ZoneOffset	offset	= 2;
+	optional	uint32	hoursOfDay	= 1;
+	optional	uint32	minutesOfDay	= 2;
+	optional	uint32	secondsOfDay	= 3;
+	optional	uint32	millisOfSecond	= 4;
+	optional	uint32	nanosOfSecond	= 5;
+	optional	sint32	hours	= 6;
+	optional	sint32	minutes	= 7;
+	optional	sint32	seconds	= 8;
 }
 
 /**
  * @TypeId(100)
  */
 message Period {
-	required	sint32	years	= 1;
-	required	sint32	months	= 2;
-	required	sint32	days	= 3;
+	optional	sint32	years	= 1;
+	optional	sint32	months	= 2;
+	optional	sint32	days	= 3;
 }
 
 /**
  * @TypeId(101)
  */
 message Year {
-	required	sint32	year	= 1;
+	required	sint32	epochYear	= 1;
 }
 
 /**
  * @TypeId(102)
  */
 message YearMonth {
-	required	Year	year	= 1;
-	required	Month	month	= 2;
+	optional	uint32	positiveEpochYear	= 1;
+	optional	uint32	negativeEpochYear	= 2;
+	optional	uint32	month	= 3;
 }
 
 /**
@@ -130,13 +151,21 @@ message ZoneId {
  * @TypeId(104)
  */
 message ZoneOffset {
-	required	string	id	= 1;
+	optional	sint32	hours	= 1;
+	optional	sint32	minutes	= 2;
+	optional	sint32	seconds	= 3;
 }
 
 /**
  * @TypeId(105)
  */
 message ZonedDateTime {
-	required	LocalDateTime	time	= 1;
-	required	ZoneId	offset	= 2;
+	optional	uint64	positiveEpochSeconds	= 1;
+	optional	uint64	negativeEpochSeconds	= 2;
+	optional	uint32	millisOfSecond	= 3;
+	optional	uint32	nanosOfSecond	= 4;
+	optional	sint32	hours	= 5;
+	optional	sint32	minutes	= 6;
+	optional	sint32	seconds	= 7;
+	optional	string	zoneId	= 8;
 }

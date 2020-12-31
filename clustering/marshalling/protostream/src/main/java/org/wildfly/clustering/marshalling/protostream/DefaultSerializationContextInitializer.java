@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.time.TimeMarshallerProvider;
 
 /**
  * @author Paul Ferraro
@@ -32,7 +33,7 @@ public enum DefaultSerializationContextInitializer implements SerializationConte
     ANY(new AnySerializationContextInitializer()),
     NET(new NetSerializationContextInitializer()),
     SQL(new SQLSerializationContextInitializer()),
-    TIME(new TimeSerializationContextInitializer()),
+    TIME(new ProvidedSerializationContextInitializer<>("java.time.proto", TimeMarshallerProvider.class)),
     UTIL(new UtilSerializationContextInitializer()),
     ATOMIC(new AtomicSerializationContextInitializer()),
     CONCURRENT(new ConcurrentSerializationContextInitializer()),
