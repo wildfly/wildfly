@@ -26,6 +26,7 @@ import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -43,6 +44,7 @@ import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
@@ -74,10 +76,12 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     LINKED_HASH_SET(new HashSetMarshaller<>(LinkedHashSet.class, LinkedHashSet::new)),
     LINKED_LIST(new UnboundedCollectionMarshaller<>(LinkedList.class, LinkedList::new)),
     LOCALE(UtilExternalizerProvider.LOCALE),
+    NATURAL_ORDER_COMPARATOR(new ValueMarshaller<>(Comparator.naturalOrder())),
     OPTIONAL(new OptionalMarshaller<>(Optional.class, Optional::isPresent, Optional.empty(), WireFormat.WIRETYPE_LENGTH_DELIMITED, ObjectMarshaller.INSTANCE, Optional::get, Optional::of)),
     OPTIONAL_DOUBLE(new OptionalMarshaller<>(OptionalDouble.class, OptionalDouble::isPresent, OptionalDouble.empty(), WireFormat.WIRETYPE_FIXED64, PrimitiveMarshaller.DOUBLE.cast(Double.class), OptionalDouble::getAsDouble, OptionalDouble::of)),
     OPTIONAL_INT(new OptionalMarshaller<>(OptionalInt.class, OptionalInt::isPresent, OptionalInt.empty(), WireFormat.WIRETYPE_VARINT, PrimitiveMarshaller.INTEGER.cast(Integer.class), OptionalInt::getAsInt, OptionalInt::of)),
     OPTIONAL_LONG(new OptionalMarshaller<>(OptionalLong.class, OptionalLong::isPresent, OptionalLong.empty(), WireFormat.WIRETYPE_VARINT, PrimitiveMarshaller.LONG.cast(Long.class), OptionalLong::getAsLong, OptionalLong::of)),
+    REVERSE_ORDER_COMPARATOR(new ValueMarshaller<>(Comparator.reverseOrder())),
     SIMPLE_ENTRY(new MapEntryMarshaller<>(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry::new)),
     SIMPLE_IMMUTABLE_ENTRY(new MapEntryMarshaller<>(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry::new)),
     SINGLETON_LIST(new SingletonCollectionMarshaller<>(Collections::singletonList)),

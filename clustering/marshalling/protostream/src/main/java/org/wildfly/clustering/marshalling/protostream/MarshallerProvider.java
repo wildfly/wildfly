@@ -52,6 +52,9 @@ public class MarshallerProvider implements SerializationContext.MarshallerProvid
     protected MarshallerProvider(Iterator<? extends BaseMarshaller<?>> marshallers) {
         while (marshallers.hasNext()) {
             BaseMarshaller<?> marshaller = marshallers.next();
+            if (marshaller.getJavaClass().isEnum() && !(marshaller instanceof org.infinispan.protostream.EnumMarshaller)) {
+                marshaller = new EnumMarshaller<>(marshaller.getJavaClass().asSubclass(Enum.class));
+            }
             this.marshallerByName.put(marshaller.getTypeName(), marshaller);
             this.marshallerByType.put(marshaller.getJavaClass(), marshaller);
         }

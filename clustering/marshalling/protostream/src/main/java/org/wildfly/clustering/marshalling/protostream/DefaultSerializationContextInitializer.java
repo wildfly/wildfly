@@ -25,19 +25,25 @@ package org.wildfly.clustering.marshalling.protostream;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.time.TimeMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.util.UtilMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.util.concurrent.ConcurrentMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.AtomicMarshallerProvider;
+import org.wildfly.clustering.marshalling.spi.MarshallingExternalizerProvider;
+import org.wildfly.clustering.marshalling.spi.net.NetExternalizerProvider;
+import org.wildfly.clustering.marshalling.spi.sql.SQLExternalizerProvider;
 
 /**
  * @author Paul Ferraro
  */
 public enum DefaultSerializationContextInitializer implements SerializationContextInitializer {
     ANY(new AnySerializationContextInitializer()),
-    NET(new NetSerializationContextInitializer()),
-    SQL(new SQLSerializationContextInitializer()),
+    NET(new ExternalizerSerializationContextInitializer<>("java.net.proto", NetExternalizerProvider.class)),
+    SQL(new ExternalizerSerializationContextInitializer<>("java.sql.proto", SQLExternalizerProvider.class)),
     TIME(new ProvidedSerializationContextInitializer<>("java.time.proto", TimeMarshallerProvider.class)),
-    UTIL(new UtilSerializationContextInitializer()),
-    ATOMIC(new AtomicSerializationContextInitializer()),
-    CONCURRENT(new ConcurrentSerializationContextInitializer()),
-    MARSHALLING(new MarshallingSerializationContextInitializer()),
+    UTIL(new ProvidedSerializationContextInitializer<>("java.util.proto", UtilMarshallerProvider.class)),
+    ATOMIC(new ProvidedSerializationContextInitializer<>("java.util.concurrent.atomic.proto", AtomicMarshallerProvider.class)),
+    CONCURRENT(new ProvidedSerializationContextInitializer<>("java.util.concurrent.proto", ConcurrentMarshallerProvider.class)),
+    MARSHALLING(new ExternalizerSerializationContextInitializer<>("org.wildfly.clustering.marshalling.spi.proto", MarshallingExternalizerProvider.class)),
     ;
     private final SerializationContextInitializer initializer;
 
