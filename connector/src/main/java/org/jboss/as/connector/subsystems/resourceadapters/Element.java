@@ -32,7 +32,7 @@ import java.util.Map;
 
 public enum Element {
     /** always the first **/
-    UNKNOWN(null), SUBSYSTEM("subsystem"), RESOURCE_ADAPTERS("resource-adapters");
+    UNKNOWN(null), SUBSYSTEM("subsystem"), RESOURCE_ADAPTERS("resource-adapters"), REPORT_DIRECTORY("report-directory");
 
     private final String name;
 

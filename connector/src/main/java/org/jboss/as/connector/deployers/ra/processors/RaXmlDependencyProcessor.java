@@ -49,7 +49,7 @@ public class RaXmlDependencyProcessor implements DeploymentUnitProcessor {
         if (phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
             return;  // Skip non ra deployments
         }
-        CopyOnWriteArrayListMultiMap<String,ServiceName> resourceAdaptersMap = phaseContext.getDeploymentUnit().getAttachment(ResourceAdaptersSubsystemService.ATTACHMENT_KEY);
+        CopyOnWriteArrayListMultiMap<String,ServiceName> resourceAdaptersMap = phaseContext.getDeploymentUnit().getAttachment(ResourceAdaptersSubsystemService.ATTACHMENT_KEY).getAdapters();
         String deploymentUnitPrefix = "";
         if (deploymentUnit.getParent() != null) {
             deploymentUnitPrefix = deploymentUnit.getParent().getName() + "#";
