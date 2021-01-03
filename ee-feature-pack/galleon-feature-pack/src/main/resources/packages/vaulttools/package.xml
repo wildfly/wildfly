@@ -3,8 +3,6 @@
 <package-spec xmlns="urn:jboss:galleon:package:2.0" name="vaulttools">
     <dependencies>
         <package name="org.jboss.as.vault-tool"/>
-        <origin name="org.wildfly.core:wildfly-core-galleon-pack">
-            <package name="bin.vaulttools"/>
-        </origin>
+        <package name="bin.vaulttools"/>
     </dependencies>
 </package-spec>

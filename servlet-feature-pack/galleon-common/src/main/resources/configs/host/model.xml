@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+
+<config xmlns="urn:jboss:galleon:config:1.0" model="host">
+    <config-deps>
+        <config-dep id="domain-dep" model="domain"/>
+    </config-deps>
+    <props>
+        <prop name="config.branch-is-batch" value="true"/>
+        <prop name="config.merge-independent-branches" value="true"/>
+        <prop name="--domain-config" value="domain.xml"/>
+        <prop name="--empty-host-config" value=""/>
+        <prop name="--remove-existing-host-config" value=""/>
+    </props>
+</config>
