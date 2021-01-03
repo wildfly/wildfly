@@ -37,6 +37,11 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
 
     private final boolean runtimeOnlyRegistrationValid;
 
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerReadWriteAttribute(Constants.REPORT_DIRECTORY, null, new ReportDirectoryWriteHandler(Constants.REPORT_DIRECTORY));
+    }
+
     public ResourceAdaptersRootResourceDefinition(boolean runtimeOnlyRegistrationValid) {
         super(ResourceAdaptersExtension.SUBSYSTEM_PATH, ResourceAdaptersExtension.getResourceDescriptionResolver(SUBSYSTEM_NAME), ResourceAdaptersSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
         this.runtimeOnlyRegistrationValid = runtimeOnlyRegistrationValid;
