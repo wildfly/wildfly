@@ -970,4 +970,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 128, value = "Legacy security is not available")
     IllegalStateException legacySecurityNotAvailable();
+
+    @Message(id = 129, value = "Report directory %s does not exist")
+    OperationFailedException reportDirectoryDoesNotExist(String reportDirectory);
 }

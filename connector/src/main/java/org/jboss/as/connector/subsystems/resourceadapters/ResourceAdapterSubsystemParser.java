@@ -72,6 +72,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.REPORT_DIRECTORY;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.REPORT_DIRECTORY_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
@@ -107,7 +109,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -137,18 +138,28 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         ModelNode node = context.getModelNode();
-        boolean hasChildren = node.hasDefined(RESOURCEADAPTER_NAME) && !node.get(RESOURCEADAPTER_NAME).asPropertyList().isEmpty();
+
+        boolean resourceAdaptersDefined = node.hasDefined(RESOURCEADAPTER_NAME) && node.get(RESOURCEADAPTER_NAME).asPropertyList().size() > 0;
+        boolean reportDirectoryDefined = node.hasDefined(REPORT_DIRECTORY_NAME);
+        boolean hasChildren = resourceAdaptersDefined || reportDirectoryDefined;
 
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), !hasChildren);
 
         if (hasChildren) {
-            writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
-            ModelNode ras = node.get(RESOURCEADAPTER_NAME);
-            for (String name : ras.keys()) {
-                final ModelNode ra = ras.get(name);
-                writeRaElement(writer, ra, name);
+            if(resourceAdaptersDefined) {
+                writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
+                ModelNode ras = node.get(RESOURCEADAPTER_NAME);
+                for (String name : ras.keys()) {
+                    final ModelNode ra = ras.get(name);
+                    writeRaElement(writer, ra, name);
+                }
+                writer.writeEndElement();
             }
-            writer.writeEndElement();
+            if (reportDirectoryDefined) {
+                writer.writeStartElement(Element.REPORT_DIRECTORY.getLocalName());
+                REPORT_DIRECTORY.marshallAsAttribute(node, writer);
+                writer.writeEndElement();
+            }
             // Close the subsystem element
             writer.writeEndElement();
         }
@@ -473,15 +484,16 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 case RESOURCEADAPTERS_3_0:
                 case RESOURCEADAPTERS_4_0:
                 case RESOURCEADAPTERS_5_0:
-                case RESOURCEADAPTERS_6_0:{
+                case RESOURCEADAPTERS_6_0:
+                case RESOURCEADAPTERS_6_1:{
                     localName = reader.getLocalName();
                     final Element element = Element.forName(reader.getLocalName());
                     SUBSYSTEM_RA_LOGGER.tracef("%s -> %s", localName, element);
                     switch (element) {
                         case SUBSYSTEM: {
                             ResourceAdapterParser parser = new ResourceAdapterParser();
-                            parser.parse(reader, list, address);
-                            ParseUtils.requireNoContent(reader);
+                            parser.parse(reader, subsystem, list, address);
+                            //ParseUtils.requireNoContent(reader);
                             break;
                         }
                     }
