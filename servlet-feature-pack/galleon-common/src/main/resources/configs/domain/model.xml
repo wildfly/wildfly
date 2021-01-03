@@ -20,7 +20,5 @@
         <package name="cleanup.domain.servers.dir" optional="true"/>
         <package name="cleanup.domain.log.dir" optional="true"/>
         <package name="cleanup.domain.data.dir" optional="true"/>
-
-        <package name="org.wildfly.deployment.transformation"/>
     </packages>
 </config>

@@ -22,11 +22,6 @@
 
 <build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly@maven(org.jboss.universe:community-universe):current">
 
-    <transitive>
-        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">
-            <name>org.wildfly.core:wildfly-core-galleon-pack</name>
-        </dependency>
-    </transitive>
     <dependencies>
         <dependency group-id="org.wildfly" artifact-id="wildfly-ee-galleon-pack">
             <name>org.wildfly:wildfly-ee-galleon-pack</name>

@@ -2,11 +2,6 @@
 
 <package-spec xmlns="urn:jboss:galleon:package:2.0" name="docs.licenses.merge">
     <dependencies>
-    <!--
-        <origin name="org.wildfly.core:wildfly-core-galleon-pack">
-            <package name="docs.licenses.merge"/>
-        </origin>
-    -->
         <package name="docs.licenses"/>
     </dependencies>
 </package-spec>

@@ -80,15 +80,6 @@
                             <offline>${galleon.offline}</offline>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>org.wildfly.core</groupId>
-                                    <artifactId>wildfly-core-galleon-pack</artifactId>
-                                    <version>${version.org.wildfly.core}</version>
-                                    <transitive>true</transitive>
-                                    <excluded-packages>
-                                        <name>docs.schema</name>
-                                    </excluded-packages>
-                                </feature-pack>
-                                <feature-pack>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${ee.maven.version}</version>

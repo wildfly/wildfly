@@ -5,8 +5,6 @@
         <package name="LICENSE.txt"/>
         <package name="README.txt"/>
         <package name="copyright.txt"/>
-        <origin name="org.wildfly.core:wildfly-core-galleon-pack">
-            <package name="misc.common"/>
-        </origin>
+        <package name="core.misc.common"/>
     </dependencies>
 </package-spec>

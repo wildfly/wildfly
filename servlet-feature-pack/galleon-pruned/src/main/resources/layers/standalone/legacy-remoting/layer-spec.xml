@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<!-- TODO Once a WF Core release with WFCORE-5233 is integrated, remove this file
+     and use the file provided by org.wildfly.core:wildfly-core-feature-pack-galleon-legacy -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="legacy-remoting">
+    <dependencies>
+        <layer name="io"/>
+        <layer name="application-security-realm"/>
+    </dependencies>
+
+    <feature-group name="remoting"/>
+</layer-spec>

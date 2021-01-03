@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature-group-spec name="basic-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
 
+    <!-- TODO Once a WF Core release with WFCORE-5233 is integrated, include the core-basic-profile feature-group
+         provided by org.wildfly.core:wildfly-core-feature-pack-galleon-common instead of the detailed elements -->
+    <feature-group name="jmx"/>
+    <feature-group name="logging"/>
+    <feature spec="subsystem.core-management"/>
+    <feature spec="subsystem.discovery"/>
+    <feature spec="subsystem.elytron">
+        <feature-group name="elytron-common"/>
+        <feature-group name="elytron-app"/>
+    </feature>
+    <feature spec="subsystem.request-controller"/>
+    <feature-group name="security-manager"/>
+
     <feature-group name="unsecured-basic-profile"/>
     <feature-group name="ejb3-elytron-security"/>
     <feature-group name="undertow-legacy-security"/>
