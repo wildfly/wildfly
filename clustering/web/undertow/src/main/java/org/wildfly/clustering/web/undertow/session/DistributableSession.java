@@ -29,6 +29,7 @@ import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 import io.undertow.websockets.core.WebSocketChannel;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.function.Consumer;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     private final UndertowSessionManager manager;
     private final Batch batch;
     private final Consumer<HttpServerExchange> closeTask;
+    private final Instant startTime;
 
     private volatile Map.Entry<Session<LocalSessionContext>, SessionConfig> entry;
 
@@ -67,6 +69,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         this.entry = new SimpleImmutableEntry<>(session, config);
         this.batch = batch;
         this.closeTask = closeTask;
+        this.startTime = !session.getMetaData().isNew() ? Instant.now() : null;
     }
 
     @Override
@@ -87,6 +90,11 @@ public class DistributableSession implements io.undertow.server.session.Session 
                     }
                     // If batch is closed, close session in a new batch
                     try (Batch batch = (this.batch.getState() == Batch.State.CLOSED) ? batcher.createBatch() : this.batch) {
+                        if (this.startTime != null) {
+                            // According to §7.6 of the servlet specification:
+                            // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+                            session.getMetaData().setLastAccess(this.startTime, Instant.now());
+                        }
                         session.close();
                     }
                 } catch (Throwable e) {
@@ -124,7 +132,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
         try (BatchContext context = this.resumeBatch()) {
-            return session.getMetaData().getLastAccessedTime().toEpochMilli();
+            return session.getMetaData().getLastAccessStartTime().toEpochMilli();
         }
     }
 
@@ -256,7 +264,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
             }
             newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
-            newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
+            newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
             newSession.getLocalContext().setAuthenticatedSession(oldSession.getLocalContext().getAuthenticatedSession());
             config.setSessionId(exchange, id);
             this.entry = new SimpleImmutableEntry<>(newSession, config);

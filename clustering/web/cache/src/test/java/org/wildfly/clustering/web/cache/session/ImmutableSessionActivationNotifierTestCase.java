@@ -59,6 +59,7 @@ public class ImmutableSessionActivationNotifierTestCase {
         Mockito.reset(this.session, this.provider);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void test() {
         Map<String, Listener> listeners = new TreeMap<>();
