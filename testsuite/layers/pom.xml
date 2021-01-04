@@ -657,7 +657,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <phase>${provisioning.phase}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/web-passivation</install-dir>
                                     <feature-packs>
@@ -686,7 +686,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase}</phase>
+                                <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
                                     <install-dir>${servlet.layers.install.dir}/test-standalone-reference</install-dir>
                                     <feature-packs>
@@ -1883,7 +1883,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <phase>${provisioning.phase}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/microprofile-standalone</install-dir>
                                     <feature-packs>
