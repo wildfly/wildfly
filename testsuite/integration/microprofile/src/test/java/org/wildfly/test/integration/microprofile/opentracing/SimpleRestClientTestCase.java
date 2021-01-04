@@ -3,7 +3,6 @@ package org.wildfly.test.integration.microprofile.opentracing;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.tracerresolver.TracerFactory;
 import io.opentracing.mock.MockSpan;
