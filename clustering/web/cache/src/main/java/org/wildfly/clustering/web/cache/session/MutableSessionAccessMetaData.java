@@ -40,13 +40,18 @@ public class MutableSessionAccessMetaData implements SessionAccessMetaData {
     }
 
     @Override
-    public Duration getLastAccessedDuration() {
-        return this.metaData.getLastAccessedDuration();
+    public Duration getSinceCreationDuration() {
+        return this.metaData.getSinceCreationDuration();
     }
 
     @Override
-    public void setLastAccessedDuration(Duration duration) {
-        this.metaData.setLastAccessedDuration(duration);
+    public Duration getLastAccessDuration() {
+        return this.metaData.getLastAccessDuration();
+    }
+
+    @Override
+    public void setLastAccessDuration(Duration sinceCreation, Duration lastAccess) {
+        this.metaData.setLastAccessDuration(sinceCreation, lastAccess);
         this.mutator.mutate();
     }
 }

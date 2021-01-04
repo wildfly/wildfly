@@ -7,17 +7,16 @@
     </subsystem>
     <supplement name="default">
         <replacement placeholder="CACHE-CONTAINERS">
+            <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
+                <local-cache name="passivation">
+                    <file-store passivation="true" purge="false"/>
+                </local-cache>
+            </cache-container>
             <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
                 <local-cache name="passivation">
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
                 <local-cache name="sso"/>
-                <local-cache name="routing"/>
-            </cache-container>
-            <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
-                <local-cache name="passivation">
-                    <file-store passivation="true" purge="false"/>
-                </local-cache>
             </cache-container>
             <cache-container name="server" default-cache="default" module="org.wildfly.clustering.server">
                 <local-cache name="default"/>
@@ -40,19 +39,6 @@
     </supplement>
     <supplement name="ha">
         <replacement placeholder="CACHE-CONTAINERS">
-            <cache-container name="web" default-cache="dist" module="org.wildfly.clustering.web.infinispan">
-                <transport lock-timeout="60000"/>
-                <replicated-cache name="sso">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                </replicated-cache>
-                <replicated-cache name="routing"/>
-                <distributed-cache name="dist">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                    <file-store/>
-                </distributed-cache>
-            </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="dist" module="org.wildfly.clustering.ejb.infinispan">
                 <transport lock-timeout="60000"/>
                 <distributed-cache name="dist">
@@ -66,6 +52,19 @@
                 <replicated-cache name="default">
                     <transaction mode="BATCH"/>
                 </replicated-cache>
+            </cache-container>
+            <cache-container name="web" default-cache="dist" module="org.wildfly.clustering.web.infinispan">
+                <transport lock-timeout="60000"/>
+                <replicated-cache name="sso">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <transaction mode="BATCH"/>
+                </replicated-cache>
+                <replicated-cache name="routing"/>
+                <distributed-cache name="dist">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <transaction mode="BATCH"/>
+                    <file-store/>
+                </distributed-cache>
             </cache-container>
             <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <transport lock-timeout="60000"/>

@@ -83,13 +83,13 @@ public abstract class AbstractSessionActivationTestCase extends AbstractClusteri
 
             this.execute(client, new HttpGet(uri2), false);
 
-            this.execute(client, new HttpDelete(uri2), false);
+            this.execute(client, new HttpDelete(uri2), true);
 
             this.execute(client, new HttpPut(uri3), true);
 
             this.execute(client, new HttpGet(uri3), false);
 
-            this.execute(client, new HttpDelete(uri3), false);
+            this.execute(client, new HttpDelete(uri3), true);
         }
     }
 

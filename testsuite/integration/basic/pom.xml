@@ -2085,6 +2085,7 @@
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                                 <layer>jsf</layer>
+                                                <layer>web-passivation</layer>
                                             </layers>
                                         </config>
                                     </configurations>

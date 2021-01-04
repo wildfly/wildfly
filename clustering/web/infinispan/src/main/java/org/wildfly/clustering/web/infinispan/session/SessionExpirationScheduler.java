@@ -69,7 +69,7 @@ public class SessionExpirationScheduler<MV> implements Scheduler<String, Immutab
     public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
         Duration maxInactiveInterval = metaData.getMaxInactiveInterval();
         if (!maxInactiveInterval.isZero()) {
-            this.scheduler.schedule(sessionId, metaData.getLastAccessedTime().plus(maxInactiveInterval));
+            this.scheduler.schedule(sessionId, metaData.getLastAccessEndTime().plus(maxInactiveInterval));
         }
     }
 

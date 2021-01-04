@@ -27,7 +27,7 @@ class Capabilities {
      * Our Capabilities
      */
 
-    static final String JWT_CAPABILITY_NAME = "org.wildlfly.microprofile.jwt";
+    static final String JWT_CAPABILITY_NAME = "org.wildfly.microprofile.jwt";
 
     /*
      * External Capabilities

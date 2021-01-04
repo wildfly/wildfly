@@ -4,5 +4,6 @@
     <feature-group name="unsecured-basic-profile"/>
     <feature-group name="undertow-legacy-security"/>
     <feature-group name="picketbox-security"/>
+    <feature-group name="distributable-web-local"/>
 
 </feature-group-spec>

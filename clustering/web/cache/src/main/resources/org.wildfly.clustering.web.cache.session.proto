@@ -7,12 +7,13 @@ package org.wildfly.clustering.web.cache.session;
  */
 message SessionCreationMetaDataEntry {
 	required	sint64	creationTime	= 1;
-	required	uint32	lastAccessedTime	= 2;
+	optional	uint32	maxInactiveInterval	= 2;
 }
 
 /**
  * @TypeId(201)
  */
 message SimpleSessionAccessMetaData {
-	required	uint32	seconds	= 1;
+	required	uint32	sinceCreation	= 1;
+	optional	uint32	lastAccess	= 2;
 }

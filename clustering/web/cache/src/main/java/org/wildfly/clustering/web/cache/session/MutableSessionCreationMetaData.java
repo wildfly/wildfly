@@ -41,6 +41,11 @@ public class MutableSessionCreationMetaData implements SessionCreationMetaData {
     }
 
     @Override
+    public boolean isNew() {
+        return this.metaData.isNew();
+    }
+
+    @Override
     public Instant getCreationTime() {
         return this.metaData.getCreationTime();
     }
@@ -64,5 +69,10 @@ public class MutableSessionCreationMetaData implements SessionCreationMetaData {
     @Override
     public boolean invalidate() {
         return this.metaData.invalidate();
+    }
+
+    @Override
+    public void close() {
+        this.metaData.close();
     }
 }

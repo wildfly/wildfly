@@ -76,7 +76,7 @@ public class UndertowSessionExpirationListenerTestCase {
         when(attributes.getAttributeNames()).thenReturn(Collections.emptySet());
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.getCreationTime()).thenReturn(Instant.now());
-        when(metaData.getLastAccessedTime()).thenReturn(Instant.now());
+        when(metaData.getLastAccessStartTime()).thenReturn(Instant.now());
         when(metaData.getMaxInactiveInterval()).thenReturn(Duration.ZERO);
 
         expirationListener.sessionExpired(session);

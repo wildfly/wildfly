@@ -35,7 +35,7 @@ public interface ImmutableSessionMetaData {
      * @return true, if this session is new, false otherwise
      */
     default boolean isNew() {
-        return this.getCreationTime().equals(this.getLastAccessedTime());
+        return this.getCreationTime().equals(this.getLastAccessStartTime());
     }
 
     /**
@@ -44,7 +44,7 @@ public interface ImmutableSessionMetaData {
      */
     default boolean isExpired() {
         Duration maxInactiveInterval = this.getMaxInactiveInterval();
-        return !maxInactiveInterval.isZero() ? this.getLastAccessedTime().plus(maxInactiveInterval).isBefore(Instant.now()) : false;
+        return !maxInactiveInterval.isZero() ? this.getLastAccessEndTime().plus(maxInactiveInterval).isBefore(Instant.now()) : false;
     }
 
     /**
@@ -54,10 +54,16 @@ public interface ImmutableSessionMetaData {
     Instant getCreationTime();
 
     /**
-     * Returns the time this session was last accessed.
-     * @return the time this session was last accessed
+     * Returns the start time of the last request to access this session.
+     * @return the start time of the last request to access this session.
      */
-    Instant getLastAccessedTime();
+    Instant getLastAccessStartTime();
+
+    /**
+     * Returns the end time of the last request to access this session.
+     * @return the end time of the last request to access this session.
+     */
+    Instant getLastAccessEndTime();
 
     /**
      * Returns the time interval, using the specified unit, after which this session will expire.

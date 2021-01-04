@@ -33,14 +33,22 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
 
     private final Instant creationTime;
     private volatile Duration maxInactiveInterval = Duration.ZERO;
+    private volatile boolean newSession;
     private final AtomicBoolean valid = new AtomicBoolean(true);
 
     public SimpleSessionCreationMetaData() {
-        this(Instant.now());
+        this.creationTime = Instant.now();
+        this.newSession = true;
     }
 
     public SimpleSessionCreationMetaData(Instant creationTime) {
         this.creationTime = creationTime;
+        this.newSession = false;
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.newSession;
     }
 
     @Override
@@ -66,6 +74,11 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
     @Override
     public boolean invalidate() {
         return this.valid.compareAndSet(true, false);
+    }
+
+    @Override
+    public void close() {
+        this.newSession = false;
     }
 
     @Override

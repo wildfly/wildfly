@@ -67,7 +67,7 @@ public class UndertowHttpSessionFactoryTestCase {
         SessionMetaData metaData = mock(SessionMetaData.class);
         Instant now = Instant.now();
         when(session.getMetaData()).thenReturn(metaData);
-        when(metaData.getLastAccessedTime()).thenReturn(now);
+        when(metaData.getLastAccessStartTime()).thenReturn(now);
 
         long result = this.factory.createHttpSession(session, context).getLastAccessedTime();
 
