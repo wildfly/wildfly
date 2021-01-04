@@ -44,8 +44,11 @@ public class SimpleSessionAccessMetaData implements SessionAccessMetaData {
 
     @Override
     public void setLastAccessDuration(Duration sinceCreation, Duration lastAccess) {
-        this.sinceCreation = sinceCreation;
-        this.lastAccess = lastAccess;
+        int nano = sinceCreation.getNano();
+        // Only retain millisecond precision
+        this.sinceCreation = (nano % 1_000_000) > 0 ? sinceCreation.withNanos((nano / 1_000_000) + 1) : sinceCreation;
+        // Only retain second precision
+        this.lastAccess = (lastAccess.getNano() > 0) ? Duration.ofSeconds(lastAccess.getSeconds() + 1) : lastAccess;
     }
 
     @Override
