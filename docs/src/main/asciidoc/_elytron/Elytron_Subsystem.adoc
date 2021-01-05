@@ -632,7 +632,7 @@ and openssl provider loaders.
                 "required" => false,
                 "provider-name" => undefined,
                 "providers" => undefined,
-                "type" => "PKCS12"
+                "type" => "JKS"
             }
         },
         "key-store-realm" => undefined,
