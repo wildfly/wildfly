@@ -143,8 +143,6 @@ public class SubsystemConfigurationTestCase {
                     tracerConfiguration.contains("sampler.param=0.5"));
             Assert.assertTrue(tracerConfiguration + " doesn't contain useTraceId128Bit=true",
                     tracerConfiguration.contains("useTraceId128Bit=true"));
-            Assert.assertTrue(tracerConfiguration + " doesn't contain sender-binding=" + SENDER_HOST + ":" + SENDER_PORT,
-                    tracerConfiguration.contains("sender-binding=" + SENDER_HOST + ":" + SENDER_PORT));
         }
     }
 
