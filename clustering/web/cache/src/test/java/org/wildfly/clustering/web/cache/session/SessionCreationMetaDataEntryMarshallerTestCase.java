@@ -28,6 +28,7 @@ import java.time.Instant;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
@@ -38,11 +39,18 @@ public class SessionCreationMetaDataEntryMarshallerTestCase {
 
     @Test
     public void test() throws IOException {
+        MarshallingTester<SessionCreationMetaDataEntry<Object>> tester = new ProtoStreamTesterFactory(SessionCreationMetaDataEntry.class.getClassLoader()).createTester();
+
         SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(Instant.now());
-        metaData.setMaxInactiveInterval(Duration.ofMinutes(10));
         SessionCreationMetaDataEntry<Object> entry = new SessionCreationMetaDataEntry<>(metaData);
 
-        new ProtoStreamTesterFactory(SessionCreationMetaDataEntry.class.getClassLoader()).<SessionCreationMetaDataEntry<Object>>createTester().test(entry, SessionCreationMetaDataEntryMarshallerTestCase::assertEquals);
+        // Default max-inactive-interval
+        metaData.setMaxInactiveInterval(Duration.ofMinutes(30));
+        tester.test(entry, SessionCreationMetaDataEntryMarshallerTestCase::assertEquals);
+
+        // Custom max-inactive-interval
+        metaData.setMaxInactiveInterval(Duration.ofMinutes(10));
+        tester.test(entry, SessionCreationMetaDataEntryMarshallerTestCase::assertEquals);
     }
 
     static void assertEquals(SessionCreationMetaDataEntry<Object> entry1, SessionCreationMetaDataEntry<Object> entry2) {
