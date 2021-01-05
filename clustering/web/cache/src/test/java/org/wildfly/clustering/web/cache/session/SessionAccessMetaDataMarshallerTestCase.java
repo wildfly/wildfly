@@ -27,6 +27,7 @@ import java.time.Duration;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
@@ -37,9 +38,21 @@ public class SessionAccessMetaDataMarshallerTestCase {
 
     @Test
     public void test() throws IOException {
+        MarshallingTester<SimpleSessionAccessMetaData> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+
         SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
-        metaData.setLastAccessDuration(Duration.ofMinutes(1), Duration.ofSeconds(1));
-        ProtoStreamTesterFactory.INSTANCE.<SimpleSessionAccessMetaData>createTester().test(metaData, SessionAccessMetaDataMarshallerTestCase::assertEquals);
+
+        // New session
+        metaData.setLastAccessDuration(Duration.ZERO, Duration.ofNanos(100_000_000));
+        tester.test(metaData, SessionAccessMetaDataMarshallerTestCase::assertEquals);
+
+        // Existing session, sub-second response time
+        metaData.setLastAccessDuration(Duration.ofSeconds(60 * 5), Duration.ofNanos(100_000_000));
+        tester.test(metaData, SessionAccessMetaDataMarshallerTestCase::assertEquals);
+
+        // Existing session, +1 second response time
+        metaData.setLastAccessDuration(Duration.ofSeconds(60 * 5), Duration.ofSeconds(1, 100_000_000));
+        tester.test(metaData, SessionAccessMetaDataMarshallerTestCase::assertEquals);
     }
 
     static void assertEquals(SimpleSessionAccessMetaData metaData1, SimpleSessionAccessMetaData metaData2) {
