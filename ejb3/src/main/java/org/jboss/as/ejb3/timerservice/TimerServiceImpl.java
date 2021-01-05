@@ -197,6 +197,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
 
         started = true;
+        timerPersistence.getValue().timerDeployed(timedObjectInvoker.getValue().getTimedObjectId());
         // register ourselves to the TimerServiceRegistry (if any)
         if (timerServiceRegistry != null) {
             timerServiceRegistry.registerTimerService(this);

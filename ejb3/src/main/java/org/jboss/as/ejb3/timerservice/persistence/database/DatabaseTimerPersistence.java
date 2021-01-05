@@ -326,6 +326,13 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     @Override
     public void addTimer(final TimerImpl timerEntity) {
+        String timedObjectId = timerEntity.getTimedObjectId();
+        synchronized (this) {
+            if(!knownTimerIds.containsKey(timedObjectId)) {
+                throw EjbLogger.EJB3_TIMER_LOGGER.timerCannotBeAdded(timerEntity);
+            }
+        }
+
         String createTimer = sql(CREATE_TIMER);
         Connection connection = null;
         PreparedStatement statement = null;
@@ -451,7 +458,17 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     }
 
     @Override
+    public synchronized void timerDeployed(String timedObjectId) {
+        knownTimerIds.put(timedObjectId, new HashSet<>());
+    }
+
+    @Override
     public List<TimerImpl> loadActiveTimers(final String timedObjectId, final TimerServiceImpl timerService) {
+        if(!knownTimerIds.containsKey(timedObjectId)) {
+            // if the timedObjectId has not being deployed
+            EjbLogger.EJB3_TIMER_LOGGER.timerNotDeployed(timedObjectId);
+            return Collections.emptyList();
+        }
         String loadTimer = sql(LOAD_ALL_TIMERS);
         Connection connection = null;
         PreparedStatement statement = null;
@@ -482,11 +499,12 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 }
             }
             synchronized (this) {
-                Set<String> ids = new HashSet<>();
+                // ids should be always be not null
+                Set<String> ids = knownTimerIds.get(timedObjectId);
                 for (Holder timer : timers) {
                     ids.add(timer.timer.getId());
                 }
-                knownTimerIds.put(timedObjectId, ids);
+
                 for(Holder timer : timers) {
                     if(timer.requiresReset) {
                         TimerImpl ret = timer.timer;
