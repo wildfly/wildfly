@@ -64,7 +64,7 @@ public class MicroProfileHealthReporter {
         @Override
         public HealthCheckResponse call() {
             return HealthCheckResponse.named(name)
-                    .state(status.equals("UP"))
+                    .status(status.equals("UP"))
                     .build();
         }
     }
@@ -113,7 +113,7 @@ public class MicroProfileHealthReporter {
 
     private final SmallRyeHealth getHealth(Map<HealthCheck, ClassLoader> serverChecks, Map<HealthCheck, ClassLoader> deploymentChecks) {
         JsonArrayBuilder results = Json.createArrayBuilder();
-        HealthCheckResponse.State status = HealthCheckResponse.State.UP;
+        HealthCheckResponse.Status status = HealthCheckResponse.Status.UP;
 
         status = processChecks(serverChecks, results, status);
 
@@ -129,7 +129,7 @@ public class MicroProfileHealthReporter {
         return new SmallRyeHealth(builder.build());
     }
 
-    private HealthCheckResponse.State processChecks(Map<HealthCheck, ClassLoader> checks, JsonArrayBuilder results, HealthCheckResponse.State status) {
+    private HealthCheckResponse.Status processChecks(Map<HealthCheck, ClassLoader> checks, JsonArrayBuilder results, HealthCheckResponse.Status status) {
         if (checks != null) {
             for (Map.Entry<HealthCheck, ClassLoader> entry : checks.entrySet()) {
                 // use the classloader of the deployment's module instead of the TCCL (which is the server's ModuleClassLoader
@@ -148,13 +148,13 @@ public class MicroProfileHealthReporter {
         return status;
     }
 
-    private HealthCheckResponse.State fillCheck(HealthCheck check, JsonArrayBuilder results, HealthCheckResponse.State globalOutcome) {
+    private HealthCheckResponse.Status fillCheck(HealthCheck check, JsonArrayBuilder results, HealthCheckResponse.Status globalOutcome) {
         JsonObject each = jsonObject(check);
         results.add(each);
-        if (globalOutcome == HealthCheckResponse.State.UP) {
+        if (globalOutcome == HealthCheckResponse.Status.UP) {
             String status = each.getString("status");
             if (status.equals(DOWN)) {
-                return HealthCheckResponse.State.DOWN;
+                return HealthCheckResponse.Status.DOWN;
             }
         }
         return globalOutcome;
@@ -176,7 +176,7 @@ public class MicroProfileHealthReporter {
     private JsonObject jsonObject(HealthCheckResponse response) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("name", response.getName());
-        builder.add("status", response.getState().toString());
+        builder.add("status", response.getStatus().toString());
         response.getData().ifPresent(d -> {
             JsonObjectBuilder data = Json.createObjectBuilder();
             for (Map.Entry<String, Object> entry : d.entrySet()) {

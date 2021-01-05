@@ -39,7 +39,6 @@ import javax.enterprise.util.AnnotationLiteral;
 import io.smallrye.health.SmallRyeHealthReporter;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Liveness;
@@ -55,17 +54,8 @@ public class CDIExtension implements Extension {
     private final MicroProfileHealthReporter reporter;
     private final Module module;
 
-    static final class HealthLiteral extends AnnotationLiteral<Health> implements Health {
-
-        static final HealthLiteral INSTANCE = new HealthLiteral();
-
-        private static final long serialVersionUID = 1L;
-
-    }
-
     // Use a single CDI instance to select and destroy all HealthCheck probes instances
     private Instance<Object> instance;
-    private final List<HealthCheck> healthChecks = new ArrayList<>();
     private final List<HealthCheck> livenessChecks = new ArrayList<>();
     private final List<HealthCheck> readinessChecks = new ArrayList<>();
     private HealthCheck defaultReadinessCheck;
@@ -84,7 +74,6 @@ public class CDIExtension implements Extension {
     private void afterDeploymentValidation(@Observes final AfterDeploymentValidation avd, BeanManager bm) {
         instance = bm.createInstance();
 
-        addHealthChecks(HealthLiteral.INSTANCE, reporter::addHealthCheck, healthChecks);
         addHealthChecks(Liveness.Literal.INSTANCE, reporter::addLivenessCheck, livenessChecks);
         addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, readinessChecks);
         if (readinessChecks.isEmpty()) {
@@ -112,7 +101,6 @@ public class CDIExtension implements Extension {
      * Remove all the instances of {@link HealthCheck} from the {@link MicroProfileHealthReporter}.
      */
     public void beforeShutdown(@Observes final BeforeShutdown bs) {
-        removeHealthCheck(healthChecks, reporter::removeHealthCheck);
         removeHealthCheck(livenessChecks, reporter::removeLivenessCheck);
         removeHealthCheck(readinessChecks, reporter::removeReadinessCheck);
 
