@@ -11,7 +11,7 @@ public class HealthConfigSource implements ConfigSource {
 
     public HealthConfigSource() {
         props = new HashMap<>();
-        props.put("org.wildfly.test.integration.microprofile.health.MyProbe.propertyConfiguredByTheDeployment", Boolean.TRUE.toString());
+        props.put("org.wildfly.test.integration.microprofile.health.MyLiveProbe.propertyConfiguredByTheDeployment", Boolean.TRUE.toString());
     }
 
     @Override
