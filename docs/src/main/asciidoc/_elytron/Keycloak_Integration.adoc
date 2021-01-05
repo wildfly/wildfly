@@ -2,7 +2,7 @@
 = Using Keycloak with WildFly Elytron
 
 When securing deployments using a Keycloak server a set of client side adapters provided by Keycloak need to be 
-installed to WildFly including a new subsystem to support configring the client side adapters.  Depending on how 
+installed to WildFly including a new subsystem to support configuring the client side adapters.  Depending on how
 you are installing WildFly you have some different options available to install the adapters.
 
 == Zip Installation
@@ -66,15 +66,11 @@ The following is an example plug-in configuration to create a bootable jar for a
         <feature-packs>
             <feature-pack>
                 <location>wildfly@maven(org.jboss.universe:community-universe):current</location>
-                <inherit-configs>false</inherit-configs>
-                <inherit-packages>false</inherit-packages>
             </feature-pack>
             <feature-pack>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-adapter-galleon-pack</artifactId>
                 <version>12.0.1</version>
-                <inherit-configs>false</inherit-configs>
-                <inherit-packages>false</inherit-packages>
             </feature-pack>
         </feature-packs>
         <layers>
