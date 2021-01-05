@@ -60,7 +60,7 @@ public class TracerConfigurationApplication extends Application {
         }
 
         private boolean checkClass(Object obj, String simpleName) {
-            return simpleName.equals(obj.getClass().getSimpleName());
+            return obj != null && simpleName.equals(obj.getClass().getSimpleName());
         }
     }
 }
