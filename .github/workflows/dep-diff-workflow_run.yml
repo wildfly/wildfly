@@ -59,6 +59,7 @@ jobs:
           echo Reading PR number
           tmp=$(<pr)
           echo "PR: ${tmp}"
+          echo "::set-output name=pr::${tmp}"
 
           echo Reading base version files
           tmp=$(<baseVersions)
@@ -70,12 +71,10 @@ jobs:
           echo "New version files: ${tmp}"
           echo "::set-output name=new_files::${tmp}"
 
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v3
-
       - name: Check versions
         uses: wildfly/dep-tree-diff@master
         with:
+          pr: ${{ steps.prepare.outputs.pr }}
           token: '${{ secrets.GITHUB_TOKEN }}'
           deps-ok-label: ${{ steps.prepare.outputs.deps_ok_label_name }}
           deps-changed-label: ${{ steps.prepare.outputs.deps_changed_label_name }}
