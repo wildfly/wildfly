@@ -1,30 +1,32 @@
-name: Dependency Tree
-
+name: Dependency Tree Input Builder
+# To deal with https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+# we need to split this across two jobs. The part that writes to the pull request lives in
+# ./dep-diff-workflow_run.yml
 on:
-  pull_request_target:
+  pull_request:
     branches:
     - master
 env:
   # The modules to check for dependencies. If there is more than one they are comma separated
   MODULES_TO_CHECK: ee-feature-pack/common,microprofile/galleon-common,servlet-feature-pack/common
-  # The name of the labels to use if the dependencies are ok
-  DEPS_OK_LABEL_NAME: deps-ok
-  # The name of the labels to use if the dependencies changed
-  DEPS_CHANGED_LABEL_NAME: deps-changed
-  # People/teams to mention in the PR comment if dependencies changed
-  CHANGE_MENTIONS: '@wildfly/prod'
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      ARTIFACTS: .pr_artifacts
     steps:
-      - name: Set needed env vars in outputs
+      - name: Prepare
         id: prepare
         run: |
+          # Make ARTIFACTS absolute
+          ARTIFACTS="${GITHUB_WORKSPACE}/${ARTIFACTS}"
+          echo "ARTIFACTS=${ARTIFACTS}" >> $GITHUB_ENV
+
+          mkdir ${ARTIFACTS}
+          echo ${{ github.event.number }} > "${ARTIFACTS}/pr"
+
           echo "::set-output name=base::${GITHUB_BASE_REF}"
-          echo "::set-output name=modules_to_check::${MODULES_TO_CHECK}"
-          echo "::set-output name=deps_ok_label_name::${DEPS_OK_LABEL_NAME}"
-          echo "::set-output name=deps_changed_label_name::${DEPS_CHANGED_LABEL_NAME}"
-          echo "::set-output name=change_mentions::${CHANGE_MENTIONS}"
+          echo "::set-output name=artifacts::${ARTIFACTS}"
 
       - name: Clone base version
         uses: actions/checkout@v2
@@ -65,7 +67,7 @@ jobs:
           for module in $(echo "${MODULES_TO_CHECK}" | sed "s/,/ /g")
           do
             baseVersionFile="_base-versions-$i.txt"
-            mvn -B dependency:tree -pl "${module}" -DoutputFile="${GITHUB_WORKSPACE}/${baseVersionFile}" || exit 1
+            mvn -B dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${baseVersionFile}" || exit 1
 
             if [ $i -gt 0 ]; then
               baseVersionFiles="${baseVersionFiles},${baseVersionFile}"
@@ -74,7 +76,7 @@ jobs:
             fi
             i=$((i + 1))
           done
-          echo "::set-output name=files::${baseVersionFiles}"
+          echo "${baseVersionFiles}" > ${ARTIFACTS}/baseVersions
 
       - name: Build PR
         working-directory: pr
@@ -90,7 +92,7 @@ jobs:
           for module in $(echo "${MODULES_TO_CHECK}" | sed "s/,/ /g")
           do
             newVersionFile="_new-versions-$i.txt"
-            mvn -B dependency:tree -pl "${module}" -DoutputFile="${GITHUB_WORKSPACE}/${newVersionFile}" || exit 1
+            mvn -B dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${newVersionFile}" || exit 1
 
             if [ $i -gt 0 ]; then
               newVersionFiles="${newVersionFiles},${newVersionFile}"
@@ -99,14 +101,9 @@ jobs:
             fi
             i=$((i + 1))
           done
-          echo "::set-output name=files::${newVersionFiles}"
+          echo "${newVersionFiles}" > ${ARTIFACTS}/newVersions
 
-      - name: Check versions
-        uses: wildfly/dep-tree-diff@master
+      - uses: actions/upload-artifact@v2
         with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
-          deps-ok-label: ${{ steps.prepare.outputs.deps_ok_label_name }}
-          deps-changed-label: ${{ steps.prepare.outputs.deps_changed_label_name }}
-          tool-change-mentions: ${{ steps.prepare.outputs.change_mentions }}
-          base-version-files: ${{ steps.base-versions.outputs.files }}
-          new-version-files: ${{ steps.new-versions.outputs.files }}
+          name: input-artifacts
+          path: ${{ steps.prepare.outputs.artifacts }}
