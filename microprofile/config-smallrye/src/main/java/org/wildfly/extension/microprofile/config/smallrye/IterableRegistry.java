@@ -24,7 +24,7 @@ package org.wildfly.extension.microprofile.config.smallrye;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * A registry whose items can be iterated over.
@@ -32,7 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class IterableRegistry<T> implements Iterable<T>, Registry<T> {
 
-    private final Map<String, T> objects = new ConcurrentHashMap<>();
+    // Use a sorted map since we need a deterministic sort order. The order things are added to the SmallRyeConfigBuilder
+    // has influence on the final sorting order, and we have tests checking this order is deterministic.
+    private final Map<String, T> objects = new ConcurrentSkipListMap<>();
 
     @Override
     public void register(String name, T object) {
