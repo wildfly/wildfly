@@ -30,6 +30,8 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * @author Paul Ferraro
  */
@@ -43,9 +45,9 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements ProtoStreamMarsha
 
     @Override
     public E readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        int code = reader.readUInt32();
         @SuppressWarnings("unchecked")
         Class<E> enumClass = (Class<E>) this.typeMarshaller.readFrom(context, reader);
+        int code = reader.readUInt32();
         EnumMarshaller<E> marshaller = (EnumMarshaller<E>) context.getMarshaller(enumClass);
         return marshaller.decode(code);
     }
@@ -55,15 +57,15 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements ProtoStreamMarsha
         Class<E> enumClass = value.getDeclaringClass();
         EnumMarshaller<E> marshaller = (EnumMarshaller<E>) context.getMarshaller(enumClass);
 
+        this.typeMarshaller.writeTo(context, writer, enumClass);
         int code = marshaller.encode(value);
         writer.writeUInt32NoTag(code);
-        this.typeMarshaller.writeTo(context, writer, enumClass);
     }
 
     @Override
     public OptionalInt size(ImmutableSerializationContext context, E value) {
         OptionalInt typeSize = this.typeMarshaller.size(context, value.getDeclaringClass());
-        return typeSize.isPresent() ? OptionalInt.of(typeSize.getAsInt() + Predictable.unsignedIntSize(value.ordinal())) : typeSize;
+        return typeSize.isPresent() ? OptionalInt.of(typeSize.getAsInt() + CodedOutputStream.computeEnumSizeNoTag(value.ordinal())) : typeSize;
     }
 
     @Override

@@ -35,9 +35,10 @@ import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.AnyField;
 import org.wildfly.clustering.marshalling.protostream.ClassField;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * ProtoStream optimized marshaller for an EnumSet
@@ -83,7 +84,7 @@ public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
         if (enumValues.length % Byte.SIZE > 0) {
             bytes += 1;
         }
-        return size.isPresent() ? OptionalInt.of(size.getAsInt() + bytes + Predictable.unsignedIntSize(bytes)) : OptionalInt.empty();
+        return size.isPresent() ? OptionalInt.of(size.getAsInt() + bytes + CodedOutputStream.computeUInt32SizeNoTag(bytes)) : OptionalInt.empty();
     }
 
     @SuppressWarnings("unchecked")

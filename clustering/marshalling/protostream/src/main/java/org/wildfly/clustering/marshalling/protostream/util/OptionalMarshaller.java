@@ -35,7 +35,9 @@ import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
+
+import protostream.com.google.protobuf.CodedOutputStream;
+
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
@@ -75,7 +77,7 @@ public enum OptionalMarshaller implements ProtoStreamMarshallerProvider {
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
             OptionalInt optional = (OptionalInt) value;
-            return OptionalInt.of(optional.isPresent() ? Predictable.signedIntSize(optional.getAsInt()) + 1 : 0);
+            return OptionalInt.of(optional.isPresent() ? CodedOutputStream.computeSInt32Size(1, optional.getAsInt()) : 0);
         }
     },
     LONG(OptionalLong.class) {
@@ -110,7 +112,7 @@ public enum OptionalMarshaller implements ProtoStreamMarshallerProvider {
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
             OptionalLong optional = (OptionalLong) value;
-            return OptionalInt.of(optional.isPresent() ? Predictable.signedLongSize(optional.getAsLong()) + 1 : 0);
+            return OptionalInt.of(optional.isPresent() ? CodedOutputStream.computeSInt64Size(1, optional.getAsLong()) : 0);
         }
     },
     DOUBLE(OptionalDouble.class) {

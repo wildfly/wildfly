@@ -31,6 +31,8 @@ import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * Generic marshaller for instances of {@link Class}.
  * @author Paul Ferraro
@@ -64,7 +66,7 @@ public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
     public OptionalInt size(ImmutableSerializationContext context, Class<?> targetClass) {
         Field<Class<?>> field = this.getField(context, targetClass);
         OptionalInt size = field.size(context, targetClass);
-        return size.isPresent() ? OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(field.getIndex() << 3 | WireFormat.WIRETYPE_VARINT)) : OptionalInt.empty();
+        return size.isPresent() ? OptionalInt.of(size.getAsInt() + CodedOutputStream.computeTagSize(field.getIndex())) : OptionalInt.empty();
     }
 
     Field<Class<?>> getField(ImmutableSerializationContext context, Class<?> targetClass) {

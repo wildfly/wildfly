@@ -33,8 +33,9 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * ProtoStream optimized collection marshaller.
@@ -83,7 +84,7 @@ public class CollectionMarshaller<T extends Collection<Object>, C, CC> implement
         C collectionContext = this.context.apply(collection);
         OptionalInt size = this.contextMarshaller.size(context, collectionContext);
         if (size.isPresent()) {
-            size = OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(collection.size()));
+            size = OptionalInt.of(size.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(collection.size()));
             for (Object element : collection) {
                 OptionalInt elementSize = ObjectMarshaller.INSTANCE.size(context, element);
                 size = size.isPresent() && elementSize.isPresent() ? OptionalInt.of(size.getAsInt() + elementSize.getAsInt()) : OptionalInt.empty();

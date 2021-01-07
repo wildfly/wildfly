@@ -31,6 +31,8 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
 import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * @author Paul Ferraro
  */
@@ -63,7 +65,7 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(Byte.BYTES);
+            return OptionalInt.of(CodedOutputStream.computeBoolSizeNoTag(((Boolean) value).booleanValue()));
         }
     },
     BYTE(Byte.class) {
@@ -79,7 +81,7 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(1);
+            return OptionalInt.of(Byte.BYTES);
         }
     },
     SHORT(Short.class) {
@@ -95,7 +97,7 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(Predictable.signedIntSize(((Short) value).shortValue()));
+            return OptionalInt.of(CodedOutputStream.computeSInt32SizeNoTag(((Short) value).shortValue()));
         }
     },
     INTEGER(Integer.class) {
@@ -111,7 +113,7 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(Predictable.signedIntSize(((Integer) value).intValue()));
+            return OptionalInt.of(CodedOutputStream.computeSInt32SizeNoTag(((Integer) value).intValue()));
         }
     },
     LONG(Long.class) {
@@ -127,7 +129,7 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(Predictable.signedLongSize(((Long) value).longValue()));
+            return OptionalInt.of(CodedOutputStream.computeSInt64SizeNoTag(((Long) value).longValue()));
         }
     },
     FLOAT(Float.class) {
@@ -143,7 +145,7 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(Float.BYTES);
+            return OptionalInt.of(CodedOutputStream.computeFloatSizeNoTag(((Float) value).floatValue()));
         }
     },
     DOUBLE(Double.class) {
@@ -159,7 +161,7 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(Double.BYTES);
+            return OptionalInt.of(CodedOutputStream.computeDoubleSizeNoTag(((Double) value).doubleValue()));
         }
     },
     CHARACTER(Character.class) {
@@ -170,14 +172,12 @@ public enum PrimitiveMarshaller implements ProtoStreamMarshallerProvider {
 
         @Override
         public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            Character character = (Character) value;
-            writer.writeUInt32NoTag(character.charValue());
+            writer.writeUInt32NoTag(((Character) value).charValue());
         }
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            Character character = (Character) value;
-            return OptionalInt.of(Predictable.unsignedIntSize(character.charValue()));
+            return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(((Character) value).charValue()));
         }
     },
     ;

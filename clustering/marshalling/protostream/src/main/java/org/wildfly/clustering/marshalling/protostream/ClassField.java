@@ -31,6 +31,8 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * Various strategies for marshalling a Class.
  * @author Paul Ferraro
@@ -88,7 +90,7 @@ public enum ClassField implements Field<Class<?>> {
                 componentClass = componentClass.getComponentType();
                 dimensions += 1;
             }
-            return OptionalInt.of(Predictable.unsignedIntSize(dimensions) + ClassField.ANY.size(context, componentClass).getAsInt());
+            return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(dimensions) + ClassField.ANY.size(context, componentClass).getAsInt());
         }
     },
     FIELD() {
@@ -104,7 +106,7 @@ public enum ClassField implements Field<Class<?>> {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Class<?> value) {
-            return OptionalInt.of(Predictable.unsignedIntSize(AnyField.fromJavaType(value).getIndex()));
+            return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(AnyField.fromJavaType(value).getIndex()));
         }
     },
     ID() {
@@ -129,7 +131,7 @@ public enum ClassField implements Field<Class<?>> {
             BaseMarshaller<?> marshaller = context.getMarshaller(value);
             String typeName = marshaller.getTypeName();
             int typeId = context.getDescriptorByName(typeName).getTypeId();
-            return OptionalInt.of(Predictable.unsignedIntSize(typeId));
+            return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(typeId));
         }
     },
     NAME() {

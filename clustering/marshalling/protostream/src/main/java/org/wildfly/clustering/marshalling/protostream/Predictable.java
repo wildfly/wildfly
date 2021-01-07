@@ -24,7 +24,10 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.util.OptionalInt;
 
+import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * Implemented by objects that can predict their marshalling sizes
@@ -42,58 +45,15 @@ public interface Predictable<T> {
         return OptionalInt.empty();
     }
 
-    // Compute buffer sizes for varints
-    // https://developers.google.com/protocol-buffers/docs/encoding#varints
-    static int unsignedIntSize(int value) {
-        int size = 1;
-        for (int i = 7; i < Integer.SIZE; i += 7) {
-            if (value < (1 << i)) {
-                return size;
-            }
-            size += 1;
-        }
-        return size;
+    static OptionalInt computeSizeNoTag(ImmutableSerializationContext context, Object value) {
+        BaseMarshaller<?> marshaller = context.getMarshaller(value.getClass());
+        @SuppressWarnings("unchecked")
+        OptionalInt size = (marshaller instanceof Predictable) ? ((Predictable<Object>) marshaller).size(context, value) : OptionalInt.empty();
+        return size.isPresent() ? OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size.getAsInt()) + size.getAsInt()) : size;
     }
 
-    static int signedIntSize(int value) {
-        int size = 1;
-        for (int i = 6; i < Integer.SIZE; i += 7) {
-            if ((value >= (-1 << i)) && (value < (1 << i))) {
-                return size;
-            }
-            size += 1;
-        }
-        return size;
-    }
-
-    static int byteArraySize(int value) {
-        return unsignedIntSize(value) + value;
-    }
-
-    static int stringSize(String value) {
-        int length = value.length();
-        return unsignedIntSize(length) + length;
-    }
-
-    static int unsignedLongSize(long value) {
-        int size = 1;
-        for (int i = 7; i < Long.SIZE; i += 7) {
-            if (value < (1L << i)) {
-                return size;
-            }
-            size += 1;
-        }
-        return size;
-    }
-
-    static int signedLongSize(long value) {
-        int size = 1;
-        for (int i = 6; i < Long.SIZE; i += 7) {
-            if ((value >= (-1L << i)) && (value < (1L << i))) {
-                return size;
-            }
-            size += 1;
-        }
-        return size;
+    static OptionalInt computeSize(ImmutableSerializationContext context, int fieldNumber, Object value) {
+        OptionalInt size = computeSizeNoTag(context, value);
+        return size.isPresent() ? OptionalInt.of(CodedOutputStream.computeTagSize(fieldNumber) + size.getAsInt()) : size;
     }
 }

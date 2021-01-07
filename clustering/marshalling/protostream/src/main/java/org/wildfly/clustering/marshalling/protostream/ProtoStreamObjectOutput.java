@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
@@ -122,10 +121,8 @@ public class ProtoStreamObjectOutput implements ObjectOutput {
 
     @Override
     public void writeObject(Object object) throws IOException {
-        Predictable<Any> marshaller = (AnyMarshaller) this.context.getMarshaller(Any.class);
         Any any = new Any(object);
-        OptionalInt size = marshaller.size(this.context, any);
-        try (ByteBufferOutputStream output = new ByteBufferOutputStream(size.isPresent() ? OptionalInt.of(Predictable.byteArraySize(size.getAsInt())) : OptionalInt.empty())) {
+        try (ByteBufferOutputStream output = new ByteBufferOutputStream(Predictable.computeSizeNoTag(this.context, any))) {
             ProtobufUtil.writeTo(this.context, output, any);
             ByteBuffer buffer = output.getBuffer();
             int offset = buffer.arrayOffset();

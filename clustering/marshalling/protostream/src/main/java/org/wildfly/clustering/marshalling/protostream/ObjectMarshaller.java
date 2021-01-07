@@ -66,9 +66,7 @@ public enum ObjectMarshaller implements ProtoStreamMarshallerProvider {
 
     @Override
     public OptionalInt size(ImmutableSerializationContext context, Object value) {
-        Predictable<Any> marshaller = (AnyMarshaller) context.getMarshaller(Any.class);
-        OptionalInt size = marshaller.size(context, new Any(value));
-        return size.isPresent() ? OptionalInt.of(Predictable.byteArraySize(size.getAsInt())) : OptionalInt.empty();
+        return Predictable.computeSizeNoTag(context, new Any(value));
     }
 
     @Override

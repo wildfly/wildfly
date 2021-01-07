@@ -36,9 +36,10 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.AnyField;
 import org.wildfly.clustering.marshalling.protostream.ClassField;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * @author Paul Ferraro
@@ -87,7 +88,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
             if (enumValues.length % Byte.SIZE > 0) {
                 bytes += 1;
             }
-            size = OptionalInt.of(size.getAsInt() + bytes + Predictable.unsignedIntSize(bytes));
+            size = OptionalInt.of(size.getAsInt() + bytes + CodedOutputStream.computeUInt32SizeNoTag(bytes));
             for (Object value : map.values()) {
                 OptionalInt valueSize = ObjectMarshaller.INSTANCE.size(context, value);
                 size = size.isPresent() && valueSize.isPresent() ? OptionalInt.of(size.getAsInt() + valueSize.getAsInt()) : OptionalInt.empty();

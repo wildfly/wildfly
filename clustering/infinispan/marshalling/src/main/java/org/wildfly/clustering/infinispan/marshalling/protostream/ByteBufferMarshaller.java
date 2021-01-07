@@ -24,20 +24,18 @@ package org.wildfly.clustering.infinispan.marshalling.protostream;
 
 import java.io.IOException;
 import java.io.StreamCorruptedException;
-import java.util.OptionalInt;
 
 import org.infinispan.commons.io.ByteBufferImpl;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.AutoSizedProtoStreamMarshaller;
 
 /**
  * Marshaller for an Infinispan ByteBuffer.
  * @author Paul Ferraro
  */
-public enum ByteBufferMarshaller implements ProtoStreamMarshaller<ByteBufferImpl> {
+public enum ByteBufferMarshaller implements AutoSizedProtoStreamMarshaller<ByteBufferImpl> {
     INSTANCE;
 
     @Override
@@ -53,11 +51,6 @@ public enum ByteBufferMarshaller implements ProtoStreamMarshaller<ByteBufferImpl
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, ByteBufferImpl buffer) throws IOException {
         writer.writeUInt32NoTag(buffer.getLength());
         writer.writeRawBytes(buffer.getBuf(), buffer.getOffset(), buffer.getLength());
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, ByteBufferImpl buffer) {
-        return OptionalInt.of(Predictable.byteArraySize(buffer.getLength()));
     }
 
     @Override
