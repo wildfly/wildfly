@@ -378,7 +378,7 @@
         <version.org.hibernate>5.3.20.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.5.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.10.7.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>6.0.21.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>6.0.22.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <!-- n.b. Infinispan Server version used for integration testing is defined separately in testsuite/integration/clustering/pom.xml -->
         <version.org.infinispan>11.0.8.Final</version.org.infinispan>
