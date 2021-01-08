@@ -60,6 +60,12 @@ public interface TimerPersistence {
     boolean shouldRun(TimerImpl timer, @Deprecated TransactionManager txManager);
 
     /**
+     * Signals that the timer is being deployed and any internal structured required should be added.
+     * @param timedObjectId
+     */
+    default void timerDeployed(String timedObjectId) {};
+
+    /**
      * Signals that a timer is being undeployed, and all cached data relating to this object should
      * be dropped to prevent a class loader leak
      *
