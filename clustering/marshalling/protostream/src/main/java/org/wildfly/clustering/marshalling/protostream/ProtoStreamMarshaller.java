@@ -22,7 +22,17 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.OptionalInt;
+
+import org.infinispan.protostream.BaseMarshaller;
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.RawProtobufMarshaller;
+import org.wildfly.clustering.marshalling.spi.ByteBufferInputStream;
+import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
 
 /**
  * @author Paul Ferraro
@@ -34,5 +44,37 @@ public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Pred
         Class<?> targetClass = this.getJavaClass();
         Package targetPackage = targetClass.getPackage();
         return (targetPackage != null) ? (targetPackage.getName() + '.' + targetClass.getSimpleName()) : targetClass.getSimpleName();
+    }
+
+    /**
+     * Reads an object from a specified byte buffer.
+     * @param <T> the object type
+     * @param context a serialization context
+     * @param buffer a byte buffer
+     * @param targetClass the type of the object to read
+     * @return the unmarshalled object
+     * @throws IOException if the object could not be unmarshalled
+     */
+    static <T> T read(ImmutableSerializationContext context, ByteBuffer buffer, Class<T> targetClass) throws IOException {
+        try (InputStream input = new ByteBufferInputStream(buffer)) {
+            return ProtobufUtil.readFrom(context, input, targetClass);
+        }
+    }
+
+    /**
+     * Writes an object to a byte buffer.
+     * @param context a serialization context
+     * @param value the object to write
+     * @return a byte buffer
+     * @throws IOException if the object could not be marshalled
+     */
+    static ByteBuffer write(ImmutableSerializationContext context, Object value) throws IOException {
+        BaseMarshaller<?> marshaller = context.getMarshaller(value.getClass());
+        @SuppressWarnings("unchecked")
+        OptionalInt size = (marshaller instanceof Predictable) ? ((Predictable<Object>) marshaller).size(context, value) : OptionalInt.empty();
+        try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
+            ProtobufUtil.writeTo(context, output, value);
+            return output.getBuffer();
+        }
     }
 }

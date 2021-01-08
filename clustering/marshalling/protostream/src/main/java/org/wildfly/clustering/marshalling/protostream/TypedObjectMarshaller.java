@@ -27,10 +27,8 @@ import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
 
 /**
  * @author Paul Ferraro
@@ -47,20 +45,17 @@ public class TypedObjectMarshaller implements ProtoStreamMarshaller<Object> {
     public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
         Class<?> targetClass = this.typeMarshaller.readFrom(context, reader);
         ByteBuffer buffer = reader.readByteBuffer();
-        return ProtobufUtil.fromByteBuffer(context, buffer, targetClass);
+        return ProtoStreamMarshaller.read(context, buffer, targetClass);
     }
 
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
         this.typeMarshaller.writeTo(context, writer, value.getClass());
-        try (ByteBufferOutputStream output = new ByteBufferOutputStream(Predictable.computeSizeNoTag(context, value))) {
-            ProtobufUtil.writeTo(context, output, value);
-            ByteBuffer buffer = output.getBuffer();
-            int offset = buffer.arrayOffset();
-            int size = buffer.limit() - offset;
-            writer.writeUInt32NoTag(size);
-            writer.writeRawBytes(buffer.array(), offset, size);
-        }
+        ByteBuffer buffer = ProtoStreamMarshaller.write(context, value);
+        int offset = buffer.arrayOffset();
+        int size = buffer.limit() - offset;
+        writer.writeUInt32NoTag(size);
+        writer.writeRawBytes(buffer.array(), offset, size);
     }
 
     @Override

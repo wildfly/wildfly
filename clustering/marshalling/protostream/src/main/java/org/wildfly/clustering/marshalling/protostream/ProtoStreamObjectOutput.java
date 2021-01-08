@@ -27,9 +27,7 @@ import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
 
 /**
  * {@link ObjectOutput} facade for a {@link RawProtoStreamWriter} allowing externalizers to write protobuf messages.
@@ -49,15 +47,11 @@ public class ProtoStreamObjectOutput extends ProtoStreamDataOutput implements Ob
 
     @Override
     public void writeObject(Object object) throws IOException {
-        Any any = new Any(object);
-        try (ByteBufferOutputStream output = new ByteBufferOutputStream(Predictable.computeSizeNoTag(this.context, any))) {
-            ProtobufUtil.writeTo(this.context, output, any);
-            ByteBuffer buffer = output.getBuffer();
-            int offset = buffer.arrayOffset();
-            int length = buffer.limit() - offset;
-            this.writeChar(length); // unsigned varint
-            this.write(buffer.array(), offset, length);
-        }
+        ByteBuffer buffer = ProtoStreamMarshaller.write(this.context, new Any(object));
+        int offset = buffer.arrayOffset();
+        int length = buffer.limit() - offset;
+        this.writeChar(length); // unsigned varint
+        this.write(buffer.array(), offset, length);
     }
 
     @Override

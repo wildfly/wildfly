@@ -23,14 +23,11 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInput;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
-import org.wildfly.clustering.marshalling.spi.ByteBufferInputStream;
 
 /**
  * {@link ObjectInput} facade for a {@link RawProtoStreamReader} allowing externalizers to read protobuf messages.
@@ -50,9 +47,7 @@ public class ProtoStreamObjectInput extends ProtoStreamDataInput implements Obje
 
     @Override
     public Object readObject() throws IOException {
-        try (InputStream input = new ByteBufferInputStream(this.reader.readByteBuffer())) {
-            return ProtobufUtil.readFrom(this.context, input, Any.class).get();
-        }
+        return ProtoStreamMarshaller.read(this.context, this.reader.readByteBuffer(), Any.class).get();
     }
 
     @Override
