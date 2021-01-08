@@ -21,6 +21,11 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -33,6 +38,7 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -51,10 +57,14 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -72,10 +82,12 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>>, Consumer<ConfigurationBuilder> {
+public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>>, Consumer<ConfigurationBuilder>, ServiceNameRegistry<ClusteringCacheRequirement> {
+    private static final Set<ClusteringCacheRequirement> CLUSTERING_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.GROUP);
 
     private final InfinispanSessionManagementConfiguration configuration;
     private final SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration;
+    private final Collection<ServiceConfigurator> configurators = new LinkedList<>();
 
     private volatile ServiceConfigurator configurationConfigurator;
     private volatile ServiceConfigurator cacheConfigurator;
@@ -104,10 +116,15 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, L
         String deploymentName = this.factoryConfiguration.getDeploymentName();
         this.configurationConfigurator = new TemplateConfigurationServiceConfigurator(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, containerName, deploymentName), containerName, deploymentName, cacheName, this).configure(support);
         this.cacheConfigurator = new CacheServiceConfigurator<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, deploymentName), containerName, deploymentName).configure(support);
+        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
+            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(this, this.configuration.getContainerName(), this.factoryConfiguration.getDeploymentName())) {
+                this.configurators.add(configurator.configure(support));
+            }
+        }
 
         this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
         this.dispatcherFactory = new ServiceSupplierDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, containerName));
-        this.group = new ServiceSupplierDependency<>(ClusteringRequirement.GROUP.getServiceName(support, containerName));
+        this.group = new ServiceSupplierDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, deploymentName));
         return this;
     }
 
@@ -137,12 +154,20 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, L
     public ServiceBuilder<?> build(ServiceTarget target) {
         this.configurationConfigurator.build(target).install();
         this.cacheConfigurator.build(target).install();
+        for (ServiceConfigurator configurator : this.configurators) {
+            configurator.build(target).install();
+        }
 
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         Consumer<SessionManagerFactory<SC, LC, TransactionBatch>> factory = new CompositeDependency(this.group, this.affinityFactory, this.dispatcherFactory).register(builder).provides(this.getServiceName());
         this.cache = builder.requires(this.cacheConfigurator.getServiceName());
         Service service = new FunctionalService<>(factory, Function.identity(), this, Consumers.close());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    }
+
+    @Override
+    public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
+        return CLUSTERING_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(this.configuration.getContainerName(), this.factoryConfiguration.getDeploymentName()) : null;
     }
 
     @Override

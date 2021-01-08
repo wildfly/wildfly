@@ -3229,4 +3229,11 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 522, value = "The default pool name %s could not be resolved from its value: %s")
     void defaultPoolExpressionCouldNotBeResolved(String defaultPoolName, String defaultPoolValue);
+
+    @LogMessage(level = WARN)
+    @Message(id = 523, value = "Timer %s has not been deployed")
+    void timerNotDeployed(String timer);
+
+    @Message(id = 524, value = "Timer %s cannot be added")
+    RuntimeException timerCannotBeAdded(TimerImpl timer);
 }
