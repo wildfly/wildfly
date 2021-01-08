@@ -40,6 +40,7 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <maven.repo.local>${settings.localRepository}</maven.repo.local>
         <microprofile.jvm.args>-server -Xms64m -Xmx512m ${modular.jdk.args} -Dmaven.repo.local=${maven.repo.local}</microprofile.jvm.args>
         <!-- Properties that set the phase used for different plugin executions.
@@ -54,9 +55,9 @@
         <ts.bootable-jar-microprofile-tck-packaging.phase>none</ts.bootable-jar-microprofile-tck-packaging.phase>
         <!-- Child modules override these properties to control what feature packs are used
              and what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.fp.groupId>${testsuite.ee.galleon.pack.groupId}</ts.microprofile-tck-provisioning.fp.groupId>
-        <ts.microprofile-tck-provisioning.fp.artifactId>${testsuite.ee.galleon.pack.artifactId}</ts.microprofile-tck-provisioning.fp.artifactId>
-        <ts.microprofile-tck-provisioning.fp.version>${testsuite.ee.galleon.pack.version}</ts.microprofile-tck-provisioning.fp.version>
+        <ts.microprofile-tck-provisioning.fp.groupId>${full.maven.groupId}</ts.microprofile-tck-provisioning.fp.groupId>
+        <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-galleon-pack</ts.microprofile-tck-provisioning.fp.artifactId>
+        <ts.microprofile-tck-provisioning.fp.version>${full.maven.version}</ts.microprofile-tck-provisioning.fp.version>
         <ts.microprofile-tck-provisioning.base.layer>FIXME-must-override</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>FIXME-must-override</ts.microprofile-tck-provisioning.decorator.layer>
 
@@ -291,29 +292,53 @@
             </build>
         </profile>
 
-        <!--
-            By default the arquillian.xml files in the TCK modules use standalone-microprofile.xml for the config.
-            For those modules that support it, switch back to using standalone.xml as the server config
-            if we are testing against a non-MP build
-        -->
+        <!-- Profile to turn off execution of various plugins if the testsuite is being run
+             against an external dist (i.e. by using the jboss.dist property to point to one)
+             and that dist does not include the full set of MP functionality. -->
         <profile>
-            <id>alt.dist.profile</id>
+            <id>disable.microprofile.profile</id>
             <activation>
                 <property>
-                    <name>testsuite.default.build.project.prefix</name>
-                    <value>ee-</value>
+                    <name>disable.microprofile.tests</name>
                 </property>
             </activation>
+            <properties>
+                <!-- Disable the standard copy-based provisioning -->
+                <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemPropertyVariables combine.children="append">
-                                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                            </systemPropertyVariables>
-                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Provision a server slimmed to only what we want for a particular TCK. -->
+                            <execution>
+                                <id>microprofile-tck-provisioning</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.jar.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>bootable-jar-microprofile-tck-packaging</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
