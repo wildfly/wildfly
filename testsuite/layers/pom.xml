@@ -1980,9 +1980,9 @@
                                     <install-dir>${layers.install.dir}/microprofile-config</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2008,9 +2008,9 @@
                                     <install-dir>${layers.install.dir}/microprofile-health</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2036,9 +2036,9 @@
                                     <install-dir>${layers.install.dir}/microprofile-metrics</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2221,9 +2221,9 @@
                                     <install-dir>${layers.install.dir}/open-tracing</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
