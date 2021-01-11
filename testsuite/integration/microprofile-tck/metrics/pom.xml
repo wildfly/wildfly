@@ -153,6 +153,7 @@
                 </property>
             </activation>
             <properties>
+                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
