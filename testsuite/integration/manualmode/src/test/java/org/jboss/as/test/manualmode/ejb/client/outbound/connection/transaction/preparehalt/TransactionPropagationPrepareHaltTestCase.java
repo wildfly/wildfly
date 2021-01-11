@@ -174,7 +174,7 @@ public class TransactionPropagationPrepareHaltTestCase {
      * </p>
      */
     @Test
-    public void prepareCrashOnClient() throws Exception {
+    public void prepareCrashOnClient(@ContainerResource(CLIENT_SERVER_NAME) ManagementClient managementClientClient, @ContainerResource(SERVER_SERVER_NAME) ManagementClient managementClientServer) throws Exception {
         try {
             ClientBeanRemote bean = RemoteLookups.lookupEjbStateless(managementClientClient, CLIENT_DEPLOYMENT,
                     ClientBean.class, ClientBeanRemote.class);
@@ -227,6 +227,16 @@ public class TransactionPropagationPrepareHaltTestCase {
         operation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).set("true");
         operation.get(ModelDescriptionConstants.RESOLVE_EXPRESSIONS).set("true");
         operation.get(ClientConstants.NAME).set(name);
-        return ManagementOperations.executeOperation(managementClient.getControllerClient(), operation);
+        for(int retry = 1;; retry++ ) {
+            try {
+                return ManagementOperations.executeOperation(managementClient.getControllerClient(), operation);
+            } catch (MgmtOperationException moe) {
+                if (retry > 10) {
+                    throw moe;
+                } else {
+                    log.debugf(moe, "Operation %s failed and will be retried. Counter: %d.", operation.toString(), retry);
+                }
+            }
+        }
     }
 }
