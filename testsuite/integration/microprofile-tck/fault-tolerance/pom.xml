@@ -100,6 +100,7 @@
                         <!-- Increase timeout to reduce timing intermittent failures -->
                         <org.eclipse.microprofile.fault.tolerance.tck.timeout.multiplier>2.0</org.eclipse.microprofile.fault.tolerance.tck.timeout.multiplier>
                     </systemPropertyVariables>
+                    <runOrder>reversealphabetical</runOrder>
                 </configuration>
             </plugin>
         </plugins>

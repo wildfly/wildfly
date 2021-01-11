@@ -65,13 +65,7 @@
 
     <modules>
         <module>config</module>
-        <!--
-            The Fault Tolerance TCK tests will fail until FT is updated, as MP Metrics made breaking changes. I am disabling
-            this module for now so that the MP Metrics update can run green. The FT update will be handled on a separate
-            ticket (WFLY-14281), under which this module will be reenabled. - jdlee
-
-            <module>fault-tolerance</module>
-        -->
+        <module>fault-tolerance</module>
         <module>health</module>
         <module>jwt</module>
         <module>metrics</module>
