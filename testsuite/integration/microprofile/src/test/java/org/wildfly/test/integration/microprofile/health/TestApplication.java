@@ -42,7 +42,7 @@ public class TestApplication extends Application {
         @POST
         @Produces("text/plain")
         public Response changeProbeOutcome(@FormParam("up") boolean up) {
-            MyProbe.up = up;
+            MyLiveProbe.up = up;
             return Response.ok().build();
         }
     }
