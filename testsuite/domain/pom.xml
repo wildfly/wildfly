@@ -235,6 +235,7 @@
                         <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
                         <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Djbossas.ts.dir=${jbossas.ts.dir} ${extra.server.jvm.args}</server.jvm.args>
+                        <testsuite.default.build.project.prefix>${testsuite.default.build.project.prefix}</testsuite.default.build.project.prefix>
                     </systemPropertyVariables>
                     <includes>
                         <include>org/jboss/as/test/integration/respawn/*TestCase.java</include>
