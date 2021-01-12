@@ -314,7 +314,7 @@
         <version.io.smallrye.smallrye-config>2.0.2</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>4.3.2</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>3.0.0</version.io.smallrye.smallrye-health>
-        <version.io.smallrye.smallrye-jwt>2.0.13</version.io.smallrye.smallrye-jwt>
+        <version.io.smallrye.smallrye-jwt>3.0.0-RC1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.0</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.open-api>2.1.0</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0-RC1</version.io.smallrye.opentracing>
@@ -354,7 +354,7 @@
         <version.org.apache.ws.security>2.2.5</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.5</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
-        <version.org.bitbucket.jose4j>0.7.0</version.org.bitbucket.jose4j>
+        <version.org.bitbucket.jose4j>0.7.2</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.9.11</version.org.bytebuddy>
         <version.org.codehaus.jackson>1.9.13.redhat-00007</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.4.0</version.org.codehaus.jettison>
@@ -2153,6 +2153,11 @@
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-jwt</artifactId>
+                <version>${version.io.smallrye.smallrye-jwt}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-jwt-common</artifactId>
                 <version>${version.io.smallrye.smallrye-jwt}</version>
             </dependency>
             <dependency>
