@@ -173,7 +173,6 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     @Override
     public Configuration get() {
         String name = this.getServiceName().getSimpleName();
-        MBeanServer server = (this.server != null) ? this.server.get() : null;
         ConfigurationBuilder builder = new ConfigurationBuilder();
         // Configure formal security first
         builder.security().read(this.security.get());
@@ -187,9 +186,9 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                 .statistics()
                     .enabled(this.statisticsEnabled)
                     .jmxDomain("org.wildfly.clustering.infinispan")
-                    .jmxEnabled(server != null)
+                    .jmxEnabled(this.server != null)
                     .jmxName(name)
-                    .mBeanServerLookup(new MBeanServerProvider(server))
+                    .mBeanServerLookup((this.server != null) ? new MBeanServerProvider(this.server.get()) : null)
                 .tcpNoDelay(this.tcpNoDelay)
                 .tcpKeepAlive(this.tcpKeepAlive)
                 .valueSizeEstimate(this.valueSizeEstimate);
