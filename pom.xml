@@ -2387,6 +2387,10 @@
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.logmanager</groupId>
                         <artifactId>jboss-logmanager</artifactId>
                     </exclusion>
@@ -2442,11 +2446,19 @@
                         <groupId>javax.xml.bind</groupId>
                         <artifactId>jaxb-api</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-osgi</artifactId>
+                    </exclusion>
                     <!-- TODO remove this exclusion once this supports Jakarta Activation -->
                     <!-- Superceded by com.sun.activation:jakarta.activation -->
                     <exclusion>
                         <groupId>javax.activation</groupId>
                         <artifactId>activation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.xml.bind</groupId>
+                        <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2471,6 +2483,10 @@
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-dbcp2</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
