@@ -236,6 +236,7 @@ link:#gal.base-server[base-server] +
 |Support for JAXRS.
 |
 link:#gal.web-server[web-server] +
+link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 
 |[[gal.jdr]]jdr
 |Support for the JBoss Diagnostic Reporting (JDR) subsystem.
@@ -379,7 +380,13 @@ link:#gal.microprofile-health[microprofile-health] (optional) +
 link:#gal.microprofile-jwt[microprofile-jwt] (optional) +
 link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
 link:#gal.microprofile-openapi[microprofile-openapi] (optional) +
+link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 link:#gal.open-tracing[open-tracing] (optional) +
+
+|[[gal.microprofile-rest-client]]microprofile-rest-client
+|Support for MicroProfile REST client.
+|
+link:#gal.microprofile-config[microprofile-config] +
 
 |[[gal.naming]]naming
 |Support for JNDI.
