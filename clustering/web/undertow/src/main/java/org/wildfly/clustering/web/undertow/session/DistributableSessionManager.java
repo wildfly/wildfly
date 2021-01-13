@@ -23,6 +23,7 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Map;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -59,14 +60,14 @@ public class DistributableSessionManager implements UndertowSessionManager, Cons
     private final AttachmentKey<io.undertow.server.session.Session> key = AttachmentKey.create(io.undertow.server.session.Session.class);
     private final String deploymentName;
     private final SessionListeners listeners;
-    private final SessionManager<LocalSessionContext, Batch> manager;
+    private final SessionManager<Map<String, Object>, Batch> manager;
     private final RecordableSessionManagerStatistics statistics;
     private final StampedLock lifecycleLock = new StampedLock();
 
     // Guarded by this
     private OptionalLong lifecycleStamp = OptionalLong.empty();
 
-    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager, SessionListeners listeners, RecordableSessionManagerStatistics statistics) {
+    public DistributableSessionManager(String deploymentName, SessionManager<Map<String, Object>, Batch> manager, SessionListeners listeners, RecordableSessionManagerStatistics statistics) {
         this.deploymentName = deploymentName;
         this.manager = manager;
         this.listeners = listeners;
@@ -79,7 +80,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Cons
     }
 
     @Override
-    public SessionManager<LocalSessionContext, Batch> getSessionManager() {
+    public SessionManager<Map<String, Object>, Batch> getSessionManager() {
         return this.manager;
     }
 
@@ -164,7 +165,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Cons
             // Batch will be closed by Session.close();
             Batch batch = batcher.createBatch();
             try {
-                Session<LocalSessionContext> session = this.manager.createSession(id);
+                Session<Map<String, Object>> session = this.manager.createSession(id);
                 if (session == null) {
                     throw UndertowClusteringLogger.ROOT_LOGGER.sessionAlreadyExists(id);
                 }
@@ -224,7 +225,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Cons
             Batcher<Batch> batcher = this.manager.getBatcher();
             Batch batch = batcher.createBatch();
             try {
-                Session<LocalSessionContext> session = this.manager.findSession(id);
+                Session<Map<String, Object>> session = this.manager.findSession(id);
                 if (session == null) {
                     return null;
                 }

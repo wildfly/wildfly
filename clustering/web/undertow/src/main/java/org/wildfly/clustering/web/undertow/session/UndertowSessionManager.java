@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.Map;
+
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.SessionManager;
 
@@ -41,5 +43,5 @@ public interface UndertowSessionManager extends io.undertow.server.session.Sessi
      * Returns underlying distributable session manager implementation.
      * @return a session manager
      */
-    SessionManager<LocalSessionContext, Batch> getSessionManager();
+    SessionManager<Map<String, Object>, Batch> getSessionManager();
 }
