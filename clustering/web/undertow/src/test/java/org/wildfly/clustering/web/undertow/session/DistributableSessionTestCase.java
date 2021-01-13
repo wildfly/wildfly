@@ -394,6 +394,11 @@ public class DistributableSessionTestCase {
         this.getLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
+    @Test
+    public void getIdentityContainerSessionAttribute() {
+        this.getLocalContextSessionAttribute(DistributableSession.IDENTITY_CONTAINER_ATTRIBUTE);
+    }
+
     private void getLocalContextSessionAttribute(String name) {
         when(this.session.getMetaData()).thenReturn(this.metaData);
         when(this.metaData.isNew()).thenReturn(true);
@@ -643,6 +648,11 @@ public class DistributableSessionTestCase {
         this.setLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
+    @Test
+    public void setIdentityContainerSessionAttribute() {
+        this.setLocalContextSessionAttribute(DistributableSession.IDENTITY_CONTAINER_ATTRIBUTE);
+    }
+
     private void setLocalContextSessionAttribute(String name) {
         when(this.session.getMetaData()).thenReturn(this.metaData);
         when(this.metaData.isNew()).thenReturn(true);
@@ -797,6 +807,11 @@ public class DistributableSessionTestCase {
     @Test
     public void removeWebSocketChannelsSessionAttribute() {
         this.removeLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+    }
+
+    @Test
+    public void removeIdentityContainerSessionAttribute() {
+        this.removeLocalContextSessionAttribute(DistributableSession.IDENTITY_CONTAINER_ATTRIBUTE);
     }
 
     private void removeLocalContextSessionAttribute(String name) {
