@@ -54,7 +54,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
     // These mechanisms can auto-reauthenticate and thus use local context (instead of replicating)
     private static final Set<String> AUTO_REAUTHENTICATING_MECHANISMS = new HashSet<>(Arrays.asList(HttpServletRequest.BASIC_AUTH, HttpServletRequest.DIGEST_AUTH, HttpServletRequest.CLIENT_CERT_AUTH));
     static final String WEB_SOCKET_CHANNELS_ATTRIBUTE = "io.undertow.websocket.current-connections";
-    private static final Set<String> LOCAL_CONTEXT_ATTRIBUTES = new HashSet<>(Arrays.asList(WEB_SOCKET_CHANNELS_ATTRIBUTE));
+    static final String IDENTITY_CONTAINER_ATTRIBUTE = "org.wildfly.elytron.web.undertow.server.servlet.ServletSecurityContextImpl$IdentityContainer";
+    private static final Set<String> LOCAL_CONTEXT_ATTRIBUTES = new HashSet<>(Arrays.asList(WEB_SOCKET_CHANNELS_ATTRIBUTE, IDENTITY_CONTAINER_ATTRIBUTE));
 
     private final UndertowSessionManager manager;
     private final Batch batch;
