@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Final-SNAPSHOT</version>
+        <version>22.0.0.Final</version>
     </parent>
     
     <artifactId>wildfly-preview-feature-pack</artifactId>
