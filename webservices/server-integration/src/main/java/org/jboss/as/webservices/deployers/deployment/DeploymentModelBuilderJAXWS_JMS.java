@@ -57,7 +57,6 @@ final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuild
             WSLogger.ROOT_LOGGER.tracef("JMS class: %s", jmsEndpointClassName);
             final String jmsEndpointAddress = jmsEndpoint.getSoapAddress();
             WSLogger.ROOT_LOGGER.tracef("JMS address: %s", jmsEndpointAddress);
-            newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
             Endpoint ep =newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
             markWeldDeployment(unit, ep);
         }
