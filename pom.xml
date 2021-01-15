@@ -315,7 +315,7 @@
         <version.io.smallrye.smallrye-fault-tolerance>4.3.2</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>3.0.0-RC2</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>2.0.13</version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-metrics>2.4.4</version.io.smallrye.smallrye-metrics>
+        <version.io.smallrye.smallrye-metrics>3.0.0</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.open-api>2.0.16</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0-RC1</version.io.smallrye.opentracing>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
@@ -365,7 +365,7 @@
         <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
         <version.org.eclipse.microprofile.health.api>3.0</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>1.1.1</version.org.eclipse.microprofile.jwt.api>
-        <version.org.eclipse.microprofile.metrics.api>2.3</version.org.eclipse.microprofile.metrics.api>
+        <version.org.eclipse.microprofile.metrics.api>3.0</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.openapi.api>1.1.2</version.org.eclipse.microprofile.openapi.api>
         <version.org.eclipse.microprofile.opentracing>2.0-RC2</version.org.eclipse.microprofile.opentracing>
         <version.org.eclipse.microprofile.rest.client.api>1.4.0</version.org.eclipse.microprofile.rest.client.api>
