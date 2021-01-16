@@ -134,7 +134,8 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         // Disable registration of MicroProfile Metrics
         builder.metrics().gauges(false).histograms(false);
         builder.jmx().domain("org.wildfly.clustering.infinispan")
-                .mBeanServerLookup(new MBeanServerProvider((this.server != null) && this.statisticsEnabled ? this.server.get() : null))
+                .mBeanServerLookup((this.server != null) ? new MBeanServerProvider(this.server.get()) : null)
+                .enabled(this.server != null)
                 ;
 
         // Do not enable server-mode for the Hibernate 2LC use case:
