@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:13.0">
+<domain xmlns="urn:jboss:domain:15.0">
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
@@ -457,6 +457,11 @@
                 <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.wildfly.clustering.web.infinispan">
                     <local-cache name="local-web" batching="true">
                         <file-store passivation="false" purge="false"/>
+                    </local-cache>
+                </cache-container>
+                <cache-container name="ejb" default-cache="local" module="org.wildfly.clustering.ejb.infinispan">
+                    <local-cache name="local" batching="true">
+                        <file-store passivation="true" purge="false"/>
                     </local-cache>
                 </cache-container>
                 <cache-container name="hibernate" default-cache="local-query" module="org.hibernate.infinispan">

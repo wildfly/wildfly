@@ -168,16 +168,20 @@ A policy that defines how host names should be verified when using HTTPS. Allowe
 == CLI Examples on How to Create a Token Realm
 
 .Create a Token Realm to validate JWT tokens using a key store to retrieve the public key
-```bash
+
+[source,bash]
+----
 # Create a Key Store
 /subsystem=elytron/key-store=my-keystore:add(path=/path/to/keystore.jks,credential-reference={clear-text=secret},type=JKS)
 
 # Create the realm
 /subsystem=elytron/token-realm=jwt-realm:add(principal-claim=sub, jwt={issuer=["as.example.com"], audience=["api.example.com"], key-store=my-keystore, certificate=as.example.com})
-```
+----
 
 .Create a Token Realm to validate OAuth2 tokens
-```bash
+
+[source,bash]
+----
 # Create a Client SSLContext
 /subsystem=elytron/key-store=default-trust-store:add(path=/path/to/keystore.jks,credential-reference={clear-text=secret},type=JKS)
 /subsystem=elytron/trust-manager=default-trust-manager:add(algorithm=PKIX, key-store=default-trust-store)
@@ -185,4 +189,4 @@ A policy that defines how host names should be verified when using HTTPS. Allowe
 
 # Create the realm
 /subsystem=elytron/token-realm=oauth2-realm:add(principal-claim=preferred_username, oauth2-introspection={client-id=my-client-id, client-secret=keep_it_secret, client-ssl-context=default-client-ssl-context, introspection-url=https://as.example.com/token/introspect})
-```
+----

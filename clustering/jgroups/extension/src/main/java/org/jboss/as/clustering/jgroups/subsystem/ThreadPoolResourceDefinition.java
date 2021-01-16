@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.BiConsumer;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
@@ -43,11 +44,11 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition.Parameters;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -57,17 +58,13 @@ import org.jboss.dmr.ModelType;
  * @author Paul Ferraro
  * @version Aug 2014
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory {
+public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory, BiConsumer<ResourceTransformationDescriptionBuilder, ModelVersion> {
 
-    DEFAULT("default", 0, 200, 0, 60000L) {
+    DEFAULT("default", 0, 200, 0, 60000L, null) {
         @Override
-        void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.getDefinition());
-
+        public void accept(ResourceTransformationDescriptionBuilder builder, ModelVersion version) {
             if (JGroupsModel.VERSION_6_0_0.requiresTransformation(version)) {
-                for (Attribute attribute : Arrays.asList(this.getMinThreads(), this.getMaxThreads(), this.getQueueLength())) {
-                    builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute.getDefinition()), attribute.getName());
-                }
+                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.getMinThreads().getName(), this.getMaxThreads().getName(), this.getQueueLength().getName());
             }
         }
     },
@@ -82,24 +79,16 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         return PathElement.pathElement("thread-pool", name);
     }
 
-    private final SimpleResourceDefinition definition;
+    private final PathElement path;
+    private final JGroupsModel deprecation;
     private final Attribute minThreads;
     private final Attribute maxThreads;
     private final Attribute queueLength;
     private final Attribute keepAliveTime;
-    private final boolean deprecated;
-
-    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime) {
-        this(name, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepAliveTime, null);
-    }
 
     ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, JGroupsModel deprecation) {
-        Parameters parameters = new Parameters(pathElement(name), JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(pathElement(name), pathElement(PathElement.WILDCARD_VALUE)));
-        this.deprecated = (deprecation != null);
-        if (this.deprecated) {
-            parameters.setDeprecatedSince(deprecation.getVersion());
-        }
-        this.definition = new SimpleResourceDefinition(parameters);
+        this.path = pathElement(name);
+        this.deprecation = deprecation;
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
         this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0), deprecation).setDeprecated(JGroupsModel.VERSION_6_0_0.getVersion()).build());
@@ -121,16 +110,20 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     @Override
-    public ResourceDefinition getDefinition() {
-        return this.definition;
-    }
-
-    @Override
     public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this.definition);
+        ResourceDescriptionResolver resolver = JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(this.path, pathElement(PathElement.WILDCARD_VALUE));
+        SimpleResourceDefinition.Parameters parameters = new SimpleResourceDefinition.Parameters(this.path, resolver);
+        if (this.deprecation != null) {
+            parameters.setDeprecatedSince(this.deprecation.getVersion());
+        }
+        ResourceDefinition definition = new SimpleResourceDefinition(parameters);
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(definition);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes()).addAttributes(this.getQueueLength());
-        ResourceServiceHandler handler = !this.deprecated ? new SimpleResourceServiceHandler(this) : null;
+        ResourceDescriptor descriptor = new ResourceDescriptor(resolver)
+                .addAttributes(this.minThreads, this.maxThreads, this.keepAliveTime)
+                .addIgnoredAttributes(this.queueLength)
+                ;
+        ResourceServiceHandler handler = (this.deprecation == null) ? new SimpleResourceServiceHandler(this) : null;
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 
@@ -162,17 +155,25 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         return this.queueLength;
     }
 
-    void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.definition);
+    @Override
+    public PathElement getPathElement() {
+        return this.path;
+    }
 
+    @Override
+    public void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.path);
+        this.accept(builder, version);
+    }
+
+    @Override
+    public void accept(ResourceTransformationDescriptionBuilder builder, ModelVersion version) {
         if (JGroupsModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(this.queueLength.getDefinition()), this.queueLength.getName());
+            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.queueLength.getName());
         }
 
         if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-            for (Attribute attribute : Arrays.asList(this.minThreads, this.maxThreads)) {
-                builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute.getDefinition()), attribute.getName());
-            }
+            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.minThreads.getName(), this.maxThreads.getName());
         }
     }
 }

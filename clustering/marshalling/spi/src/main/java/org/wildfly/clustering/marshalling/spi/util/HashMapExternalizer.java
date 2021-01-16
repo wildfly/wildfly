@@ -22,32 +22,19 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.IntFunction;
+
+import org.wildfly.clustering.marshalling.spi.ValueFunction;
+import org.wildfly.clustering.marshalling.spi.util.HashSetExternalizer.CapacityFactory;
+import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class HashMapExternalizer<T extends Map<Object, Object>> extends MapExternalizer<T, Void> {
+public class HashMapExternalizer<T extends Map<Object, Object>> extends MapExternalizer<T, Void, Integer> {
 
-    public HashMapExternalizer(Class<?> targetClass, Supplier<T> factory) {
-        super(targetClass, new Function<Void, T>() {
-            @Override
-            public T apply(Void context) {
-                return factory.get();
-            }
-        });
-    }
-
-    @Override
-    protected void writeContext(ObjectOutput output, T map) {
-    }
-
-    @Override
-    protected Void readContext(ObjectInput input) {
-        return null;
+    public HashMapExternalizer(Class<T> targetClass, IntFunction<T> factory) {
+        super(targetClass, new CapacityFactory<>(factory), Map.Entry::getValue, ValueFunction.voidFunction(), ValueExternalizer.VOID);
     }
 }

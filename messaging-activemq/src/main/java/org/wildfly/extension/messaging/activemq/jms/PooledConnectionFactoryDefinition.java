@@ -25,6 +25,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 import static java.lang.System.arraycopy;
 import static org.wildfly.extension.messaging.activemq.AbstractTransportDefinition.CONNECTOR_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.wildfly.extension.messaging.activemq.AbstractTransportDefinition;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
@@ -152,12 +154,17 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
     public void registerAttributes(ManagementResourceRegistration registry) {
         Collection<AttributeDefinition> definitions = getAttributes();
         ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(definitions);
+        CredentialReferenceWriteAttributeHandler credentialReferenceWriteAttributeHandler = new CredentialReferenceWriteAttributeHandler(CREDENTIAL_REFERENCE);
         for (AttributeDefinition attr : definitions) {
             if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 if (deployed) {
                     registry.registerReadOnlyAttribute(attr, PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
                 } else {
-                    registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
+                    if (attr.equals(CREDENTIAL_REFERENCE)) {
+                        registry.registerReadWriteAttribute(attr, null, credentialReferenceWriteAttributeHandler);
+                    } else {
+                        registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
+                    }
                 }
             }
         }

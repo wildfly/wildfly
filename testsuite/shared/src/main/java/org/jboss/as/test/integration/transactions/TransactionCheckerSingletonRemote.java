@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.transactions;
 
+import javax.ejb.Remote;
 import java.util.Collection;
 
 /**
@@ -30,6 +31,7 @@ import java.util.Collection;
  *
  * @author Ondra Chaloupka <ochaloup@redhat.com>
  */
+@Remote
 public interface TransactionCheckerSingletonRemote {
     int getCommitted();
     void addCommit();

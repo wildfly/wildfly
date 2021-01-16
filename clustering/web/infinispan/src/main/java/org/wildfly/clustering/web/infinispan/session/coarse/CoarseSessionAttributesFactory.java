@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,9 +37,8 @@ import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
@@ -80,9 +80,13 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     @Override
     public Map<String, Object> createValue(String id, Void context) {
         Map<String, Object> attributes = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
-        V value = this.marshaller.write(attributes);
-        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
-        return attributes;
+        try {
+            V value = this.marshaller.write(attributes);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
+            return attributes;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
@@ -100,7 +104,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         if (value != null) {
             try {
                 return this.marshaller.read(value);
-            } catch (InvalidSerializedFormException e) {
+            } catch (IOException e) {
                 InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
                 if (purgeIfInvalid) {
                     this.purge(id);
@@ -126,11 +130,14 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, Object> values, ImmutableSessionMetaData metaData, C context) {
-        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, values);
-        SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
-        Mutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? Mutator.PASSIVE : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(values));
-        return new CoarseSessionAttributes(values, mutator, this.marshaller, this.immutability, this.properties, notifier);
+    public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
+        try {
+            Mutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? Mutator.PASSIVE : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
+            SessionActivationNotifier notifier = this.properties.isPersistent() ? new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
+            return new CoarseSessionAttributes(attributes, mutator, this.marshaller, this.immutability, this.properties, notifier);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
@@ -139,13 +146,13 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     }
 
     @CacheEntriesEvicted
-    public void evicted(CacheEntriesEvictedEvent<Key<String>, ?> event) {
+    public void evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
         if (!event.isPre()) {
             Cache<SessionAttributesKey, V> cache = this.cache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
-            for (Key<String> key : event.getEntries().keySet()) {
+            for (GroupedKey<String> key : event.getEntries().keySet()) {
                 // Workaround for ISPN-8324
                 if (key instanceof SessionCreationMetaDataKey) {
-                    cache.evict(new SessionAttributesKey(key.getValue()));
+                    cache.evict(new SessionAttributesKey(key.getId()));
                 }
             }
         }

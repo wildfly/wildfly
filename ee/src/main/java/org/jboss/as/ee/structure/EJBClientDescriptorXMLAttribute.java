@@ -17,6 +17,8 @@ public enum EJBClientDescriptorXMLAttribute {
     SECURITY_REALM("security-realm"),
     INVOCATION_TIMEOUT("invocation-timeout"),
     DEPLOYMENT_NODE_SELECTOR("deployment-node-selector"),
+    DEFAULT_COMPRESSION("default-compression"),
+    URI("uri"),
     // default unknown attribute
     UNKNOWN(null);
 

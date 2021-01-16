@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<module xmlns="urn:jboss:module:1.5" name="org.wildfly.extension.messaging-activemq">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-messaging-activemq}"/>
+        <artifact name="${org.jboss.activemq.artemis.integration:artemis-wildfly-integration}"/>
+        <resource-root path="META-INF"/>
+    </resources>
+
+    <dependencies>
+        <!-- io.undertow.core is required only if http-acceptor are used -->
+        <module name="io.undertow.core" optional="true" />
+        <module name="io.netty" />
+        <module name="javax.api"/>
+        <module name="javax.enterprise.api"/>
+        <module name="javax.jms.api"/>
+        <module name="javax.json.api"/>
+        <module name="javax.resource.api" />
+        <module name="javax.transaction.api"/>
+        <module name="org.apache.activemq.artemis" services="import" />
+        <module name="org.apache.activemq.artemis.ra"/>
+        <module name="org.jboss.common-beans"/>
+        <module name="org.jboss.staxmapper"/>
+        <!-- required to provide high-level JMS CLI commands loaded by the extension -->
+        <module name="org.jboss.as.cli" optional="true"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.network"/>
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.jboss.as.server"/>
+        <!-- Only used if capability org.wildfly.weld is available -->
+        <module name="org.jboss.as.weld.common" optional="true"/>
+        <module name="org.jboss.jandex"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.ironjacamar.impl"/>
+        <module name="org.jboss.ironjacamar.api"/>
+        <module name="org.jboss.as.connector" />
+        <!-- Use of legacy security domain ends up using this module's class loader. -->
+        <module name="org.jboss.as.security" optional="true"/>
+        <module name="org.jboss.as.security-plugins"/>
+        <module name="org.jboss.vfs"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.picketbox"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.wildfly.naming-client" services="import" />
+        <module name="org.jboss.threads"/>
+        <module name="org.jboss.weld.core"/>
+        <!-- org.jboss.xnio is required only if http-acceptor are used -->
+        <module name="org.jboss.xnio" optional="true" />
+        <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
+        <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true" />
+        <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.spi"/>
+        <module name="org.wildfly.transaction.client"/>
+        <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
+        <module name="org.hornetq.client" />
+    </dependencies>
+</module>

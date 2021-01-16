@@ -30,7 +30,7 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingletonRemote;
-import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
+import org.jboss.as.test.integration.transactions.RemoteLookups;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -45,6 +45,7 @@ import org.junit.runner.RunWith;
 import javax.naming.NamingException;
 import javax.transaction.TransactionRolledbackException;
 
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.util.PropertyPermission;
@@ -82,10 +83,10 @@ public class IIOPTimeoutTestCase {
     }
 
     @Before
-    public void startUp() throws NamingException {
+    public void startUp() throws NamingException, URISyntaxException {
         if(checker == null) {
-            checker = TransactionTestLookupUtil.lookupEjbStateless(mgmtClient.getMgmtAddress(), 8080,
-                    DEPLOYMENT_NAME, TransactionCheckerSingleton.class, TransactionCheckerSingletonRemote.class);
+            checker = RemoteLookups.lookupEjbStateless(mgmtClient, DEPLOYMENT_NAME,
+                    TransactionCheckerSingleton.class, TransactionCheckerSingletonRemote.class);
         }
         checker.resetAll();
     }
@@ -115,7 +116,7 @@ public class IIOPTimeoutTestCase {
 
         try {
             bean.testTimeout();
-            Assert.fail("Excpected rollback exception being thrown");
+            Assert.fail("Expected rollback exception being thrown");
         } catch (Exception e) {
             // expected: enlistment of the resource to a timed out transaction should fail
             // the SystemException from wildfly transaction client is transfered to ServerException
@@ -188,13 +189,13 @@ public class IIOPTimeoutTestCase {
     }
 
     private TestBeanRemote lookupStateless() throws NamingException, RemoteException {
-        TestBeanHome beanHome = TransactionTestLookupUtil.lookupIIOP(mgmtClient.getMgmtAddress(), DEFAULT_IIOP_PORT,
+        TestBeanHome beanHome = RemoteLookups.lookupIIOP(mgmtClient.getMgmtAddress(), DEFAULT_IIOP_PORT,
                 TestBeanHome.class, StatelessBean.class);
         return beanHome.create();
     }
 
     private TestBeanRemote lookupStateful() throws NamingException, RemoteException {
-        TestBeanHome beanHome = TransactionTestLookupUtil.lookupIIOP(mgmtClient.getMgmtAddress(), DEFAULT_IIOP_PORT,
+        TestBeanHome beanHome = RemoteLookups.lookupIIOP(mgmtClient.getMgmtAddress(), DEFAULT_IIOP_PORT,
                 TestBeanHome.class, StatefulBean.class);
         return beanHome.create();
     }

@@ -26,10 +26,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.infinispan.client.hotrod.ProtocolVersion;
+import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
-import org.infinispan.client.hotrod.near.NearCacheService;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
@@ -38,6 +39,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.NearCacheFactory;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.FunctionalService;
@@ -57,11 +59,11 @@ public class RemoteCacheServiceConfigurator<K, V> extends SimpleServiceNameProvi
     private final String containerName;
     private final String cacheName;
     private final String configurationName;
-    private final Function<ClientListenerNotifier, NearCacheService<K, V>> nearCacheFactory;
+    private final NearCacheFactory<K, V> nearCacheFactory;
 
     private volatile SupplierDependency<RemoteCacheContainer> container;
 
-    public RemoteCacheServiceConfigurator(ServiceName name, String containerName, String cacheName, String configurationName, Function<ClientListenerNotifier, NearCacheService<K, V>> nearCacheFactory) {
+    public RemoteCacheServiceConfigurator(ServiceName name, String containerName, String cacheName, String configurationName, NearCacheFactory<K, V> nearCacheFactory) {
         super(name);
         this.containerName = containerName;
         this.cacheName = cacheName;
@@ -71,9 +73,18 @@ public class RemoteCacheServiceConfigurator<K, V> extends SimpleServiceNameProvi
 
     @Override
     public RemoteCache<K, V> get() {
+        String templateName = (this.configurationName != null) ? this.configurationName : DefaultTemplate.DIST_SYNC.getTemplateName();
+        NearCacheMode mode = this.nearCacheFactory.getMode();
+        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<RemoteCacheConfigurationBuilder>() {
+            @Override
+            public void accept(RemoteCacheConfigurationBuilder builder) {
+                builder.forceReturnValues(false).nearCacheMode(mode).transactionMode(TransactionMode.NONE).templateName(templateName);
+            }
+        };
+        this.container.get().getConfiguration().addRemoteCache(this.cacheName, configurator);
         RemoteCacheContainer container = this.container.get();
         try (RemoteCacheContainer.NearCacheRegistration registration = (this.nearCacheFactory != null) ? container.registerNearCacheFactory(this.cacheName, this.nearCacheFactory) : null) {
-            RemoteCache<K, V> cache = (container.getConfiguration().version().compareTo(ProtocolVersion.PROTOCOL_VERSION_27) >= 0) ? container.administration().getOrCreateCache(this.cacheName, this.configurationName) : container.getCache(this.cacheName);
+            RemoteCache<K, V> cache = container.getCache(this.cacheName);
             cache.start();
             return cache;
         }
@@ -82,6 +93,7 @@ public class RemoteCacheServiceConfigurator<K, V> extends SimpleServiceNameProvi
     @Override
     public void accept(RemoteCache<K, V> cache) {
         cache.stop();
+        this.container.get().getConfiguration().removeRemoteCache(this.cacheName);
     }
 
     @Override

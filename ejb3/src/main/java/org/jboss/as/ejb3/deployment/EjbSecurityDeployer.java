@@ -22,10 +22,10 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import org.jboss.as.ee.security.AbstractSecurityDeployer;
+import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.ejb3.security.EjbJaccConfig;
 import org.jboss.as.ejb3.security.EjbJaccService;
-import org.jboss.as.security.deployment.AbstractSecurityDeployer;
-import org.jboss.as.security.service.JaccService;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 

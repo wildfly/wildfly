@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-picketlink</artifactId>
@@ -38,6 +38,12 @@
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-security-plugins</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

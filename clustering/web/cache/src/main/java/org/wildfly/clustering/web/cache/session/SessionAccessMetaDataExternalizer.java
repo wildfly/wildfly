@@ -41,13 +41,14 @@ public class SessionAccessMetaDataExternalizer implements Externalizer<SimpleSes
     @Override
     public void writeObject(ObjectOutput output, SimpleSessionAccessMetaData metaData) throws IOException {
         // If last access duration is a sub-second value, persist as 1 second; otherwise, session will still be considered "new"
-        IndexSerializer.VARIABLE.writeInt(output, Math.max((int) metaData.getLastAccessedDuration().getSeconds(), 1));
+        IndexSerializer.VARIABLE.writeInt(output, Math.max((int) metaData.getSinceCreationDuration().getSeconds(), 1));
+        IndexSerializer.VARIABLE.writeInt(output, Math.max((int) metaData.getLastAccessDuration().getSeconds(), 1));
     }
 
     @Override
     public SimpleSessionAccessMetaData readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
-        metaData.setLastAccessedDuration(Duration.ofSeconds(IndexSerializer.VARIABLE.readInt(input)));
+        metaData.setLastAccessDuration(Duration.ofSeconds(IndexSerializer.VARIABLE.readInt(input)), Duration.ofSeconds(IndexSerializer.VARIABLE.readInt(input)));
         return metaData;
     }
 

@@ -39,13 +39,12 @@ import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 public class InfinispanBeanGroupTestCase {
     private String id;
-    private BeanGroupEntry<String, Object> entry = mock(BeanGroupEntry.class);
-    private MarshallingContext context = mock(MarshallingContext.class);
+    private BeanGroupEntry<String, Object, Object> entry = mock(BeanGroupEntry.class);
+    private Object context = new Object();
     private Mutator mutator = mock(Mutator.class);
     private Remover<String> remover = mock(Remover.class);
 
@@ -68,8 +67,8 @@ public class InfinispanBeanGroupTestCase {
     }
 
     @Test
-    public void getBeans() throws ClassNotFoundException, IOException {
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = mock(MarshalledValue.class);
+    public void getBeans() throws IOException {
+        MarshalledValue<Map<String, Object>, Object> value = mock(MarshalledValue.class);
         Map<String, Object> beans = Collections.singletonMap("id", new Object());
 
         when(this.entry.getBeans()).thenReturn(value);
@@ -79,8 +78,8 @@ public class InfinispanBeanGroupTestCase {
     }
 
     @Test
-    public void addBean() throws ClassNotFoundException, IOException {
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = mock(MarshalledValue.class);
+    public void addBean() throws IOException {
+        MarshalledValue<Map<String, Object>, Object> value = mock(MarshalledValue.class);
         Map<String, Object> beans = mock(Map.class);
         String id = "id";
         Object bean = new Object();
@@ -94,9 +93,9 @@ public class InfinispanBeanGroupTestCase {
     }
 
     @Test
-    public void getBean() throws ClassNotFoundException, IOException {
+    public void getBean() throws IOException {
         PassivationListener<Object> listener = mock(PassivationListener.class);
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = mock(MarshalledValue.class);
+        MarshalledValue<Map<String, Object>, Object> value = mock(MarshalledValue.class);
         Map<String, Object> beans = mock(Map.class);
         String id = "id";
         Object bean = new Object();
@@ -122,9 +121,9 @@ public class InfinispanBeanGroupTestCase {
     }
 
     @Test
-    public void releaseBean() throws ClassNotFoundException, IOException {
+    public void releaseBean() throws IOException {
         PassivationListener<Object> listener = mock(PassivationListener.class);
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = mock(MarshalledValue.class);
+        MarshalledValue<Map<String, Object>, Object> value = mock(MarshalledValue.class);
         Map<String, Object> beans = mock(Map.class);
         String id = "id";
         Object bean = new Object();
@@ -151,8 +150,9 @@ public class InfinispanBeanGroupTestCase {
     }
 
     @Test
-    public void removeBean() throws ClassNotFoundException, IOException {
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = mock(MarshalledValue.class);
+    public void removeBean() throws IOException {
+        MarshalledValue<Map<String, Object>, Object> value = mock(MarshalledValue.class);
+        PassivationListener<Object> listener = mock(PassivationListener.class);
         Map<String, Object> beans = mock(Map.class);
         String id = "id";
         Object bean = new Object();
@@ -161,15 +161,17 @@ public class InfinispanBeanGroupTestCase {
         when(value.get(this.context)).thenReturn(beans);
         when(beans.remove(id)).thenReturn(bean);
 
-        Object result = this.group.removeBean(id);
+        Object result = this.group.removeBean(id, listener);
 
         Assert.assertSame(bean, result);
+
+        verify(listener).postActivate(bean);
     }
 
     @Test
-    public void prePassivate() throws ClassNotFoundException, IOException {
+    public void prePassivate() throws IOException {
         PassivationListener<Object> listener = mock(PassivationListener.class);
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = mock(MarshalledValue.class);
+        MarshalledValue<Map<String, Object>, Object> value = mock(MarshalledValue.class);
         Map<String, Object> beans = mock(Map.class);
         String id = "id";
         Object bean = new Object();
@@ -188,9 +190,9 @@ public class InfinispanBeanGroupTestCase {
     }
 
     @Test
-    public void postActivate() throws ClassNotFoundException, IOException {
+    public void postActivate() throws IOException {
         PassivationListener<Object> listener = mock(PassivationListener.class);
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = mock(MarshalledValue.class);
+        MarshalledValue<Map<String, Object>, Object> value = mock(MarshalledValue.class);
         Map<String, Object> beans = mock(Map.class);
         String id = "id";
         Object bean = new Object();
@@ -209,8 +211,8 @@ public class InfinispanBeanGroupTestCase {
     }
 
     @Test
-    public void close() throws ClassNotFoundException, IOException {
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = mock(MarshalledValue.class);
+    public void close() throws IOException {
+        MarshalledValue<Map<String, Object>, Object> value = mock(MarshalledValue.class);
 
         when(this.entry.getBeans()).thenReturn(value);
         when(value.get(this.context)).thenReturn(Collections.<String, Object>emptyMap());

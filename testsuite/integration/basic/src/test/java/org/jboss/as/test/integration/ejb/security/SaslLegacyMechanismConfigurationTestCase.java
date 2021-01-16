@@ -77,6 +77,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
    private static final String MODULE = "SaslLegacyMechanismConfigurationTestCase";
    public static final String ANONYMOUS_PLAIN_SASL_MECHANISMS = "PLAIN,ANONYMOUS";
    public static final String ANONYMOUS_PLAIN_SASL_MECHANISMS_REVERSED = "ANONYMOUS,PLAIN";
+   public static final String SASL_DISALLOWED_MECHANISMS = "DIGEST,DIGEST-MD5,JBOSS-LOCAL-USER";
 
    @ContainerResource
    private ManagementClient managementClient;
@@ -115,13 +116,13 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
 
    @Test
    public void testAnonymous() throws Exception {
-      String echoValue = getBean(log, null, null).getPrincipal();
+      String echoValue = getBean(log, null, null, true).getPrincipal();
       Assert.assertEquals("anonymous", echoValue);
    }
 
    @Test
    public void testAuthorized() throws Exception {
-      String echoValue = getBean(log, "user1", "password1").getPrincipal();
+      String echoValue = getBean(log, "user1", "password1", true).getPrincipal();
       Assert.assertEquals("user1", echoValue);
    }
 
@@ -130,7 +131,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
       tryReloadWithSaslMechanism(ANONYMOUS_PLAIN_SASL_MECHANISMS_REVERSED);
 
       try {
-         String echoValue = getBean(log, "user1", "password1").getPrincipal();
+         String echoValue = getBean(log, "user1", "password1", true).getPrincipal();
          Assert.assertEquals("user1", echoValue);
       } finally {
          tryReloadWithSaslMechanism(ANONYMOUS_PLAIN_SASL_MECHANISMS);
@@ -142,7 +143,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
       Exception ex = null;
       try {
          tryReloadWithSaslMechanism("FAKE_MECHANISM,PLAIN,ANONYMOUS");
-         getBean(log, null, null).getPrincipal();
+         getBean(log, null, null, true).getPrincipal();
       } catch (EJBException e) {
          ex = e;
       } finally {
@@ -159,7 +160,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
       Exception ex = null;
       try {
          tryReloadWithSaslMechanism("EXTERNAL,PLAIN,ANONYMOUS");
-         getBean(log, null, null).getPrincipal();
+         getBean(log, null, null, true).getPrincipal();
       } catch (EJBException e) {
          ex = e;
       } finally {
@@ -168,6 +169,17 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
       }
 
       Assert.assertNotNull("Call to ejb should fail, because http-connector is not valid", ex);
+   }
+
+   @Test
+   public void testDigest() throws Exception {
+        try {
+            tryReloadWithSaslMechanism("DIGEST-MD5");
+            String echoValue = getBean(log, "user1", "password1", false).getPrincipal();
+            Assert.assertEquals("user1", echoValue);
+        } finally {
+            tryReloadWithSaslMechanism(ANONYMOUS_PLAIN_SASL_MECHANISMS);
+        }
    }
 
    private void tryReloadWithSaslMechanism(String mechanismName) throws Exception {
@@ -182,9 +194,9 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
 
    // ejb client code
 
-   private SaslLegacyMechanismBeanRemote getBean(final Logger log, String username, String password) throws Exception {
+   private SaslLegacyMechanismBeanRemote getBean(final Logger log, String username, String password, boolean addDisallowed) throws Exception {
       log.trace("**** creating InitialContext");
-      InitialContext ctx = new InitialContext(setupEJBClientProperties(username, password));
+      InitialContext ctx = new InitialContext(setupEJBClientProperties(username, password, addDisallowed));
       try {
          log.trace("**** looking up StatelessBean through JNDI");
          SaslLegacyMechanismBeanRemote bean = (SaslLegacyMechanismBeanRemote)
@@ -195,7 +207,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
       }
    }
 
-   private Properties setupEJBClientProperties(String username, String password) throws IOException {
+   private Properties setupEJBClientProperties(String username, String password, boolean addDisallowed) throws IOException {
       log.trace("*** reading EJBClientContextSelector properties");
       // setup the properties
       final String clientPropertiesFile = "org/jboss/as/test/integration/ejb/security/jboss-ejb-client.properties";
@@ -215,6 +227,9 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
          properties.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
       }
 
+      if (addDisallowed) {
+          properties.put("remote.connection.default.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS", SASL_DISALLOWED_MECHANISMS);
+      }
 
       if(username != null && password != null) {
          properties.put(Context.SECURITY_PRINCIPAL, username);

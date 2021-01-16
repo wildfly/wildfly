@@ -33,9 +33,11 @@ enum AgroalNamespace {
 
     UNKNOWN(null), // must be first
 
-    AGROAL_1_0("urn:jboss:domain:datasources-agroal:1.0");
+    AGROAL_1_0("urn:jboss:domain:datasources-agroal:1.0"),
 
-    public static final AgroalNamespace CURRENT = AGROAL_1_0;
+    AGROAL_2_0("urn:jboss:domain:datasources-agroal:2.0");
+
+    public static final AgroalNamespace CURRENT = AGROAL_2_0;
 
     private static final Map<String, AgroalNamespace> MAP;
 

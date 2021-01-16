@@ -22,24 +22,19 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.persistence.filestore.FileTimerPersistence;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Adds the timer service file based data store
@@ -47,6 +42,10 @@ import org.jboss.msc.service.ServiceName;
  * @author Stuart Douglas
  */
 public class FileDataStoreAdd extends AbstractAddStepHandler {
+
+    private static final String TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME = "org.wildfly.transactions.transaction-synchronization-registry";
+    private static final String TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME = "org.wildfly.transactions.global-default-local-provider";
+    private static final String PATH_MANAGER_CAPABILITY_NAME = "org.wildfly.management.path-manager";
 
     FileDataStoreAdd(AttributeDefinition... attributes) {
         super(attributes);
@@ -59,14 +58,14 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
         final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
 
         final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(true, path, relativeTo);
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final ServiceName serviceName = TimerPersistence.SERVICE_NAME.append(address.getLastElement().getValue());
-        final ServiceBuilder sb = context.getServiceTarget().addService(serviceName, fileTimerPersistence);
-        sb.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader());
-        sb.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, fileTimerPersistence.getPathManager());
-        sb.requires(context.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider", null));
-        sb.addDependency(context.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry", null), TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry());
-        sb.install();
-    }
 
+        // add the TimerPersistence instance
+        final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
+        final CapabilityServiceBuilder<FileTimerPersistence> builder = serviceTarget.addCapability(FileDataStoreResourceDefinition.TIMER_PERSISTENCE_CAPABILITY, fileTimerPersistence);
+        builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader());
+        builder.addCapabilityRequirement(PATH_MANAGER_CAPABILITY_NAME, PathManager.class, fileTimerPersistence.getPathManager());
+        builder.addCapabilityRequirement(TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME, Void.class);
+        builder.addCapabilityRequirement(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME, TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry());
+        builder.install();
+    }
 }

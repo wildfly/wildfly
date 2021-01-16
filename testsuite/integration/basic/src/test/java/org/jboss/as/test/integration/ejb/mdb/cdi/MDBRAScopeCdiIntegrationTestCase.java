@@ -24,10 +24,12 @@ package org.jboss.as.test.integration.ejb.mdb.cdi;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.PropertyPermission;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -51,6 +53,7 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -180,8 +183,8 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
         ResourceAdapterArchive raa = createRAR();
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "xxx-ejbs.jar");
         ejbJar.addClasses(/* MDBRAScopeCdiIntegrationTestCase.class, */CdiIntegrationMDB.class, RequestScopedCDIBean.class,
-                MDBProxy.class, MDBProxyBean.class, JMSMessagingUtil.class, JmsQueueSetup.class).addPackage(
-                JMSOperations.class.getPackage());
+                MDBProxy.class, MDBProxyBean.class, JMSMessagingUtil.class, JmsQueueSetup.class, TimeoutUtil.class)
+                .addPackage(JMSOperations.class.getPackage());
         ejbJar.addAsManifestResource(new StringAsset(
                 "Dependencies: org.jboss.as.controller-client, org.jboss.as.controller, org.jboss.dmr \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
@@ -189,6 +192,8 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, deploymentName);
         ear.addAsModule(raa);
         ear.addAsModule(ejbJar);
+        ear.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
         return ear;
     }
 
@@ -206,7 +211,7 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
         raa.addAsManifestResource(RarInsideEarReDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client, org.jboss.as.controller, org.jboss.dmr,org.jboss.as.cli\n"),
+                                "Dependencies: org.jboss.as.controller-client, org.jboss.as.controller, org.jboss.dmr\n"),
                         "MANIFEST.MF");
 
         return raa;

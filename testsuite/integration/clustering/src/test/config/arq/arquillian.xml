@@ -42,6 +42,19 @@
         </configuration>
     </container>
 
+    <container qualifier="node-non-ha" mode="manual">
+        <configuration>
+            <property name="jbossHome">${basedir}/target/${wildfly1}</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/${wildfly1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+            <property name="serverConfig">${jboss.server.config.file.name}</property>
+            <property name="jbossArguments">${jboss.args}</property>
+            <property name="managementAddress">${node0}</property>
+            <property name="managementPort">${as.managementPort:9990}</property>
+            <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+            <property name="waitForPortsTimeoutInSeconds">8</property>
+        </configuration>
+    </container>
+
     <group qualifier="clustering-all">
         <container qualifier="node-1" mode="custom">
             <configuration>
@@ -94,19 +107,6 @@
             </configuration>
         </container>
 
-        <container qualifier="infinispan-server-1" mode="custom">
-            <configuration>
-                <property name="jbossHome">${basedir}/target/infinispan-server-${version.org.infinispan}</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.socket.binding.port-offset=400</property>
-                <property name="serverConfig">clustered.xml</property>
-                <property name="modulePath">${basedir}/target/infinispan-server-${version.org.infinispan}/modules</property>
-                <property name="managementAddress">${node0}</property>
-                <property name="managementPort">10390</property>
-                <property name="waitForPorts">10390</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
-            </configuration>
-        </container>
-
         <container qualifier="load-balancer-1" mode="custom">
             <configuration>
                 <property name="jbossHome">${basedir}/target/${wildfly-load-balancer1}</property>
@@ -115,19 +115,6 @@
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">10490</property>
                 <property name="waitForPorts">10490</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
-            </configuration>
-        </container>
-
-        <container qualifier="node-non-ha" mode="custom">
-            <configuration>
-                <property name="jbossHome">${basedir}/target/${wildfly1}</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/${wildfly1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
-                <property name="serverConfig">standalone.xml</property>
-                <property name="jbossArguments">${jboss.args}</property>
-                <property name="managementAddress">${node0}</property>
-                <property name="managementPort">${as.managementPort:9990}</property>
-                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>

@@ -23,7 +23,7 @@
 package org.jboss.as.ejb3.subsystem.deployment;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for a {@link org.jboss.as.ejb3.component.entity.EntityBeanComponent}.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a {@link org.jboss.as.ejb3.component.stateless.StatelessSessionComponent}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

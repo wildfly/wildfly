@@ -1,0 +1,96 @@
+[[Installation_Guide]]
+= Installation Guide
+WildFly team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 3
+:toc-title: Installation Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 14
+
+:leveloffset: +1
+
+ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2020 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+link:#Zipped_Installation[Zipped distribution], 
+link:#Galleon_Provisioning[Galleon provisioning] or link:#Bootable_JAR[bootable JAR], this guide helps you identify the 
+installation strategy that best fits your application requirements.
+
+[[Zipped_Installation]]
+= Installing WildFly from a zipped distribution
+
+http://www.wildfly.org/downloads[Downloading the WildFly release zip] and unzipping it is the traditional way to install
+a complete WildFly server with support for both standalone and managed domain operating modes. A WildFly distribution
+contains a large number of default configurations allowing you to select the server features and operating modes.
+
+A WildFly distribution based installation is well suited when:
+
+* You want to rely on a traditional Jakarta EE application deployment.
+* You want a Jakarta EE or Eclipse MicroProfile platform compliant server that offers all Jakarta EE or MicroProfile features.
+* You are not (yet) concerned by server installation size and memory footprint.
+* You are not yet sure of the kind of operating mode and application you are targeting.
+* Your server instances will contain one or more application deployments.
+
+If that is the kind of installation you are aiming at, the guides that you should read next are:
+
+* The link:Getting_Started_Guide{outfilesuffix}[Getting Started Guide] shows you
+how to install, start and configure the server.
+* The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
+Started Developing Applications Guide] shows you how to build Jakarta EE
+applications and deploy them to WildFly.
+
+[[Galleon_Provisioning]]
+= Installing WildFly with Galleon
+
+Galleon provisioning tooling allows you to construct a customized WildFly installation according to your application needs. 
+Some applications don't need a fully featured server supporting all operating modes and containing all Jakarta EE capabilities. 
+Galleon tooling allows you to select the server capabilities you want to see installed. 
+
+A WildFly server provisioned with Galleon is well suited when:
+
+* You want to rely on a traditional Jakarta EE application deployment.
+* You want to easily update an installation to the latest WildFly version.
+* Your application requires only a subset of the Jakarta EE or Eclipse MicroProfile platform APIs
+(although Galleon can provision a server that supports the full set of Jakarta EE and MicroProfile platform APIs).
+* You are concerned by server installation size and memory footprint.
+* You are only using standalone operating mode (with support for High Availability or not).
+* Your server instances will contain one or more application deployments.
+
+If that is the kind of installation you are aiming at, the guides that you should read next are:
+
+* The link:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] shows you how to
+provision customized WildFly server using Galleon.
+* The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
+Started Developing Applications Guide] shows you how to build Jakarta EE
+applications and deploy them to WildFly.
+
+[[Bootable_JAR]]
+= WildFly Bootable JAR
+
+A bootable JAR contains both a customized WildFly server and your deployment. Such a JAR can
+then run with a simple java command such as ``java -jar myapp-bootable.jar``
+
+A bootable JAR is built using Maven. You need to integrate the  
+link:https://github.com/wildfly-extras/wildfly-jar-maven-plugin[bootable JAR Maven plugin] 
+in the Maven project of your application.
+
+A Bootable JAR is well suited when:
+
+* You want to leverage your existing WildFly applications.
+* You want to build a microservice composed of a server and a single application deployment.
+* You are concerned by JAR size and memory footprint.
+* You are only using standalone operating mode (with support for High Availability or not).
+* You are building your application using Maven.
+
+If that is the kind of installation you are aiming at, the guide that you should read next is:
+
+* The link:Bootable_Guide{outfilesuffix}[Bootable JAR Guide] shows you how to package your application and the WildFly server
+into a bootable JAR.

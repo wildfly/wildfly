@@ -27,7 +27,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
+import org.jboss.as.test.integration.transactions.RemoteLookups;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -84,7 +84,7 @@ public class StatelessTimeoutTestCase {
      */
     @Test
     public void noTimeout() throws Exception {
-        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = RemoteLookups.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(1, 0);
     }
 
@@ -96,7 +96,7 @@ public class StatelessTimeoutTestCase {
      */
     @Test
     public void timeout() throws Exception {
-        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = RemoteLookups.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(3, 1);
 
         Assert.assertEquals("Two times two XA resources - for each commit happened", 4, checker.getCommitted());
@@ -111,7 +111,7 @@ public class StatelessTimeoutTestCase {
      */
     @Test
     public void timeoutMultiple() throws Exception {
-        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = RemoteLookups.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(4, 3);
 
         Assert.assertEquals("One time two XA resources - for each commit happened", 2, checker.getCommitted());
@@ -125,13 +125,13 @@ public class StatelessTimeoutTestCase {
      */
     @Test
     public void resetTimeoutToDefault() throws Exception {
-        StatelessBmtRestartTimeoutBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtRestartTimeoutBean.class);
+        StatelessBmtRestartTimeoutBean bean = RemoteLookups.lookupModule(initCtx, StatelessBmtRestartTimeoutBean.class);
         bean.test();
     }
 
     @Test
     public void threadStoringTimeout() throws Exception {
-        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = RemoteLookups.lookupModule(initCtx, StatelessBmtBean.class);
         TransactionManager tm = (TransactionManager) new InitialContext().lookup("java:/TransactionManager");
 
         int transactionTimeoutToSet = 42;

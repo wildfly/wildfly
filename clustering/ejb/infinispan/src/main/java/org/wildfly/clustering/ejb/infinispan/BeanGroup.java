@@ -43,7 +43,7 @@ public interface BeanGroup<I, T> extends AutoCloseable {
     void addBean(I id, T bean);
     T getBean(I id, PassivationListener<T> listener);
     boolean releaseBean(I id, PassivationListener<T> listener);
-    T removeBean(I id);
+    T removeBean(I id, PassivationListener<T> listener);
 
     void prePassivate(I id, PassivationListener<T> listener);
     void postActivate(I id, PassivationListener<T> listener);

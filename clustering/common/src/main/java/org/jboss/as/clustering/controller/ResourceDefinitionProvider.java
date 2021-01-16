@@ -21,63 +21,28 @@
  */
 package org.jboss.as.clustering.controller;
 
-import java.util.List;
-
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Provides a {@link ResourceDefinition} and handles its registration.
  * @author Paul Ferraro
  */
-public interface ResourceDefinitionProvider extends Definable<ResourceDefinition>, ResourceDefinition, Registration<ManagementResourceRegistration> {
+public interface ResourceDefinitionProvider extends Registration<ManagementResourceRegistration> {
 
-    @Override
-    default PathElement getPathElement() {
-        return this.getDefinition().getPathElement();
-    }
+    /**
+     * The registration path of the provided resource definition.
+     * @return a path element
+     */
+    PathElement getPathElement();
 
-    @Override
-    default DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration registration) {
-        return this.getDefinition().getDescriptionProvider(registration);
-    }
-
-    @Override
-    default List<AccessConstraintDefinition> getAccessConstraints() {
-        return this.getDefinition().getAccessConstraints();
-    }
-
-    @Override
-    default boolean isRuntime() {
-        return this.getDefinition().isRuntime();
-    }
-
-    @Override
-    default boolean isOrderedChild() {
-        return this.getDefinition().isOrderedChild();
-    }
-
-    @Override
-    default void registerOperations(ManagementResourceRegistration registration) {
-        // We will handle registration ourselves
-    }
-
-    @Override
-    default void registerAttributes(ManagementResourceRegistration registration) {
-        // We will handle registration ourselves
-    }
-
-    @Override
-    default void registerNotifications(ManagementResourceRegistration registration) {
-        // We will handle registration ourselves
-    }
-
-    @Override
-    default void registerChildren(ManagementResourceRegistration registration) {
-        // We will handle registration ourselves
-    }
+    /**
+     * Builds a resource transformation description for this resource
+     * @param parent the builder of the parent resource
+     * @param version the version to which to transform
+     */
+    void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version);
 }

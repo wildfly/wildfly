@@ -22,7 +22,10 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.ATTRIBUTES;
+import static org.wildfly.extension.messaging.activemq.BridgeDefinition.CREDENTIAL_REFERENCE;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.DISCOVERY_GROUP_NAME;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.FORWARDING_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.INITIAL_CONNECT_ATTEMPTS;
@@ -46,6 +49,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -63,6 +67,12 @@ public class BridgeAdd extends AbstractAddStepHandler {
 
     private BridgeAdd() {
         super(ATTRIBUTES);
+    }
+
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        super.populateModel(context, operation, resource);
+        handleCredentialReferenceUpdate(context, resource.getModel());
     }
 
     @Override
@@ -88,6 +98,11 @@ public class BridgeAdd extends AbstractAddStepHandler {
         }
         // else the initial subsystem install is not complete; MessagingSubsystemAdd will add a
         // handler that calls addBridgeConfigs
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(CREDENTIAL_REFERENCE, context, resource);
     }
 
     static BridgeConfiguration createBridgeConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {

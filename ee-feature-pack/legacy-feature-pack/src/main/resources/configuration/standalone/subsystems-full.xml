@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <subsystems>
+        <subsystem>logging.xml</subsystem>
+        <subsystem>batch-jberet.xml</subsystem>
+        <subsystem>bean-validation.xml</subsystem>
+        <subsystem>core-management.xml</subsystem>
+        <subsystem>datasources.xml</subsystem>
+        <subsystem>deployment-scanner.xml</subsystem>
+        <subsystem>discovery.xml</subsystem>
+        <subsystem>distributable-web.xml</subsystem>
+        <subsystem supplement="full">ee.xml</subsystem>
+        <subsystem>ee-security.xml</subsystem>
+        <subsystem supplement="full">ejb3.xml</subsystem>
+        <subsystem supplement="standalone-wildfly">elytron.xml</subsystem>
+        <subsystem>health.xml</subsystem>
+        <subsystem>iiop-openjdk.xml</subsystem>
+        <subsystem>infinispan.xml</subsystem>
+        <subsystem>io.xml</subsystem>
+        <subsystem>jaxrs.xml</subsystem>
+        <subsystem>jca.xml</subsystem>
+        <subsystem>jdr.xml</subsystem>
+        <subsystem>jmx.xml</subsystem>
+        <subsystem>jpa.xml</subsystem>
+        <subsystem>jsf.xml</subsystem>
+        <subsystem>jsr77.xml</subsystem>
+        <subsystem>mail.xml</subsystem>
+        <subsystem>messaging-activemq.xml</subsystem>
+        <subsystem>metrics.xml</subsystem>
+        <subsystem>naming.xml</subsystem>
+        <subsystem>pojo.xml</subsystem>
+        <subsystem>remoting.xml</subsystem>
+        <subsystem>request-controller.xml</subsystem>
+        <subsystem>resource-adapters.xml</subsystem>
+        <subsystem>sar.xml</subsystem>
+        <subsystem>security.xml</subsystem>
+        <subsystem>security-manager.xml</subsystem>
+        <subsystem>transactions.xml</subsystem>
+        <subsystem>undertow.xml</subsystem>
+        <subsystem>webservices.xml</subsystem>
+        <subsystem>weld.xml</subsystem>
+    </subsystems>
+</config>

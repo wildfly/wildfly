@@ -38,6 +38,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
+import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
@@ -73,6 +74,8 @@ import javax.net.ssl.SSLSession;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,20 +96,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class AssociationImpl implements Association, AutoCloseable {
 
     private static final String RETURNED_CONTEXT_DATA_KEY = "jboss.returned.keys";
+    private static final ListenerHandle NOOP_LISTENER_HANDLE = new ListenerHandle() {
+        @Override
+        public void close() {
+            // Do nothing
+        }
+    };
     private final DeploymentRepository deploymentRepository;
-    private final ClusterTopologyRegistrar clusterTopologyRegistrar;
-    private final Registry<String, List<ClientMapping>> clientMappingRegistry;
+    private final Map<Integer, ClusterTopologyRegistrar> clusterTopologyRegistrars;
     private volatile Executor executor;
 
-    AssociationImpl(final DeploymentRepository deploymentRepository, final Registry<String, List<ClientMapping>> clientMappingRegistry) {
+    AssociationImpl(final DeploymentRepository deploymentRepository, final List<Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>>> clientMappingRegistries) {
         this.deploymentRepository = deploymentRepository;
-        this.clientMappingRegistry = clientMappingRegistry;
-        this.clusterTopologyRegistrar = (clientMappingRegistry != null) ? new ClusterTopologyRegistrar(clientMappingRegistry) : null;
+        this.clusterTopologyRegistrars = clientMappingRegistries.isEmpty() ? Collections.emptyMap() : new HashMap<>(clientMappingRegistries.size());
+        for (Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>> entry : clientMappingRegistries) {
+            this.clusterTopologyRegistrars.put(entry.getKey().getSocketBinding().getSocketAddress().getPort(), new ClusterTopologyRegistrar(entry.getValue()));
+        }
     }
 
     @Override
     public void close() {
-        if (this.clusterTopologyRegistrar != null) this.clusterTopologyRegistrar.close();
+        for (ClusterTopologyRegistrar registrar : this.clusterTopologyRegistrars.values()) {
+            registrar.close();
+        }
     }
 
     @Override
@@ -160,6 +172,40 @@ final class AssociationImpl implements Association, AutoCloseable {
             return CancelHandle.NULL;
         }
 
+        final Component component = componentView.getComponent();
+
+        try {
+            component.waitForComponentStart();
+        } catch (RuntimeException e) {
+            invocationRequest.writeException(new EJBException(e));
+            return CancelHandle.NULL;
+        }
+
+        final EJBLocator<?> actualLocator;
+
+        if (component instanceof StatefulSessionComponent) {
+            if (ejbLocator.isStateless()) {
+                final SessionID sessionID = ((StatefulSessionComponent) component).createSessionRemote();
+                try {
+                    invocationRequest.convertToStateful(sessionID);
+                } catch (IllegalArgumentException e) {
+                    // cannot convert (old protocol)
+                    invocationRequest.writeNotStateful();
+                    return CancelHandle.NULL;
+                }
+                actualLocator = ejbLocator.withSession(sessionID);
+            } else {
+                actualLocator = ejbLocator;
+            }
+        } else {
+            if (ejbLocator.isStateful()) {
+                invocationRequest.writeNotStateful();
+                return CancelHandle.NULL;
+            } else {
+                actualLocator = ejbLocator;
+            }
+        }
+
         final boolean isAsync = componentView.isAsynchronous(invokedMethod);
 
         final boolean oneWay = isAsync && invokedMethod.getReturnType() == void.class;
@@ -202,7 +248,7 @@ final class AssociationImpl implements Association, AutoCloseable {
 
             try {
                 final Map<String, Object> contextDataHolder = new HashMap<>();
-                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag, contextDataHolder);
+                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag, actualLocator, contextDataHolder);
                 attachments.putAll(contextDataHolder);
             } catch (EJBComponentUnavailableException ex) {
                 // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
@@ -241,7 +287,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             }
             // invocation was successful
             if (! oneWay) try {
-                updateAffinities(invocationRequest, attachments, ejbLocator, componentView);
+                updateAffinities(invocationRequest, attachments, actualLocator, componentView);
                 requestContent.writeInvocationResult(result);
             } catch (Throwable ioe) {
                 EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
@@ -265,7 +311,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             // Stateless invocations no not require strong affinity, only weak affinity to nodes within the same cluster, if present.
             // However, since V3, the EJB client does not support weak affinity updates referencing a cluster (and even then, only via Affinity.WEAK_AFFINITY_CONTEXT_KEY), only a node.
             // Until this is corrected, we need to use the strong affinity instead.
-            strongAffinity = legacyAffinity = this.getStatelessAffinity();
+            strongAffinity = legacyAffinity = this.getStatelessAffinity(invocationRequest);
         }
 
         // cause the affinity values to get sent back to the client
@@ -370,8 +416,9 @@ final class AssociationImpl implements Association, AutoCloseable {
     }
 
     @Override
-    public ListenerHandle registerClusterTopologyListener(@NotNull final ClusterTopologyListener clusterTopologyListener) {
-        return (this.clusterTopologyRegistrar != null) ? this.clusterTopologyRegistrar.registerClusterTopologyListener(clusterTopologyListener) : () -> {};
+    public ListenerHandle registerClusterTopologyListener(@NotNull final ClusterTopologyListener listener) {
+        ClusterTopologyRegistrar registrar = this.findClusterTopologyRegistrar(listener.getConnection().getLocalAddress());
+        return (registrar != null) ? registrar.registerClusterTopologyListener(listener) : NOOP_LISTENER_HANDLE;
     }
 
     @Override
@@ -380,10 +427,19 @@ final class AssociationImpl implements Association, AutoCloseable {
             @Override
             public void listenerAdded(final DeploymentRepository repository) {
                 List<EJBModuleIdentifier> list = new ArrayList<>();
-                for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
-                    EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
-                    list.add(ejbModuleIdentifier);
+
+                if (!repositoryIsSuspended()) {
+                    // only send out the initial list if the deployment repository (i.e. the server + clean transaction state) is not in a suspended state
+                    for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
+                        EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
+                        list.add(ejbModuleIdentifier);
+                    }
+                    EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending initial module availability to connecting client: server is not suspended");
+                } else {
+                    // send out empty list if the deploymentRepository is suspended
+                    EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending empty initial module availability to connecting client: server is suspended");
                 }
+
                 moduleAvailabilityListener.moduleAvailable(list);
             }
 
@@ -411,6 +467,11 @@ final class AssociationImpl implements Association, AutoCloseable {
             public void deploymentResumed(DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
+
+            private boolean repositoryIsSuspended() {
+                return deploymentRepository.isSuspended();
+            }
+
         };
         deploymentRepository.addListener(listener);
         return () -> deploymentRepository.removeListener(listener);
@@ -482,6 +543,10 @@ final class AssociationImpl implements Association, AutoCloseable {
             this.clusterTopologyListeners.clear();
         }
 
+        Group getGroup() {
+            return this.clientMappingRegistry.getGroup();
+        }
+
         ClusterTopologyListener.ClusterInfo getClusterInfo(final Map<String, List<ClientMapping>> entries) {
             final List<ClusterTopologyListener.NodeInfo> nodeInfoList = new ArrayList<>(entries.size());
             for (Map.Entry<String, List<ClientMapping>> entry : entries.entrySet()) {
@@ -508,16 +573,24 @@ final class AssociationImpl implements Association, AutoCloseable {
             return new ClusterTopologyListener.ClusterInfo(this.clientMappingRegistry.getGroup().getName(), nodeInfoList);
         }
 
-        void sendClusterRemovalMessage(String cluster) {
-            for (ClusterTopologyListener listener : this.clusterTopologyListeners) {
-                // send the clusterRemoval message to the listener
-                listener.clusterRemoval(Arrays.asList(cluster));
+        void sendTopologyUpdateIfLastNodeToLeave() {
+            // if we are the only member, we need to send a topology update, as there will not be other members left in the cluster to send it on our behalf (WFLY-11682)
+            // check if we are the only member in the cluster (either we have a local entry and we are the only member, or we do not and the entries are empty)
+            Map.Entry<String, List<ClientMapping>> localEntry = this.clientMappingRegistry.getEntry(this.clientMappingRegistry.getGroup().getLocalMember());
+            Map<String, List<ClientMapping>> entries = this.clientMappingRegistry.getEntries();
+            boolean loneMember = localEntry != null ? (entries.size() == 1) && entries.containsKey(localEntry.getKey()) : entries.isEmpty();
+
+            if (loneMember) {
+                String cluster = this.clientMappingRegistry.getGroup().getName();
+                for (ClusterTopologyListener listener : this.clusterTopologyListeners) {
+                    // send the clusterRemoval message to the listener
+                    listener.clusterRemoval(Arrays.asList(cluster));
+                }
             }
         }
     }
 
-
-    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, Map<String, Object> contextDataHolder) throws Exception {
+    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, final EJBLocator<?> ejbLocator, Map<String, Object> contextDataHolder) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -551,7 +624,6 @@ final class AssociationImpl implements Association, AutoCloseable {
             }
         }
         // add the session id to the interceptor context, if it's a stateful ejb locator
-        final EJBLocator<?> ejbLocator = content.getEJBLocator();
         if (ejbLocator.isStateful()) {
             interceptorContext.putPrivateData(SessionID.class, ejbLocator.asStateful().getSessionId());
         }
@@ -630,11 +702,15 @@ final class AssociationImpl implements Association, AutoCloseable {
         return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
     }
 
-    private Affinity getStatelessAffinity() {
-        Registry<String, List<ClientMapping>> registry = this.clientMappingRegistry;
-        Group group = registry != null ? registry.getGroup() : null;
+    private Affinity getStatelessAffinity(Request request) {
+        ClusterTopologyRegistrar registrar = this.findClusterTopologyRegistrar(request.getLocalAddress());
+        Group group = (registrar != null) ? registrar.getGroup() : null;
 
         return group != null && !group.isSingleton() ? new ClusterAffinity(group.getName()) : null;
+    }
+
+    private ClusterTopologyRegistrar findClusterTopologyRegistrar(SocketAddress localAddress) {
+        return (localAddress instanceof InetSocketAddress) ? this.clusterTopologyRegistrars.get(((InetSocketAddress) localAddress).getPort()) : null;
     }
 
     Executor getExecutor() {
@@ -645,28 +721,13 @@ final class AssociationImpl implements Association, AutoCloseable {
         this.executor = executor;
     }
 
-    boolean isLoneMemberInCluster() {
-        // check if we are the only member in the cluster (either we have a local entry and we are the only member, or we do not and the entries are empty)
-        boolean loneMember = false;
-        if (clientMappingRegistry != null) {
-            Map.Entry<String, List<ClientMapping>> localEntry = clientMappingRegistry.getEntry(clientMappingRegistry.getGroup().getLocalNode());
-            Map<String, List<ClientMapping>> entries = clientMappingRegistry.getEntries();
-            loneMember = localEntry != null ? (entries.size() == 1) && entries.containsKey(localEntry.getKey()) : entries.isEmpty();
-        }
-        return loneMember;
-    }
-
     /**
      * Checks if this node is the last node in the cluster and sends a topology update to all connected clients if this is so
      * This should only be called when the node is known to be shutting down (and not just suspending)
      */
     void sendTopologyUpdateIfLastNodeToLeave() {
-        if (clientMappingRegistry != null) {
-            // if we are the only member, we need to send a topology update, as there will not be other members left in the cluster to send it on our behalf (WFLY-11682)
-            if (isLoneMemberInCluster()) {
-                String cluster = clientMappingRegistry.getGroup().getName();
-                clusterTopologyRegistrar.sendClusterRemovalMessage(cluster);
-            }
+        for (ClusterTopologyRegistrar registrar : this.clusterTopologyRegistrars.values()) {
+            registrar.sendTopologyUpdateIfLastNodeToLeave();
         }
     }
 }

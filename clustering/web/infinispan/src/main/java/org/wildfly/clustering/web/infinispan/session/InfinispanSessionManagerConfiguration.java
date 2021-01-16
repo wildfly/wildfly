@@ -27,8 +27,8 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.Key;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -40,10 +40,9 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <S> the HttpSession specification type
  * @param <C> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionManagerConfiguration<S, C, AL, BL> {
+public interface InfinispanSessionManagerConfiguration<S, C, AL> {
     C getServletContext();
     SessionExpirationListener getExpirationListener();
     Cache<Key<String>, ?> getCache();
@@ -53,5 +52,6 @@ public interface InfinispanSessionManagerConfiguration<S, C, AL, BL> {
     Scheduler<String, ImmutableSessionMetaData> getExpirationScheduler();
     Recordable<ImmutableSession> getInactiveSessionRecorder();
     Registrar<SessionExpirationListener> getExpirationRegistar();
-    SpecificationProvider<S, C, AL, BL> getSpecificationProvider();
+    SpecificationProvider<S, C, AL> getSpecificationProvider();
+    Runnable getStartTask();
 }

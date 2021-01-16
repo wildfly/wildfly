@@ -420,4 +420,10 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id=104, value = "Host and context path are occupied, %s can't be registered. Message was: %s")
     DuplicateServiceException duplicateHostContextDeployments(ServiceName deploymentInfoServiceName, String errorMessage);
+
+    @Message(id = 104, value = "Some classes referenced by annotation: %s in class: %s are missing.")
+    DeploymentUnitProcessingException missingClassInAnnotation(String anCls, String resCls);
+
+    @Message(id=105, value = "Host and context path are occupied, %s can't be registered. Message was: %s")
+    DuplicateServiceException duplicateHostContextDeployments(ServiceName deploymentInfoServiceName, String errorMessage);
 }

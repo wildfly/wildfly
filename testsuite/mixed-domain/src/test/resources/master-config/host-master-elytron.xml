@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host name="master" xmlns="urn:jboss:domain:13.0">
+<host name="master" xmlns="urn:jboss:domain:15.0">
 
     <extensions>
         <extension module="org.jboss.as.jmx"/>
@@ -133,12 +133,8 @@
                         <property name="wildfly.sasl.local-user.default-user" value="$local"/>
                     </properties>
                     <filters>
-                        <filter>
-                            <pattern-filter value="JBOSS-LOCAL-USER"/>
-                        </filter>
-                        <filter>
-                            <pattern-filter value="DIGEST-MD5"/>
-                        </filter>
+                        <filter pattern="JBOSS-LOCAL-USER"/>
+                        <filter pattern="DIGEST-MD5"/>
                     </filters>
                 </configurable-sasl-server-factory>
                 <mechanism-provider-filtering-sasl-server-factory name="elytron" sasl-server-factory="global">

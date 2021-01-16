@@ -1,4 +1,107 @@
 [[OpenSSL]]
 = OpenSSL
 
+== Configuring WildFly to use the OpenSSL TLS provider
 
+There are a couple ways you can configure WildFly to use the OpenSSL TLS provider.
+
+=== Configure the Elytron subsystem to use the OpenSSL TLS provider by default
+
+The following commands can be used to configure the Elytron subsystem so that the OpenSSL TLS
+provider is used by default:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron:write-attribute(name=initial-providers, value=combined-providers)
+/subsystem=elytron:undefine-attribute(name=final-providers)
+reload
+----
+
+=== Configure the OpenSSL TLS provider on an SSL context
+
+Instead of configuring the Elytron subsystem to use the OpenSSL TLS provider by default,
+it is also possible to specify that the OpenSSL TLS provider should be used for a specific
+SSL context. For example, the following command can be used to create a `server-ssl-context`
+that will use the OpenSSL TLS provider:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/server-ssl-context=httpsSSC:add(providers=openssl, ...)
+reload
+----
+
+== OpenSSL Library Location
+
+WildFly will search for the OpenSSL library using the standard system library search path. If you'd like to specify a
+custom location for the OpenSSL library, the `org.wildfly.openssl.path` property can be specified during WildFly startup.
+
+If OpenSSL was loaded successfully, a message similar to the one below will occur in the `server.log` file on startup:
+
+[source,options="nowrap"]
+----
+15:37:59,814 INFO [org.wildfly.openssl.SSL] (MSC service thread 1-7) WFOPENSSL0002 OpenSSL Version OpenSSL 1.1.1d FIPS  10 Sep 2019
+----
+
+== Enabling TLSv1.3
+
+*WARNING* It is possible to use TLSv1.3 with the OpenSSL TLS provider when using OpenSSL 1.1.1 or higher and
+when running against JDK 11 or higher. However, if JDK 11 is in use and if there is a very large number of
+TLSv1.3 requests being made, it is possible that a drop in performance (throughput and response time) will occur
+compared to TLSv1.2. For this reason, the use of TLSv1.3 is currently disabled by default. TLSv1.3 can be enabled
+by configuring the `cipher-suite-names` attribute for an SSL context. See the sections on
+<<configuring-a-server-sslcontext,Configuring a server SSLContext>> and
+<<configuring-a-client-sslcontext,Configuring a client SSLContext>> for more details. It is recommended to test
+for performance degradation prior to enabling TLSv1.3 in a production environment.
+
+== Adding Additional Native Libraries
+
+By default, WildFly includes WildFly OpenSSL native libraries for commonly used platforms (Linux x86_64, Windows x86_64,
+Mac OS X x86_64, and Linux s390). However, the https://github.com/wildfly-security/wildfly-openssl-natives[WildFly OpenSSL Natives project]
+contains modules that can be used to build WildFly OpenSSL native libraries for other platforms as well. The steps needed to build and make
+use of a WildFly OpenSSL native library for a different platform than the ones provided by default will be described below.
+
+=== Building the Native Library
+
+Make sure you have cloned the https://github.com/wildfly-security/wildfly-openssl-natives[WildFly OpenSSL Natives] project
+locally. We'll use `$WILDFLY_OPENSSL_NATIVES` to denote the path to this project. Next, `cd` to the module that you want
+to build. In this example, we'll use the `linux-i386` module but similar steps can be used to build and make use of another
+module instead.
+
+[source,shell]
+----
+cd $WILDFLY_OPENSSL_NATIVES/linux-i386
+mvn clean install
+----
+
+Notice that this now results in a `wildfly-openssl-linux-i386-VERSION.jar` in the `$WILDFLY_OPENSSL_NATIVES/linux-i386/target` directory.
+We'll make use of this in the next step.
+
+=== Overriding the Existing WildFly OpenSSL Module
+
+We're going to add a new module that will override the existing WildFly OpenSSL module that's found in the
+`$WILDFLY_HOME/modules/system/layers/base/org/wildfly/openssl` directory. Notice that the existing module
+contains a Java artifact in its `main` directory and native libraries for the default platforms in its
+`main/lib` directory.
+
+First, create a new module that contains the WildFly OpenSSL Java artifact from the existing module:
+
+[source,shell]
+----
+module add --name=org.wildfly.openssl --resources=$WILDFLY_HOME/modules/system/layers/base/org/wildfly/openssl/main/wildfly-openssl-java-VERSION.jar --dependencies=java.logging,jdk.unsupported
+----
+
+Next, add the native library that we already built to this newly created module:
+
+[source,shell]
+----
+mkdir $WILDFLY_HOME/modules/org/wildfly/openssl/main/lib
+cd $WILDFLY_HOME/modules/org/wildfly/openssl/main/lib
+jar xvf $WILDFLY_OPENSSL_NATIVES/linux-i386/target/wildfly-openssl-linux-i386-VERSION.jar linux-i386
+----
+
+You should now see a `libwfssl.so` file in the `$WILDFLY_HOME/modules/org/wildfly/openssl/main/lib/linux-i386` directory.
+
+That's it, WildFly will now make use of the newly added WildFly OpenSSL module instead of the existing one,
+allowing it to make use of the new native library when running on the Linux i386 platform. Additional
+native libraries can be added to the `$WILDFLY_HOME/modules/org/wildfly/openssl/main/lib` directory
+if desired.

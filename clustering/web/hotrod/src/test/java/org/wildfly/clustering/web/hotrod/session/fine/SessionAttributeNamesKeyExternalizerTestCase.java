@@ -34,7 +34,7 @@ import org.wildfly.clustering.marshalling.ExternalizerTester;
 public class SessionAttributeNamesKeyExternalizerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         SessionAttributeNamesKey key = new SessionAttributeNamesKey("test");
         new ExternalizerTester<>(new SessionAttributeNamesKeyExternalizer()).test(key);
     }

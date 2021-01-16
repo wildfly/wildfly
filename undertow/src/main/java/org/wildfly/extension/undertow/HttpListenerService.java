@@ -34,6 +34,7 @@ import io.undertow.server.handlers.SSLHeaderHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
 import io.undertow.server.protocol.http2.Http2UpgradeHandler;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -48,6 +49,8 @@ import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
 
+import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.HTTP_UPGRADE_REGISTRY_CAPABILITY;
+
 /**
  * @author Stuart Douglas
  * @author Tomaz Cerar
@@ -57,13 +60,19 @@ public class HttpListenerService extends ListenerService {
 
     private final ChannelUpgradeHandler httpUpgradeHandler = new ChannelUpgradeHandler();
     protected final InjectedValue<ListenerRegistry> httpListenerRegistry = new InjectedValue<>();
+    /**
+     * @deprecated Replaced by HTTP_UPGRADE_REGISTRY.getCapabilityServiceName()
+     */
+    @Deprecated
     static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
     static final String PROTOCOL = "http";
 
     private final String serverName;
+    private final PathAddress address ;
 
-    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding, boolean proxyProtocol) {
-        super(name, listenerOptions, socketOptions, proxyProtocol);
+    public HttpListenerService(final PathAddress address, final String serverName, OptionMap listenerOptions, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding, boolean proxyProtocol) {
+        super(address.getLastElement().getValue(), listenerOptions, socketOptions, proxyProtocol);
+        this.address = address;
         this.serverName = serverName;
         addWrapperHandler(handler -> {
             httpUpgradeHandler.setNonUpgradeHandler(handler);
@@ -94,7 +103,8 @@ public class HttpListenerService extends ListenerService {
     protected void preStart(final StartContext context) {
         //adds the HTTP upgrade service
         //TODO: have a bit more of a think about how we handle this
-        context.getChildTarget().addService(HTTP_UPGRADE_REGISTRY.append(getName()), new ValueService<Object>(new ImmediateValue<Object>(httpUpgradeHandler)))
+        context.getChildTarget().addService(HTTP_UPGRADE_REGISTRY_CAPABILITY.getCapabilityServiceName(address), new ValueService<Object>(new ImmediateValue<Object>(httpUpgradeHandler)))
+                .addAliases(HTTP_UPGRADE_REGISTRY.append(getName()))
                 .install();
         ListenerRegistry.Listener listener = new ListenerRegistry.Listener(getProtocol(), getName(), serverName, getBinding().getValue().getSocketAddress());
         listener.setContextInformation("socket-binding", getBinding().getValue());

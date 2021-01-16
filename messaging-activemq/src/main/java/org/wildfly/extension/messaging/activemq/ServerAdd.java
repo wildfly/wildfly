@@ -23,9 +23,12 @@ package org.wildfly.extension.messaging.activemq;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.PATH_MANAGER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
@@ -50,6 +53,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CONNECTION_TTL_OVERRIDE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_BINDINGS_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_JOURNAL_DIR;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREDENTIAL_REFERENCE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.DISK_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.GLOBAL_MAX_DISK_USAGE;
@@ -87,6 +91,13 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_COUNTER_SAMPLE_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_EXPIRY_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_EXPIRY_THREAD_PRIORITY;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_LIST;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_NIC;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_PERIOD;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_PING6_COMMAND;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_PING_COMMAND;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_TIMEOUT;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.NETWORK_CHECK_URL_LIST;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.OVERRIDE_IN_VM_SECURITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PAGE_MAX_CONCURRENT_IO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSISTENCE_ENABLED;
@@ -116,6 +127,7 @@ import java.util.function.Supplier;
 import javax.management.MBeanServer;
 import javax.sql.DataSource;
 
+import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.Interceptor;
@@ -144,8 +156,6 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.as.security.service.SecurityBootstrapService;
-import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -184,6 +194,9 @@ class ServerAdd extends AbstractAddStepHandler {
     private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS = "brokerconfig.storeConfiguration.jdbcLockExpirationMillis";
     private static final String ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS = "brokerconfig.storeConfiguration.jdbcLockAcquisitionTimeoutMillis";
 
+    private static final ServiceName SECURITY_BOOTSTRAP_SERVICE = ServiceName.JBOSS.append("security", "bootstrap");
+    private static final ServiceName SECURITY_DOMAIN_SERVICE = ServiceName.JBOSS.append("security", "security-domain");
+
     private ServerAdd() {
         super(ServerDefinition.ATTRIBUTES);
     }
@@ -198,6 +211,7 @@ class ServerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
+        handleCredentialReferenceUpdate(context, resource.getModel().get(CREDENTIAL_REFERENCE.getName()), CREDENTIAL_REFERENCE.getName());
 
         // add an operation to create all the messaging paths resources that have not been already been created
         // prior to adding the ActiveMQ server
@@ -259,6 +273,11 @@ class ServerAdd extends AbstractAddStepHandler {
         context.addStep(new InstallServerHandler(resource), OperationContext.Stage.RUNTIME);
     }
 
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(CREDENTIAL_REFERENCE, context, resource);
+    }
+
     private class InstallServerHandler implements OperationStepHandler {
 
         private final Resource resource;
@@ -315,10 +334,10 @@ class ServerAdd extends AbstractAddStepHandler {
             } else {
                 // Add legacy security
                 String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
-                securityDomainContext = Optional.of(serviceBuilder.requires(SecurityDomainService.SERVICE_NAME.append(domain)));
+                securityDomainContext = Optional.of(serviceBuilder.requires(SECURITY_DOMAIN_SERVICE.append(domain)));
                 // WFLY-6652 / WFLY-10292 this dependency ensures that Artemis will be able to destroy any queues created on behalf of a
                 // pooled-connection-factory client during server stop
-                serviceBuilder.requires(SecurityBootstrapService.SERVICE_NAME);
+                serviceBuilder.requires(SECURITY_BOOTSTRAP_SERVICE);
             }
 
             List<Interceptor> incomingInterceptors = processInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation));
@@ -364,7 +383,7 @@ class ServerAdd extends AbstractAddStepHandler {
                 }
             }
             for (String httpListener : httpListeners) {
-                serviceBuilder.requires(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListener));
+                serviceBuilder.requires(context.getCapabilityServiceName(HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME, httpListener, ChannelUpgradeHandler.class));
             }
 
             //this requires connectors
@@ -450,7 +469,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
             // inject credential-references for bridges
             addBridgeCredentialStoreReference(serverService, configuration, BridgeDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
-            addClusterCredentialStoreReference(serverService, ServerDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
+            addClusterCredentialStoreReference(serverService, CREDENTIAL_REFERENCE, context, model, serviceBuilder);
 
             // Install the ActiveMQ Service
             ServiceController activeMQServerServiceController = serviceBuilder.setInstance(serverService)
@@ -636,6 +655,21 @@ class ServerAdd extends AbstractAddStepHandler {
             configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
             configuration.getWildcardConfiguration().setRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
+            if (model.hasDefined(NETWORK_CHECK_NIC.getName())
+                    || model.hasDefined(NETWORK_CHECK_PERIOD.getName())
+                    || model.hasDefined(NETWORK_CHECK_TIMEOUT.getName())
+                    || model.hasDefined(NETWORK_CHECK_LIST.getName())
+                    || model.hasDefined(NETWORK_CHECK_URL_LIST.getName())
+                    || model.hasDefined(NETWORK_CHECK_PING_COMMAND.getName())
+                    || model.hasDefined(NETWORK_CHECK_PING6_COMMAND.getName())) {
+                configuration.setNetworCheckNIC(NETWORK_CHECK_NIC.resolveModelAttribute(context, model).asStringOrNull());
+                configuration.setNetworkCheckList(NETWORK_CHECK_LIST.resolveModelAttribute(context, model).asStringOrNull());
+                configuration.setNetworkCheckPeriod(NETWORK_CHECK_PERIOD.resolveModelAttribute(context, model).asLong());
+                configuration.setNetworkCheckPing6Command(NETWORK_CHECK_PING6_COMMAND.resolveModelAttribute(context, model).asString());
+                configuration.setNetworkCheckPingCommand(NETWORK_CHECK_PING_COMMAND.resolveModelAttribute(context, model).asString());
+                configuration.setNetworkCheckTimeout(NETWORK_CHECK_TIMEOUT.resolveModelAttribute(context, model).asInt());
+                configuration.setNetworkCheckURLList(NETWORK_CHECK_URL_LIST.resolveModelAttribute(context, model).asStringOrNull());
+            }
             processStorageConfiguration(context, model, configuration);
             HAPolicyConfigurationBuilder.getInstance().addHAPolicyConfiguration(context, configuration, model);
 

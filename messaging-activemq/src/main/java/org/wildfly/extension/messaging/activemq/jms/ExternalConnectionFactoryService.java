@@ -25,6 +25,7 @@ import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.api.jms.JMSFactoryType;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.apache.activemq.artemis.jms.server.config.ConnectionFactoryConfiguration;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
@@ -58,16 +59,17 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
     // mapping between the {discovery}-groups and the command dispatcher factory they use
     private final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories;
     private ActiveMQConnectionFactory factory;
+    private final ConnectionFactoryConfiguration config;
 
     ExternalConnectionFactoryService(DiscoveryGroupConfiguration groupConfiguration,
             Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories,
-            Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha, boolean enable1Prefixes) {
-        this(ha, enable1Prefixes, type, groupConfiguration, Collections.emptyMap(), Collections.emptyMap(),commandDispatcherFactories, groupBindings, clusterNames, null);
+            Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ConnectionFactoryConfiguration config) {
+        this(ha, enable1Prefixes, type, groupConfiguration, Collections.emptyMap(), Collections.emptyMap(),commandDispatcherFactories, groupBindings, clusterNames, null, config);
     }
 
     ExternalConnectionFactoryService(TransportConfiguration[] connectors, Map<String, Supplier<SocketBinding>> socketBindings,
-            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings, JMSFactoryType type, boolean ha, boolean enable1Prefixes) {
-        this(ha, enable1Prefixes, type, null, socketBindings, outboundSocketBindings, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), connectors);
+            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ConnectionFactoryConfiguration config) {
+        this(ha, enable1Prefixes, type, null, socketBindings, outboundSocketBindings, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), connectors, config);
     }
 
     private ExternalConnectionFactoryService(boolean ha,
@@ -79,7 +81,8 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
             Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories,
             Map<String, Supplier<SocketBinding>> groupBindings,
             Map<String, String> clusterNames,
-            TransportConfiguration[] connectors) {
+            TransportConfiguration[] connectors,
+            ConnectionFactoryConfiguration config) {
         assert (connectors != null && connectors.length > 0) || groupConfiguration != null;
         this.ha = ha;
         this.enable1Prefixes = enable1Prefixes;
@@ -91,6 +94,7 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
         this.clusterNames = clusterNames;
         this.commandDispatcherFactories = commandDispatcherFactories;
         this.groupBindings = groupBindings;
+        this.config = config;
     }
 
     @Override
@@ -124,6 +128,44 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
                 } else {
                     factory = ActiveMQJMSClient.createConnectionFactoryWithoutHA(config, type);
                 }
+            }
+            if(config != null) {
+                factory.setAutoGroup(config.isAutoGroup());
+                factory.setBlockOnAcknowledge(config.isBlockOnAcknowledge());
+                factory.setBlockOnDurableSend(config.isBlockOnDurableSend());
+                factory.setBlockOnNonDurableSend(config.isBlockOnNonDurableSend());
+                factory.setCacheLargeMessagesClient(config.isCacheLargeMessagesClient());
+                factory.setCallFailoverTimeout(config.getCallFailoverTimeout());
+                factory.setCallTimeout(config.getCallTimeout());
+                factory.setClientID(config.getClientID());
+                factory.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
+                factory.setCompressLargeMessage(config.isCompressLargeMessages());
+                factory.setConfirmationWindowSize(config.getConfirmationWindowSize());
+                factory.setConnectionTTL(config.getConnectionTTL());
+                factory.setConsumerMaxRate(config.getConsumerMaxRate());
+                factory.setConsumerWindowSize(config.getConsumerWindowSize());
+                factory.setDeserializationBlackList(config.getDeserializationBlackList());
+                factory.setDeserializationWhiteList(config.getDeserializationWhiteList());
+                factory.setDupsOKBatchSize(config.getDupsOKBatchSize());
+                factory.setEnableSharedClientID(config.isEnableSharedClientID());
+                factory.setFailoverOnInitialConnection(config.isFailoverOnInitialConnection());
+                factory.setGroupID(config.getGroupID());
+                factory.setInitialMessagePacketSize(config.getInitialMessagePacketSize());
+                factory.setMaxRetryInterval(config.getMaxRetryInterval());
+                factory.setMinLargeMessageSize(config.getMinLargeMessageSize());
+                factory.setPreAcknowledge(config.isPreAcknowledge());
+                factory.setProducerMaxRate(config.getProducerMaxRate());
+                factory.setProducerWindowSize(config.getProducerWindowSize());
+                factory.setProtocolManagerFactoryStr(config.getProtocolManagerFactoryStr());
+                factory.setConnectionLoadBalancingPolicyClassName(config.getLoadBalancingPolicyClassName());
+                factory.setReconnectAttempts(config.getReconnectAttempts());
+                factory.setRetryInterval(config.getRetryInterval());
+                factory.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
+                factory.setScheduledThreadPoolMaxSize(config.getScheduledThreadPoolMaxSize());
+                factory.setThreadPoolMaxSize(config.getThreadPoolMaxSize());
+                factory.setTransactionBatchSize(config.getTransactionBatchSize());
+                factory.setUseGlobalPools(config.isUseGlobalPools());
+                factory.setUseTopologyForLoadBalancing(config.getUseTopologyForLoadBalancing());
             }
             factory.setEnable1xPrefixes(enable1Prefixes);
         } catch (Throwable e) {

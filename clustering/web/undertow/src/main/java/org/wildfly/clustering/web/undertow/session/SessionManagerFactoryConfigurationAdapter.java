@@ -29,41 +29,31 @@ import java.util.ServiceLoader;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionBindingListener;
 
-import org.jboss.modules.Module;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SpecificationProvider;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
-import org.wildfly.clustering.web.undertow.session.DistributableSessionManagerFactoryServiceConfigurator.MarshallingVersion;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener, MarshallingContext, LocalSessionContext> {
+public class SessionManagerFactoryConfigurationAdapter<C> extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, C, LocalSessionContext> {
 
     private final Integer maxActiveSessions;
-    private final MarshallingContext context;
-    private final MarshalledValueFactory<MarshallingContext> marshalledValueFactory;
+    private final MarshalledValueFactory<C> marshalledValueFactory;
     private final LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
     private final Immutability immutability;
 
-    public SessionManagerFactoryConfigurationAdapter(SessionManagerFactoryConfiguration configuration, Immutability immutability) {
+    public SessionManagerFactoryConfigurationAdapter(SessionManagerFactoryConfiguration configuration, MarshalledValueFactory<C> marshalledValueFactory, Immutability immutability) {
         super(configuration);
         this.maxActiveSessions = configuration.getMaxActiveSessions();
-        Module module = configuration.getModule();
-        this.context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
-        this.marshalledValueFactory = new SimpleMarshalledValueFactory(this.context);
+        this.marshalledValueFactory = marshalledValueFactory;
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
         this.immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(UndertowSessionAttributeImmutability.class), loadedImmutability, Collections.singleton(immutability)));
     }
@@ -74,13 +64,8 @@ public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConf
     }
 
     @Override
-    public MarshalledValueFactory<MarshallingContext> getMarshalledValueFactory() {
+    public MarshalledValueFactory<C> getMarshalledValueFactory() {
         return this.marshalledValueFactory;
-    }
-
-    @Override
-    public MarshallingContext getMarshallingContext() {
-        return this.context;
     }
 
     @Override
@@ -94,7 +79,7 @@ public class SessionManagerFactoryConfigurationAdapter extends WebDeploymentConf
     }
 
     @Override
-    public SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener> getSpecificationProvider() {
+    public SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> getSpecificationProvider() {
         return UndertowSpecificationProvider.INSTANCE;
     }
 }

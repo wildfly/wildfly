@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-dist-cache">
+
+    <!-- Infinispan cache configuration used for distributed SFSB caching -->
+
+    <dependencies>
+        <layer name="transactions"/>
+    </dependencies>
+
+    <feature spec="subsystem.ejb3">
+        <param name="default-stateful-bean-access-timeout" value="5000"/>
+        <param name="default-sfsb-cache" value="distributable"/>
+    </feature>
+
+    <feature-group name="private-interface"/>
+
+    <feature-group name="infinispan-dist-ejb"/>
+    <feature-group name="jgroups-all"/>
+    <packages>
+        <!-- The infinispan subsystem doesn't assume ejb3,
+             and ejb3 subysystem doesn't assume clustering, but the
+             combination requires the clustering<->ejb3 integration package -->
+        <package name="org.wildfly.clustering.ejb.infinispan"/>
+    </packages>
+</layer-spec>

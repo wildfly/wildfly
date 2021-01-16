@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -44,7 +45,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -60,7 +61,7 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "LOCKING");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(15000L)) {
+        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(15))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
@@ -139,7 +140,7 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.ISOLATION.getDefinition()), Attribute.ISOLATION.getDefinition());
+            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.ISOLATION.getName());
         }
     }
 

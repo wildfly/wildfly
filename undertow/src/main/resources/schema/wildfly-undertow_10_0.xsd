@@ -19,9 +19,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="urn:jboss:domain:undertow:10.0"
            targetNamespace="urn:jboss:domain:undertow:10.0"
+           xmlns:credential-reference="urn:wildfly:credential-reference:1.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
+
+    <xs:import namespace="urn:wildfly:credential-reference:1.0" schemaLocation="wildfly-credential-reference_1_0.xsd"/>
     <!-- The undertow subsystem root element -->
     <xs:element name="subsystem" type="undertow-subsystemType"/>
 

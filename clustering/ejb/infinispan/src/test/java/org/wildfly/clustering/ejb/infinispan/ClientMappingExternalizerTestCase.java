@@ -22,13 +22,12 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.io.IOException;
 import java.net.InetAddress;
 
 import org.jboss.as.network.ClientMapping;
+import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.junit.Assert;
 
 /**
  * Unit test for {@link ClientMappingExternalizer}.
@@ -37,10 +36,10 @@ import org.junit.Assert;
 public class ClientMappingExternalizerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws Exception {
         ClientMapping mapping = new ClientMapping(InetAddress.getLoopbackAddress(), 16, "localhost", Short.MAX_VALUE);
 
-        new ExternalizerTester<>(new ClientMappingExternalizer(), ClientMappingExternalizerTestCase::assertEquals).test(mapping);
+        new ExternalizerTester<>(new ClientMappingExternalizer()).test(mapping, ClientMappingExternalizerTestCase::assertEquals);
     }
 
     static void assertEquals(ClientMapping mapping1, ClientMapping mapping2) {

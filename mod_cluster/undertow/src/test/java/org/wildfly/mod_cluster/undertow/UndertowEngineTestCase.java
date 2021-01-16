@@ -30,9 +30,11 @@ import static org.mockito.Mockito.mock;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.junit.Test;
+import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.HttpsListenerService;
 import org.wildfly.extension.undertow.Server;
@@ -50,7 +52,7 @@ public class UndertowEngineTestCase {
     private final String hostName = "default-host";
     private final String route = "route";
     private final Host host = new Host(this.hostName, Collections.emptyList(), "ROOT.war", StatusCodes.NOT_FOUND, false);
-    private final HttpsListenerService listener = new HttpsListenerService("default", "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
+    private final HttpsListenerService listener = new HttpsListenerService(PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
 
     private final UndertowService service = new TestUndertowService("default-container", this.serverName, this.hostName, this.route, this.server);
     private final Server server = new TestServer(this.serverName, this.hostName, this.service, this.host, this.listener);

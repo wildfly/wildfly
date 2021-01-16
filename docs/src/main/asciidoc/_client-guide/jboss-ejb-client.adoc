@@ -1,70 +1,79 @@
 [[jboss-ejb-client]]
 = jboss-ejb-client
-<jboss-ejb-client /> - EJB Client
 
-The _<jboss-ejb-client />_ element in a wildfly-config.xml file can be used to specify EJB Client configuration. This element is from the “urn:jboss:wildfly-client-ejb:3.0” namespace, e.g.
+The jboss-ejb-client.xml can be used to conifure EJB client from within a deployment. The file
+should be located in jar's `META-INF` directory.
 
 [source,xml,options="nowrap"]
 ----
-<?xml version="1.0" encoding="UTF-8"?>
-
-<configuration>
-...
-    <jboss-ejb-client xmlns="urn:jboss:wildfly-client-ejb:3.0">
-       ...
-    </jboss-ejb-client>
-...
-</configuration>
+<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.4">
+    <client-context invocation-timeout="1000" deployment-node-selector="org.foo.DeploymentNodeSelector" default-compression="5">
+        <ejb-receivers exclude-local-receiver="false" local-receiver-pass-by-value="true">
+            <remoting-ejb-receiver outbound-connection-ref="connection" connection-timeout="3000"/>
+        </ejb-receivers>
+        <http-connections>
+            <http-connection uri="http://localhost:8180/wildfly-services"/>
+        </http-connections>
+        <profile name="test-profile"/>
+    </client-context>
+</jboss-ejb-client>
 ----
 
-This section describes the child elements and attributes that can be configured within this element.
+[[client-context]]
+== <client-context>
 
-The _<jboss-ejb-client /> element can optionally contain the following three child elements, as described in the next sections:
+Configurations that will be used to setup an EJB client context for the deployment.
 
-* *<invocation-timeout />*
-* *<global-interceptors />*
-* *<connections />*
+* `invocation-timeout` A timeout, in milliseconds, that will be used for EJB invocations.
+A value of zero or a negative value will imply a "wait forever" semantic where the invocation
+will never timeout and the client will wait for the invocation result indefinitely.
+
+* `deployment-node-selector` The fully qualified class name of the class which implements the
+`org.jboss.ejb.client.DeploymentNodeSelector` interface. The instance of this class will be used
+for selecting nodes, from among multiple eligible nodes within an EJB client context, which can
+handle a particular deployment.
+
+* `default-compression` Default compression level (from 0 to 9) of request and response message
+payload.
+
+[[ejb-receivers]]
+=== <ejb-receivers>
+
+Configures a number of remoting based EJB receivers.
+
+* `exclude-local-receiver` Set to true if the local receiver which gets added to the EJB client
+ context by default, has to be excluded from the context.
+
+* `local-receiver-pass-by-value` Set to false if the local receiver that's available in the EJB
+client context, should use pass-by-reference (instead of pass-by-value) semantics for the EJB invocations.
+
+[[remoting-ejb-receiver]]
+==== <remoting-ejb-receiver>
+
+* `outbound-connection-ref` Reference to an outbound connection configured in the remoting subsystem.
+* `connect-timeout` The timeout, in milliseconds, to be used while creating a connection.
+
+[[http-connections]]
+=== <http-connections>
+
+Configures remote http-connection for EJB invocation
+
+[[http-connection]]
+==== <http-connection>
+
+HTTP Connection for EJB invocation.
+
+* `uri` Uniform Resource Identifier for the HTTP connection should be defined.
+
+[[profile]]
+=== <profile>
+
+References a remoting profile configured in the remoting subsystem.
+
+* `name` The name of the profile.
 
 
-== <invocation-timeout />
 
-This element is used to specify an EJB invocation timeout. It has one attribute which is required:
 
-[cols=",",options="header"]
-|====
-| Attribute | Description
-| seconds | The timeout, in seconds, for the EJB handshake or method invocation request/response cycle. The invocation of any method throws a {{java.util.concurrent.TimeoutException}} if the execution takes longer than the timeout period. The server side will not be interrupted. \\ |
-|====
 
-== <global-interceptors />
 
-This element is used to specify global EJB client interceptors. It can contain any number of _<interceptor />_ elements.
-
-== <interceptor />
-
-This element is used to specify an EJB client interceptor. It has two attributes:
-
-[cols=",",options="header"]
-|====
-| Attribute | Description
-| class | The name of a class that implements the {{org.jboss.ejb.client.EJBClientInterceptor}} interface.
-| module | The optional name of the module that should be used to load the interceptor class.
-|====
-
-== <connections />
-
-This element is used to specify EJB client connections. It can contain any number of _<connection />_ elements.
-
-== <connection />
-
-This element is used to specify an EJB client connection. It has one required attribute. It can also optionally contain an _<interceptors />_ element.
-
-[cols=",",options="header"]
-|====
-| Attribute | Description
-| uri | The connection destination URI.
-|====
-
-== <interceptors />
-
-This element is used to specify EJB client interceptors and can contain any number of _<interceptor />_ elements.

@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -26,8 +26,6 @@
         <module>hibernate4_3</module>
         <module>hibernate5</module>
         <module>hibernate5_3</module>
-        <module>hibernate5-3-legacy</module>
-        <module>hibernate5-legacy</module>
         <module>hibernate-transformer</module>
         <module>eclipselink</module>
         <module>openjpa</module>

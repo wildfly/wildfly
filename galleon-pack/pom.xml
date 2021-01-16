@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -44,17 +44,48 @@
     <packaging>pom</packaging>
 
     <properties>
+        <mp.galleon.common.resources.directory>${basedir}/../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
-        <feature-pack.license.directory>${basedir}/src/license</feature-pack.license.directory>
+        <feature-pack.license.directory>${basedir}/../microprofile/src/license</feature-pack.license.directory>
     </properties>
 
     <build>
         <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
+                <!-- Feature pack generation is vulnerable to leftover files in the target
+                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>copy-mp-galleon-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${mp.galleon.common.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>copy-resources</id>
                         <phase>process-resources</phase>
@@ -155,176 +186,21 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-galleon-plugins</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- module and copy artifact dependencies -->
 
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-fault-tolerance</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-fault-tolerance-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-jwt</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-open-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bitbucket.b_c</groupId>
-            <artifactId>jose4j</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
-            <artifactId>microprofile-fault-tolerance-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.microprofile.jwt</groupId>
-            <artifactId>microprofile-jwt-auth-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.microprofile.openapi</groupId>
-            <artifactId>microprofile-openapi-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
+            <version>${full.maven.version}</version>
+            <type>pom</type>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-jwt</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>*</artifactId>
-                    <groupId>*</groupId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
-
 
     </dependencies>
 
@@ -387,6 +263,9 @@
                                                 <!-- Ignore jdk jars because they are system scope -->
                                                 <exclude>com.sun:tools</exclude>
                                                 <exclude>sun.jdk:jconsole</exclude>
+                                                <!-- Ignore the shared resource poms as those we want their
+                                                     transitives. Those poms ban transitives at their level -->
+                                                <exclude>${full.maven.groupId}:wildfly-mp-feature-pack-galleon-common</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

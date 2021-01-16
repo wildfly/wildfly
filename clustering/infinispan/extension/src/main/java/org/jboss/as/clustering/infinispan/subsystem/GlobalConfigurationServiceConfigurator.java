@@ -29,17 +29,16 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 
-import org.infinispan.commons.marshall.Ids;
+import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.SerializationConfigurationBuilder;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
-import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
@@ -61,9 +60,9 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.infinispan.AdvancedExternalizerAdapter;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
+import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -76,29 +75,28 @@ import org.wildfly.clustering.service.SupplierDependency;
  */
 public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<GlobalConfiguration> {
 
+    private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<Module> module;
     private final SupplierDependency<TransportConfiguration> transport;
-    private final SupplierDependency<SiteConfiguration> site;
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
-    private final Map<ScheduledThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> schedulers = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
+    private final Map<ScheduledThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> scheduledPools = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
     private final String name;
 
     private volatile SupplierDependency<MBeanServer> server;
-    private volatile Supplier<ModuleLoader> loader;
     private volatile String defaultCache;
     private volatile boolean statisticsEnabled;
 
     GlobalConfigurationServiceConfigurator(PathAddress address) {
         super(CONFIGURATION, address);
         this.name = address.getLastElement().getValue();
+        this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
         this.transport = new ServiceSupplierDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address));
-        this.site = new ServiceSupplierDependency<>(CacheContainerComponent.SITE.getServiceName(address));
-        for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
+        for (ThreadPoolResourceDefinition pool : EnumSet.of(ThreadPoolResourceDefinition.LISTENER, ThreadPoolResourceDefinition.BLOCKING, ThreadPoolResourceDefinition.NON_BLOCKING)) {
             this.pools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
         }
         for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
-            this.schedulers.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
+            this.scheduledPools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
         }
     }
 
@@ -113,56 +111,41 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     @Override
     public GlobalConfiguration get() {
         org.infinispan.configuration.global.GlobalConfigurationBuilder builder = new org.infinispan.configuration.global.GlobalConfigurationBuilder();
-        if (this.defaultCache != null) {
-            builder.defaultCacheName(this.defaultCache);
-        }
-        TransportConfiguration transport = this.transport.get();
-        // This fails due to ISPN-4755 !!
-        // this.builder.transport().read(this.transport.getValue());
-        // Workaround this by copying relevant fields individually
-        builder.transport().transport(transport.transport())
-                .distributedSyncTimeout(transport.distributedSyncTimeout())
-                .clusterName(transport.clusterName())
-                .machineId(transport.machineId())
-                .rackId(transport.rackId())
-                .siteId(transport.siteId())
+        builder.cacheManagerName(this.name)
+                .defaultCacheName(this.defaultCache)
+                .cacheContainer().statistics(this.statisticsEnabled)
         ;
 
+        builder.transport().read(this.transport.get());
+
         Module module = this.module.get();
-        builder.serialization().classResolver(ModularClassResolver.getInstance(this.loader.get()));
-        builder.classLoader(module.getClassLoader());
-        int id = Ids.MAX_ID;
-        SerializationConfigurationBuilder serialization = builder.serialization();
-        for (Externalizer<?> externalizer : EnumSet.allOf(DefaultExternalizer.class)) {
-            serialization.addAdvancedExternalizer(new AdvancedExternalizerAdapter<>(id++, externalizer));
-        }
-        for (Externalizer<?> externalizer : module.loadService(Externalizer.class)) {
-            InfinispanLogger.ROOT_LOGGER.debugf("Cache container %s will use an externalizer for %s", this.name, externalizer.getTargetClass().getName());
-            serialization.addAdvancedExternalizer(new AdvancedExternalizerAdapter<>(id++, externalizer));
-        }
+        ClassLoader loader = module.getClassLoader();
+        Marshaller marshaller = this.createMarshaller(loader);
+        InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", this.name, marshaller.getClass().getName());
+        builder.serialization().marshaller(marshaller);
+        builder.classLoader(loader);
 
-        builder.transport().transportThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.TRANSPORT).get());
-        builder.transport().remoteCommandThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.REMOTE_COMMAND).get());
-
-        builder.asyncThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.ASYNC_OPERATIONS).get());
-        builder.expirationThreadPool().read(this.schedulers.get(ScheduledThreadPoolResourceDefinition.EXPIRATION).get());
+        builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());
         builder.listenerThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.LISTENER).get());
-        builder.stateTransferThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.STATE_TRANSFER).get());
-        builder.persistenceThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.PERSISTENCE).get());
+        builder.nonBlockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.NON_BLOCKING).get());
+        builder.expirationThreadPool().read(this.scheduledPools.get(ScheduledThreadPoolResourceDefinition.EXPIRATION).get());
 
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
-        builder.globalJmxStatistics()
-                .enabled(this.statisticsEnabled)
-                .cacheManagerName(this.name)
-                .mBeanServerLookup(new MBeanServerProvider((this.server != null) ? this.server.get() : null))
-                .jmxDomain("org.wildfly.clustering.infinispan")
-                .allowDuplicateDomains(true);
+        // Disable registration of MicroProfile Metrics
+        builder.metrics().gauges(false).histograms(false);
+        builder.jmx().domain("org.wildfly.clustering.infinispan")
+                .mBeanServerLookup((this.server != null) ? new MBeanServerProvider(this.server.get()) : null)
+                .enabled(this.server != null)
+                ;
 
-        builder.site().read(this.site.get());
-
-        // Disable triangle algorithm
-        // We optimize for originator as primary owner
-        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
+        // Do not enable server-mode for the Hibernate 2LC use case:
+        // * The 2LC stack already overrides the interceptor for distribution caches
+        // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
+        // See ISPN-12252 for details
+        if (!module.getName().equals("org.infinispan.hibernate-cache")) {
+            // Disable triangle algorithm - we optimize for originator as primary owner
+            builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
+        }
         // Disable configuration storage
         builder.globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
 
@@ -172,15 +155,23 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<GlobalConfiguration> global = new CompositeDependency(this.module, this.transport, this.site, this.server).register(builder).provides(this.getServiceName());
-        this.loader = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
+        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.module, this.transport, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency: this.pools.values()) {
             dependency.register(builder);
         }
-        for (Dependency dependency : this.schedulers.values()) {
+        for (Dependency dependency: this.scheduledPools.values()) {
             dependency.register(builder);
         }
         Service service = new FunctionalService<>(global, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
+    }
+
+    private Marshaller createMarshaller(ClassLoader loader) {
+        ModuleLoader moduleLoader = this.loader.get();
+        try {
+            return new InfinispanProtoStreamMarshaller(new ModuleClassResolver(moduleLoader), loader);
+        } catch (NoSuchElementException e) {
+            return new JBossMarshaller(ModularClassResolver.getInstance(moduleLoader), loader);
+        }
     }
 }

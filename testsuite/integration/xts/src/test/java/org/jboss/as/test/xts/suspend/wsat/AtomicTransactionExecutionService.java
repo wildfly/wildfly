@@ -59,7 +59,7 @@ public class AtomicTransactionExecutionService implements ExecutorService {
 
     @Override
     public void init(String activationServiceUrl, String remoteServiceUrl) {
-        LOGGER.infof("initialising with activationServiceUrl=%s and remoteServiceUrl=%s", activationServiceUrl,
+        LOGGER.debugf("initialising with activationServiceUrl=%s and remoteServiceUrl=%s", activationServiceUrl,
                 remoteServiceUrl);
 
         if (!wasInitialised) {
@@ -79,42 +79,42 @@ public class AtomicTransactionExecutionService implements ExecutorService {
     @Override
     public void begin() throws Exception {
         assert currentTransaction == null : "Transaction already started";
-        LOGGER.infof("trying to start a new transaction");
+        LOGGER.debugf("trying to start a new transaction");
 
         UserTransaction.getUserTransaction().begin();
         currentTransaction = TransactionManager.getTransactionManager().suspend();
 
-        LOGGER.infof("started transaction %s", currentTransaction);
+        LOGGER.debugf("started transaction %s", currentTransaction);
     }
 
     @Override
     public void commit() throws Exception {
         assert currentTransaction != null : "No active transaction";
-        LOGGER.infof("trying to commit transaction %s", currentTransaction);
+        LOGGER.debugf("trying to commit transaction %s", currentTransaction);
 
         TransactionManager.getTransactionManager().resume(currentTransaction);
         UserTransaction.getUserTransaction().commit();
         currentTransaction = null;
 
-        LOGGER.infof("committed transaction");
+        LOGGER.debugf("committed transaction");
     }
 
     @Override
     public void rollback() throws Exception {
         assert currentTransaction != null : "No active transaction";
-        LOGGER.infof("trying to rollback transaction %s", currentTransaction);
+        LOGGER.debugf("trying to rollback transaction %s", currentTransaction);
 
         TransactionManager.getTransactionManager().resume(currentTransaction);
         UserTransaction.getUserTransaction().rollback();
         currentTransaction = null;
 
-        LOGGER.infof("rolled back transaction");
+        LOGGER.debugf("rolled back transaction");
     }
 
     @Override
     public void enlistParticipant() throws Exception {
         assert currentTransaction != null : "No active transaction";
-        LOGGER.infof("trying to enlist participant to the transaction %s", currentTransaction);
+        LOGGER.debugf("trying to enlist participant to the transaction %s", currentTransaction);
 
         TransactionManager.getTransactionManager().resume(currentTransaction);
         String participantId = new Uid().stringForm();
@@ -122,20 +122,20 @@ public class AtomicTransactionExecutionService implements ExecutorService {
         TransactionManager.getTransactionManager().enlistForVolatileTwoPhase(transactionParticipant, participantId);
         currentTransaction = TransactionManager.getTransactionManager().suspend();
 
-        LOGGER.infof("enlisted participant %s", transactionParticipant);
+        LOGGER.debugf("enlisted participant %s", transactionParticipant);
     }
 
     @Override
     public void execute() throws Exception {
         assert remoteService != null : "Remote service was not initialised";
         assert currentTransaction != null : "No active transaction";
-        LOGGER.infof("trying to execute remote service in transaction %s", currentTransaction);
+        LOGGER.debugf("trying to execute remote service in transaction %s", currentTransaction);
 
         TransactionManager.getTransactionManager().resume(currentTransaction);
         remoteService.execute();
         currentTransaction = TransactionManager.getTransactionManager().suspend();
 
-        LOGGER.infof("executed remote service");
+        LOGGER.debugf("executed remote service");
     }
 
     @Override

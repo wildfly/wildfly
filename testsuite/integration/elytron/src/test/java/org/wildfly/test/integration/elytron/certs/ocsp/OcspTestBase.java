@@ -45,8 +45,8 @@ import java.util.LinkedList;
 import javax.security.auth.x500.X500Principal;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-
 import org.jboss.as.test.shared.CliUtils;
+
 import org.wildfly.security.x500.GeneralName;
 import org.wildfly.security.x500.cert.AccessDescription;
 import org.wildfly.security.x500.cert.AuthorityInformationAccessExtension;
@@ -85,6 +85,7 @@ public class OcspTestBase extends CommonBase {
 
     protected static KeyStore trustStore;
     protected static KeyStore ocspCheckedGoodKeyStore;
+    protected static KeyStore ocspCheckedGoodNoUrlKeyStore;
     protected static KeyStore ocspCheckedRevokedKeyStore;
     protected static KeyStore ocspCheckedUnknownKeyStore;
     protected static KeyStore ocspCheckedTooLongChainKeyStore;
@@ -99,6 +100,7 @@ public class OcspTestBase extends CommonBase {
     protected static final File LADYBIRD_FILE = new File(WORKING_DIR_CA,"ladybird.keystore");
     protected static final File OCSP_RESPONDER_FILE = new File(WORKING_DIR_CA,"ocsp-responder.keystore");
     protected static final File OCSP_CHECKED_GOOD_FILE = new File(WORKING_DIR_CA,"ocsp-checked-good.keystore");
+    protected static final File OCSP_CHECKED_GOOD_NO_URL_FILE = new File(WORKING_DIR_CA,"ocsp-checked-good-no-url.keystore");
     protected static final File OCSP_CHECKED_REVOKED_FILE = new File(WORKING_DIR_CA, "ocsp-checked-revoked.keystore");
     protected static final File OCSP_CHECKED_UNKNOWN_FILE = new File(WORKING_DIR_CA, "ocsp-checked-unknown.keystore");
     protected static final File OCSP_CHECKED_TOO_LONG_CHAIN_FILE =
@@ -109,6 +111,8 @@ public class OcspTestBase extends CommonBase {
     private static final File WORKING_DIR_CACRL = new File(CA_CRL_LOCATION);
     protected static final File CA_BLANK_PEM_CRL = new File(WORKING_DIR_CACRL, "blank.pem");
     protected static final File TRUST_FILE = new File(WORKING_DIR_CA,"ca.truststore");
+
+    protected static final String OCSP_RESPONDER_URL = "http://localhost:" + OCSP_PORT + "/ocsp";
 
     private static KeyStore createKeyStore() throws Exception {
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -142,15 +146,13 @@ public class OcspTestBase extends CommonBase {
     private static X509Certificate issuerCertificate;
     private static X509Certificate intermediateIssuerCertificate;
     private static X509Certificate ocspCheckedGoodCertificate;
+    private static X509Certificate ocspCheckedGoodNoUrlCertificate;
     private static X509Certificate ocspCheckedRevokedCertificate;
     private static X509Certificate ocspCheckedTooLongChainCertificate;
 
-    //    @BeforeClass
     public static void beforeTest() throws Exception {
         Assert.assertTrue(WORKING_DIR_CA.mkdirs());
         Assert.assertTrue(WORKING_DIR_CACRL.mkdirs());
-
-        final String OCSP_RESPONDER_URL = "http://localhost:" + OCSP_PORT + "/ocsp";
 
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         Security.addProvider(new BouncyCastleProvider());
@@ -165,7 +167,7 @@ public class OcspTestBase extends CommonBase {
         SelfSignedX509CertificateAndSigningKey issuerSelfSignedX509CertificateAndSigningKey = SelfSignedX509CertificateAndSigningKey.builder()
                 .setDn(issuerDN)
                 .setKeyAlgorithmName("RSA")
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .addExtension(false, "BasicConstraints", "CA:true,pathlen:2147483647")
                 .build();
         issuerCertificate = issuerSelfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
@@ -180,13 +182,14 @@ public class OcspTestBase extends CommonBase {
         X509Certificate ladybirdCertificate = new X509CertificateBuilder()
                 .setIssuerDn(issuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(ladybirdPublicKey)
                 .setSerialNumber(new BigInteger("3"))
                 .addExtension(new BasicConstraintsExtension(false, false, -1))
                 .build();
-        ladybirdKeyStore.setKeyEntry("ladybird", ladybirdSigningKey, PASSWORD_CHAR, new X509Certificate[]{ladybirdCertificate,issuerCertificate});
+        ladybirdKeyStore.setKeyEntry("ladybird", ladybirdSigningKey, PASSWORD_CHAR,
+                new X509Certificate[]{ladybirdCertificate, issuerCertificate});
 
         // Generates certificate and keystore for OCSP responder
         KeyPair ocspResponderKeys = keyPairGenerator.generateKeyPair();
@@ -196,7 +199,7 @@ public class OcspTestBase extends CommonBase {
         X509Certificate ocspResponderCertificate = new X509CertificateBuilder()
                 .setIssuerDn(issuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=OcspResponder"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(ocspResponderPublicKey)
                 .setSerialNumber(new BigInteger("15"))
@@ -205,7 +208,8 @@ public class OcspTestBase extends CommonBase {
                 .build();
         KeyStore ocspResponderKeyStore = createKeyStore();
         ocspResponderKeyStore.setCertificateEntry("ca", issuerCertificate);
-        ocspResponderKeyStore.setKeyEntry("ocspResponder", ocspResponderSigningKey, PASSWORD_CHAR, new X509Certificate[]{ocspResponderCertificate,issuerCertificate});
+        ocspResponderKeyStore.setKeyEntry("ocspResponder", ocspResponderSigningKey, PASSWORD_CHAR,
+                new X509Certificate[]{ocspResponderCertificate, issuerCertificate});
         createTemporaryKeyStoreFile(ocspResponderKeyStore, OCSP_RESPONDER_FILE, PASSWORD_CHAR);
 
         // Generates GOOD certificate referencing the OCSP responder
@@ -216,7 +220,7 @@ public class OcspTestBase extends CommonBase {
         ocspCheckedGoodCertificate = new X509CertificateBuilder()
                 .setIssuerDn(issuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(ocspCheckedGoodPublicKey)
                 .setSerialNumber(new BigInteger("16"))
@@ -226,8 +230,29 @@ public class OcspTestBase extends CommonBase {
                 ))).build();
         ocspCheckedGoodKeyStore = createKeyStore();
         ocspCheckedGoodKeyStore.setCertificateEntry("ca", issuerCertificate);
-        ocspCheckedGoodKeyStore.setKeyEntry("localhost", ocspCheckedGoodSigningKey, PASSWORD_CHAR, new X509Certificate[]{ocspCheckedGoodCertificate,issuerCertificate});
+        ocspCheckedGoodKeyStore.setKeyEntry("localhost", ocspCheckedGoodSigningKey, PASSWORD_CHAR,
+                new X509Certificate[]{ocspCheckedGoodCertificate, issuerCertificate});
         createTemporaryKeyStoreFile(ocspCheckedGoodKeyStore, OCSP_CHECKED_GOOD_FILE, PASSWORD_CHAR);
+
+        // Generates GOOD certificate but not referencing OCSP responder
+        KeyPair ocspCheckedGoodNoUrlKeys = keyPairGenerator.generateKeyPair();
+        PrivateKey ocspCheckedGoodNoUrlSigningKey = ocspCheckedGoodNoUrlKeys.getPrivate();
+        PublicKey ocspCheckedGoodNoUrlPublicKey = ocspCheckedGoodNoUrlKeys.getPublic();
+
+        ocspCheckedGoodNoUrlCertificate = new X509CertificateBuilder()
+                .setIssuerDn(issuerDN)
+                .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
+                .setSignatureAlgorithmName("SHA256withRSA")
+                .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
+                .setPublicKey(ocspCheckedGoodNoUrlPublicKey)
+                .setSerialNumber(new BigInteger("53"))
+                .addExtension(new BasicConstraintsExtension(false, false, -1))
+                .build();
+        ocspCheckedGoodNoUrlKeyStore = createKeyStore();
+        ocspCheckedGoodNoUrlKeyStore.setCertificateEntry("ca", issuerCertificate);
+        ocspCheckedGoodNoUrlKeyStore.setKeyEntry("localhost", ocspCheckedGoodNoUrlSigningKey, PASSWORD_CHAR,
+                new X509Certificate[]{ocspCheckedGoodNoUrlCertificate, issuerCertificate});
+        createTemporaryKeyStoreFile(ocspCheckedGoodNoUrlKeyStore, OCSP_CHECKED_GOOD_NO_URL_FILE, PASSWORD_CHAR);
 
         // Generates REVOKED certificate referencing the OCSP responder
         KeyPair ocspCheckedRevokedKeys = keyPairGenerator.generateKeyPair();
@@ -237,7 +262,7 @@ public class OcspTestBase extends CommonBase {
         ocspCheckedRevokedCertificate = new X509CertificateBuilder()
                 .setIssuerDn(issuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(ocspCheckedRevokedPublicKey)
                 .setSerialNumber(new BigInteger("17"))
@@ -260,7 +285,7 @@ public class OcspTestBase extends CommonBase {
         X509Certificate ocspCheckedUnknownCertificate = new X509CertificateBuilder()
                 .setIssuerDn(issuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=ocspCheckedUnknown"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(ocspCheckedUnknownPublicKey)
                 .setSerialNumber(new BigInteger("18"))
@@ -283,11 +308,14 @@ public class OcspTestBase extends CommonBase {
         intermediateIssuerCertificate = new X509CertificateBuilder()
                 .setIssuerDn(issuerDN)
                 .setSubjectDn(intermediateIssuerDN)
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                 .setPublicKey(intermediateIssuerPublicKey)
                 .setSerialNumber(new BigInteger("6"))
                 .addExtension(new BasicConstraintsExtension(false, true, -1))
+                .addExtension(new AuthorityInformationAccessExtension(Collections.singletonList(
+                        new AccessDescription(OID_AD_OCSP, new GeneralName.URIName(OCSP_RESPONDER_URL))
+                )))
                 .build();
 
         // Generates GOOD certificate with more intermediate certificates referencing the OCSP responder
@@ -298,7 +326,7 @@ public class OcspTestBase extends CommonBase {
         ocspCheckedTooLongChainCertificate = new X509CertificateBuilder()
                 .setIssuerDn(intermediateIssuerDN)
                 .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
-                .setSignatureAlgorithmName("SHA1withRSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
                 .setSigningKey(intermediateIssuerSigningKey)
                 .setPublicKey(ocspCheckedTooLongChainPublicKey)
                 .setSerialNumber(new BigInteger("20"))
@@ -323,10 +351,13 @@ public class OcspTestBase extends CommonBase {
     public static void startOcspServer() throws Exception {
         ocspServer = new TestingOcspServer(OCSP_PORT);
         ocspServer.createIssuer(1, issuerCertificate);
+        ocspServer.createIssuer(2, intermediateIssuerCertificate);
+        ocspServer.createCertificate(3, 1, intermediateIssuerCertificate);
         ocspServer.createCertificate(1, 1, ocspCheckedGoodCertificate);
         ocspServer.createCertificate(2, 1, ocspCheckedRevokedCertificate);
         ocspServer.revokeCertificate(2, 4);
         ocspServer.createCertificate(3, 2, ocspCheckedTooLongChainCertificate);
+        ocspServer.createCertificate(4, 1, ocspCheckedGoodNoUrlCertificate);
 
         ocspServer.start();
     }
@@ -347,7 +378,7 @@ public class OcspTestBase extends CommonBase {
                 currentDate
         );
         X509CRLHolder caBlankCrlHolder = caBlankCrlBuilder.setNextUpdate(nextYear).build(
-                new JcaContentSignerBuilder("SHA1withRSA")
+                new JcaContentSignerBuilder("SHA256withRSA")
                         .setProvider("BC")
                         .build(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
         );
@@ -367,6 +398,7 @@ public class OcspTestBase extends CommonBase {
         Assert.assertTrue(LADYBIRD_FILE.delete());
         Assert.assertTrue(OCSP_RESPONDER_FILE.delete());
         Assert.assertTrue(OCSP_CHECKED_GOOD_FILE.delete());
+        Assert.assertTrue(OCSP_CHECKED_GOOD_NO_URL_FILE.delete());
         Assert.assertTrue(OCSP_CHECKED_REVOKED_FILE.delete());
         Assert.assertTrue(OCSP_CHECKED_UNKNOWN_FILE.delete());
         Assert.assertTrue(OCSP_CHECKED_TOO_LONG_CHAIN_FILE.delete());
@@ -439,6 +471,8 @@ public class OcspTestBase extends CommonBase {
 
         CredentialReference serverKeyStoreCredRef = CredentialReference.builder().withClearText(PASSWORD).build();
 
+        CredentialReference ocspResponderKeyStoreCredRef = CredentialReference.builder().withClearText(PASSWORD).build();
+
         // Prepare server key-store and key-manager for server ssl context
         Path serverKeyStorePath = Path.builder().withPath(CliUtils.asAbsolutePath(LADYBIRD_FILE)).build();
 
@@ -456,7 +490,16 @@ public class OcspTestBase extends CommonBase {
                 serverKeyStoreCredRef).withType("JKS").withPath(serverTrustStorePath).build();
         elements.add(serverTrustStore);
 
-        Ocsp ocsp = Ocsp.builder().withPreferCrls(false).build();
+        // Add OCSP responder key store
+        Path ocspResponderKeyStorePath = Path.builder().withPath(OCSP_RESPONDER_FILE.getAbsolutePath()).build();
+        SimpleKeyStore ocspResponderKeyStore = SimpleKeyStore.builder().withName("ocspResponderKeyStore").withCredentialReference(
+                ocspResponderKeyStoreCredRef).withType("JKS").withPath(ocspResponderKeyStorePath).build();
+        elements.add(ocspResponderKeyStore);
+
+        Ocsp ocsp = Ocsp.builder()
+                .withPreferCrls(false)
+                .withResponderKeyStore("ocspResponderKeyStore")
+                .withResponderCertificate("ocspResponder").build();
 
         CertificateRevocationList crl =
                 CertificateRevocationList.builder().withPath(CliUtils.asAbsolutePath(CA_BLANK_PEM_CRL)).build();

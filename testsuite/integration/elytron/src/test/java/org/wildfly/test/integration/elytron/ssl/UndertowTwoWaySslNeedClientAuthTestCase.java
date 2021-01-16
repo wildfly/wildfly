@@ -22,6 +22,7 @@
 
 package org.wildfly.test.integration.elytron.ssl;
 
+import static java.security.AccessController.doPrivileged;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
 import static org.junit.Assert.fail;
@@ -32,9 +33,16 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.GeneralSecurityException;
+import java.security.PrivilegedAction;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.Response;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -49,6 +57,9 @@ import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -56,6 +67,10 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.client.AuthenticationContextConfigurationClient;
+import org.wildfly.security.auth.client.ElytronXmlParser;
+import org.wildfly.security.auth.client.InvalidAuthenticationConfigurationException;
 import org.wildfly.test.integration.elytron.util.WelcomeContent;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -128,6 +143,153 @@ public class UndertowTwoWaySslNeedClientAuthTestCase {
         HttpClient client = SSLTruststoreUtil.getHttpClientWithSSL(CLIENT_TRUSTSTORE_FILE, PASSWORD);
         assertSslHandshakeFails(client);
         closeClient(client);
+    }
+
+    /**
+     * RESTEasy client loads truststore from Elytron client configuration. This truststore contains correct server certificate.
+     */
+    @Test
+    public void testResteasyElytronClientTrustedServer() {
+        AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
+            try {
+                URL config = getClass().getResource("wildfly-config-correct-truststore.xml");
+                return ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI()).create();
+            } catch (Throwable t) {
+                throw new InvalidAuthenticationConfigurationException(t);
+            }
+        });
+        context.run(() -> {
+            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            ResteasyClient client = resteasyClientBuilder.build();
+            Response response = client.target(String.valueOf(securedRootUrl)).request().get();
+            Assert.assertEquals(200, response.getStatus());
+        });
+    }
+
+    /**
+     * RESTEasy client loads SSL Context from Elytron client config.
+     * This SSL Context does not have truststore configured, so exception is expected.
+     */
+    @Test(expected = ProcessingException.class)
+    public void testResteasyElytronClientMissingTruststore() {
+        AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
+            try {
+                URL config = getClass().getResource("wildfly-config-correct-truststore-missing.xml");
+                return ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI()).create();
+            } catch (Throwable t) {
+                throw new InvalidAuthenticationConfigurationException(t);
+            }
+        });
+        context.run(() -> {
+            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
+            ResteasyClient client = resteasyClientBuilder.build();
+            Response response = client.target(String.valueOf(securedRootUrl)).request().get();
+            Assert.assertEquals("Hello World!", response.readEntity(String.class));
+            Assert.assertEquals(200, response.getStatus());
+        });
+    }
+
+    /**
+     * Elytron client has configured truststore that does not contain server's certificate.
+     * Test will pass because Elytron config is ignored since different ssl context is specified on RESTEasy client builder specifically.
+     */
+    @Test
+    public void testClientConfigProviderSSLContextIgnoredIfDifferentIsSet() throws URISyntaxException, GeneralSecurityException {
+        AuthenticationContextConfigurationClient AUTH_CONTEXT_CLIENT =
+                AccessController.doPrivileged((PrivilegedAction<AuthenticationContextConfigurationClient>) AuthenticationContextConfigurationClient::new);
+
+        AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
+            try {
+                URL config = getClass().getResource("wildfly-config-correct-truststore-missing.xml");
+                return ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI()).create();
+            } catch (Throwable t) {
+                throw new InvalidAuthenticationConfigurationException(t);
+            }
+        });
+        AuthenticationContext contextWithTruststore = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
+            try {
+                URL config = getClass().getResource("wildfly-config-correct-truststore.xml");
+                return ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI()).create();
+            } catch (Throwable t) {
+                throw new InvalidAuthenticationConfigurationException(t);
+            }
+        });
+        SSLContext sslContext = AUTH_CONTEXT_CLIENT.getSSLContext(securedRootUrl.toURI(), contextWithTruststore);
+        context.run(() -> {
+            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
+            resteasyClientBuilder.sslContext(sslContext).hostnameVerifier((s, sslSession) -> true);
+            ResteasyClient client = resteasyClientBuilder.build();
+            Response response = client.target(String.valueOf(securedRootUrl)).request().get();
+            Assert.assertEquals(200, response.getStatus());
+        });
+    }
+
+    /**
+     * Test situation when credentials are set on RESTEeasy client, but truststore is part of SSLContext configured for Elytron client.
+     * Test that Elytron SSLContext will be used successfully.
+     */
+    @Test
+    public void testClientConfigProviderSSLContextIsSuccessfulWhenBasicSetOnRESTEasy() {
+        AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
+            try {
+                URL config = getClass().getResource("wildfly-config-correct-truststore.xml");
+                return ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI()).create();
+            } catch (Throwable t) {
+                throw new InvalidAuthenticationConfigurationException(t);
+            }
+        });
+        context.run(() -> {
+            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
+            resteasyClientBuilder.hostnameVerifier((s, sslSession) -> true);
+            ResteasyClient client = resteasyClientBuilder.build();
+            client.register(new BasicAuthentication("randomName", "randomPass"));
+            Response response = client.target(String.valueOf(securedRootUrl)).request().get();
+            Assert.assertEquals(200, response.getStatus());
+        });
+    }
+
+    /**
+     * Test that RESTEasy client does choose SSLContext from Elytron client based on destination of the request.
+     * In this case the truststore is set for different endpoint/server and so SSL handshake will fail.
+     */
+    @Test(expected = ProcessingException.class)
+    public void testClientConfigProviderSSLContextForDifferentHostWillNotWork() {
+        AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
+            try {
+                URL config = getClass().getResource("wildfly-config-correct-truststore-different-host.xml");
+                return ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI()).create();
+            } catch (Throwable t) {
+                throw new InvalidAuthenticationConfigurationException(t);
+            }
+        });
+        context.run(() -> {
+            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            ResteasyClient client = resteasyClientBuilder.build();
+            Response response = client.target(String.valueOf(securedRootUrl)).request().get();
+            Assert.assertEquals(200, response.getStatus());
+        });
+    }
+
+    /**
+     * Test that RESTEasy client does choose SSLContext from Elytron client based on destination of the request.
+     * In this case the truststore is set for correct endpoint/server and so SSL handshake will succeed.
+     */
+    @Test
+    public void testClientConfigProviderSSLContextForCorrectHostWillWork() {
+        AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
+            try {
+                URL config = getClass().getResource("wildfly-config-correct-truststore-correct-host.xml");
+                return ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI()).create();
+            } catch (Throwable t) {
+                throw new InvalidAuthenticationConfigurationException(t);
+            }
+        });
+        context.run(() -> {
+            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            ResteasyClient client = resteasyClientBuilder.build();
+            Response response = client.target(String.valueOf(securedRootUrl)).request().get();
+            Assert.assertEquals(200, response.getStatus());
+        });
     }
 
     private void assertConnectionToServer(HttpClient client, int expectedStatusCode) {

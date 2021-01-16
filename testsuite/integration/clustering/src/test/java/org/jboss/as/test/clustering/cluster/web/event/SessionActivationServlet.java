@@ -23,7 +23,6 @@
 package org.jboss.as.test.clustering.cluster.web.event;
 
 import java.io.IOException;
-import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,8 +62,13 @@ public class SessionActivationServlet extends HttpServlet {
     }
 
     @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.getServletContext().log(String.format("[%s] %s", request.getMethod(), request.getRequestURI()));
+        super.service(request, response);
+    }
+
+    @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getServletContext().log(request.getRequestURI() + ":PUT");
         HttpSession session = request.getSession();
         SessionActivationListener listener = new ImmutableSessionActivationListener(true);
         session.setAttribute(IMMUTABLE_ATTRIBUTE_NAME, listener);
@@ -76,7 +80,6 @@ public class SessionActivationServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getServletContext().log(request.getRequestURI() + ":GET");
         HttpSession session = request.getSession();
         ((SessionActivationListener) session.getAttribute(IMMUTABLE_ATTRIBUTE_NAME)).assertActive();
         ((SessionActivationListener) session.getAttribute(MUTABLE_ATTRIBUTE_NAME)).assertActive();
@@ -84,11 +87,8 @@ public class SessionActivationServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getServletContext().log(request.getRequestURI() + ":DELETE");
         HttpSession session = request.getSession();
-        request.getServletContext().log(request.getRequestURI() + ":removeAttribute(" + IMMUTABLE_ATTRIBUTE_NAME + ")");
         session.removeAttribute(IMMUTABLE_ATTRIBUTE_NAME);
-        request.getServletContext().log(request.getRequestURI() + ":removeAttribute(" + MUTABLE_ATTRIBUTE_NAME + ")");
         session.removeAttribute(MUTABLE_ATTRIBUTE_NAME);
     }
 
@@ -120,14 +120,14 @@ public class SessionActivationServlet extends HttpServlet {
 
         public void assertActive() {
             if (!this.active) {
-                throw new IllegalStateException(String.format("%s.sessionDidActivate(...) not invoked", this.getClass().getSimpleName()));
+                throw new AssertionError(String.format("%s.sessionDidActivate(...) not invoked", this.getClass().getSimpleName()));
             }
         }
 
         @Override
         public void sessionWillPassivate(HttpSessionEvent event) {
             if (!this.active) {
-                throw new IllegalStateException(String.format("%s.sessionWillPassivate(...) already invoked", this.getClass().getSimpleName()));
+                throw new AssertionError(String.format("%s.sessionWillPassivate(...) already invoked", this.getClass().getSimpleName()));
             }
             this.active = false;
         }
@@ -135,7 +135,7 @@ public class SessionActivationServlet extends HttpServlet {
         @Override
         public void sessionDidActivate(HttpSessionEvent event) {
             if (this.active) {
-                throw new IllegalStateException(String.format("%s.sessionDidActivate(...) already invoked", this.getClass().getSimpleName()));
+                throw new AssertionError(String.format("%s.sessionDidActivate(...) already invoked", this.getClass().getSimpleName()));
             }
             this.active = true;
         }
@@ -152,7 +152,7 @@ public class SessionActivationServlet extends HttpServlet {
 
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             if (this.active) {
-                throw new NotSerializableException(String.format("%s.sessionWillPassivate(...) not invoked", this.getClass().getSimpleName()));
+                throw new AssertionError(String.format("%s.sessionWillPassivate(...) not invoked", this.getClass().getSimpleName()));
             }
             out.defaultWriteObject();
         }

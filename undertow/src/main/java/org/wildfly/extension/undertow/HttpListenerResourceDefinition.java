@@ -42,10 +42,11 @@ import java.util.List;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  */
 public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
-    protected static final HttpListenerResourceDefinition INSTANCE = new HttpListenerResourceDefinition();
 
+    protected static final HttpListenerResourceDefinition INSTANCE = new HttpListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition CERTIFICATE_FORWARDING = new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_FORWARDING, ModelType.BOOLEAN)
             .setRequired(false)
@@ -132,7 +133,8 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     private HttpListenerResourceDefinition() {
-        super(UndertowExtension.HTTP_LISTENER_PATH);
+        super(new Parameters(UndertowExtension.HTTP_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
+                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY));
     }
 
     @Override

@@ -141,7 +141,7 @@ public class ContainerManagedTransactionNotSupportedTestCase {
                     .send(destination, message);
 
             Message reply = context.createConsumer(replyTo)
-                    .receive(adjust(2000));
+                    .receive(adjust(5000));
             assertNotNull(reply);
             assertEquals(message.getJMSMessageID(), reply.getJMSCorrelationID());
             assertTrue("messageDrivenContext.setRollbackOnly() did not throw the expected IllegalStateException",

@@ -72,14 +72,14 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
 
     private static Logger LOGGER = Logger.getLogger(LdapExtLDAPServerSetupTask.class);
 
-    static final String SECURITY_CREDENTIALS = "secret";
-    static final String SECURITY_PRINCIPAL = "uid=admin,ou=system";
+    public static final String SECURITY_CREDENTIALS = "secret";
+    public static final String SECURITY_PRINCIPAL = "uid=admin,ou=system";
 
     static final String KEYSTORE_FILENAME = "ldaps.jks";
-    static final File KEYSTORE_FILE = new File(KEYSTORE_FILENAME);
-    static final int LDAP_PORT = 10389;
-    static final int LDAP_PORT2 = 11389;
-    static final int LDAPS_PORT = 10636;
+    public static final File KEYSTORE_FILE = new File(KEYSTORE_FILENAME);
+    public static final int LDAP_PORT = 10389;
+    public static final int LDAP_PORT2 = 11389;
+    public static final int LDAPS_PORT = 10636;
 
     static final String[] ROLE_NAMES = {"TheDuke", "Echo", "TheDuke2", "Echo2", "JBossAdmin", "jduke", "jduke2", "RG1", "RG2",
             "RG3", "R1", "R2", "R3", "R4", "R5", "Roles", "User", "Admin", "SharedRoles", "RX"};

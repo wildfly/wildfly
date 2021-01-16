@@ -188,7 +188,14 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             AttributeAccess attribute = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
             AttributeDefinition definition = attribute.getAttributeDefinition();
             if ((attribute.getStorageType() == AttributeAccess.Storage.CONFIGURATION) && !translations.containsKey(definition)) {
-                definition.validateAndSet(operation, model);
+                OperationStepHandler writeHandler = this.descriptor.getCustomAttributes().get(definition);
+                if (writeHandler != null) {
+                    // If attribute has custom handling, perform a separate write-attribute operation
+                    ModelNode writeAttributeOperation = Util.getWriteAttributeOperation(currentAddress, definition.getName(), definition.validateOperation(operation));
+                    context.addStep(writeAttributeOperation, writeHandler, OperationContext.Stage.MODEL);
+                } else {
+                    definition.validateAndSet(operation, model);
+                }
             }
         }
 
@@ -242,7 +249,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             }
         }
 
-        for (CapabilityReferenceRecorder recorder : context.getResourceRegistration().getRequirements()) {
+        for (CapabilityReferenceRecorder recorder : registration.getRequirements()) {
             recorder.addCapabilityRequirements(context, resource, null);
         }
     }
@@ -254,6 +261,12 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             builder.addParameter(SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ADD_INDEX, ModelType.INT, true).build());
         }
         for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
+            builder.addParameter(attribute);
+        }
+        for (AttributeDefinition attribute : this.descriptor.getCustomAttributes().keySet()) {
+            builder.addParameter(attribute);
+        }
+        for (AttributeDefinition attribute : this.descriptor.getIgnoredAttributes()) {
             builder.addParameter(attribute);
         }
         for (AttributeDefinition parameter : this.descriptor.getExtraParameters()) {

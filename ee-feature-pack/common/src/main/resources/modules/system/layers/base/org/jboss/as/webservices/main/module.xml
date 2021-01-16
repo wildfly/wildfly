@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.webservices">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <exports>
+        <exclude path="org/jboss/as/webservices/logging"/>
+    </exports>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-webservices-server-integration}"/>
+        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-resources::wildfly1900}"/>
+    </resources>
+
+    <dependencies>
+        <module name="javax.annotation.api"/>
+        <module name="javax.api"/>
+        <module name="javax.ejb.api"/>
+        <module name="javax.jws.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.xml.ws.api"/>
+        <module name="org.jboss.invocation"/>
+        <module name="org.jboss.jandex"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.web"/>
+        <module name="org.jboss.metadata.ear"/>
+        <module name="org.jboss.metadata.ejb"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.ejb3"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.network"/>
+        <module name="org.jboss.as.security-plugins"/>
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.vfs"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.ws.api" />
+        <module name="org.jboss.ws.common" services="import" />
+        <module name="org.jboss.ws.spi" />
+        <module name="org.picketbox" />
+        <module name="org.wildfly.extension.undertow" />
+        <module name="io.undertow.core" />
+        <module name="io.undertow.servlet"/>
+        <module name="org.wildfly.transaction.client"/>
+        <module name="javax.transaction.api"/>
+        <!-- Only used if capability org.wildfly.weld is available-->
+        <module name="org.jboss.as.weld.common" optional="true"/>
+    </dependencies>
+</module>

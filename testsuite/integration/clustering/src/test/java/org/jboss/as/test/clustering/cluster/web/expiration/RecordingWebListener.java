@@ -35,11 +35,11 @@ import javax.servlet.http.HttpSessionListener;
 @WebListener
 public class RecordingWebListener implements HttpSessionListener, HttpSessionAttributeListener {
 
-    public static BlockingQueue<String> createdSessions = new LinkedBlockingQueue<>();
-    public static BlockingQueue<String> destroyedSessions = new LinkedBlockingQueue<>();
-    public static ConcurrentMap<String, BlockingQueue<String>> addedAttributes = new ConcurrentHashMap<>();
-    public static ConcurrentMap<String, BlockingQueue<String>> removedAttributes = new ConcurrentHashMap<>();
-    public static ConcurrentMap<String, BlockingQueue<String>> replacedAttributes = new ConcurrentHashMap<>();
+    public static final BlockingQueue<String> createdSessions = new LinkedBlockingQueue<>();
+    public static final BlockingQueue<String> destroyedSessions = new LinkedBlockingQueue<>();
+    public static final ConcurrentMap<String, BlockingQueue<String>> addedAttributes = new ConcurrentHashMap<>();
+    public static final ConcurrentMap<String, BlockingQueue<String>> removedAttributes = new ConcurrentHashMap<>();
+    public static final ConcurrentMap<String, BlockingQueue<String>> replacedAttributes = new ConcurrentHashMap<>();
 
     private static void record(HttpSessionBindingEvent event, ConcurrentMap<String, BlockingQueue<String>> attributes) {
         BlockingQueue<String> set = new LinkedBlockingQueue<>();

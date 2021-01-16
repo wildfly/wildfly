@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-microprofile</artifactId>
@@ -44,6 +44,7 @@
     <modules>
         <module>config-smallrye</module>
         <module>fault-tolerance-smallrye</module>
+        <module>galleon-common</module>
         <module>health-smallrye</module>
         <module>jwt-smallrye</module>
         <module>metrics-smallrye</module>

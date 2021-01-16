@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.web.cache.session;
 
-import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.wildfly.clustering.ee.Remover;
@@ -56,15 +55,15 @@ public class CompositeSession<L> extends CompositeImmutableSession implements Se
     }
 
     @Override
+    public boolean isValid() {
+        return this.metaData.isValid();
+    }
+
+    @Override
     public void invalidate() {
         if (this.metaData.invalidate()) {
             this.remover.remove(this.getId());
         }
-    }
-
-    @Override
-    public boolean isValid() {
-        return this.metaData.isValid();
     }
 
     @Override
@@ -76,7 +75,7 @@ public class CompositeSession<L> extends CompositeImmutableSession implements Se
     public void close() {
         if (this.metaData.isValid()) {
             this.attributes.close();
-            this.metaData.setLastAccessedTime(Instant.now());
+            this.metaData.close();
         }
     }
 

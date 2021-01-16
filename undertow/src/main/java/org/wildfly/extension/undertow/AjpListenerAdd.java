@@ -50,7 +50,7 @@ class AjpListenerAdd extends ListenerAdd {
         }
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
         AjpListenerResourceDefinition.MAX_AJP_PACKET_SIZE.resolveOption(context, model,listenerBuilder);
-        return new AjpListenerService(name, scheme, listenerBuilder.getMap(), socketOptions);
+        return new AjpListenerService(context.getCurrentAddress(), scheme, listenerBuilder.getMap(), socketOptions);
     }
 
     @Override

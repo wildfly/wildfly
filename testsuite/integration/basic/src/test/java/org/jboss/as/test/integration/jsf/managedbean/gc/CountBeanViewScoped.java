@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jsf.managedbean.gc;
 
 import java.io.Serializable;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -31,6 +30,8 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+
+import org.jboss.logging.Logger;
 
 @ManagedBean
 @ViewScoped
@@ -47,19 +48,19 @@ public class CountBeanViewScoped implements Serializable {
 
     @PostConstruct
     public void init() {
-        LOG.info("CountBeanViewScoped#Initializing counter with @PostConstruct ...");
+        LOG.debug("CountBeanViewScoped#Initializing counter with @PostConstruct ...");
         count = initBeanViewScoped.getInit();
     }
 
     @PreDestroy
     public void destroy() {
-        LOG.info("Destroyed View Scoped CountBean");
+        LOG.debug("Destroyed View Scoped CountBean");
         TestResultsBean.setPreDestroyViewScoped(true);
     }
 
     public String invalidateGC() {
 
-        LOG.info("Running View Scoped Garbage Collect, invalidate session so view will be destroyed");
+        LOG.debug("Running View Scoped Garbage Collect, invalidate session so view will be destroyed");
         System.gc();
 
         FacesContext facesContext = FacesContext.getCurrentInstance();

@@ -22,10 +22,6 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.function.LongFunction;
 
@@ -39,24 +35,5 @@ public class DateExternalizer<D extends Date> extends LongExternalizer<D> {
 
     public DateExternalizer(Class<D> targetClass, LongFunction<D> factory) {
         super(targetClass, factory, Date::getTime);
-    }
-
-    public static class SqlTimestampExternalizer extends DateExternalizer<Timestamp> {
-        public SqlTimestampExternalizer() {
-            super(Timestamp.class, Timestamp::new);
-        }
-
-        @Override
-        public void writeObject(ObjectOutput output, Timestamp timestamp) throws IOException {
-            super.writeObject(output, timestamp);
-            output.writeInt(timestamp.getNanos());
-        }
-
-        @Override
-        public Timestamp readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            Timestamp timestamp = super.readObject(input);
-            timestamp.setNanos(input.readInt());
-            return timestamp;
-        }
     }
 }

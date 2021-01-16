@@ -427,6 +427,56 @@ public class JMSTopicManagementTestCase {
         Assert.assertEquals(0, result.asInt());
     }
 
+    @Test
+    public void testPauseAndResume() throws Exception {
+
+        final ModelNode readAttr = getTopicOperation("read-attribute");
+        readAttr.get("name").set("paused");
+
+        ModelNode result = execute(readAttr, true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertFalse(result.asBoolean());
+
+        result = execute(getTopicOperation("pause"), true);
+        Assert.assertFalse(result.isDefined());
+
+        result = execute(readAttr, true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertTrue(result.asBoolean());
+
+        final String subscriptionName = "pauseJMSTopic";
+        TopicSubscriber consumer = consumerSession.createDurableSubscriber(topic, subscriptionName);
+        MessageProducer producer = session.createProducer(topic);
+        producer.send(session.createTextMessage("A"));
+
+        TextMessage message = (TextMessage)consumer.receive(TimeoutUtil.adjust(500));
+        Assert.assertNull("The message was received by the consumer, this is wrong as the connection is paused", message);
+        ModelNode operation = getTopicOperation("count-messages-for-subscription");
+        operation.get("client-id").set(consumerConn.getClientID());
+        operation.get("subscription-name").set(subscriptionName);
+        result = execute(operation, true);
+        assertTrue(result.isDefined());
+        Assert.assertEquals(1, result.asInt());
+
+        result = execute(getTopicOperation("resume"), true);
+        Assert.assertFalse(result.isDefined());
+
+        result = execute(readAttr, true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertFalse(result.asBoolean());
+
+        message = (TextMessage)consumer.receive(TimeoutUtil.adjust(500));
+        Assert.assertNotNull("The message was not received by the consumer, this is wrong as the connection is resumed", message);
+        Assert.assertEquals("A", message.getText());
+        Thread.sleep(TimeoutUtil.adjust(500));
+        operation = getTopicOperation("count-messages-for-subscription");
+        operation.get("client-id").set(consumerConn.getClientID());
+        operation.get("subscription-name").set(subscriptionName);
+        result = execute(operation, true);
+        assertTrue(result.isDefined());
+        Assert.assertEquals(0, result.asInt());
+    }
+
     private ModelNode getTopicOperation(String operationName) {
         final ModelNode address = adminSupport.getServerAddress()
                 .add("jms-topic", getTopicName());

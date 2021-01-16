@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -38,6 +40,7 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
+import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -79,11 +82,19 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
+        Map<String, SessionBeanComponentDescription> sessionBeanComponentDescriptions = new HashMap<>();
         if (componentDescriptions != null) {
             for (ComponentDescription componentDescription : componentDescriptions) {
                 // process only EJB session beans
                 if (componentDescription instanceof SessionBeanComponentDescription) {
-                    this.setupJNDIBindings((EJBComponentDescription) componentDescription, deploymentUnit);
+                    SessionBeanComponentDescription sessionBeanComponentDescription = (SessionBeanComponentDescription) componentDescription;
+                    String ejbClassName = sessionBeanComponentDescription.getEJBClassName();
+                    SessionBeanComponentDescription existingDescription = sessionBeanComponentDescriptions.putIfAbsent(ejbClassName, sessionBeanComponentDescription);
+                    if ((existingDescription == null) || existingDescription.getSessionBeanType() == sessionBeanComponentDescription.getSessionBeanType()) {
+                        this.setupJNDIBindings(sessionBeanComponentDescription, deploymentUnit);
+                    } else {
+                        EjbLogger.DEPLOYMENT_LOGGER.typeSpecViolation(ejbClassName);
+                    }
                 }
             }
         }
@@ -244,7 +255,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             public void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
                 final InjectedValue<ManagedReferenceFactory> delegateInjection = new InjectedValue<>();
                 delegate.getResourceValue(resolutionContext, serviceBuilder, phaseContext, delegateInjection);
-                injector.inject(new ManagedReferenceFactory() {
+                injector.inject(new RemoteViewManagedReferenceFactory(moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient) {
                     @Override
                     public ManagedReference getReference() {
                         ControlPoint cp = controlPointInjectedValue.getValue();

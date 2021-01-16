@@ -44,7 +44,7 @@ public class EJBSecurityMetaData {
     /**
      * The security domain for this EJB component
      */
-    private final String securityDomain;
+    private final String securityDomainName;
 
     /**
      * The run-as role (if any) for this EJB component
@@ -80,7 +80,7 @@ public class EJBSecurityMetaData {
         }
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         this.runAsRole = ejbComponentDescription.getRunAs();
-        this.securityDomain = ejbComponentDescription.getSecurityDomain();
+        this.securityDomainName = ejbComponentDescription.getResolvedSecurityDomain();
         this.runAsPrincipal = ejbComponentDescription.getRunAsPrincipal();
         this.securityRoles = ejbComponentDescription.getSecurityRoles();
         final Map<String, Collection<String>> links = ejbComponentDescription.getSecurityRoleLinks();
@@ -114,8 +114,8 @@ public class EJBSecurityMetaData {
      *
      * @return
      */
-    public String getSecurityDomain() {
-        return this.securityDomain;
+    public String getSecurityDomainName() {
+        return this.securityDomainName;
     }
 
     /**

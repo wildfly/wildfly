@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ /*
+  ~  * JBoss, Home of Professional Open Source.
+  ~  * Copyright $year Red Hat, Inc., and individual contributors
+  ~  * as indicated by the @author tags.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *     http://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ee-feature-pack-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>23.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-ee-galleon-pack</artifactId>
+
+    <name>WildFly: EE Full Galleon Pack</name>
+    <description>Galleon feature pack providing full platform Jakarta EE functionality</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
+        <common.resources.directory>${basedir}/../common/src/main/resources</common.resources.directory>
+        <ee-8-api.resources.directory>${basedir}/../ee-8-api/src/main/resources</ee-8-api.resources.directory>
+        <galleon-common.resources.directory>${basedir}/../galleon-common/src/main/resources</galleon-common.resources.directory>
+        <pruned.resources.directory>${basedir}/../pruned/src/main/resources</pruned.resources.directory>
+        <common.license.directory>${basedir}/../common/src/license</common.license.directory>
+        <ee-8-api.license.directory>${basedir}/../ee-8-api/src/license</ee-8-api.license.directory>
+        <pruned.license.directory>${basedir}/../pruned/src/license</pruned.license.directory>
+    </properties>
+
+    <build>
+        <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
+        <plugins>
+            <plugin>
+                <!-- Feature pack generation is vulnerable to leftover files in the target
+                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-pruned-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${pruned.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-common-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${common.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-ee8-api-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${ee-8-api.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-common-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon-common.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.maven.plugins</groupId>
+                <artifactId>licenses-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>update-licenses-xml</id>
+                        <goals>
+                            <goal>insert-versions</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+                            <licensesConfigFiles>
+                                <licensesConfigFile>${common.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${ee-8-api.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${pruned.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
+                            </licensesConfigFiles>
+                            <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
+                            <excludedArtifacts>infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-galleon-pack|wildfly-servlet-galleon-pack|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-ee-8-api|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned</excludedArtifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>feature-pack-build</id>
+                        <goals>
+                            <goal>build-feature-pack</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <release-name>${ee.dist.product.release.name}</release-name>
+                            <fork-embedded>${galleon.fork.embedded}</fork-embedded>
+                            <task-properties>
+                                <product.release.version>${ee.dist.product.release.version}</product.release.version>
+                            </task-properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <!-- feature pack dependencies -->
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-galleon-pack</artifactId>
+            <type>zip</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+            <type>zip</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-galleon-plugins</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- module and copy artifact dependencies -->
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-common</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-ee-8-api</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-common</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-pruned</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <!-- This profile should only be activated to download licenses from remote URLs
+                 instead of copying the license files from the src/main/resources/content/docs/licences
+                 directory -->
+            <id>download-licenses</id>
+            <activation>
+                <property>
+                    <name>download-licenses</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>download-licenses</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <licensesOutputDirectory>${basedir}/target/resources/content/docs/licenses</licensesOutputDirectory>
+                                    <licensesOutputFile>${basedir}/target/resources/content/docs/licenses/licenses.xml</licensesOutputFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>enforce</id>
+            <activation>
+                <property>
+                    <name>!skip-enforce</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ban-transitive-deps</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <banTransitiveDependencies>
+                                            <excludes>
+                                                <!-- Ignore jdk jars because they are system scope -->
+                                                <exclude>com.sun:tools</exclude>
+                                                <exclude>sun.jdk:jconsole</exclude>
+                                                <!-- Ignore the shared resource poms as those we want their
+                                                     transitives. Those poms ban transitives at their level -->
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-common</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-ee-8-api</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-pruned</exclude>
+                                            </excludes>
+                                        </banTransitiveDependencies>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>enforce-product</id>
+            <activation>
+                <property>
+                    <name>enforce-product</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jboss.maven.plugins.enforcer.rules</groupId>
+                                <artifactId>version-enforcer-rule</artifactId>
+                                <version>1.0.0</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>ban-non-product-deps</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <rule implementation="org.jboss.maven.plugins.enforcer.rules.version.BanVersionDependenciesRule">
+                                          <versionPattern>^((?!redhat).)*$</versionPattern>
+                                        </rule>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>javadocDist</id>
+            <properties>
+                <javadoc.branding>WildFly public API - ${project.version}</javadoc.branding>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${version.javadoc.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>javadocs-dist</id>
+                                <goals>
+                                    <goal>aggregate-jar</goal>
+                                </goals>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <verbose>true</verbose>
+                                    <maxmemory>2400m</maxmemory>
+                                    <!-- To prevent problems with author names written in non-UTF-8:
+                                    -->
+                                    <encoding>ISO-8859-1</encoding>
+
+                                    <windowtitle>${javadoc.branding} public API</windowtitle>
+                                    <doctitle>${javadoc.branding} public API</doctitle>
+                                    <header>${javadoc.branding}</header>
+                                    <footer>${javadoc.branding}</footer>
+
+                                    <includeDependencySources>true</includeDependencySources>
+                                    <dependencySourceIncludes>
+                                        <!-- Filled by a script during creation of Javadoc. -->
+                                    </dependencySourceIncludes>
+
+                                    <dependencySourceExcludes>
+                                        <!-- Filled by a script during creation of Javadoc. -->
+                                    </dependencySourceExcludes>
+
+                                    <groups>
+                                        <!-- Filled by a script during creation of Javadoc. -->
+                                    </groups>
+
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

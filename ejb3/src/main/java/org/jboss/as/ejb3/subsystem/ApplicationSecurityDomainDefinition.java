@@ -22,15 +22,20 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.security.Policy;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -54,13 +59,8 @@ import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
@@ -71,19 +71,18 @@ import org.wildfly.security.auth.server.SecurityDomain;
  */
 public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinition {
 
-    public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.ejb3.application-security-domain";
+    public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.ejb3.application-security-domain";
+    public static final String CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS = "org.wildfly.ejb3.application-security-domain.known-deployments";
+    private static final String SECURITY_DOMAIN_CAPABILITY_NAME = "org.wildfly.security.security-domain";
 
-    static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY, true, ApplicationSecurityDomain.class)
+    static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_CAPABILITY = RuntimeCapability
+            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, true, ApplicationSecurityDomain.class)
             .build();
-
-    private static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
-    private static final String JACC_POLICY_CAPABILITY = "org.wildfly.security.jacc-policy";
 
     static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.SECURITY_DOMAIN, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, APPLICATION_SECURITY_DOMAIN_CAPABILITY, true)
+            .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY_NAME, APPLICATION_SECURITY_DOMAIN_CAPABILITY_NAME, true)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();
 
@@ -103,9 +102,11 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
     private static final Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains = Collections.synchronizedSet(new HashSet<>());
 
+    private static final AttachmentKey<KnownDeploymentsApi> KNOWN_DEPLOYMENTS_KEY = AttachmentKey.create(KnownDeploymentsApi.class);
+
     private ApplicationSecurityDomainDefinition() {
         this(new Parameters(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN))
-                .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
+                .setCapabilities(APPLICATION_SECURITY_DOMAIN_CAPABILITY)
                 .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(EJB3Extension.SUBSYSTEM_NAME, EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, false, false, false)),
                         new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(EJB3Extension.SUBSYSTEM_NAME, EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN)))
                 , new AddHandler());
@@ -134,6 +135,16 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         }
 
         @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+            KnownDeploymentsApi knownDeployments = new KnownDeploymentsApi();
+            context.registerCapability(RuntimeCapability.Builder
+                    .of(CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, true, knownDeployments).build()
+                    .fromBaseCapability(context.getCurrentAddressValue()));
+            context.attach(KNOWN_DEPLOYMENTS_KEY, knownDeployments);
+        }
+
+        @Override
         protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             super.populateModel(context, operation, resource);
             ModelNode model = resource.getModel();
@@ -150,23 +161,27 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             String securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
             boolean enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
-            RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
+
+            RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
             ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
-            ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService(enableJacc);
+            ServiceName securityDomainServiceName = serviceName.append("security-domain");
 
-            ServiceBuilder<ApplicationSecurityDomain> serviceBuilder = context.getServiceTarget().addService(serviceName, applicationSecurityDomainService)
+            CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(APPLICATION_SECURITY_DOMAIN_CAPABILITY)
                     .setInitialMode(Mode.LAZY);
-            serviceBuilder.addDependency(context.getCapabilityServiceName(
-                            SECURITY_DOMAIN_CAPABILITY, securityDomain, SecurityDomain.class),
-                    SecurityDomain.class, applicationSecurityDomainService.getSecurityDomainInjector());
 
-            if (model.hasDefined(ENABLE_JACC.getName())) {
-                if (ENABLE_JACC.resolveModelAttribute(context, model).asBoolean()) {
-                    serviceBuilder.requires(context.getCapabilityServiceName(JACC_POLICY_CAPABILITY, Policy.class));
-                }
-            }
+            Supplier<SecurityDomain> securityDomainSupplier = serviceBuilder.requires(context.getCapabilityServiceName(
+                    SECURITY_DOMAIN_CAPABILITY_NAME, securityDomain, SecurityDomain.class));
+
+            Consumer<ApplicationSecurityDomainService.ApplicationSecurityDomain> applicationSecurityDomainConsumer = serviceBuilder.provides(serviceName);
+            Consumer<SecurityDomain> securityDomainConsumer = serviceBuilder.provides(securityDomainServiceName);
+
+            ApplicationSecurityDomainService service = new ApplicationSecurityDomainService(enableJacc, securityDomainSupplier, applicationSecurityDomainConsumer, securityDomainConsumer);
+            serviceBuilder.setInstance(service);
 
             serviceBuilder.install();
+
+            KnownDeploymentsApi knownDeploymentsApi = context.getAttachment(KNOWN_DEPLOYMENTS_KEY);
+            knownDeploymentsApi.setApplicationSecurityDomainService(service);
         }
     }
 
@@ -193,8 +208,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
         @Override
         protected ServiceName serviceName(String name) {
-            RuntimeCapability<?> dynamicCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(name);
-            return dynamicCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
+            return APPLICATION_SECURITY_DOMAIN_CAPABILITY.getCapabilityServiceName(ApplicationSecurityDomain.class, name);
         }
     }
 
@@ -204,23 +218,32 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             if (context.isDefaultRequiresRuntime()) {
                 context.addStep((ctx, op) -> {
-                    RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
-                    ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
-                    ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                    ServiceController<?> controller = serviceRegistry.getRequiredService(serviceName);
+                    final KnownDeploymentsApi knownDeploymentsApi = context.getCapabilityRuntimeAPI(
+                            CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, ctx.getCurrentAddressValue(),
+                            KnownDeploymentsApi.class);
 
                     ModelNode deploymentList = new ModelNode();
-                    if (controller.getState() == State.UP) {
-                        Service service = controller.getService();
-                        if (service instanceof ApplicationSecurityDomainService) {
-                            for (String current : ((ApplicationSecurityDomainService) service).getDeployments()) {
-                                deploymentList.add(current);
-                            }
-                        }
+                    for (String current : knownDeploymentsApi.getKnownDeployments()) {
+                        deploymentList.add(current);
                     }
+
                     context.getResult().set(deploymentList);
                 }, OperationContext.Stage.RUNTIME);
             }
+        }
+    }
+
+    private static class KnownDeploymentsApi {
+
+        private volatile ApplicationSecurityDomainService service;
+
+        List<String> getKnownDeployments() {
+            return service != null ? Arrays.asList(service.getDeployments()) : Collections.emptyList();
+
+        }
+
+        void setApplicationSecurityDomainService(final ApplicationSecurityDomainService service) {
+            this.service = service;
         }
     }
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="datasources-web-server">
+    <dependencies>
+        <layer name="web-server"/>
+        <layer name="core-server"/>
+        <layer name="core-tools" optional="true"/>
+        <layer name="datasources" optional="true"/>
+    </dependencies>
+    <feature-group name="undertow-elytron-security"/>
+    <packages>
+        <!-- Support for installing legacy one-off patches -->
+        <package name="org.jboss.as.patching.cli" optional="true"/>
+    </packages>
+</layer-spec>

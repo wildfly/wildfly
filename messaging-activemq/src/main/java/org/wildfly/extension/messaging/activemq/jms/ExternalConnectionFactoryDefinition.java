@@ -46,7 +46,42 @@ public class ExternalConnectionFactoryDefinition extends PersistentResourceDefin
     static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.external.connection-factory", true, ExternalConnectionFactoryService.class).
             build();
     public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{
-        CommonAttributes.HA, Regular.FACTORY_TYPE, Common.DISCOVERY_GROUP, CONNECTORS, Common.ENTRIES, External.ENABLE_AMQ1_PREFIX, Common.USE_TOPOLOGY};
+        CommonAttributes.HA, Regular.FACTORY_TYPE, Common.DISCOVERY_GROUP, CONNECTORS, Common.ENTRIES, External.ENABLE_AMQ1_PREFIX,
+        Common.CLIENT_FAILURE_CHECK_PERIOD,
+        Common.CONNECTION_TTL,
+        CommonAttributes.CALL_TIMEOUT,
+        CommonAttributes.CALL_FAILOVER_TIMEOUT,
+        Common.CONSUMER_WINDOW_SIZE,
+        Common.CONSUMER_MAX_RATE,
+        Common.CONFIRMATION_WINDOW_SIZE,
+        Common.PRODUCER_WINDOW_SIZE,
+        Common.PRODUCER_MAX_RATE,
+        Common.PROTOCOL_MANAGER_FACTORY,
+        Common.COMPRESS_LARGE_MESSAGES,
+        Common.CACHE_LARGE_MESSAGE_CLIENT,
+        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+        CommonAttributes.CLIENT_ID,
+        Common.DUPS_OK_BATCH_SIZE,
+        Common.TRANSACTION_BATCH_SIZE,
+        Common.BLOCK_ON_ACKNOWLEDGE,
+        Common.BLOCK_ON_NON_DURABLE_SEND,
+        Common.BLOCK_ON_DURABLE_SEND,
+        Common.AUTO_GROUP,
+        Common.PRE_ACKNOWLEDGE,
+        Common.RETRY_INTERVAL,
+        Common.RETRY_INTERVAL_MULTIPLIER,
+        CommonAttributes.MAX_RETRY_INTERVAL,
+        Common.RECONNECT_ATTEMPTS,
+        Common.FAILOVER_ON_INITIAL_CONNECTION,
+        Common.CONNECTION_LOAD_BALANCING_CLASS_NAME,
+        Common.USE_GLOBAL_POOLS,
+        Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
+        Common.THREAD_POOL_MAX_SIZE,
+        Common.GROUP_ID,
+        Common.DESERIALIZATION_BLACKLIST,
+        Common.DESERIALIZATION_WHITELIST,
+        Common.INITIAL_MESSAGE_PACKET_SIZE,
+        Common.USE_TOPOLOGY};
 
     private final boolean registerRuntimeOnly;
 

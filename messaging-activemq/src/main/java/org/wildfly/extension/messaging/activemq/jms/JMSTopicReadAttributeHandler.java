@@ -25,6 +25,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.ignoreOperationIfServerNotActive;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAUSED;
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.DURABLE_MESSAGE_COUNT;
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.DURABLE_SUBSCRIPTION_COUNT;
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.NON_DURABLE_MESSAGE_COUNT;
@@ -125,6 +126,8 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             // This attribute does not make sense. JMS topics created by the management API are always
             // managed and not temporary. Only topics created by the Clients can be temporary.
             context.getResult().set(false);
+        } else if (PAUSED.getName().equals(attributeName)) {
+            context.getResult().set(control.isPaused());
         } else {
             throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(attributeName);
         }

@@ -138,7 +138,7 @@ public abstract class AbstractDwmTestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP).set("take-snapshot");
         ModelNode result = execute(client, operation);
-        log.info("Snapshot of current configuration taken: " + result.asString());
+        log.debugf("Snapshot of current configuration taken: %s", result);
         return result.asString();
     }
 
@@ -326,7 +326,7 @@ public abstract class AbstractDwmTestCase {
     private void setUpServer(ModelControllerClient client ,String containerId) throws IOException {
         ModelControllerClient mcc = CONTAINER_0.equals(containerId) ? createClient1() : createClient2();
 
-        log.info("Setting up Policy/Selector: " + getPolicy() + "/" + getSelector() + " on server " + containerId);
+        log.debugf("Setting up Policy/Selector: %s/%s on server %s", getPolicy(), getSelector(), containerId);
         ModelNode addBasicDwm = addBasicDwm();
         ModelNode setUpPolicy = setUpPolicy(getPolicy());
         ModelNode setUpPolicyOptions = setUpWatermarkPolicyOption(getWatermarkPolicyOption());
@@ -339,10 +339,10 @@ public abstract class AbstractDwmTestCase {
         }
         ModelNode compositeOp = ModelUtil.createCompositeNode(operationList.toArray(new ModelNode[1]));
         ModelNode result = mcc.execute(compositeOp);
-        log.info("Setting up DWM on server " + containerId + ": " + result);
+        log.debugf("Setting up DWM on server %s: %s", containerId, result);
 
         result = mcc.execute(setUpCustomContext());
-        log.info("Setting up CustomContext on server " + containerId + ": " + result);
+        log.debugf("Setting up CustomContext on server %s: %s", containerId, result);
 
         mcc.close();
     }
@@ -396,7 +396,6 @@ public abstract class AbstractDwmTestCase {
         jar.addClass(LongWork.class).addClass(ShortWork.class)
                 .addPackage(DistributedConnection1.class.getPackage());
         jar.addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector,"
-                + "org.jboss.as.controller,org.jboss.dmr,org.jboss.as.cli,org.jboss.staxmapper,"
                 + "org.jboss.ironjacamar.impl\n"), "MANIFEST.MF");
         return jar;
     }
@@ -408,7 +407,7 @@ public abstract class AbstractDwmTestCase {
                         "ironjacamar.xml")
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,org.jboss.as.connector \n"),
+                                "Dependencies: org.jboss.as.connector \n"),
                         "MANIFEST.MF");
         return rar;
     }

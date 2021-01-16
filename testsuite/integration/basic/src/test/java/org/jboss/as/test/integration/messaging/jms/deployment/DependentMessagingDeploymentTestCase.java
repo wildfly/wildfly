@@ -22,12 +22,14 @@
 
 package org.jboss.as.test.integration.messaging.jms.deployment;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
+import java.util.PropertyPermission;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +42,9 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -74,24 +78,29 @@ public class DependentMessagingDeploymentTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            JMSOperationsProvider.getInstance(managementClient).createJmsQueue(QUEUE_NAME, QUEUE_LOOKUP);
-            JMSOperationsProvider.getInstance(managementClient).createJmsTopic(TOPIC_NAME, TOPIC_LOOKUP);
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.createJmsQueue(QUEUE_NAME, QUEUE_LOOKUP);
+            jmsOperations.createJmsTopic(TOPIC_NAME, TOPIC_LOOKUP);
         }
 
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            JMSOperationsProvider.getInstance(managementClient).removeJmsQueue(QUEUE_NAME);
-            JMSOperationsProvider.getInstance(managementClient).removeJmsTopic(TOPIC_NAME);
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsQueue(QUEUE_NAME);
+            jmsOperations.removeJmsTopic(TOPIC_NAME);
         }
     }
 
     @Deployment
     public static WebArchive createArchive() {
         return create(WebArchive.class, "DependentMessagingDeploymentTestCase.war")
-                .addClass(MessagingServlet.class)
+                .addClasses(MessagingServlet.class, TimeoutUtil.class)
                 .addClasses(QueueMDB.class, TopicMDB.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")
+                ), "permissions.xml");
     }
 
     @Test
@@ -99,7 +108,8 @@ public class DependentMessagingDeploymentTestCase {
         sendAndReceiveMessage(true);
 
         try {
-            JMSOperationsProvider.getInstance(managementClient).removeJmsQueue(QUEUE_NAME);
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsQueue(QUEUE_NAME);
             fail("removing a JMS resource that the deployment is depending upon must fail");
         } catch(Exception e) {
         }
@@ -112,20 +122,19 @@ public class DependentMessagingDeploymentTestCase {
         sendAndReceiveMessage(false);
 
         try {
-            JMSOperationsProvider.getInstance(managementClient).removeJmsTopic(TOPIC_NAME);
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsTopic(TOPIC_NAME);
             fail("removing a JMS resource that the deployment is depending upon must fail");
         } catch(Exception e) {
         }
-
         sendAndReceiveMessage(false);
     }
 
     private void sendAndReceiveMessage(boolean sendToQueue) throws Exception {
         String destination = sendToQueue ? "queue" : "topic";
         String text = UUID.randomUUID().toString();
-        URL url = new URL(this.url.toExternalForm() + "DependentMessagingDeploymentTestCase?destination=" + destination + "&text=" + text);
-        String reply = HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
-
+        URL servletUrl = new URL(this.url.toExternalForm() + "DependentMessagingDeploymentTestCase?destination=" + destination + "&text=" + text);
+        String reply = HttpRequest.get(servletUrl.toExternalForm(), 10, TimeUnit.SECONDS);
         assertNotNull(reply);
         assertEquals(text, reply);
     }

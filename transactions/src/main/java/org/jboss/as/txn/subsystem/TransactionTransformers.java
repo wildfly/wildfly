@@ -39,6 +39,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     static final ModelVersion MODEL_VERSION_EAP70 = ModelVersion.create(3, 0);
     static final ModelVersion MODEL_VERSION_EAP71 = ModelVersion.create(4, 0);
     static final ModelVersion MODEL_VERSION_EAP72 = ModelVersion.create(5, 0);
+    static final ModelVersion MODEL_VERSION_EAP73 = ModelVersion.create(5, 1);
 
 
     @Override
@@ -49,8 +50,13 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
+
+        // 5.2.0 --> 5.1.0
+        // CMR resources adds/removes requires restart of JVM
+        chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP73);
+
         // 5.1.0 --> 5.0.0
-        ResourceTransformationDescriptionBuilder builderEap72 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP72);
+        ResourceTransformationDescriptionBuilder builderEap72 = chainedBuilder.createBuilder(MODEL_VERSION_EAP73, MODEL_VERSION_EAP72);
         builderEap72.getAttributeBuilder().end(); // node-id attribute requires restart of JVM instead of reload
 
         // 5.0.0 --> 4.0.0
@@ -70,7 +76,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
 
         ResourceTransformationDescriptionBuilder builderEap70 = chainedBuilder.createBuilder(MODEL_VERSION_EAP71, MODEL_VERSION_EAP70);
         builderEap70.getAttributeBuilder()
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(OBJECT_STORE_RELATIVE_TO), OBJECT_STORE_RELATIVE_TO)
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, OBJECT_STORE_RELATIVE_TO)
                 .end();
 
         builderEap70.addChildResource(TransactionExtension.LOG_STORE_PATH)
@@ -101,7 +107,8 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
                 MODEL_VERSION_EAP70,
                 MODEL_VERSION_EAP71,
                 MODEL_VERSION_EAP72,
-                // v5_1_0
+                MODEL_VERSION_EAP73,
+                // v5_2_0
         });
     }
 }

@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.web.hotrod.session.coarse;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,7 +32,6 @@ import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.hotrod.RemoteCacheMutatorFactory;
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
@@ -70,9 +70,13 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     @Override
     public Map<String, Object> createValue(String id, Void context) {
         Map<String, Object> attributes = new ConcurrentHashMap<>();
-        V value = this.marshaller.write(attributes);
-        this.cache.put(new SessionAttributesKey(id), value);
-        return attributes;
+        try {
+            V value = this.marshaller.write(attributes);
+            this.cache.put(new SessionAttributesKey(id), value);
+            return attributes;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
@@ -81,7 +85,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         if (value != null) {
             try {
                 return this.marshaller.read(value);
-            } catch (InvalidSerializedFormException e) {
+            } catch (IOException e) {
                 Logger.ROOT_LOGGER.failedToActivateSession(e, id.toString());
                 this.remove(id);
             }
@@ -90,11 +94,14 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, Object> values, ImmutableSessionMetaData metaData, C context) {
-        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, values);
-        SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
-        Mutator mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(values));
-        return new CoarseSessionAttributes(values, mutator, this.marshaller, this.immutability, this.properties, notifier);
+    public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
+        try {
+            Mutator mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
+            SessionActivationNotifier notifier = this.properties.isPersistent() ? new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
+            return new CoarseSessionAttributes(attributes, mutator, this.marshaller, this.immutability, this.properties, notifier);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override

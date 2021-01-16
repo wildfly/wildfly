@@ -33,8 +33,6 @@ import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.eap720.DomainAdjuster720;
 import org.jboss.dmr.ModelNode;
 
@@ -57,9 +55,8 @@ public class DomainAdjuster710 extends DomainAdjuster720 {
 
         list.addAll(removeEESecurity(profileAddress.append(SUBSYSTEM, "ee-security")));
         list.addAll(removeDiscovery(profileAddress.append(SUBSYSTEM, "discovery")));
-        list.addAll(removeMicroProfileConfigSmallrye(profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye")));
         list.addAll(removeMicroProfileOpenTracing(profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye")));
-
+        list.addAll(removeMicroProfileConfigSmallrye(profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye")));
         return list;
     }
 
@@ -70,16 +67,6 @@ public class DomainAdjuster710 extends DomainAdjuster720 {
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.ee-security")));
         return list;
-    }
-    private void adjustUndertow(PathAddress undertow, List<ModelNode> ops) {
-        // EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
-        // for SSL by default, which automatically generates certs.
-        // This could be removed if all hosts were configured to contain a security domain with SSL
-        // enabled.
-        final PathAddress httpsListener = undertow
-                .append("server", "default-server")
-                .append("https-listener", "https");
-        ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
     }
 
     private List<ModelNode> adjustJGroups(final PathAddress subsystem) throws Exception {

@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionConfiguration;
 import org.infinispan.client.hotrod.configuration.TransactionConfigurationBuilder;
-import org.infinispan.transaction.tm.EmbeddedTransactionManager;
+import org.infinispan.client.hotrod.transaction.manager.RemoteTransactionManager;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentServiceConfigurator;
@@ -71,7 +71,12 @@ public class RemoteTransactionServiceConfigurator extends ComponentServiceConfig
             }
             case BATCH: {
                 builder.transactionMode(org.infinispan.client.hotrod.configuration.TransactionMode.NON_DURABLE_XA);
-                builder.transactionManagerLookup(new TransactionManagerProvider(EmbeddedTransactionManager.getInstance()));
+                builder.transactionManagerLookup(new TransactionManagerProvider(RemoteTransactionManager.getInstance()));
+                break;
+            }
+            case NON_XA: {
+                builder.transactionMode(org.infinispan.client.hotrod.configuration.TransactionMode.NON_XA);
+                builder.transactionManagerLookup(new TransactionManagerProvider(ContextTransactionManager.getInstance()));
                 break;
             }
             case NON_DURABLE_XA: {

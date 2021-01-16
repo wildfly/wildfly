@@ -23,10 +23,10 @@ package org.wildfly.extension.microprofile.faulttolerance.tck;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -35,7 +35,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
 import org.jboss.shrinkwrap.api.container.LibraryContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.io.IOUtil;
 
 /**
@@ -53,7 +52,7 @@ public class FaultToleranceApplicationArchiveProcessor implements ApplicationArc
     @Override
     public void process(Archive<?> applicationArchive, TestClass testClass) {
         if (!(applicationArchive instanceof ClassContainer)) {
-            LOGGER.warning(
+            LOGGER.warn(
                     "Unable to add additional classes - not a class/resource container: "
                             + applicationArchive);
             return;
@@ -72,15 +71,6 @@ public class FaultToleranceApplicationArchiveProcessor implements ApplicationArc
             applicationArchive.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
         }
 
-        if (applicationArchive instanceof WebArchive
-                && applicationArchive.contains("META-INF/microprofile-config.properties")
-                && !applicationArchive.contains("WEB-INF/classes/META-INF/microprofile-config.properties")) {
-            // workaround for https://github.com/eclipse/microprofile-fault-tolerance/pull/495
-            // this entire `if` should be removed when that PR is merged and MP FT released
-            applicationArchive.move("META-INF/microprofile-config.properties",
-                    "WEB-INF/classes/META-INF/microprofile-config.properties");
-        }
-
         String config;
         if (!applicationArchive.contains(MP_CONFIG_PATH)) {
             config = MAX_THREADS_OVERRIDE;
@@ -91,7 +81,7 @@ public class FaultToleranceApplicationArchiveProcessor implements ApplicationArc
         }
         classContainer.addAsResource(new StringAsset(config), MP_CONFIG_PATH);
 
-        LOGGER.info("Added additional resources to " + applicationArchive.toString(true));
+        LOGGER.debug("Added additional resources to " + applicationArchive.toString(true));
     }
 
     private ByteArrayOutputStream readCurrentConfig(Archive<?> appArchive) {

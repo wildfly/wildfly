@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:13.0"
+<host xmlns="urn:jboss:domain:15.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:10.0 wildfly-config_10_0.xsd"
       name="failover-h2">

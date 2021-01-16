@@ -38,18 +38,17 @@ import java.util.Map;
 
 import io.undertow.UndertowOptions;
 import io.undertow.server.ConnectorStatistics;
+import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -78,6 +77,12 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             //.addDynamicRequirements(Capabilities.CAPABILITY_SERVER) -- has no function so don't use it
             .setAllowMultipleRegistrations(true) //hack to support mod_cluster's legacy profiles
             .build();
+
+    // only used by the subclasses Http(s)ListenerResourceDefinition
+    protected static final RuntimeCapability<Void> HTTP_UPGRADE_REGISTRY_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HTTP_UPGRADE_REGISTRY, true, ChannelUpgradeHandler.class)
+            .setAllowMultipleRegistrations(true)
+            .build();
+
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setRequired(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -239,9 +244,9 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         ATTRIBUTES.addAll(SOCKET_OPTIONS);
     }
 
-    public ListenerResourceDefinition(PathElement pathElement) {
-        super(new SimpleResourceDefinition.Parameters(pathElement, UndertowExtension.getResolver(Constants.LISTENER))
-                .addCapabilities(LISTENER_CAPABILITY));
+    public ListenerResourceDefinition(Parameters parameters) {
+        // this Persistent Parameters will be cast to Parameters
+        super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY));
     }
 
     public Collection<AttributeDefinition> getAttributes() {

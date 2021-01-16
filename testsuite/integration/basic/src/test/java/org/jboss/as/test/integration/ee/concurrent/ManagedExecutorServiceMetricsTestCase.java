@@ -44,6 +44,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.naming.InitialContext;
@@ -53,6 +54,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -71,8 +73,12 @@ public class ManagedExecutorServiceMetricsTestCase {
 
     private static final Logger logger = Logger.getLogger(ManagedExecutorServiceMetricsTestCase.class);
 
+    private static final PathAddress REQUEST_CONTROLLER_PATH_ADDRESS = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
     private static final PathAddress EE_SUBSYSTEM_PATH_ADDRESS = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME));
     private static final String RESOURCE_NAME = ManagedExecutorServiceMetricsTestCase.class.getSimpleName();
+
+    private static final String ACTIVE_REQUEST_ATTRIBUTE_NAME = "active-requests";
+    private static final String MAX_REQUEST_ATTRIBUTE_NAME = "max-requests";
 
     @ArquillianResource
     private ManagementClient managementClient;
@@ -81,7 +87,7 @@ public class ManagedExecutorServiceMetricsTestCase {
     public static Archive<?> deploy() {
         return ShrinkWrap.create(JavaArchive.class, ManagedExecutorServiceMetricsTestCase.class.getSimpleName() + ".jar")
                 .addClasses(ManagedExecutorServiceMetricsTestCase.class)
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.as.ee, org.jboss.remoting3\n"), "MANIFEST.MF")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.as.ee, org.jboss.remoting\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new RemotingPermission("createEndpoint"),
                         new RemotingPermission("connect"),
@@ -116,7 +122,6 @@ public class ManagedExecutorServiceMetricsTestCase {
         }
     }
 
-
     @Test
     public void testManagedScheduledExecutorServiceManagement() throws Exception {
         final PathAddress pathAddress = EE_SUBSYSTEM_PATH_ADDRESS.append(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE, RESOURCE_NAME);
@@ -145,39 +150,170 @@ public class ManagedExecutorServiceMetricsTestCase {
         }
     }
 
+    /**
+     * WFLY-13177 - this tests an edge-case when executor threads are all busy and even queue is at its maximum. In that case
+     * the executor will reject any other tasks which should not increase active request counter in RequestController.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testActiveRequests() throws Exception {
+        final PathAddress pathAddress = EE_SUBSYSTEM_PATH_ADDRESS.append(EESubsystemModel.MANAGED_EXECUTOR_SERVICE, RESOURCE_NAME);
+        // add
+        final ModelNode addOperation = Util.createAddOperation(pathAddress);
+        final String jndiName = "java:jboss/ee/concurrency/activerequests/" + RESOURCE_NAME;
+        addOperation.get(ManagedExecutorServiceResourceDefinition.JNDI_NAME).set(jndiName);
+        // note: threads will increase till CORE_THREADS config value, then reuses if has idle thread
+        addOperation.get(ManagedExecutorServiceResourceDefinition.CORE_THREADS).set(2);
+        addOperation.get(ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH).set(1);
+        final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
+        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        try {
+            final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
+            Assert.assertNotNull(executorService);
+            testActiveRequestStats(pathAddress, executorService);
+        } finally {
+            // remove
+            final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
+            removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
+            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined());
+        }
+    }
+
+    /**
+     * WFLY-13177 - this tests another edge-case when executor is busy, but a new task is rejected due to a max-requests counter achieved.
+     * In that case RequestController will reject any other tasks which should not decrease/increase active request counter in RequestController.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMaxRequests() throws Exception {
+        final PathAddress pathAddress = EE_SUBSYSTEM_PATH_ADDRESS.append(EESubsystemModel.MANAGED_EXECUTOR_SERVICE, RESOURCE_NAME);
+        // add
+        final ModelNode addOperation = Util.createAddOperation(pathAddress);
+        final String jndiName = "java:jboss/ee/concurrency/maxrequests/" + RESOURCE_NAME;
+        addOperation.get(ManagedExecutorServiceResourceDefinition.JNDI_NAME).set(jndiName);
+        // note: threads will increase till CORE_THREADS config value, then reuses if has idle thread
+        addOperation.get(ManagedExecutorServiceResourceDefinition.CORE_THREADS).set(2);
+        addOperation.get(ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH).set(1);
+        final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
+        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        writeAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, MAX_REQUEST_ATTRIBUTE_NAME, 3, true);
+        try {
+            final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
+            Assert.assertNotNull(executorService);
+            testActiveRequestStats(pathAddress, executorService);
+        } finally {
+            try {
+                // remove
+                final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
+                removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+                final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
+                Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
+                        .isDefined());
+            } finally {
+                writeAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, MAX_REQUEST_ATTRIBUTE_NAME, -1, true);
+            }
+        }
+    }
+
+    private void testActiveRequestStats(PathAddress pathAddress, ManagedExecutorService executorService) throws IOException, ExecutionException, InterruptedException, BrokenBarrierException {
+
+        // assert stats initial values
+        Assert.assertEquals(0, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT));
+        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT));
+        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE));
+        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT));
+
+        // exclusive testing of queue size stat
+        final CyclicBarrier barrier1 = new CyclicBarrier(3);
+        final CyclicBarrier barrier2 = new CyclicBarrier(3);
+        final Future f1 = executorService.submit(() -> {
+            logger.info("Executing task #4.1");
+            try {
+                barrier1.await();
+                barrier2.await();
+            } catch (Exception e) {
+                Assert.fail();
+            }
+        });
+        Assert.assertEquals(1, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        final Future f2 = executorService.submit(() -> {
+            logger.info("Executing task #4.2");
+            try {
+                barrier1.await();
+                barrier2.await();
+            } catch (Exception e) {
+                Assert.fail();
+            }
+        });
+        Assert.assertEquals(2, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        barrier1.await();
+        // 2 tasks running, executing a 3rd should place it in queue,
+        // cause when core threads is reached executor always prefers queueing than creating a new thread
+        final Future f3 = executorService.submit(() -> {
+            logger.info("Executing task #4.3");
+        });
+        Assert.assertEquals(3, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        Assert.assertEquals(1, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE));
+        // executor is full, the following task will be rejected which should not increase the active request counter
+        try {
+            final Future f4 = executorService.submit(() -> {
+                logger.info("Executing task #4.4");
+            });
+            Assert.fail();
+        } catch (RejectedExecutionException e) {
+            // expected exception
+        }
+        Assert.assertEquals(3, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        // resume tasks running, ensure all complete and then confirm expected idle stats
+        barrier2.await();
+        f1.get();
+        f2.get();
+        f3.get();
+        Assert.assertEquals(0, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT));
+        Assert.assertEquals(3, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT));
+        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE));
+        Assert.assertEquals(3, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT));
+    }
+
     private void testRuntimeStats(PathAddress pathAddress, ManagedExecutorService executorService) throws IOException, ExecutionException, InterruptedException, BrokenBarrierException {
 
         // assert stats initial values
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT) == 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT, 0);
 
         // execute task #1 and assert stats values
         executorService.submit(() -> {
             logger.info("Executing task #1");
             try {
-                Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT) == 1);
-                Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT) == 0);
-                Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE) == 0);
-                Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT) == 1);
-                Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT) == 1);
-                Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT) == 1);
-            } catch (IOException e) {
+                assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT, 1);
+                assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT, 0);
+                assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 0);
+                assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT, 1);
+                assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT, 1);
+                assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT, 1);
+            } catch (IOException | InterruptedException e) {
                 Assert.fail();
             }
         }).get();
 
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT) == 1);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT) == 1);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT) == 1);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT) == 1);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT, 1);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT, 1);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT, 1);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT, 1);
 
         // execute task #2 and assert stats values
         executorService.submit(() -> {
@@ -189,18 +325,18 @@ public class ManagedExecutorServiceMetricsTestCase {
             }
             // after sleeping for over hung threshold time the thread executing this should be considered hung...
             try {
-                Assert.assertTrue("Hung thread count should be 1", readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT) == 1);
-            } catch (IOException e) {
+                assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT, 1);
+            } catch (IOException | InterruptedException e) {
                 Assert.fail();
             }
         }).get();
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT) == 2);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT) == 2);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT) == 2);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT) == 2);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT, 2);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT, 2);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT, 2);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT, 2);
 
         // exclusive testing of queue size stat
         final CyclicBarrier barrier1 = new CyclicBarrier(3);
@@ -229,18 +365,18 @@ public class ManagedExecutorServiceMetricsTestCase {
         final Future f3 = executorService.submit(() -> {
             logger.info("Executing task #3.3");
         });
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE) == 1);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 1);
         // resume tasks running, ensure all complete and then confirm expected idle stats
         barrier2.await();
         f1.get();
         f2.get();
         f3.get();
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT) == 5);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE) == 0);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT) == 2);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT) == 5);
-        Assert.assertTrue(readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT) == 2);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT, 5);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT, 2);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT, 5);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT, 2);
     }
 
     private int readStatsAttribute(PathAddress resourceAddress, String attrName) throws IOException {
@@ -248,5 +384,29 @@ public class ManagedExecutorServiceMetricsTestCase {
         final ModelNode result = managementClient.getControllerClient().execute(op);
         Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
         return result.get(RESULT).asInt();
+    }
+
+    private void assertStatsAttribute(PathAddress resourceAddress, String attrName, int expectedAttrValue) throws IOException, InterruptedException {
+        int actualAttrValue = readStatsAttribute(resourceAddress, attrName);
+        int retries = 3;
+        while (actualAttrValue != expectedAttrValue && retries > 0) {
+            Thread.sleep(500);
+            actualAttrValue = readStatsAttribute(resourceAddress, attrName);
+            retries--;
+        }
+        Assert.assertEquals(attrName, expectedAttrValue, actualAttrValue);
+    }
+
+    private void writeAttribute(PathAddress resourceAddress, String attrName, int value) throws IOException {
+        writeAttribute(resourceAddress, attrName, value, false);
+    }
+
+    private void writeAttribute(PathAddress resourceAddress, String attrName, int value, boolean allowResourseServiceRestart) throws IOException {
+        ModelNode op = Util.getWriteAttributeOperation(resourceAddress, attrName, value);
+        if (allowResourseServiceRestart) {
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        }
+        final ModelNode result = managementClient.getControllerClient().execute(op);
+        Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
     }
 }

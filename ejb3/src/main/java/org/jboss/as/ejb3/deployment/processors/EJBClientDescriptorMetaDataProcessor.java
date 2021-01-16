@@ -40,6 +40,7 @@ import java.util.Properties;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
@@ -50,7 +51,7 @@ import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
-import org.jboss.as.remoting.AbstractOutboundConnectionService;
+import org.jboss.as.network.OutboundConnection;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -91,6 +92,8 @@ import org.xnio.OptionMap;
 public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProcessor {
 
     private static final String INTERNAL_REMOTING_PROFILE = "internal-remoting-profile";
+    private static final String OUTBOUND_CONNECTION_CAPABILITY_NAME = "org.wildfly.remoting.outbound-connection";
+    private static final String REMOTING_PROFILE_CAPABILITY_NAME = "org.wildfly.ejb3.remoting-profile";
 
     private final boolean appclient;
 
@@ -110,9 +113,11 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             return;
         }
 
+        // support for using capabilities to resolve service names
+        CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+
         // check for EJB client interceptor configuration
         final List<EJBClientInterceptor> deploymentEjbClientInterceptors = getClassPathInterceptors(module.getClassLoader());
-
         List<EJBClientInterceptor> staticEjbClientInterceptors = deploymentUnit.getAttachment(org.jboss.as.ejb3.subsystem.Attachments.STATIC_EJB_CLIENT_INTERCEPTORS);
 
         List<EJBClientInterceptor> ejbClientInterceptors = new ArrayList<>();
@@ -127,8 +132,8 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
 
         final boolean interceptorsDefined = ejbClientInterceptors != null && ! ejbClientInterceptors.isEmpty();
 
-        final EJBClientDescriptorMetaData ejbClientDescriptorMetaData = deploymentUnit
-                .getAttachment(Attachments.EJB_CLIENT_METADATA);
+        final EJBClientDescriptorMetaData ejbClientDescriptorMetaData = deploymentUnit.getAttachment(Attachments.EJB_CLIENT_METADATA);
+
         // no explicit EJB client configuration in this deployment, so nothing to do
         if (ejbClientDescriptorMetaData == null && ! interceptorsDefined) {
             return;
@@ -174,15 +179,18 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             final String profile = ejbClientDescriptorMetaData.getProfile();
             final ServiceName profileServiceName;
             if (profile != null) {
-                profileServiceName = RemotingProfileService.BASE_SERVICE_NAME.append(profile);
+                // set up a service for the named remoting profile
+                profileServiceName = capabilityServiceSupport.getCapabilityServiceName(REMOTING_PROFILE_CAPABILITY_NAME, profile);
+                // why below?
                 serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
                 serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, service.getProfileServiceInjector());
             } else {
                 // if descriptor defines list of ejb-receivers instead of profile then we create internal ProfileService for this
                 // application which contains defined receivers
                 profileServiceName = ejbClientContextServiceName.append(INTERNAL_REMOTING_PROFILE);
-                final Map<String, RemotingProfileService.ConnectionSpec> map = new HashMap<>();
-                final RemotingProfileService profileService = new RemotingProfileService(Collections.emptyList(), map);
+                final Map<String, RemotingProfileService.RemotingConnectionSpec> remotingConnectionMap = new HashMap<>();
+                final List<RemotingProfileService.HttpConnectionSpec> httpConnections = new ArrayList<>();
+                final RemotingProfileService profileService = new RemotingProfileService(Collections.emptyList(), remotingConnectionMap, httpConnections);
                 final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName,
                         profileService);
                 if (ejbClientDescriptorMetaData.isLocalReceiverExcluded() != Boolean.TRUE) {
@@ -190,15 +198,24 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                     profileServiceBuilder.addDependency(passByValue == Boolean.FALSE ? LocalTransportProvider.BY_REFERENCE_SERVICE_NAME : LocalTransportProvider.BY_VALUE_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
                 }
                 final Collection<EJBClientDescriptorMetaData.RemotingReceiverConfiguration> receiverConfigurations = ejbClientDescriptorMetaData.getRemotingReceiverConfigurations();
+
                 for (EJBClientDescriptorMetaData.RemotingReceiverConfiguration receiverConfiguration : receiverConfigurations) {
                     final String connectionRef = receiverConfiguration.getOutboundConnectionRef();
                     final long connectTimeout = receiverConfiguration.getConnectionTimeout();
                     final Properties channelCreationOptions = receiverConfiguration.getChannelCreationOptions();
                     final OptionMap optionMap = getOptionMapFromProperties(channelCreationOptions, EJBClientDescriptorMetaDataProcessor.class.getClassLoader());
-                    final InjectedValue<AbstractOutboundConnectionService> injector = new InjectedValue<>();
-                    profileServiceBuilder.addDependency(AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionRef), AbstractOutboundConnectionService.class, injector);
-                    final RemotingProfileService.ConnectionSpec connectionSpec = new RemotingProfileService.ConnectionSpec(connectionRef, injector, optionMap, connectTimeout);
-                    map.put(connectionRef, connectionSpec);
+
+                    final InjectedValue<OutboundConnection> injector = new InjectedValue<>();
+                    final ServiceName internalServiceName = capabilityServiceSupport.getCapabilityServiceName(OUTBOUND_CONNECTION_CAPABILITY_NAME, connectionRef);
+                    profileServiceBuilder.addDependency(internalServiceName, OutboundConnection.class, injector);
+
+                    final RemotingProfileService.RemotingConnectionSpec connectionSpec = new RemotingProfileService.RemotingConnectionSpec(connectionRef, injector, optionMap, connectTimeout);
+                    remotingConnectionMap.put(connectionRef, connectionSpec);
+                }
+                for (EJBClientDescriptorMetaData.HttpConnectionConfiguration httpConfigurations : ejbClientDescriptorMetaData.getHttpConnectionConfigurations()) {
+                    final String uri = httpConfigurations.getUri();
+                    RemotingProfileService.HttpConnectionSpec httpConnectionSpec = new RemotingProfileService.HttpConnectionSpec(uri);
+                    httpConnections.add(httpConnectionSpec);
                 }
                 profileServiceBuilder.install();
 
@@ -218,6 +235,9 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             }
             final long invocationTimeout = ejbClientDescriptorMetaData.getInvocationTimeout();
             service.setInvocationTimeout(invocationTimeout);
+
+            final int defaultCompression = ejbClientDescriptorMetaData.getDefaultCompression();
+            service.setDefaultCompression(defaultCompression);
 
             // clusters
             final Collection<EJBClientDescriptorMetaData.ClusterConfig> clusterConfigs = ejbClientDescriptorMetaData.getClusterConfigs();

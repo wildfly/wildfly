@@ -1,0 +1,284 @@
+package java.util;
+
+// IDs: 10 - 59
+
+// Empty collections
+
+/**
+ * @TypeId(10)
+ */
+message EmptyEnumeration {
+}
+
+/**
+ * @TypeId(11)
+ */
+message EmptyIterator {
+}
+
+/**
+ * @TypeId(12)
+ */
+message EmptyList {
+}
+
+/**
+ * @TypeId(13)
+ */
+message EmptyListIterator {
+}
+
+/**
+ * @TypeId(24)
+ */
+message EmptyMap {
+}
+
+/**
+ * @TypeId(15)
+ */
+message EmptyNavigableMap {
+}
+
+/**
+ * @TypeId(16)
+ */
+message EmptyNavigableSet {
+}
+
+/**
+ * @TypeId(17)
+ */
+message EmptySet {
+}
+
+// Singleton collections
+
+/**
+ * @TypeId(20)
+ */
+message SingletonList {
+	required	bytes	value	= 1;
+}
+
+/**
+ * @TypeId(21)
+ */
+message SingletonMap {
+	required	SimpleEntry	entry	= 1;
+}
+
+/**
+ * @TypeId(22)
+ */
+message SingletonSet {
+	required	bytes	value	= 1;
+}
+
+// Comparators
+
+/**
+ * @TypeId(28)
+ */
+enum NaturalOrderComparator {
+	INSTANCE	= 0;
+}
+
+/**
+ * @TypeId(29)
+ */
+message ReverseComparator {
+}
+
+// Collections
+
+/**
+ * @TypeId(30)
+ */
+message ArrayDeque {
+	required	uint32	size	= 1;
+	repeated	bytes	element	= 2;
+}
+
+/**
+ * @TypeId(31)
+ */
+message ArrayList {
+	required	uint32	size	= 1;
+	repeated	bytes	element	= 2;
+}
+
+/**
+ * @TypeId(32)
+ */
+message BitSet {
+	required	uint32	size	= 1;
+	required	bytes	bits	= 2;
+}
+
+/**
+ * @TypeId(33)
+ */
+message Calendar {
+	required	string	type	= 1;
+	required	sint64	time	= 2;
+	required	bool	lenient	= 3;
+	required	string	zone	= 4;
+	required	int32	firstDayOfWeek	= 5;
+	required	int32	minDaysInFirstWeek	= 6;
+}
+
+/**
+ * @TypeId(34)
+ */
+message Currency {
+	required	string	id = 1;
+}
+
+/**
+ * @TypeId(35)
+ */
+message Date {
+	required	sint32	millis = 1;
+}
+
+/**
+ * @TypeId(36)
+ */
+message EnumMap {
+	required	bytes	enumClass	= 1;
+	required	BitSet	keys	= 2;
+	repeated	bytes	values	= 3;
+}
+
+/**
+ * @TypeId(37)
+ */
+message EnumSet {
+	required	bytes	enumClass	= 1;
+	required	BitSet	value	= 2;
+}
+
+/**
+ * @TypeId(38)
+ */
+message HashMap {
+	required	uint32	size	= 1;
+	repeated	SimpleEntry	entry	= 2;
+}
+
+/**
+ * @TypeId(39)
+ */
+message HashSet {
+	required	uint32	size	= 1;
+	repeated	bytes	element	= 2;
+}
+
+/**
+ * @TypeId(40)
+ */
+message LinkedHashMap {
+	required	uint32	size	= 1;
+	repeated	SimpleEntry	entry	= 2;
+}
+
+/**
+ * @TypeId(41)
+ */
+message LinkedHashSet {
+	required	uint32	size	= 1;
+	repeated	bytes	element	= 2;
+}
+
+/**
+ * @TypeId(42)
+ */
+message LinkedList {
+	required	uint32	size	= 1;
+	repeated	bytes	element	= 2;
+}
+
+/**
+ * @TypeId(43)
+ */
+message Locale {
+	required	string	tag	= 1;
+}
+
+/**
+ * @TypeId(44)
+ */
+message Optional {
+	optional	bytes	value = 1;
+}
+
+/**
+ * @TypeId(45)
+ */
+message OptionalDouble {
+	optional	double	value = 1;
+}
+
+/**
+ * @TypeId(46)
+ */
+message OptionalInt {
+	optional	bytes	value = 1;
+}
+
+/**
+ * @TypeId(47)
+ */
+message OptionalLong {
+	optional	bytes	value = 1;
+}
+
+/**
+ * @TypeId(48)
+ */
+message SimpleEntry {
+	required	bytes	key	= 1;
+	optional	bytes	value	= 2;
+}
+
+/**
+ * @TypeId(49)
+ */
+message SimpleImmutableEntry {
+	required	bytes	key	= 1;
+	optional	bytes	value	= 2;
+}
+
+/**
+ * @TypeId(50)
+ */
+message TimeZone {
+	required	string	id	= 1;
+}
+
+/**
+ * @TypeId(51)
+ */
+message TreeMap {
+	required	bytes	comparator	= 1;
+	required	uint32	size	= 2;
+	repeated	SimpleEntry	entry	= 3;
+}
+
+/**
+ * @TypeId(52)
+ */
+message TreeSet {
+	required	bytes	comparator	= 1;
+	required	uint32	size	= 2;
+	repeated	bytes	element	= 3;
+}
+
+/**
+ * @TypeId(53)
+ */
+message UUID {
+	required	int64	high	= 1;
+	required	int64	low	= 2;
+}

@@ -22,32 +22,24 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.function.Function;
+
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.IdentityFunction;
+import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
 
 /**
  * Externalizers for implementations of {@link SortedMap}.
  * Requires additional serialization of the comparator.
  * @author Paul Ferraro
  */
-public class SortedMapExternalizer<T extends SortedMap<Object, Object>> extends MapExternalizer<T, Comparator<Object>> {
-
-    public SortedMapExternalizer(Class<?> targetClass, Function<Comparator<Object>, T> factory) {
-        super(targetClass, factory);
-    }
-
-    @Override
-    protected void writeContext(ObjectOutput output, T map) throws IOException {
-        output.writeObject(map.comparator());
-    }
-
+public class SortedMapExternalizer<T extends SortedMap<Object, Object>> extends ContextualMapExternalizer<T, Comparator<Object>> {
     @SuppressWarnings("unchecked")
-    @Override
-    protected Comparator<Object> readContext(ObjectInput input) throws IOException, ClassNotFoundException {
-        return (Comparator<Object>) input.readObject();
+    private static final Externalizer<Comparator<Object>> COMPARATOR_EXTERNALIZER = (Externalizer<Comparator<Object>>) (Externalizer<?>) new ObjectExternalizer<>(Comparator.class, Comparator.class::cast, IdentityFunction.getInstance());
+
+    public SortedMapExternalizer(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
+        super(targetClass, factory, SortedMap::comparator, COMPARATOR_EXTERNALIZER);
     }
 }

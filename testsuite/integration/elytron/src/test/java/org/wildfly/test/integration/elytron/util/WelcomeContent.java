@@ -21,7 +21,7 @@ import static org.jboss.as.test.shared.CliUtils.escapePath;
  */
 public class WelcomeContent extends AbstractConfigurableElement {
 
-    private final boolean layersTest = Boolean.getBoolean("ts.layers");
+    private final boolean layersTest = Boolean.getBoolean("ts.layers") || Boolean.getBoolean("ts.bootable");
 
     private WelcomeContent(Builder builder) {
         super(builder);

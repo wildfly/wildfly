@@ -79,7 +79,7 @@ public class AliasCdiModulesDependencyTest {
     public static WebArchive getDeployment() throws Exception {
         doSetup();
         return ShrinkWrap.create(WebArchive.class)
-            .addClasses(AliasCdiModulesDependencyTest.class, WarBean.class)
+            .addClasses(AliasCdiModulesDependencyTest.class, WarBean.class, TestModule.class)
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
             .addAsManifestResource(new StringAsset("Dependencies: test." + ALIAS_MODULE_NAME + " meta-inf export\n"), "MANIFEST.MF");
     }

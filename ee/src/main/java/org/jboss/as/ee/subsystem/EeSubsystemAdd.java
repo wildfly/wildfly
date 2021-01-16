@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.ee.subsystem.EeCapabilities.LEGACY_JACC_CAPABILITY;
+import static org.jboss.as.ee.subsystem.EeCapabilities.ELYTRON_JACC_CAPABILITY;
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -29,6 +31,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.ReflectiveClassIntrospector;
 import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcessor;
@@ -66,6 +69,7 @@ import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.InApplicationClientBindingProcessor;
 import org.jboss.as.ee.naming.InstanceNameBindingProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
+import org.jboss.as.ee.security.JaccEarDeploymentProcessor;
 import org.jboss.as.ee.structure.AnnotationPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.AppJBossAllParser;
 import org.jboss.as.ee.structure.ApplicationClientDeploymentProcessor;
@@ -148,6 +152,10 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         jbossDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(jbossDescriptorPropertyReplacement);
         ejbAnnotationPropertyReplacementProcessor.setDescriptorPropertyReplacement(ejbAnnotationPropertyReplacement);
 
+        CapabilityServiceSupport capabilitySupport = context.getCapabilityServiceSupport();
+        final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY);
+        final boolean legacyJacc = !elytronJacc && capabilitySupport.hasCapability(LEGACY_JACC_CAPABILITY);
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
@@ -200,7 +208,11 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_INSTANCE_NAME, new InstanceNameBindingProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT, new ApplicationContextProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_CONCURRENT_CONTEXT, new EEConcurrentContextProcessor());
+                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_STARTUP_COUNTDOWN, new EEStartupCountdownProcessor());
 
+                if (legacyJacc || elytronJacc) {
+                    processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JACC_POLICY, new JaccEarDeploymentProcessor(elytronJacc ? ELYTRON_JACC_CAPABILITY : LEGACY_JACC_CAPABILITY));
+                }
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RESOLVE_MESSAGE_DESTINATIONS, new MessageDestinationResolutionProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_COMPONENT_AGGREGATION, new ComponentAggregationProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DEFAULT_BINDINGS_EE_CONCURRENCY, new EEConcurrentDefaultBindingProcessor());

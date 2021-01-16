@@ -21,14 +21,12 @@
  */
 package org.jboss.as.test.clustering.cluster.web.expiration;
 
+import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
 public class CoarseSessionExpirationTestCase extends SessionExpirationTestCase {
 
     private static final String MODULE_NAME = CoarseSessionExpirationTestCase.class.getSimpleName();
@@ -47,5 +45,9 @@ public class CoarseSessionExpirationTestCase extends SessionExpirationTestCase {
 
     static WebArchive getDeployment() {
         return getBaseDeployment(MODULE_NAME).addAsWebInfResource(SessionExpirationTestCase.class.getPackage(), "jboss-web-coarse.xml", "jboss-web.xml");
+    }
+
+    public CoarseSessionExpirationTestCase() {
+        super(TransactionMode.TRANSACTIONAL);
     }
 }

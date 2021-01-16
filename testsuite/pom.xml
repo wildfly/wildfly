@@ -59,7 +59,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -193,6 +193,10 @@
                 <directory>src/test/resources</directory>
             </testResource>
             <testResource>
+                <directory>src/test/resources/filtered</directory>
+                <filtering>true</filtering>
+            </testResource>
+            <testResource>
                 <directory>src/test/java</directory>
                 <excludes>
                     <exclude>**/*.java</exclude>
@@ -235,7 +239,9 @@
                                            <exclude>bin/*.sh</exclude>
                                            <exclude>bin/*.bat</exclude>
                                            <exclude>bin/*.ps1</exclude>
-                                           <exclude>docs/</exclude>
+                                           <exclude>docs/licenses/</exclude>
+                                           <exclude>docs/schema/</exclude>
+                                           <exclude>docs/examples/configs/</exclude>
                                            <exclude>modules/</exclude>
                                            <exclude>welcome-content/*.png</exclude>
                                            <exclude>standalone/data</exclude>
@@ -488,6 +494,14 @@
                 <module>layers</module>
             </modules>
         </profile>
+        <profile>
+            <id>ee9.module.profile</id>
+            <activation><property><name>ts.ee9</name></property></activation>
+            <modules>
+                <module>integration</module>
+                <module>layers</module>
+            </modules>
+        </profile>
 
 
         <!--
@@ -617,6 +631,8 @@
             <properties>
                 <jboss.args>-secmgr</jboss.args>
                 <jboss.domain.server.args>-secmgr</jboss.domain.server.args>
+                <!-- Re-enable the default surefire execution -->
+                <surefire.default-test.phase>test</surefire.default-test.phase>
             </properties>
         </profile>
 

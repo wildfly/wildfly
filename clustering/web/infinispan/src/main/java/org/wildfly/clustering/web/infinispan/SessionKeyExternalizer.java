@@ -27,15 +27,17 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.function.Function;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.web.cache.SessionIdentifierSerializer;
 
 /**
  * Base externalizer for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
-public class SessionKeyExternalizer<K extends Key<String>> implements Externalizer<K> {
+public class SessionKeyExternalizer<K extends GroupedKey<String>> implements Externalizer<K> {
+    private static final Serializer<String> IDENTIFIER_SERIALIZER = SessionIdentifierSerializer.INSTANCE;
 
     private final Class<K> targetClass;
     private final Function<String, K> resolver;
@@ -47,12 +49,12 @@ public class SessionKeyExternalizer<K extends Key<String>> implements Externaliz
 
     @Override
     public void writeObject(ObjectOutput output, K key) throws IOException {
-        SessionIdentifierSerializer.INSTANCE.write(output, key.getValue());
+        IDENTIFIER_SERIALIZER.write(output, key.getId());
     }
 
     @Override
     public K readObject(ObjectInput input) throws IOException {
-        return this.resolver.apply(SessionIdentifierSerializer.INSTANCE.read(input));
+        return this.resolver.apply(IDENTIFIER_SERIALIZER.read(input));
     }
 
     @Override

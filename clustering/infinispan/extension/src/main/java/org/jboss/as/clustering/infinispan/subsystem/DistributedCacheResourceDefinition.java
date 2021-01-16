@@ -100,7 +100,7 @@ public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDe
 
         if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.L1_LIFESPAN.getDefinition()), Attribute.L1_LIFESPAN.getDefinition())
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.L1_LIFESPAN.getName())
                     .end();
         }
 

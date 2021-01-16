@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.spi;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.OptionalInt;
 import java.util.function.LongFunction;
 import java.util.function.ToLongFunction;
 
@@ -58,5 +59,10 @@ public class LongExternalizer<T> implements Externalizer<T> {
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
+    }
+
+    @Override
+    public OptionalInt size(T object) {
+        return OptionalInt.of(Long.BYTES);
     }
 }

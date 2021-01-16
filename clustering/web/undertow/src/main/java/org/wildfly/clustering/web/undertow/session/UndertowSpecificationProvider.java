@@ -24,14 +24,11 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -40,7 +37,7 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
 /**
  * @author Paul Ferraro
  */
-public enum UndertowSpecificationProvider implements SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener> {
+public enum UndertowSpecificationProvider implements SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> {
     INSTANCE;
 
     @Override
@@ -68,7 +65,7 @@ public enum UndertowSpecificationProvider implements SpecificationProvider<HttpS
 
             @Override
             public long getLastAccessedTime() {
-                return session.getMetaData().getLastAccessedTime().toEpochMilli();
+                return session.getMetaData().getLastAccessStartTime().toEpochMilli();
             }
 
             @Override
@@ -184,31 +181,6 @@ public enum UndertowSpecificationProvider implements SpecificationProvider<HttpS
             @Override
             public void sessionDidActivate(HttpSessionEvent event) {
                 postActivate.accept(event.getSession());
-            }
-        };
-    }
-
-    @Override
-    public Class<HttpSessionBindingListener> getHttpSessionBindingListenerClass() {
-        return HttpSessionBindingListener.class;
-    }
-
-    @Override
-    public BiConsumer<HttpSession, String> valueBoundNotifier(HttpSessionBindingListener listener) {
-        return new BiConsumer<HttpSession, String>() {
-            @Override
-            public void accept(HttpSession session, String attributeName) {
-                listener.valueBound(new HttpSessionBindingEvent(session, attributeName, listener));
-            }
-        };
-    }
-
-    @Override
-    public BiConsumer<HttpSession, String> valueUnboundNotifier(HttpSessionBindingListener listener) {
-        return new BiConsumer<HttpSession, String>() {
-            @Override
-            public void accept(HttpSession session, String attributeName) {
-                listener.valueUnbound(new HttpSessionBindingEvent(session, attributeName, listener));
             }
         };
     }

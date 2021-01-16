@@ -1,0 +1,18 @@
+package org.wildfly.clustering.web.hotrod.session.fine;
+
+import "java.util.proto";
+
+/**
+ * @TypeId(230)
+ */
+message SessionAttributeNamesKey {
+	required	string	id	= 1;
+}
+
+/**
+ * @TypeId(231)
+ */
+message SessionAttributeKey {
+	required	string	id	= 1;
+	required	java.util.UUID	attribute	= 2;
+}

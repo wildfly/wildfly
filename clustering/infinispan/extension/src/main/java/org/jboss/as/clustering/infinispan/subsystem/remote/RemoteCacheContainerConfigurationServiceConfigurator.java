@@ -23,10 +23,13 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -39,13 +42,15 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
-import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.TransactionConfiguration;
+import org.infinispan.commons.marshall.Marshaller;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
@@ -55,12 +60,19 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
+import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -76,9 +88,10 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
     private final Map<String, List<SupplierDependency<OutboundSocketBinding>>> clusters = new HashMap<>();
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ExecutorFactoryConfiguration>> threadPools = new EnumMap<>(ThreadPoolResourceDefinition.class);
+    private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<Module> module;
+    private final Properties properties = new Properties();
     private final SupplierDependency<ConnectionPoolConfiguration> connectionPool;
-    private final SupplierDependency<NearCacheConfiguration> nearCache;
     private final SupplierDependency<SecurityConfiguration> security;
     private final SupplierDependency<TransactionConfiguration> transaction;
 
@@ -96,10 +109,10 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
     RemoteCacheContainerConfigurationServiceConfigurator(PathAddress address) {
         super(RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, address);
+        this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.threadPools.put(ThreadPoolResourceDefinition.CLIENT, new ServiceSupplierDependency<>(ThreadPoolResourceDefinition.CLIENT.getServiceName(address)));
         this.module = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.MODULE.getServiceName(address));
         this.connectionPool = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.CONNECTION_POOL.getServiceName(address));
-        this.nearCache = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.NEAR_CACHE.getServiceName(address));
         this.security = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.SECURITY.getServiceName(address));
         this.transaction = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.TRANSACTION.getServiceName(address));
     }
@@ -133,13 +146,18 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
 
+        this.properties.clear();
+        for (Property property : ModelNodes.optionalPropertyList(Attribute.PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+            this.properties.setProperty(property.getName(), property.getValue().asString());
+        }
+
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<Configuration> configuration = new CompositeDependency(this.module, this.connectionPool, this.nearCache, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
+        Consumer<Configuration> configuration = new CompositeDependency(this.loader, this.module, this.connectionPool, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
@@ -154,9 +172,12 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
     @Override
     public Configuration get() {
-        MBeanServer server = (this.server != null) ? this.server.get() : null;
-        ConfigurationBuilder builder = new ConfigurationBuilder()
-                .marshaller(new HotRodMarshaller(this.module.get()))
+        String name = this.getServiceName().getSimpleName();
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        // Configure formal security first
+        builder.security().read(this.security.get());
+        // Apply properties next, which may override formal security configuration
+        builder.withProperties(this.properties)
                 .connectionTimeout(this.connectionTimeout)
                 .keySizeEstimate(this.keySizeEstimate)
                 .maxRetries(this.maxRetries)
@@ -165,14 +186,19 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                 .statistics()
                     .enabled(this.statisticsEnabled)
                     .jmxDomain("org.wildfly.clustering.infinispan")
-                    .jmxEnabled(server != null)
-                    .mBeanServerLookup(new MBeanServerProvider(server))
+                    .jmxEnabled(this.server != null)
+                    .jmxName(name)
+                    .mBeanServerLookup((this.server != null) ? new MBeanServerProvider(this.server.get()) : null)
                 .tcpNoDelay(this.tcpNoDelay)
                 .tcpKeepAlive(this.tcpKeepAlive)
                 .valueSizeEstimate(this.valueSizeEstimate);
 
+        ClassLoader loader = this.module.get().getClassLoader();
+        Marshaller marshaller = this.createMarshaller(loader);
+        InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", name, marshaller.getClass().getName());
+        builder.marshaller(marshaller);
+
         builder.connectionPool().read(this.connectionPool.get());
-        builder.nearCache().read(this.nearCache.get());
         builder.asyncExecutorFactory().read(this.threadPools.get(ThreadPoolResourceDefinition.CLIENT).get());
 
         for (Map.Entry<String, List<SupplierDependency<OutboundSocketBinding>>> cluster : this.clusters.entrySet()) {
@@ -193,9 +219,17 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
             }
         }
 
-        builder.security().read(this.security.get());
         builder.transaction().read(this.transaction.get());
 
         return builder.build();
+    }
+
+    private Marshaller createMarshaller(ClassLoader loader) {
+        ModuleLoader moduleLoader = this.loader.get();
+        try {
+            return new ProtoStreamMarshaller(new ModuleClassResolver(moduleLoader), loader);
+        } catch (NoSuchElementException e) {
+            return new JBossMarshaller(ModularClassResolver.getInstance(moduleLoader), loader);
+        }
     }
 }

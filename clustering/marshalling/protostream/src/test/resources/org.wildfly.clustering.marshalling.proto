@@ -1,0 +1,10 @@
+package org.wildfly.clustering.marshalling;
+
+import "java.util.proto";
+
+/**
+ * @TypeId(1000)
+ */
+message TestInvocationHandler {
+	required	java.util.UUID	value	= 1;
+}

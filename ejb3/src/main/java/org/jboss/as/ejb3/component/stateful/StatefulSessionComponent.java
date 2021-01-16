@@ -116,6 +116,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     protected StatefulSessionComponent(final StatefulSessionComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
 
+        ejbComponentCreateService.setDefaultStatefulSessionTimeout();
         this.afterBegin = ejbComponentCreateService.getAfterBegin();
         this.afterBeginMethod = ejbComponentCreateService.getAfterBeginMethod();
         this.afterCompletion = ejbComponentCreateService.getAfterCompletion();

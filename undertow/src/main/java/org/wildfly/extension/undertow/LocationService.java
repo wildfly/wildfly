@@ -90,7 +90,7 @@ public class LocationService implements Service<LocationService>, FilterLocation
     }
 
     protected static HttpHandler configureHandlerChain(HttpHandler rootHandler, List<UndertowFilter> filters) {
-        filters.sort((o1, o2) -> o1.getPriority() >= o2.getPriority() ? 1 : -1);
+        filters.sort((o1, o2) -> Integer.compare(o1.getPriority(), o2.getPriority()));
         Collections.reverse(filters); //handler chain goes last first
         HttpHandler handler = rootHandler;
         for (UndertowFilter filter : filters) {

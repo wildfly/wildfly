@@ -17,6 +17,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
@@ -31,6 +32,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_REQUIRED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USERS;
+import static org.jboss.as.controller.security.CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -68,6 +70,10 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
                 .getAttributeBuilder()
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(ModelNode.ZERO, true), INITIAL_POOL_SIZE)
                 .end();
+        builder.addChildResource(ConnectionDefinitionResourceDefinition.PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, RECOVERY_CREDENTIAL_REFERENCE)
+                .end();
 
         parentBuilder = chainedBuilder.createBuilder(EAP_7_1, EAP_7_0);
         builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
@@ -81,7 +87,7 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Constants.ENLISTMENT_TRACE), Constants.ENLISTMENT_TRACE)
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, Constants.ENLISTMENT_TRACE)
                 .end();
 
         parentBuilder = chainedBuilder.createBuilder(EAP_7_0, EAP_6_2);

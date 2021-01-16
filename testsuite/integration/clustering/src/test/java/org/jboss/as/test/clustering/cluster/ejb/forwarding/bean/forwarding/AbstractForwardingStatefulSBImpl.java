@@ -47,7 +47,7 @@ public abstract class AbstractForwardingStatefulSBImpl {
             try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
                 bean = directory.lookupStateful("RemoteStatefulSBImpl", RemoteStatefulSB.class);
             } catch (Exception e) {
-                log.infof("exception occurred looking up ejb on forwarding node %s", getCurrentNode());
+                log.debugf("exception occurred looking up ejb on forwarding node %s", getCurrentNode());
                 throw new RuntimeException(e);
             }
         }
@@ -55,7 +55,7 @@ public abstract class AbstractForwardingStatefulSBImpl {
     }
 
     public int getSerialAndIncrement() {
-        log.infof("getSerialAndIncrement() called on forwarding node %s", getCurrentNode());
+        log.debugf("getSerialAndIncrement() called on forwarding node %s", getCurrentNode());
         return forward().getSerialAndIncrement();
     }
 

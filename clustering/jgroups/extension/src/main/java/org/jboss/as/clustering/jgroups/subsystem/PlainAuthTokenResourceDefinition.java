@@ -25,7 +25,9 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Paul Ferraro
@@ -33,6 +35,12 @@ import org.jboss.as.controller.PathElement;
 public class PlainAuthTokenResourceDefinition extends AuthTokenResourceDefinition<BinaryAuthToken> {
 
     static final PathElement PATH = pathElement("plain");
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+
+        AuthTokenResourceDefinition.addTransformations(version, builder);
+    }
 
     PlainAuthTokenResourceDefinition() {
         super(PATH, UnaryOperator.identity(), PlainAuthTokenServiceConfigurator::new);

@@ -1,0 +1,83 @@
+name: Dependency Tree Reporter
+# This gets called when ./dep-diff-pull_request.yml has completed. See that file
+# for why this is split into two.
+on:
+  workflow_run:
+    workflows: [ "Dependency Tree Input Builder" ]
+    types:
+      - completed
+env:
+  # The name of the labels to use if the dependencies are ok
+  DEPS_OK_LABEL_NAME: deps-ok
+  # The name of the labels to use if the dependencies changed
+  DEPS_CHANGED_LABEL_NAME: deps-changed
+  # People/teams to mention in the PR comment if dependencies changed
+  CHANGE_MENTIONS: '@wildfly/prod'
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    if: >
+      ${{ github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Download artifacts
+        # It would have been nice to be able to use actions/download-artifact@v2
+        # for this, but as the artifacts are uploaded by another workflow it does
+        # not seem possible - so we need to do this stuff instead
+        uses: actions/github-script@v3.1.0
+        with:
+          script: |
+            var artifacts = await github.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{github.event.workflow_run.id }},
+            });
+            console.log(artifacts);
+            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "input-artifacts"
+            })[0];
+            var download = await github.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/input.zip', Buffer.from(download.data));
+
+
+      - name: Set needed env vars in outputs
+        id: prepare
+        run: |
+          unzip input.zip
+          echo current directory contents
+          ls -al
+          echo "::set-output name=deps_ok_label_name::${DEPS_OK_LABEL_NAME}"
+          echo "::set-output name=deps_changed_label_name::${DEPS_CHANGED_LABEL_NAME}"
+          echo "::set-output name=change_mentions::${CHANGE_MENTIONS}"
+
+          echo Reading PR number
+          tmp=$(<pr)
+          echo "PR: ${tmp}"
+          echo "::set-output name=pr::${tmp}"
+
+          echo Reading base version files
+          tmp=$(<baseVersions)
+          echo "Base version files: ${tmp}"
+          echo "::set-output name=base_files::${tmp}"
+
+          echo Reading new version files
+          tmp=$(<newVersions)
+          echo "New version files: ${tmp}"
+          echo "::set-output name=new_files::${tmp}"
+
+      - name: Check versions
+        uses: wildfly/dep-tree-diff@master
+        with:
+          pr: ${{ steps.prepare.outputs.pr }}
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          deps-ok-label: ${{ steps.prepare.outputs.deps_ok_label_name }}
+          deps-changed-label: ${{ steps.prepare.outputs.deps_changed_label_name }}
+          tool-change-mentions: ${{ steps.prepare.outputs.change_mentions }}
+          base-version-files: ${{ steps.prepare.outputs.base_files }}
+          new-version-files: ${{ steps.prepare.outputs.new_files }}

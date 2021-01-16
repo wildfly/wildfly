@@ -118,8 +118,10 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
                 JcaTestsUtil.class);
 
         rar.addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector," +
-                "org.jboss.as.controller,org.jboss.dmr,org.jboss.as.cli,org.jboss.staxmapper," +
-                "org.jboss.ironjacamar.impl, org.jboss.ironjacamar.jdbcadapters,org.jboss.remoting\n"), "MANIFEST.MF");
+                "org.jboss.as.controller,org.jboss.dmr,org.jboss.staxmapper," +
+                // Needed for RemotingPermission class if security manager is enabled
+                (System.getProperty("security.manager") == null ? "" : "org.jboss.remoting,") +
+                "org.jboss.ironjacamar.impl, org.jboss.ironjacamar.jdbcadapters\n"), "MANIFEST.MF");
         rar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),

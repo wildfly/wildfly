@@ -160,6 +160,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         final ServiceLoader<ModuleServicesProvider> moduleServicesProviders = ServiceLoader.load(ModuleServicesProvider.class,
                 WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
 
+        // This map is a cache that allows us to avoid repeated introspection of Module's exported resources
+        // it is of little importance for small deployment, but makes a difference in massive ones, see WFLY-14055
+        Map<String, Map<URL, URL>> exportedResourcesCache = new HashMap<>();
         for (DeploymentUnit deployment : deploymentUnits) {
             final Module module = deployment.getAttachment(Attachments.MODULE);
             if (module == null) {
@@ -178,7 +181,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                 if (dependency == null) {
                     continue;
                 }
-                Map<URL, URL> resourcesMap = findExportedResources(dependency);
+                Map<URL, URL> resourcesMap = findExportedResources(dependency, exportedResourcesCache);
                 if (!resourcesMap.isEmpty()) {
                     List<BeanDeploymentArchiveImpl> moduleBdas = new ArrayList<>();
                     for (Entry<URL,URL> entry : resourcesMap.entrySet()) {
@@ -196,6 +199,14 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                          * Workaround for resteasy-cdi bundling beans.xml
                          */
                         if (beansXmlUrl.toString().contains("resteasy-cdi")) {
+                            continue;
+                        }
+
+                        /*
+                         * check if the dependency processes META-INF, if it doesn't we don't want to pick up beans
+                         * See https://docs.wildfly.org/17/Developer_Guide.html#CDI_Reference
+                         */
+                        if (!dep.getImportFilter().accept("META-INF")) {
                             continue;
                         }
 
@@ -317,9 +328,13 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
      * @param dependencyModule
      * @return the map of exported resources
      */
-    private Map<URL, URL> findExportedResources(Module dependencyModule) {
+    private Map<URL, URL> findExportedResources(Module dependencyModule, Map<String, Map<URL, URL>> exportedResourcesCache) {
+        if (exportedResourcesCache.containsKey(dependencyModule.getName())) {
+            return exportedResourcesCache.get(dependencyModule.getName());
+        }
         Set<URL> beanXmls = findExportedResource(dependencyModule, META_INF_BEANS_XML);
         if (beanXmls.isEmpty()) {
+            exportedResourcesCache.put(dependencyModule.getName(), Collections.emptyMap());
             return Collections.emptyMap();
         }
         Set<URL> indexes = findExportedResource(dependencyModule, META_INF_JANDEX_IDX);
@@ -335,6 +350,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             }
             ret.put(beansXml, idx);
         }
+        exportedResourcesCache.put(dependencyModule.getName(), ret);
         return ret;
     }
 

@@ -75,11 +75,9 @@ public class RemoteLocalCallTestCase {
         jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
         jar.addAsManifestResource(
                 createPermissionsXmlAsset(
-                        new SecurityPermission("putProviderProperty.WildFlyElytron"),createFilePermission("read,write",
-                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write",
-                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-"))),
-
+                        createFilePermission("delete",
+                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
+                        new SecurityPermission("putProviderProperty.WildFlyElytron")),
                 "permissions.xml");
         return jar;
     }

@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
@@ -77,18 +78,17 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void processComponentConfig(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final ComponentDescription description, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private void processComponentConfig(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final ComponentDescription description, DeploymentUnit deploymentUnit) {
 
-        final Class<?> componentClass;
         try {
-            componentClass = ClassLoadingUtils.loadClass(description.getComponentClassName(), deploymentUnit);
+            final Class<?> componentClass = ClassLoadingUtils.loadClass(description.getComponentClassName(), deploymentUnit);
+            handleAnnotations(applicationClasses, deploymentReflectionIndex, componentClass, description);
         } catch (Throwable e) {
             //just ignore the class for now.
             //if it is an optional component this is ok, if it is not an optional component
             //it will fail at configure time anyway
-            return;
+            EeLogger.ROOT_LOGGER.debugf(e,"Ignoring failure to handle interceptor annotations for %s", description.getComponentClassName());
         }
-        handleAnnotations(applicationClasses, deploymentReflectionIndex, componentClass, description);
     }
 
 

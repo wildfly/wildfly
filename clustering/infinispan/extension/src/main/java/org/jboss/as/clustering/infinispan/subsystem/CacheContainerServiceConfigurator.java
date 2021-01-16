@@ -27,17 +27,16 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.factories.impl.BasicComponentRegistry;
-import org.infinispan.globalstate.GlobalConfigurationManager;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
@@ -45,17 +44,18 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.infinispan.LocalGlobalConfigurationManager;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -65,6 +65,8 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.service.AsyncServiceConfigurator;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
@@ -80,6 +82,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     private final PathAddress address;
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
+    private final SupplierDependency<Module> module;
 
     private volatile Registrar<String> registrar;
     private volatile ServiceName[] names;
@@ -89,6 +92,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         this.address = address;
         this.name = address.getLastElement().getValue();
         this.configuration = new ServiceSupplierDependency<>(CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(address));
+        this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
         this.registry = registry;
     }
 
@@ -108,18 +112,16 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     public EmbeddedCacheManager get() {
         GlobalConfiguration config = this.configuration.get();
         String defaultCacheName = config.defaultCacheName().orElse(null);
+        ConfigurationBuilderHolder holder = new ConfigurationBuilderHolder(config.classLoader(), new GlobalConfigurationBuilder().read(config));
         // We need to create a dummy default configuration if cache has a default cache
-        Configuration defaultConfiguration = (defaultCacheName != null) ? new ConfigurationBuilder().build() : null;
-        EmbeddedCacheManager manager = new DefaultCacheManager(config, defaultConfiguration, false);
+        if (defaultCacheName != null) {
+            holder.newConfigurationBuilder(defaultCacheName);
+        }
+        EmbeddedCacheManager manager = new DefaultCacheManager(holder, false);
         // Undefine the default cache, if we defined one
         if (defaultCacheName != null) {
             manager.undefineConfiguration(defaultCacheName);
         }
-        // Override GlobalConfigurationManager with a local implementation
-        @SuppressWarnings("deprecation")
-        BasicComponentRegistry registry = manager.getGlobalComponentRegistry().getComponent(BasicComponentRegistry.class);
-        registry.replaceComponent(GlobalConfigurationManager.class.getName(), new LocalGlobalConfigurationManager(), false);
-        registry.rewire();
 
         manager.start();
         manager.addListener(this);
@@ -148,24 +150,26 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<CacheContainer> container = this.configuration.register(builder).provides(this.names);
+        ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
+        Consumer<CacheContainer> container = new CompositeDependency(this.configuration, this.module).register(builder).provides(this.names);
         Service service = new FunctionalService<>(container, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
     @CacheStarted
-    public void cacheStarted(CacheStartedEvent event) {
+    public CompletionStage<Void> cacheStarted(CacheStartedEvent event) {
         String cacheName = event.getCacheName();
         InfinispanLogger.ROOT_LOGGER.cacheStarted(cacheName, this.name);
         this.registrations.put(cacheName, this.registrar.register(cacheName));
+        return CompletableFutures.completedNull();
     }
 
     @CacheStopped
-    public void cacheStopped(CacheStoppedEvent event) {
+    public CompletionStage<Void> cacheStopped(CacheStoppedEvent event) {
         String cacheName = event.getCacheName();
         try (Registration registration = this.registrations.remove(cacheName)) {
             InfinispanLogger.ROOT_LOGGER.cacheStopped(cacheName, this.name);
         }
+        return CompletableFutures.completedNull();
     }
 }

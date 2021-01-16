@@ -5,17 +5,21 @@
         <include name="cloud-server"/>
         <include name="h2-default-datasource"/>
         <include name="microprofile-fault-tolerance"/>
+        <include name="microprofile-health"/>
         <include name="microprofile-jwt"/>
+        <include name="microprofile-metrics"/>
         <include name="microprofile-openapi"/>
+        <include name="microprofile-opentracing"/>
+        <include name="microprofile-rest-client"/>
         <include name="undertow-legacy-https"/>
         <exclude name="management-security-realm"/>
     </layers>
     <!-- TODO WFLY-13150 encapsulate these in a layer -->
-    <feature-group name="distributable-web"/>
+    <feature-group name="distributable-web-local"/>
     <feature-group name="infinispan-local-web"/>
     <packages>
         <!-- The distributable-web subsystem doesn't assume undertow,
-             and undertow subysystem doesn't assume clustering, but the
+             and undertow subsystem doesn't assume clustering, but the
              combination requires the clustering<->undertow integration package -->
         <package name="org.wildfly.clustering.web.undertow"/>
     </packages>

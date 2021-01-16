@@ -28,9 +28,11 @@ import org.wildfly.clustering.web.IdentifierFactory;
 /**
  * The SSO equivalent of a session manager.
  * @author Paul Ferraro
- * @param the authentication identity type
- * @param the deployment identifier type
- * @param the local context type
+ * @param <A> the authentication identity type
+ * @param <D> the deployment identifier type
+ * @param <S> the session identifier type
+ * @param <L> the local context type
+ * @param <B> the batch type
  */
 public interface SSOManager<A, D, S, L, B extends Batch> extends IdentifierFactory<String> {
     /**

@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.web.cache.routing;
 
-import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -35,7 +34,7 @@ import org.wildfly.clustering.web.routing.RoutingProvider;
 public class LocalRoutingProvider implements RoutingProvider {
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route) {
+    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route) {
         return Collections.singleton(new LocalRouteServiceConfigurator(serverName, route));
     }
 }

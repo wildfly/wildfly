@@ -38,6 +38,9 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeU
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.security.CredentialReference.CREDENTIAL_REFERENCE;
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 
 import javax.sql.DataSource;
 import java.sql.Driver;
@@ -67,9 +70,6 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.security.service.SecurityDomainService;
-import org.jboss.as.security.service.SimpleSecurityManagerService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.Credential;
@@ -101,6 +101,10 @@ import org.wildfly.security.credential.source.CredentialSource;
  */
 public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
+    private static final ServiceName SECURITY_DOMAIN_SERVICE = ServiceName.JBOSS.append("security", "security-domain");
+    private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
+    private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
+
     AbstractDataSourceAdd(Collection<AttributeDefinition> attributes) {
         super(Capabilities.DATA_SOURCE_CAPABILITY, attributes);
     }
@@ -112,7 +116,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             DataSourceStatisticsService.registerStatisticsResources(resource);
         }
         super.populateModel(context, operation, resource);
-
+        final ModelNode model = resource.getModel();
+        handleCredentialReferenceUpdate(context, model.get(CREDENTIAL_REFERENCE), CREDENTIAL_REFERENCE);
+        handleCredentialReferenceUpdate(context, model.get(Constants.RECOVERY_CREDENTIAL_REFERENCE.getName()), Constants.RECOVERY_CREDENTIAL_REFERENCE.getName());
     }
 
     @Override
@@ -138,6 +144,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
 
         }
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(Constants.CREDENTIAL_REFERENCE, context, resource);
+        rollbackCredentialStoreUpdate(Constants.RECOVERY_CREDENTIAL_REFERENCE, context, resource);
     }
 
      void firstRuntimeStep(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -243,8 +255,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
          }
 
          if (requireLegacySecurity) {
-             dataSourceServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, dataSourceService.getSubjectFactoryInjector())
-                     .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager());
+             dataSourceServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class, dataSourceService.getSubjectFactoryInjector())
+                     .addDependency(SECURITY_MANAGER_SERVICE, ServerSecurityManager.class, dataSourceService.getServerSecurityManager());
          }
 
          ModelNode credentialReference = Constants.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
@@ -311,7 +323,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             if (dsSecurityConfig != null) {
                 final String securityDomainName = dsSecurityConfig.getSecurityDomain();
                 if (!elytronEnabled && securityDomainName != null) {
-                    builder.requires(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                    builder.requires(SECURITY_DOMAIN_SERVICE.append(securityDomainName));
                 }
             }
             // add dependency on security domain service if applicable for recovery config
@@ -320,7 +332,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 if (credential != null) {
                     final String securityDomainName = credential.getSecurityDomain();
                     if (!RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean() && securityDomainName != null) {
-                        builder.requires(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                        builder.requires(SECURITY_DOMAIN_SERVICE.append(securityDomainName));
                     }
                 }
             }
@@ -363,7 +375,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             if (dsSecurityConfig != null) {
                 final String securityDomainName = dsSecurityConfig.getSecurityDomain();
                 if (!elytronEnabled && securityDomainName != null) {
-                    builder.requires(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                    builder.requires(SECURITY_DOMAIN_SERVICE.append(securityDomainName));
                 }
             }
             for (ServiceName name : serviceNames) {

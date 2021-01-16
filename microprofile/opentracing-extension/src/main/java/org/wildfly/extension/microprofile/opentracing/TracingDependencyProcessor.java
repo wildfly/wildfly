@@ -93,7 +93,12 @@ public class TracingDependencyProcessor implements DeploymentUnitProcessor {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, false, true, false));
         }
         for (String module : EXPORTED_MODULES) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true, true, false));
+            ModuleDependency modDep = new ModuleDependency(moduleLoader, module, false, true, true, false);
+            // io.opentracing.contrib.opentracing-interceptors needs to be processed by ExternalBeanArchiveProcessor
+            if (module.contains("opentracing-interceptors")) {
+                modDep.addImportFilter(s -> s.equals("META-INF"), true);
+            }
+            moduleSpecification.addSystemDependency(modDep);
         }
         for (String module : WildFlyTracerFactory.getModules()) {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, true, false, true, false));

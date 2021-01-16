@@ -1,0 +1,28 @@
+package org.wildfly.clustering.marshalling.protostream;
+
+import "java.lang.proto";
+
+/**
+ * @TypeId(0)
+ */
+message Any {
+	oneof value {
+		Boolean	boolean	= 1;
+		Byte	byte	= 2;
+		Short	short	= 3;
+		Integer	integer	= 4;
+		Long	long	= 5;
+		Float	float	= 6;
+		Double	double	= 7;
+		Character	char	= 8;
+		String	string	= 9;
+		bytes	boolean_array	= 10;
+		bytes	byte_array	= 11;
+		uint32	short_array	= 12;
+		uint32	integer_array	= 13;
+		uint32	long_array	= 14;
+		uint32	float_array	= 15;
+		uint32	double_array	= 16;
+		String	char_array	= 17;
+	}
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <extension-module>org.wildfly.extension.health</extension-module>
+    <subsystem xmlns="urn:wildfly:health:1.0" security-enabled="false" />
+</config>

@@ -39,7 +39,7 @@ public class SessionAttributeKeyFormat extends DelimitedKeyFormat<SessionAttribu
 
         @Override
         public String[] apply(SessionAttributeKey key) {
-            return new String[] { key.getValue(), key.getAttributeId().toString() };
+            return new String[] { key.getId(), key.getAttributeId().toString() };
         }
     }
 

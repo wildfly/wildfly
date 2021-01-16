@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~
+  ~ Copyright 2020 Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!-- TODO Consider dropping direct dep on core-galleon-pack and instead using
+     a source dep, eliminating the need to re-provision this just to get a
+     different version. -->
+<module xmlns="urn:jboss:module:1.9" name="org.glassfish.jakarta.json">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <dependencies>
+        <module name="javax.json.api" />
+    </dependencies>
+    <resources>
+        <artifact name="${org.glassfish:jakarta.json}">
+            <filter>
+                <!-- This artifact packages both the API and the impl in the same jar,
+                     but we want to use our own API jar (see javax.json.api module).
+                     So suppress the API packages. We suppress both javax and jakarta
+                     so this same file can be used with artifacts that provide either
+                     package namespace. -->
+                <exclude path="javax/*"/>
+                <exclude path="jakarta/*"/>
+            </filter>
+        </artifact>
+    </resources>
+</module>

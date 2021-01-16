@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.cache.simple;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 
@@ -63,7 +62,7 @@ public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifia
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
+    public Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
         return Collections.emptySet();
     }
 

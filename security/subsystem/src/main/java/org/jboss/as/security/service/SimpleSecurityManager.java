@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
@@ -60,6 +61,7 @@ import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.authorization.resources.EJBResource;
 import org.jboss.security.identity.Identity;
+import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
@@ -73,10 +75,13 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
+ * This {@code SimpleSecurityManager} also implements {@code Supplier<ServerSecurityManager>} so that
+ * the corresponding {@code get()} method can return a new instance which delegates to {@code this}.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SimpleSecurityManager implements ServerSecurityManager {
+public class SimpleSecurityManager implements ServerSecurityManager, Supplier<ServerSecurityManager> {
     protected static final PrivilegedAction<SecurityContext> GET_SECURITY_CONTEXT = new PrivilegedAction<SecurityContext>() {
         public SecurityContext run() {
             return SecurityContextAssociation.getSecurityContext();
@@ -94,10 +99,16 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     public SimpleSecurityManager() {
     }
 
-    public SimpleSecurityManager(SimpleSecurityManager delegate) {
+    SimpleSecurityManager(SimpleSecurityManager delegate) {
         this.securityManagement = delegate.securityManagement;
         this.propagate = false;
     }
+
+    public ServerSecurityManager get() {
+        return new SimpleSecurityManager(this);
+    }
+
+
 
     private ISecurityManagement securityManagement = null;
 
@@ -298,8 +309,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         contexts.push(previous);
         SecurityContext current = establishSecurityContext(securityDomain);
         if (propagate && previous != null) {
-            current.setSubjectInfo(getSubjectInfo(previous));
-
+            propagateSubject(current,previous);
             // If the outgoing run-as identity is not set, take the incoming
             // run-as identity and propagate it (it could be null which is fine)
             if( previous.getOutgoingRunAs() != null ) {
@@ -352,7 +362,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         contexts.push(previous);
         SecurityContext current = establishSecurityContext(securityDomain);
         if (propagate &&  previous != null) {
-            current.setSubjectInfo(getSubjectInfo(previous));
+            propagateSubject(current,previous);
             current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
 
@@ -362,6 +372,25 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         if (trusted == false) {
             SecurityContextUtil util = current.getUtil();
             util.createSubjectInfo(new SimplePrincipal(userName), new String(password), subject);
+        }
+    }
+
+    private void propagateSubject(final SecurityContext target, final SecurityContext source) {
+        final SecurityContextUtil previousUtil = source.getUtil();
+        final SecurityContextUtil currentUtil = target.getUtil();
+        if(target.getSecurityDomain() != null && source.getSecurityDomain() != null && target.getSecurityDomain().equals(source.getSecurityDomain())){
+            target.setSubjectInfo(source.getSubjectInfo());
+        } else {
+            currentUtil.createSubjectInfo(previousUtil.getUserPrincipal(), previousUtil.getCredential(), previousUtil.getSubject());
+            if (previousUtil.getRoles() != null) {
+                try {
+                    currentUtil.setRoles((RoleGroup) previousUtil.getRoles().clone());
+                } catch (CloneNotSupportedException e) {
+                    // should not happen, RoleGroup supports clone.
+                    throw new RuntimeException(e);
+                }
+            }
+            currentUtil.setIdentities(previousUtil.getIdentities(Identity.class));
         }
     }
 

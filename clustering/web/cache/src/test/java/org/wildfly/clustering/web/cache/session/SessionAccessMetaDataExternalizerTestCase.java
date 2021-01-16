@@ -36,13 +36,14 @@ import org.wildfly.clustering.marshalling.ExternalizerTester;
 public class SessionAccessMetaDataExternalizerTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
-        metaData.setLastAccessedDuration(Duration.ofMinutes(1));
-        new ExternalizerTester<>(new SessionAccessMetaDataExternalizer(), SessionAccessMetaDataExternalizerTestCase::assertEquals).test(metaData);
+        metaData.setLastAccessDuration(Duration.ofMinutes(1), Duration.ofSeconds(1));
+        new ExternalizerTester<>(new SessionAccessMetaDataExternalizer()).test(metaData, SessionAccessMetaDataExternalizerTestCase::assertEquals);
     }
 
     static void assertEquals(SimpleSessionAccessMetaData metaData1, SimpleSessionAccessMetaData metaData2) {
-        Assert.assertEquals(metaData1.getLastAccessedDuration(), metaData2.getLastAccessedDuration());
+        Assert.assertEquals(metaData1.getSinceCreationDuration(), metaData2.getSinceCreationDuration());
+        Assert.assertEquals(metaData1.getLastAccessDuration(), metaData2.getLastAccessDuration());
     }
 }

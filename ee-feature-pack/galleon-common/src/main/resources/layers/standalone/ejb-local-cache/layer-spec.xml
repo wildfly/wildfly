@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-local-cache">
+    <dependencies>
+        <layer name="transactions"/>
+    </dependencies>
+    <feature spec="subsystem.ejb3">
+        <param name="default-stateful-bean-access-timeout" value="5000"/>
+        <param name="default-sfsb-cache" value="simple"/>
+    </feature>
+    <!-- Infinispan cache configuration used for local SFSB caching -->
+    <feature-group name="infinispan-local-ejb"/>
+    <packages>
+        <!-- The infinispan subsystem doesn't assume ejb3,
+             and ejb3 subysystem doesn't assume clustering, but the
+             combination requires the clustering<->ejb3 integration package -->
+        <package name="org.wildfly.clustering.ejb.infinispan"/>
+    </packages>
+</layer-spec>

@@ -33,6 +33,7 @@ import org.jboss.as.test.shared.ModelParserUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 /**
@@ -56,7 +57,8 @@ public class ParseAndMarshalModelsTestCase {
         EAP_6_4_0(true, "6-4-0"),
         EAP_7_0_0(true, "7-0-0"),
         EAP_7_1_0(true, "7-1-0"),
-        EAP_7_2_0(true, "7-2-0");
+        EAP_7_2_0(true, "7-2-0"),
+        EAP_7_3_0(true, "7-3-0");
 
         final boolean eap;
         final String versionQualifier;
@@ -89,11 +91,13 @@ public class ParseAndMarshalModelsTestCase {
 
     private static final Version[] EAP_VERSIONS = {
             Version.EAP_6_0_0, Version.EAP_6_1_0, Version.EAP_6_2_0,
-            Version.EAP_6_3_0, Version.EAP_6_4_0, Version.EAP_7_0_0, Version.EAP_7_1_0, Version.EAP_7_2_0};
+            Version.EAP_6_3_0, Version.EAP_6_4_0, Version.EAP_7_0_0, Version.EAP_7_1_0, Version.EAP_7_2_0, Version.EAP_7_3_0};
 
     private static final Version[] AS_VERSIONS = {Version.AS_7_1_3, Version.AS_7_2_0};
 
     private static final File JBOSS_HOME = Paths.get("target" ,"jbossas-parse-marshal").toFile();
+
+    private static final boolean altDistTest = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
 
     @Test
     public void testStandaloneXml() throws Exception {
@@ -199,6 +203,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneFullHaXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, "full-ha"));
             validateWebSubsystem(model, version);
@@ -210,6 +217,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneFullXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, "full"));
             validateWebSubsystem(model, version);
@@ -221,6 +231,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, null));
             validateWebSubsystem(model, version);
@@ -245,6 +258,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneJtsXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, "jts"));
             validateWebSubsystem(model, version);
@@ -263,6 +279,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandalonePicketLinkXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // Did not exist until 6.3, where the tech preview was abandoned and redone
@@ -274,6 +293,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneXtsXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, "xts"));
             validateCmpSubsystem(model, version);
@@ -287,6 +309,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneAzureFullHaXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // didn't exist yet
@@ -298,6 +323,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneAzureHaXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // didn't exist yet
@@ -309,6 +337,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneEc2FullHaXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // didn't exist yet
@@ -320,6 +351,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneEc2HaXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // didn't exist yet
@@ -331,6 +365,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneGenericJmsXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // didn't exist yet
@@ -342,6 +379,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneGossipFullHaXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // didn't exist yet
@@ -353,6 +393,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneGossipHaXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // didn't exist yet
@@ -375,6 +418,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPStandaloneRtsXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             if (version.is6x()) {
                 // didn't exist yet
@@ -426,6 +472,9 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testEAPDomainXml() throws Exception {
+
+        Assume.assumeFalse(altDistTest);
+
         for (Version version : EAP_VERSIONS) {
             ModelNode model = domainXmlTest(getLegacyConfigFile("domain", version, null));
             validateProfiles(model, version);

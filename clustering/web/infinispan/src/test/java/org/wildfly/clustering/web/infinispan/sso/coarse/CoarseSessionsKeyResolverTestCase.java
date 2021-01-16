@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKeyResolve
 public class CoarseSessionsKeyResolverTestCase {
 
     @Test
-    public void test() throws ClassNotFoundException, IOException {
+    public void test() throws IOException {
         CoarseSessionsKey key = new CoarseSessionsKey("ABC123");
         new ExternalizerTester<>(new CoarseSessionsKeyExternalizer()).test(key);
         new KeyFormatTester<>(new CoarseSessionsKeyFormat()).test(key);

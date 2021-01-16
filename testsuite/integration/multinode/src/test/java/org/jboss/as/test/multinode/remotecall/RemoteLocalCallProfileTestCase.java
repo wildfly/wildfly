@@ -22,17 +22,16 @@
 
 package org.jboss.as.test.multinode.remotecall;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.util.Arrays;
+import java.util.Collections;
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
 
@@ -44,7 +43,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -70,43 +72,37 @@ public class RemoteLocalCallProfileTestCase {
 
     static class RemoteLocalCallProfileTestCaseServerSetup implements ServerSetupTask {
 
+        private static final PathAddress ADDR_REMOTING_PROFILE = PathAddress.pathAddress().append(SUBSYSTEM, "ejb3").append("remoting-profile", "test-profile");
+        private static final PathAddress ADDR_REMOTING_EJB_RECEIVER = ADDR_REMOTING_PROFILE.append("remoting-ejb-receiver", "test-receiver");
+
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "ejb3");
-            address.add("remoting-profile", "test-profile");
-            address.protect();
 
-            final ModelNode op1 = new ModelNode();
-            op1.get(OP).set("add");
-            op1.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
-            op1.get(OP_ADDR).add("remoting-profile", "test-profile");
-            op1.get(OP_ADDR).set(address);
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
+            ModelNode steps = compositeOp.get(STEPS);
 
-            op1.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            // /subsystem=ejb3/remoting-profile=test-profile:add()
+            ModelNode remotingProfileAddModelNode = Util.createAddOperation(ADDR_REMOTING_PROFILE);
+            steps.add(remotingProfileAddModelNode);
 
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op1);
+            // /subsystem=ejb3/remoting-profile=test-profile/remoting-ejb-receiver=test-receiver:add(outbound-connection-ref=remote-ejb-connection)
+            ModelNode ejbReceiverAddModelNode = Util.createAddOperation(ADDR_REMOTING_EJB_RECEIVER);
+            ejbReceiverAddModelNode.get("outbound-connection-ref").set("remote-ejb-connection");
+            steps.add(ejbReceiverAddModelNode);
 
-            ModelNode op2 = new ModelNode();
-            op2.get(OP).set(ADD);
-            op2.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
-            op2.get(OP_ADDR).add("remoting-profile", "test-profile");
-            op2.get(OP_ADDR).add("remoting-ejb-receiver", "test-receiver");
-
-            op2.get("outbound-connection-ref").set("remote-ejb-connection");
-
-            op2.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op2);
+            Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-             ModelNode op = new ModelNode();
-             op.get(OP).set(REMOVE);
-             op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
-             op.get(OP_ADDR).add("remoting-profile", "test-profile");
-             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+            ModelNode remotingProfileRemoveModelNode = Util.createRemoveOperation(ADDR_REMOTING_PROFILE);
+            //remotingProfileRemoveModelNode.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+
+            Utils.applyUpdates(Collections.singletonList(remotingProfileRemoveModelNode), managementClient.getControllerClient());
+            ServerReload.reloadIfRequired(managementClient);
         }
     }
 
@@ -127,12 +123,12 @@ public class RemoteLocalCallProfileTestCase {
     public static Archive<?> deployment1() {
         JavaArchive jar = createJar(ARCHIVE_NAME_CLIENT);
         jar.addClasses(RemoteLocalCallProfileTestCase.class);
-        jar.addAsManifestResource("META-INF/jboss-ejb-client-profile.xml", "jboss-ejb-client.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write",
-                        "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write",
+        jar.addAsManifestResource("META-INF/jboss-ejb-client-profile.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(
+                createPermissionsXmlAsset(
+                        createFilePermission("delete",
                                 "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-"))),
-                        "permissions.xml");
+                "permissions.xml");
         return jar;
     }
 

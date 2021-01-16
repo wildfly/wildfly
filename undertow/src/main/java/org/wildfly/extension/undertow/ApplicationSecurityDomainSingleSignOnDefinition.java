@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -35,6 +36,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -84,7 +86,8 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
+                .addAttributes(EnumSet.complementOf(EnumSet.of(Attribute.CREDENTIAL)))
+                .addAttribute(Attribute.CREDENTIAL, new CredentialReferenceWriteAttributeHandler(Attribute.CREDENTIAL.getDefinition()))
                 .addAttributes(SingleSignOnDefinition.Attribute.class)
                 .addCapabilities(Capability.class)
                 ;

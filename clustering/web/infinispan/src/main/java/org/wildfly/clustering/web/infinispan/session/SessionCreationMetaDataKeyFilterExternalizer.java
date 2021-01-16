@@ -24,15 +24,15 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
+import org.wildfly.clustering.marshalling.spi.EnumExternalizer;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class SessionCreationMetaDataKeyFilterExternalizer extends ValueExternalizer<SessionCreationMetaDataKeyFilter> {
+public class SessionCreationMetaDataKeyFilterExternalizer extends EnumExternalizer<SessionCreationMetaDataKeyFilter> {
 
     public SessionCreationMetaDataKeyFilterExternalizer() {
-        super(new SessionCreationMetaDataKeyFilter());
+        super(SessionCreationMetaDataKeyFilter.class);
     }
 }

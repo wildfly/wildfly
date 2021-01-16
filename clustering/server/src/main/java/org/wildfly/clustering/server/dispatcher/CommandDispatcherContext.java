@@ -32,5 +32,4 @@ public interface CommandDispatcherContext<CC, MC> {
     CC getCommandContext();
     Contextualizer getContextualizer();
     MarshalledValueFactory<MC> getMarshalledValueFactory();
-    MC getMarshallingContext();
 }

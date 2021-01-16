@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="embedded-activemq">
+    <dependencies>
+        <layer name="resource-adapters"/>
+    </dependencies>
+    <feature-group name="messaging-activemq">
+        <feature spec="subsystem.messaging-activemq.server">
+            <param name="server" value="default"/>
+            <param name="elytron-domain" value="ApplicationDomain"/>
+        </feature>
+    </feature-group>
+</layer-spec>

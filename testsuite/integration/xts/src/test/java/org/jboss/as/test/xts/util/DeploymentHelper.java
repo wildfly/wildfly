@@ -84,6 +84,7 @@ public class DeploymentHelper {
                         new RuntimePermission("createClassLoader"),
                         new RuntimePermission("getClassLoader"),
                         new RuntimePermission("org.apache.cxf.permission"),
+                        new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
                         new FilePermission(javaHome + File.separator + "lib" + File.separator + "wsdl.properties", "read"),
                         new PropertyPermission("user.dir", "read"),
                         new PropertyPermission("arquillian.debug", "read"),

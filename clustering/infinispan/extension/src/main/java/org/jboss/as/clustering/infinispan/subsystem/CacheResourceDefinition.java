@@ -29,7 +29,6 @@ import java.util.NoSuchElementException;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Index;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
@@ -114,7 +113,9 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this.definition = this.apply(createBuilder(name, type)).build();
+            this.definition = this.apply(createBuilder(name, type))
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
@@ -134,8 +135,8 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         INDEXING("indexing", ModelType.STRING, InfinispanModel.VERSION_4_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(Index.NONE.name()))
-                        .setValidator(new EnumValidator<>(Index.class))
+                return builder.setDefaultValue(new ModelNode(org.infinispan.configuration.cache.Index.NONE.name()))
+                        .setValidator(new EnumValidator<>(org.infinispan.configuration.cache.Index.class))
                         ;
             }
         },
@@ -153,13 +154,16 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
-            this.definition = this.apply(createBuilder(name, type)).setDeprecated(deprecation.getVersion()).build();
+            this.definition = this.apply(createBuilder(name, type))
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
         }
 
         DeprecatedAttribute(String name, InfinispanModel deprecation) {
             this.definition = new PropertiesAttributeDefinition.Builder(name)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
         }
 
@@ -262,7 +266,6 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setRequired(false)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 ;
     }
 
@@ -298,8 +301,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
             builder.setCustomResourceTransformer(batchingTransformer);
         }
 
-        BinaryMemoryResourceDefinition.buildTransformation(version, builder);
-        ObjectMemoryResourceDefinition.buildTransformation(version, builder);
+        HeapMemoryResourceDefinition.buildTransformation(version, builder);
         OffHeapMemoryResourceDefinition.buildTransformation(version, builder);
         HotRodStoreResourceDefinition.buildTransformation(version, builder);
 
@@ -331,11 +333,11 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
 
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)
-                .addAttributes(DeprecatedAttribute.class)
+                .addIgnoredAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
-                .addRequiredSingletonChildren(ObjectMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
+                .addRequiredSingletonChildren(HeapMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
                 ;
         new SimpleResourceRegistration(descriptor, this.handler).register(registration);
 
@@ -348,8 +350,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
             }
         }
 
-        new ObjectMemoryResourceDefinition().register(registration);
-        new BinaryMemoryResourceDefinition().register(registration);
+        new HeapMemoryResourceDefinition().register(registration);
         new OffHeapMemoryResourceDefinition().register(registration);
 
         new ExpirationResourceDefinition().register(registration);

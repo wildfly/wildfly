@@ -27,6 +27,15 @@ objectClass: top
 ou: RefUser
 ref: ldap://${hostname}:${ldapPort2}/ou=People,dc=jboss,dc=org
 
+dn: uid=tester,ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+uid: tester
+cn: Tester Testerovic
+sn: Testerovic
+userPassword: password
+
 dn: ou=Roles,dc=jboss,dc=org
 objectclass: top
 objectclass: organizationalUnit

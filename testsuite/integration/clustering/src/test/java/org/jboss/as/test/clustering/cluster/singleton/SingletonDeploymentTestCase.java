@@ -63,6 +63,9 @@ import org.junit.runner.RunWith;
 @ServerSetup(SingletonDeploymentTestCase.ServerSetupTask.class)
 public abstract class SingletonDeploymentTestCase extends AbstractClusteringTestCase {
 
+    static final String SINGLETON_DEPLOYMENT_1 = "singleton-deployment-1";
+    static final String SINGLETON_DEPLOYMENT_2 = "singleton-deployment-2";
+
     private static final String MODULE_NAME = SingletonDeploymentTestCase.class.getSimpleName();
     private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
@@ -102,9 +105,9 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
             @ArquillianResource(TraceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws Exception {
 
-        this.deploy(DEPLOYMENT_HELPER_1);
+        this.deploy(SINGLETON_DEPLOYMENT_1);
         Thread.sleep(DELAY);
-        this.deploy(DEPLOYMENT_HELPER_2);
+        this.deploy(SINGLETON_DEPLOYMENT_2);
         Thread.sleep(DELAY);
 
         String primaryProviderRequest = String.format("/subsystem=singleton/singleton-policy=default/deployment=%s:read-attribute(name=primary-provider)", this.deploymentName);
@@ -136,7 +139,7 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
                 HttpClientUtils.closeQuietly(response);
             }
 
-            this.undeploy(DEPLOYMENT_HELPER_1);
+            this.undeploy(SINGLETON_DEPLOYMENT_1);
 
             Thread.sleep(DELAY);
 
@@ -158,7 +161,7 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
                 HttpClientUtils.closeQuietly(response);
             }
 
-            this.deploy(DEPLOYMENT_HELPER_1);
+            this.deploy(SINGLETON_DEPLOYMENT_1);
 
             Thread.sleep(DELAY);
 
@@ -183,7 +186,7 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
                 HttpClientUtils.closeQuietly(response);
             }
 
-            this.undeploy(DEPLOYMENT_HELPER_2);
+            this.undeploy(SINGLETON_DEPLOYMENT_2);
 
             Thread.sleep(DELAY);
 
@@ -205,7 +208,7 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
                 HttpClientUtils.closeQuietly(response);
             }
 
-            this.deploy(DEPLOYMENT_HELPER_2);
+            this.deploy(SINGLETON_DEPLOYMENT_2);
 
             Thread.sleep(DELAY);
 
@@ -230,7 +233,10 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
                 HttpClientUtils.closeQuietly(response);
             }
         } finally {
-            this.undeploy(DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2);
+            this.undeploy(SINGLETON_DEPLOYMENT_1);
+            Thread.sleep(DELAY);
+            this.undeploy(SINGLETON_DEPLOYMENT_2);
+            Thread.sleep(DELAY);
         }
     }
 

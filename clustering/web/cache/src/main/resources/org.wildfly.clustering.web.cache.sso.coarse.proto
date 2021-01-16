@@ -1,0 +1,10 @@
+package org.wildfly.clustering.web.cache.sso.coarse;
+
+// IDs: 206 - 209
+
+/**
+ * @TypeId(206)
+ */
+message SessionFilter {
+	required	bytes	session	= 1;
+}

@@ -29,8 +29,8 @@ import org.infinispan.util.function.SerializablePredicate;
  * Filters a cache for session creation meta data entries.
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataKeyFilter implements SerializablePredicate<Object> {
-    private static final long serialVersionUID = -1079989480899595045L;
+public enum SessionCreationMetaDataKeyFilter implements SerializablePredicate<Object> {
+    INSTANCE;
 
     @Override
     public boolean test(Object key) {

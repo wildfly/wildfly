@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-ee-cache</artifactId>
@@ -43,6 +43,12 @@
     <description>
         This module contains code that is common to the wildfly-clustering-ee-hotrod and wildfly-clustering-ee-infinispan modules.
     </description>
+
+    <properties>
+        <jdk.max.version>9</jdk.max.version>
+        <!-- This property otherwise causes the java8-test execution to crash -->
+        <modular.jdk.args></modular.jdk.args>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -56,6 +62,10 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

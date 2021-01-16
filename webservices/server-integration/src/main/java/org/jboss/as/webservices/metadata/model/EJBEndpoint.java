@@ -59,7 +59,7 @@ public final class EJBEndpoint extends AbstractEndpoint {
    }
 
    public String getSecurityDomain() {
-       return ejbMD.getSecurityDomain();
+       return ejbMD.getResolvedSecurityDomain();
    }
 
    public Set<String> getDeclaredSecurityRoles() {

@@ -84,7 +84,7 @@ After restarting the servers, users should be able to log in once and have acces
 
 == Create Two Server Instances
 
-All configuration you did so far should be reflect in _$JBOSS_HOME_/_standalone/standalone-ha.xml._ You can now create two distinct server configuration directories_:\_
+All configuration you did so far should be reflected in _$JBOSS_HOME_/_standalone/standalone-ha.xml._ You can now create two distinct server configuration directories_:\_
 [source,options="nowrap"]
 ----
 cp -r standalone standalone-a

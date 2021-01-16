@@ -1,0 +1,105 @@
+[[MicroProfile_Metrics_SmallRye]]
+= Metrics Subsystem Configuration
+
+[NOTE]
+====
+This subsystem exposes only base metrics from the WildFly Management Model and JVM MBeans.
+
+Support for https://microprofile.io/project/eclipse/microprofile-metrics[Eclipse MicroProfile Metrics] is provided by
+the _microprofile-metrics-smallrye_ subsystem.
+====
+
+[[required-extension-metrics]]
+== Extension
+
+This `org.wildfly.extension.metrics` extension is included in all the standalone configurations included in the
+WildFly distribution as well as the `metrics` layer.
+
+You can also add the extension to a configuration without it either by adding
+an `<extension module="org.wildfly.extension.metrics"/>`
+element to the xml or by using the following CLI operation:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.metrics:add
+----
+
+== Management Model
+
+The `/subsystem=metrics` resource defines three attributes:
+
+* `security-enabled` - a boolean to indicate whether authentication is required to access the HTTP metrics endpoint (described below). By default, it is `true`. The
+standalone configurations explicitly sets it to `false` to accept unauthenticated access to the HTTP endpoints.
+* `exposed-subsystems` - a list of strings corresponding to the names of subsystems that exposes their metrics in the HTTP metrics endpoints.
+By default, it is not defined (there will be no metrics exposed by subsystem. The special wildcard "*" can be used to expose metrics from _all_ subsystems. The standalone
+configuration sets this attribute to "*".
+* `prefix` - A string to prepend to WildFly metrics that are exposed by the HTTP endpoint `/metrics` with the Prometheus output format.
+
+[[metrics-http-endpoint]]
+== HTTP Endpoint
+
+The Metric HTTP endpoint is accessible on WildFly HTTP management interface http://localhost:9990/metrics[http://localhost:9990/metrics].
+
+Secured access to the HTTP endpoint is controlled by the `security-enabled` attribute of the `/subsystem=metrics` resource.
+If it is set to `true`, the HTTP client must be authenticated.
+
+If security is disabled, the HTTP endpoint returns a `200 OK` response:
+
+----
+$ curl -v http://localhost:9990/metrics
+< HTTP/1.1 200 OK
+...
+# HELP base_classloader_total_loaded_class_count Displays the total number of classes that have been loaded since the Java virtual machine has started execution
+.
+# TYPE base_classloader_total_loaded_class_count counter
+base_classloader_total_loaded_class_count 10822.0
+...
+----
+
+If security has been enabled, the HTTP client must pass the credentials corresponding to a management user
+created by the `add-user` script. For example:
+
+----
+$ curl -v --digest -u myadminuser:myadminpassword http://localhost:9990/metrics
+< HTTP/1.1 200 OK
+...
+# HELP base_classloader_total_loaded_class_count Displays the total number of classes that have been loaded since the Java virtual machine has started execution
+.
+# TYPE base_classloader_total_loaded_class_count counter
+base_classloader_total_loaded_class_count 10822.0
+...
+----
+
+If the authentication fails, the  server will reply with a `401 NOT AUTHORIZED` response.
+
+== Exposed Metrics
+
+The HTTP endpoint exposes the following metrics:
+
+* Base metrics - Metrics from JVM MBeans (read from their JMX MBeans)
+* Vendor metrics - WildFly Metrics from the management model subsystem and deployment subtrees.
+
+The HTTP endpoint exposes the metrics in the Prometheus format only.
+
+=== WildFly Metrics Description
+
+WildFly metrics names are based on the subsystem that provides them as well as the name of the attribute from the management model.
+Their name can also be prepended with a `prefix` (specified on the `/subsystem=metrics` resource).
+Other information is stored using labels.
+
+For example Undertow exposes a metric attribute `request-count` for every Servlet in an application deployment.
+This attribute will be exposed to Prometheus with the name `wildfly_undertow_request_count`.
+Other information such as the name of the Servlet are added to the labels of the metrics.
+
+The [helloworld-rs quickstart](https://github.com/wildfly/quickstart/tree/master/helloworld-rs) creates a JAX-RS application
+that can be deployed in WildFly.
+A corresponding metric will be exposed for it with the name and labels:
+
+* `wildfly_undertow_request_count_total{deployment="helloworld-rs.war",servlet="org.jboss.as.quickstarts.rshelloworld.JAXActivator",subdeployment="helloworld-rs.war"}`
+
+[NOTE]
+Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their statistics by default
+as they have an impact on performance and memory usage. These subsystems provides a `statistics-enabled` attribute that must
+be set to `true` to enable them.
+For convenience, WildFly standalone configuration provides expressions to enable the statistics by setting a
+System property `-Dwildfly.statistics-enabled=true` to enable statistics on the subsystems provided by the configuration.

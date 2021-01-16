@@ -1,0 +1,186 @@
+[[Galleon_Provisioning]]
+= Provisioning WildFly with Galleon
+
+As opposed to a using traditional WildFly zip installation that installs it all (all default
+server configurations and all JBoss modules), using https://github.com/wildfly/galleon[Galleon] tooling
+you can choose to install a complete or customized WildFly server.
+
+More information on Galleon features and tooling can be found in the Galleon https://docs.wildfly.org/galleon/[docs].
+
+== Download and Installation of the Galleon Command Line Tool
+
+Releases of the Galleon command line tool are available on the Galleon link:https://github.com/wildfly/galleon/releases[releases page].
+
+Download and unzip the release zip and add the `bin` dir to your system path. Use `galleon.sh` or `galleon.bat` to launch the tool.
+
+== WildFly Galleon feature-packs
+
+WildFly provides a Galleon feature-pack maven artifact (a zipped file that contains 
+everything needed to dynamically provision a server). 
+This feature-pack, as well as the feature-packs on which its depends,
+are deployed in public maven repositories. 
+
+When Galleon is used to install WildFly, WildFly feature-packs are retrieved and 
+their content is assembled to create an installation.
+
+== Installing WildFly using Galleon
+
+The Galleon maven plugin or Galleon CLI are used to install WildFly. The latest CLI and documentation can be downloaded 
+from the Galleon releases https://github.com/wildfly/galleon/releases[page].
+
+To install the latest final version of WildFly into the directory _my-wildfly-server_ call:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server
+----
+
+Once installed, the directory _my-wildfly-server_ contains all that is expected to run a complete WildFly server. 
+By default, all standalone and domain configurations are installed.
+
+[NOTE]
+====
+
+Append the release version to install an identified release, for example:
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current#21.0.0.Final --dir=my-wildfly-server
+----
+====
+
+== Selecting the configurations to install
+
+Galleon allows you to specify only a subset of the default configurations to be installed.
+
+To only install the standalone.xml configuration call:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --default-configs=standalone/standalone.xml
+----
+
+To install multiple configurations, a comma separated list of default configurations can be provided, 
+for example:
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --default-configs=standalone/standalone.xml,domain/domain.xml
+----
+
+[NOTE]
+====
+
+A default configuration is identified by _<configuration model>_/_<configuration name>_. WildFly defines _standalone_ and _domain_ models. 
+The _configuration name_ is the XML configuration file name (e.g.: _standalone.xml_, _domain.xml_, _standalone-ha.xml_).
+====
+
+[[wildfly_galleon_layers]]
+== WildFly Galleon layers
+
+WildFly Galleon feature-packs expose some link:++https://docs.wildfly.org/galleon/#_layers++[Galleon layers]. 
+A layer identifies one or more server capabilities that can be installed on its own or
+in combination with other layers. For example, if your application (e.g. a microservice)
+is only making use of _JAX-RS_, Eclipse MicroProfile Config and _CDI_ server capabilities, you can choose to only install
+the _jaxrs_, _microprofile-config_ and _cdi_ layers. The _standalone.xml_ configuration would then only contain the 
+required subsystems and their dependencies.
+
+The benefit to installing WildFly using Galleon layers, in addition to configuration 
+trim down, is that Galleon only installs the needed content (JBoss Modules modules, scripts, etc.)
+
+To install a server only configured with the _JAX-RS_ and _CDI_ capabilities call:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cdi,jaxrs
+----
+
+Once installed, the directory _my-wildfly-server_ contains all that is expected to deploy an application
+that depends on _JAX-RS_ and _CDI_.
+
+Some layers _optionally_ depend on other layers; i.e. the features provided by layer can and by default do make use
+of those from another layer, but if those are not present things will still work fine. In such a case if you do not
+want the optional capabilities you can exclude the optional layer by prefixing its name with a '-'. For example
+to exclude the optional _CDI_ dependency on _Bean Validation_:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cdi,jaxrs,-bean-validation
+----
+
+[NOTE]
+====
+
+* Tools (jboss-cli, add-user, ...) are not always installed when installing WildFly using layers.
+In some cases, depending on what layers you use, only server launcher scripts are installed into the _bin_ directory.
+To include these tools include the _core-tools_ layer.
+====
+
+include::Galleon_layers.adoc[]
+
+[[galleon-cli-recipes]]
+=== Galleon CLI recipes
+
+Using the Galleon CLI tool, you can provision WildFly installations based on a set of layers.
+
+[NOTE]
+====
+In order to exclude an optional layer prefix its name with '-', for example: '-jpa' to exclude the jpa layer.
+====
+
+==== Installation of a cloud-server
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server
+----
+
+==== Installation of a cloud-server with support for https (using legacy core ApplicationRealm)
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server,undertow-legacy-https
+----
+
+==== Installation of a cloud-server and ejb with ejb-dist-cache as an alternative to ejb-local-cache
+
+This is done by excluding the _ejb_ layer's optional _ejb-local-cache_ dependency and specifying its _ejb-dist-cache_
+alternative:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server,ejb,-ejb-local-cache,ejb-dist-cache
+----
+
+==== Installation of a jaxrs-server with jpa-distributed as an alternative to jpa
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=jaxrs-server,-jpa,jpa-distributed
+----
+
+==== Installation of jaxrs, cdi, elytron and logging
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=jaxrs,cdi,elytron,logging
+----
+
+==== Installation of a servlet container with main core functionalities
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,core-server
+----
+
+==== Installation of a servlet container with support for https (using legacy core ApplicationRealm)
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,undertow-legacy-https
+----
+
+==== Installation of a core server
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=core-server
+----

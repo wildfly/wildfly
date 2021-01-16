@@ -1,0 +1,10 @@
+package java.lang;
+
+// IDs: 1 - 9
+
+/**
+ * @TypeId(1)
+ */
+message Class {
+	required	string	name	= 1;
+}

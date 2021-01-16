@@ -21,10 +21,8 @@
  */
 package org.jboss.as.test.multinode.clientinterceptor.secured;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import java.security.SecurityPermission;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -92,14 +90,10 @@ public class SecuredBeanClientInterceptorTestCase {
         war.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         war.addAsManifestResource(
                 createPermissionsXmlAsset(
-                        new SecurityPermission("putProviderProperty.WildFlyElytron"),createFilePermission("read,write",
-                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
-                        createFilePermission("read,write",
-                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
+                        new SecurityPermission("putProviderProperty.WildFlyElytron"),
                         new ElytronPermission("getSecurityDomain"),
                         new RuntimePermission("getProtectionDomain"),
                         new AuthPermission("modifyPrincipals")),
-
                 "permissions.xml");
         return war;
     }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="unsecured-basic-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="remoting">
+        <feature spec="subsystem.remoting">
+            <feature spec="subsystem.remoting.configuration.endpoint">
+                <unset param="worker"/>
+            </feature>
+        </feature>
+    </feature-group>
+
+    <feature-group name="servlet-unsecured-basic-profile"/>
+
+    <feature spec="subsystem.discovery"/>
+
+    <feature spec="subsystem.ee">
+        <feature spec="subsystem.ee.context-service">
+            <param name="context-service" value="default"/>
+            <param name="use-transaction-setup-provider" value="true"/>
+        </feature>
+    </feature>
+
+    <feature spec="subsystem.naming">
+        <feature spec="subsystem.naming.service.remote-naming"/>
+    </feature>
+
+    <feature-group name="batch-jberet"/>
+    <feature spec="subsystem.bean-validation"/>
+    <feature-group name="transactions"/>
+    <feature-group name="datasources"/>
+    <feature spec="subsystem.ee-security"/>
+    <feature-group name="ejb3"/>
+    <feature spec="subsystem.resource-adapters"/>
+    <feature-group name="jca"/>
+    <feature-group name="jpa"/>
+    <feature spec="subsystem.jsf"/>
+    <feature-group name="jaxrs"/>
+    <feature spec="subsystem.jdr"/>
+    <feature spec="subsystem.weld"/>
+    <feature spec="subsystem.pojo"/>
+    <feature spec="subsystem.sar"/>
+    <feature-group name="mail"/>
+    <feature-group name="webservices"/>
+    <feature-group name="security-manager"/>
+</feature-group-spec>

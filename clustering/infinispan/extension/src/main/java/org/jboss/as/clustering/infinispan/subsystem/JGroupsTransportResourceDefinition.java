@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -115,12 +116,22 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                         ;
             }
         },
-        LOCK_TIMEOUT("lock-timeout", ModelType.LONG, new ModelNode(240000L)),
+        LOCK_TIMEOUT("lock-timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(4))) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = this.apply(createBuilder(name, type, defaultValue)).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES))
+                    .build();
         }
 
         @Override
@@ -141,7 +152,13 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         private final AttributeDefinition definition;
 
         ExecutorAttribute(String name) {
-            this.definition = createBuilder(name, ModelType.STRING, null).setAllowExpression(false).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setAllowExpression(false)
+                    .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
         }
 
         @Override
@@ -158,23 +175,19 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowExpression(true)
-                .setRequired(false)
-                .setDefaultValue(defaultValue)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                ;
     }
 
     @SuppressWarnings("deprecation")
@@ -283,8 +296,8 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return descriptor.addAttributes(Attribute.class)
-                    .addAttributes(ExecutorAttribute.class)
-                    .addAttributes(DeprecatedAttribute.class)
+                    .addIgnoredAttributes(ExecutorAttribute.class)
+                    .addIgnoredAttributes(DeprecatedAttribute.class)
                     .addCapabilities(Capability.class)
                     .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsDefaultRequirement.CHANNEL_FACTORY))
                     ;

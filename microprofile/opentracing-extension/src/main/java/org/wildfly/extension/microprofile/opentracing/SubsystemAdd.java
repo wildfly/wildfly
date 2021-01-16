@@ -23,6 +23,7 @@ package org.wildfly.extension.microprofile.opentracing;
 
 import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.DEFAULT_TRACER;
 import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.DEFAULT_TRACER_CAPABILITY;
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.OPENTRACING_CAPABILITY;
 import static org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory.ENV_TRACER;
 import static org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory.TRACER_CAPABILITY_NAME;
 
@@ -61,7 +62,8 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         WildFlyTracerFactory.registerTracer(ENV_TRACER).accept(new JaegerEnvTracerConfiguration());
-        TracingExtensionLogger.ROOT_LOGGER.activatingSubsystem();String defaultTracer = DEFAULT_TRACER.resolveModelAttribute(context, operation).asStringOrNull();
+        TracingExtensionLogger.ROOT_LOGGER.activatingSubsystem();
+        String defaultTracer = DEFAULT_TRACER.resolveModelAttribute(context, operation).asStringOrNull();
         if (defaultTracer != null && !defaultTracer.isEmpty()) {
             CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(DEFAULT_TRACER_CAPABILITY);
             final Supplier<TracerConfiguration> config = builder.requiresCapability(TRACER_CAPABILITY_NAME, TracerConfiguration.class, defaultTracer);
@@ -100,6 +102,7 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        context.registerCapability(OPENTRACING_CAPABILITY);
         ModelNode defaultTracer = DEFAULT_TRACER.resolveModelAttribute(context, operation);
         if (defaultTracer.isDefined()) {
             context.registerCapability(DEFAULT_TRACER_CAPABILITY);

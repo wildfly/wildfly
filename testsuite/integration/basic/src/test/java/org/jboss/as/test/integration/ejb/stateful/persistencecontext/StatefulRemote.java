@@ -28,8 +28,11 @@ import javax.ejb.Remote;
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  */
 @Remote
-public interface StatefulRemote {
+public interface StatefulRemote extends AutoCloseable {
     int doit();
 
     void find(int id);
+
+    @Override
+    void close();
 }

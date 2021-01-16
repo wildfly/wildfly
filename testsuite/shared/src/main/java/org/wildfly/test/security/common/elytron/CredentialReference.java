@@ -23,6 +23,7 @@
 package org.wildfly.test.security.common.elytron;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Helper class for adding "credential-reference" attributes into CLI commands.
@@ -60,6 +61,20 @@ public class CredentialReference implements CliFragment {
             sb.append("}, ");
         }
         return sb.toString();
+    }
+
+    public ModelNode asModelNode() {
+        ModelNode credentialReference = new ModelNode();
+        if (alias != null) {
+            credentialReference.get("alias").set(alias);
+        }
+        if (store != null) {
+            credentialReference.get("store").set(store);
+        }
+        if (clearText != null) {
+            credentialReference.get("clear-text").set(clearText);
+        }
+        return credentialReference.asObject();
     }
 
     /**

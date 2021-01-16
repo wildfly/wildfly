@@ -60,6 +60,7 @@ final class DeploymentModelBuilderJAXWS_EJB extends AbstractDeploymentModelBuild
                 ep.setProperty(COMPONENT_VIEW_NAME, componentViewName);
             }
             ep.setEndpointConfig(ecm.getConfig(ejbEndpointClassName));
+            markWeldDeployment(unit, ep);
         }
     }
 

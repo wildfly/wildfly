@@ -45,6 +45,11 @@ public enum IndexSerializer implements IntSerializer {
             }
             output.writeByte(index);
         }
+
+        @Override
+        public int size(int value) {
+            return Byte.BYTES;
+        }
     },
     UNSIGNED_SHORT() {
         @Override
@@ -58,6 +63,11 @@ public enum IndexSerializer implements IntSerializer {
                 throw new IndexOutOfBoundsException(Integer.toString(index));
             }
             output.writeShort(index);
+        }
+
+        @Override
+        public int size(int value) {
+            return Short.BYTES;
         }
     },
     INTEGER(),
@@ -88,6 +98,17 @@ public enum IndexSerializer implements IntSerializer {
                 i >>>= 7;
             }
             output.writeByte((byte) i);
+        }
+
+        @Override
+        public int size(int index) {
+            int size = 1;
+            int i = index;
+            while ((i & ~0x7F) != 0) {
+                size += 1;
+                i >>>= 7;
+            }
+            return size;
         }
     },
     ;

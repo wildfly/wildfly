@@ -31,7 +31,6 @@ import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
 /**
  * A {@link org.wildfly.clustering.ejb.infinispan.BeanGroup} implementation backed by an infinispan cache.
@@ -40,16 +39,17 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
  *
  * @param <I> the bean identifier type
  * @param <T> the bean type
+ * @param <C> the marshalling context type
  */
-public class InfinispanBeanGroup<I, T> implements BeanGroup<I, T> {
+public class InfinispanBeanGroup<I, T, C> implements BeanGroup<I, T> {
 
     private final I id;
-    private final BeanGroupEntry<I, T> entry;
-    private final MarshallingContext context;
+    private final BeanGroupEntry<I, T, C> entry;
+    private final C context;
     private final Mutator mutator;
     private final Remover<I> remover;
 
-    public InfinispanBeanGroup(I id, BeanGroupEntry<I, T> entry, MarshallingContext context, Mutator mutator, Remover<I> remover) {
+    public InfinispanBeanGroup(I id, BeanGroupEntry<I, T, C> entry, C context, Mutator mutator, Remover<I> remover) {
         this.id = id;
         this.entry = entry;
         this.context = context;
@@ -65,7 +65,7 @@ public class InfinispanBeanGroup<I, T> implements BeanGroup<I, T> {
     private Map<I, T> beans() {
         try {
             return this.entry.getBeans().get(this.context);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             throw InfinispanEjbLogger.ROOT_LOGGER.deserializationFailure(e, this.id);
         }
     }
@@ -88,9 +88,15 @@ public class InfinispanBeanGroup<I, T> implements BeanGroup<I, T> {
     }
 
     @Override
-    public T removeBean(I id) {
-        this.entry.decrementUsage(id);
-        return this.beans().remove(id);
+    public T removeBean(I id, PassivationListener<T> listener) {
+        int usage = this.entry.decrementUsage(id);
+        T bean = this.beans().remove(id);
+        if (bean != null) {
+            if ((usage == 0) && (listener != null)) {
+                listener.postActivate(bean);
+            }
+        }
+        return bean;
     }
 
     @Override

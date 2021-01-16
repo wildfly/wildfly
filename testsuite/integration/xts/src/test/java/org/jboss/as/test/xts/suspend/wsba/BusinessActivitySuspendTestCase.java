@@ -27,9 +27,11 @@ import static org.junit.Assert.assertEquals;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.as.test.xts.suspend.AbstractTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
@@ -43,14 +45,29 @@ public class BusinessActivitySuspendTestCase extends AbstractTestCase {
     @TargetsContainer(EXECUTOR_SERVICE_CONTAINER)
     @Deployment(name = EXECUTOR_SERVICE_ARCHIVE_NAME, testable = false)
     public static WebArchive getExecutorServiceArchive() {
-        return getExecutorServiceArchiveBase().addClasses(BusinessActivityExecutionService.class,
+        WebArchive war = getExecutorServiceArchiveBase().addClasses(BusinessActivityExecutionService.class,
                 BusinessActivityRemoteService.class, BusinessActivityParticipant.class);
+        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
+            war.addAsManifestResource(
+                    PermissionUtils.createPermissionsXmlAsset(
+                            new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp")),
+                    "permissions.xml");
+        }
+        return war;
     }
 
     @TargetsContainer(REMOTE_SERVICE_CONTAINER)
     @Deployment(name = REMOTE_SERVICE_ARCHIVE_NAME, testable = false)
     public static WebArchive getRemoteServiceArchive() {
-        return getRemoteServiceArchiveBase().addClasses(BusinessActivityRemoteService.class, BusinessActivityParticipant.class);
+        WebArchive war = getRemoteServiceArchiveBase().addClasses(BusinessActivityRemoteService.class,
+                BusinessActivityParticipant.class);
+        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
+            war.addAsManifestResource(
+                    PermissionUtils.createPermissionsXmlAsset(
+                            new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp")),
+                    "permissions.xml");
+        }
+        return war;
     }
 
     protected void assertParticipantInvocations(List<String> invocations) {

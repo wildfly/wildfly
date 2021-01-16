@@ -99,7 +99,7 @@ public class JMSBridgeTest {
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         ArchivePaths.create("beans.xml"))
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,org.jboss.remoting3\n"), "MANIFEST.MF")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.remoting\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new RemotingPermission("createEndpoint"),
                         new RemotingPermission("connect"),

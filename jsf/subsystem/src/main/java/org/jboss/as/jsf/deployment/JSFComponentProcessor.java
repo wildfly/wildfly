@@ -50,11 +50,17 @@ import org.jboss.vfs.VirtualFile;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import org.jboss.as.weld.WeldCapability;
 
 /**
  * Sets up JSF managed beans as components using information in the annotations and
@@ -67,12 +73,148 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
 
     private static final String WEB_INF_FACES_CONFIG = "WEB-INF/faces-config.xml";
 
-    private static final String MANAGED_BEAN = "managed-bean";
-    private static final String MANAGED_BEAN_CLASS = "managed-bean-class";
-    private static final String LIFECYCLE = "lifecycle";
-    private static final String PHASE_LISTENER = "phase-listener";
-
     private static final String CONFIG_FILES = "javax.faces.CONFIG_FILES";
+
+    /**
+     * JSF tags that should be checked in the configuration file. All the
+     * tags that are needed for injection are taken into account.
+     * If more artifacts should be included just add it to the enum and to
+     * the <em>facesConfigElement</em> tree in order to be parsed.
+     */
+    private enum JsfTag {
+        FACES_CONFIG,
+        FACTORY,
+        APPLICATION_FACTORY,
+        VISIT_CONTEXT_FACTORY,
+        EXCEPTION_HANDLER_FACTORY,
+        EXTERNAL_CONTEXT_FACTORY,
+        FACES_CONTEXT_FACTORY,
+        PARTIAL_VIEW_CONTEXT_FACTORY,
+        LIFECYCLE_FACTORY,
+        RENDER_KIT_FACTORY,
+        VIEW_DECLARATION_LANGUAGE_FACTORY,
+        FACELET_CACHE_FACTORY,
+        TAG_HANDLER_DELEGATE_FACTORY,
+        APPLICATION,
+        EL_RESOLVER,
+        RESOURCE_HANDLER,
+        STATE_MANAGER,
+        ACTION_LISTENER,
+        NAVIGATION_HANDLER,
+        VIEW_HANDLER,
+        SYSTEM_EVENT_LISTENER,
+        SYSTEM_EVENT_LISTENER_CLASS,
+        LIFECYCLE,
+        PHASE_LISTENER,
+        MANAGED_BEAN,
+        MANAGED_BEAN_CLASS;
+
+        private String tagName;
+
+        JsfTag() {
+            tagName = this.name().toLowerCase().replaceAll("_", "-");
+        }
+
+        public String getTagName() {
+            return tagName;
+        }
+    };
+
+    /**
+     * Helper tree class to save the XML tree structure of elements
+     * to take into consideration for injection.
+     */
+    private static class JsfTree {
+        private final JsfTag tag;
+        private final Map<String, JsfTree> children;
+
+        public JsfTree(JsfTag tag, JsfTree... children) {
+            this.tag = tag;
+            this.children = new HashMap<>();
+            for (JsfTree c : children) {
+                this.children.put(c.getTag().getTagName(), c);
+            }
+        }
+
+        public JsfTag getTag() {
+            return tag;
+        }
+
+        public JsfTree getChild(String name) {
+            return children.get(name);
+        }
+
+        public boolean isLeaf() {
+            return children.isEmpty();
+        }
+    }
+
+    /**
+     * Helper class to queue tags read from the JSF XML configuration file. The
+     * idea is saving the element which can be a known tree element or another
+     * one that is not interested for injection.
+     */
+    private static class JsfElement {
+        private final JsfTree tree;
+        private final String tag;
+
+        public JsfElement(JsfTree tree) {
+            this.tree = tree;
+            this.tag = null;
+        }
+
+        public JsfElement(String tag) {
+            this.tree = null;
+            this.tag = tag;
+        }
+
+        public String getTag() {
+            return tag;
+        }
+
+        public JsfTree getTree() {
+            return tree;
+        }
+
+        public boolean isTree() {
+            return tree != null;
+        }
+    }
+
+    /**
+     * The element tree to parse the XML artifacts for injection.
+     */
+    private static final JsfTree facesConfigElement;
+
+    static {
+        // tree of jsf artifact tags with order
+        facesConfigElement = new JsfTree(JsfTag.FACES_CONFIG,
+                new JsfTree(JsfTag.FACTORY,
+                        new JsfTree(JsfTag.APPLICATION_FACTORY),
+                        new JsfTree(JsfTag.VISIT_CONTEXT_FACTORY),
+                        new JsfTree(JsfTag.EXCEPTION_HANDLER_FACTORY),
+                        new JsfTree(JsfTag.EXTERNAL_CONTEXT_FACTORY),
+                        new JsfTree(JsfTag.FACES_CONTEXT_FACTORY),
+                        new JsfTree(JsfTag.PARTIAL_VIEW_CONTEXT_FACTORY),
+                        new JsfTree(JsfTag.LIFECYCLE_FACTORY),
+                        new JsfTree(JsfTag.RENDER_KIT_FACTORY),
+                        new JsfTree(JsfTag.VIEW_DECLARATION_LANGUAGE_FACTORY),
+                        new JsfTree(JsfTag.FACELET_CACHE_FACTORY),
+                        new JsfTree(JsfTag.TAG_HANDLER_DELEGATE_FACTORY)),
+                new JsfTree(JsfTag.APPLICATION,
+                        new JsfTree(JsfTag.EL_RESOLVER),
+                        new JsfTree(JsfTag.RESOURCE_HANDLER),
+                        new JsfTree(JsfTag.STATE_MANAGER),
+                        new JsfTree(JsfTag.ACTION_LISTENER),
+                        new JsfTree(JsfTag.NAVIGATION_HANDLER),
+                        new JsfTree(JsfTag.VIEW_HANDLER),
+                        new JsfTree(JsfTag.SYSTEM_EVENT_LISTENER,
+                                new JsfTree(JsfTag.SYSTEM_EVENT_LISTENER_CLASS))),
+                new JsfTree(JsfTag.LIFECYCLE,
+                        new JsfTree(JsfTag.PHASE_LISTENER)),
+                new JsfTree(JsfTag.MANAGED_BEAN,
+                        new JsfTree(JsfTag.MANAGED_BEAN_CLASS)));
+    }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -95,149 +237,85 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         }
         final Set<String> managedBeanClasses = new HashSet<String>();
         handleAnnotations(index, managedBeanClasses);
-        processXmlManagedBeans(deploymentUnit, managedBeanClasses);
-        processPhaseListeners(deploymentUnit, managedBeanClasses);
         for (String managedBean : managedBeanClasses) {
-            //try and load the class, and skip the class if it cannot be loaded
-            //this is not ideal, but we are not allowed to let the deployment
-            //fail due to missing managed beans
-            try {
-                final Class<?> componentClass = module.getClassLoader().loadClass(managedBean);
-                componentClass.getConstructor();
-            } catch (ClassNotFoundException e) {
-                JSFLogger.ROOT_LOGGER.managedBeanLoadFail(managedBean);
-                continue;
-            } catch (NoSuchMethodException e) {
-                JSFLogger.ROOT_LOGGER.managedBeanNoDefaultConstructor(managedBean);
-                continue;
-            }
-            installManagedBeanComponent(managedBean, moduleDescription, deploymentUnit, applicationClassesDescription);
+            installManagedBeanComponent(managedBean, moduleDescription, module, deploymentUnit, applicationClassesDescription);
         }
-
+        // process all the other elements elegible for injection in the JSF spec
+        processJSFArtifactsForInjection(deploymentUnit, managedBeanClasses);
     }
 
     /**
-     * Parse the faces config files looking for managed bean classes. The parser is quite
-     * simplistic as the only information we need is the managed-bean-class element
+     * According to JSF specification there is a table of eligible components
+     * for CDI injection (TABLE 5-3 JSF Artifacts Eligible for Injection in chapter
+     * 5.4.1 JSF Managed Classes and Java EE Annotations). This method parses
+     * the faces-config configuration files and registers the classes.
+     * The parser is quite simplistic. The tags are saved into a queue and
+     * using the facesConfigElement tree it is known when a tag is one of the
+     * classes to use for injection.
      */
-    private void processXmlManagedBeans(final DeploymentUnit deploymentUnit, final Set<String> managedBeanClasses) {
+    private void processJSFArtifactsForInjection(final DeploymentUnit deploymentUnit, final Set<String> managedBeanClasses) {
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        boolean isCDI = support.hasCapability(WELD_CAPABILITY_NAME) &&
+                support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get().isPartOfWeldDeployment(deploymentUnit);
+        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        JsfElement current = null;
+        Deque<JsfElement> queue = new LinkedList<>();
         for (final VirtualFile facesConfig : getConfigurationFiles(deploymentUnit)) {
-            InputStream is = null;
-            try {
-                is = facesConfig.openStream();
+            try (InputStream is = facesConfig.openStream()) {
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
                 inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
-                StringBuilder className = null;
-                int indent = 0;
-                boolean managedBean = false;
-                boolean managedBeanClass = false;
-                while (true) {
+                boolean finished = false;
+                while (!finished) {
                     int event = parser.next();
-                    if (event == XMLStreamConstants.END_DOCUMENT) {
-                        parser.close();
-                        break;
-                    }
-                    if (event == XMLStreamConstants.START_ELEMENT) {
-                        indent++;
-                        if (indent == 2) {
-                            if (parser.getLocalName().equals(MANAGED_BEAN)) {
-                                managedBean = true;
+                    switch (event) {
+                        case XMLStreamConstants.END_DOCUMENT:
+                            finished = true;
+                            parser.close();
+                            break;
+                        case XMLStreamConstants.START_ELEMENT:
+                            String tagName = parser.getLocalName();
+                            if (current == null) {
+                                // first element => should be faces-context
+                                if (tagName.equals(JsfTag.FACES_CONFIG.getTagName())) {
+                                    current = new JsfElement(facesConfigElement);
+                                } else {
+                                    current = new JsfElement(tagName);
+                                }
+                            } else {
+                                JsfTree child = current.isTree()? current.getTree().getChild(tagName) : null;
+                                if (child != null && child.isLeaf()) {
+                                    // leaf component => read the class and register the component
+                                    String className = parser.getElementText().trim();
+                                    if (!managedBeanClasses.contains(className)) {
+                                        managedBeanClasses.add(className);
+                                        if (child.getTag() == JsfTag.MANAGED_BEAN_CLASS) {
+                                            installManagedBeanComponent(className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
+                                        } else {
+                                            installJsfArtifactComponent(child.getTag().getTagName(), className, isCDI, moduleDescription, module, deploymentUnit, applicationClassesDescription);
+                                        }
+                                    }
+                                } else if (child != null) {
+                                    // non-leaf known element => advance into it
+                                    queue.push(current);
+                                    current = new JsfElement(child);
+                                } else {
+                                    // unknown element => just put it in the queue
+                                    queue.push(current);
+                                    current = new JsfElement(tagName);
+                                }
                             }
-                        } else if (indent == 3 && managedBean) {
-                            if (parser.getLocalName().equals(MANAGED_BEAN_CLASS)) {
-                                managedBeanClass = true;
-                                className = new StringBuilder();
-                            }
-                        }
-
-                    } else if (event == XMLStreamConstants.END_ELEMENT) {
-                        indent--;
-                        managedBeanClass = false;
-                        if (indent == 1) {
-                            managedBean = false;
-                        }
-                        if (className != null) {
-                            managedBeanClasses.add(className.toString().trim());
-                            className = null;
-                        }
-                    } else if (managedBeanClass && event == XMLStreamConstants.CHARACTERS) {
-                        className.append(parser.getText());
+                            break;
+                        case XMLStreamConstants.END_ELEMENT:
+                            // end of current element, just get the previous element from the queue
+                            current = queue.isEmpty()? null : queue.pop();
+                            break;
                     }
                 }
             } catch (Exception e) {
                 JSFLogger.ROOT_LOGGER.managedBeansConfigParseFailed(facesConfig);
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
-        }
-    }
-
-    /**
-     * WFLY-6617
-     * According to  JSF 2.2 spec, it should be possible to inject beans using @EJB annotation into
-     * PhaseListeners.
-     */
-    private void processPhaseListeners(final DeploymentUnit deploymentUnit, final Set<String> managedBeanClasses) {
-        for (final VirtualFile facesConfig : getConfigurationFiles(deploymentUnit)) {
-            InputStream is = null;
-            try {
-                is = facesConfig.openStream();
-                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                inputFactory.setXMLResolver(NoopXMLResolver.create());
-                XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
-                StringBuilder phaseListenerName = null;
-                int indent = 0;
-                boolean lifecycle = false;
-                boolean phaseListener = false;
-                while (true) {
-                    int event = parser.next();
-                    if (event == XMLStreamConstants.END_DOCUMENT) {
-                        parser.close();
-                        break;
-                    }
-                    if (event == XMLStreamConstants.START_ELEMENT) {
-                        indent++;
-                        if (indent == 2) {
-                            if(parser.getLocalName().equals(LIFECYCLE)){
-                                lifecycle = true;
-                            }
-                        } else if (indent == 3 && lifecycle) {
-                            if(parser.getLocalName().equals(PHASE_LISTENER)){
-                                phaseListener = true;
-                                phaseListenerName = new StringBuilder();
-                            }
-                        }
-                    } else if (event == XMLStreamConstants.END_ELEMENT) {
-                        indent--;
-                        phaseListener = false;
-                        if (indent == 1) {
-                            lifecycle = false;
-                        }
-                        if(phaseListenerName != null){
-                            managedBeanClasses.add(phaseListenerName.toString().trim());
-                            phaseListenerName = null;
-                        }
-                    } else if (phaseListener && event == XMLStreamConstants.CHARACTERS) {
-                        phaseListenerName.append(parser.getText());
-                    }
-                }
-            } catch (Exception e) {
-                JSFLogger.ROOT_LOGGER.phaseListenersConfigParseFailed(facesConfig);
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
-                }
             }
         }
     }
@@ -282,9 +360,11 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             if (deploymentRoot != null) {
                 for (final String file : files) {
-                    final VirtualFile configFile = deploymentRoot.getRoot().getChild(file);
-                    if (configFile.exists()) {
-                        ret.add(configFile);
+                    if (!file.isEmpty()) {
+                        final VirtualFile configFile = deploymentRoot.getRoot().getChild(file);
+                        if (configFile.exists()) {
+                            ret.add(configFile);
+                        }
                     }
                 }
             }
@@ -308,8 +388,45 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void installManagedBeanComponent(String className, final EEModuleDescription moduleDescription, final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
-        final ComponentDescription componentDescription = new WebComponentDescription(MANAGED_BEAN.toString() + "." + className, className, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
+    private void installManagedBeanComponent(String className, final EEModuleDescription moduleDescription,
+            final Module module, final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
+        //try and load the class, and skip the class if it cannot be loaded
+        //this is not ideal, but we are not allowed to let the deployment
+        //fail due to missing managed beans
+        try {
+            final Class<?> componentClass = module.getClassLoader().loadClass(className);
+            componentClass.getConstructor();
+        } catch (ClassNotFoundException e) {
+            JSFLogger.ROOT_LOGGER.managedBeanLoadFail(className);
+            return;
+        } catch (NoSuchMethodException e) {
+            JSFLogger.ROOT_LOGGER.managedBeanNoDefaultConstructor(className);
+            return;
+        }
+        install(JsfTag.MANAGED_BEAN.getTagName(), className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
+    }
+
+    private void installJsfArtifactComponent(String type, String className, boolean isCDI, final EEModuleDescription moduleDescription,
+            final Module module, final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
+        try {
+            final Class<?> componentClass = module.getClassLoader().loadClass(className);
+            if (!isCDI) {
+                // if not CDI the default constructor is compulsory to inject the artifact
+                componentClass.getConstructor();
+            }
+        } catch (ClassNotFoundException e) {
+            JSFLogger.ROOT_LOGGER.managedBeanLoadFail(className);
+            return;
+        } catch (NoSuchMethodException e) {
+            JSFLogger.ROOT_LOGGER.jsfArtifactNoDefaultConstructor(type, className);
+            return;
+        }
+        install(type, className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
+    }
+
+    private void install(String type, String className, final EEModuleDescription moduleDescription, final Module module,
+            final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
+        final ComponentDescription componentDescription = new WebComponentDescription(type + "." + className, className, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
         moduleDescription.addComponent(componentDescription);
         deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, componentDescription.getStartServiceName());
     }

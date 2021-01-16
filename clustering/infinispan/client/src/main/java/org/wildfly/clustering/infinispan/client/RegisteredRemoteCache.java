@@ -27,7 +27,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
+
+import javax.transaction.TransactionManager;
 
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
@@ -37,7 +41,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
-import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.client.hotrod.impl.RemoteCacheSupport;
 import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
 import org.infinispan.commons.util.CloseableIterator;
@@ -45,6 +48,7 @@ import org.infinispan.commons.util.CloseableIteratorCollection;
 import org.infinispan.commons.util.CloseableIteratorSet;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.query.dsl.Query;
+import org.reactivestreams.Publisher;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 
@@ -71,8 +75,13 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public boolean removeWithVersion(K key, long version) {
-        return this.cache.removeWithVersion(key, version);
+    public boolean isTransactional() {
+        return this.cache.isTransactional();
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return this.cache.getTransactionManager();
     }
 
     @Override
@@ -97,161 +106,8 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public V remove(Object key) {
-        return this.cache.remove(key);
-    }
-
-    @Override
-    public boolean remove(Object key, Object value) {
-        return this.cache.remove(key, value);
-    }
-
-    @Override
-    public boolean replace(K key, V oldValue, V value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
-        return this.cache.replace(key, oldValue, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
-    }
-
-    @Override
-    public CompletableFuture<Boolean> removeWithVersionAsync(K key, long version) {
-        return this.cache.removeWithVersionAsync(key, version);
-    }
-
-    @Override
-    public boolean replaceWithVersion(K key, V newValue, long version, int lifespanSeconds, int maxIdleTimeSeconds) {
-        return this.cache.replaceWithVersion(key, newValue, version, lifespanSeconds, maxIdleTimeSeconds);
-    }
-
-    @Override
-    public boolean replaceWithVersion(K key, V newValue, long version, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleTimeUnit) {
-        return this.cache.replaceWithVersion(key, newValue, version, lifespan, lifespanTimeUnit, maxIdle, maxIdleTimeUnit);
-    }
-
-    @Override
-    public CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds, int maxIdleSeconds) {
-        return this.cache.replaceWithVersionAsync(key, newValue, version, lifespanSeconds, maxIdleSeconds);
-    }
-
-    @Override
-    public CloseableIterator<Entry<Object, Object>> retrieveEntries(String filterConverterFactory, Set<Integer> segments, int batchSize) {
-        return this.cache.retrieveEntries(filterConverterFactory, segments, batchSize);
-    }
-
-    @Override
-    public CloseableIterator<Entry<Object, Object>> retrieveEntries(String filterConverterFactory, Object[] filterConverterParams, Set<Integer> segments, int batchSize) {
-        return this.cache.retrieveEntries(filterConverterFactory, filterConverterParams, segments, batchSize);
-    }
-
-    @Override
-    public CloseableIterator<Entry<Object, Object>> retrieveEntries(String filterConverterFactory, int batchSize) {
-        return this.cache.retrieveEntries(filterConverterFactory, batchSize);
-    }
-
-    @Override
-    public CloseableIterator<Entry<Object, Object>> retrieveEntriesByQuery(Query filterQuery, Set<Integer> segments, int batchSize) {
-        return this.cache.retrieveEntriesByQuery(filterQuery, segments, batchSize);
-    }
-
-    @Override
-    public CloseableIterator<Entry<Object, MetadataValue<Object>>> retrieveEntriesWithMetadata(Set<Integer> segments, int batchSize) {
-        return this.cache.retrieveEntriesWithMetadata(segments, batchSize);
-    }
-
-    @Deprecated
-    @Override
-    public VersionedValue<V> getVersioned(K key) {
-        return this.cache.getVersioned(key);
-    }
-
-    @Override
-    public MetadataValue<V> getWithMetadata(K key) {
-        return this.cache.getWithMetadata(key);
-    }
-
-    @Override
-    public CompletableFuture<MetadataValue<V>> getWithMetadataAsync(K key) {
-        return this.cache.getWithMetadataAsync(key);
-    }
-
-    @Override
-    public CloseableIteratorSet<K> keySet() {
-        return this.cache.keySet();
-    }
-
-    @Override
-    public CloseableIteratorSet<K> keySet(IntSet segments) {
-        return this.cache.keySet(segments);
-    }
-
-    @Override
-    public CloseableIteratorCollection<V> values() {
-        return this.cache.values();
-    }
-
-    @Override
-    public CloseableIteratorCollection<V> values(IntSet segments) {
-        return this.cache.values(segments);
-    }
-
-    @Override
-    public CloseableIteratorSet<Entry<K, V>> entrySet() {
-        return this.cache.entrySet();
-    }
-
-    @Override
-    public CloseableIteratorSet<Entry<K, V>> entrySet(IntSet segments) {
-        return this.cache.entrySet(segments);
-    }
-
-    @Override
-    public void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
-        this.cache.putAll(map, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
-    }
-
-    @Override
-    public CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
-        return this.putAllAsync(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-    }
-
-    @Override
-    public RemoteCacheClientStatisticsMXBean clientStatistics() {
-        return this.cache.clientStatistics();
-    }
-
-    @Override
-    public ServerStatistics serverStatistics() {
-        return this.cache.serverStatistics();
-    }
-
-    @Override
-    public RemoteCache<K, V> withFlags(Flag... flags) {
-        return new RegisteredRemoteCache<>(this.manager, this.cache.withFlags(flags), this.registrar, this.registration);
-    }
-
-    @Override
     public RemoteCacheManager getRemoteCacheManager() {
         return this.manager;
-    }
-
-    @Deprecated
-    @Override
-    public Map<K, V> getBulk() {
-        return this.cache.getBulk();
-    }
-
-    @Deprecated
-    @Override
-    public Map<K, V> getBulk(int size) {
-        return this.cache.getBulk(size);
-    }
-
-    @Override
-    public Map<K, V> getAll(Set<? extends K> keys) {
-        return this.cache.getAll(keys);
-    }
-
-    @Override
-    public String getProtocolVersion() {
-        return this.cache.getProtocolVersion();
     }
 
     @Override
@@ -265,18 +121,18 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public void removeClientListener(Object listener) {
-        this.cache.removeClientListener(listener);
+    public RemoteCacheClientStatisticsMXBean clientStatistics() {
+        return this.cache.clientStatistics();
     }
 
     @Override
-    public Set<Object> getListeners() {
-        return this.cache.getListeners();
+    public CloseableIteratorSet<Entry<K, V>> entrySet(IntSet segments) {
+        return this.cache.entrySet(segments);
     }
 
     @Override
-    public <T> T execute(String scriptName, Map<String, ?> params) {
-        return this.cache.execute(scriptName, params);
+    public <T> T execute(String taskName, Map<String, ?> params) {
+        return this.cache.execute(taskName, params);
     }
 
     @Override
@@ -285,8 +141,79 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
+    public DataFormat getDataFormat() {
+        return this.cache.getDataFormat();
+    }
+
+    @Deprecated
+    @Override
+    public Set<Object> getListeners() {
+        return this.cache.getListeners();
+    }
+
+    @Override
+    public String getProtocolVersion() {
+        return this.cache.getProtocolVersion();
+    }
+
+    @Override
+    public CloseableIteratorSet<K> keySet(IntSet segments) {
+        return this.cache.keySet(segments);
+    }
+
+    @Override
+    public void removeClientListener(Object listener) {
+        this.cache.removeClientListener(listener);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, long lifespanSeconds, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleTimeUnit) {
+        return this.cache.replaceWithVersionAsync(key, newValue, version, lifespanSeconds, lifespanTimeUnit, maxIdle, maxIdleTimeUnit);
+    }
+
+    @Override
+    public CloseableIterator<Map.Entry<Object, Object>> retrieveEntries(String filterConverterFactory, Object[] filterConverterParams, Set<Integer> segments, int batchSize) {
+        return this.cache.retrieveEntries(filterConverterFactory, filterConverterParams, segments, batchSize);
+    }
+
+    @Override
+    public CloseableIterator<Map.Entry<Object, Object>> retrieveEntriesByQuery(Query<?> filterQuery, Set<Integer> segments, int batchSize) {
+        return this.cache.retrieveEntriesByQuery(filterQuery, segments, batchSize);
+    }
+
+    @Override
+    public CloseableIterator<Map.Entry<Object, MetadataValue<Object>>> retrieveEntriesWithMetadata(Set<Integer> segments, int batchSize) {
+        return this.cache.retrieveEntriesWithMetadata(segments, batchSize);
+    }
+
+    @Override
+    public <E> Publisher<Map.Entry<K, E>> publishEntries(String filterConverterFactory, Object[] filterConverterParams, Set<Integer> segments, int batchSize) {
+        return this.cache.publishEntries(filterConverterFactory, filterConverterParams, segments, batchSize);
+    }
+
+    @Override
+    public <E> Publisher<Map.Entry<K, E>> publishEntriesByQuery(Query<?> filterQuery, Set<Integer> segments, int batchSize) {
+        return this.cache.publishEntriesByQuery(filterQuery, segments, batchSize);
+    }
+
+    @Override
+    public Publisher<Map.Entry<K, MetadataValue<V>>> publishEntriesWithMetadata(Set<Integer> segments, int batchSize) {
+        return this.cache.publishEntriesWithMetadata(segments, batchSize);
+    }
+
+    @Override
+    public ServerStatistics serverStatistics() {
+        return this.cache.serverStatistics();
+    }
+
+    @Override
     public StreamingRemoteCache<K> streaming() {
         return this.cache.streaming();
+    }
+
+    @Override
+    public CloseableIteratorCollection<V> values(IntSet segments) {
+        return this.cache.values(segments);
     }
 
     @Override
@@ -295,8 +222,8 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public DataFormat getDataFormat() {
-        return this.cache.getDataFormat();
+    public RemoteCache<K, V> withFlags(Flag... flags) {
+        return new RegisteredRemoteCache<>(this.manager, this.cache.withFlags(flags), this.registrar, this.registration);
     }
 
     @Override
@@ -310,53 +237,8 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public V put(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.put(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public V putIfAbsent(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.putIfAbsent(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public V replace(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.replace(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
     public CompletableFuture<Void> clearAsync() {
         return this.cache.clearAsync();
-    }
-
-    @Override
-    public CompletableFuture<V> getAsync(K arg0) {
-        return this.cache.getAsync(arg0);
-    }
-
-    @Override
-    public CompletableFuture<V> putAsync(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.putAsync(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public CompletableFuture<V> putIfAbsentAsync(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.cache.putIfAbsentAsync(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public CompletableFuture<V> removeAsync(Object arg0) {
-        return this.cache.removeAsync(arg0);
-    }
-
-    @Override
-    public CompletableFuture<V> replaceAsync(K arg0, V arg1, long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
-        return this.replaceAsync(arg0, arg1, arg2, arg3, arg4, arg5);
-    }
-
-    @Override
-    public int size() {
-        return this.cache.size();
     }
 
     @Override
@@ -365,27 +247,97 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public boolean containsKey(Object key) {
-        return this.cache.containsKey(key);
-    }
-
-    @Override
     public boolean containsValue(Object value) {
         return this.cache.containsValue(value);
     }
 
     @Override
-    public V get(Object key) {
-        return this.cache.get(key);
+    public CompletableFuture<V> computeAsync(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.computeAsync(key, remappingFunction, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
     }
 
     @Override
-    public void clear() {
-        this.cache.clear();
+    public CompletableFuture<V> computeIfAbsentAsync(K key, Function<? super K, ? extends V> mappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.computeIfAbsentAsync(key, mappingFunction, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
     }
 
     @Override
-    protected void set(K key, V value) {
-        this.put(key, value, this.defaultLifespan, TimeUnit.MILLISECONDS, this.defaultMaxIdleTime, TimeUnit.MILLISECONDS);
+    public CompletableFuture<V> computeIfPresentAsync(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.computeIfPresentAsync(key, remappingFunction, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> containsKeyAsync(K key) {
+        return this.cache.containsKeyAsync(key);
+    }
+
+    @Override
+    public CompletableFuture<Map<K, V>> getAllAsync(Set<?> keys) {
+        return this.cache.getAllAsync(keys);
+    }
+
+    @Override
+    public CompletableFuture<V> getAsync(K key) {
+        return this.cache.getAsync(key);
+    }
+
+    @Override
+    public CompletableFuture<MetadataValue<V>> getWithMetadataAsync(K key) {
+        return this.cache.getWithMetadataAsync(key);
+    }
+
+    @Override
+    public CompletableFuture<V> mergeAsync(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
+        return this.cache.mergeAsync(key, value, remappingFunction, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
+    }
+
+    @Override
+    public CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.putAllAsync(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    @Override
+    public CompletableFuture<V> putAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.putAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    @Override
+    public CompletableFuture<V> putIfAbsentAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.putIfAbsentAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    @Override
+    public CompletableFuture<V> removeAsync(Object key) {
+        return this.cache.removeAsync(key);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> removeAsync(Object key, Object value) {
+        return this.cache.removeAsync(key, value);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> removeWithVersionAsync(K key, long version) {
+        return this.cache.removeWithVersionAsync(key, version);
+    }
+
+    @Override
+    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+        this.cache.replaceAll(function);
+    }
+
+    @Override
+    public CompletableFuture<V> replaceAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.replaceAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> replaceAsync(K key, V oldValue, V newValue, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+        return this.cache.replaceAsync(key, oldValue, newValue, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+    }
+
+    @Override
+    public CompletableFuture<Long> sizeAsync() {
+        return this.cache.sizeAsync();
     }
 }

@@ -81,7 +81,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         //always add EE API
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_API, false, false, true, false));
         // previously exported by EJB_API prior to WFLY-5922 TODO WFLY-5967 look into moving this to WS subsystem
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAX_RPC_API, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAX_RPC_API, true, false, true, false));
         //we always give them the EJB client
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_NAMING_CLIENT, false, false, true, false));

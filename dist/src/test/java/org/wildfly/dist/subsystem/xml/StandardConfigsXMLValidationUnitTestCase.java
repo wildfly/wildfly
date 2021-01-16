@@ -22,55 +22,15 @@
 
 package org.wildfly.dist.subsystem.xml;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
-import org.junit.After;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.SAXException;
+import org.wildfly.test.distribution.validation.AbstractValidationUnitTest;
 
 /**
- * A XSDValidationUnitTestCase.
+ * Performs validation against their xsd of the server configuration files in the distribution.
  *
  * @author Brian Stansberry
- * @version $Revision: 1.1 $
  */
 public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidationUnitTest {
-    private static Source[] SCHEMAS;
-
-    @BeforeClass
-    public static void setUp() {
-        final List<Source> sources = new LinkedList<Source>();
-        for (File file : jbossSchemaFiles(true)) {
-            sources.add(new StreamSource(file));
-        }
-        SCHEMAS = sources.toArray(new StreamSource[0]);
-    }
-
-    private File tmpFile;
-
-    @After
-    public void cleanUp() {
-        if (tmpFile != null) {
-            if (!tmpFile.delete()) {
-                tmpFile.deleteOnExit();
-            }
-        }
-    }
 
     @Test
     public void testHost() throws Exception {
@@ -171,61 +131,5 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     @Test
     public void testStandaloneGenericJMS() throws Exception {
         parseXml("docs/examples/configs/standalone-genericjms.xml");
-    }
-
-    private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        schemaFactory.setErrorHandler(new ErrorHandlerImpl());
-        schemaFactory.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
-        Schema schema = schemaFactory.newSchema(SCHEMAS);
-        Validator validator = schema.newValidator();
-        validator.setErrorHandler(new ErrorHandlerImpl());
-        validator.setFeature("http://apache.org/xml/features/validation/schema", true);
-        validator.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
-        validator.validate(new StreamSource(getXmlFile(xmlName)));
-    }
-
-    private File getXmlFile(String xmlName) throws IOException {
-
-        // Copy the input file to tmp, replacing system prop expressions on non-string fields
-        // so they don't cause validation failures
-        // TODO we should just pass an IS to Validator
-        final File tmp = File.createTempFile(getClass().getSimpleName(), "xml");
-        tmp.deleteOnExit();
-        File target = new File(getBaseDir(), xmlName);
-        try (BufferedWriter writer= Files.newBufferedWriter(tmp.toPath(), StandardCharsets.UTF_8)) {
-            List<String> lines = Files.readAllLines(target.toPath(), StandardCharsets.UTF_8);
-            for (String line : lines) {
-                writer.write(fixExpressions(line));
-            }
-        }
-        return tmp;
-    }
-
-    private static String fixExpressions(String line) {
-        String result = line.replace("${jboss.management.native.port:9999}", "9999");
-        result = result.replace("${jboss.management.http.port:9990}", "9990");
-        result = result.replace("${jboss.management.https.port:9993}", "9993");
-        result = result.replace("${jboss.domain.master.protocol:remote}", "remote");
-        result = result.replace("${jboss.domain.master.protocol:remote+http}", "remote+http");
-        result = result.replace("${jboss.domain.master.port:9999}", "9999");
-        result = result.replace("${jboss.domain.master.port:9990}", "9990");
-        result = result.replace("${jboss.messaging.group.port:9876}", "9876");
-        result = result.replace("${jboss.socket.binding.port-offset:0}", "0");
-        result = result.replace("${jboss.http.port:8080}", "8080");
-        result = result.replace("${jboss.https.port:8443}", "8443");
-        result = result.replace("${jboss.remoting.port:4447}", "4447");
-        result = result.replace("${jboss.ajp.port:8009}", "8009");
-        result = result.replace("${jboss.mcmp.port:8090}", "8090");
-        result = result.replace("${jboss.deployment.scanner.rollback.on.failure:false}", "false");
-        result = result.replace("${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
-        result = result.replace("${wildfly.ejb.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
-        result = result.replace("${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
-        result = result.replace("${wildfly.transactions.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
-        result = result.replace("${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
-        result = result.replace("${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
-        result = result.replace("${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}", "UP");
-        result = result.replace("${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}", "UP");
-        return result;
     }
 }

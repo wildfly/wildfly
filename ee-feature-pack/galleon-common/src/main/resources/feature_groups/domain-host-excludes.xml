@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="domain-host-excludes" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+        <feature-group name="domain-host-excludes"/>
+    </origin>
+
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly10.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.core-management&quot;,&quot;org.wildfly.extension.datasources-agroal&quot;,&quot;org.wildfly.extension.discovery&quot;,&quot;org.wildfly.extension.ee-security&quot;,&quot;org.wildfly.extension.elytron&quot;,&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;,&quot;org.wildfly.extension.microprofile.config-smallrye&quot;,&quot;org.wildfly.extension.microprofile.health-smallrye&quot;,&quot;org.wildfly.extension.microprofile.opentracing-smallrye&quot;,&quot;org.wildfly.extension.microprofile.metrics-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly10.1"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.core-management&quot;,&quot;org.wildfly.extension.datasources-agroal&quot;,&quot;org.wildfly.extension.discovery&quot;,&quot;org.wildfly.extension.ee-security&quot;,&quot;org.wildfly.extension.elytron&quot;,&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;,&quot;org.wildfly.extension.microprofile.config-smallrye&quot;,&quot;org.wildfly.extension.microprofile.health-smallrye&quot;,&quot;org.wildfly.extension.microprofile.opentracing-smallrye&quot;,&quot;org.wildfly.extension.microprofile.metrics-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly11.0"/>
+        <param name="host-release" value="WildFly11.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.datasources-agroal&quot;,&quot;org.wildfly.extension.ee-security&quot;,&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;,&quot;org.wildfly.extension.microprofile.config-smallrye&quot;,&quot;org.wildfly.extension.microprofile.health-smallrye&quot;,&quot;org.wildfly.extension.microprofile.opentracing-smallrye&quot;,&quot;org.wildfly.extension.microprofile.metrics-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly12.0"/>
+        <param name="host-release" value="WildFly12.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.datasources-agroal&quot;,&quot;org.wildfly.extension.ee-security&quot;,&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;,&quot;org.wildfly.extension.microprofile.config-smallrye&quot;,&quot;org.wildfly.extension.microprofile.health-smallrye&quot;,&quot;org.wildfly.extension.microprofile.opentracing-smallrye&quot;,&quot;org.wildfly.extension.microprofile.metrics-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly13.0"/>
+        <param name="host-release" value="WildFly13.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.datasources-agroal&quot;,&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;,&quot;org.wildfly.extension.microprofile.config-smallrye&quot;,&quot;org.wildfly.extension.microprofile.health-smallrye&quot;,&quot;org.wildfly.extension.microprofile.opentracing-smallrye&quot;,&quot;org.wildfly.extension.microprofile.metrics-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly14.0"/>
+        <param name="host-release" value="WildFly14.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;,&quot;org.wildfly.extension.microprofile.metrics-smallrye&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly15.0"/>
+        <param name="host-release" value="WildFly15.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.web&quot;,&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly16.0"/>
+        <param name="host-release" value="WildFly16.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly17.0"/>
+        <param name="host-release" value="WildFly17.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly18.0"/>
+        <param name="host-release" value="WildFly18.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly19.0"/>
+        <param name="host-release" value="WildFly19.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly20.0"/>
+        <param name="host-release" value="WildFly20.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly21.0"/>
+        <param name="host-release" value="WildFly21.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;]"/>
+    </feature>
+</feature-group-spec>

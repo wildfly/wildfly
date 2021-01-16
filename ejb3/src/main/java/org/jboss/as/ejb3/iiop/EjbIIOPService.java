@@ -23,6 +23,8 @@ package org.jboss.as.ejb3.iiop;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InvalidClassException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,12 +35,11 @@ import javax.ejb.EJBMetaData;
 import javax.rmi.PortableRemoteObject;
 import javax.transaction.TransactionManager;
 
-import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
@@ -48,11 +49,13 @@ import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.ejb.iiop.EJBMetaDataImplIIOP;
 import org.jboss.ejb.iiop.HandleImplIIOP;
 import org.jboss.ejb.iiop.HomeHandleImplIIOP;
+import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.OutputStreamByteOutput;
+import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
 import org.jboss.metadata.ejb.jboss.IIOPMetaData;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
@@ -84,9 +87,10 @@ import org.wildfly.iiop.openjdk.csiv2.CSIv2Policy;
 import org.wildfly.iiop.openjdk.rmi.ir.InterfaceRepository;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import com.sun.corba.se.spi.extension.ZeroPortPolicy;
 import org.wildfly.transaction.client.ContextTransactionManager;
+
+import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
+import com.sun.corba.se.spi.extension.ZeroPortPolicy;
 
 /**
  * This is an IIOP "proxy factory" for <code>EJBHome</code>s and
@@ -240,13 +244,14 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     }
 
 
+    @Override
     public synchronized void start(final StartContext startContext) throws StartException {
 
 
         try {
             final RiverMarshallerFactory factory = new RiverMarshallerFactory();
             final MarshallingConfiguration configuration = new MarshallingConfiguration();
-            configuration.setClassResolver(ModularClassResolver.getInstance(serviceModuleLoaderInjectedValue.getValue()));
+            configuration.setClassResolver(new FilteringClassResolver(ModularClassResolver.getInstance(serviceModuleLoaderInjectedValue.getValue())));
             this.configuration = configuration;
             this.factory = factory;
             final TransactionManager jtsTransactionManager = transactionManagerInjectedValue.getValue().getTransactionManager();
@@ -272,7 +277,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 name = component.getComponentName();
             }
             name = name.replace(".", "_");
-
+            EjbLogger.DEPLOYMENT_LOGGER.iiopBindings(component.getComponentName(), component.getModuleName(),
+                    name);
 
             final ORB orb = this.orb.getValue();
             if (interfaceRepositorySupported) {
@@ -313,9 +319,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 }
             }
 
-            String securityDomain = "CORBA_REMOTE"; //TODO: what should this default to
+            String securityDomainName = "CORBA_REMOTE"; //TODO: what should this default to
             if (component.getSecurityMetaData() != null) {
-                securityDomain = component.getSecurityMetaData().getSecurityDomain();
+                securityDomainName = component.getSecurityMetaData().getSecurityDomainName();
             }
 
             Policy[] policies = policyList.toArray(new Policy[policyList.size()]);
@@ -332,7 +338,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
             // Instantiate home servant, bind it to the servant registry, and create CORBA reference to the EJBHome.
             final EjbCorbaServant homeServant = new EjbCorbaServant(poaCurrent, homeMethodMap, homeRepositoryIds, homeInterfaceDef,
-                    orb, homeView.getValue(), factory, configuration, jtsTransactionManager, module.getClassLoader(), true, securityDomain,
+                    orb, homeView.getValue(), factory, configuration, jtsTransactionManager, module.getClassLoader(), true, securityDomainName,
                     component.getSecurityDomain());
 
             homeServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
@@ -369,7 +375,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             // Instantiate the ejb object servant and bind it to the servant registry.
             final EjbCorbaServant beanServant = new EjbCorbaServant(poaCurrent, beanMethodMap, beanRepositoryIds,
                     beanInterfaceDef, orb, remoteView.getValue(), factory, configuration, jtsTransactionManager,
-                    module.getClassLoader(), false, securityDomain, component.getSecurityDomain());
+                    module.getClassLoader(), false, securityDomainName, component.getSecurityDomain());
             beanReferenceFactory = beanServantRegistry.bind(beanServantName(name), beanServant, policies);
 
             // Register bean home in local CORBA naming context
@@ -580,5 +586,59 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
     public InjectedValue<TransactionManagerService> getTransactionManagerInjectedValue() {
         return transactionManagerInjectedValue;
+    }
+
+    // ModularClassResolver is final so we have to wrap it
+    private static final class FilteringClassResolver implements ClassResolver {
+        private final ClassResolver delegate;
+
+        private FilteringClassResolver(ClassResolver delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void annotateClass(Marshaller marshaller, Class<?> clazz) throws IOException {
+            delegate.annotateClass(marshaller, clazz);
+        }
+
+        @Override
+        public void annotateProxyClass(Marshaller marshaller, Class<?> proxyClass) throws IOException {
+            delegate.annotateProxyClass(marshaller, proxyClass);
+        }
+
+        @Override
+        public String getClassName(Class<?> clazz) throws IOException {
+            return delegate.getClassName(clazz);
+        }
+
+        @Override
+        public String[] getProxyInterfaces(Class<?> proxyClass) throws IOException {
+            return delegate.getProxyInterfaces(proxyClass);
+        }
+
+        @Override
+        public Class<?> resolveClass(Unmarshaller unmarshaller, String name, long serialVersionUID) throws IOException, ClassNotFoundException {
+            checkFilter(name);
+            return delegate.resolveClass(unmarshaller, name, serialVersionUID);
+        }
+
+        @Override
+        public Class<?> resolveProxyClass(Unmarshaller unmarshaller, String[] interfaces) throws IOException, ClassNotFoundException {
+            for (String name : interfaces) {
+                checkFilter(name);
+            }
+            return delegate.resolveProxyClass(unmarshaller, interfaces);
+        }
+
+        private void checkFilter(String className) throws InvalidClassException {
+            // We only resolve org.jboss.ejb.client.SessionId impls in its package.
+            // The SessionId abstract class is public but its constructor is package
+            // protected, so the only valid impls are in that package.
+            // The JBoss Marshalling 'Configuration' object instances that use this
+            // ClassResolver are only meant to marshal/unmarshal SessionId objects.
+            if (!className.startsWith("org.jboss.ejb.client.")) {
+                throw EjbLogger.REMOTE_LOGGER.cannotResolveFilteredClass(className);
+            }
+        }
     }
 }

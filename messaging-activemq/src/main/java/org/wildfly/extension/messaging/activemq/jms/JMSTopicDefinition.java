@@ -71,7 +71,7 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
             .build();
 
     static final AttributeDefinition[] READONLY_ATTRIBUTES = { TOPIC_ADDRESS,
-            CommonAttributes.TEMPORARY };
+            CommonAttributes.TEMPORARY, CommonAttributes.PAUSED };
 
     static final AttributeDefinition DURABLE_MESSAGE_COUNT = create(CommonAttributes.DURABLE_MESSAGE_COUNT, INT)
             .setStorageRuntime()

@@ -75,7 +75,7 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testOnlyExternalContextAllowsCache() throws Exception {
-        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServices services = createKernelServicesBuilder(createAdditionalInitialization())
                 .build();
         Assert.assertTrue(services.isSuccessfulBoot());
 
@@ -189,4 +189,8 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
         return result;
     }
 
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.remoting.endpoint");
+    }
 }

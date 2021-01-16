@@ -74,6 +74,10 @@ public class FileSystemRealm extends AbstractUserAttributeValuesCapableElement i
         FileUtils.deleteQuietly(tempFolder);
     }
 
+    public Path getPath() {
+        return this.path;
+    }
+
     /**
      * Creates builder to build {@link FileSystemRealm}.
      *

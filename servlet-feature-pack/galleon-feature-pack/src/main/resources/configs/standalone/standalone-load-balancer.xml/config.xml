@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+
+<config xmlns="urn:jboss:galleon:config:1.0" name="standalone-load-balancer.xml" model="standalone">
+    <layers>
+        <include name="legacy-management"/>
+        <include name="logging"/>
+        <include name="undertow-load-balancer"/>
+        <include name="git-history"/>
+    </layers>
+    <feature-group name="standalone-security-realms"/>
+</config>

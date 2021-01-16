@@ -157,7 +157,7 @@ public class MixedDomainTestSuite {
                 testSupport.start();
                 support = testSupport;
             } catch (Exception e) {
-                testSupport.stop();
+                testSupport.close();
                 throw new RuntimeException(e);
             }
         }
@@ -171,7 +171,7 @@ public class MixedDomainTestSuite {
     private static synchronized void stop() {
         version = null;
         if(support != null) {
-            support.stop();
+            support.close();
             support = null;
         }
     }

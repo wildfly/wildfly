@@ -44,7 +44,7 @@ public class AtomicTransactionRemoteService implements RemoteService {
 
     @Override
     public void execute() throws Exception {
-        LOGGER.infof("trying to enlist participant to the transaction %s",
+        LOGGER.debugf("trying to enlist participant to the transaction %s",
                 TransactionManager.getTransactionManager().currentTransaction());
 
         String participantId = new Uid().stringForm();
@@ -52,7 +52,7 @@ public class AtomicTransactionRemoteService implements RemoteService {
         TransactionManager.getTransactionManager().enlistForVolatileTwoPhase(transactionParticipant,
                 transactionParticipant.getId());
 
-        LOGGER.infof("enlisted participant %s", transactionParticipant);
+        LOGGER.debugf("enlisted participant %s", transactionParticipant);
     }
 
     @Override

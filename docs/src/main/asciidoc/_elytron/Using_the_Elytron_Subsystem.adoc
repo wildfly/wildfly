@@ -2209,6 +2209,7 @@ use custom implementations of the following components:
 When creating custom implementations of Elytron components, they must
 present the appropriate capabilities and requirements.
 
+[[configuring-a-server-sslcontext]]
 === Configuring a server SSLContext
 
 Using the Elytron subsystem, it is possible to configure an `SSLContext` for use on the server side of a connection.
@@ -2262,7 +2263,7 @@ post-realm-principal-transformer:: _(Optional)_ A principal transformer to apply
 final-principal-transformer:: _(Optional)_ A final principal transformer to apply for this mechanism realm.
 realm-mapper:: _(Optional)_ The realm mapper to be used for SSL authentication.
 
-
+[[configuring-a-client-sslcontext]]
 === Configuring a client SSLContext
 
 Using the Elytron subsystem, it is possible to configure an `SSLContext` for use on the client side of a connection.
@@ -2522,13 +2523,91 @@ sections.
 A role decoder converts attributes from the identity provided by the
 security realm into roles. Role decoders are also specifically typed
 based on their functionality, for example _empty-role-decoder_,
-_simple-role-decoder_, and _custom-role-decoder_.
+_simple-role-decoder_, _custom-role-decoder_, and _aggregate-role-decoder_.
 
 Adding a role decoder takes the general form:
 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/ROLE-DECODER-TYPE=roleDeoderName:add(....)
+----
+
+==== Create an Elytron Role Decoder that makes use of the IP Address of the Remote Client
+
+A role decoder that is configured on a security realm assigns roles to
+an identity based on attributes provided by the security realm. It is
+also possible to configure a role decoder that makes use of the IP
+address of the remote client when determining the roles associated
+with an identity. As an example, we might want to make use of the IP
+address of the remote client in order to assign a user a particular
+role when establishing a connection to the server from a corporate
+network and a different role when establishing a connection to the
+server from a different network.
+
+Adding a role decoder that makes use of the remote client's IP
+address takes the general form:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=roleDecoderName:add(source-address="...", pattern="...", roles=[...])
+----
+
+In particular, a _source-address-role-decoder_ has the following attributes:
+
+* _source-address_ - The IP address of the remote client.
+
+* _pattern_ - A regular expression that specifies the IP address to match.
+
+* _roles_ - The list of roles to assign if the source IP address matches the given address.
+
+Only one of _source-address_ and _pattern_ should be specified.
+
+For example, the following _source-address-role-decoder_ could be configured to specify
+that a user should be assigned the "Administrator" role when establishing a connection
+to the server from the 10.10.10.10 IP address:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+----
+
+Once a _source-address-role-decoder_ has been configured, it can be referenced from a _security-domain_:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/security-domain=exampleSD:add(..., role-decoder=decoder1)
+----
+
+It is also possible to assign permissions to an identity based on its roles using a
+link:Using_the_Elytron_Subsystem{outfilesuffix}#create-an-elytron-permission-mapper[simple permission mapper].
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+/subsystem=elytron/simple-permission-mapper=ipPermissionMapper:add(permission-mappings=[{roles=["Administrator"], permission-sets=[{permission-set=login-permission}]}])
+/subsystem=elytron/security-domain=exampleSD:add(..., role-decoder=decoder1, permission-mapper=ipPermissionMapper)
+----
+
+The above example configures a security domain with a source address role decoder that
+will assign the "Administrator" role when the IP address of the remote client matches
+the configured address and a simple permission mapper that only assigns the
+"LoginPermission" if the identity has the "Administrator" role. Thus, authentication
+will succeed if the IP address of the remote client matches the configured address.
+
+It is also possible to configure an _aggregate-role-decoder_. This consists of
+two or more _role-decoder_ elements where each element is a reference to a configured
+role decoder. Each role decoder will be applied and the returned value will be a union of
+the roles returned by each decoder.
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/source-address-role-decoder=decoder1:add(source-address="10.10.10.10", roles=["Administrator"])
+/subsystem=elytron/source-address-role-decoder=decoder2:add(source-address="12.12.12.12", roles=["Users"])
+/subsystem=elytron/aggregate-role-decoder=aggregateDecoder:add(role-decoders=[decoder1, decoder2])
 ----
 
 [[create-an-elytron-permission-set]]
@@ -2604,7 +2683,7 @@ Adding a security domain takes the general form:
 === Create an Elytron Authentication Factory
 
 An authentication factory is an authentication policy used for specific
-authentication mechanisms. Authenticaion factories are specifically
+authentication mechanisms. Authentication factories are specifically
 based on the authentication mechanism, for example
 _http-authentication-factory_ and +
 _sasl-authentication-factory_ and _kerberos-security-factory_.
@@ -2627,6 +2706,43 @@ default:
 [source,options="nowrap"]
 ----
 /subsystem=elytron/policy=policy-provider-a:add(custom-policy=\[{name=policy-provider-a, class-name=MyPolicyProviderA, module=x.y.z}\])
+----
+
+[[create-an-elytron-case-principal-transformer]]
+=== Create an Elytron Case Principal Transformer
+
+Principal transformers can take a name and map it to another representation of the name or perform
+some normalisation. A ``case-principal-transformer`` converts a principal to upper or lower case.
+As an example, we might want to convert our principal to upper case if the identities in our realm
+are stored in upper case.
+
+Adding a ``case-principal-transformer`` that converts a principal to upper/lower case takes the
+general form:
+
+[source,options="nowrap]
+----
+/subsystem=elytron/case-principal-transformer=transformerName:add(upper-case="...")
+----
+
+In particular, a ``case-principal-transformer`` has the following attribute:
+
+* ``upper-case`` - A boolean value to indicate whether the principal should be converted to upper case.
+Indicating ``false`` for this attribute converts the principal to lower case.
+
+For example, the following ``case-principal-transformer`` could be configured to specify that
+a principal should be transformed to lower case:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/case-principal-transformer=transformer1:add(upper-case="false")
+----
+
+On the other hand, a ``case-principal-transformer`` could be configured by omitting the
+``upper-case`` attribute, which is then set to ``true`` by default:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/case-principal-transformer=transformer2:add()
 ----
 
 :leveloffset: +1

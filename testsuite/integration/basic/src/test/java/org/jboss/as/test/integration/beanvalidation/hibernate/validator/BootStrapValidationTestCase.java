@@ -100,28 +100,6 @@ public class BootStrapValidationTestCase {
     }
 
     /**
-     * Ensure that including a cross-site script attack triggers the @SafeHtml validation rule
-     */
-    @Test
-    public void testSafeHTML() {
-        HibernateValidatorConfiguration configuration = Validation.byProvider(HibernateValidator.class).configure();
-        assertNotNull(configuration);
-
-        ValidatorFactory factory = configuration.buildValidatorFactory();
-        Validator validator = factory.getValidator();
-
-        Employee emp = new Employee();
-        // create employee
-        emp.setFirstName("Joe");
-        emp.setLastName("Cocker");
-        emp.setEmail("none@jboss.org");
-        emp.setWebsite("<script> Cross-site scripting http://en.wikipedia.org/wiki/Joe_Cocker <script/>.");
-
-        Set<ConstraintViolation<Employee>> constraintViolations = validator.validate(emp);
-        assertEquals("Wrong number of constraints", constraintViolations.size(), 1);
-    }
-
-    /**
      * A custom constraint validator factory.
      */
     private static class CustomConstraintValidatorFactory implements ConstraintValidatorFactory {

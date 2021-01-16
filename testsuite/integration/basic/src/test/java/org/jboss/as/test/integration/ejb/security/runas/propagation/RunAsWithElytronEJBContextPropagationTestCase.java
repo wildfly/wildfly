@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.security.runas.propagation;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-
 import java.io.File;
 import java.util.Properties;
 
@@ -85,10 +82,7 @@ public class RunAsWithElytronEJBContextPropagationTestCase extends AbstractCliTe
         final JavaArchive ejbClientJar = ShrinkWrap.create(JavaArchive.class, EJB_TEST_MODULE_NAME + ".jar");
         ejbClientJar.addClass(IntermediateCallerInRole.class).addClass(IntermediateCallerInRoleRemote.class)
                 .addClass(CallerInRole.class).addClass(ServerCallerInRole.class).addAsManifestResource(
-                        IntermediateCallerInRole.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery"),
-                        createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery", "-")
-                ), "permissions.xml");
+                        IntermediateCallerInRole.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return ejbClientJar;
     }
 

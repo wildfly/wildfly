@@ -26,7 +26,7 @@ import java.util.Properties;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
-import javax.ejb.Singleton;
+import javax.inject.Singleton;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

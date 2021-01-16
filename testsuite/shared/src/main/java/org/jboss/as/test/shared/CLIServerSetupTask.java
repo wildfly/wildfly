@@ -83,20 +83,20 @@ public class CLIServerSetupTask implements ServerSetupTask {
 
             ModelNode result = managementClient.getControllerClient().execute(commandModel);
 
-            LOG.infof("Executed batch %s with result %s", commands, result.toJSONString(true));
+            LOG.debugf("Executed batch %s with result %s", commands, result.toJSONString(true));
             this.checkResult(result);
         } else {
             for (String command : commands) {
                 ModelNode commandModel = context.buildRequest(command);
                 ModelNode result = managementClient.getControllerClient().execute(commandModel);
 
-                LOG.infof("Executed single command %s with result %s", commands, result.toJSONString(true));
+                LOG.debugf("Executed single command %s with result %s", commands, result.toJSONString(true));
                 this.checkResult(result);
             }
         }
 
         if (reload) {
-            LOG.infof("Reloading server %s if its in a 'reload-required' state.", managementClient.getMgmtAddress());
+            LOG.debugf("Reloading server %s if its in a 'reload-required' state.", managementClient.getMgmtAddress());
             ServerReload.reloadIfRequired(managementClient);
         }
     }

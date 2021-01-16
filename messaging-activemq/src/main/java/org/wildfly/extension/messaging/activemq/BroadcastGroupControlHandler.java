@@ -24,7 +24,7 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.wildfly.extension.messaging.activemq.BroadcastGroupDefinition.GET_CONNECTOR_PAIRS_AS_JSON;
 
-import org.apache.activemq.artemis.api.core.management.BroadcastGroupControl;
+import org.apache.activemq.artemis.api.core.management.BaseBroadcastGroupControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.OperationContext;
@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BroadcastGroupControlHandler extends AbstractActiveMQComponentControlHandler<BroadcastGroupControl> {
+public class BroadcastGroupControlHandler extends AbstractActiveMQComponentControlHandler<BaseBroadcastGroupControl> {
 
     public static final BroadcastGroupControlHandler INSTANCE = new BroadcastGroupControlHandler();
 
@@ -45,9 +45,9 @@ public class BroadcastGroupControlHandler extends AbstractActiveMQComponentContr
     }
 
     @Override
-    protected BroadcastGroupControl getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address) {
+    protected BaseBroadcastGroupControl getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address) {
         final String resourceName = address.getLastElement().getValue();
-        return BroadcastGroupControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.BROADCAST_GROUP + resourceName));
+        return BaseBroadcastGroupControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.BROADCAST_GROUP + resourceName));
     }
 
     @Override
@@ -58,7 +58,7 @@ public class BroadcastGroupControlHandler extends AbstractActiveMQComponentContr
     @Override
     protected Object handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
         if (GET_CONNECTOR_PAIRS_AS_JSON.equals(operationName)) {
-            BroadcastGroupControl control = getActiveMQComponentControl(context, operation, false);
+            BaseBroadcastGroupControl control = getActiveMQComponentControl(context, operation, false);
             try {
                 context.getResult().set(control.getConnectorPairsAsJSON());
             } catch (Exception e) {

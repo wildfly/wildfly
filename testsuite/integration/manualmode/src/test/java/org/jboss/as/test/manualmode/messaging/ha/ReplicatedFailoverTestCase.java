@@ -37,6 +37,8 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -45,6 +47,13 @@ import org.jboss.dmr.ModelNode;
 public class ReplicatedFailoverTestCase extends FailoverTestCase {
     private static final ModelNode MASTER_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-master").toModelNode();
     private static final ModelNode SLAVE_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-slave").toModelNode();
+
+    @BeforeClass
+    public static void conditionallyIgnore() throws Exception {
+        // https://issues.redhat.com/browse/WFLY-14071
+        // Reenable once we have a release of Artemis with https://issues.redhat.com/browse/ENTMQBR-2925
+        Assume.assumeFalse("true".equals(System.getenv().get("GITHUB_ACTIONS")));
+    }
 
     @Override
     protected void setUpServer1(ModelControllerClient client) throws Exception {

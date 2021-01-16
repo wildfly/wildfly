@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="microprofile-opentracing-jaeger" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature spec="subsystem.microprofile-opentracing-smallrye">
+        <param name="default-tracer" value="jaeger"/>
+        <feature spec="subsystem.microprofile-opentracing-smallrye.jaeger-tracer">
+            <param name="jaeger-tracer" value="jaeger"/>
+            <param name="sampler-param" value="1"/>
+            <param name="sampler-type" value="const"/>
+        </feature>
+    </feature>
+
+</feature-group-spec>

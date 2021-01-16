@@ -42,7 +42,12 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
@@ -87,7 +92,13 @@ public class DistributableSessionManagerFactoryServiceConfigurator extends Simpl
     public DistributableSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration, DistributableSessionManagementProvider provider, Immutability immutability) {
         super(name);
         this.configuration = configuration;
-        this.configurator = provider.getSessionManagerFactoryServiceConfigurator(new SessionManagerFactoryConfigurationAdapter(configuration, immutability));
+        ByteBufferMarshaller marshaller = createMarshaller(configuration.getModule());
+        MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(marshaller);
+        this.configurator = provider.getSessionManagerFactoryServiceConfigurator(new SessionManagerFactoryConfigurationAdapter<>(configuration, factory, immutability));
+    }
+
+    private static ByteBufferMarshaller createMarshaller(Module module) {
+        return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
     }
 
     @Override

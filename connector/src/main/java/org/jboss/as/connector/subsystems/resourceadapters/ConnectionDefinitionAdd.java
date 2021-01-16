@@ -39,6 +39,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 
 import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -53,8 +55,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.core.security.ServerSecurityManager;
-import org.jboss.as.security.service.SimpleSecurityManagerService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
@@ -71,7 +71,17 @@ import org.wildfly.security.auth.client.AuthenticationContext;
  */
 public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
 
+    private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
+    private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
+
     public static final ConnectionDefinitionAdd INSTANCE = new ConnectionDefinitionAdd();
+
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+        final ModelNode model = resource.getModel();
+        handleCredentialReferenceUpdate(context, model.get(RECOVERY_CREDENTIAL_REFERENCE.getName()), RECOVERY_CREDENTIAL_REFERENCE.getName());
+    }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
@@ -172,9 +182,9 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             }
 
             if (!elytronEnabled || !elytronRecoveryEnabled) {
-                cdServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                cdServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
                         service.getSubjectFactoryInjector())
-                        .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
+                        .addDependency(SECURITY_MANAGER_SERVICE,
                                 ServerSecurityManager.class, service.getServerSecurityManager());
             }
 
@@ -223,6 +233,11 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
         } catch (Exception e) {
             throw new OperationFailedException(e, new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToCreate("ConnectionDefinition", operation, e.getLocalizedMessage())));
         }
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+        rollbackCredentialStoreUpdate(RECOVERY_CREDENTIAL_REFERENCE, context, resource);
     }
 
 

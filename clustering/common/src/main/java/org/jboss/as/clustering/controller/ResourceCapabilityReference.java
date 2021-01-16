@@ -38,17 +38,15 @@ import org.wildfly.clustering.service.UnaryRequirement;
  * @author Paul Ferraro
  */
 public class ResourceCapabilityReference extends AbstractCapabilityReference {
-
     private final Function<PathAddress, String[]> requirementNameResolver;
 
     /**
      * Creates a new reference between the specified capability and the specified requirement
      * @param capability the capability referencing the specified requirement
      * @param requirement the requirement of the specified capability
-     * @param requirementNameResolver function for resolving the dynamic elements of the requirement name
      */
     public ResourceCapabilityReference(Capability capability, Requirement requirement) {
-        this(capability, requirement, new SimpleCapabilityNameResolver());
+        this(capability, requirement, SimpleCapabilityNameResolver.EMPTY);
     }
 
     /**

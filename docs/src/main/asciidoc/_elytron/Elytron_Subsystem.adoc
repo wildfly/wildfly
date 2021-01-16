@@ -137,6 +137,9 @@ using a ServiceLoader
 where the principal transformer is an aggregation of other principal
 transformers.
 
+|case-principal-transformer |A principal transformer definition where
+the principal is adjusted to upper or lower case.
+
 |chained-principal-transformer |A principal transformer definition where
 the principal transformer is a chaining of other principal transformers.
 
@@ -266,6 +269,11 @@ files.
 
 |token-realm |A security realm definition capable of validating and
 extracting identities from security tokens.
+
+|distributed-realm |A security realm definition for authentication and authorization identities distributed between multiple security realms.
+
+|failover-realm |A realm definition that is an aggregation of two realms, one for default behaviour and
+second for cases when first realm is unavailable.
 |=======================================================================
 
 [[permission-mappers]]
@@ -297,6 +305,13 @@ always returns the same constant.
 
 |simple-role-decoder |Definition of a simple RoleDecoder that takes a
 single attribute and maps it directly to roles.
+
+|source-address-role-decoder |Definition of a RoleDecoder that maps roles
+based on the IP address of the remote client.
+
+|aggregate-role-decoder |A role decoder that is an aggregation of other
+role decoders. An aggregate role decoder combines the roles obtained using
+each role decoder.
 |=======================================================================
 
 [[role-mappers]]
@@ -325,6 +340,10 @@ performs a logical operation using two referenced role mappers.
 
 |mapped-role-mapper |A role mapper definition for a role mapper that uses
 configured mapping of role names to map role names.
+
+|regex-role-mapper |A role mapper definition for a role mapper that
+performs a regex matching and maps matching roles with provided pattern.
+Regex can capture groups that replacement pattern can make use of.
 |=======================================================================
 
 [[ssl-components]]
@@ -492,7 +511,13 @@ sasl-authentication-factory is used based on the mechanism name. In this
 case, configured will match on JBOSS-LOCAL-USER and DIGEST-MD5. It also
 sets the wildfly.sasl.local-user.default-user to $local.
 
-|combined-providers |Is an aggregate provider that aggreates the elytron
+|applicationSSC| The `applicationSSC` server SSL context can be used
+to automatically generate a self-signed certificate the first time
+the HTTPS interface is accessed. This server SSL context should only
+be used for testing purposes. It should never be used in a production
+environment.
+
+|combined-providers |Is an aggregate provider that aggregates the elytron
 and openssl provider loaders.
 
 |elytron |A provider loader
@@ -502,7 +527,7 @@ and openssl provider loaders.
 
 *Default WildFly Configuration*
 
-[source,java,options="nowrap"]
+[source,json,options="nowrap"]
 ----
 /subsystem=elytron:read-resource(recursive=true)
 {
@@ -524,12 +549,14 @@ and openssl provider loaders.
             "openssl"
         ]}},
         "aggregate-realm" => undefined,
+        "aggregate-role-decoder" => undefined,
         "aggregate-role-mapper" => undefined,
         "aggregate-sasl-server-factory" => undefined,
         "aggregate-security-event-listener" => undefined,
         "authentication-configuration" => undefined,
         "authentication-context" => undefined,
         "caching-realm" => undefined,
+        "case-principal-transformer" => undefined,
         "certificate-authority-account" => undefined,
         "chained-principal-transformer" => undefined,
         "client-ssl-context" => undefined,
@@ -585,8 +612,29 @@ and openssl provider loaders.
         }},
         "jdbc-realm" => undefined,
         "kerberos-security-factory" => undefined,
-        "key-manager" => undefined,
-        "key-store" => undefined,
+        "key-manager" => {
+            "applicationKM" => {
+                "algorithm" => undefined,
+                "alias-filter" => undefined,
+                "credential-reference" => {"clear-text" => "password"},
+                "generate-self-signed-certificate-host" => "localhost",
+                "key-store" => "applicationKS",
+                "provider-name" => undefined,
+                "providers" => undefined
+            }
+        }
+        "key-store" => {
+            "applicationKS" => {
+                "alias-filter" => undefined,
+                "credential-reference" => {"clear-text" => "password"},
+                "path" => "application.keystore",
+                "relative-to" => "jboss.server.config.dir",
+                "required" => false,
+                "provider-name" => undefined,
+                "providers" => undefined,
+                "type" => "JKS"
+            }
+        },
         "key-store-realm" => undefined,
         "ldap-key-store" => undefined,
         "ldap-realm" => undefined,
@@ -665,6 +713,7 @@ and openssl provider loaders.
             }
         },
         "provider-sasl-server-factory" => {"global" => {"providers" => undefined}},
+        "regex-role-mapper" => undefined,
         "regex-principal-transformer" => undefined,
         "regex-validating-principal-transformer" => undefined,
         "sasl-authentication-factory" => {
@@ -742,7 +791,30 @@ and openssl provider loaders.
                 "trusted-security-domains" => undefined
             }
         },
-        "server-ssl-context" => undefined,
+        "server-ssl-context" => {
+            "applicationSSC" => {
+                "authentication-optional" => false,
+                "cipher-suite-filter" => "DEFAULT",
+                "cipher-suite-names" => undefined,
+                "final-principal-transformer" => undefined,
+                "key-manager" => "applicationKM",
+                "maximum-session-cache-size" => -1,
+                "need-client-auth" => false,
+                "post-realm-principal-transformer" => undefined,
+                "pre-realm-principal-transformer" => undefined,
+                "protocols" => undefined,
+                "provider-name" => undefined,
+                "providers" => undefined,
+                "realm-mapper" => undefined,
+                "security-domain" => undefined,
+                "session-timeout" => -1,
+                "trust-manager" => undefined,
+                "use-cipher-suites-order" => true,
+                "want-client-auth" => false,
+                "wrap" => false,
+                "ssl-session" => undefined
+            }
+        },
         "service-loader-http-server-mechanism-factory" => undefined,
         "service-loader-sasl-server-factory" => undefined,
         "simple-permission-mapper" => {"default-permission-mapper" => {
@@ -764,6 +836,7 @@ and openssl provider loaders.
         "simple-regex-realm-mapper" => undefined,
         "simple-role-decoder" => {"groups-to-roles" => {"attribute" => "groups"}},
         "size-rotating-file-audit-log" => undefined,
+        "source-address-role-decoder" => undefined,
         "syslog-audit-log" => undefined,
         "token-realm" => undefined,
         "trust-manager" => undefined,
@@ -792,6 +865,62 @@ Authentication
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-http-auth)
 ----
 For more information on configuring an http-authentication-factory, see <<configure-an-http-authentication-factory, configure an http-authentication-factory>>
+
+SSL/TLS
+
+Undertow can be configured to make use of the `applicationSSC` server SSL context for *testing purposes*,
+as shown below:
+
+[source,bash]
+----
+batch
+/subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
+/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=applicationSSC)
+run-batch
+reload
+----
+
+The `applicationSSC` server SSL context references the `applicationKM` key manager:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/key-manager=applicationKM:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "algorithm" => undefined,
+        "alias-filter" => undefined,
+        "credential-reference" => {"clear-text" => "password"},
+        "generate-self-signed-certificate-host" => "localhost",
+        "key-store" => "applicationKS",
+        "provider-name" => undefined,
+        "providers" => undefined
+    }
+}
+----
+
+When the `applicationSSC` server SSL context is used by Undertow, a self-signed certificate will automatically
+be generated the first time the HTTPS interface is accessed if the file that backs the `applicationKS` key store
+doesn't exist. This self-signed certificate will then be persisted to the file that backs the `applicationKS` key
+store. The `generate-self-signed-certificate-host` value, `localhost`, will be used as the Common Name (CN) value
+in the generated self-signed certificate. The following messages will appear in the server log file:
+
+[source]
+----
+13:21:39,197 WARN  [org.wildfly.extension.elytron] (MSC service thread 1-6) WFLYELY01083: KeyStore /wildfly/standalone/configuration/application.keystore not found, it will be auto generated on first use with a self-signed certificate for host localhost
+...
+13:39:57,152 WARN  [org.wildfly.extension.elytron] (default task-1) WFLYELY01084: Generated self-signed certificate at /wildfly/dist/target/wildfly-21.0.0.Beta1-SNAPSHOT/standalone/configuration/application.keystore. Please note that self-signed certificates are not secure and should only be used for testing purposes. Do not use this self-signed certificate in production.
+SHA-1 fingerprint of the generated key is fc:16:cf:bf:de:3a:6d:d6:fe:ec:f9:cd:9d:22:c9:3d:43:d7:e3:57
+SHA-256 fingerprint of the generated key is 38:69:00:4e:39:e2:40:e2:ef:b6:95:58:c6:ba:d0:0f:56:c5:7c:5d:fc:d5:c3:b9:b0:94:80:9c:f5:45:9d:40
+----
+
+*NOTE* To disable the automatic self-signed certificate generation, undefine the `generate-self-signed-certificate-host`
+attribute on the `applicationKM` key manager.
+
+*WARNING* This self-signed certificate is only intended to be used for testing purposes. This self-signed certificate
+should never be used in a production environment. For more information on configuring an `ssl-context`,
+see <<configuring-a-server-sslcontext, Configuring a server SSLContext>>. For more information on how to
+easily obtain a signed certificate using the WildFly CLI, see <<obtain-certificate, Obtain a signed certificate from Let's Encrypt>>.
 
 [[default-elytron-application-domain-configuration]]
 === Default Elytron ApplicationDomain Configuration
@@ -850,7 +979,7 @@ core management authentication.
 
 *Default Configuration*
 
-[source,java,options="nowrap"]
+[source,json,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:read-resource()
 {
@@ -911,7 +1040,7 @@ management-sasl-authentication
 ----
 
 [[reload-wildfly-for-the-changes-to-take-affect.]]
-==== Reload WildFly for the changes to take affect.
+==== Reload WildFly for the changes to take effect.
 
 [source,options="nowrap"]
 ----
@@ -1032,7 +1161,7 @@ _http-interface_ using a _sasl-authentication-factory_.
 
 *Example Configuration with Default Components*
 
-[source,java,options="nowrap"]
+[source,json,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:read-resource()
 {

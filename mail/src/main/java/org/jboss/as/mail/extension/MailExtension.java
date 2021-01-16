@@ -60,9 +60,10 @@ public class MailExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_2.getUriString(), MailSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_2_0.getUriString(), MailSubsystemParser2_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_3_0.getUriString(), MailSubsystemParser3_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_4_0.getUriString(), MailSubsystemParser4_0::new);
     }
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
 
     @Override
@@ -72,7 +73,7 @@ public class MailExtension implements Extension {
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(MailSubsystemResource.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        subsystem.registerXMLElementWriter(new MailSubsystemParser3_0());
+        subsystem.registerXMLElementWriter(new MailSubsystemParser4_0());
     }
 
 }

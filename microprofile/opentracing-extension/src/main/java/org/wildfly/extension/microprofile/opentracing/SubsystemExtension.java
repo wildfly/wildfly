@@ -44,10 +44,11 @@ public class SubsystemExtension implements Extension {
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
+    protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_3_0_0;
 
-    private static final PersistentResourceXMLParser PARSER = SubsytemParser_2_0.INSTANCE;
-    public static final String NAMESPACE = SubsytemParser_2_0.OPENTRACING_NAMESPACE;
+    private static final PersistentResourceXMLParser PARSER = SubsytemParser_3_0.INSTANCE;
+    public static final String NAMESPACE = SubsytemParser_3_0.OPENTRACING_NAMESPACE;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(false, keyPrefix);
@@ -76,7 +77,8 @@ public class SubsystemExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, SubsytemParser_1_0.NAMESPACE, SubsytemParser_1_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, SubsytemParser_1_0.NAMESPACE, SubsytemParser_1_0.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, SubsytemParser_2_0.OPENTRACING_NAMESPACE, SubsytemParser_2_0.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE, PARSER);
     }
 }

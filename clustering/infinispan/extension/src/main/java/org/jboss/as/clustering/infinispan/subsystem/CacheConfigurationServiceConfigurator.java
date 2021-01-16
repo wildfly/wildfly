@@ -82,7 +82,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
         String containerName = address.getParent().getLastElement().getValue();
         String cacheName = address.getLastElement().getValue();
         this.configurator = new ConfigurationServiceConfigurator(this.getServiceName(), containerName, cacheName, this.andThen(builder -> {
-            if (builder.memory().storageType() == StorageType.OBJECT) {
+            if (builder.memory().storage() == StorageType.HEAP) {
                 GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
                 for (Grouper<?> grouper : this.module.get().loadService(Grouper.class)) {
                     groupsBuilder.addGrouper(grouper);
@@ -118,7 +118,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
         builder.locking().read(this.locking.get());
         builder.persistence().read(this.persistence.get());
         builder.transaction().read(tx);
-        builder.jmxStatistics().enabled(this.statisticsEnabled).available(this.statisticsEnabled);
+        builder.statistics().enabled(this.statisticsEnabled);
 
         try {
             // Configure invocation batching based on transaction configuration

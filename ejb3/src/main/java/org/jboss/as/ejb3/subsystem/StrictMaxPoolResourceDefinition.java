@@ -30,11 +30,11 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
@@ -53,6 +53,10 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
+
+    public static final String STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME = "org.wildfly.ejb3.pool-config";
+    public static final RuntimeCapability<Void> STRICT_MAX_POOL_CONFIG_CAPABILITY =
+            RuntimeCapability.Builder.of(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, true, StrictMaxPoolConfigService.class).build();
 
     public static final SimpleAttributeDefinition MAX_POOL_SIZE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MAX_POOL_SIZE, ModelType.INT, true)
@@ -108,7 +112,6 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
         // All values but NONE are 'legal' for use, although we provide a corrector to allow NONE as well
         // I use this convoluted mechanism to name these to make this more robust in case other values get added
         private static DeriveSize[] LEGAL_VALUES = EnumSet.complementOf(EnumSet.of(NONE)).toArray(new DeriveSize[2]);
-
         private String value;
 
         DeriveSize(String value) {
@@ -126,7 +129,6 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                 case FROM_CPU_COUNT_VALUE: return FROM_CPU_COUNT;
                 default:
                     return valueOf(value);
-
             }
         }
     }
@@ -143,15 +145,16 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                     return Derive.FROM_CPU_COUNT;
             }
         }
-
         return Derive.NONE;
     }
 
     private StrictMaxPoolResourceDefinition() {
-        super(PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL),
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL),
-                ADD_HANDLER, new ServiceRemoveStepHandler(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME, ADD_HANDLER),
-                OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL))
+                .setAddHandler(ADD_HANDLER)
+                .setRemoveHandler(new ServiceRemoveStepHandler(null, ADD_HANDLER, STRICT_MAX_POOL_CONFIG_CAPABILITY))
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_NONE)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
+                .setCapabilities(STRICT_MAX_POOL_CONFIG_CAPABILITY));
     }
 
     @Override
@@ -160,7 +163,6 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, osh);
         }
-
         resourceRegistration.registerReadOnlyAttribute(DERIVED_SIZE, new StrictMaxPoolDerivedSizeReadHandler());
     }
 

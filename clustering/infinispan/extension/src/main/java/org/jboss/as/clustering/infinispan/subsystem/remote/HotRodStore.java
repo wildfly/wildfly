@@ -23,239 +23,220 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.EnumSet;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
+import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.Flag;
-import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
-import org.infinispan.client.hotrod.impl.Util;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
-import org.infinispan.client.hotrod.impl.operations.PingOperation;
+import org.infinispan.client.hotrod.impl.operations.PingResponse;
+import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.io.ByteBuffer;
-import org.infinispan.commons.marshall.WrappedByteArray;
-import org.infinispan.commons.persistence.Store;
-import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.IntSet;
-import org.infinispan.commons.util.IteratorMapper;
-import org.infinispan.marshall.core.MarshalledEntry;
-import org.infinispan.metadata.InternalMetadata;
-import org.infinispan.persistence.PersistenceUtil;
-import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
+import org.infinispan.marshall.persistence.PersistenceMarshaller;
 import org.infinispan.persistence.spi.InitializationContext;
+import org.infinispan.persistence.spi.MarshallableEntry;
+import org.infinispan.persistence.spi.MarshallableEntryFactory;
+import org.infinispan.persistence.spi.MarshalledValue;
+import org.infinispan.persistence.spi.NonBlockingStore;
 import org.infinispan.persistence.spi.PersistenceException;
-import org.infinispan.persistence.spi.SegmentedAdvancedLoadWriteStore;
+import org.infinispan.util.concurrent.BlockingManager;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.reactivestreams.Publisher;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.common.function.Functions;
 
-import io.reactivex.Flowable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.internal.functions.Functions;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
 
 /**
- * Simple implementation of Infinispan {@link AdvancedLoadWriteStore} configured with a started container-managed {@link RemoteCacheContainer}
- * instance. Does not perform wrapping entries in Infinispan internal objects, this stores "raw" values.
+ * Implementation of Infinispan {@link AdvancedLoadWriteStore} configured with a started container-managed {@link RemoteCacheContainer} instance.
+ * Remote caches are auto-created on the remote server if supported by the protocol.
  *
  * @author Radoslav Husar
+ * @author Paul Ferraro
  */
-@Store(shared = true)
-public class HotRodStore<K, V> implements SegmentedAdvancedLoadWriteStore<K, V>, Function<CloseableIterator<byte[]>, Publisher<K>>, Consumer<K> {
+@ConfiguredBy(HotRodStoreConfiguration.class)
+public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
+    private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ);
 
-    private InitializationContext ctx;
-
-    private RemoteCache<byte[], byte[]> remoteCache;
+    private RemoteCache<ByteBuffer, ByteBuffer> cache;
+    private BlockingManager blockingManager;
+    private OperationsFactory operationsFactory;
+    private PersistenceMarshaller marshaller;
+    private MarshallableEntryFactory<K,V> entryFactory;
+    private int batchSize;
 
     @Override
-    public void init(InitializationContext ctx) {
-        this.ctx = ctx;
+    public CompletionStage<Void> start(InitializationContext context) {
+        this.blockingManager = context.getBlockingManager();
+        HotRodStoreConfiguration configuration = context.getConfiguration();
 
-        HotRodStoreConfiguration configuration = ctx.getConfiguration();
-        RemoteCacheContainer remoteCacheContainer = configuration.attributes().attribute(HotRodStoreConfiguration.REMOTE_CACHE_CONTAINER).get();
-        String cacheConfiguration = configuration.attributes().attribute(HotRodStoreConfiguration.CACHE_CONFIGURATION).get();
-        String cacheName = ctx.getCache().getName();
+        RemoteCacheContainer container = configuration.remoteCacheContainer();
+        String cacheConfiguration = configuration.cacheConfiguration();
+        String cacheName = context.getCache().getName();
+        this.batchSize = configuration.maxBatchSize();
 
-        try {
-            ProtocolVersion protocolVersion = remoteCacheContainer.getConfiguration().version();
+        this.marshaller = context.getPersistenceMarshaller();
+        this.entryFactory = context.getMarshallableEntryFactory();
 
-            // Administration support was introduced in protocol version 2.7
-            if (protocolVersion.compareTo(ProtocolVersion.PROTOCOL_VERSION_27) < 0) {
-                this.remoteCache = remoteCacheContainer.getCache(cacheName, false);
-                if (this.remoteCache == null) {
-                    throw InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(protocolVersion.toString(), cacheName);
-                }
-            } else {
-                InfinispanLogger.ROOT_LOGGER.remoteCacheCreated(cacheName, cacheConfiguration);
-                this.remoteCache = remoteCacheContainer.administration().getOrCreateCache(cacheName, cacheConfiguration);
+        String templateName = (cacheConfiguration != null) ? cacheConfiguration : DefaultTemplate.DIST_SYNC.getTemplateName();
+        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<RemoteCacheConfigurationBuilder>() {
+            @Override
+            public void accept(RemoteCacheConfigurationBuilder builder) {
+                builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).nearCacheMode(NearCacheMode.DISABLED).templateName(templateName);
             }
-        } catch (HotRodClientException ex) {
-            throw new PersistenceException(ex);
-        }
+        };
+        container.getConfiguration().addRemoteCache(cacheName, configurator);
+
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    HotRodStore.this.setRemoteCache(container, cacheName);
+                } catch (HotRodClientException ex) {
+                    throw new PersistenceException(ex);
+                }
+            }
+        };
+        return this.blockingManager.runBlocking(task, "hotrod-store-start");
     }
 
-    @Override
-    public void start() {
-        // Do nothing -- remoteCacheContainer is already started
-    }
+    synchronized void setRemoteCache(RemoteCacheContainer container, String cacheName) {
+        this.cache = container.getCache(cacheName);
 
-    @Override
-    public void stop() {
-        // Do nothing -- remoteCacheContainer lifecycle is controlled by the application server
-    }
-
-    @Override
-    public MarshalledEntry<K, V> load(Object key) throws PersistenceException {
-        byte[] bytes = this.remoteCache.get(this.marshall(key));
-        if (bytes == null) {
-            return null;
-        }
-        Map.Entry<ByteBuffer, ByteBuffer> entry = this.unmarshallValue(bytes);
-        return this.ctx.getMarshalledEntryFactory().newMarshalledEntry(key, entry.getKey(), entry.getValue());
-    }
-
-    private MarshalledEntry<K, V> asMarshalledEntry(Object key) {
-        return this.ctx.getMarshalledEntryFactory().newMarshalledEntry(key, (Object) null, (InternalMetadata) null);
-    }
-
-    @Override
-    public void write(MarshalledEntry<? extends K, ? extends V> entry) {
-        this.remoteCache.put(this.marshall(entry.getKey()), this.marshall(entry));
-    }
-
-    @Override
-    public void writeBatch(Iterable<MarshalledEntry<? extends K, ? extends V>> marshalledEntries) {
-        Map<byte[], byte[]> batch = new HashMap<>();
-        for (MarshalledEntry<? extends K, ? extends V> entry : marshalledEntries) {
-            batch.put(this.marshall(entry.getKey()), this.marshall(entry));
+        if (this.cache == null) {
+            // Administration support was introduced in protocol version 2.7
+            throw InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(container.getConfiguration().version().toString(), cacheName);
         }
 
-        if (!batch.isEmpty()) {
-            this.remoteCache.putAll(batch);
-        }
+        RemoteCacheManager manager = this.cache.getRemoteCacheManager();
+        this.operationsFactory = new OperationsFactory(manager.getChannelFactory(), manager.getCodec(), null, manager.getConfiguration());
+
+        this.cache.start();
     }
 
     @Override
-    public boolean contains(Object key) {
-        return this.remoteCache.containsKey(this.marshall(key));
+    public CompletionStage<Void> stop() {
+        return (this.cache != null) ? this.blockingManager.runBlocking(this.cache::stop, "hotrod-store-stop") : CompletableFutures.completedNull();
     }
 
     @Override
-    public boolean delete(Object key) {
-        return this.remoteCache.withFlags(Flag.FORCE_RETURN_VALUE).remove(this.marshall(key)) != null;
+    public Set<Characteristic> characteristics() {
+        return CHARACTERISTICS;
     }
 
     @Override
-    public Flowable<K> publishKeys(Predicate<? super K> filter) {
-        return this.publishKeys(null, filter);
+    public CompletionStage<MarshallableEntry<K, V>> load(int segment, Object key) {
+        return this.cache.getAsync(this.marshalKey(key)).thenApply(value -> (value != null) ? this.entryFactory.create(key, this.unmarshalValue(value)) : null);
+    }
+
+    @Override
+    public CompletionStage<Void> write(int segment, MarshallableEntry<? extends K, ? extends V> entry) {
+        return this.cache.putAsync(entry.getKeyBytes(), this.marshalValue(entry.getMarshalledValue())).thenAccept(Functions.discardingConsumer());
+    }
+
+    @Override
+    public CompletionStage<Boolean> delete(int segment, Object key) {
+        return this.cache.withFlags(Flag.FORCE_RETURN_VALUE).removeAsync(this.marshalKey(key)).thenApply(Objects::nonNull);
+    }
+
+    @Override
+    public CompletionStage<Void> batch(int publisherCount, Publisher<SegmentedPublisher<Object>> removePublisher, Publisher<SegmentedPublisher<MarshallableEntry<K, V>>> writePublisher) {
+        Completable removeCompletable = Flowable.fromPublisher(removePublisher)
+                .flatMap(sp -> Flowable.fromPublisher(sp), publisherCount)
+                .flatMapCompletable(key -> Completable.fromCompletionStage(this.cache.removeAsync(this.marshalKey(key))), false, this.batchSize);
+        Completable writeCompletable = Flowable.fromPublisher(writePublisher)
+                .flatMap(sp -> Flowable.fromPublisher(sp), publisherCount)
+                .flatMapCompletable(entry -> Completable.fromCompletionStage(this.cache.putAsync(entry.getKeyBytes(), this.marshalValue(entry.getMarshalledValue()))), false, this.batchSize);
+        return removeCompletable.mergeWith(writeCompletable).toCompletionStage(null);
     }
 
     @Override
     public Flowable<K> publishKeys(IntSet segments, Predicate<? super K> filter) {
-        Flowable<K> keys = Flowable.using(Functions.justCallable(this.remoteCache.keySet(segments).iterator()), this, CloseableIterator::close);
-        return (filter != null) ? keys.filter(filter::test) : keys;
+        Stream<K> keys = this.cache.keySet().stream().map(this::unmarshalKey);
+        Stream<K> filteredKeys = (filter != null) ? keys.filter(filter) : keys;
+        return Flowable.fromPublisher(this.blockingManager.blockingPublisher(Flowable.defer(() -> Flowable.fromStream(filteredKeys).doFinally(filteredKeys::close))));
     }
 
     @Override
-    public Publisher<K> apply(CloseableIterator<byte[]> iterator) {
-        return Flowable.fromIterable(new SimpleIterable<>(new IteratorMapper<>(iterator, this::unmarshallKey)));
+    public Publisher<MarshallableEntry<K, V>> publishEntries(IntSet segments, Predicate<? super K> filter, boolean includeValues) {
+        return includeValues ? this.publishEntries(segments, filter) : this.publishKeys(segments, filter).map(this.entryFactory::create);
+    }
+
+    private Flowable<MarshallableEntry<K, V>> publishEntries(IntSet segments, Predicate<? super K> filter) {
+        Stream<MarshallableEntry<K, V>> entries = this.cache.entrySet().stream().map(this::unmarshalEntry);
+        Stream<MarshallableEntry<K, V>> filteredEntries = (filter != null) ? entries.filter(entry -> filter.test(entry.getKey())) : entries;
+        return Flowable.fromPublisher(this.blockingManager.blockingPublisher(Flowable.defer(() -> Flowable.fromStream(filteredEntries).doFinally(filteredEntries::close))));
     }
 
     @Override
-    public Publisher<MarshalledEntry<K, V>> publishEntries(Predicate<? super K> filter, boolean fetchValue, boolean fetchMetadata) {
-        return this.publishEntries(null, filter, fetchValue, fetchMetadata);
+    public CompletionStage<Void> clear() {
+        return this.cache.clearAsync();
     }
 
     @Override
-    public Publisher<MarshalledEntry<K, V>> publishEntries(IntSet segments, Predicate<? super K> filter, boolean fetchValue, boolean fetchMetadata) {
-        Flowable<K> keys = this.publishKeys(filter);
-        return (fetchValue || fetchMetadata) ? keys.map(this::load) : keys.map(this::asMarshalledEntry);
+    public CompletionStage<Boolean> containsKey(int segment, Object key) {
+        return this.cache.containsKeyAsync(this.marshalKey(key));
     }
 
     @Override
-    public int size() {
-        return this.remoteCache.size();
+    public CompletionStage<Boolean> isAvailable() {
+        return this.operationsFactory.newFaultTolerantPingOperation().execute().thenApply(PingResponse::isSuccess);
     }
 
     @Override
-    public void clear() {
-        this.remoteCache.clear();
+    public CompletionStage<Long> size(IntSet segments) {
+        return this.cache.sizeAsync();
     }
 
-    @Override
-    public void purge(Executor threadPool, PurgeListener<? super K> listener) {
-        // Ignore
-    }
-
-    private byte[] marshall(Object key) {
-        try {
-            return (key instanceof WrappedByteArray) ? ((WrappedByteArray) key).getBytes() : this.ctx.getMarshaller().objectToByteBuffer(key);
-        } catch (IOException | InterruptedException e) {
-            throw new PersistenceException(e);
-        }
-    }
-
-    private byte[] marshall(MarshalledEntry<? extends K, ? extends V> entry) {
-        return this.marshall(new AbstractMap.SimpleImmutableEntry<>(entry.getValueBytes(), entry.getMetadataBytes()));
+    private ByteBuffer marshalKey(Object key) {
+        return this.entryFactory.create(key).getKeyBytes();
     }
 
     @SuppressWarnings("unchecked")
-    private K unmarshallKey(byte[] bytes) {
-        return (K) this.unmarshall(bytes);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map.Entry<ByteBuffer, ByteBuffer> unmarshallValue(byte[] bytes) {
-        return (Map.Entry<ByteBuffer, ByteBuffer>) this.unmarshall(bytes);
-    }
-
-    private Object unmarshall(byte[] bytes) {
+    private K unmarshalKey(ByteBuffer key) {
         try {
-            return this.ctx.getMarshaller().objectFromByteBuffer(bytes);
+            return (K) this.marshaller.objectFromByteBuffer(key.getBuf(), key.getOffset(), key.getLength());
         } catch (IOException | ClassNotFoundException e) {
             throw new PersistenceException(e);
         }
     }
 
-    @Override
-    public boolean isAvailable() {
-        RemoteCacheManager manager = this.remoteCache.getRemoteCacheManager();
-        OperationsFactory operationsFactory = new OperationsFactory(manager.getChannelFactory(), manager.getCodec(), null, manager.getConfiguration());
-        PingOperation.PingResponse response = Util.await(operationsFactory.newFaultTolerantPingOperation().execute());
-        return response.isSuccess();
+    private MarshallableEntry<K, V> unmarshalEntry(Map.Entry<ByteBuffer, ByteBuffer> entry) {
+        return this.entryFactory.create(this.unmarshalKey(entry.getKey()), this.unmarshalValue(entry.getValue()));
     }
 
-    @Override
-    public int size(IntSet segments) {
-        return PersistenceUtil.count(this, segments);
-    }
-
-    @Override
-    public void clear(IntSet segments) {
-        this.publishKeys(segments, null).blockingForEach(this);
-    }
-
-    @Override
-    public void accept(K key) {
-        this.remoteCache.remove(this.marshall(key));
-    }
-
-    private static class SimpleIterable<T> implements Iterable<T> {
-        private final Iterator<T> iterator;
-
-        SimpleIterable(Iterator<T> iterator) {
-            this.iterator = iterator;
+    private ByteBuffer marshalValue(MarshalledValue value) {
+        try {
+            return this.marshaller.objectToBuffer(value);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new PersistenceException(e);
+        } catch (IOException e) {
+            throw new PersistenceException(e);
         }
+    }
 
-        @Override
-        public Iterator<T> iterator() {
-            return this.iterator;
+    private MarshalledValue unmarshalValue(ByteBuffer buffer) {
+        if (buffer == null) return null;
+        try {
+            return (MarshalledValue) this.marshaller.objectFromByteBuffer(buffer.getBuf(), buffer.getOffset(), buffer.getLength());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new PersistenceException(e);
         }
     }
 }

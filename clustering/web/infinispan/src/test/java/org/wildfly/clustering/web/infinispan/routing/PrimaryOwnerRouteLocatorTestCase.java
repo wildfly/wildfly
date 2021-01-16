@@ -26,6 +26,8 @@ import static org.mockito.Mockito.*;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.stream.Collectors;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.configuration.cache.CacheMode;
@@ -43,9 +45,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;
@@ -58,8 +60,8 @@ import org.wildfly.clustering.web.routing.RouteLocator;
 public class PrimaryOwnerRouteLocatorTestCase {
 
     @Parameters
-    public static Iterable<CacheMode> cacheModes() {
-        return Arrays.asList(CacheMode.DIST_SYNC, CacheMode.REPL_SYNC, CacheMode.SCATTERED_SYNC, CacheMode.INVALIDATION_SYNC, CacheMode.LOCAL);
+    public static Iterable<CacheMode> parameters() {
+        return EnumSet.allOf(CacheMode.class).stream().filter(CacheMode::isSynchronous).collect(Collectors.toList());
     }
 
     private final Address[] addresses = new Address[] { mock(Address.class), mock(Address.class), mock(Address.class) };
@@ -121,16 +123,17 @@ public class PrimaryOwnerRouteLocatorTestCase {
         switch (this.cache.getCacheConfiguration().clustering().cacheMode()) {
             case INVALIDATION_SYNC:
             case REPL_SYNC:
-            case DIST_SYNC: {
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
+            case DIST_SYNC:
+            case SCATTERED_SYNC: {
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(0);
                 String result = locator.locate("session");
                 Assert.assertEquals("0", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(1);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(1);
                 result = locator.locate("session");
                 Assert.assertEquals("1", result);
 
-                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(2);
+                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(2);
                 result = locator.locate("session");
                 Assert.assertEquals("2", result);
                 break;

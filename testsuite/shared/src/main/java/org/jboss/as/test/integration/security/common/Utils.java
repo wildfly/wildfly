@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.security.common;
 
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils.OID_KERBEROS_V5;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -76,6 +77,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.RedirectStrategy;
@@ -793,6 +795,58 @@ public class Utils extends CoreUtils {
             response = httpClient.execute(httpPost);
             statusCode = response.getStatusLine().getStatusCode();
             assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+            return EntityUtils.toString(response.getEntity());
+        }
+    }
+
+    /**
+     * Do HTTP request using given client with BEARER_TOKEN authentication.The implementation makes 2 calls - the first without
+     * Authorization header provided (just to check response code and WWW-Authenticate header value), the second with
+     * Authorization header.
+     *
+     * @param url URL to make request to
+     * @param token bearer token
+     * @param expectedStatusCode expected status code
+     * @return response body
+     * @throws URISyntaxException
+     * @throws UnsupportedEncodingException
+     * @throws ClientProtocolException
+     */
+    public static String makeCallWithTokenAuthn(final URL url, String token, int expectedStatusCode)
+            throws URISyntaxException, IOException, ClientProtocolException, UnsupportedEncodingException {
+
+        LOGGER.trace("Requesting URL: " + url);
+
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+            final HttpGet httpGet = new HttpGet(url.toURI());
+            HttpResponse response = httpClient.execute(httpGet);
+            assertEquals("Unexpected HTTP response status code.", SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+            Header[] authenticateHeaders = response.getHeaders("WWW-Authenticate");
+            assertTrue("Expected WWW-Authenticate header was not present in the HTTP response",
+                    authenticateHeaders != null && authenticateHeaders.length > 0);
+            boolean bearerAuthnHeaderFound = false;
+            for (Header header : authenticateHeaders) {
+                final String headerVal = header.getValue();
+                if (headerVal != null && headerVal.startsWith("Bearer")) {
+                    bearerAuthnHeaderFound = true;
+                    break;
+                }
+            }
+            assertTrue("WWW-Authenticate response header didn't request expected Bearer token authentication",
+                    bearerAuthnHeaderFound);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                EntityUtils.consume(entity);
+            }
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("HTTP response was SC_UNAUTHORIZED, let's authenticate using the token '%s'", token));
+            }
+
+            httpGet.addHeader("Authorization", "Bearer " + token);
+            response = httpClient.execute(httpGet);
+            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode,
+                    response.getStatusLine().getStatusCode());
             return EntityUtils.toString(response.getEntity());
         }
     }

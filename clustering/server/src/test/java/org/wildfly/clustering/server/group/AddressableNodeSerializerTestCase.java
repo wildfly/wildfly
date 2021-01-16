@@ -31,6 +31,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.group.AddressableNodeSerializer.AddressableNodeExternalizer;
 import org.wildfly.clustering.server.group.AddressableNodeSerializer.AddressableNodeKeyFormat;
 
@@ -40,16 +43,23 @@ import org.wildfly.clustering.server.group.AddressableNodeSerializer.Addressable
  */
 public class AddressableNodeSerializerTestCase {
 
+    private final AddressableNode node = new AddressableNode(UUID.randomUUID(), "foo", new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE));
+
     @Test
-    public void test() throws ClassNotFoundException, IOException {
-        AddressableNode node = new AddressableNode(UUID.randomUUID(), "node1", new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE));
-        new ExternalizerTester<>(new AddressableNodeExternalizer(), AddressableNodeSerializerTestCase::assertEquals).test(node);
-        new KeyFormatTester<>(new AddressableNodeKeyFormat(), AddressableNodeSerializerTestCase::assertEquals).test(node);
+    public void test() throws IOException {
+        this.test(new ExternalizerTester<>(new AddressableNodeExternalizer()));
+        this.test(new KeyFormatTester<>(new AddressableNodeKeyFormat()));
+        this.test(new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester());
+        this.test(new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester());
     }
 
-    static void assertEquals(AddressableNode node1, AddressableNode node2) {
-        Assert.assertEquals(node1, node2);
-        Assert.assertEquals(node1.getName(), node2.getName());
-        Assert.assertEquals(node1.getSocketAddress(), node2.getSocketAddress());
+    public void test(Tester<AddressableNode> tester) throws IOException {
+        tester.test(this.node, AddressableNodeSerializerTestCase::assertEquals);
+    }
+
+    static void assertEquals(AddressableNode expected, AddressableNode actual) {
+        Assert.assertEquals(expected.getAddress(), actual.getAddress());
+        Assert.assertEquals(expected.getName(), actual.getName());
+        Assert.assertEquals(expected.getSocketAddress(), actual.getSocketAddress());
     }
 }

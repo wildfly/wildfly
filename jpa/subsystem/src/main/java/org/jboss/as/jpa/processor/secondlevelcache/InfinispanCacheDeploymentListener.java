@@ -27,16 +27,19 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.security.AccessController;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Supplier;
 
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.cache.spi.Wrapper;
 import org.jipijapa.event.spi.EventListener;
@@ -57,6 +60,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     public static final String CONTAINER = "container";
     public static final String NAME = "name";
     public static final String CACHES = "caches";
+    public static final String PENDING_PUTS = "pending-puts";
 
     public static final String DEFAULT_CACHE_CONTAINER = "hibernate";
 
@@ -76,7 +80,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String container = properties.getProperty(CONTAINER);
         String cacheType = properties.getProperty(CACHE_TYPE);
         // TODO Figure out how to access CapabilityServiceSupport from here
-        ServiceName containerServiceName = ServiceName.parse(InfinispanRequirement.CONTAINER.resolve(container));
+        ServiceName containerServiceName = ServiceNameFactory.parseServiceName(InfinispanRequirement.CONTAINER.getName()).append(container);
 
         // need a private cache for non-jpa application use
         String name = properties.getProperty(NAME, UUID.randomUUID().toString());
@@ -88,29 +92,22 @@ public class InfinispanCacheDeploymentListener implements EventListener {
             // If using a private cache, addCacheDependencies(...) is never triggered
             String[] caches = properties.getProperty(CACHES).split("\\s+");
             for (String cache : caches) {
-                ServiceName dependencyName = ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(container, cache));
-                builder.requires(dependencyName);
+                builder.requires(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(container, cache));
             }
         }
-
+        final CountDownLatch latch = new CountDownLatch(1);
+        builder.addListener(new LifecycleListener() {
+            @Override
+            public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                if (event == LifecycleEvent.UP) {
+                    latch.countDown();
+                    controller.removeListener(this);
+                }
+            }
+        });
         ServiceController<?> controller = builder.install();
-
         // Ensure cache configuration services are started
-        StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(controller);
-        try {
-            monitor.awaitStability();
-            // TODO Figure out why the awaitStability() returns prematurely while there are still dependencies starting
-            while (controller.getState() == ServiceController.State.DOWN) {
-                Thread.yield();
-                monitor.awaitStability();
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw e;
-        } finally {
-            monitor.removeController(controller);
-        }
+        latch.await();
 
         return new CacheWrapper(manager.get(), controller);
     }
@@ -121,7 +118,10 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         CapabilityServiceSupport support = CacheDeploymentListener.getInternalDeploymentCapablityServiceSupport();
         String container = properties.getProperty(CONTAINER);
         for (String cache : properties.getProperty(CACHES).split("\\s+")) {
-            builder.requires(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
+            // Workaround for legacy default configuration, where the pending-puts cache configuration is missing
+            if (cache.equals(PENDING_PUTS) ? support.hasCapability(InfinispanCacheRequirement.CACHE.resolve(container, cache)) : true) {
+                builder.requires(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
+            }
         }
     }
 
@@ -151,21 +151,24 @@ public class InfinispanCacheDeploymentListener implements EventListener {
             if (ROOT_LOGGER.isTraceEnabled()) {
                 ROOT_LOGGER.tracef("stop second level cache by removing dependency on service '%s'", this.controller.getName().getCanonicalName());
             }
-            StabilityMonitor monitor = new StabilityMonitor();
-            monitor.addController(this.controller);
-            this.controller.setMode(ServiceController.Mode.REMOVE);
+            final CountDownLatch latch = new CountDownLatch(1);
+            controller.addListener(new LifecycleListener() {
+                @Override
+                public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                    if (event == LifecycleEvent.REMOVED) latch.countDown();
+                }
+            });
+            controller.setMode(ServiceController.Mode.REMOVE);
             try {
-                monitor.awaitStability();
-            } catch (InterruptedException e) {
+                latch.await();
+            } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-            } finally {
-                monitor.removeController(this.controller);
             }
         }
     }
 
     private static ServiceContainer currentServiceContainer() {
-        if(System.getSecurityManager() == null) {
+        if (System.getSecurityManager() == null) {
             return CurrentServiceContainer.getServiceContainer();
         }
         return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);

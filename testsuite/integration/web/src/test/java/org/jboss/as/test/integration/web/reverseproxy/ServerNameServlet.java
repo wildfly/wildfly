@@ -47,6 +47,11 @@ public class ServerNameServlet extends HttpServlet {
         if("true".equals(req.getParameter("session"))) {
             req.getSession(true);
         }
+        if (req.getParameter("wait") != null) {
+            try {
+                Thread.sleep(Long.parseLong(req.getParameter("wait")));
+            } catch (InterruptedException e) {}
+        }
         resp.getWriter().write(message);
         resp.getWriter().close();
     }

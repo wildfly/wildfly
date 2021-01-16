@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.StoreWriteBehindResourceDefinition.Attribute.MODIFICATION_QUEUE_SIZE;
-import static org.jboss.as.clustering.infinispan.subsystem.StoreWriteBehindResourceDefinition.Attribute.THREAD_POOL_SIZE;
 
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -39,7 +38,6 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 public class StoreWriteBehindServiceConfigurator extends ComponentServiceConfigurator<AsyncStoreConfiguration> {
 
     private volatile int queueSize;
-    private volatile int poolSize;
 
     StoreWriteBehindServiceConfigurator(PathAddress address) {
         super(CacheComponent.STORE_WRITE, address.getParent());
@@ -48,15 +46,14 @@ public class StoreWriteBehindServiceConfigurator extends ComponentServiceConfigu
     @Override
     public AsyncStoreConfiguration get() {
         return new ConfigurationBuilder().persistence().addSingleFileStore().async()
+                .enable()
                 .modificationQueueSize(this.queueSize)
-                .threadPoolSize(this.poolSize)
                 .create();
     }
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.queueSize = MODIFICATION_QUEUE_SIZE.resolveModelAttribute(context, model).asInt();
-        this.poolSize = THREAD_POOL_SIZE.resolveModelAttribute(context, model).asInt();
         return this;
     }
 }

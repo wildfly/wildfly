@@ -30,8 +30,8 @@ import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
 import org.wildfly.clustering.ee.cache.scheduler.SortedScheduledEntries;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
@@ -69,7 +69,7 @@ public class SessionExpirationScheduler<MV> implements Scheduler<String, Immutab
     public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
         Duration maxInactiveInterval = metaData.getMaxInactiveInterval();
         if (!maxInactiveInterval.isZero()) {
-            this.scheduler.schedule(sessionId, metaData.getLastAccessedTime().plus(maxInactiveInterval));
+            this.scheduler.schedule(sessionId, metaData.getLastAccessEndTime().plus(maxInactiveInterval));
         }
     }
 
@@ -82,7 +82,7 @@ public class SessionExpirationScheduler<MV> implements Scheduler<String, Immutab
     public void cancel(Locality locality) {
         for (String sessionId : this.scheduler) {
             if (Thread.currentThread().isInterrupted()) break;
-            if (!locality.isLocal(new Key<>(sessionId))) {
+            if (!locality.isLocal(new GroupedKey<>(sessionId))) {
                 this.cancel(sessionId);
             }
         }

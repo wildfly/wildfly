@@ -36,26 +36,31 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.health.HealthSubsystemDefinition;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
 public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDefinition {
 
-    static final String HEALTH_REPORTER_CAPABILITY = "org.wildfly.microprofile.health.reporter";
+    static final String MICROPROFILE_HEALTH_REPORTER_CAPABILITY = "org.wildfly.extension.microprofile.health.reporter";
+    static final String HEALTH_HTTP_CONTEXT_CAPABILITY = "org.wildfly.extension.health.http-context";
+    static final String HEALTH_SERVER_PROBE_CAPABILITY = "org.wildfly.extension.health.server-probes";
 
     static final RuntimeCapability<Void> HEALTH_REPORTER_RUNTIME_CAPABILITY =
-            RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, HealthReporter.class)
-                    .addRequirements(WELD_CAPABILITY_NAME)
+            RuntimeCapability.Builder.of(MICROPROFILE_HEALTH_REPORTER_CAPABILITY, MicroProfileHealthReporter.class)
+                    .addRequirements(WELD_CAPABILITY_NAME, HEALTH_SERVER_PROBE_CAPABILITY)
                     .build();
 
-    public static final ServiceName HEALTH_REPORTER_SERVICE = ServiceName.parse(HEALTH_REPORTER_CAPABILITY);
+    public static final ServiceName HEALTH_REPORTER_SERVICE = ServiceName.parse(MICROPROFILE_HEALTH_REPORTER_CAPABILITY);
 
-    static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
-    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.health.http-context", HealthContextService.class)
-            .addRequirements(HTTP_EXTENSIBILITY_CAPABILITY)
+    static final RuntimeCapability<Void> MICROPROFILE_HEALTH_HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.health.http-context", MicroProfileHealthContextService.class)
+            .addRequirements(HEALTH_HTTP_CONTEXT_CAPABILITY)
             .build();
-    static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
+    static final ServiceName HTTP_CONTEXT_SERVICE = MICROPROFILE_HEALTH_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
+
+    static final RuntimeCapability<Void> MICROPROFILE_HEALTH_HTTP_SECURITY_CAPABILITY = RuntimeCapability.Builder.of(HealthSubsystemDefinition.HEALTH_HTTP_SECURITY_CAPABILITY, Boolean.class)
+            .build();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
             .setDefaultValue(ModelNode.TRUE)
@@ -88,7 +93,7 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
                 MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileHealthSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileHealthSubsystemAdd.INSTANCE))
-                .setCapabilities(HEALTH_REPORTER_RUNTIME_CAPABILITY, HTTP_CONTEXT_CAPABILITY));
+                .setCapabilities(HEALTH_REPORTER_RUNTIME_CAPABILITY, MICROPROFILE_HEALTH_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_HEALTH_HTTP_SECURITY_CAPABILITY));
         this.registerRuntimeOperations = registerRuntimeOperations;
     }
 

@@ -25,13 +25,13 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -67,15 +67,15 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         if(propagateSecurity) {
             securityManager = ejbComponent.getSecurityManager();
         } else {
-            securityManager = new SimpleSecurityManager((SimpleSecurityManager) ejbComponent.getSecurityManager());
+            securityManager =  ((Supplier<ServerSecurityManager>) ejbComponent.getSecurityManager()).get();
         }
         final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
-        String securityDomain =  securityMetaData.getSecurityDomain();
-        if (securityDomain == null) {
-            securityDomain = DEFAULT_DOMAIN;
+        String securityDomainName =  securityMetaData.getSecurityDomainName();
+        if (securityDomainName == null) {
+            securityDomainName = DEFAULT_DOMAIN;
         }
         if (ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.trace("Using security domain: " + securityDomain + " for EJB " + ejbComponent.getComponentName());
+            ROOT_LOGGER.trace("Using security domain: " + securityDomainName + " for EJB " + ejbComponent.getComponentName());
         }
         final String runAs = securityMetaData.getRunAs();
         // TODO - We should do something with DeclaredRoles although it never has much meaning in JBoss AS
@@ -89,7 +89,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
                 extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
         }
         SecurityContextInterceptorHolder holder = new SecurityContextInterceptorHolder();
-        holder.setSecurityManager(securityManager).setSecurityDomain(securityDomain)
+        holder.setSecurityManager(securityManager).setSecurityDomain(securityDomainName)
         .setRunAs(runAs).setRunAsPrincipal(runAsPrincipal).setPolicyContextID(this.policyContextID)
         .setExtraRoles(extraRoles).setPrincipalVsRolesMap(principalVsRolesMap)
         .setSkipAuthentication(securityRequired == false);

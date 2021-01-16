@@ -58,6 +58,7 @@
     <default-packages>
         <package name="modules.all"/>
         <package name="docs.licenses.merge"/>
+        <package name="docs.examples"/>
     </default-packages>
     <package-schemas>
         <group name="org.wildfly"/>
@@ -75,18 +76,28 @@
     <config name="host-master.xml" model="host"/>
     <config name="host-slave.xml" model="host"/>
 
+    <plugins>
+        <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
+    </plugins>
+
 
     <generate-feature-specs>
         <extensions>
             <standalone>
+                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
             </standalone>
             <domain>
+                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
             </domain>
         </extensions>
     </generate-feature-specs>

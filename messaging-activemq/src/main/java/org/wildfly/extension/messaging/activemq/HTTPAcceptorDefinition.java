@@ -24,6 +24,7 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_LISTENER_REGISTRY_CAPABILITY_NAME;
+import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PARAMS;
 
@@ -42,6 +43,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.MessagingServices.ServerNameMapper;
@@ -53,18 +55,19 @@ import org.wildfly.extension.messaging.activemq.MessagingServices.ServerNameMapp
  */
 public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
 
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq", true, HTTPUpgradeService.class)
+            .setDynamicNameMapper(new ServerNameMapper("http-upgrade-service"))
+            .addRequirements(HTTP_LISTENER_REGISTRY_CAPABILITY_NAME)
+            .build();
+
     static final SimpleAttributeDefinition HTTP_LISTENER = create(CommonAttributes.HTTP_LISTENER, ModelType.STRING)
             .setRequired(true)
+            .setCapabilityReference(HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME, CAPABILITY)
             .build();
     static final SimpleAttributeDefinition UPGRADE_LEGACY = create("upgrade-legacy", ModelType.BOOLEAN)
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
-            .build();
-    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq", true, HTTPUpgradeService.class)
-            .setDynamicNameMapper(new ServerNameMapper("http-upgrade-service"))
-            .addRequirements(HTTP_LISTENER_REGISTRY_CAPABILITY_NAME)
-            .addAdditionalRequiredPackages("io.undertow.core", "org.jboss.as.remoting", "org.jboss.xnio", "org.jboss.xnio.netty.netty-xnio-transport")
             .build();
     static AttributeDefinition[] ATTRIBUTES = { HTTP_LISTENER, PARAMS, UPGRADE_LEGACY };
 
@@ -96,5 +99,13 @@ public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Arrays.asList(ATTRIBUTES);
+    }
+
+    @Override
+    public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerAdditionalRuntimePackages(
+                RuntimePackageDependency.required("io.undertow.core"),
+                RuntimePackageDependency.required("org.jboss.xnio"),
+                RuntimePackageDependency.required("org.jboss.xnio.netty.netty-xnio-transport"));
     }
 }

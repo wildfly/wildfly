@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="cdi">
-    <dependencies>
-        <layer name="base-server"/>
-    </dependencies>
-    <feature spec="subsystem.weld"/>
-</layer-spec>

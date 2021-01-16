@@ -47,12 +47,6 @@ import org.jboss.dmr.ModelType;
 public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTER_CACHE.name())) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(ConsistentHashStrategy.class));
-            }
-        },
         SEGMENTS("segments", ModelType.INT, new ModelNode(256)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -77,19 +71,46 @@ public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDe
         }
     }
 
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTER_CACHE.name()), InfinispanModel.VERSION_13_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(ConsistentHashStrategy.class));
+            }
+        },
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (InfinispanModel.VERSION_4_1_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CONSISTENT_HASH_STRATEGY.getDefinition()), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.SEGMENTS.getDefinition()), Attribute.SEGMENTS.getDefinition())
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, DeprecatedAttribute.CONSISTENT_HASH_STRATEGY.getName(), Attribute.SEGMENTS.getName())
                     .end();
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ConsistentHashStrategy.INTRA_CACHE.name())), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ConsistentHashStrategy.INTRA_CACHE.name())), DeprecatedAttribute.CONSISTENT_HASH_STRATEGY.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, DeprecatedAttribute.CONSISTENT_HASH_STRATEGY.getDefinition())
                     .end();
         }
 
@@ -105,7 +126,10 @@ public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDe
 
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return this.configurator.apply(descriptor).addAttributes(Attribute.class);
+            return this.configurator.apply(descriptor)
+                    .addAttributes(Attribute.class)
+                    .addIgnoredAttributes(DeprecatedAttribute.class)
+                    ;
         }
     }
 

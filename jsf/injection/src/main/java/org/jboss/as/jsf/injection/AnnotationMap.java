@@ -70,7 +70,10 @@ public class AnnotationMap {
             stringToAnnoMap.put(FacesBehavior.class.getName(), FacesBehavior.class);
             stringToAnnoMap.put(FacesBehaviorRenderer.class.getName(), FacesBehaviorRenderer.class);
 
-            // Put JSF 2.2 annotations below this line if any new ones are to be scanned.  So far none.
+            // Put JSF 2.2+ annotations below this line if any new ones are to be scanned.
+            // Load the class to avoid a NoClassDefFoundError if it is not present in the impl
+            ClassLoader loader = AnnotationMap.class.getClassLoader();
+            addAnnotationIfPresent(loader, "javax.faces.view.facelets.FaceletsResourceResolver");
         } catch (Exception e) {
             // Ignore.  Whatever classes are available have been loaded into the map.
         }
@@ -78,6 +81,17 @@ public class AnnotationMap {
 
     // don't allow instance
     private AnnotationMap() {}
+
+    private static void addAnnotationIfPresent(ClassLoader loader, String name) {
+        try {
+            Class clazz = loader.loadClass(name);
+            if (Annotation.class.isAssignableFrom(clazz)) {
+                stringToAnnoMap.put(name, clazz);
+            }
+        } catch(ClassNotFoundException e) {
+            // ignore, annotation not found in the used JSF version
+        }
+    }
 
     public static Map<Class<? extends Annotation>, Set<Class<?>>> get(final ExternalContext extContext) {
         Map<String, Object> appMap = extContext.getApplicationMap();

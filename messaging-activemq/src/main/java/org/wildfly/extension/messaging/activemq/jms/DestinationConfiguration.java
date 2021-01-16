@@ -113,7 +113,7 @@ public class DestinationConfiguration {
     }
 
     private boolean destinationAlreadyExist(String body) {
-        return body.contains("AMQ119019") || body.contains("AMQ119018") || body.contains("AMQ229019") || body.contains("AMQ229018");
+        return body.contains("AMQ119019") || body.contains("AMQ119018") || body.contains("AMQ229019") || body.contains("AMQ229018") || body.contains("AMQ229204");
     }
 
     public void destroyQueue(ConnectionFactory cf, Queue managementQueue, String queueName) throws JMSException {
@@ -138,7 +138,7 @@ public class DestinationConfiguration {
             connection.start();
             QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
             Message m = session.createMessage();
-            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", topicName, topicName, isDurable(), RoutingType.MULTICAST.name());
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createAddress", topicName, RoutingType.MULTICAST.name());
             Message reply = requestor.request(m);
             ROOT_LOGGER.infof("Creating topic %s returned %s", topicName, reply);
             if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
@@ -157,7 +157,7 @@ public class DestinationConfiguration {
             connection.start();
             QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
             Message m = session.createMessage();
-            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "destroyQueue", topicName, true, true);
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "deleteAddress", topicName, true);
             Message reply = requestor.request(m);
             ROOT_LOGGER.debugf("Deleting topic " + topicName + " returned " + reply);
             if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {

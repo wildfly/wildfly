@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.spi;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 
@@ -55,5 +56,10 @@ public class SerializerExternalizer<T> implements Externalizer<T> {
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
+    }
+
+    @Override
+    public OptionalInt size(T object) {
+        return this.serializer.size(object);
     }
 }

@@ -9,6 +9,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_1_3_0;
+import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_4_0_0;
+import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_5_0_0;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STATISTICS_ENABLED;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -24,6 +30,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -37,16 +44,27 @@ import org.junit.Test;
 
 /**
  * Test cases for transformers used in the EJB3 subsystem.
+ * <p>
+ * This checks the following features:
+ * - basic subsystem testing (i.e. current model version boots successfully)
+ * - registered transformers transform model and operations correctly between different API model versions
+ * - expressions appearing in XML configurations are correctly rejected if so required
+ * - bad attribute values are correctly rejected
  *
  * @author <a href="tomasz.cerar@redhat.com"> Tomasz Cerar</a>
  * @author Richard Achmatowicz (c) 2015 Red Hat Inc.
+ * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  */
 public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private static final String LEGACY_EJB_CLIENT_ARTIFACT = "org.jboss:jboss-ejb-client:2.1.2.Final";
 
-    private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
+    private static String formatWildflySubsystemArtifact(ModelTestControllerVersion version) {
         return formatArtifact("org.wildfly:wildfly-ejb3:%s", version);
+    }
+
+    private static String formatEAPSubsystemArtifact(ModelTestControllerVersion version) {
+        return formatArtifact("org.jboss.eap:wildfly-ejb3:%s", version);
     }
 
     private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
@@ -68,12 +86,12 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_6_0.xsd";
+        return "schema/wildfly-ejb3_8_0.xsd";
     }
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
+        return new String[]{
                 "/subsystem-templates/ejb3.xml"
         };
     }
@@ -84,13 +102,128 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         super.testSchemaOfSubsystemTemplates();
     }
 
+    /*
+     * Transformer tests not involving rejection
+     */
+
     @Test
     public void testTransformerEAP640() throws Exception {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_0;
-        testTransformation(ModelVersion.create(1, 3, 0), controller,
+
+        testTransformation(VERSION_1_3_0.getVersion(), controller,
                 formatLegacySubsystemArtifact(controller),
                 formatArtifact("org.jboss.as:jboss-as-threads:%s", controller),
                 "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
+    }
+
+    @Test
+    public void testTransformerEAP647() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_7;
+
+        testTransformation(VERSION_1_3_0.getVersion(), controller,
+                formatLegacySubsystemArtifact(controller),
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller),
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
+    }
+
+    @Test
+    public void testTransformerEAP700() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_7_0_0;
+
+        testTransformation(VERSION_4_0_0.getVersion(), controller,
+                formatEAPSubsystemArtifact(controller),
+                "org.jboss.eap:wildfly-clustering-ejb-spi:7.0.0.GA-redhat-2",
+                "org.wildfly.core:wildfly-threads:2.1.2.Final-redhat-1",
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-4");
+    }
+
+    @Test
+    public void testTransformerEAP710() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_7_1_0;
+
+        testTransformation(VERSION_5_0_0.getVersion(), controller,
+                formatEAPSubsystemArtifact(controller),
+                "org.jboss.eap:wildfly-clustering-ejb-spi:7.1.0.GA-redhat-11",
+                "org.wildfly.core:wildfly-threads:3.0.10.Final-redhat-1",
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.5.Final-redhat-1");
+    }
+
+    @Test
+    public void testTransformerEAP720() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_7_2_0;
+
+        testTransformation(VERSION_5_0_0.getVersion(), controller,
+                formatEAPSubsystemArtifact(controller),
+                "org.wildfly.core:wildfly-threads:6.0.11.Final-redhat-00001",
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.6.Final-redhat-1");
+    }
+
+    /*
+     * Transformer tests involving rejection
+     */
+
+    @Test
+    public void testRejectionsEAP640() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_0;
+
+        this.testRejections(VERSION_1_3_0.getVersion(), controller,
+                formatLegacySubsystemArtifact(controller),
+                LEGACY_EJB_CLIENT_ARTIFACT,
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller),
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
+    }
+
+    @Test
+    public void testRejectionsEAP647() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_7;
+
+        this.testRejections(VERSION_1_3_0.getVersion(), controller,
+                formatLegacySubsystemArtifact(controller),
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller),
+                LEGACY_EJB_CLIENT_ARTIFACT,
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
+    }
+
+    @Test
+    public void testRejectionsEAP700() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_7_0_0;
+
+        this.testRejections(VERSION_4_0_0.getVersion(), controller,
+                formatEAPSubsystemArtifact(controller),
+                "org.jboss.eap:wildfly-clustering-ejb-spi:7.0.0.GA-redhat-2",
+                "org.wildfly.core:wildfly-threads:2.1.2.Final-redhat-1",
+                LEGACY_EJB_CLIENT_ARTIFACT,
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-4");
+    }
+
+    @Test
+    public void testRejectionsEAP710() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_7_1_0;
+
+        this.testRejections(VERSION_5_0_0.getVersion(), controller,
+                formatEAPSubsystemArtifact(controller),
+                "org.jboss.eap:wildfly-clustering-ejb-spi:7.1.0.GA-redhat-11",
+                "org.wildfly.core:wildfly-threads:3.0.10.Final-redhat-1",
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.5.Final-redhat-1");
+    }
+
+    @Test
+    public void testRejectionsEAP720() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_7_2_0;
+
+        this.testRejections(VERSION_5_0_0.getVersion(), controller,
+                formatEAPSubsystemArtifact(controller),
+                "org.wildfly.core:wildfly-threads:6.0.11.Final-redhat-00001",
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.6.Final-redhat-1");
+    }
+
+
+    /*
+     * Add in required capabilities for external subsystem resources the ejb3 subsystem accesses
+     */
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.MANAGEMENT;
     }
 
     /**
@@ -102,7 +235,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
      * @param mavenResourceURLs
      * @throws Exception
      */
-    private void testTransformation(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
+    private void testTransformation(ModelVersion model, ModelTestControllerVersion controller, String... mavenResourceURLs) throws Exception {
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
@@ -120,45 +253,47 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(services, model, null);
+        checkSubsystemModelTransformation(services, model, new DefaultModelFixer());
 
-        PathAddress ejb3PathAddress = PathAddress.pathAddress(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-        Map<String, String> attributeRenames = new HashMap<>();
-        attributeRenames.put(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.getName(), EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.getName());
-        attributeRenames.put(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.getName(), EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.getName());
+        if (EJB3Model.VERSION_1_2_1.matches(model) || EJB3Model.VERSION_1_3_0.matches(model)) {
+            PathAddress ejb3PathAddress = PathAddress.pathAddress(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+            Map<String, String> attributeRenames = new HashMap<>();
+            attributeRenames.put(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.getName(), EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.getName());
+            attributeRenames.put(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.getName(), EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.getName());
 
-        for (Map.Entry<String, String> renames : attributeRenames.entrySet()){
-            ModelNode operation = Util.getWriteAttributeOperation(ejb3PathAddress, renames.getKey(), "test");
-            testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
+            for (Map.Entry<String, String> renames : attributeRenames.entrySet()) {
+                ModelNode operation = Util.getWriteAttributeOperation(ejb3PathAddress, renames.getKey(), "test");
+                testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
 
-            operation = Util.getReadAttributeOperation(ejb3PathAddress, renames.getKey());
-            testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
+                operation = Util.getReadAttributeOperation(ejb3PathAddress, renames.getKey());
+                testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
 
-            operation = Util.getUndefineAttributeOperation(ejb3PathAddress, renames.getKey());
-            testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
+                operation = Util.getUndefineAttributeOperation(ejb3PathAddress, renames.getKey());
+                testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
+            }
         }
     }
 
-    @Test
-    public void testRejectionsEAP640() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_0;
-        this.testRejections(ModelVersion.create(1, 3, 0), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT,
-                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
+    protected AdditionalInitialization createAdditionalInitializationForRejectionTests() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.global-default-local-provider",
+                buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"),
+                buildDynamicCapabilityName("org.wildfly.remoting.connector", "http-remoting-connector"),
+                buildDynamicCapabilityName("org.wildfly.remoting.connector", "remoting-connector"),
+                buildDynamicCapabilityName("org.wildfly.clustering.infinispan.cache-container", "not-ejb"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.timer-service.timer-persistence-service", "file-data-store"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.mdb-delivery-group", "1"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.mdb-delivery-group", "2"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.mdb-delivery-group", "3"),
+                buildDynamicCapabilityName("org.wildfly.ejb3.pool-config", "pool"),
+                "org.wildfly.remoting.endpoint", "org.wildfly.security.jacc-policy");
     }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.global-default-local-provider", buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"));
-    }
-
-    private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
+    private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String... mavenResourceURLs) throws Exception {
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
+        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitializationForRejectionTests());
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controller, model)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitializationForRejectionTests(), controller, model)
                 .addMavenResourceURL(mavenResourceURLs)
                 .dontPersistXml();
 
@@ -171,15 +306,47 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         List<ModelNode> operations = builder.parseXmlResource("subsystem-ejb3-transform-reject.xml");
 
         ModelTestUtils.checkFailedTransformedBootOperations(services, model, operations, createFailedOperationTransformationConfig(services, model));
-
     }
 
     private static FailedOperationTransformationConfig createFailedOperationTransformationConfig(KernelServices services, ModelVersion version) {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
 
+        // EAP 6.4.0
         if (EJB3Model.VERSION_1_2_1.matches(version)) {
 
+            // register rejections for changes in 3.0.0
+
+            // register rejections for changes in 4.0.0
+            // reject the resource /subsystem=ejb3/mdb-delivery-group=delivery-group-name
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.MDB_DELIVERY_GROUP, "delivery-group-name")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
+            // register rejections for changes in 5.0.0
+
+            // reject the resource /subsystem=ejb3/application-security-domain=domain
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, "domain")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            // reject the resource /subsystem=ejb3/service=identity
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            // reject the resource /subsystem=ejb3/remoting-profile=profile and its children
+            PathAddress remotingProfileAddress = subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"));
+            PathAddress ejbReceiverAddress = remotingProfileAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_EJB_RECEIVER, "receiver"));
+            PathAddress channelCreationOptionsAddress = ejbReceiverAddress.append(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS));
+            config.addFailedAttribute(remotingProfileAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(ejbReceiverAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(channelCreationOptionsAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
+            // register rejections for changes in 6.0.0
+
+            // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
+
+            // register rejections for changes in 7.0.0
+
+            // register rejections for changes in 8.0.0
+            PathAddress httpConnectionAddress = remotingProfileAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection"));
+            PathAddress httpConnectionOptions = httpConnectionAddress.append(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS));
+            config.addFailedAttribute(httpConnectionAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(httpConnectionOptions, FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
             // create a chained config to apply multiple transformation configs to each one of a collection of attributes
             FailedOperationTransformationConfig.ChainedConfig chainedSubsystemConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
@@ -187,7 +354,8 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
                             /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS,
                             EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN,
-                            EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS, EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS))
+                            EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS, EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS,
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
@@ -212,28 +380,9 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             PathAddress databaseDataStore = subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
             config.addFailedAttribute(databaseDataStore, FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
-            // reject the resource /subsystem=ejb3/mdb-delivery-group=delivery-group-name
-            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.MDB_DELIVERY_GROUP, "delivery-group-name")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-
-            // reject the resource /subsystem=ejb3/remoting-profile=profile and its children
-            PathAddress remotingProfileAddress = subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"));
-            PathAddress ejbReceiverAddress = remotingProfileAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_EJB_RECEIVER, "receiver"));
-            PathAddress channelCreationOptionsAddress = ejbReceiverAddress.append(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS));
-            config.addFailedAttribute(remotingProfileAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(ejbReceiverAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(channelCreationOptionsAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
-
             // reject the attribute 'cluster' from resource /subsystem=ejb3/service=remote
-            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME));
-
-            // reject the resource /subsystem=ejb3/application-security-domain=domain
-            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, "domain")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-
-            // reject the resource /subsystem=ejb3/service=identity
-            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-
-            // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
-            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME, EJB3RemoteResourceDefinition.CONNECTORS));
 
             //Special handling for this test!!!!
             //Don't transform the resulting composite, instead rather transform the individual steps
@@ -243,6 +392,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             config.setCallback(() -> removeExtraFileStoreConfig.removeExtraFileDataStore());
         }
 
+        // EAP 6.4.7
         if (EJB3Model.VERSION_1_3_0.matches(version)) {
 
             // create a chained config to apply multiple transformation configs to each one of a collection of attributes
@@ -251,7 +401,8 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
                             /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS,
                             EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN,
-                            EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS, EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS))
+                            EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS, EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS,
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
@@ -274,8 +425,14 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             config.addFailedAttribute(ejbReceiverAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(channelCreationOptionsAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
+            PathAddress httpConnectionAddress = remotingProfileAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection"));
+            PathAddress httpConnectionOptions = httpConnectionAddress.append(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS));
+            config.addFailedAttribute(httpConnectionAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(httpConnectionOptions, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
             // reject the attribute 'cluster' from resource /subsystem=ejb3/service=remote
-            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME));
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME, EJB3RemoteResourceDefinition.CONNECTORS));
 
             // reject the resource /subsystem=ejb3/application-security-domain=domain
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, "domain")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
@@ -287,12 +444,120 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
         }
 
+        // need to include all changes from current to 4.0.0
+        if (EJB3Model.VERSION_4_0_0.matches(version)) {
+
+            config.addFailedAttribute(subsystemAddress,
+                    new FailedOperationTransformationConfig.NewAttributesConfig(
+                            EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS,
+                            EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS,
+                            EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN,
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT
+                            )
+            );
+
+            // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
+
+            // reject the resource /subsystem=ejb3/application-security-domain=domain
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, "domain")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
+            // reject the resource /subsystem=ejb3/service=identity
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
+            // reject the attribute 'connectors' from resource /subsystem=ejb3/service=remote
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CONNECTORS));
+
+            // reject /subsystem=ejb3/remoting-profile=profile/remote-http-connection=connection
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"))
+                            .append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
+        // need to include all changes from current to 5.0.0
+        if (EJB3Model.VERSION_5_0_0.matches(version)) {
+
+            config.addFailedAttribute(subsystemAddress,
+                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.CLIENT_INTERCEPTORS,
+                            EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS,
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT));
+
+            // reject the attribute core-threads from resource /subsystem=ejb3/thread-pool=default
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.THREAD_POOL_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PoolAttributeDefinitions.CORE_THREADS));
+
+            // reject the attribute 'connectors' from resource /subsystem=ejb3/service=remote
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CONNECTORS));
+
+            // reject /subsystem=ejb3/remoting-profile=profile/remote-http-connection=connection
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"))
+                            .append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
+        // need to include all changes from current to 6.0.0
+        if (EJB3Model.VERSION_6_0_0.matches(version)) {
+            config.addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT));
+
+            // reject the attribute 'connectors' from resource /subsystem=ejb3/service=remote
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CONNECTORS));
+
+            // reject /subsystem=ejb3/remoting-profile=profile/remote-http-connection=connection
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"))
+                            .append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
+        // need to include all changes from current to 7.0.0
+        if (EJB3Model.VERSION_7_0_0.matches(version)) {
+
+            // reject the attribute 'connectors' from resource /subsystem=ejb3/service=remote
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CONNECTORS));
+
+            // reject /subsystem=ejb3/remoting-profile=profile/remote-http-connection=connection
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE, "profile"))
+                            .append(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION, "connection")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
         return config;
     }
 
-    private static class CorrectFalseToTrue extends FailedOperationTransformationConfig.AttributesPathAddressConfig<CorrectFalseToTrue>{
 
-        public CorrectFalseToTrue(AttributeDefinition...defs) {
+    /*
+     * Class to fix up some irredeemable errors in the legacy model before comparison
+     */
+    private static class DefaultModelFixer implements ModelFixer {
+
+        private final String SLSB_STRICT_MAX_POOL = "slsb-strict-max-pool";
+        private final String MDB_STRICT_MAX_POOL = "mdb-strict-max-pool";
+
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            // /subsystem=ejb3/strict-max-pool=* attribute derive-size has a default in legacy but none in current, which fails the model comparison
+
+            if (modelNode.hasDefined(STRICT_MAX_BEAN_INSTANCE_POOL) && modelNode.get(STRICT_MAX_BEAN_INSTANCE_POOL).hasDefined(MDB_STRICT_MAX_POOL)) {
+                modelNode.get(STRICT_MAX_BEAN_INSTANCE_POOL, MDB_STRICT_MAX_POOL, StrictMaxPoolResourceDefinition.DERIVE_SIZE.getName()).set(new ModelNode());
+            }
+            if (modelNode.hasDefined(STRICT_MAX_BEAN_INSTANCE_POOL) && modelNode.get(STRICT_MAX_BEAN_INSTANCE_POOL).hasDefined(SLSB_STRICT_MAX_POOL)) {
+                modelNode.get(STRICT_MAX_BEAN_INSTANCE_POOL, SLSB_STRICT_MAX_POOL, StrictMaxPoolResourceDefinition.DERIVE_SIZE.getName()).set(new ModelNode());
+            }
+
+            if (modelNode.hasDefined(STATISTICS_ENABLED) && modelNode.hasDefined(ENABLE_STATISTICS)
+                                                         && modelNode.get(STATISTICS_ENABLED).equals(modelNode.get(ENABLE_STATISTICS))) {
+                // In a legacy kernel before WFCORE-4183 a read-resource result incorrectly includes a value for both an attribute and its alias. Correct that
+                modelNode.get(ENABLE_STATISTICS).set(new ModelNode());
+            }
+            return modelNode;
+        }
+    }
+
+    private static class CorrectFalseToTrue extends FailedOperationTransformationConfig.AttributesPathAddressConfig<CorrectFalseToTrue> {
+
+        public CorrectFalseToTrue(AttributeDefinition... defs) {
             super(convert(defs));
         }
 

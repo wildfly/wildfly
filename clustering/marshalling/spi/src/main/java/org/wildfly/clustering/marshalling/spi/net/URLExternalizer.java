@@ -28,9 +28,9 @@ import java.io.ObjectOutput;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Externalizer for a {@link URL}.
@@ -41,7 +41,7 @@ public class URLExternalizer implements Externalizer<URL> {
     @Override
     public void writeObject(ObjectOutput output, URL url) throws IOException {
         try {
-            DefaultExternalizer.URI.cast(URI.class).writeObject(output, url.toURI());
+            NetExternalizerProvider.URI.cast(URI.class).writeObject(output, url.toURI());
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
@@ -49,11 +49,20 @@ public class URLExternalizer implements Externalizer<URL> {
 
     @Override
     public URL readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return DefaultExternalizer.URI.cast(URI.class).readObject(input).toURL();
+        return NetExternalizerProvider.URI.cast(URI.class).readObject(input).toURL();
     }
 
     @Override
     public Class<URL> getTargetClass() {
         return URL.class;
+    }
+
+    @Override
+    public OptionalInt size(URL url) {
+        try {
+            return NetExternalizerProvider.URI.cast(URI.class).size(url.toURI());
+        } catch (URISyntaxException e) {
+            return OptionalInt.empty();
+        }
     }
 }

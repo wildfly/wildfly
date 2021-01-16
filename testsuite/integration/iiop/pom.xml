@@ -10,7 +10,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -28,6 +28,8 @@
         <ts.elytron.cli>ssl-enable-elytron.cli</ts.elytron.cli>
         <wildfly>wildfly</wildfly>
         <wildfly.config.dir>${basedir}/target/${wildfly}/standalone/configuration</wildfly.config.dir>
+        <!-- Disable the default surefire test execution. All profiles use custom executions. -->
+        <surefire.default-test.phase>none</surefire.default-test.phase>
     </properties>
     <dependencies>
         <dependency>
@@ -144,14 +146,6 @@
                         </configuration>
                         <executions combine.children="append">
 
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
                             <!-- Multi node clustering tests. -->
                             <execution>
                                 <id>tests-iiop-multi-node.surefire</id>

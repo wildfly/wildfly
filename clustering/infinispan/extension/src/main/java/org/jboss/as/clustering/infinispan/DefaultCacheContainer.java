@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
 
@@ -42,13 +41,15 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
  * @author Paul Ferraro
  */
-public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer, EmbeddedCacheManagerAdmin {
+public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer {
 
     private final ServiceValueRegistry<Cache<?, ?>> registry;
     private final Function<String, ServiceName> serviceNameFactory;
+    private final EmbeddedCacheManagerAdmin administrator;
 
     public DefaultCacheContainer(EmbeddedCacheManager container, ServiceValueRegistry<Cache<?, ?>> registry, Function<String, ServiceName> serviceNameFactory) {
         super(container);
+        this.administrator = new DefaultCacheContainerAdmin(this);
         this.registry = registry;
         this.serviceNameFactory = serviceNameFactory;
     }
@@ -91,22 +92,9 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         return this.wrap(this.cm.<K, V>getCache(cacheName));
     }
 
-    @Deprecated
-    @Override
-    public <K, V> Cache<K, V> getCache(String cacheName, String configurationName) {
-        return this.wrap(this.cm.<K, V>getCache(cacheName, configurationName));
-    }
-
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
         Cache<K, V> cache = this.cm.<K, V>getCache(cacheName, createIfAbsent);
-        return (cache != null) ? this.wrap(cache) : null;
-    }
-
-    @Deprecated
-    @Override
-    public <K, V> Cache<K, V> getCache(String cacheName, String configurationTemplate, boolean createIfAbsent) {
-        Cache<K, V> cache = this.cm.<K, V>getCache(cacheName, configurationTemplate, createIfAbsent);
         return (cache != null) ? this.wrap(cache) : null;
     }
 
@@ -122,38 +110,12 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public EmbeddedCacheManagerAdmin administration() {
-        return this;
-    }
-
-    @Override
-    public EmbeddedCacheManagerAdmin withFlags(AdminFlag... flags) {
-        return this;
-    }
-
-    @Override
-    public EmbeddedCacheManagerAdmin withFlags(EnumSet<AdminFlag> flags) {
-        return this;
-    }
-
-    @Override
-    public <K, V> Cache<K, V> createCache(String name, String template) {
-        return this.createCache(name, this.getCacheConfiguration(name));
-    }
-
-    @Override
-    public <K, V> Cache<K, V> getOrCreateCache(String name, String template) {
-        return this.getOrCreateCache(name, this.getCacheConfiguration(name));
+        return this.administrator;
     }
 
     @Override
     public synchronized <K, V> Cache<K, V> createCache(String name, Configuration configuration) {
-        this.defineConfiguration(name, configuration);
-        return this.getCache(name);
-    }
-
-    @Override
-    public synchronized <K, V> Cache<K, V> getOrCreateCache(String name, Configuration configuration) {
-        return (this.getCacheConfiguration(name) != null) ? this.createCache(name, configuration) : this.getCache(name);
+        return this.administrator.createCache(name, configuration);
     }
 
     @Override

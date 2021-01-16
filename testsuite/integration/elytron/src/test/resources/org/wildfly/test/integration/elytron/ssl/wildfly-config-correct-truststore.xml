@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:client:1.4">
+        <key-stores>
+            <key-store name="truststore" type="JKS">
+                <file name="target/UndertowTwoWaySslNeedClientAuthTestCase/client.truststore"/>
+            </key-store>
+            <key-store name="keystore" type="JKS">
+                <file name="target/UndertowTwoWaySslNeedClientAuthTestCase/client.keystore"/>
+                <key-store-clear-password password="123456" />
+            </key-store>
+        </key-stores>
+        <ssl-contexts>
+            <ssl-context name="client-context">
+                <trust-store key-store-name="truststore"/>
+                <key-store-ssl-certificate key-store-name="keystore">
+                    <key-store-clear-password password="123456" />
+                </key-store-ssl-certificate>
+                <providers>
+                    <global/>
+                </providers>
+            </ssl-context>
+        </ssl-contexts>
+        <ssl-context-rules>
+            <rule use-ssl-context="client-context"/>
+        </ssl-context-rules>
+    </authentication-client>
+</configuration>

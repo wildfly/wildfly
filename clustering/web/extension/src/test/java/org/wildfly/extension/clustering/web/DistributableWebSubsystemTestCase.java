@@ -26,7 +26,6 @@ import java.util.EnumSet;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
-import org.jboss.dmr.ModelNode;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -51,17 +50,16 @@ public class DistributableWebSubsystemTestCase extends ClusteringSubsystemTest<D
     }
 
     @Override
-    protected void validateModel(ModelNode model) {
-        System.out.println(model.toJSONString(false));
-        super.validateModel(model);
-    }
-
-    @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
                 .require(InfinispanDefaultCacheRequirement.CONFIGURATION, "foo")
                 .require(InfinispanCacheRequirement.CONFIGURATION, "foo", "bar")
                 .require(InfinispanClientRequirement.REMOTE_CONTAINER, "foo")
                 ;
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        // Skip
     }
 }

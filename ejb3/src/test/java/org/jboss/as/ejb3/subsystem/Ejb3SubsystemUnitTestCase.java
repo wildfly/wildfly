@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.subsystem;
 
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -62,13 +64,20 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
+    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
+        Set<PathAddress> ignoredChildren = new HashSet<PathAddress>();
+       // ignoredChildren.add(PathAddress.pathAddress(PathElement.pathElement("subsystem", "ejb3"), PathElement.pathElement("passivation-store", "infinispan")));
+        return ignoredChildren;
+    }
+
+    @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_6_0.xsd";
+        return "schema/wildfly-ejb3_8_0.xsd";
     }
 
     @Override
@@ -126,6 +135,52 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
         validatePoolConfig(ks, pa);
 
+    }
+
+    @Test
+    public void testDefaultPools() throws Exception {
+        final String subsystemXml = readResource("subsystem-pools.xml");
+        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue("Subsystem boot failed!", ks.isSuccessfulBoot());
+
+        // add a test pool
+        String testPoolName = "test-pool";
+        final PathAddress ejb3Address = PathAddress.pathAddress("subsystem", "ejb3");
+        PathAddress testPoolAddress = ejb3Address.append("strict-max-bean-instance-pool", testPoolName);
+        final ModelNode addPool = Util.createAddOperation(testPoolAddress);
+        ModelNode response = ks.executeOperation(addPool);
+        Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+
+        // set default-mdb-instance-pool
+        writeAndReadPool(ks, ejb3Address, "default-mdb-instance-pool", testPoolName);
+        writeAndReadPool(ks, ejb3Address, "default-mdb-instance-pool", null);
+        writeAndReadPool(ks, ejb3Address, "default-mdb-instance-pool", null);
+        writeAndReadPool(ks, ejb3Address, "default-mdb-instance-pool", "mdb-strict-max-pool");
+
+        // set default-slsb-instance-pool
+        writeAndReadPool(ks, ejb3Address, "default-slsb-instance-pool", null);
+        writeAndReadPool(ks, ejb3Address, "default-slsb-instance-pool", null);
+        writeAndReadPool(ks, ejb3Address, "default-slsb-instance-pool", testPoolName);
+        writeAndReadPool(ks, ejb3Address, "default-slsb-instance-pool", testPoolName);
+        writeAndReadPool(ks, ejb3Address, "default-slsb-instance-pool", "slsb-strict-max-pool");
+
+        final ModelNode removePool = Util.createRemoveOperation(testPoolAddress);
+        response = ks.executeOperation(removePool);
+        Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+    }
+
+    private void writeAndReadPool(KernelServices ks, PathAddress ejb3Address, String attributeName, String testPoolName) {
+        ModelNode writeAttributeOperation = testPoolName == null ?
+                Util.getUndefineAttributeOperation(ejb3Address, attributeName) :
+                Util.getWriteAttributeOperation(ejb3Address, attributeName, testPoolName);
+        ModelNode response = ks.executeOperation(writeAttributeOperation);
+        Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+
+        final String expectedPoolName = testPoolName == null ? "undefined" : testPoolName;
+        final ModelNode readAttributeOperation = Util.getReadAttributeOperation(ejb3Address, attributeName);
+        response = ks.executeOperation(readAttributeOperation);
+        final String poolName = response.get("result").asString();
+        Assert.assertEquals("Unexpected pool name", expectedPoolName, poolName);
     }
 
     private void validatePoolConfig(KernelServices ks, PathAddress pa) {

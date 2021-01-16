@@ -32,7 +32,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,7 +51,6 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
  */
 @RunWith(Arquillian.class)
 @ServerSetup(PassivationConfigurationSetup.class)
-@Ignore("WFLY-12512")
 public class DynamicJNDIContextEJBInvocationTestCase {
 
     private static final Logger logger = Logger.getLogger(DynamicJNDIContextEJBInvocationTestCase.class);

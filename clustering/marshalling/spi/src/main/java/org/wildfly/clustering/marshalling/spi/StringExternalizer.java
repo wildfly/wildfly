@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.spi;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -56,6 +57,11 @@ public class StringExternalizer<T> implements Externalizer<T> {
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         return this.reader.apply(input.readUTF());
+    }
+
+    @Override
+    public OptionalInt size(T object) {
+        return OptionalInt.of(this.writer.apply(object).length() + 1);
     }
 
     @Override

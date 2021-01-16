@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-jsf-installer</artifactId>
@@ -121,7 +121,7 @@
             </activation>
             <properties>
                 <jsf-impl-name>myfaces</jsf-impl-name>
-                <jsf-version>2.3.1</jsf-version>
+                <jsf-version>2.3.7</jsf-version>
             </properties>
             <dependencies>
                 <dependency>

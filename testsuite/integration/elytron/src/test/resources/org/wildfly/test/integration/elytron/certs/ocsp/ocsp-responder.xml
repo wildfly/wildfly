@@ -21,7 +21,7 @@
             <type>JKS</type>
             <key>password=Elytron,keystore=file:target/test-classes/ca/jks/ocsp-responder.keystore</key>
             <algorithms>
-                <algorithm>SHA1withRSA</algorithm>
+                <algorithm>SHA256withRSA</algorithm>
             </algorithms>
         </signer>
     </signers>

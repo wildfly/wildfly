@@ -1,7 +1,5 @@
-[[Undertow]]
+[[JAXRS]]
 = JAXRS subsystem configuration
-
-****
 
 The jaxrs subsystem presents RESTful facilities as defined by the Jakarta RESTful Web Services
 project (https://projects.eclipse.org/projects/ee4j.jaxrs) and implemented
@@ -25,8 +23,8 @@ jaxrs ships as an empty xml element:
 ----
 <subsystem xmlns="urn:jboss:domain:jaxrs:2.0"/>
 ----
-but it can be expanded to configure parameters described in Section 3.4 "Configuration switches"
-of the RESTEasy User Guide (https://resteasy.github.io/docs.html). For example:
+but it can be expanded to configure parameters described in Section 3.5 "Configuration switches"
+of the RESTEasy User Guide (https://resteasy.github.io/docs). For example:
 
 [source,xml,options="nowrap"]
 
@@ -107,7 +105,13 @@ apply to all deployments.
 that parameter and its value will be passed to subsequent deployments as web.xml context parameters. Existing 
 deployments are not affected.
 
-*Note.* Since there parameters are global, the classes referred in "resteasy.providers" and "resteasy.disable.providers"
+*Note.* Since these parameters are global, the classes referred to in "resteasy.providers" and "resteasy.disable.providers"
 must be available to all deployments. In practice, then, they are meant to enable
 or disable RESTEasy providers. Note that they can be used in conjunction with
-"resteasy-use-builtin-providers" to tailor a set of available providers. 
+"resteasy-use-builtin-providers" to tailor a set of available providers.
+
+*Note.* RESTEasy has introduced a new treatment of javax.ws.rs.WebApplicationExceptions thrown by a JAX-RS or
+MicroProfile REST Client client running inside a JAX-RS resource, in which the embedded javax.ws.rs.core.Response is
+"sanitized" before being returned to prevent the risk of information leaking from a third party. The original
+behavior can be restored by setting the parameter "resteasy.original.webapplicationexception.behavior" to "true".
+See the RESTEasy User Guide chapter "Resteasy WebApplicationExceptions" for more information.

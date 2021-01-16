@@ -79,7 +79,7 @@ public class ThreadPoolMetricsTestCase {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ArtemisThreadpoolMetricsTestCase.jar");
         ejbJar.addPackage(TimeoutUtil.class.getPackage());
         ejbJar.addClasses(JMSThreadPoolMetricsSetup.class, JMSThreadPoolMetricsMDB.class, JMSThreadPoolMetricsUtil.class);
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting3\n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting\n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(
                 new FilePermission(System.getProperty("jboss.inst") + File.separatorChar + "standalone" + File.separatorChar + "tmp" + File.separatorChar + "auth" + File.separatorChar + "*", "read"),
                 new PropertyPermission("ts.timeout.factor", "read"),
@@ -122,7 +122,7 @@ public class ThreadPoolMetricsTestCase {
             }
 
             // we are in the middle of processing
-            Thread.sleep(TimeoutUtil.adjust(100));
+            Thread.sleep(100);
             resources = JMSThreadPoolMetricsUtil.getResources(managementClient);
 
             JMSThreadPoolMetricsUtil.assertGreater("active count", resources.get(JMSThreadPoolMetricsUtil.ACTIVE_COUNT).asLong(), activeCount);
@@ -132,7 +132,7 @@ public class ThreadPoolMetricsTestCase {
 
             // read responses
             for (int i = 0; i < JMSThreadPoolMetricsUtil.MESSAGES_COUNT; i++) {
-                TextMessage textMessage = JMSThreadPoolMetricsUtil.receiveReply(session, replyQueue, 5000);
+                TextMessage textMessage = JMSThreadPoolMetricsUtil.receiveReply(session, replyQueue, TimeoutUtil.adjust(5000));
                 logger.trace("got reply for [" + textMessage.getText() + "]");
             }
 

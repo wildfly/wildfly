@@ -22,9 +22,11 @@
 
 package org.wildfly.clustering.web.hotrod.session.fine;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.infinispan.client.hotrod.Flag;
@@ -32,8 +34,8 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheMap;
 import org.wildfly.clustering.ee.hotrod.RemoteCacheMutatorFactory;
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributeActivationNotifier;
@@ -54,7 +56,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, UUID>> {
+public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, AtomicReference<Map<String, UUID>>> {
 
     private final RemoteCache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
     private final RemoteCache<SessionAttributeKey, V> attributeCache;
@@ -75,12 +77,12 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @Override
-    public Map<String, UUID> createValue(String id, Void context) {
-        return Collections.emptyMap();
+    public AtomicReference<Map<String, UUID>> createValue(String id, Void context) {
+        return new AtomicReference<>(Collections.emptyMap());
     }
 
     @Override
-    public Map<String, UUID> findValue(String id) {
+    public AtomicReference<Map<String, UUID>> findValue(String id) {
         Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (names != null) {
             for (Map.Entry<String, UUID> nameEntry : names.entrySet()) {
@@ -89,7 +91,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
                     try {
                         this.marshaller.read(value);
                         continue;
-                    } catch (InvalidSerializedFormException e) {
+                    } catch (IOException e) {
                         Logger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, nameEntry.getKey());
                     }
                 } else {
@@ -98,9 +100,9 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
                 this.remove(id);
                 return null;
             }
-            return names;
+            return new AtomicReference<>(names);
         }
-        return Collections.emptyMap();
+        return new AtomicReference<>(Collections.emptyMap());
     }
 
     @Override
@@ -115,14 +117,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, C context) {
-        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, names);
-        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, attributes), context);
-        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.withFlags(Flag.FORCE_RETURN_VALUE), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
+    public SessionAttributes createSessionAttributes(String id, AtomicReference<Map<String, UUID>> names, ImmutableSessionMetaData metaData, C context) {
+        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, names)), context);
+        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), new RemoteCacheMap<>(this.attributeCache), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, UUID> names) {
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, AtomicReference<Map<String, UUID>> names) {
         return new FineImmutableSessionAttributes<>(names, getKeyFactory(id), this.attributeCache, this.marshaller);
     }
 

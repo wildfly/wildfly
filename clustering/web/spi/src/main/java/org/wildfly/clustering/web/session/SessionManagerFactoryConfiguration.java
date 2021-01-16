@@ -22,7 +22,6 @@
 package org.wildfly.clustering.web.session;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
@@ -32,22 +31,19 @@ import org.wildfly.clustering.web.WebDeploymentConfiguration;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @param <MC> the marshalling context type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<S, SC, AL, BL, MC extends Marshallability, LC> extends WebDeploymentConfiguration {
+public interface SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends WebDeploymentConfiguration {
 
     Integer getMaxActiveSessions();
 
     MarshalledValueFactory<MC> getMarshalledValueFactory();
 
-    MC getMarshallingContext();
-
     LocalContextFactory<LC> getLocalContextFactory();
 
     Immutability getImmutability();
 
-    SpecificationProvider<S, SC, AL, BL> getSpecificationProvider();
+    SpecificationProvider<S, SC, AL> getSpecificationProvider();
 }

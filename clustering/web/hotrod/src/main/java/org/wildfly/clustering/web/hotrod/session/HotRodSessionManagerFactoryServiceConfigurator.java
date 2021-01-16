@@ -38,7 +38,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -55,21 +54,20 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <BL> the HttpSessionBindingListener specification type
  * @param <MC> the marshalling context type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC extends Marshallability, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
+public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
 
     private final HotRodSessionManagementConfiguration configuration;
-    private final SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration;
+    private final SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration;
 
     private volatile ServiceConfigurator cacheConfigurator;
     @SuppressWarnings("rawtypes")
     private volatile SupplierDependency<RemoteCache> cache;
 
-    public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, BL, MC, LC> factoryConfiguration) {
+    public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration) {
         super(ServiceName.JBOSS.append("clustering", "web", factoryConfiguration.getDeploymentName()));
         this.configuration = configuration;
         this.factoryConfiguration = factoryConfiguration;
@@ -77,8 +75,7 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC ex
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        String containerName = this.configuration.getContainerName();
-        this.cacheConfigurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), containerName, this.getDeploymentName(), this.getConfigurationName(), new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy())).configure(support);
+        this.cacheConfigurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), this.configuration.getContainerName(), this.getDeploymentName(), this.configuration.getConfigurationName(), new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy())).configure(support);
         this.cache = new ServiceSupplierDependency<>(this.cacheConfigurator.getServiceName());
         return this;
     }
@@ -104,16 +101,6 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC ex
     }
 
     @Override
-    public String getContainerName() {
-        return this.configuration.getContainerName();
-    }
-
-    @Override
-    public String getConfigurationName() {
-        return this.configuration.getConfigurationName();
-    }
-
-    @Override
     public Integer getMaxActiveSessions() {
         return this.factoryConfiguration.getMaxActiveSessions();
     }
@@ -121,11 +108,6 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC ex
     @Override
     public MarshalledValueFactory<MC> getMarshalledValueFactory() {
         return this.factoryConfiguration.getMarshalledValueFactory();
-    }
-
-    @Override
-    public MC getMarshallingContext() {
-        return this.factoryConfiguration.getMarshallingContext();
     }
 
     @Override
@@ -154,7 +136,7 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, BL, MC ex
     }
 
     @Override
-    public SpecificationProvider<S, SC, AL, BL> getSpecificationProvider() {
+    public SpecificationProvider<S, SC, AL> getSpecificationProvider() {
         return this.factoryConfiguration.getSpecificationProvider();
     }
 }

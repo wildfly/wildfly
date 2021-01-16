@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Response implements Serializable {
 
-    private String greeting;
+    private Serializable greeting;
     private String tccl;
 
     public Response() {
@@ -16,7 +16,7 @@ public class Response implements Serializable {
     }
 
     public String getGreeting() {
-        return greeting;
+        return greeting == null ? null : greeting.toString();
     }
 
     public String getTccl() {

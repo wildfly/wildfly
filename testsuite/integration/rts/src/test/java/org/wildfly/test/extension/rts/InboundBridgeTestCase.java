@@ -21,18 +21,12 @@
 */
 package org.wildfly.test.extension.rts;
 
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.Response;
-
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.jbossts.star.util.TxLinkNames;
 import org.jboss.jbossts.star.util.TxStatusMediaType;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -50,14 +44,8 @@ import org.wildfly.test.extension.rts.common.LoggingXAResource;
 @RunAsClient
 @RunWith(Arquillian.class)
 public final class InboundBridgeTestCase extends AbstractTestCase {
-
     private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts, org.jboss.jts, org.codehaus.jettison\n";
-
-    private String inboundBridgeResourceUrl;
-
-    private String loggingRestATParticipantUrl;
-
-    private String loggingRestATParticipantInvocationsUrl;
+    private InboundBridgeUtilities utils;
 
     @ArquillianResource
     private ManagementClient managementClient;
@@ -73,51 +61,52 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
     @Before
     public void before() {
         super.before();
-        inboundBridgeResourceUrl = getDeploymentUrl() + InboundBridgeResource.URL_SEGMENT;
-        loggingRestATParticipantUrl = getDeploymentUrl() + LoggingRestATResource.BASE_URL_SEGMENT;
-        loggingRestATParticipantInvocationsUrl = loggingRestATParticipantUrl + "/" + LoggingRestATResource.INVOCATIONS_URL_SEGMENT;
-        resetInvocations();
+        utils = new InboundBridgeUtilities(txSupport,
+                getDeploymentUrl() + InboundBridgeResource.URL_SEGMENT, // inboundBridgeResourceUrl
+                getDeploymentUrl() + LoggingRestATResource.BASE_URL_SEGMENT, // loggingRestATParticipantUrl
+                getDeploymentUrl() + LoggingRestATResource.BASE_URL_SEGMENT + "/" + LoggingRestATResource.INVOCATIONS_URL_SEGMENT); // loggingRestATParticipantInvocationsUrl
+        utils.resetInvocations();
     }
 
     @Test
     public void testCommit() throws Exception {
         txSupport.startTx();
-        enlistInboundBridgeResource();
+        utils.enlistInboundBridgeResource();
         txSupport.commitTx();
 
-        final JSONArray jsonArray = getInboundBridgeResourceInvocations();
+        final JSONArray jsonArray = utils.getInboundBridgeResourceInvocations();
 
-        assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
-        assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
-        assertJsonArray(jsonArray, "LoggingXAResource.prepare", 1);
-        assertJsonArray(jsonArray, "LoggingXAResource.commit", 1);
-        assertJsonArray(jsonArray, "LoggingXAResource.rollback", 0);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.prepare", 1);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.commit", 1);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.rollback", 0);
     }
 
     @Test
     public void testRollback() throws Exception {
         txSupport.startTx();
-        enlistInboundBridgeResource();
+        utils.enlistInboundBridgeResource();
         txSupport.rollbackTx();
 
-        JSONArray jsonArray = getInboundBridgeResourceInvocations();
+        JSONArray jsonArray = utils.getInboundBridgeResourceInvocations();
 
-        assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
-        assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
-        assertJsonArray(jsonArray, "LoggingXAResource.prepare", 0);
-        assertJsonArray(jsonArray, "LoggingXAResource.commit", 0);
-        assertJsonArray(jsonArray, "LoggingXAResource.rollback", 1);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.prepare", 0);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.commit", 0);
+        utils.assertJsonArray(jsonArray, "LoggingXAResource.rollback", 1);
     }
 
     @Test
     public void testCommitWithTwoParticipants() throws Exception {
         txSupport.startTx();
-        enlistLoggingRestATParticipant();
-        enlistInboundBridgeResource();
+        utils.enlistLoggingRestATParticipant();
+        utils.enlistInboundBridgeResource();
         txSupport.commitTx();
 
-        JSONArray participantResourceInvocations = getLoggingRestATParticipantInvocations();
-        JSONArray xaResourceInvocations = getInboundBridgeResourceInvocations();
+        JSONArray participantResourceInvocations = utils.getLoggingRestATParticipantInvocations();
+        JSONArray xaResourceInvocations = utils.getInboundBridgeResourceInvocations();
 
         Assert.assertEquals(2, participantResourceInvocations.length());
         Assert.assertEquals("LoggingRestATResource.terminateParticipant(" + TxStatusMediaType.TX_PREPARED + ")",
@@ -125,92 +114,35 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         Assert.assertEquals("LoggingRestATResource.terminateParticipant(" + TxStatusMediaType.TX_COMMITTED + ")",
                 participantResourceInvocations.get(1));
 
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.start", 1);
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.end", 1);
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.prepare", 1);
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.commit", 1);
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.rollback", 0);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.start", 1);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.end", 1);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.prepare", 1);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.commit", 1);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.rollback", 0);
     }
 
     @Test
     public void testRollbackWithTwoParticipants() throws Exception {
         txSupport.startTx();
-        enlistLoggingRestATParticipant();
-        enlistInboundBridgeResource();
+        utils.enlistLoggingRestATParticipant();
+        utils.enlistInboundBridgeResource();
         txSupport.rollbackTx();
 
-        JSONArray participantResourceInvocations = getLoggingRestATParticipantInvocations();
-        JSONArray xaResourceInvocations = getInboundBridgeResourceInvocations();
+        JSONArray participantResourceInvocations = utils.getLoggingRestATParticipantInvocations();
+        JSONArray xaResourceInvocations = utils.getInboundBridgeResourceInvocations();
 
         Assert.assertEquals(1, participantResourceInvocations.length());
         Assert.assertEquals("LoggingRestATResource.terminateParticipant(" + TxStatusMediaType.TX_ROLLEDBACK + ")",
                 participantResourceInvocations.get(0));
 
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.start", 1);
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.end", 1);
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.prepare", 0);
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.commit", 0);
-        assertJsonArray(xaResourceInvocations, "LoggingXAResource.rollback", 1);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.start", 1);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.end", 1);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.prepare", 0);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.commit", 0);
+        utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.rollback", 1);
     }
 
     protected String getBaseUrl() {
         return managementClient.getWebUri().toString();
     }
-
-    private void enlistInboundBridgeResource() {
-        final Link participantLink = Link.fromUri(txSupport.getTxnUri()).rel(TxLinkNames.PARTICIPANT).title(TxLinkNames.PARTICIPANT).build();
-        final Response response = ClientBuilder.newClient().target(inboundBridgeResourceUrl).request()
-                .header("link", participantLink).post(null);
-
-        Assert.assertEquals(200, response.getStatus());
-    }
-
-    private void enlistLoggingRestATParticipant() {
-        String linkHeader = txSupport.makeTwoPhaseAwareParticipantLinkHeader(loggingRestATParticipantUrl, false, null, null);
-        String recoveryUrl = txSupport.enlistParticipant(txSupport.getTxnUri(), linkHeader);
-
-        Assert.assertFalse(recoveryUrl == null);
-    }
-
-    private void resetInvocations() {
-        Response response = ClientBuilder.newClient().target(inboundBridgeResourceUrl).request().put(null);
-        Assert.assertEquals(200, response.getStatus());
-
-        response = ClientBuilder.newClient().target(loggingRestATParticipantInvocationsUrl).request().put(null);
-        Assert.assertEquals(200, response.getStatus());
-    }
-
-    private JSONArray getInboundBridgeResourceInvocations() throws Exception {
-        final String response = ClientBuilder.newClient().target(inboundBridgeResourceUrl).request().get(String.class);
-        final JSONArray jsonArray = new JSONArray(response);
-
-        return jsonArray;
-    }
-
-    private JSONArray getLoggingRestATParticipantInvocations() throws Exception {
-        String response = ClientBuilder.newClient().target(loggingRestATParticipantInvocationsUrl).request().get(String.class);
-        JSONArray jsonArray = new JSONArray(response);
-
-        return jsonArray;
-    }
-
-    /**
-     * Checking if the parameter <code>recordToAssert</code>
-     * is placed exactly once in the {@link JSONArray}.
-     */
-    private void assertJsonArray(JSONArray invocationsJSONArray, String recordToAssert, int expectedRecordFoundCount) throws JSONException {
-        if(recordToAssert == null) throw new NullPointerException("recordToAssert");
-        int recordFoundCount = 0;
-        for(int i = 0; i < invocationsJSONArray.length(); i++) {
-            if(recordToAssert.equals(invocationsJSONArray.get(i))) {
-                recordFoundCount++;
-            }
-        }
-        if (recordFoundCount != expectedRecordFoundCount) {
-            Assert.fail("Invocation result returned as a JSON array '" + invocationsJSONArray + "' "
-                    + "expected to contain the record '" + recordToAssert + "' " + expectedRecordFoundCount + " times "
-                    + "but the record was " + recordFoundCount + " times in the array");
-        }
-    }
-
 }

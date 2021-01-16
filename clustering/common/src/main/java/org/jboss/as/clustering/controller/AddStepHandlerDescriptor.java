@@ -39,6 +39,12 @@ import org.jboss.as.controller.registry.Resource;
 public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescriptor, RemoveStepHandlerDescriptor {
 
     /**
+     * Custom attributes of the add operation, processed using a specific write-attribute handler.
+     * @return a map of attributes and their write-attribute handler
+     */
+    Map<AttributeDefinition, OperationStepHandler> getCustomAttributes();
+
+    /**
      * Extra parameters (not specified by {@link #getAttributes()}) for the add operation.
      * @return a collection of attributes
      */

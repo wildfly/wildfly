@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>20.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-dist-legacy</artifactId>
@@ -67,6 +67,17 @@
             <groupId>org.jboss.metadata</groupId>
             <artifactId>jboss-metadata-common</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -183,6 +194,7 @@
                             <!-- Parameters to test cases. -->
                             <systemPropertyVariables combine.children="append">
                                 <jboss.dist>${basedir}/target/xml-validation</jboss.dist>
+                                <jboss.actual.dist>${basedir}/target/${project.build.finalName}</jboss.actual.dist>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

@@ -1,8 +1,10 @@
 [[WildFly_Testsuite_Overview]]
 = WildFly Testsuite Overview
 
+WARNING: This section has not been updated for a long time and some sections are out of date. Contributions are welcome.
+
 This document will detail the implementation of the testsuite
-Integration submodule as it guides you on adding your own test cases.
+integration submodule as it guides you on adding your own test cases.
 
 The WildFly integration test suite has been designed with the following
 goals:
@@ -27,7 +29,7 @@ main, but also remote and embedded)
 [[test-suite-organization]]
 == Test Suite Organization
 
-The testsuite module has a small number of submodules:
+The testsuite module has a few submodules:
 
 * *benchmark* - holds all benchmark tests intended to assess relative
 performance of specific feature
@@ -37,14 +39,14 @@ performance of specific feature
 
 It is expected that test contributions fit into one of these categories.
 
-The pom.xml file located in the testsuite module is inherited by all
+The `pom.xml` file located in the testsuite module is inherited by all
 submodules and is used to do the following:
 
 * set defaults for common testsuite system properties (which can then be
 overridden on the command line)
 * define dependencies common to all tests (Arquillian, junit or testng,
 and container type)
-* provide a workaround for @Resource(lookup=...) which requires
+* provide a workaround for `@Resource(lookup=...)` which requires
 libraries in jbossas/endorsed
 
 It should not:
@@ -65,9 +67,9 @@ You should not activate the abovementioned profiles by -P, because that
 disables other profiles which are activated by default.
 
 Instead, you should always use activating properties, which are in
-parenthesis in the lists below.
+parentheses in the lists below.
 
-*Testsuite profiles* are used to group tests into logical groups.
+Testsuite profiles are used to group tests into logical groups.
 
 * all-modules.module.profile (all-modules)
 * integration.module.profile (integration.module)
@@ -76,15 +78,14 @@ parenthesis in the lists below.
 * benchmark.module.profile (benchmark.module)
 * stress.module.profile (stress.module)
 
-They also pprepare WildFly instances and resources for respective
+They also prepare WildFly instances and resources for respective
 testsuite submodules.
 
 * jpda.profile - sets surefire.jpda.args (debug)
-* ds.profile -sets database properties and prepares the datasource
-(ds=<db id>)
+* ds.profile - sets database properties and prepares the datasource (ds=<db id>)
 ** Has related database-specific profiles, like mysql51.profile etc.
 
-*Integration testsuite profiles* configure surefire executions.
+Integration testsuite profiles configure surefire executions.
 
 * smoke.integration.tests.profile
 * basic.integration.tests.profile
@@ -93,11 +94,11 @@ testsuite submodules.
 == Integration tests
 
 [[smoke--dts.smoke--dts.nosmoke]]
-=== Smoke -Dts.smoke, -Dts.noSmoke
+=== Smoke `-Dts.smoke`
 
 Contains smoke tests.
 
-Runs by default; use -Dts.noSmoke to prevent running.
+Runs by default; use `-Dts.noSmoke` to prevent running.
 
 Tests should execute quickly.
 
@@ -107,9 +108,9 @@ Divided into two Surefire executions:
 * Second with web profile (majority of tests).
 
 [[basic--dts.basic]]
-=== Basic -Dts.basic
+=== Basic `-Dts.basic`
 
-Basic integration tests - those which do not need special configuration
+Basic integration tests - those which do not need a special configuration
 like cluster.
 
 Divided into three Surefire executions:
@@ -119,16 +120,80 @@ Divided into three Surefire executions:
 * Third with web profile, but needs to be run after server restart to
 check whether persistent data are really persisted.
 
-[[cluster--dts.clust]]
-=== Cluster -Dts.clust
+[[cluster--dts.clustering]]
+=== Clustering `-Dts.clustering`
 
-Sets up a cluster of two nodes.
+Contains all tests relating to clustering aspects of the application server, such as:
+
+* web session clustering,
+* ejb session clustering,
+* command dispatcher,
+* web session affinity handling,
+* and other areas.
+
+Tests should leverage shared testing logic by extending `org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase`.
+The test case contract is that before executing the test method, all specified servers are started and all specified
+deployments are deployed. This allows Arquillian resource injection into the test case.
+
+There are four WildFly server instances, one load-balancer (Undertow) and one datagrid (Infinispan server) available
+for the tests.
+
+==== Maven profiles and Parallelization
+
+There are maven profiles that might come in handy for testing:
+
+* `ts.clustering.common.profile` prepares server configurations used by test execution profiles
+* `ts.clustering.cluster.ha.profile` runs tests against `standalone-ha.xml` profile
+* `ts.clustering.cluster.fullha.profile` runs tests which require `standalone-full-ha.xml` profile; e.g. tests requiring JMS subsystem
+* `ts.clustering.cluster.ha-infinispan-server.profile` runs tests against `standalone-ha.xml` profile with Infinispan Server provisioned via `@ClassRule`
+* `ts.clustering.single.profile` runs clustering tests that are using a non-HA server profile
+* `ts.clustering.byteman.profile` runs clustering tests that require installation of byteman rules
+
+For instance, to only run tests that run against full-ha profile, activate clustering tests with `-Dts.clustering` and exclude
+the other profiles with `-P`:
+
+    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -P \!ts.clustering.cluster.ha.profile,\!ts.clustering.single.profile,\!ts.clustering.byteman.profile
+
+If the testsuite can be run on multiple runners in parallel, the main execution (which takes the majority of the execution time)
+can be split by packages using `-Dts.surefire.clustering.ha.additionalExcludes` property.
+This property feeds a regular expression to exclude sub-packages of the `org.jboss.as.test.clustering.cluster` package.
+The sub-packages at the time of writing are `affinity`, `cdi`, `dispatcher`, `ejb`, `ejb2`, `group`, `jms`, `jpa`,
+`jsf`, `provider`, `registry`, `singleton`, `sso`, `web`, and `xsite`.
+For instance, to parallelize testsuite execution on two machines (e.g. when using GitHub actions scripting or alike) the following commands
+could be used to split the clustering tests into two executions of similar execution time, the first node can run the first half of the tests in sub-packages, e.g.:
+
+    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -P \!ts.clustering.cluster.fullha.profile,\!ts.clustering.single.profile,\!ts.clustering.byteman.profile -Dts.surefire.clustering.ha.additionalExcludes=affinity\|cdi\|dispatcher\|ejb\|ejb2\|group\|jms\|jpa
+
+while another node can concurrently run all the other profiles and the other half of sub-packages:
+
+    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -Dts.surefire.clustering.ha.additionalExcludes=jsf\|provider\|registry\|singleton\|sso\|web\|xsite
+
+If the test packages get out of sync with the excludes this will result in a test running multiple times, rather than tests being omitted.
+
+==== Running a single test
+
+To run a single test, specifying `-Dtest=foo` is the standard way to do this. However, this overrides the includes/excludes
+section of the surefire maven plugin execution. So, in case of the clustering testsuite, the profile which this test belongs
+to needs to be specified as well. For instance, to run a single test from the 'single' tests execution, exclude the other
+test profiles:
+
+    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -P \!ts.clustering.cluster.ha.profile,\!ts.clustering.cluster.fullha.profile,\!ts.clustering.byteman.profile -Dtest=org.jboss.as.test.clustering.single.dispatcher.CommandDispatcherTestCase
+
+==== Skipping clustering tests
+
+To skip execution of all clustering tests use `-Dts.noClustering`.
 
 [[iiop--dts.iiop]]
-=== IIOP -Dts.iiop
+=== IIOP `-Dts.iiop`
+
+NOTE: This section is open for contributions.
 
 [[xts--dts.xts]]
-== XTS -Dts.XTS
+=== XTS `-Dts.XTS`
+
+NOTE: This section is open for contributions.
 
 [[multinode--dts.multinode]]
-=== Multinode -Dts.multinode
+=== Multinode `-Dts.multinode`
+
+NOTE: This section is open for contributions.

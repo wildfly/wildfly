@@ -24,16 +24,16 @@ package org.wildfly.clustering.web.infinispan;
 
 import java.util.function.Function;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 
 /**
  * Base {@link org.wildfly.clustering.infinispan.spi.persistence.KeyFormat} for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
-public class SessionKeyFormat<K extends Key<String>> extends SimpleKeyFormat<K> {
+public class SessionKeyFormat<K extends GroupedKey<String>> extends SimpleKeyFormat<K> {
 
     protected SessionKeyFormat(Class<K> targetClass, Function<String, K> resolver) {
-        super(targetClass, resolver, Key::getValue);
+        super(targetClass, resolver, GroupedKey::getId);
     }
 }

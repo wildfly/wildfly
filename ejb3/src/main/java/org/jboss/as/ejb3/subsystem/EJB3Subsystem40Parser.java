@@ -82,7 +82,8 @@ public class EJB3Subsystem40Parser extends EJB3Subsystem30Parser {
                     EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.parseAndSetParameter(value, operation, reader);
                     break;
                 case CONNECTOR_REF:
-                    EJB3RemoteResourceDefinition.CONNECTOR_REF.parseAndSetParameter(value, operation, reader);
+                    // see WFLY-13132
+                    EJB3RemoteResourceDefinition.CONNECTORS.getParser().parseAndSetParameter(EJB3RemoteResourceDefinition.CONNECTORS, value, operation, reader);
                     break;
                 case THREAD_POOL_NAME:
                     EJB3RemoteResourceDefinition.THREAD_POOL_NAME.parseAndSetParameter(value, operation, reader);

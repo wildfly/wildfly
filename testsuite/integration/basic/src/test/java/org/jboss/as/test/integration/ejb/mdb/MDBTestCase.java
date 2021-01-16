@@ -36,6 +36,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -49,6 +50,9 @@ import org.junit.runner.RunWith;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.FilePermission;
+import java.io.IOException;
+import java.util.PropertyPermission;
+import org.jboss.as.controller.client.helpers.Operations;
 
 /**
  * Tests MDB deployments
@@ -108,15 +112,16 @@ public class MDBTestCase {
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDBTestCase.jar");
-        ejbJar.addClasses(DDBasedMDB.class, BMTSLSB.class, JMSMessagingUtil.class, AnnoBasedMDB.class);
+        ejbJar.addClasses(DDBasedMDB.class, BMTSLSB.class, JMSMessagingUtil.class, AnnoBasedMDB.class, TimeoutUtil.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClass(JmsQueueSetup.class);
         ejbJar.addAsManifestResource(MDBTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting3\n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting\n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),
-                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read"),
+                new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")
         ), "permissions.xml");
 
         return ejbJar;
@@ -151,6 +156,10 @@ public class MDBTestCase {
      */
     @Test
     public void testSuspendResumeWithMDB() throws Exception {
+        //Won't work with a remote broker
+        if(isRemote()) {
+            return;
+        }
         boolean resumed = false;
         ModelNode op = new ModelNode();
         try {
@@ -180,5 +189,15 @@ public class MDBTestCase {
                 managementClient.getControllerClient().execute(op);
             }
         }
+    }
+
+    private boolean isRemote() throws IOException {
+        ModelNode address = new ModelNode();
+        address.add("socket-binding-group", "standard-sockets");
+        address.add("remote-destination-outbound-socket-binding", "messaging-activemq");
+        ModelNode op = Operations.createReadResourceOperation(address, false);
+        ModelNode response = managementClient.getControllerClient().execute(op);
+        final String outcome = response.require("outcome").asString();
+        return "success".equalsIgnoreCase(outcome);
     }
 }

@@ -46,8 +46,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.security.service.SimpleSecurityManagerService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
@@ -84,6 +82,9 @@ import org.jboss.security.SubjectFactory;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
+
+    private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
+    private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
 
     public ParsedRaDeploymentProcessor() {
     }
@@ -223,8 +224,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 builder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
             }
             if (activation != null && ActivationSecurityUtil.isLegacySecurityRequired(activation)) {
-                builder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
-                        .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, raDeploymentService.getServerSecurityManager());
+                builder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
+                        .addDependency(SECURITY_MANAGER_SERVICE, ServerSecurityManager.class, raDeploymentService.getServerSecurityManager());
             }
 
             return builder;

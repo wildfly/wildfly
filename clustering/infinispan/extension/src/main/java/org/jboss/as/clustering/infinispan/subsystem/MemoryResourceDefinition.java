@@ -34,6 +34,7 @@ import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -53,8 +54,13 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
         return PathElement.pathElement("memory", value);
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        SIZE("size", ModelType.LONG, new ModelNode(-1L)),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        SIZE("size", ModelType.LONG, null) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new LongRangeValidatorBuilder().min(1).configure(builder).build());
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
@@ -71,15 +77,41 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
+        }
+    }
+
+    enum SharedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        SIZE_UNIT("size-unit", ModelType.STRING, new ModelNode(MemorySizeUnit.ENTRIES.name())),
+        ;
+        private final AttributeDefinition definition;
+
+        SharedAttribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
     }
 
     private final StorageType type;
     private final UnaryOperator<ResourceDescriptor> configurator;
+    private final org.jboss.as.clustering.controller.Attribute sizeUnitAttribute;
 
-    MemoryResourceDefinition(StorageType type, PathElement path, UnaryOperator<ResourceDescriptor> configurator) {
+    MemoryResourceDefinition(StorageType type, PathElement path, UnaryOperator<ResourceDescriptor> configurator, org.jboss.as.clustering.controller.Attribute sizeUnitAttribute) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
         this.type = type;
         this.configurator = configurator;
+        this.sizeUnitAttribute = sizeUnitAttribute;
     }
 
     @Override
@@ -104,6 +136,6 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
 
     @Override
     public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new MemoryServiceConfigurator(this.type, address);
+        return new MemoryServiceConfigurator(this.type, address, this.sizeUnitAttribute);
     }
 }

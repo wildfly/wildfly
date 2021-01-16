@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,60 +22,13 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.function.BiConsumer;
-
-import org.junit.Assert;
-
 /**
- * Tester for an {@link Externalizer}.
+ * A marshalling tester for a single externalizer.
  * @author Paul Ferraro
  */
-public class ExternalizerTester<T> {
-
-    private final Externalizer<T> externalizer;
-    private final BiConsumer<T, T> assertion;
+public class ExternalizerTester<T> extends MarshallingTester<T> {
 
     public ExternalizerTester(Externalizer<T> externalizer) {
-        this(externalizer, Assert::assertEquals);
-    }
-
-    public ExternalizerTester(Externalizer<T> externalizer, BiConsumer<T, T> assertion) {
-        this.externalizer = externalizer;
-        this.assertion = assertion;
-    }
-
-    public void test(T subject) throws IOException, ClassNotFoundException {
-        assertTrue(this.externalizer.getTargetClass().isInstance(subject));
-
-        ByteArrayOutputStream externalizedOutput = new ByteArrayOutputStream();
-        try (ObjectOutputStream output = new ObjectOutputStream(externalizedOutput)) {
-            this.externalizer.writeObject(output, subject);
-        }
-
-        byte[] externalizedBytes = externalizedOutput.toByteArray();
-
-        try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(externalizedBytes))) {
-            T result = this.externalizer.readObject(input);
-            assertTrue(this.externalizer.getTargetClass().isInstance(result));
-            this.assertion.accept(subject, result);
-        }
-
-        // If object is serializable, make sure we've actually improved upon default serialization size
-        if (subject instanceof java.io.Serializable) {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            try (ObjectOutputStream output = new ObjectOutputStream(out)) {
-                output.writeObject(subject);
-            }
-
-            byte[] bytes = out.toByteArray();
-            Assert.assertTrue(externalizedBytes.length < bytes.length);
-        }
+        super(new ExternalizerMarshaller<>(externalizer));
     }
 }

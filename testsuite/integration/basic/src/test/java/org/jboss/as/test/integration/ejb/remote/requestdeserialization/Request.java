@@ -4,21 +4,22 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 
 public class Request implements Externalizable {
 
-    private String greeting;
+    private Serializable greeting;
     private transient ClassLoader tccl;
 
     public Request() {
     }
 
-    public Request(String greeting) {
+    public Request(Serializable greeting) {
         this.greeting = greeting;
     }
 
     public String getGreeting() {
-        return greeting;
+        return greeting == null ? null : greeting.toString();
     }
 
     public ClassLoader getTccl() {
@@ -32,7 +33,7 @@ public class Request implements Externalizable {
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        greeting = (String) in.readObject();
+        greeting = (Serializable) in.readObject();
         tccl = Thread.currentThread().getContextClassLoader(); // save a reference to current TCCL
     }
 }
