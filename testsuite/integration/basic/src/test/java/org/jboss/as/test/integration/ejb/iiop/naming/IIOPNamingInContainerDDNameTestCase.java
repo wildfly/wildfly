@@ -5,7 +5,7 @@ import java.util.Properties;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
+//import javax.rmi.PortableRemoteObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -54,7 +54,7 @@ public class IIOPNamingInContainerDDNameTestCase {
         final Properties prope = new Properties();
         final InitialContext context = new InitialContext(prope);
         final Object iiopObj = context.lookup("corbaname:iiop:" + managementClient.getMgmtAddress() + ":3528#bean/custom/name/IIOPNamingBean");
-        final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
+        final IIOPNamingHome object = (IIOPNamingHome) iiopObj;//PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
         Assert.assertEquals("hello", result.hello());
     }

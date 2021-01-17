@@ -30,7 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
+//import javax.rmi.PortableRemoteObject;
 import javax.transaction.Status;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -105,7 +105,7 @@ public class IIOPTransactionPropagationTestCase {
     @Test
     public void testIIOPInvocation() throws Throwable {
         final Object iiopObj = context.lookup(IIOPTestBean.class.getSimpleName());
-        final IIOPTestBeanHome beanHome = (IIOPTestBeanHome) PortableRemoteObject.narrow(iiopObj, IIOPTestBeanHome.class);
+        final IIOPTestBeanHome beanHome = (IIOPTestBeanHome) iiopObj;//PortableRemoteObject.narrow(iiopObj, IIOPTestBeanHome.class);
         final IIOPTestRemote bean = beanHome.create();
 
         try {
@@ -122,7 +122,7 @@ public class IIOPTransactionPropagationTestCase {
     @Test
     public void testIIOPNeverCallInvocation() throws Throwable {
         final Object iiopObj = context.lookup(IIOPTestBean.class.getSimpleName());
-        final IIOPTestBeanHome beanHome = (IIOPTestBeanHome) PortableRemoteObject.narrow(iiopObj, IIOPTestBeanHome.class);
+        final IIOPTestBeanHome beanHome = (IIOPTestBeanHome) iiopObj;//PortableRemoteObject.narrow(iiopObj, IIOPTestBeanHome.class);
         final IIOPTestRemote bean = beanHome.create();
 
         try {
@@ -141,7 +141,7 @@ public class IIOPTransactionPropagationTestCase {
     @Test
     public void testIIOPInvocationWithRollbackOnly() throws Throwable {
         final Object iiopObj = context.lookup(IIOPTestBean.class.getSimpleName());
-        final IIOPTestBeanHome beanHome = (IIOPTestBeanHome) PortableRemoteObject.narrow(iiopObj, IIOPTestBeanHome.class);
+        final IIOPTestBeanHome beanHome = (IIOPTestBeanHome) iiopObj;//PortableRemoteObject.narrow(iiopObj, IIOPTestBeanHome.class);
         final IIOPTestRemote bean = beanHome.create();
 
         try {

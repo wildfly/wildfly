@@ -29,7 +29,7 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
+//import javax.rmi.PortableRemoteObject;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
@@ -85,7 +85,7 @@ public final class RemoteLookups {
         prope.put(Context.PROVIDER_URL, "corbaloc::" + serverHost +":" + iiopPort + "/JBoss/Naming/root");
         final InitialContext context = new InitialContext(prope);
         final Object ejbHome = context.lookup(beanClass.getSimpleName());
-        return homeClass.cast(PortableRemoteObject.narrow(ejbHome, homeClass));
+        return homeClass.cast(ejbHome);//PortableRemoteObject.narrow(ejbHome, homeClass));
     }
 
     private static <T> T lookupEjb(InitialContext ctx, String archiveName, Class<? extends T> beanType,

@@ -26,7 +26,7 @@ import org.jboss.as.network.NetworkUtils;
 import javax.ejb.Stateless;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
+//import javax.rmi.PortableRemoteObject;
 import java.rmi.RemoteException;
 
 /**
@@ -48,7 +48,7 @@ public class ClientEjb {
         final String hostname = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node1"));
         final Object value = ctx.lookup("corbaname:iiop:"+hostname+":" + port + "#IIOPSslStatelessBean");
 
-        final Object narrow = PortableRemoteObject.narrow(value, IIOPSslStatelessHome.class);
+        final Object narrow = value;//PortableRemoteObject.narrow(value, IIOPSslStatelessHome.class);
         return ((IIOPSslStatelessHome)narrow).create().hello();
     }
 
@@ -57,7 +57,7 @@ public class ClientEjb {
         final String hostname = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node1"));
         final Object value = ctx.lookup("corbaname:ssliop:1.2@"+hostname+":" + port + "#IIOPSslStatelessBean");
 
-        final Object narrow = PortableRemoteObject.narrow(value, IIOPSslStatelessHome.class);
+        final Object narrow = value;//PortableRemoteObject.narrow(value, IIOPSslStatelessHome.class);
         return ((IIOPSslStatelessHome)narrow).create().hello();
     }
 }

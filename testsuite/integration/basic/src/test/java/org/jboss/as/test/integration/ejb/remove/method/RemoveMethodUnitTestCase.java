@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.remove.method;
 import java.rmi.NoSuchObjectException;
 import javax.ejb.EJBObject;
 import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
+//import javax.rmi.PortableRemoteObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -98,7 +98,7 @@ public class RemoveMethodUnitTestCase {
     public void testExplicitExtensionEjbObjectInProxy() throws Exception {
         // Obtain stub
         Object obj = ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + Ejb21ViewBean.class.getSimpleName() + "!" + Ejb21ViewHome.class.getName());
-        Ejb21ViewHome home = (Ejb21ViewHome) PortableRemoteObject.narrow(obj, Ejb21ViewHome.class);
+        Ejb21ViewHome home = (Ejb21ViewHome) obj;//PortableRemoteObject.narrow(obj, Ejb21ViewHome.class);
         Ejb21View session = home.create();
 
         // Ensure EJBObject
@@ -132,7 +132,7 @@ public class RemoveMethodUnitTestCase {
     public void testEjbRemoveInvokedOnRemoval() throws Exception {
         // Obtain stub
         Object obj = ctx.lookup("java:app/" + DD_BASED_MODULE_NAME + "/" + Ejb21ViewDDBean.class.getSimpleName() + "!" + Ejb21ViewHome.class.getName());
-        Ejb21ViewHome home = (Ejb21ViewHome) PortableRemoteObject.narrow(obj, Ejb21ViewHome.class);
+        Ejb21ViewHome home = (Ejb21ViewHome) obj;//PortableRemoteObject.narrow(obj, Ejb21ViewHome.class);
         Ejb21View bean = home.create();
 
         // Ensure EJBObject

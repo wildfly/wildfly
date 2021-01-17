@@ -6,7 +6,7 @@ import javax.ejb.EJBMetaData;
 import javax.ejb.Handle;
 import javax.ejb.HomeHandle;
 import javax.ejb.Stateless;
-import javax.rmi.PortableRemoteObject;
+//import javax.rmi.PortableRemoteObject;
 
 import org.junit.Assert;
 import org.jboss.ejb.iiop.HandleImplIIOP;
@@ -27,7 +27,7 @@ public class ClientEjb {
 
     public String getRemoteViaHomeHandleMessage() throws RemoteException {
         final HomeHandle handle = home.getHomeHandle();
-        final IIOPBasicHome newHome = (IIOPBasicHome) PortableRemoteObject.narrow(handle.getEJBHome(), IIOPBasicHome.class);
+        final IIOPBasicHome newHome = (IIOPBasicHome) handle.getEJBHome();//PortableRemoteObject.narrow(handle.getEJBHome(), IIOPBasicHome.class);
         final IIOPBasicRemote object = newHome.create();
         return object.hello();
     }
@@ -37,7 +37,7 @@ public class ClientEjb {
 
         final IIOPBasicRemote object = home.create();
         final Handle handle = object.getHandle();
-        final IIOPBasicRemote newObject = (IIOPBasicRemote) PortableRemoteObject.narrow(handle.getEJBObject(), IIOPBasicRemote.class);
+        final IIOPBasicRemote newObject = (IIOPBasicRemote) handle.getEJBObject();//PortableRemoteObject.narrow(handle.getEJBObject(), IIOPBasicRemote.class);
         return newObject.hello();
     }
 
@@ -46,13 +46,13 @@ public class ClientEjb {
         final IIOPBasicRemote object = home.create();
         final Handle handle = object.wrappedHandle().getHandle();
         Assert.assertEquals(HandleImplIIOP.class, handle.getClass());
-        final IIOPBasicRemote newObject = (IIOPBasicRemote) PortableRemoteObject.narrow(handle.getEJBObject(), IIOPBasicRemote.class);
+        final IIOPBasicRemote newObject = (IIOPBasicRemote) handle.getEJBObject();//PortableRemoteObject.narrow(handle.getEJBObject(), IIOPBasicRemote.class);
         return newObject.hello();
     }
 
     public String getRemoteMessageViaEjbMetadata() throws RemoteException {
         final EJBMetaData metadata = home.getEJBMetaData();
-        final IIOPBasicHome newHome = (IIOPBasicHome) PortableRemoteObject.narrow(metadata.getEJBHome(), IIOPBasicHome.class);
+        final IIOPBasicHome newHome = (IIOPBasicHome) metadata.getEJBHome();//PortableRemoteObject.narrow(metadata.getEJBHome(), IIOPBasicHome.class);
         final IIOPBasicRemote object = newHome.create();
         Assert.assertEquals(IIOPBasicHome.class, metadata.getHomeInterfaceClass());
         Assert.assertEquals(IIOPBasicRemote.class, metadata.getRemoteInterfaceClass());

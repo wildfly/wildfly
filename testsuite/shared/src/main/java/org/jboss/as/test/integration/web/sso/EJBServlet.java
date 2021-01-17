@@ -51,7 +51,7 @@ public class EJBServlet extends HttpServlet {
             bean.noop();
 
             Object homeRef = enc.lookup("ejb/OptimizedEJB");
-            home = (StatelessSessionHome) PortableRemoteObject.narrow(homeRef, StatelessSessionHome.class);
+            home = (StatelessSessionHome) homeRef;//PortableRemoteObject.narrow(homeRef, StatelessSessionHome.class);
             bean = home.create();
             bean.noop();
             bean.getData();
