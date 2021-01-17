@@ -40,16 +40,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
     private final ImmutableSerializationContext context;
-    private final Predictable<Any> marshaller;
 
     public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context) {
         this.context = context;
-        this.marshaller = (ProtoStreamMarshaller<Any>) context.getMarshaller(Any.class);
     }
 
     @Override
     public OptionalInt size(Object value) {
-        return this.marshaller.size(this.context, new Any(value));
+        return Predictable.computeSizeNoTag(this.context, new Any(value));
     }
 
     @Override

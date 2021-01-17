@@ -24,7 +24,10 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.util.OptionalInt;
 
+import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * Implemented by objects that can predict their marshalling sizes
@@ -40,5 +43,31 @@ public interface Predictable<T> {
      */
     default OptionalInt size(ImmutableSerializationContext context, T value) {
         return OptionalInt.empty();
+    }
+
+    /**
+     * Computes the payload size of the specified value.
+     * @param context the serialization context
+     * @param value the value to be marshalled
+     * @return the payload size of the specified value, or an empty value if the size could not be computed.
+     */
+    static OptionalInt computeSizeNoTag(ImmutableSerializationContext context, Object value) {
+        if (value == null) return OptionalInt.of(0);
+        BaseMarshaller<?> marshaller = context.getMarshaller(value.getClass());
+        @SuppressWarnings("unchecked")
+        OptionalInt size = (marshaller instanceof Predictable) ? ((Predictable<Object>) marshaller).size(context, value) : OptionalInt.empty();
+        return size.isPresent() ? OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size.getAsInt()) + size.getAsInt()) : size;
+    }
+
+    /**
+     * Computes the payload size of the specified field.
+     * @param context the serialization context
+     * @param index the index of the field
+     * @param value the value to be marshalled
+     * @return the payload size of the specified value, or an empty value if the size could not be computed.
+     */
+    static OptionalInt computeSize(ImmutableSerializationContext context, int index, Object value) {
+        OptionalInt size = computeSizeNoTag(context, value);
+        return size.isPresent() ? OptionalInt.of(CodedOutputStream.computeTagSize(index) + size.getAsInt()) : size;
     }
 }
