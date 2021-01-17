@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -44,7 +45,7 @@ import org.junit.Test;
  * @author Paul Ferraro
  */
 public abstract class AbstractConcurrentTestCase {
-    private static final Map<Object, Object> BASIS = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(i)));
+    private static final Map<Object, Object> BASIS = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(-i)));
 
     private final MarshallingTesterFactory factory;
 
@@ -78,16 +79,42 @@ public abstract class AbstractConcurrentTestCase {
         tester.test(new ConcurrentLinkedQueue<>(BASIS.keySet()), AbstractConcurrentTestCase::assertCollectionEquals);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testConcurrentSkipListMap() throws IOException {
         MarshallingTester<ConcurrentSkipListMap<Object, Object>> tester = this.factory.createTester();
+
+        ConcurrentSkipListMap<Object, Object> map = new ConcurrentSkipListMap<>();
+        map.putAll(BASIS);
+        tester.test(map, AbstractConcurrentTestCase::assertMapEquals);
+
+        map = new ConcurrentSkipListMap<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
+        map.putAll(BASIS);
+        tester.test(map, AbstractConcurrentTestCase::assertMapEquals);
+
+        map = new ConcurrentSkipListMap<>(new TestComparator<>());
+        map.putAll(BASIS);
+        tester.test(map, AbstractConcurrentTestCase::assertMapEquals);
+
         tester.test(new ConcurrentSkipListMap<>(BASIS), AbstractConcurrentTestCase::assertMapEquals);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testConcurrentSkipListSet() throws IOException {
         MarshallingTester<ConcurrentSkipListSet<Object>> tester = this.factory.createTester();
-        tester.test(new ConcurrentSkipListSet<>(BASIS.keySet()), AbstractConcurrentTestCase::assertCollectionEquals);
+
+        ConcurrentSkipListSet<Object> set = new ConcurrentSkipListSet<>();
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+
+        set = new ConcurrentSkipListSet<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+
+        set = new ConcurrentSkipListSet<>(new TestComparator<>());
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
     }
 
     @Test

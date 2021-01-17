@@ -5,6 +5,12 @@ import "java.util.proto";
 /**
  * @TypeId(1000)
  */
+message TestComparator {
+}
+
+/**
+ * @TypeId(1001)
+ */
 message TestInvocationHandler {
 	required	java.util.UUID	value	= 1;
 }

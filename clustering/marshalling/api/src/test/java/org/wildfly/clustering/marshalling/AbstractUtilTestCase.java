@@ -72,7 +72,7 @@ import org.junit.Test;
  * @author Paul Ferraro
  */
 public abstract class AbstractUtilTestCase {
-    private static final Map<Object, Object> BASIS = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(i)));
+    private static final Map<Object, Object> BASIS = Stream.of(1, 2, 3, 4, 5).collect(Collectors.toMap(i -> i, i -> Integer.toString(-i)));
 
     private final MarshallingTesterFactory factory;
 
@@ -199,7 +199,7 @@ public abstract class AbstractUtilTestCase {
     public void testOptional() throws IOException {
         MarshallingTester<Optional<Object>> tester = this.factory.createTester();
         tester.test(Optional.empty());
-        tester.test(Optional.of(UUID.randomUUID()));
+        tester.test(Optional.of("foo"));
     }
 
     @Test
@@ -226,16 +226,22 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testSimpleEntry() throws IOException {
         MarshallingTester<AbstractMap.SimpleEntry<Object, Object>> tester = this.factory.createTester();
-        tester.test(new AbstractMap.SimpleEntry<>("key", "value"));
-        UUID value = UUID.randomUUID();
+        String key = "key";
+        String value = "value";
+        tester.test(new AbstractMap.SimpleEntry<>(null, null));
+        tester.test(new AbstractMap.SimpleEntry<>(key, null));
+        tester.test(new AbstractMap.SimpleEntry<>(key, value));
         tester.test(new AbstractMap.SimpleEntry<>(value, value));
     }
 
     @Test
     public void testSimpleImmutableEntry() throws IOException {
         MarshallingTester<AbstractMap.SimpleImmutableEntry<Object, Object>> tester = this.factory.createTester();
-        tester.test(new AbstractMap.SimpleImmutableEntry<>("key", "value"));
-        UUID value = UUID.randomUUID();
+        String key = "key";
+        String value = "value";
+        tester.test(new AbstractMap.SimpleImmutableEntry<>(null, null));
+        tester.test(new AbstractMap.SimpleImmutableEntry<>(key, null));
+        tester.test(new AbstractMap.SimpleImmutableEntry<>(key, value));
         tester.test(new AbstractMap.SimpleImmutableEntry<>(value, value));
     }
 
@@ -246,35 +252,46 @@ public abstract class AbstractUtilTestCase {
         tester.test(TimeZone.getTimeZone("America/New_York"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testTreeMap() throws IOException {
         MarshallingTester<TreeMap<Object, Object>> tester = this.factory.createTester();
-        tester.test(new TreeMap<>(BASIS), AbstractUtilTestCase::assertMapEquals);
+
+        TreeMap<Object, Object> map = new TreeMap<>();
+        map.putAll(BASIS);
+        tester.test(map, AbstractUtilTestCase::assertMapEquals);
+
+        map = new TreeMap<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
+        map.putAll(BASIS);
+        tester.test(map, AbstractUtilTestCase::assertMapEquals);
+
+        map = new TreeMap<>(new TestComparator<>());
+        map.putAll(BASIS);
+        tester.test(map, AbstractUtilTestCase::assertMapEquals);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testTreeSet() throws IOException {
         MarshallingTester<TreeSet<Object>> tester = this.factory.createTester();
-        tester.test(new TreeSet<>(BASIS.keySet()), AbstractUtilTestCase::assertCollectionEquals);
+
+        TreeSet<Object> set = new TreeSet<>();
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+
+        set = new TreeSet<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+
+        set = new TreeSet<>(new TestComparator<>());
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
     }
 
     @Test
     public void testUUID() throws IOException {
         MarshallingTester<UUID> tester = this.factory.createTester();
         tester.test(UUID.randomUUID());
-    }
-
-    // java.util.Comparator.xxxOrder() methods
-    @Test
-    public void testNaturalOrderComparator() throws IOException {
-        MarshallingTester<Comparator<?>> tester = this.factory.createTester();
-        tester.test(Comparator.naturalOrder(), Assert::assertSame);
-    }
-
-    @Test
-    public void testReverseOrderComparator() throws IOException {
-        MarshallingTester<Comparator<?>> tester = this.factory.createTester();
-        tester.test(Comparator.reverseOrder(), Assert::assertSame);
     }
 
     // java.util.Collections.emptyXXX() methods
@@ -342,19 +359,23 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testSingletonList() throws IOException {
         MarshallingTester<List<Object>> tester = this.factory.createTester();
-        tester.test(Collections.singletonList(UUID.randomUUID()), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Collections.singletonList(null), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Collections.singletonList("foo"), AbstractUtilTestCase::assertCollectionEquals);
     }
 
     @Test
     public void testSingletonMap() throws IOException {
         MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
-        tester.test(Collections.singletonMap(UUID.randomUUID(), UUID.randomUUID()), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Collections.singletonMap(null, null), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Collections.singletonMap("foo", null), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Collections.singletonMap("foo", "bar"), AbstractUtilTestCase::assertMapEquals);
     }
 
     @Test
     public void testSingletonSet() throws IOException {
         MarshallingTester<Set<Object>> tester = this.factory.createTester();
-        tester.test(Collections.singleton(UUID.randomUUID()), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Collections.singleton(null), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Collections.singleton("foo"), AbstractUtilTestCase::assertCollectionEquals);
     }
 
     static <T extends Collection<?>> void assertCollectionEquals(T expected, T actual) {
@@ -364,7 +385,7 @@ public abstract class AbstractUtilTestCase {
 
     static <T extends Map<?, ?>> void assertMapEquals(T expected, T actual) {
         Assert.assertEquals(expected.size(), actual.size());
-        Assert.assertTrue(expected.keySet().containsAll(actual.keySet()));
+        Assert.assertTrue(actual.keySet().toString(), expected.keySet().containsAll(actual.keySet()));
         for (Map.Entry<?, ?> entry : expected.entrySet()) {
             Assert.assertEquals(entry.getValue(), actual.get(entry.getKey()));
         }
