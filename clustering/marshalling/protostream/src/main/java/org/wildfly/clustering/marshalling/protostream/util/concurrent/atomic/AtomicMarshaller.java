@@ -22,93 +22,38 @@
 
 package org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic;
 
-import java.io.IOException;
-import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
-import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.spi.util.concurrent.atomic.AtomicExternalizerProvider;
-
-import protostream.com.google.protobuf.CodedOutputStream;
+import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SingleFieldMarshaller;
 
 /**
  * ProtoStream optimized marshallers for java.util.concurrent.atomic types.
  * @author Paul Ferraro
  */
 public enum AtomicMarshaller implements MarshallerProvider {
-    BOOLEAN(AtomicBoolean.class) {
-        private final ProtoStreamMarshaller<AtomicBoolean> marshaller = new ExternalizerMarshaller<>(AtomicExternalizerProvider.ATOMIC_BOOLEAN.cast(AtomicBoolean.class));
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    INTEGER(AtomicInteger.class) {
-        @Override
-        public AtomicInteger readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return new AtomicInteger(reader.readSInt32());
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeSInt32NoTag(((AtomicInteger) value).intValue());
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(CodedOutputStream.computeSInt32SizeNoTag(((AtomicInteger) value).intValue()));
-        }
-    },
-    LONG(AtomicLong.class) {
-        @Override
-        public AtomicLong readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return new AtomicLong(reader.readSInt64());
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeSInt64NoTag(((AtomicLong) value).longValue());
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(CodedOutputStream.computeSInt64SizeNoTag(((AtomicLong) value).longValue()));
-        }
-    },
-    REFERENCE(AtomicReference.class) {
-        @SuppressWarnings("rawtypes")
-        private final ProtoStreamMarshaller<AtomicReference> marshaller = new FunctionalObjectMarshaller<>(AtomicReference.class, AtomicReference::new, AtomicReference::get);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    }
+    BOOLEAN(PrimitiveMarshaller.BOOLEAN.cast(Boolean.class), AtomicBoolean::new, AtomicBoolean::get, AtomicBoolean::new),
+    INTEGER(PrimitiveMarshaller.INTEGER.cast(Integer.class), AtomicInteger::new, AtomicInteger::get, AtomicInteger::new),
+    LONG(PrimitiveMarshaller.LONG.cast(Long.class), AtomicLong::new, AtomicLong::get, AtomicLong::new),
+    REFERENCE(ObjectMarshaller.INSTANCE, AtomicReference::new, AtomicReference::get, AtomicReference::new),
     ;
-    private final Class<?> targetClass;
+    private final ProtoStreamMarshaller<?> marshaller;
 
-    AtomicMarshaller(Class<?> targetClass) {
-        this.targetClass = targetClass;
-    }
-
-    @Override
-    public Class<? extends Object> getJavaClass() {
-        return this.targetClass;
+    <T, V> AtomicMarshaller(ScalarMarshaller<V> marshaller, Supplier<T> defaultFactory, Function<T, V> function, Function<V, T> factory) {
+        this.marshaller = new SingleFieldMarshaller<>(marshaller, defaultFactory, function, factory);
     }
 
     @Override
     public ProtoStreamMarshaller<?> getMarshaller() {
-        return this;
+        return this.marshaller;
     }
 }
