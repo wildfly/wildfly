@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,135 +22,40 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.infinispan.protostream.impl.WireFormat;
-import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SingleFieldMarshaller;
 
 /**
- * ProtoStream optimized marshallers for optional types.
+ * Marshallers for java.util.Optional* instances.
  * @author Paul Ferraro
  */
 public enum OptionalMarshaller implements MarshallerProvider {
-    INT(OptionalInt.class) {
-        @Override
-        public OptionalInt readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            OptionalInt result = OptionalInt.empty();
-            int tag = reader.readTag();
-            while (tag != 0) {
-                int field = WireFormat.getTagFieldNumber(tag);
-                switch (field) {
-                    case 1: {
-                        result = OptionalInt.of(reader.readSInt32());
-                        break;
-                    }
-                    default: {
-                        reader.skipField(tag);
-                    }
-                }
-                tag = reader.readTag();
-            }
-            return result;
-        }
 
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            OptionalInt optional = (OptionalInt) value;
-            if (optional.isPresent()) {
-                writer.writeSInt64(1, optional.getAsInt());
-            }
-        }
-    },
-    LONG(OptionalLong.class) {
-        @Override
-        public OptionalLong readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            OptionalLong result = OptionalLong.empty();
-            int tag = reader.readTag();
-            while (tag != 0) {
-                int field = WireFormat.getTagFieldNumber(tag);
-                switch (field) {
-                    case 1: {
-                        result = OptionalLong.of(reader.readSInt64());
-                        break;
-                    }
-                    default: {
-                        reader.skipField(tag);
-                    }
-                }
-                tag = reader.readTag();
-            }
-            return result;
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            OptionalLong optional = (OptionalLong) value;
-            if (optional.isPresent()) {
-                writer.writeSInt64(1, optional.getAsLong());
-            }
-        }
-    },
-    DOUBLE(OptionalDouble.class) {
-        @Override
-        public OptionalDouble readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            OptionalDouble result = OptionalDouble.empty();
-            int tag = reader.readTag();
-            while (tag != 0) {
-                int field = WireFormat.getTagFieldNumber(tag);
-                switch (field) {
-                    case 1: {
-                        result = OptionalDouble.of(reader.readDouble());
-                        break;
-                    }
-                    default: {
-                        reader.skipField(tag);
-                    }
-                }
-                tag = reader.readTag();
-            }
-            return result;
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            OptionalDouble optional = (OptionalDouble) value;
-            if (optional.isPresent()) {
-                writer.writeDouble(1, optional.getAsDouble());
-            }
-        }
-    },
-    OBJECT(Optional.class) {
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        private final ProtoStreamMarshaller<Optional> marshaller = new FunctionalObjectMarshaller<>(Optional.class, Optional::ofNullable, value -> value.orElse(null));
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    }
+    OBJECT(ObjectMarshaller.INSTANCE, Optional::empty, Optional::isPresent, Optional::get, Optional::of),
+    DOUBLE(PrimitiveMarshaller.DOUBLE.cast(Double.class), OptionalDouble::empty, OptionalDouble::isPresent, OptionalDouble::getAsDouble, OptionalDouble::of),
+    INT(PrimitiveMarshaller.INTEGER.cast(Integer.class), OptionalInt::empty, OptionalInt::isPresent, OptionalInt::getAsInt, OptionalInt::of),
+    LONG(PrimitiveMarshaller.LONG.cast(Long.class), OptionalLong::empty, OptionalLong::isPresent, OptionalLong::getAsLong, OptionalLong::of),
     ;
-    private final Class<?> targetClass;
+    private final ProtoStreamMarshaller<?> marshaller;
 
-    OptionalMarshaller(Class<?> targetClass) {
-        this.targetClass = targetClass;
-    }
-
-    @Override
-    public Class<? extends Object> getJavaClass() {
-        return this.targetClass;
+    <T, V> OptionalMarshaller(ScalarMarshaller<V> marshaller, Supplier<T> defaultFactory, Predicate<T> isPresent, Function<T, V> function, Function<V, T> factory) {
+        this.marshaller = new SingleFieldMarshaller<>(marshaller, defaultFactory, isPresent.negate(), function, factory);
     }
 
     @Override
     public ProtoStreamMarshaller<?> getMarshaller() {
-        return this;
+        return this.marshaller;
     }
 }
