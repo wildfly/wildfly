@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.microprofile.reactive.messaging.kafka.config;
+package org.wildfly.microprofile.reactive.messaging.config;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,9 +32,15 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class DisableKafkaConnectorTracingConfigSource implements ConfigSource {
+public class ReactiveMessagingConfigSource implements ConfigSource {
 
-    private Map<String, String> PROPERTIES = Collections.singletonMap("mp.messaging.connector.smallrye-kafka.tracing-enabled", "false");
+    private static final Map<String, String> PROPERTIES;
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("mp.messaging.connector.smallrye-kafka.tracing-enabled", "false");
+        map.put("smallrye-messaging-strict-binding", "true");
+        PROPERTIES = Collections.unmodifiableMap(map);
+    }
 
     @Override
     public Map<String, String> getProperties() {

@@ -54,11 +54,6 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
 
     private static final String EXPERIMENTAL_PROPERTY = "jboss.as.reactive.messaging.experimental";
 
-    // Force strict mode in the SmallRye reactive messaging validation. This is needed to pass the TCK,
-    // and also gives fail-fast behaviour
-    //TODO Replace this with a ConfigSource once we have a release with https://github.com/smallrye/smallrye-reactive-messaging/pull/936/
-    private static final String STRICT_MODE_PROPERTY = "smallrye-messaging-strict-binding";
-
     private static final List<DotName> REACTIVE_MESSAGING_ANNOTATIONS;
     private static final List<DotName> BANNED_REACTIVE_MESSAGING_ANNOTATIONS;
     static {
@@ -87,13 +82,6 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isReactiveMessagingDeployment(deploymentUnit)) {
-            WildFlySecurityManager.doChecked(new PrivilegedAction() {
-                @Override
-                public Void run() {
-                    System.setProperty(STRICT_MODE_PROPERTY, "true");
-                    return null;
-                }
-            });
             addModuleDependencies(deploymentUnit);
         }
     }
@@ -116,6 +104,7 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.reactivex.rxjava2.rxjava", false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.mutiny.reactive-streams-operators", false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.wildfly.reactive.messaging.config", false, false, true, false));
 
         // These are optional über modules that export all the independent connectors/clients. However, it seems
         // to confuse the ExternalBeanArchiveProcessor which provides the modules to scan for beans, so we

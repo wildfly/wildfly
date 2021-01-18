@@ -86,6 +86,7 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
                 RuntimePackageDependency.required("io.vertx.client"),
                 RuntimePackageDependency.required("org.apache.commons.lang3"),
                 RuntimePackageDependency.required("org.eclipse.microprofile.reactive-messaging.api"),
+                RuntimePackageDependency.required("org.wildfly.reactive.messaging.config"),
                 RuntimePackageDependency.required("org.slf4j"));
 
     }

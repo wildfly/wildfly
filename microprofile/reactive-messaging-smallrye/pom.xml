@@ -42,6 +42,6 @@
 
     <modules>
         <module>extension</module>
-        <module>kafka-config</module>
+        <module>config</module>
     </modules>
 </project>

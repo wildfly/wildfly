@@ -1222,7 +1222,7 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-reactive-messaging-kafka-config</artifactId>
+                <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>

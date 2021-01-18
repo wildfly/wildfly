@@ -27,6 +27,5 @@
 
     <packages>
         <package name="io.smallrye.reactive.messaging.connector.kafka"/>
-        <package name="org.wildfly.reactive.messaging.kafka-config"/>
     </packages>
 </layer-spec>

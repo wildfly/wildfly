@@ -21,16 +21,28 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.wildfly.reactive.messaging.kafka-config">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-microprofile-reactive-messaging-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>23.0.0.Beta1-SNAPSHOT</version>
+    </parent>
 
-    <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-reactive-messaging-kafka-config}"/>
-    </resources>
+
+    <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
+    <name>WildFly: MicroProfile Reactive Messaging Config</name>
 
     <dependencies>
-        <module name="org.eclipse.microprofile.config.api"/>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+        </dependency>
     </dependencies>
-</module>
+</project>
