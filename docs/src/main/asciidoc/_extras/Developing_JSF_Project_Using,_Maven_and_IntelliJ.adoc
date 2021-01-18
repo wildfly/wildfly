@@ -1,21 +1,21 @@
-[[Developing_JSF_Project_Using,_Maven_and_IntelliJ]]
-= Developing JSF Project Using JBoss AS7, Maven and IntelliJ
+[[Developing_Jakarta_Server_Faces_Project_Using,_Maven_and_IntelliJ]]
+= Developing Jakarta Server Faces Project Using JBoss AS7, Maven and IntelliJ
 ifdef::env-github[:imagesdir: ../images/]
 
 JBoss AS7 is a very 'modern' application server that has very fast
-startup speed. So it's an excellent container to test your JSF project.
+startup speed. So it's an excellent container to test your Jakarta Server Faces project.
 In this article, I'd like to show you how to use AS7, maven and IntelliJ
-together to develop your JSF project.
+together to develop your Jakarta Server Faces project.
 
 In this article I'd like to introduce the following things:
 
 * Create a project using Maven
-* Add JSF into project
+* Add Jakarta Server Faces into project
 * Writing Code
 * Add JBoss AS 7 deploy plugin into project
 * Deploy project to JBoss AS 7
 * Import project into IntelliJ
-* Add IntelliJ JSF support to project
+* Add IntelliJ Jakarta Server Faces support to project
 * Add JBoss AS7 to IntelliJ
 * Debugging project with IntelliJ and AS7
 
@@ -80,9 +80,9 @@ image:jsf/8108c4f111aab2c3465472eb84cf1d9b7cf912d0.jpg[images/jsf/8108c4f111aab2
 The contents of the project is shown as above.
 
 [[add-jsf-into-project]]
-== Add JSF into project
+== Add Jakarta Server Faces into project
 
-The JSF library is now included in maven repo, so we can let maven to
+The Jakarta Server Faces library is now included in maven repo, so we can let maven to
 manage the download for us. First is to add repository into our pom.xml:
 
 [source,java,options="nowrap"]
@@ -94,7 +94,7 @@ manage the download for us. First is to add repository into our pom.xml:
 </repository>
 ----
 
-Then we add JSF dependency into pom.xml:
+Then we add Jakarta Server Faces dependency into pom.xml:
 
 [source,xml,options="nowrap"]
 ----
@@ -116,7 +116,7 @@ jsf-api for us automatically.
 [[writing-code]]
 == Writing Code
 
-Writing JSF code in this article is trivial, so I've put written a
+Writing Jakarta Server Faces code in this article is trivial, so I've put written a
 project called 'jsfdemo' onto github:
 
 https://github.com/liweinan/jsfdemo
@@ -222,7 +222,7 @@ deployed:
 
 image:jsf/2._java.jpg[images/jsf/2._java.jpg]
 
-Now we have learnt how to create a JSF project and deploy it to AS7
+Now we have learnt how to create a Jakarta Server Faces project and deploy it to AS7
 without any help from graphical tools. Next let's see how to use
 IntelliJ IDEA to go on developing/debugging our project.
 
@@ -259,15 +259,15 @@ image:jsf/91e40cd0b1545cff4622857d6dc9959f96faf056.jpg[images/jsf/91e40cd0b1545c
 Hooray! We've imported the project into IntelliJ now icon:smile-o[role="yellow"]
 
 [[adding-intellij-jsf-support-to-project]]
-== Adding IntelliJ JSF support to project
+== Adding IntelliJ Jakarta Server Faces support to project
 
 Let's see how to use IntelliJ and AS7 to debug the project. First we
-need to add 'JSF' facet into project. Open project setting:
+need to add 'Jakarta Server Faces' facet into project. Open project setting:
 
 image:jsf/8b8d0051f4f15033f17cb859c65f2d8481914678.jpg[images/jsf/8b8d0051f4f15033f17cb859c65f2d8481914678.jpg]
 
 Click on 'Facets' section on left; Select 'Web' facet that we already
-have, and click the '+' on top, choose 'JSF':
+have, and click the '+' on top, choose 'Jakarta Server Faces':
 
 image:jsf/e6947b84a56a698ca1392a440081bddfb5cae284.jpg[images/jsf/e6947b84a56a698ca1392a440081bddfb5cae284.jpg]
 
@@ -279,7 +279,7 @@ Click 'Ok':
 
 image:jsf/9988c572bad281146f405e9287f645a3da201885.jpg[images/jsf/9988c572bad281146f405e9287f645a3da201885.jpg]
 
-Now we have enabled IntelliJ's JSF support for project.
+Now we have enabled IntelliJ's Jakarta Server Faces support for project.
 
 [[add-jboss-as7-to-intellij]]
 == Add JBoss AS7 to IntelliJ
@@ -408,7 +408,7 @@ And we could inspect our project now.
 == Conclusion
 
 In this article I've shown to you how to use maven to create a project
-using JSF and deploy it in JBoss AS7, and I've also talked about the
+using Jakarta Server Faces and deploy it in JBoss AS7, and I've also talked about the
 usage of IntelliJ during project development phase. Hope the contents
 are practical and helpful to you icon:smile-o[role="yellow"]
 

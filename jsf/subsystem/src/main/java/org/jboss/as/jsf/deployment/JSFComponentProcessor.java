@@ -247,7 +247,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
     /**
      * According to JSF specification there is a table of eligible components
      * for CDI injection (TABLE 5-3 JSF Artifacts Eligible for Injection in chapter
-     * 5.4.1 JSF Managed Classes and Java EE Annotations). This method parses
+     * 5.4.1 JSF Managed Classes and Jakarta EE Annotations). This method parses
      * the faces-config configuration files and registers the classes.
      * The parser is quite simplistic. The tags are saved into a queue and
      * using the facesConfigElement tree it is known when a tag is one of the
