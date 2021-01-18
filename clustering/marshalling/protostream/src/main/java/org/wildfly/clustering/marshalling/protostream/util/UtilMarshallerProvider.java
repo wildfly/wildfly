@@ -37,6 +37,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 
 /**
@@ -49,16 +50,16 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     CALENDAR(UtilExternalizerProvider.CALENDAR),
     CURRENCY(UtilExternalizerProvider.CURRENCY),
     DATE(UtilExternalizerProvider.DATE),
-    EMPTY_ENUMERATION(UtilExternalizerProvider.EMPTY_ENUMERATION),
-    EMPTY_ITERATOR(UtilExternalizerProvider.EMPTY_ITERATOR),
-    EMPTY_LIST(UtilExternalizerProvider.EMPTY_LIST),
-    EMPTY_LIST_ITERATOR(UtilExternalizerProvider.EMPTY_LIST_ITERATOR),
-    EMPTY_MAP(UtilExternalizerProvider.EMPTY_MAP),
-    EMPTY_NAVIGABLE_MAP(UtilExternalizerProvider.EMPTY_NAVIGABLE_MAP),
-    EMPTY_NAVIGABLE_SET(UtilExternalizerProvider.EMPTY_NAVIGABLE_SET),
-    EMPTY_SET(UtilExternalizerProvider.EMPTY_SET),
-    EMPTY_SORTED_MAP(UtilExternalizerProvider.EMPTY_SORTED_MAP),
-    EMPTY_SORTED_SET(UtilExternalizerProvider.EMPTY_SORTED_SET),
+    EMPTY_ENUMERATION(new ValueMarshaller<>(Collections.emptyEnumeration())),
+    EMPTY_ITERATOR(new ValueMarshaller<>(Collections.emptyIterator())),
+    EMPTY_LIST(new ValueMarshaller<>(Collections.emptyList())),
+    EMPTY_LIST_ITERATOR(new ValueMarshaller<>(Collections.emptyListIterator())),
+    EMPTY_MAP(new ValueMarshaller<>(Collections.emptyMap())),
+    EMPTY_NAVIGABLE_MAP(new ValueMarshaller<>(Collections.emptyNavigableMap())),
+    EMPTY_NAVIGABLE_SET(new ValueMarshaller<>(Collections.emptyNavigableSet())),
+    EMPTY_SET(new ValueMarshaller<>(Collections.emptySet())),
+    EMPTY_SORTED_MAP(new ValueMarshaller<>(Collections.emptySortedMap())),
+    EMPTY_SORTED_SET(new ValueMarshaller<>(Collections.emptySortedSet())),
     ENUM_MAP(new EnumMapMarshaller<>()),
     ENUM_SET(new EnumSetMarshaller<>()),
     HASH_MAP(new HashMapMarshaller<>(HashMap.class, HashMap::new)),
