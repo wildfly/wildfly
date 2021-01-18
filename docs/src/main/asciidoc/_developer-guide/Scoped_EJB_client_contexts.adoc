@@ -20,7 +20,7 @@ JVM.
 In case of standalone applications, typically a single EJBClientContext
 (backed by any number of EJB receivers) exists. However this isn't
 mandatory. Certain standalone applications can potentially have more
-than one EJBClientContext(s) and a EJB client context selector will be
+than one EJBClientContext(s) and an EJB client context selector will be
 responsible for returning the appropriate context.
 
 In case of remote clients which run within another WildFly {wildflyVersion} instance,
@@ -60,9 +60,9 @@ invocations from a remote client using JNDI] that the JNDI lookups are
 setup the EJB client context and the EJB receivers. Let's assume we have
 a jboss-ejb-client.properties with the relevant receivers
 configurations. These configurations include the security credentials
-that will be used to create a EJB receiver which connects to the AS7
+that will be used to create an EJB receiver which connects to the AS7
 server. Now when the above code is invoked, the EJB client API looks for
-the EJB client context to pick a EJB receiver, to pass on the EJB
+the EJB client context to pick an EJB receiver, to pass on the EJB
 invocation request. Since we just have a single EJB client context, that
 context is used by the above code to invoke the bean.
 
@@ -97,7 +97,7 @@ So we have the same application, which wants to connect to the same
 server instance for invoking the EJB(s) hosted on that server, but wants
 to use two different credentials while connecting to the server.
 Remember, the client application has a single EJB client context which
-can have atmost 1 EJB recevier for each server instance. Which
+can have atmost 1 EJB receiver for each server instance. Which
 effectively means that the above code will end up using just one
 credential to connect to the server. So there was no easy way to have
 the above code working.
@@ -114,7 +114,7 @@ are typically used for EJB invocations.
 Developers familiar with earlier versions of JBoss AS would remember
 that for invoking an EJB, you would typically create a JNDI context
 passing it the PROVIDER_URL which would point to the target server. That
-way any invocation done on EJB proxies looked up using that JNDI
+way any invocation is done on EJB proxies looked up using that JNDI
 context, would end up on that server. If we look back at the example
 above, we'll realize that, we are ultimately aiming for a similar
 functionality through https://issues.redhat.com/browse/EJBCLIENT-34. We
@@ -163,7 +163,7 @@ The name of the property is:
 `org.jboss.ejb.client.scoped.context`
 
 which is expected to have a value true. This property lets the EJB
-client API know that it has to created a EJB client context (backed by
+client API know that it has to created an EJB client context (backed by
 EJB receiver(s)) and that created context is then scoped/visible to only
 that JNDI context which created it. Lookup and invocation on any EJB
 proxies looked up using this JNDI context will only know of the EJB
@@ -217,7 +217,7 @@ chances of it changing or even removal shouldn't really affect the
 client application and instead it's supposed to be transparent to the
 client application.
 
-The connections thus created for a EJB client context are kept open as
+The connections thus created for an EJB client context are kept open as
 long as the EJB client context is open. This allows the EJB client
 context to be usable for EJB invocations. The connections associated
 with the EJB client context are closed when the EJB client context

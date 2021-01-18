@@ -618,7 +618,7 @@ org/hibernate/main/hibernate-core-4.0.0.Beta1.jar and is implicitly
 loaded by that module.
 
 This is not obvious, but due to changes in Hibernate 4, this problem is
-caused by a backward compatibility issue due moving the
+caused by a backward compatibility issue due to moving the
 HashtableCacheProvider class into another package. This class was moved
 from the org.hibernate.cache package to the org.hibernate.cache.internal
 package. If you don't remove the hibernate.cache.provider_class property
@@ -687,7 +687,7 @@ follow the new rules.
 ==== How to resolve it:
 
 To debug this, look earlier in the server log trace to what JNDI binding
-were used. Looking at the server log we see this:
+was used. Looking at the server log we see this:
 
 [source,options="nowrap"]
 ----

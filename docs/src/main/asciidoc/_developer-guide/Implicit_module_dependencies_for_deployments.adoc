@@ -34,7 +34,7 @@ dependencies are added is explained in the next section.
 When a deployment is being processed by the server, it goes through a
 chain of "deployment processors". Each of these processors will have a
 way to check if the deployment meets a certain criteria and if it does,
-the deployment processor adds a implicit module dependency to that
+the deployment processor adds an implicit module dependency to that
 deployment. Let's take an example - Consider (again) an EJB3 deployment
 which has the following class:
 
@@ -53,13 +53,13 @@ public class MySuperDuperBean {
 As can be seen, we have a simple @Stateless EJB. When the deployment
 containing this class is being processed, the EJB deployment processor
 will see that the deployment contains a class with the @Stateless
-annotation and thus identifies this as a EJB deployment. *This is just
+annotation and thus identifies this as an EJB deployment. *This is just
 one of the several ways, various deployment processors can identify a
 deployment of some specific type.* The EJB deployment processor will
 then add an implicit dependency on the Jakarta EE API module, so that all
 the Jakarta EE API classes are visible to the deployment.
 
-Some subsystems will always add a API classes, even if the trigger
+Some subsystems will always add API classes, even if the trigger
 condition is not met. These are listed separately below.
 
 In the next section, we'll list down the implicit module dependencies
@@ -77,7 +77,7 @@ being added
 
 |Core Server |javax.api sun.jdk org.jboss.vfs |  | 
 
-|Batch Subsystem |javax.batch.api |  | 
+|Batch Subsystem |javax.batch.api |  | implicit
 
 |EE Subsystem |javaee.api |  | 
 
