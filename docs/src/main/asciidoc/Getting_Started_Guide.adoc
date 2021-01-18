@@ -114,7 +114,7 @@ Missing ActiveMQ Artemis and JMS?
 
 The WildFly Web Profile doesn't include JMS (provided by ActiveMQ Artemis) by
 default. If you want to use messaging, make sure you start the server
-// using the "Full Platform" configuration.
+ using the "Full Platform" configuration.
 
 This document provides a quick overview on how to download and get
 started using WildFly {wildflyVersion} for your application development. For in-depth

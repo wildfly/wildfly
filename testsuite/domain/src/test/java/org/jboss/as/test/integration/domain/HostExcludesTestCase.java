@@ -78,6 +78,19 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private static DomainLifecycleUtil masterUtils;
     private static DomainClient masterClient;
     private static WildFlyManagedConfiguration masterConfig;
+    private boolean isEeGalleonPack = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
+
+
+    // List of extensions added by the wildfly-galleon-pack.
+    private List<String> xpExtensions = Arrays.asList(
+            "org.wildfly.extension.microprofile.config-smallrye",
+            "org.wildfly.extension.microprofile.health-smallrye",
+            "org.wildfly.extension.microprofile.metrics-smallrye",
+            "org.wildfly.extension.microprofile.opentracing-smallrye",
+            "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+            "org.wildfly.extension.microprofile.jwt-smallrye",
+            "org.wildfly.extension.microprofile.openapi-smallrye"
+    );
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -161,7 +174,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         )),
         WILDFLY_17_0("WildFly17.0", WILDFLY_16_0),
         WILDFLY_18_0("WildFly18.0", WILDFLY_17_0),
-        WILDFLY_19_0("WildFly19.0", WILDFLY_18_0,Arrays.asList(
+        WILDFLY_19_0("WildFly19.0", WILDFLY_18_0, Arrays.asList(
                 "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
                 "org.wildfly.extension.microprofile.jwt-smallrye",
                 "org.wildfly.extension.microprofile.openapi-smallrye"
@@ -172,76 +185,76 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.health",
                 "org.wildfly.extension.metrics"
         )),
-                EAP62("EAP62", Arrays.asList(
-                        "org.jboss.as.appclient",
-                        "org.jboss.as.clustering.infinispan",
-                        "org.jboss.as.clustering.jgroups",
-                        "org.jboss.as.cmp",
-                        "org.jboss.as.configadmin",
-                        "org.jboss.as.connector",
-                        "org.jboss.as.deployment-scanner",
-                        "org.jboss.as.ee",
-                        "org.jboss.as.ejb3",
-                        "org.jboss.as.jacorb",
-                        "org.jboss.as.jaxr",
-                        "org.jboss.as.jaxrs",
-                        "org.jboss.as.jdr",
-                        "org.jboss.as.jmx",
-                        "org.jboss.as.jpa",
-                        "org.jboss.as.jsf",
-                        "org.jboss.as.jsr77",
-                        "org.jboss.as.logging",
-                        "org.jboss.as.mail",
-                        "org.jboss.as.messaging",
-                        "org.jboss.as.modcluster",
-                        "org.jboss.as.naming",
-                        "org.jboss.as.pojo",
-                        "org.jboss.as.remoting",
-                        "org.jboss.as.sar",
-                        "org.jboss.as.security",
-                        "org.jboss.as.threads",
-                        "org.jboss.as.transactions",
-                        "org.jboss.as.web",
-                        "org.jboss.as.webservices",
-                        "org.jboss.as.weld",
-                        "org.jboss.as.xts",
-                        // This module was added in EAP70, but we move it to the EAP62 extension list to allow the test passing
-                        // without adding it to the host-exclude section. We don't want to expose it in the host-exclude.
-                        "org.wildfly.extension.mod_cluster"
-                )),
-                EAP63("EAP63", EAP62, Arrays.asList(
-                        "org.wildfly.extension.picketlink"
-                )),
-                EAP64("EAP64", EAP63),
-                EAP64z("EAP64z", EAP64),
-                EAP70("EAP70", EAP64z, Arrays.asList(
-                        "org.wildfly.extension.batch.jberet",
-                        "org.wildfly.extension.bean-validation",
-                        "org.wildfly.extension.clustering.singleton",
-                        "org.wildfly.extension.io",
-                        "org.wildfly.extension.messaging-activemq",
-                        "org.wildfly.extension.request-controller",
-                        "org.wildfly.extension.rts",
-                        "org.wildfly.extension.security.manager",
-                        "org.wildfly.extension.undertow",
-                        "org.wildfly.iiop-openjdk"
-                )),
-                EAP71("EAP71", EAP70, Arrays.asList(
-                        "org.wildfly.extension.core-management",
-                        "org.wildfly.extension.discovery",
-                        "org.wildfly.extension.elytron"
-                )),
-                EAP72("EAP72", EAP71, Arrays.asList(
-                        "org.wildfly.extension.datasources-agroal",
-                        "org.wildfly.extension.microprofile.opentracing-smallrye",
-                        "org.wildfly.extension.microprofile.health-smallrye",
-                        "org.wildfly.extension.microprofile.config-smallrye",
-                        "org.wildfly.extension.ee-security"
-                )),
-                EAP73("EAP73", EAP72, Arrays.asList(
-                        "org.wildfly.extension.microprofile.metrics-smallrye",
-                        "org.wildfly.extension.clustering.web"
-                ));
+        EAP62("EAP62", Arrays.asList(
+                "org.jboss.as.appclient",
+                "org.jboss.as.clustering.infinispan",
+                "org.jboss.as.clustering.jgroups",
+                "org.jboss.as.cmp",
+                "org.jboss.as.configadmin",
+                "org.jboss.as.connector",
+                "org.jboss.as.deployment-scanner",
+                "org.jboss.as.ee",
+                "org.jboss.as.ejb3",
+                "org.jboss.as.jacorb",
+                "org.jboss.as.jaxr",
+                "org.jboss.as.jaxrs",
+                "org.jboss.as.jdr",
+                "org.jboss.as.jmx",
+                "org.jboss.as.jpa",
+                "org.jboss.as.jsf",
+                "org.jboss.as.jsr77",
+                "org.jboss.as.logging",
+                "org.jboss.as.mail",
+                "org.jboss.as.messaging",
+                "org.jboss.as.modcluster",
+                "org.jboss.as.naming",
+                "org.jboss.as.pojo",
+                "org.jboss.as.remoting",
+                "org.jboss.as.sar",
+                "org.jboss.as.security",
+                "org.jboss.as.threads",
+                "org.jboss.as.transactions",
+                "org.jboss.as.web",
+                "org.jboss.as.webservices",
+                "org.jboss.as.weld",
+                "org.jboss.as.xts",
+                // This module was added in EAP70, but we move it to the EAP62 extension list to allow the test passing
+                // without adding it to the host-exclude section. We don't want to expose it in the host-exclude.
+                "org.wildfly.extension.mod_cluster"
+        )),
+        EAP63("EAP63", EAP62, Arrays.asList(
+                "org.wildfly.extension.picketlink"
+        )),
+        EAP64("EAP64", EAP63),
+        EAP64z("EAP64z", EAP64),
+        EAP70("EAP70", EAP64z, Arrays.asList(
+                "org.wildfly.extension.batch.jberet",
+                "org.wildfly.extension.bean-validation",
+                "org.wildfly.extension.clustering.singleton",
+                "org.wildfly.extension.io",
+                "org.wildfly.extension.messaging-activemq",
+                "org.wildfly.extension.request-controller",
+                "org.wildfly.extension.rts",
+                "org.wildfly.extension.security.manager",
+                "org.wildfly.extension.undertow",
+                "org.wildfly.iiop-openjdk"
+        )),
+        EAP71("EAP71", EAP70, Arrays.asList(
+                "org.wildfly.extension.core-management",
+                "org.wildfly.extension.discovery",
+                "org.wildfly.extension.elytron"
+        )),
+        EAP72("EAP72", EAP71, Arrays.asList(
+                "org.wildfly.extension.datasources-agroal",
+                "org.wildfly.extension.microprofile.opentracing-smallrye",
+                "org.wildfly.extension.microprofile.health-smallrye",
+                "org.wildfly.extension.microprofile.config-smallrye",
+                "org.wildfly.extension.ee-security"
+        )),
+        EAP73("EAP73", EAP72, Arrays.asList(
+                "org.wildfly.extension.microprofile.metrics-smallrye",
+                "org.wildfly.extension.clustering.web"
+        ));
 
         private final String name;
         private final Set<String> extensions = new HashSet<>();
@@ -364,20 +377,26 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                     "This host-exclude name is not defined in this test: %s", name),
                     confPrevRelease);
 
-            //check that available extensions - excluded extensions = extensions in a previous release.
+            //check that available extensions - excluded extensions = expected extensions in a previous release.
             Set<String> expectedExtensions = ExtensionConf.forName(name).getExtensions();
 
             Set<String> extensionsUnderTest = new HashSet<>(availableExtensions);
             extensionsUnderTest.removeAll(excludedExtensions);
 
+            // If we are testing a server built from wildfly-ee-galleon-pack, we need to remove from the expected
+            // list of extensions all the extensions that are added by the wildfly-galleon-pack
+            if (isEeGalleonPack) {
+                expectedExtensions.removeAll(xpExtensions);
+            }
+
             if (expectedExtensions.size() > extensionsUnderTest.size()) {
                 expectedExtensions.removeAll(extensionsUnderTest);
-                fail(String.format("These exclusions are not required for %s host-exclude: %s", name, expectedExtensions));
+                fail(String.format("These extensions are expected to be available after applying the %s host-exclude configuration to the extensions supplied by this server release: %s", name, expectedExtensions));
             }
 
             if ( extensionsUnderTest.size() != expectedExtensions.size() ){
                 extensionsUnderTest.removeAll(expectedExtensions);
-                fail(String.format("Found missing extensions for %s host-exclude: %s", name, extensionsUnderTest));
+                fail(String.format("These extensions are missing on the %s host-exclude: %s", name, extensionsUnderTest));
             }
         }
     }
