@@ -44,52 +44,52 @@ import protostream.com.google.protobuf.CodedOutputStream;
  * A set of fields used by {@link AnyMarshaller}.
  * @author Paul Ferraro
  */
-public enum AnyField implements MarshallerProvider, Field<Object> {
+public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
     BOOLEAN(Boolean.class) {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return PrimitiveMarshaller.BOOLEAN;
         }
     },
     BYTE(Byte.class) {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return PrimitiveMarshaller.BYTE;
         }
     },
     SHORT(Short.class) {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return PrimitiveMarshaller.SHORT;
         }
     },
     INTEGER(Integer.class) {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return PrimitiveMarshaller.INTEGER;
         }
     },
     LONG(Long.class) {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return PrimitiveMarshaller.LONG;
         }
     },
     FLOAT(Float.class) {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return PrimitiveMarshaller.FLOAT;
         }
     },
     DOUBLE(Double.class) {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return PrimitiveMarshaller.DOUBLE;
         }
     },
     CHARACTER(Character.class) {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return PrimitiveMarshaller.CHARACTER;
         }
     },
@@ -160,50 +160,50 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
         }
     },
     SHORT_ARRAY(short[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Short.TYPE), PrimitiveMarshaller.SHORT);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Short.TYPE), PrimitiveMarshaller.SHORT);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     INTEGER_ARRAY(int[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Integer.TYPE), PrimitiveMarshaller.INTEGER);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Integer.TYPE), PrimitiveMarshaller.INTEGER);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     LONG_ARRAY(long[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Long.TYPE), PrimitiveMarshaller.LONG);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Long.TYPE), PrimitiveMarshaller.LONG);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     FLOAT_ARRAY(float[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Float.TYPE), PrimitiveMarshaller.FLOAT);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Float.TYPE), PrimitiveMarshaller.FLOAT);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     DOUBLE_ARRAY(double[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Double.TYPE), PrimitiveMarshaller.DOUBLE);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Double.TYPE), PrimitiveMarshaller.DOUBLE);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     CHAR_ARRAY(char[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Character.TYPE), PrimitiveMarshaller.CHARACTER);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Character.TYPE), PrimitiveMarshaller.CHARACTER);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
@@ -226,68 +226,68 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
         }
     },
     IDENTIFIED_OBJECT(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ID);
+        private final ScalarMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ID);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     IDENTIFIED_ENUM(Void.class) {
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ID);
+        private final ScalarMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ID);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     IDENTIFIED_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ID, ObjectMarshaller.INSTANCE);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ID, ObjectMarshaller.INSTANCE);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     OBJECT(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ANY);
+        private final ScalarMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ANY);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     ENUM(Void.class) {
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ANY);
+        private final ScalarMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ANY);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     FIELD_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.FIELD, ObjectMarshaller.INSTANCE);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.FIELD, ObjectMarshaller.INSTANCE);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ANY, ObjectMarshaller.INSTANCE);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ANY, ObjectMarshaller.INSTANCE);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
     MULTI_DIMENSIONAL_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ARRAY, ObjectMarshaller.INSTANCE);
+        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ARRAY, ObjectMarshaller.INSTANCE);
 
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
+        public ScalarMarshaller<?> getMarshaller() {
             return this.marshaller;
         }
     },
@@ -378,7 +378,7 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
     }
 
     @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
+    public ScalarMarshaller<?> getMarshaller() {
         return this;
     }
 

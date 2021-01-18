@@ -35,11 +35,11 @@ import protostream.com.google.protobuf.CodedOutputStream;
 /**
  * @author Paul Ferraro
  */
-public class TypedEnumMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<E> {
+public class TypedEnumMarshaller<E extends Enum<E>> implements ScalarMarshaller<E> {
 
-    private final ProtoStreamMarshaller<Class<?>> typeMarshaller;
+    private final ScalarMarshaller<Class<?>> typeMarshaller;
 
-    public TypedEnumMarshaller(ProtoStreamMarshaller<Class<?>> typeMarshaller) {
+    public TypedEnumMarshaller(ScalarMarshaller<Class<?>> typeMarshaller) {
         this.typeMarshaller = typeMarshaller;
     }
 

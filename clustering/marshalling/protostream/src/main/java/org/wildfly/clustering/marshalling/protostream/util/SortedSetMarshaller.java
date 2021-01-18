@@ -27,7 +27,7 @@ import java.util.SortedSet;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 
 /**
  * Marshaller for a {@link SortedSet}.
@@ -37,6 +37,6 @@ public class SortedSetMarshaller<T extends SortedSet<Object>> extends Contextual
 
     @SuppressWarnings("unchecked")
     public SortedSetMarshaller(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
-        super(targetClass, factory, SortedSet::comparator, (ProtoStreamMarshaller<Comparator<Object>>) (ProtoStreamMarshaller<?>) ObjectMarshaller.INSTANCE);
+        super(targetClass, factory, SortedSet::comparator, (ScalarMarshaller<Comparator<Object>>) (ScalarMarshaller<?>) ObjectMarshaller.INSTANCE);
     }
 }

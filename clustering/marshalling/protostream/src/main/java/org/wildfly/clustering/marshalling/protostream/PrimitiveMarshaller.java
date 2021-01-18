@@ -36,7 +36,7 @@ import protostream.com.google.protobuf.CodedOutputStream;
 /**
  * @author Paul Ferraro
  */
-public enum PrimitiveMarshaller implements MarshallerProvider {
+public enum PrimitiveMarshaller implements ScalarMarshallerProvider {
     VOID(Void.class) {
         @Override
         public Boolean readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
@@ -195,7 +195,7 @@ public enum PrimitiveMarshaller implements MarshallerProvider {
     }
 
     @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
+    public ScalarMarshaller<?> getMarshaller() {
         return this;
     }
 }

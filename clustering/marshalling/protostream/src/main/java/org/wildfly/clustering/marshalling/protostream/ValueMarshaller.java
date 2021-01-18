@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -35,30 +36,33 @@ import org.infinispan.protostream.RawProtoStreamWriter;
  */
 public class ValueMarshaller<T> implements ProtoStreamMarshaller<T> {
 
-    private final T value;
+    private final ScalarMarshaller<T> marshaller;
 
     public ValueMarshaller(T value) {
-        this.value = value;
+        this.marshaller = new ScalarValueMarshaller<>(value);
     }
 
     @Override
     public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.value;
+        T value = this.marshaller.readFrom(context, reader);
+        if (reader.readTag() != 0) {
+            throw new StreamCorruptedException();
+        }
+        return value;
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) {
-        // Nothing to write
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<? extends T> getJavaClass() {
-        return (Class<T>) this.value.getClass();
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) throws IOException {
+        this.marshaller.writeTo(context, writer, value);
     }
 
     @Override
     public OptionalInt size(ImmutableSerializationContext context, T value) {
-        return OptionalInt.of(0);
+        return this.marshaller.size(context, value);
+    }
+
+    @Override
+    public Class<? extends T> getJavaClass() {
+        return this.marshaller.getJavaClass();
     }
 }

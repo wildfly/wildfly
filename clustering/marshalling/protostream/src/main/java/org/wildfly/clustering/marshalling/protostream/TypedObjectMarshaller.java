@@ -33,11 +33,11 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 /**
  * @author Paul Ferraro
  */
-public class TypedObjectMarshaller implements ProtoStreamMarshaller<Object> {
+public class TypedObjectMarshaller implements ScalarMarshaller<Object> {
 
-    private final ProtoStreamMarshaller<Class<?>> typeMarshaller;
+    private final ScalarMarshaller<Class<?>> typeMarshaller;
 
-    public TypedObjectMarshaller(ProtoStreamMarshaller<Class<?>> typeMarshaller) {
+    public TypedObjectMarshaller(ScalarMarshaller<Class<?>> typeMarshaller) {
         this.typeMarshaller = typeMarshaller;
     }
 

@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 
 /**
  * Marshaller for maps constructed with a context.
@@ -33,7 +33,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
  */
 public class ContextualMapMarshaller<T extends Map<Object, Object>, C> extends MapMarshaller<T, C, C> {
 
-    public ContextualMapMarshaller(Class<T> targetClass, Function<C, T> factory, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
+    public ContextualMapMarshaller(Class<T> targetClass, Function<C, T> factory, Function<T, C> context, ScalarMarshaller<C> contextMarshaller) {
         super(targetClass, factory, Map.Entry::getKey, context, contextMarshaller);
     }
 }

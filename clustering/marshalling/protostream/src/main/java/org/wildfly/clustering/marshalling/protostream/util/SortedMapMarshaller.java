@@ -27,7 +27,7 @@ import java.util.SortedMap;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -36,6 +36,6 @@ public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends Co
 
     @SuppressWarnings("unchecked")
     public SortedMapMarshaller(Class<T> targetClass, Function<Comparator<Object>, T> factory) {
-        super(targetClass, factory, SortedMap::comparator, (ProtoStreamMarshaller<Comparator<Object>>) (ProtoStreamMarshaller<?>) ObjectMarshaller.INSTANCE);
+        super(targetClass, factory, SortedMap::comparator, (ScalarMarshaller<Comparator<Object>>) (ScalarMarshaller<?>) ObjectMarshaller.INSTANCE);
     }
 }

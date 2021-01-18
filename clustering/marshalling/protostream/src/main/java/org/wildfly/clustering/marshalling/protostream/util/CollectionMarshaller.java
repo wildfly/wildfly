@@ -34,6 +34,7 @@ import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 
 import protostream.com.google.protobuf.CodedOutputStream;
 
@@ -47,9 +48,9 @@ public class CollectionMarshaller<T extends Collection<Object>, C, CC> implement
     private final Function<CC, T> factory;
     private final Function<Map.Entry<C, Integer>, CC> constructorContext;
     private final Function<T, C> context;
-    private final ProtoStreamMarshaller<C> contextMarshaller;
+    private final ScalarMarshaller<C> contextMarshaller;
 
-    public CollectionMarshaller(Class<T> targetClass, Function<CC, T> factory, Function<Map.Entry<C, Integer>, CC> constructorContext, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
+    public CollectionMarshaller(Class<T> targetClass, Function<CC, T> factory, Function<Map.Entry<C, Integer>, CC> constructorContext, Function<T, C> context, ScalarMarshaller<C> contextMarshaller) {
         this.targetClass = targetClass;
         this.factory = factory;
         this.constructorContext = constructorContext;

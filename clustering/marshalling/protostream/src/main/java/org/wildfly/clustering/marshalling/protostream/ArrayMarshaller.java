@@ -35,12 +35,12 @@ import protostream.com.google.protobuf.CodedOutputStream;
 /**
  * @author Paul Ferraro
  */
-public class ArrayMarshaller implements ProtoStreamMarshaller<Object> {
+public class ArrayMarshaller implements ScalarMarshaller<Object> {
 
-    private final ProtoStreamMarshaller<Class<?>> componentTypeMarshaller;
-    private final ProtoStreamMarshaller<Object> elementMarshaller;
+    private final ScalarMarshaller<Class<?>> componentTypeMarshaller;
+    private final ScalarMarshaller<Object> elementMarshaller;
 
-    public ArrayMarshaller(ProtoStreamMarshaller<Class<?>> componentTypeMarshaller, ProtoStreamMarshaller<Object> elementMarshaller) {
+    public ArrayMarshaller(ScalarMarshaller<Class<?>> componentTypeMarshaller, ScalarMarshaller<Object> elementMarshaller) {
         this.componentTypeMarshaller = componentTypeMarshaller;
         this.elementMarshaller = elementMarshaller;
     }

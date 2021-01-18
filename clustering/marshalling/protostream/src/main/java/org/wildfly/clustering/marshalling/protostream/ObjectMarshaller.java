@@ -33,7 +33,7 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 /**
  * @author Paul Ferraro
  */
-public enum ObjectMarshaller implements MarshallerProvider {
+public enum ObjectMarshaller implements ScalarMarshaller<Object> {
     INSTANCE;
 
     @Override
@@ -58,10 +58,5 @@ public enum ObjectMarshaller implements MarshallerProvider {
     @Override
     public OptionalInt size(ImmutableSerializationContext context, Object value) {
         return Predictable.computeSizeNoTag(context, new Any(value));
-    }
-
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this;
     }
 }
