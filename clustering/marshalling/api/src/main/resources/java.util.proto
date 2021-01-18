@@ -224,14 +224,14 @@ message OptionalDouble {
  * @TypeId(46)
  */
 message OptionalInt {
-	optional	bytes	value = 1;
+	optional	sint32	value = 1;
 }
 
 /**
  * @TypeId(47)
  */
 message OptionalLong {
-	optional	bytes	value = 1;
+	optional	sint64	value = 1;
 }
 
 /**
