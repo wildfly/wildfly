@@ -6,21 +6,21 @@ package java.util.concurrent.atomic;
  * @TypeId(80)
  */
 message AtomicBoolean {
-	required	bool	value	= 1;
+	optional	bool	value	= 1;
 }
 
 /**
  * @TypeId(81)
  */
 message AtomicInteger {
-	required	int32	value	= 1;
+	optional	sint32	value	= 1;
 }
 
 /**
  * @TypeId(82)
  */
 message AtomicLong {
-	required	int64	value	= 1;
+	optional	sint64	value	= 1;
 }
 
 /**
