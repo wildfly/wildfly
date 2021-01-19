@@ -32,8 +32,9 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * Generic marshaller for {@link Map} implementations.
@@ -83,7 +84,7 @@ public class MapMarshaller<T extends Map<Object, Object>, C, CC> implements Prot
         C mapContext = this.context.apply(map);
         OptionalInt size = this.contextMarshaller.size(context, mapContext);
         if (size.isPresent()) {
-            size = OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(map.size()));
+            size = OptionalInt.of(size.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(map.size()));
             for (Map.Entry<Object, Object> entry : map.entrySet()) {
                 OptionalInt keySize = ObjectMarshaller.INSTANCE.size(context, entry.getKey());
                 OptionalInt valueSize = ObjectMarshaller.INSTANCE.size(context, entry.getValue());

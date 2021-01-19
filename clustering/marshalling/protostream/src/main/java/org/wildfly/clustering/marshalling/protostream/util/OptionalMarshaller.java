@@ -34,8 +34,9 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * ProtoStream optimized marshallers for optional types.
@@ -74,7 +75,7 @@ public enum OptionalMarshaller implements MarshallerProvider {
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
             OptionalInt optional = (OptionalInt) value;
-            return OptionalInt.of(optional.isPresent() ? Predictable.signedIntSize(optional.getAsInt()) + 1 : 0);
+            return OptionalInt.of(optional.isPresent() ? CodedOutputStream.computeSInt32Size(1, optional.getAsInt()) : 0);
         }
     },
     LONG(OptionalLong.class) {
@@ -109,7 +110,7 @@ public enum OptionalMarshaller implements MarshallerProvider {
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
             OptionalLong optional = (OptionalLong) value;
-            return OptionalInt.of(optional.isPresent() ? Predictable.signedLongSize(optional.getAsLong()) + 1 : 0);
+            return OptionalInt.of(optional.isPresent() ? CodedOutputStream.computeSInt64Size(1, optional.getAsLong()) : 0);
         }
     },
     DOUBLE(OptionalDouble.class) {
@@ -144,7 +145,7 @@ public enum OptionalMarshaller implements MarshallerProvider {
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
             OptionalDouble optional = (OptionalDouble) value;
-            return OptionalInt.of(optional.isPresent() ? Double.BYTES + 1 : 0);
+            return OptionalInt.of(optional.isPresent() ? CodedOutputStream.computeDoubleSize(1, optional.getAsDouble()) : 0);
         }
     },
     OBJECT(Optional.class) {

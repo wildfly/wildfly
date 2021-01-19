@@ -36,9 +36,10 @@ import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.concurrent.atomic.AtomicExternalizerProvider;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * ProtoStream optimized marshallers for java.util.concurrent.atomic types.
@@ -66,7 +67,7 @@ public enum AtomicMarshaller implements MarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(Predictable.signedIntSize(((AtomicInteger) value).intValue()));
+            return OptionalInt.of(CodedOutputStream.computeSInt32SizeNoTag(((AtomicInteger) value).intValue()));
         }
     },
     LONG(AtomicLong.class) {
@@ -82,7 +83,7 @@ public enum AtomicMarshaller implements MarshallerProvider {
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(Predictable.signedLongSize(((AtomicLong) value).longValue()));
+            return OptionalInt.of(CodedOutputStream.computeSInt64SizeNoTag(((AtomicLong) value).longValue()));
         }
     },
     REFERENCE(AtomicReference.class) {
