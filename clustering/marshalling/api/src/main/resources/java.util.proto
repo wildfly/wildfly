@@ -112,8 +112,7 @@ message ArrayList {
  * @TypeId(32)
  */
 message BitSet {
-	required	uint32	size	= 1;
-	required	bytes	bits	= 2;
+	optional	bytes	value	= 1;
 }
 
 /**
@@ -132,7 +131,7 @@ message Calendar {
  * @TypeId(34)
  */
 message Currency {
-	required	string	id = 1;
+	optional	string	value	= 1;
 }
 
 /**
@@ -203,7 +202,7 @@ message LinkedList {
  * @TypeId(43)
  */
 message Locale {
-	required	string	tag	= 1;
+	optional	string	value	= 1;
 }
 
 /**
@@ -254,7 +253,7 @@ message SimpleImmutableEntry {
  * @TypeId(50)
  */
 message TimeZone {
-	required	string	id	= 1;
+	optional	string	value	= 1;
 }
 
 /**
@@ -279,6 +278,6 @@ message TreeSet {
  * @TypeId(53)
  */
 message UUID {
-	required	int64	high	= 1;
-	required	int64	low	= 2;
+	optional	sfixed64	high	= 1;
+	optional	sfixed64	low	= 2;
 }

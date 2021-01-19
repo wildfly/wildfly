@@ -23,14 +23,12 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.io.StreamCorruptedException;
-import java.util.OptionalInt;
 import java.util.UUID;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
+import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
@@ -40,6 +38,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 public enum UUIDMarshaller implements ProtoStreamMarshaller<UUID> {
     INSTANCE;
 
+    private static final int MOST_SIGNIFICANT_BITS_INDEX = 1;
+    private static final int LEAST_SIGNIFICANT_BITS_INDEX = 2;
+
     @Override
     public Class<? extends UUID> getJavaClass() {
         return UUID.class;
@@ -47,22 +48,35 @@ public enum UUIDMarshaller implements ProtoStreamMarshaller<UUID> {
 
     @Override
     public UUID readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        long mostSignificantBits = reader.readFixed64();
-        long leastSignificantBits = reader.readFixed64();
-        if (reader.readTag() != 0) {
-            throw new StreamCorruptedException();
+        long mostSignificantBits = 0;
+        long leastSignificantBits = 0;
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            int index = WireFormat.getTagFieldNumber(tag);
+            switch (index) {
+                case MOST_SIGNIFICANT_BITS_INDEX:
+                    mostSignificantBits = reader.readSFixed64();
+                    break;
+                case LEAST_SIGNIFICANT_BITS_INDEX:
+                    leastSignificantBits = reader.readSFixed64();
+                    break;
+                default:
+                    reading = (tag != 0) && reader.skipField(tag);
+            }
         }
         return new UUID(mostSignificantBits, leastSignificantBits);
     }
 
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, UUID uuid) throws IOException {
-        ((RawProtoStreamWriterImpl) writer).getDelegate().writeFixed64NoTag(uuid.getMostSignificantBits());
-        ((RawProtoStreamWriterImpl) writer).getDelegate().writeFixed64NoTag(uuid.getLeastSignificantBits());
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, UUID value) {
-        return OptionalInt.of(Long.BYTES + Long.BYTES);
+        long mostSignificantBits = uuid.getMostSignificantBits();
+        if (mostSignificantBits != 0) {
+            writer.writeSFixed64(MOST_SIGNIFICANT_BITS_INDEX, mostSignificantBits);
+        }
+        long leastSignificantBits = uuid.getLeastSignificantBits();
+        if (leastSignificantBits != 0) {
+            writer.writeSFixed64(LEAST_SIGNIFICANT_BITS_INDEX, leastSignificantBits);
+        }
     }
 }
