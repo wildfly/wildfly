@@ -34,6 +34,8 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * Marshaller for an {@link Any} object.
  * @author Paul Ferraro
@@ -97,7 +99,7 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
         AnyField field = (referenceId == null) ? getField(context, object) : AnyField.REFERENCE;
         OptionalInt size = field.size(context, (referenceId == null) ? object : referenceId);
 
-        return size.isPresent() ? OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(field.getIndex() << 3 | WireFormat.WIRETYPE_VARINT)) : OptionalInt.empty();
+        return size.isPresent() ? OptionalInt.of(size.getAsInt() + CodedOutputStream.computeTagSize(field.getIndex())) : OptionalInt.empty();
     }
 
     private static AnyField getField(ImmutableSerializationContext context, Object value) {

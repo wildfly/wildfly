@@ -30,6 +30,8 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * @author Paul Ferraro
  */
@@ -71,7 +73,7 @@ public class ArrayMarshaller implements ProtoStreamMarshaller<Object> {
         OptionalInt componentTypeSize = this.componentTypeMarshaller.size(context, array.getClass().getComponentType());
         if (componentTypeSize.isPresent()) {
             int length = Array.getLength(array);
-            int size = Predictable.unsignedIntSize(length);
+            int size = CodedOutputStream.computeUInt32SizeNoTag(length);
             for (int i = 0; i < length; ++i) {
                 Object element = Array.get(array, i);
                 OptionalInt elementSize = this.elementMarshaller.size(context, element);

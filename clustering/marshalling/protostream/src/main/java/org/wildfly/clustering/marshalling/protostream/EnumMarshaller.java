@@ -26,6 +26,8 @@ import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * ProtoStream marshaller for enums.
  * @author Paul Ferraro
@@ -63,6 +65,6 @@ public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protost
 
     @Override
     public OptionalInt size(ImmutableSerializationContext context, E value) {
-        return OptionalInt.of(Predictable.unsignedIntSize(value.ordinal()));
+        return OptionalInt.of(CodedOutputStream.computeEnumSizeNoTag(value.ordinal()));
     }
 }

@@ -34,7 +34,6 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.MarshallerProvider;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
@@ -70,12 +69,6 @@ public enum OptionalMarshaller implements MarshallerProvider {
                 writer.writeSInt64(1, optional.getAsInt());
             }
         }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            OptionalInt optional = (OptionalInt) value;
-            return OptionalInt.of(optional.isPresent() ? Predictable.signedIntSize(optional.getAsInt()) + 1 : 0);
-        }
     },
     LONG(OptionalLong.class) {
         @Override
@@ -105,12 +98,6 @@ public enum OptionalMarshaller implements MarshallerProvider {
                 writer.writeSInt64(1, optional.getAsLong());
             }
         }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            OptionalLong optional = (OptionalLong) value;
-            return OptionalInt.of(optional.isPresent() ? Predictable.signedLongSize(optional.getAsLong()) + 1 : 0);
-        }
     },
     DOUBLE(OptionalDouble.class) {
         @Override
@@ -139,12 +126,6 @@ public enum OptionalMarshaller implements MarshallerProvider {
             if (optional.isPresent()) {
                 writer.writeDouble(1, optional.getAsDouble());
             }
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            OptionalDouble optional = (OptionalDouble) value;
-            return OptionalInt.of(optional.isPresent() ? Double.BYTES + 1 : 0);
         }
     },
     OBJECT(Optional.class) {

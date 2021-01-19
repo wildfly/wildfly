@@ -33,6 +33,8 @@ import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * @author Paul Ferraro
  */
@@ -69,7 +71,7 @@ public class TypedObjectMarshaller implements ProtoStreamMarshaller<Object> {
     private static OptionalInt objectSize(ImmutableSerializationContext context, Object value) {
         BaseMarshaller<?> marshaller = context.getMarshaller(value.getClass());
         OptionalInt size = (marshaller instanceof Predictable) ? ((Predictable<Object>) marshaller).size(context, value) : OptionalInt.empty();
-        return size.isPresent() ? OptionalInt.of(Predictable.byteArraySize(size.getAsInt())) : size;
+        return size.isPresent() ? OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size.getAsInt()) + size.getAsInt()) : size;
     }
 
     @Override

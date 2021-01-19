@@ -38,6 +38,8 @@ import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
 import org.jboss.modules.Module;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * A set of fields used by {@link AnyMarshaller}.
  * @author Paul Ferraro
@@ -105,12 +107,6 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
             String string = (String) value;
             BYTE_ARRAY.cast(byte[].class).writeTo(context, writer, (string != null) ? string.getBytes(StandardCharsets.UTF_8) : this.empty);
         }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            String string = (String) value;
-            return (string != null) ? OptionalInt.of(Predictable.stringSize(string)) : BYTE_ARRAY.size(context, this.empty);
-        }
     },
     BOOLEAN_ARRAY(boolean[].class) {
         @Override
@@ -147,7 +143,7 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
             int size = values.length;
             // Calculate number of bytes in BitSet
             int bytes = (size / Byte.SIZE) + ((size % Byte.SIZE) > 0 ? 1 : 0);
-            return OptionalInt.of(Predictable.unsignedIntSize(size) + bytes);
+            return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size) + bytes);
         }
     },
     BYTE_ARRAY(byte[].class) {
@@ -161,12 +157,6 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
             byte[] bytes = (byte[]) value;
             writer.writeUInt32NoTag(bytes.length);
             writer.writeRawBytes(bytes, 0, bytes.length);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            byte[] bytes = (byte[]) value;
-            return OptionalInt.of(Predictable.byteArraySize(bytes.length));
         }
     },
     SHORT_ARRAY(short[].class) {
@@ -232,7 +222,7 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
             Integer id = (Integer) value;
-            return OptionalInt.of(Predictable.unsignedIntSize(id));
+            return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(id));
         }
     },
     IDENTIFIED_OBJECT(Void.class) {
@@ -332,7 +322,7 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
                 OptionalInt moduleSize = ObjectMarshaller.INSTANCE.size(context, Module.forClass(value.getClass()));
                 if (moduleSize.isPresent()) {
                     Class<?>[] interfaceClasses = value.getClass().getInterfaces();
-                    size = OptionalInt.of(size.getAsInt() + moduleSize.getAsInt() + Predictable.unsignedIntSize(interfaceClasses.length));
+                    size = OptionalInt.of(size.getAsInt() + moduleSize.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(interfaceClasses.length));
                     for (Class<?> interfaceClass : interfaceClasses) {
                         OptionalInt interfaceSize = ClassField.ANY.size(context, interfaceClass);
                         size = size.isPresent() && interfaceSize.isPresent() ? OptionalInt.of(size.getAsInt() + interfaceSize.getAsInt()) : OptionalInt.empty();

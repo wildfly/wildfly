@@ -31,6 +31,8 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * Generic marshaller for a Throwable.
  * @author Paul Ferraro
@@ -127,16 +129,16 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
         if (size.isPresent()) {
             OptionalInt messageSize = AnyField.STRING.size(context, (cause == null) || !cause.toString().equals(message) ? message : null);
             StackTraceElement[] stackTrace = exception.getStackTrace();
-            int stackTraceSize = Predictable.unsignedIntSize(stackTrace.length);
+            int stackTraceSize = CodedOutputStream.computeUInt32SizeNoTag(stackTrace.length);
             for (StackTraceElement element : stackTrace) {
                 stackTraceSize += ObjectMarshaller.INSTANCE.size(context, element.getClassName()).getAsInt();
                 stackTraceSize += ObjectMarshaller.INSTANCE.size(context, element.getMethodName()).getAsInt();
                 stackTraceSize += ObjectMarshaller.INSTANCE.size(context, element.getFileName()).getAsInt();
-                stackTraceSize += Predictable.unsignedIntSize(element.getLineNumber());
+                stackTraceSize += CodedOutputStream.computeUInt32SizeNoTag(element.getLineNumber());
             }
             size = OptionalInt.of(size.getAsInt() + messageSize.getAsInt() + stackTraceSize);
             Throwable[] suppressed = exception.getSuppressed();
-            size = OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(suppressed.length));
+            size = OptionalInt.of(size.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(suppressed.length));
             for (Throwable suppression : suppressed) {
                 OptionalInt suppressionSize = ObjectMarshaller.INSTANCE.size(context, suppression);
                 size = size.isPresent() && suppressionSize.isPresent() ? OptionalInt.of(size.getAsInt() + suppressionSize.getAsInt()) : OptionalInt.empty();

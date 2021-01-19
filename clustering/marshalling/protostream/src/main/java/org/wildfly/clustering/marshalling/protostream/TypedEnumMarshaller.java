@@ -30,6 +30,8 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 
+import protostream.com.google.protobuf.CodedOutputStream;
+
 /**
  * @author Paul Ferraro
  */
@@ -63,7 +65,7 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements ProtoStreamMarsha
     @Override
     public OptionalInt size(ImmutableSerializationContext context, E value) {
         OptionalInt typeSize = this.typeMarshaller.size(context, value.getDeclaringClass());
-        return typeSize.isPresent() ? OptionalInt.of(typeSize.getAsInt() + Predictable.unsignedIntSize(value.ordinal())) : typeSize;
+        return typeSize.isPresent() ? OptionalInt.of(typeSize.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(value.ordinal())) : typeSize;
     }
 
     @Override
