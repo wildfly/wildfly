@@ -28,6 +28,7 @@ import java.util.OptionalInt;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
  * A class field that marshals instances of {@link Class} using a {@link ClassResolver}.
@@ -69,5 +70,10 @@ public class ClassResolverField implements Field<Class<?>> {
     @Override
     public int getIndex() {
         return this.index;
+    }
+
+    @Override
+    public int getWireType() {
+        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     }
 }

@@ -28,6 +28,7 @@ import java.util.OptionalInt;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
  * @author Paul Ferraro
@@ -61,6 +62,11 @@ public class TypedObjectMarshaller implements ScalarMarshaller<Object> {
 
     @Override
     public Class<? extends Object> getJavaClass() {
-        return null;
+        return Object.class;
+    }
+
+    @Override
+    public int getWireType() {
+        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     }
 }

@@ -78,6 +78,12 @@ public interface ScalarMarshaller<T> extends Predictable<T> {
     Class<? extends T> getJavaClass();
 
     /**
+     * Returns the wire type associated with this marshaller.
+     * @return a valid protobuf wire type
+     */
+    int getWireType();
+
+    /**
      * Reads an object from a specified ProtoStream reader.
      * @param <T> the object type
      * @param context a serialization context

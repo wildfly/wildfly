@@ -58,7 +58,7 @@ public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
         Field<Class<?>> field = this.getField(context, targetClass);
-        writer.writeTag(field.getIndex(), WireFormat.WIRETYPE_VARINT);
+        writer.writeTag(field.getIndex(), field.getWireType());
         field.writeTo(context, writer, targetClass);
     }
 

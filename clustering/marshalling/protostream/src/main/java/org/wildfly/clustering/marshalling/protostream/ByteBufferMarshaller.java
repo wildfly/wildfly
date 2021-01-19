@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
  * Scalar marshaller for a {@link ByteBuffer}.
@@ -52,5 +53,10 @@ public enum ByteBufferMarshaller implements ScalarMarshaller<ByteBuffer> {
     @Override
     public Class<? extends ByteBuffer> getJavaClass() {
         return ByteBuffer.class;
+    }
+
+    @Override
+    public int getWireType() {
+        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     }
 }

@@ -36,6 +36,11 @@ public interface ScalarMarshallerProvider extends ScalarMarshaller<Object> {
     ScalarMarshaller<?> getMarshaller();
 
     @Override
+    default int getWireType() {
+        return this.getMarshaller().getWireType();
+    }
+
+    @Override
     default Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
         return this.getMarshaller().readFrom(context, reader);
     }

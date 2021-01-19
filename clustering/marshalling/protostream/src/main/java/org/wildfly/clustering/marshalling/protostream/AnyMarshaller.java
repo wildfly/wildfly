@@ -82,7 +82,7 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 
         AnyField field = (referenceId == null) ? getField(context, object) : AnyField.REFERENCE;
 
-        writer.writeTag(field.getIndex(), WireFormat.WIRETYPE_VARINT);
+        writer.writeTag(field.getIndex(), field.getWireType());
         field.writeTo(context, writer, (referenceId == null) ? object : referenceId);
 
         if (referenceId == null) {

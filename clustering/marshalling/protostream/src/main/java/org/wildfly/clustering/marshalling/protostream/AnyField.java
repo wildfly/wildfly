@@ -36,6 +36,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
+import org.infinispan.protostream.impl.WireFormat;
 import org.jboss.modules.Module;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -46,55 +47,15 @@ import protostream.com.google.protobuf.CodedOutputStream;
  * @author Paul Ferraro
  */
 public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
-    BOOLEAN(Boolean.class) {
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.BOOLEAN;
-        }
-    },
-    BYTE(Byte.class) {
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.BYTE;
-        }
-    },
-    SHORT(Short.class) {
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.SHORT;
-        }
-    },
-    INTEGER(Integer.class) {
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.INTEGER;
-        }
-    },
-    LONG(Long.class) {
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.LONG;
-        }
-    },
-    FLOAT(Float.class) {
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.FLOAT;
-        }
-    },
-    DOUBLE(Double.class) {
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.DOUBLE;
-        }
-    },
-    CHARACTER(Character.class) {
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.CHARACTER;
-        }
-    },
-    STRING(String.class) {
+    BOOLEAN(PrimitiveMarshaller.BOOLEAN),
+    BYTE(PrimitiveMarshaller.BYTE),
+    SHORT(PrimitiveMarshaller.SHORT),
+    INTEGER(PrimitiveMarshaller.INTEGER),
+    LONG(PrimitiveMarshaller.LONG),
+    FLOAT(PrimitiveMarshaller.FLOAT),
+    DOUBLE(PrimitiveMarshaller.DOUBLE),
+    CHARACTER(PrimitiveMarshaller.CHARACTER),
+    STRING(new ScalarMarshaller<String>() {
         private final byte[] empty = new byte[0];
 
         @Override
@@ -104,12 +65,21 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            String string = (String) value;
-            BYTE_ARRAY.cast(byte[].class).writeTo(context, writer, (string != null) ? string.getBytes(StandardCharsets.UTF_8) : this.empty);
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, String value) throws IOException {
+            BYTE_ARRAY.cast(byte[].class).writeTo(context, writer, (value != null) ? value.getBytes(StandardCharsets.UTF_8) : this.empty);
         }
-    },
-    BOOLEAN_ARRAY(boolean[].class) {
+
+        @Override
+        public Class<? extends String> getJavaClass() {
+            return String.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        }
+    }),
+    BOOLEAN_ARRAY(new ScalarMarshaller<boolean[]>() {
         @Override
         public boolean[] readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             int size = reader.readUInt32();
@@ -124,8 +94,7 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            boolean[] values = (boolean[]) value;
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, boolean[] values) throws IOException {
             int size = values.length;
             // N.B. Write the length of the array, which corresponds to the number of used bits.
             writer.writeUInt32NoTag(size);
@@ -139,74 +108,51 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            boolean[] values = (boolean[]) value;
+        public OptionalInt size(ImmutableSerializationContext context, boolean[] values) {
             int size = values.length;
             // Calculate number of bytes in BitSet
             int bytes = (size / Byte.SIZE) + ((size % Byte.SIZE) > 0 ? 1 : 0);
             return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size) + bytes);
         }
-    },
-    BYTE_ARRAY(byte[].class) {
+
+        @Override
+        public Class<? extends boolean[]> getJavaClass() {
+            return boolean[].class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        }
+    }),
+    BYTE_ARRAY(new ScalarMarshaller<byte[]>() {
         @Override
         public byte[] readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return reader.readByteArray();
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ByteBufferMarshaller.INSTANCE.writeTo(context, writer, ByteBuffer.wrap((byte[]) value));
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, byte[] bytes) throws IOException {
+            ByteBufferMarshaller.INSTANCE.writeTo(context, writer, ByteBuffer.wrap(bytes));
         }
-    },
-    SHORT_ARRAY(short[].class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Short.TYPE), PrimitiveMarshaller.SHORT);
 
         @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
+        public Class<? extends byte[]> getJavaClass() {
+            return byte[].class;
         }
-    },
-    INTEGER_ARRAY(int[].class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Integer.TYPE), PrimitiveMarshaller.INTEGER);
 
         @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
+        public int getWireType() {
+            return ByteBufferMarshaller.INSTANCE.getWireType();
         }
-    },
-    LONG_ARRAY(long[].class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Long.TYPE), PrimitiveMarshaller.LONG);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    FLOAT_ARRAY(float[].class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Float.TYPE), PrimitiveMarshaller.FLOAT);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    DOUBLE_ARRAY(double[].class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Double.TYPE), PrimitiveMarshaller.DOUBLE);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    CHAR_ARRAY(char[].class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(new ScalarValueMarshaller<>(Character.TYPE), PrimitiveMarshaller.CHARACTER);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    REFERENCE(Void.class) {
+    }),
+    SHORT_ARRAY(new ArrayMarshaller(short[].class, new ScalarValueMarshaller<>(Short.TYPE), PrimitiveMarshaller.SHORT)),
+    INTEGER_ARRAY(new ArrayMarshaller(int[].class, new ScalarValueMarshaller<>(Integer.TYPE), PrimitiveMarshaller.INTEGER)),
+    LONG_ARRAY(new ArrayMarshaller(long[].class, new ScalarValueMarshaller<>(Long.TYPE), PrimitiveMarshaller.LONG)),
+    FLOAT_ARRAY(new ArrayMarshaller(float[].class, new ScalarValueMarshaller<>(Float.TYPE), PrimitiveMarshaller.FLOAT)),
+    DOUBLE_ARRAY(new ArrayMarshaller(double[].class, new ScalarValueMarshaller<>(Double.TYPE), PrimitiveMarshaller.DOUBLE)),
+    CHAR_ARRAY(new ArrayMarshaller(char[].class, new ScalarValueMarshaller<>(Character.TYPE), PrimitiveMarshaller.CHARACTER)),
+    REFERENCE(new ScalarMarshaller<Object>() {
         @Override
         public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return reader.readUInt32();
@@ -223,74 +169,26 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
             Integer id = (Integer) value;
             return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(id));
         }
-    },
-    IDENTIFIED_OBJECT(Void.class) {
-        private final ScalarMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ID);
 
         @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
+        public Class<? extends Object> getJavaClass() {
+            return Object.class;
         }
-    },
-    IDENTIFIED_ENUM(Void.class) {
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        private final ScalarMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ID);
 
         @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
         }
-    },
-    IDENTIFIED_ARRAY(Void.class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ID, ObjectMarshaller.INSTANCE);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    OBJECT(Void.class) {
-        private final ScalarMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ANY);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    ENUM(Void.class) {
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        private final ScalarMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ANY);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    FIELD_ARRAY(Void.class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.FIELD, ObjectMarshaller.INSTANCE);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    ARRAY(Void.class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ANY, ObjectMarshaller.INSTANCE);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    MULTI_DIMENSIONAL_ARRAY(Void.class) {
-        private final ScalarMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ARRAY, ObjectMarshaller.INSTANCE);
-
-        @Override
-        public ScalarMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    PROXY(Void.class) {
+    }),
+    IDENTIFIED_OBJECT(new TypedObjectMarshaller(ClassField.ID)),
+    IDENTIFIED_ENUM(new TypedEnumMarshaller<>(ClassField.ID)),
+    IDENTIFIED_ARRAY(new ArrayMarshaller(ClassField.ID, ObjectMarshaller.INSTANCE)),
+    OBJECT(new TypedObjectMarshaller(ClassField.ANY)),
+    ENUM(new TypedEnumMarshaller<>(ClassField.ANY)),
+    FIELD_ARRAY(new ArrayMarshaller(ClassField.FIELD, ObjectMarshaller.INSTANCE)),
+    ARRAY(new ArrayMarshaller(ClassField.ANY, ObjectMarshaller.INSTANCE)),
+    MULTI_DIMENSIONAL_ARRAY(new ArrayMarshaller(ClassField.ARRAY, ObjectMarshaller.INSTANCE)),
+    PROXY(new ScalarMarshaller<Object>() {
         @Override
         public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             Module module = (Module) ObjectMarshaller.INSTANCE.readFrom(context, reader);
@@ -330,18 +228,27 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
             }
             return size;
         }
-    },
-    THROWABLE(Throwable.class) {
+
         @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        public Class<? extends Object> getJavaClass() {
+            return Object.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        }
+    }),
+    THROWABLE(new ScalarMarshaller<Throwable>() {
+        @Override
+        public Throwable readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             Class<?> targetClass = ClassField.ANY.readFrom(context, reader);
 
             return new ExceptionMarshaller<>(targetClass.asSubclass(Throwable.class)).readFrom(context, reader);
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            Throwable exception = (Throwable) value;
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Throwable exception) throws IOException {
             @SuppressWarnings("unchecked")
             Class<Throwable> exceptionClass = (Class<Throwable>) exception.getClass();
             ClassField.ANY.writeTo(context, writer, exceptionClass);
@@ -350,25 +257,29 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            Throwable exception = (Throwable) value;
+        public OptionalInt size(ImmutableSerializationContext context, Throwable exception) {
             @SuppressWarnings("unchecked")
             Class<Throwable> exceptionClass = (Class<Throwable>) exception.getClass();
             OptionalInt classSize = ClassField.ANY.size(context, exceptionClass);
             OptionalInt exceptionSize = new ExceptionMarshaller<>(exceptionClass).size(context, exception);
             return classSize.isPresent() && exceptionSize.isPresent() ? OptionalInt.of(classSize.getAsInt() + exceptionSize.getAsInt()) : OptionalInt.empty();
         }
-    },
+
+        @Override
+        public Class<? extends Throwable> getJavaClass() {
+            return Throwable.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        }
+    }),
     ;
-    private final Class<?> targetClass;
+    private final ScalarMarshaller<?> marshaller;
 
-    AnyField(Class<?> targetClass) {
-        this.targetClass = targetClass;
-    }
-
-    @Override
-    public Class<? extends Object> getJavaClass() {
-        return this.targetClass;
+    AnyField(ScalarMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
     }
 
     @Override
@@ -378,7 +289,7 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
 
     @Override
     public ScalarMarshaller<?> getMarshaller() {
-        return this;
+        return this.marshaller;
     }
 
     private static final AnyField[] VALUES = AnyField.values();
@@ -390,8 +301,9 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
     private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();
     static {
         for (AnyField field : VALUES) {
-            if (field.targetClass != Void.class) {
-                FIELDS.put(field.targetClass, field);
+            Class<?> fieldClass = field.getJavaClass();
+            if ((fieldClass != Object.class) && (fieldClass != Enum.class)) {
+                FIELDS.put(fieldClass, field);
             }
         }
     }

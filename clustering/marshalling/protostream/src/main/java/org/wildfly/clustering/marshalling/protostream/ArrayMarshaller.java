@@ -29,6 +29,7 @@ import java.util.OptionalInt;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.impl.WireFormat;
 
 import protostream.com.google.protobuf.CodedOutputStream;
 
@@ -36,11 +37,16 @@ import protostream.com.google.protobuf.CodedOutputStream;
  * @author Paul Ferraro
  */
 public class ArrayMarshaller implements ScalarMarshaller<Object> {
-
+    private final Class<? extends Object> arrayClass;
     private final ScalarMarshaller<Class<?>> componentTypeMarshaller;
     private final ScalarMarshaller<Object> elementMarshaller;
 
     public ArrayMarshaller(ScalarMarshaller<Class<?>> componentTypeMarshaller, ScalarMarshaller<Object> elementMarshaller) {
+        this(Object.class, componentTypeMarshaller, elementMarshaller);
+    }
+
+    public ArrayMarshaller(Class<? extends Object> arrayClass, ScalarMarshaller<Class<?>> componentTypeMarshaller, ScalarMarshaller<Object> elementMarshaller) {
+        this.arrayClass = arrayClass;
         this.componentTypeMarshaller = componentTypeMarshaller;
         this.elementMarshaller = elementMarshaller;
     }
@@ -90,6 +96,11 @@ public class ArrayMarshaller implements ScalarMarshaller<Object> {
 
     @Override
     public Class<? extends Object> getJavaClass() {
-        return null;
+        return this.arrayClass;
+    }
+
+    @Override
+    public int getWireType() {
+        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     }
 }

@@ -30,6 +30,7 @@ import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.impl.WireFormat;
 
 import protostream.com.google.protobuf.CodedOutputStream;
 
@@ -57,6 +58,11 @@ public enum ClassField implements Field<Class<?>> {
         @SuppressWarnings("unchecked")
         private ProtoStreamMarshaller<Class<?>> getMarshaller(ImmutableSerializationContext context) {
             return (ProtoStreamMarshaller<Class<?>>) (ProtoStreamMarshaller<?>) context.getMarshaller(Class.class);
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
         }
     },
     ARRAY() {
@@ -92,6 +98,11 @@ public enum ClassField implements Field<Class<?>> {
             }
             return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(dimensions) + ClassField.ANY.size(context, componentClass).getAsInt());
         }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        }
     },
     FIELD() {
         @Override
@@ -107,6 +118,11 @@ public enum ClassField implements Field<Class<?>> {
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Class<?> value) {
             return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(AnyField.fromJavaType(value).getIndex()));
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
         }
     },
     ID() {
@@ -133,6 +149,11 @@ public enum ClassField implements Field<Class<?>> {
             int typeId = context.getDescriptorByName(typeName).getTypeId();
             return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(typeId));
         }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
+        }
     },
     NAME() {
         @Override
@@ -155,6 +176,11 @@ public enum ClassField implements Field<Class<?>> {
             String typeName = marshaller.getTypeName();
             return AnyField.STRING.size(context, typeName);
         }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        }
     },
     OBJECT() {
         @Override
@@ -169,6 +195,11 @@ public enum ClassField implements Field<Class<?>> {
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Class<?> value) {
             return OptionalInt.of(0);
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
         }
     },
     ;

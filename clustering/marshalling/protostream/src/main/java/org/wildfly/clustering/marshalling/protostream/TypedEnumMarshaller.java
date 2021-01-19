@@ -29,6 +29,7 @@ import org.infinispan.protostream.EnumMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.impl.WireFormat;
 
 import protostream.com.google.protobuf.CodedOutputStream;
 
@@ -68,8 +69,14 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements ScalarMarshaller<
         return typeSize.isPresent() ? OptionalInt.of(typeSize.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(value.ordinal())) : typeSize;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Class<? extends E> getJavaClass() {
-        return null;
+        return (Class<E>) (Class<?>) Enum.class;
+    }
+
+    @Override
+    public int getWireType() {
+        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     }
 }

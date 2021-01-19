@@ -28,6 +28,7 @@ import java.util.OptionalInt;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
  * @author Paul Ferraro
@@ -53,5 +54,10 @@ public enum ObjectMarshaller implements ScalarMarshaller<Object> {
     @Override
     public OptionalInt size(ImmutableSerializationContext context, Object value) {
         return Predictable.computeSizeNoTag(context, new Any(value));
+    }
+
+    @Override
+    public int getWireType() {
+        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     }
 }

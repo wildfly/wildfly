@@ -30,6 +30,7 @@ import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
 import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
+import org.infinispan.protostream.impl.WireFormat;
 
 import protostream.com.google.protobuf.CodedOutputStream;
 
@@ -37,165 +38,243 @@ import protostream.com.google.protobuf.CodedOutputStream;
  * @author Paul Ferraro
  */
 public enum PrimitiveMarshaller implements ScalarMarshallerProvider {
-    VOID(Void.class) {
+    VOID(new ScalarMarshaller<Void>() {
         @Override
-        public Boolean readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        public Void readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return null;
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Void value) throws IOException {
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
+        public OptionalInt size(ImmutableSerializationContext context, Void value) {
             return OptionalInt.of(0);
         }
-    },
-    BOOLEAN(Boolean.class) {
+
+        @Override
+        public Class<? extends Void> getJavaClass() {
+            return Void.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return 0;
+        }
+    }),
+    BOOLEAN(new ScalarMarshaller<Boolean>() {
         @Override
         public Boolean readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Boolean.valueOf(reader.readBool());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeBoolNoTag(((Boolean) value).booleanValue());
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Boolean value) throws IOException {
+            ((RawProtoStreamWriterImpl) writer).getDelegate().writeBoolNoTag(value.booleanValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(CodedOutputStream.computeBoolSizeNoTag(false));
+        public OptionalInt size(ImmutableSerializationContext context, Boolean value) {
+            return OptionalInt.of(CodedOutputStream.computeBoolSizeNoTag(value.booleanValue()));
         }
-    },
-    BYTE(Byte.class) {
+
+        @Override
+        public Class<? extends Boolean> getJavaClass() {
+            return Boolean.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
+        }
+    }),
+    BYTE(new ScalarMarshaller<Byte>() {
         @Override
         public Byte readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Byte.valueOf(((RawProtoStreamReaderImpl) reader).getDelegate().readRawByte());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeRawByte(((Byte) value).byteValue());
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Byte value) throws IOException {
+            ((RawProtoStreamWriterImpl) writer).getDelegate().writeRawByte(value.byteValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
+        public OptionalInt size(ImmutableSerializationContext context, Byte value) {
             return OptionalInt.of(1);
         }
-    },
-    SHORT(Short.class) {
+
+        @Override
+        public Class<? extends Byte> getJavaClass() {
+            return Byte.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
+        }
+    }),
+    SHORT(new ScalarMarshaller<Short>() {
         @Override
         public Short readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Short.valueOf((short) reader.readSInt32());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeSInt32NoTag(((Short) value).shortValue());
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Short value) throws IOException {
+            ((RawProtoStreamWriterImpl) writer).getDelegate().writeSInt32NoTag(value.shortValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(CodedOutputStream.computeSInt32SizeNoTag(((Short) value).shortValue()));
+        public OptionalInt size(ImmutableSerializationContext context, Short value) {
+            return OptionalInt.of(CodedOutputStream.computeSInt32SizeNoTag(value.shortValue()));
         }
-    },
-    INTEGER(Integer.class) {
+
+        @Override
+        public Class<? extends Short> getJavaClass() {
+            return Short.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
+        }
+    }),
+    INTEGER(new ScalarMarshaller<Integer>() {
         @Override
         public Integer readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Integer.valueOf(reader.readSInt32());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeSInt32NoTag(((Integer) value).intValue());
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Integer value) throws IOException {
+            ((RawProtoStreamWriterImpl) writer).getDelegate().writeSInt32NoTag(value.intValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(CodedOutputStream.computeSInt32SizeNoTag(((Integer) value).intValue()));
+        public OptionalInt size(ImmutableSerializationContext context, Integer value) {
+            return OptionalInt.of(CodedOutputStream.computeSInt32SizeNoTag(value.intValue()));
         }
-    },
-    LONG(Long.class) {
+
+        @Override
+        public Class<? extends Integer> getJavaClass() {
+            return Integer.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
+        }
+    }),
+    LONG(new ScalarMarshaller<Long>() {
         @Override
         public Long readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Long.valueOf(reader.readSInt64());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeSInt64NoTag(((Long) value).longValue());
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Long value) throws IOException {
+            ((RawProtoStreamWriterImpl) writer).getDelegate().writeSInt64NoTag(value.longValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(CodedOutputStream.computeSInt64SizeNoTag(((Long) value).longValue()));
+        public OptionalInt size(ImmutableSerializationContext context, Long value) {
+            return OptionalInt.of(CodedOutputStream.computeSInt64SizeNoTag(value.longValue()));
         }
-    },
-    FLOAT(Float.class) {
+
+        @Override
+        public Class<? extends Long> getJavaClass() {
+            return Long.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
+        }
+    }),
+    FLOAT(new ScalarMarshaller<Float>() {
         @Override
         public Float readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Float.valueOf(reader.readFloat());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeFloatNoTag(((Float) value).floatValue());
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Float value) throws IOException {
+            ((RawProtoStreamWriterImpl) writer).getDelegate().writeFloatNoTag(value.floatValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(CodedOutputStream.computeFloatSizeNoTag(((Float) value).floatValue()));
+        public OptionalInt size(ImmutableSerializationContext context, Float value) {
+            return OptionalInt.of(CodedOutputStream.computeFloatSizeNoTag(value.floatValue()));
         }
-    },
-    DOUBLE(Double.class) {
+
+        @Override
+        public Class<? extends Float> getJavaClass() {
+            return Float.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_FIXED32;
+        }
+    }),
+    DOUBLE(new ScalarMarshaller<Double>() {
         @Override
         public Double readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Double.valueOf(reader.readDouble());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ((RawProtoStreamWriterImpl) writer).getDelegate().writeDoubleNoTag(((Double) value).doubleValue());
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Double value) throws IOException {
+            ((RawProtoStreamWriterImpl) writer).getDelegate().writeDoubleNoTag(value.doubleValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            return OptionalInt.of(CodedOutputStream.computeDoubleSizeNoTag(((Double) value).doubleValue()));
+        public OptionalInt size(ImmutableSerializationContext context, Double value) {
+            return OptionalInt.of(CodedOutputStream.computeDoubleSizeNoTag(value.doubleValue()));
         }
-    },
-    CHARACTER(Character.class) {
+
+        @Override
+        public Class<? extends Double> getJavaClass() {
+            return Double.class;
+        }
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_FIXED64;
+        }
+    }),
+    CHARACTER(new ScalarMarshaller<Character>() {
         @Override
         public Character readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
             return Character.valueOf((char) reader.readUInt32());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            Character character = (Character) value;
-            writer.writeUInt32NoTag(character.charValue());
+        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Character value) throws IOException {
+            writer.writeUInt32NoTag(value.charValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            Character character = (Character) value;
-            return OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(character.charValue()));
+        public Class<? extends Character> getJavaClass() {
+            return Character.class;
         }
-    },
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
+        }
+    }),
     ;
-    private final Class<?> primitiveClass;
+    private final ScalarMarshaller<?> marshaller;
 
-    PrimitiveMarshaller(Class<?> primitiveClass) {
-        this.primitiveClass = primitiveClass;
-    }
-
-    @Override
-    public Class<? extends Object> getJavaClass() {
-        return this.primitiveClass;
+    PrimitiveMarshaller(ScalarMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
     }
 
     @Override
     public ScalarMarshaller<?> getMarshaller() {
-        return this;
+        return this.marshaller;
     }
 }

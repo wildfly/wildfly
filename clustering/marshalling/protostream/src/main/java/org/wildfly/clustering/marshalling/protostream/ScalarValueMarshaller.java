@@ -61,4 +61,9 @@ public class ScalarValueMarshaller<T> implements ScalarMarshaller<T> {
     public OptionalInt size(ImmutableSerializationContext context, T value) {
         return OptionalInt.of(0);
     }
+
+    @Override
+    public int getWireType() {
+        return 0;
+    }
 }
