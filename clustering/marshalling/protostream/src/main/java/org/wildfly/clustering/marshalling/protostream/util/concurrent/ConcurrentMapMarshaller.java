@@ -20,45 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream.util;
+package org.wildfly.clustering.marshalling.protostream.util.concurrent;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
-import org.infinispan.protostream.impl.WireFormat;
-import org.wildfly.clustering.marshalling.protostream.Any;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SimpleFunctionalMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.MapMarshaller;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
- * Marshaller for a basic collection.
+ * Marshaller for a {@link ConcurrentMap} that does not allow null values.
  * @author Paul Ferraro
  */
-public class CollectionMarshaller<T extends Collection<Object>> extends AbstractCollectionMarshaller<T> {
-
-    private final Supplier<T> factory;
+public class ConcurrentMapMarshaller<T extends ConcurrentMap<Object, Object>> extends SimpleFunctionalMarshaller<T, Map<Object, Object>> {
+    private static final ProtoStreamMarshaller<Map<Object, Object>> MARSHALLER = new MapMarshaller<>(HashMap::new);
 
     @SuppressWarnings("unchecked")
-   public CollectionMarshaller(Supplier<T> factory) {
-        super((Class<T>) factory.get().getClass());
-        this.factory = factory;
-    }
-
-    @Override
-    public T readFrom(ProtoStreamReader reader) throws IOException {
-        T collection = this.factory.get();
-        boolean reading = true;
-        while (reading) {
-            int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
-            switch (index) {
-                case ELEMENT_INDEX:
-                    collection.add(reader.readObject(Any.class).get());
-                    break;
-                default:
-                    reading = (tag != 0) && reader.skipField(tag);
+    public ConcurrentMapMarshaller(Supplier<T> factory) {
+        super((Class<T>) factory.get().getClass(), MARSHALLER, new ExceptionFunction<Map<Object, Object>, T, IOException>() {
+            @Override
+            public T apply(Map<Object, Object> map) {
+                T result = factory.get();
+                result.putAll(map);
+                return result;
             }
-        }
-        return collection;
+        });
     }
 }

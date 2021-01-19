@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,24 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.BitSet;
+import java.util.EnumSet;
 
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilder;
 
 /**
- * Collection marshaller for collections constructed with a context.
+ * Builder for an {@link EnumSet}.
  * @author Paul Ferraro
  */
-public class ContextualCollectionMarshaller<T extends Collection<Object>, C> extends CollectionMarshaller<T, C, C> {
+public interface EnumSetBuilder<E extends Enum<E>> extends ProtoStreamBuilder<EnumSet<E>> {
 
-    public ContextualCollectionMarshaller(Class<T> targetClass, Function<C, T> factory, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
-        super(targetClass, factory, Map.Entry::getKey, context, contextMarshaller);
-    }
+    EnumSetBuilder<E> setEnumClass(Class<E> enumClass);
+
+    EnumSetBuilder<E> setComplement(boolean complement);
+
+    EnumSetBuilder<E> setBits(BitSet bits);
+
+    EnumSetBuilder<E> add(int ordinal);
+
+    Class<E> getEnumClass();
 }

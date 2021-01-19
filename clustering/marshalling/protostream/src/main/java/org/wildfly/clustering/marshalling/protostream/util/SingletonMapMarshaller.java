@@ -22,56 +22,34 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.io.IOException;
 import java.util.Map;
-import java.util.OptionalInt;
+import java.io.IOException;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
+ * Marshaller for a singleton map.
  * @author Paul Ferraro
  */
-public class SingletonMapMarshaller<T extends Map<Object, Object>> implements ProtoStreamMarshaller<T> {
-
-    private final BiFunction<Object, Object, T> factory;
-
-    public SingletonMapMarshaller(BiFunction<Object, Object, T> factory) {
-        this.factory = factory;
-    }
-
-    @Override
-    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        Object key = ObjectMarshaller.INSTANCE.readFrom(context, reader);
-        Object value = ObjectMarshaller.INSTANCE.readFrom(context, reader);
-        return this.factory.apply(key, value);
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T map) throws IOException {
-        Map.Entry<Object, Object> entry = map.entrySet().iterator().next();
-        ObjectMarshaller.INSTANCE.writeTo(context, writer, entry.getKey());
-        ObjectMarshaller.INSTANCE.writeTo(context, writer, entry.getValue());
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T map) {
-        Map.Entry<Object, Object> entry = map.entrySet().iterator().next();
-        OptionalInt size = ObjectMarshaller.INSTANCE.size(context, entry.getKey());
-        if (size.isPresent()) {
-            OptionalInt valueSize = ObjectMarshaller.INSTANCE.size(context, entry.getValue());
-            size = valueSize.isPresent() ? OptionalInt.of(size.getAsInt() + valueSize.getAsInt()) : OptionalInt.empty();
+public class SingletonMapMarshaller extends FunctionalMarshaller<Map<Object, Object>, SimpleEntry<Object, Object>> {
+    private static final ExceptionFunction<Map<Object, Object>, SimpleEntry<Object, Object>, IOException> FUNCTION = new ExceptionFunction<Map<Object, Object>, SimpleEntry<Object, Object>, IOException>() {
+        @Override
+        public SimpleEntry<Object, Object> apply(Map<Object, Object> map) {
+            return new SimpleEntry<>(map.entrySet().iterator().next());
         }
-        return size;
-    }
+    };
 
     @SuppressWarnings("unchecked")
-    @Override
-    public Class<? extends T> getJavaClass() {
-        return (Class<T>) this.factory.apply(null, null).getClass();
+    public SingletonMapMarshaller(BiFunction<Object, Object, Map<Object, Object>> factory) {
+        super((Class<Map<Object, Object>>) factory.apply(null, null).getClass(), new MapEntryMarshaller<>(Function.identity()), FUNCTION, new ExceptionFunction<SimpleEntry<Object, Object>, Map<Object, Object>, IOException>() {
+            @Override
+            public Map<Object, Object> apply(SimpleEntry<Object, Object> entry) {
+                return factory.apply(entry.getKey(), entry.getValue());
+            }
+        });
     }
 }

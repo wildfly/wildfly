@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,36 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.function.Supplier;
 
-import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
-import org.wildfly.clustering.marshalling.spi.ValueFunction;
-import org.wildfly.clustering.marshalling.spi.SupplierFunction;
+import org.wildfly.clustering.marshalling.protostream.Any;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Collection marshaller for unbounded collections.
+ * Abstract collection marshaller that writes the elements of the collection.
  * @author Paul Ferraro
  */
-public class UnboundedCollectionMarshaller<T extends Collection<Object>> extends CollectionMarshaller<T, Void, Void> {
+public abstract class AbstractCollectionMarshaller<T extends Collection<Object>> implements ProtoStreamMarshaller<T> {
 
-    public UnboundedCollectionMarshaller(Class<T> targetClass, Supplier<T> factory) {
-        super(targetClass, new SupplierFunction<>(factory), Map.Entry::getKey, ValueFunction.voidFunction(), PrimitiveMarshaller.VOID.cast(Void.class));
+    protected static final int ELEMENT_INDEX = 1;
+
+    private final Class<? extends T> collectionClass;
+
+    public AbstractCollectionMarshaller(Class<? extends T> collectionClass) {
+        this.collectionClass = collectionClass;
+    }
+
+    @Override
+    public void writeTo(ProtoStreamWriter writer, T collection) throws IOException {
+        for (Object element : collection) {
+            writer.writeObject(ELEMENT_INDEX, new Any(element));
+        }
+    }
+
+    @Override
+    public Class<? extends T> getJavaClass() {
+        return this.collectionClass;
     }
 }

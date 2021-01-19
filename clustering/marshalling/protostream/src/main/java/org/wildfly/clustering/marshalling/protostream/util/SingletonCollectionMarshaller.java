@@ -30,6 +30,7 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.common.function.Functions;
 
 /**
+ * Marshaller for singleton collections.
  * @author Paul Ferraro
  */
 public class SingletonCollectionMarshaller<T extends Collection<Object>> extends FunctionalScalarMarshaller<T, Object> {

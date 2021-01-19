@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,35 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
-import java.util.Set;
-import java.util.function.IntFunction;
+import java.io.IOException;
+import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 
-import org.wildfly.clustering.marshalling.spi.util.BoundedCollectionExternalizer;
-import org.wildfly.clustering.marshalling.spi.util.HashSetExternalizer.CapacityFactory;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for hash table based sets constructed with a capacity rather than a size.
+ * Abstract marshaller for a {@link Map} that writes the entries of the map.
  * @author Paul Ferraro
  */
-public class HashSetMarshaller<T extends Set<Object>> extends BoundedCollectionExternalizer<T> {
+public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> implements ProtoStreamMarshaller<T> {
+    protected static final int ENTRY_INDEX = 1;
 
-    public HashSetMarshaller(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, new CapacityFactory<>(factory));
+    private final Class<? extends T> mapClass;
+
+    public AbstractMapMarshaller(Class<? extends T> mapClass) {
+        this.mapClass = mapClass;
+    }
+
+    @Override
+    public void writeTo(ProtoStreamWriter writer, T map) throws IOException {
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            writer.writeObject(ENTRY_INDEX, new SimpleEntry<>(entry));
+        }
+    }
+
+    @Override
+    public Class<? extends T> getJavaClass() {
+        return this.mapClass;
     }
 }
