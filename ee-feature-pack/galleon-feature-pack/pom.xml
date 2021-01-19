@@ -51,6 +51,7 @@
         <ee-8-api.resources.directory>${basedir}/../ee-8-api/src/main/resources</ee-8-api.resources.directory>
         <galleon-common.resources.directory>${basedir}/../galleon-common/src/main/resources</galleon-common.resources.directory>
         <pruned.resources.directory>${basedir}/../pruned/src/main/resources</pruned.resources.directory>
+        <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
     </properties>
 
     <build>
@@ -250,9 +251,10 @@
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/src/main/resources</directory>
+                                    <directory>${content.resources.directory}</directory>
                                 </resource>
                             </resources>
+                            <overwrite>true</overwrite>
                         </configuration>
                     </execution>
                 </executions>
@@ -410,6 +412,14 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -492,6 +502,7 @@
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-ee-8-api</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-pruned</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-content</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

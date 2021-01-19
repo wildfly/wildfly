@@ -961,6 +961,20 @@
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
+            
+             <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
