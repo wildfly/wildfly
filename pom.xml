@@ -313,7 +313,7 @@
         <version.io.smallrye.smallrye-common>1.5.0</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>2.0.2</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>4.3.2</version.io.smallrye.smallrye-fault-tolerance>
-        <version.io.smallrye.smallrye-health>3.0.0-RC2</version.io.smallrye.smallrye-health>
+        <version.io.smallrye.smallrye-health>3.0.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>2.0.13</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.0</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.open-api>2.1.0</version.io.smallrye.open-api>
