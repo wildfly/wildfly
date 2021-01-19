@@ -94,11 +94,13 @@ public abstract class AbstractUtilTestCase {
 
     @Test
     public void testBitSet() throws IOException {
+        MarshallingTester<BitSet> tester = this.factory.createTester();
+
+        tester.test(new BitSet(0));
         BitSet set = new BitSet(7);
         set.set(1);
         set.set(3);
         set.set(5);
-        MarshallingTester<BitSet> tester = this.factory.createTester();
         tester.test(set);
     }
 
@@ -118,7 +120,8 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testCurrency() throws IOException {
         MarshallingTester<Currency> tester = this.factory.createTester();
-        tester.test(Currency.getInstance(Locale.US));
+        tester.test(Currency.getInstance(Locale.getDefault()));
+        tester.test(Currency.getInstance(Locale.UK));
     }
 
     @Test
@@ -192,7 +195,9 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testLocale() throws IOException {
         MarshallingTester<Locale> tester = this.factory.createTester();
-        tester.test(Locale.US);
+        tester.test(Locale.getDefault());
+        tester.test(Locale.ENGLISH);
+        tester.test(Locale.CANADA_FRENCH);
     }
 
     @Test
@@ -249,7 +254,7 @@ public abstract class AbstractUtilTestCase {
     public void testTimeZone() throws IOException {
         MarshallingTester<TimeZone> tester = this.factory.createTester();
         tester.test(TimeZone.getDefault());
-        tester.test(TimeZone.getTimeZone("America/New_York"));
+        tester.test(TimeZone.getTimeZone("GMT"));
     }
 
     @SuppressWarnings("unchecked")
