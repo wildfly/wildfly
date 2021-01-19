@@ -22,6 +22,10 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+import java.util.OptionalInt;
+
+import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtobufMarshaller;
 
 /**
@@ -34,5 +38,16 @@ public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Pred
         Class<?> targetClass = this.getJavaClass();
         Package targetPackage = targetClass.getPackage();
         return (targetPackage != null) ? (targetPackage.getName() + '.' + targetClass.getSimpleName()) : targetClass.getSimpleName();
+    }
+
+    @Override
+    default OptionalInt size(ImmutableSerializationContext context, T value) {
+        SizeComputingWriter writer = new SizeComputingWriter(context);
+        try {
+            this.writeTo(writer, writer, value);
+            return OptionalInt.of(writer.getAsInt());
+        } catch (IOException | IllegalArgumentException e) {
+            return OptionalInt.empty();
+        }
     }
 }
