@@ -25,16 +25,16 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.util.Collection;
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
-import org.wildfly.clustering.marshalling.spi.util.SingletonCollectionExternalizer;
+import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SingleFieldMarshaller;
+import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
  */
-public class SingletonCollectionMarshaller<T extends Collection<Object>> extends FunctionalObjectMarshaller<T> {
+public class SingletonCollectionMarshaller<T extends Collection<Object>> extends SingleFieldMarshaller<T, Object> {
 
-    @SuppressWarnings("unchecked")
     public SingletonCollectionMarshaller(Function<Object, T> factory) {
-        super((Class<T>) factory.apply(null).getClass(), factory, SingletonCollectionExternalizer.accessor());
+        super(ObjectMarshaller.INSTANCE, Functions.constantSupplier(factory.apply(null)), collection -> collection.iterator().next(), factory);
     }
 }
