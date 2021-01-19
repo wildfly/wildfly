@@ -25,20 +25,28 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
+import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -46,9 +54,9 @@ import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     ARRAY_DEQUE(new BoundedCollectionMarshaller<>(ArrayDeque.class, ArrayDeque::new)),
     ARRAY_LIST(new BoundedCollectionMarshaller<>(ArrayList.class, ArrayList::new)),
-    BIT_SET(UtilExternalizerProvider.BIT_SET),
+    BIT_SET(new FunctionalScalarMarshaller<>(Scalar.BYTE_ARRAY.cast(byte[].class), BitSet::new, BitSet::isEmpty, BitSet::toByteArray, BitSet::valueOf)),
     CALENDAR(UtilExternalizerProvider.CALENDAR),
-    CURRENCY(UtilExternalizerProvider.CURRENCY),
+    CURRENCY(new FunctionalScalarMarshaller<>(Scalar.STRING.cast(String.class), Functions.constantSupplier(Currency.getInstance(Locale.getDefault())), Currency::getCurrencyCode, Currency::getInstance)),
     DATE(UtilExternalizerProvider.DATE),
     EMPTY_ENUMERATION(new ValueMarshaller<>(Collections.emptyEnumeration())),
     EMPTY_ITERATOR(new ValueMarshaller<>(Collections.emptyIterator())),
@@ -67,7 +75,7 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     LINKED_HASH_MAP(new LinkedHashMapMarshaller()),
     LINKED_HASH_SET(new HashSetMarshaller<>(LinkedHashSet.class, LinkedHashSet::new)),
     LINKED_LIST(new UnboundedCollectionMarshaller<>(LinkedList.class, LinkedList::new)),
-    LOCALE(UtilExternalizerProvider.LOCALE),
+    LOCALE(new FunctionalScalarMarshaller<>(Scalar.STRING.cast(String.class), Functions.constantSupplier(Locale.getDefault()), Locale::toLanguageTag, Locale::forLanguageTag)),
     OPTIONAL(OptionalMarshaller.OBJECT),
     OPTIONAL_DOUBLE(OptionalMarshaller.DOUBLE),
     OPTIONAL_INT(OptionalMarshaller.INT),
@@ -77,16 +85,15 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     SINGLETON_LIST(new SingletonCollectionMarshaller<>(Collections::singletonList)),
     SINGLETON_MAP(new SingletonMapMarshaller<>(Collections::singletonMap)),
     SINGLETON_SET(new SingletonCollectionMarshaller<>(Collections::singleton)),
-    TIME_ZONE(UtilExternalizerProvider.TIME_ZONE),
+    TIME_ZONE(new FunctionalScalarMarshaller<>(TimeZone.class, Scalar.STRING.cast(String.class), Functions.constantSupplier(TimeZone.getDefault()), TimeZone::getID, TimeZone::getTimeZone)),
     TREE_MAP(new SortedMapMarshaller<>(TreeMap.class, TreeMap::new)),
     TREE_SET(new SortedSetMarshaller<>(TreeSet.class, TreeSet::new)),
-    UUID(UUIDMarshaller.INSTANCE),
+    UUID(new ProtoStreamBuilderFieldSetMarshaller<>(UUIDMarshaller.INSTANCE)),
     ;
-    private final ProtoStreamMarshaller<Object> marshaller;
+    private final ProtoStreamMarshaller<?> marshaller;
 
-    @SuppressWarnings("unchecked")
     UtilMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = (ProtoStreamMarshaller<Object>) marshaller;
+        this.marshaller = marshaller;
     }
 
     UtilMarshallerProvider(Externalizer<?> externalizer) {
