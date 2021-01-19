@@ -286,8 +286,8 @@ bean, CDI will inject that bean
 [[introduction-2]]
 === Introduction
 
-This quickstart adds in a "complete" view layer into the mix. Java EE
-ships with a JSF. JSF is a server side rendering, component orientated
+This quickstart adds in a "complete" view layer into the mix. Jakarta EE
+ships with a Jakarta Server Faces. Jakarta Server Faces is a server side rendering, component orientated
 framework, where you write markup using an HTML like language, adding in
 dynamic behavior by binding components to beans in the back end. The
 quickstart also makes more use of CDI to wire the application together.
@@ -313,10 +313,10 @@ No need to open any of them, just point them out
 .  `web.xml` - don't need it!
 .  `beans.xml` - as before, marker file
 .  `faces-config.xml` - nice feature from AS7 - we can just put
-`faces-config.xml` into the WEB-INF and it enables JSF (inspiration from
+`faces-config.xml` into the WEB-INF and it enables Jakarta Server Faces (inspiration from
 CDI)
 .  `pom.xml` we saw this before, this time it's the same but adds in
-JSF API
+Jakarta Server Faces API
 
 [[views]]
 === Views
@@ -340,7 +340,7 @@ calls a method on the game bean
 persistence etc.
 ..  `@Named` – As we discussed CDI is typesafe, (beans are injected by
 type) but sometimes need to access in a non-typesafe fashion. @Named
-exposes the Bean in EL - and allows us to access it from JSF
+exposes the Bean in EL - and allows us to access it from Jakarta Server Faces
 ..  `@SessionScoped` – really simple app, we keep the game data in the
 session - to play two concurrent games, need two sessions. This is not a
 limitation of CDI, but simply keeps this demo very simple. CDI will
@@ -373,7 +373,7 @@ instance at runtime
 [[introduction-3]]
 === Introduction
 
-The login quickstart builds on the knowledge of CDI and JSF we have got
+The login quickstart builds on the knowledge of CDI and Jakarta Server Faces we have got
 from numberguess. New stuff we will learn about is how to use JPA to
 store data in a database, how to use JTA to control transactions, and
 how to use EJB for declarative TX control.
@@ -408,7 +408,7 @@ JTA and EJB
 [[views-1]]
 === Views
 
-.  `template.xhtml` One of the updates added to JSF 2.0 was templating
+.  `template.xhtml` One of the updates added to Jakarta Server Faces was templating
 ability. We take advantage of that in this app, as we have multiple
 views
 ..  Actually nothing too major here, we define the app "title" and we
@@ -434,14 +434,14 @@ logout, link to add users.
 
 .  `Credentials.java` Backing bean for the login form field, pretty
 trivial. It's request scoped (natural for a login field) and named so we
-can get it from JSF.
+can get it from Jakarta Server Faces.
 .  `Login.java`
 ..  Is session scoped (a user is logged in for the length of their
 session or until they log out}}
 ..  Is accessible from EL
 ..  Injects the current credentials
 ..  Uses the userManager service to load the user, and sends any
-messages to JSF as needed
+messages to Jakarta Server Faces as needed
 ..  Uses a producer method to expose the @LoggedIn user (producer
 methods used as we don't know which user at development time)
 .  `User.java` Is a pretty straightforward JPA entity. Mapped with
@@ -483,7 +483,7 @@ The kitchensink quickstart is generated from an archetype available for
 JBoss AS (tell people to check the
 link:/pages/createpage.action?spaceKey=WFLY&title=Getting+Started+Developing+Applications&linkCreation=true&fromPageId=557131[Getting
 Started Developing Applications] Guide for details). It demonstrates
-CDI, JSF, EJB, JPA (which we've seen before) and JAX-RS and Bean
+CDI, Jakarta Server Faces, Jakarta Enterprise Beans, JPA (which we've seen before) and JAX-RS and Bean
 Validation as well. We add in Arquillian for testing.
 
 [[run-the-app-2]]

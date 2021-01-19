@@ -13,7 +13,7 @@ when and which modules are added as implicit dependencies.
 == What's an implicit module dependency?
 
 Consider an application deployment which contains EJBs. EJBs typically
-need access to classes from the javax.ejb.* package and other Java EE
+need access to classes from the javax.ejb.* package and other Jakarta EE
 API packages. The jars containing these packages are already shipped in
 WildFly and are available as "modules". The module which contains the
 javax.ejb.* classes has a specific name and so does the module which

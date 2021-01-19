@@ -1,26 +1,26 @@
-[[JSF]]
-= JSF Configuration
+[[Jakarta_Server_Faces]]
+= Jakarta Server Faces Configuration
 
 [abstract]
 
-JSF configuration is handled by the JSF subsystem. The JSF subsystem
-allows multiple JSF implementations to be installed on the same WildFly
+Jakarta Server Faces configuration is handled by the Jakarta Server Faces subsystem. The Jakarta Server Faces subsystem
+allows multiple Jakarta Server Faces implementations to be installed on the same WildFly
 server. In particular, any version of Mojarra or MyFaces that implements
-spec level 2.1 or higher can be installed. For each JSF implementation,
+spec level 2.1 or higher can be installed. For each Jakarta Server Faces implementation,
 a new slot needs to be created under `com.sun.jsf-impl`,
-`javax.faces.api`, and `org.jboss.as.jsf-injection`. When the JSF
-subsystem starts up, it scans the module path to find all of the JSF
-implementations that have been installed. The default JSF implementation
+`javax.faces.api`, and `org.jboss.as.jsf-injection`. When the Jakarta Server Faces
+subsystem starts up, it scans the module path to find all of the Jakarta Server Faces
+implementations that have been installed. The default Jakarta Server Faces implementation
 that WildFly should use is defined by the `default-jsf-impl-slot`
 attribute.
 
 [[installing-a-new-jsf-implementation-manually]]
-== Installing a new JSF implementation manually
+== Installing a new Jakarta Server Faces implementation manually
 
-A new JSF implementation can be manually installed as follows:
+A new Jakarta Server Faces implementation can be manually installed as follows:
 
 [[add-a-module-slot-for-the-new-jsf-implementation-jar]]
-=== Add a module slot for the new JSF implementation JAR
+=== Add a module slot for the new Jakarta Server Faces implementation JAR
 
 * Create the following directory structure under the
 WILDFLY_HOME/modules directory: +
@@ -29,18 +29,18 @@ WILDFLY_HOME/modules/com/sun/jsf-impl/<JSF_IMPL_NAME>-<JSF_VERSION> +
 For example, for Mojarra 2.2.11, the above path would resolve to: +
 WILDFLY_HOME/modules/com/sun/jsf-impl/mojarra-2.2.11
 
-* Place the JSF implementation JAR in the <JSF_IMPL_NAME>-<JSF_VERSION>
+* Place the Jakarta Server Faces implementation JAR in the <JSF_IMPL_NAME>-<JSF_VERSION>
 subdirectory. In the same subdirectory, add a `module.xml` file similar
 to the
 https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/resources/mojarra-impl-module.xml[Mojarra]
 or
 https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/resources/myfaces-impl-module.xml[MyFaces]
 template examples. Change the `resource-root-path` to the name of your
-JSF implementation JAR and fill in appropriate values for $\{
+Jakarta Server Faces implementation JAR and fill in appropriate values for $\{
 `jsf-impl-name`} and $\{ `jsf-version`}.
 
 [[add-a-module-slot-for-the-new-jsf-api-jar]]
-=== Add a module slot for the new JSF API JAR
+=== Add a module slot for the new Jakarta Server Faces API JAR
 
 * Create the following directory structure under the
 WILDFLY_HOME/modules directory: +
@@ -53,11 +53,11 @@ https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/
 or
 https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/resources/myfaces-api-module.xml[MyFaces]
 template examples. Change the `resource-root-path` to the name of your
-JSF API JAR and fill in appropriate values for $\{ `jsf-impl-name`} and
+Jakarta Server Faces API JAR and fill in appropriate values for $\{ `jsf-impl-name`} and
 $\{ `jsf-version`}.
 
 [[add-a-module-slot-for-the-jsf-injection-jar]]
-=== Add a module slot for the JSF injection JAR
+=== Add a module slot for the Jakarta Server Faces injection JAR
 
 * Create the following directory structure under the
 WILDFLY_HOME/modules directory: +
@@ -96,8 +96,8 @@ Fill in the appropriate value for $\{ `version.commons-digester`}.
 === Start the server
 
 After starting the server, the following CLI command can be used to
-verify that your new JSF implementation has been installed successfully.
-The new JSF implementation should appear in the output of this command.
+verify that your new Jakarta Server Faces implementation has been installed successfully.
+The new Jakarta Server Faces implementation should appear in the output of this command.
 
 [source,options="nowrap"]
 ----
@@ -105,10 +105,10 @@ The new JSF implementation should appear in the output of this command.
 ----
 
 [[changing-the-default-jsf-implementation]]
-== Changing the default JSF implementation
+== Changing the default Jakarta Server Faces implementation
 
-The following CLI command can be used to make a newly installed JSF
-implementation the default JSF implementation used by WildFly:
+The following CLI command can be used to make a newly installed Jakarta Server Faces
+implementation the default Jakarta Server Faces implementation used by WildFly:
 
 [source,options="nowrap"]
 ----
@@ -118,12 +118,12 @@ implementation the default JSF implementation used by WildFly:
 A server restart will be required for this change to take effect.
 
 [[configuring-a-jsf-app-to-use-a-non-default-jsf-implementation]]
-== Configuring a JSF app to use a non-default JSF implementation
+== Configuring a Jakarta Server Faces app to use a non-default Jakarta Server Faces implementation
 
-A JSF app can be configured to use an installed JSF implementation
+A Jakarta Server Faces app can be configured to use an installed Jakarta Server Faces implementation
 that's not the default implementation by adding a
 `org.jboss.jbossfaces.JSF_CONFIG_NAME` context parameter to its
-`web.xml` file. For example, to indicate that a JSF app should use
+`web.xml` file. For example, to indicate that a Jakarta Server Faces app should use
 MyFaces 2.2.12 (assuming MyFaces 2.2.12 has been installed on the
 server), the following context parameter would need to be added:
 
@@ -135,14 +135,14 @@ server), the following context parameter would need to be added:
 </context-param>
 ----
 
-If a JSF app does not specify this context parameter, the default JSF
+If a Jakarta Server Faces app does not specify this context parameter, the default Jakarta Server Faces
 implementation will be used for that app.
 
 [[disallowing-doctype-declarations]]
 == Disallowing DOCTYPE declarations
 
 The following CLI commands can be used to disallow DOCTYPE declarations
-in JSF deployments:
+in Jakarta Server Faces deployments:
 
 [source,options="nowrap"]
 ----
@@ -150,7 +150,7 @@ in JSF deployments:
 reload
 ----
 
-This setting can be overridden for a particular JSF deployment by
+This setting can be overridden for a particular Jakarta Server Faces deployment by
 adding the `com.sun.faces.disallowDoctypeDecl` context parameter
 to the deployment's `web.xml` file:
 

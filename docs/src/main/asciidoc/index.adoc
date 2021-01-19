@@ -64,7 +64,7 @@ and failover.
 Started Developing Applications Guide] shows you how to build Jakarta EE
 applications and deploy them to WildFly. The guide starts by showing you
 the simplest _helloworld_ application using just Servlet and CDI, and
-then adds in JSF, persistence and transactions, EJB, Bean Validation,
+then adds in Jakarta Server Faces, persistence and transactions, EJB, Bean Validation,
 RESTful web services and more. Finally, you'll get the opportunity to create
 your own skeleton project. Each tutorial is accompanied by a quickstart,
 which contains the source code, deployment descriptors and a Maven based

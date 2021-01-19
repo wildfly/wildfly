@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -38,7 +38,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
 /**
- * Deployment processor which adds the java EE APIs to EE deployments
+ * Deployment processor which adds the Jakarta EE APIs to EE deployments
  * <p/>
  *
  * @author John E. Bailey
