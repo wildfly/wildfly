@@ -1,7 +1,7 @@
 [[JTA_Reference]]
 = JTA Reference
 
-WildFly uses http://narayana.io[Narayana] as the implementation on of the JTA specification.
+WildFly uses http://narayana.io[Narayana] as the implementation of the JTA specification.
 Narayana manages transactions in the application server.
 
 == Transactions in Enterprise Java applications
@@ -169,7 +169,7 @@ NOTE: you can define the same behaviour when you use the `ejb-jar.xml`
       descriptor instead of the annotations
 
 The WildFly provides specific annotation `org.jboss.ejb3.annotation.TransactionTimeout`
-which gives you chance to change transaction timeout for particular bean/method.
+which gives you the chance to change the transaction timeout for a particular bean/method.
 
 NOTE: when you use message-driven bean then the `@TransactionTimeout` does not work
       and you need to define the timeout through the `@ActivationConfigProperty`:
@@ -264,7 +264,7 @@ public class MySynchronization
 }
 ----
 
-For registration of the synchronization callback, the use can inject the
+For registration of the synchronization callback, the user can inject the
 https://docs.oracle.com/javaee/7/api/javax/transaction/TransactionSynchronizationRegistry.html[javax.transaction.TransactionSynchronizationRegistry].
 (the mandated JNDI location for the object is at `java:comp/TransactionSynchronizationRegistry`) and then to register
 the synchronization instance. The instance is bound to the currently active transaction.
@@ -456,7 +456,7 @@ TRACE [com.arjuna.ats.arjuna] (default task-1) TransactionReaper::remove ( Basic
   (the transaction reaper is an independent thread taking care of transaction timeouts,
     see more at http://narayana.io/docs/project/index.html#d0e2032[section Transaction timeouts]
     in the Narayana documentation).
-* At this place consider the `BasicAction` (a Narayana abstration for the transaction)
+* At this place consider the `BasicAction` (a Narayana abstraction for the transaction)
   is identified by string `0:ffff0a28050c:-a09a5fe:5c598d64:3b`.
   It refers to the transaction id. You can track it through the log and follow
   what is happening with the particular transaction.

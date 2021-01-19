@@ -2,7 +2,7 @@
 = Class Loading in WildFly
 
 
-Since JBoss AS 7, Class loading is considerably different to previous
+Since JBoss AS 7, Class loading is considerably different from previous
 versions of JBoss AS. Class loading is based on the
 <<Class_Loading_in_WildFly,MODULES>> project. Instead of the more familiar
 hierarchical class loading environment, WildFly's class loading is based
@@ -31,7 +31,7 @@ application server are set up for you automatically. For instance, if
 you are deploying a Jakarta EE application a dependency on the Java EE
 API's will be added to your module automatically. Similarly if your
 module contains a beans.xml file a dependency on
-http://seamframework.org/Weld[Weld]will be added automatically, along
+http://seamframework.org/Weld[Weld] will be added automatically, along
 with any supporting modules that weld needs to operate.
 
 For a complete list of the automatic dependencies that are added, please
@@ -115,7 +115,7 @@ vice-versa).
 
 The ear-subdeployments-isolated element value has no effect on the
 isolated classloader of the .war file(s). i.e. irrespective of whether
-this flag is set to true or false, the .war within a .ear will have a
+this flag is set to true or false, the .war within a .ear will have an
 isolated classloader and other sub-deployments within that .ear will not
 be able to access classes from that .war. This is as per spec.
 
@@ -161,7 +161,7 @@ module that depends on this module will also get access to the
 dependency.
 * `services` By default items in META-INF of a dependency are not
 accessible, this makes items from `META-INF/services` accessible so
-http://download.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html[services]in
+http://download.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html[services] in
 the modules can be loaded.
 * `optional` If this is specified the deployment will not fail if the
 module is not available.

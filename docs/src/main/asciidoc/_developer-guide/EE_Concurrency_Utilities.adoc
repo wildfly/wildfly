@@ -37,7 +37,7 @@ The Context Service ( `javax.enterprise.concurrent.ContextService`) is a
 brand new concurrency utility, which applications may use to build
 contextual proxies from existing objects.
 
-A contextual proxy is an object that sets a invocation context, captured
+A contextual proxy is an object that sets an invocation context, captured
 when created, whenever is invoked, before delegating the invocation to
 the original object.
 
