@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,29 +22,30 @@
 
 package org.wildfly.clustering.marshalling.protostream.util.concurrent;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Comparator;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SimpleFunctionalMarshaller;
-import org.wildfly.clustering.marshalling.protostream.util.CollectionMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.SortedMapMarshaller;
 
 /**
- * Marshaller for copy-on-write implementations of {@link Collection}.
+ * Marshaller for a concurrent {@link SortedMap} that does not allow null values.
  * @author Paul Ferraro
  */
-public class CopyOnWriteCollectionMarshaller<T extends Collection<Object>> extends SimpleFunctionalMarshaller<T, Collection<Object>> {
-    private static final ProtoStreamMarshaller<Collection<Object>> MARSHALLER = new CollectionMarshaller<>(LinkedList::new);
+public class ConcurrentSortedMapMarshaller<T extends ConcurrentMap<Object, Object> & SortedMap<Object, Object>> extends SimpleFunctionalMarshaller<T, SortedMap<Object, Object>> {
+    private static final ProtoStreamMarshaller<SortedMap<Object, Object>> MARSHALLER = new SortedMapMarshaller<>(TreeMap::new);
 
     @SuppressWarnings("unchecked")
-    public CopyOnWriteCollectionMarshaller(Supplier<T> factory) {
-        super((Class<T>) factory.get().getClass(), MARSHALLER, new Function<Collection<Object>, T>() {
+    public ConcurrentSortedMapMarshaller(Function<Comparator<? super Object>, T> factory) {
+        super((Class<T>) factory.apply((Comparator<Object>) (Comparator<?>) Comparator.naturalOrder()).getClass(), MARSHALLER, new Function<SortedMap<Object, Object>, T>() {
             @Override
-            public T apply(Collection<Object> collection) {
-                T result = factory.get();
-                result.addAll(collection);
+            public T apply(SortedMap<Object, Object> map) {
+                T result = factory.apply(map.comparator());
+                result.putAll(map);
                 return result;
             }
         });

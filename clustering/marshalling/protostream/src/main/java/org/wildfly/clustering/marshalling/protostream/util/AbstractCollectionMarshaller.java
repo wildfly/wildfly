@@ -24,42 +24,51 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.function.Supplier;
+import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.Any;
+import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
+ * Abstract collection marshaller that writes the elements of the collection.
  * @author Paul Ferraro
  */
-public class CollectionMarshaller<T extends Collection<Object>> extends AbstractCollectionMarshaller<T> {
+public abstract class AbstractCollectionMarshaller<T extends Collection<Object>> implements ProtoStreamMarshaller<T> {
 
-    private final Supplier<T> factory;
+    protected static final int ELEMENT_INDEX = 1;
 
-    @SuppressWarnings("unchecked")
-   public CollectionMarshaller(Supplier<T> factory) {
-        super((Class<T>) factory.get().getClass());
-        this.factory = factory;
+    private final Class<? extends T> collectionClass;
+
+    public AbstractCollectionMarshaller(Class<? extends T> collectionClass) {
+        this.collectionClass = collectionClass;
     }
 
     @Override
-    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        T collection = this.factory.get();
-        boolean reading = true;
-        while (reading) {
-            int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
-            switch (index) {
-                case ELEMENT_INDEX:
-                    collection.add(ProtoStreamMarshaller.read(context, reader.readByteBuffer(), Any.class).get());
-                    break;
-                default:
-                    reading = (tag != 0) && reader.skipField(tag);
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T collection) throws IOException {
+        for (Object element : collection) {
+            writer.writeBytes(ELEMENT_INDEX, ProtoStreamMarshaller.write(context, new Any(element)));
+        }
+    }
+
+    @Override
+    public OptionalInt size(ImmutableSerializationContext context, T collection) {
+        int size = 0;
+        for (Object element : collection) {
+            OptionalInt elementSize = Predictable.computeSize(context, ELEMENT_INDEX, new Any(element));
+            if (elementSize.isPresent()) {
+                size += elementSize.getAsInt();
+            } else {
+                return elementSize;
             }
         }
-        return collection;
+        return OptionalInt.of(size);
+    }
+
+    @Override
+    public Class<? extends T> getJavaClass() {
+        return this.collectionClass;
     }
 }

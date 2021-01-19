@@ -24,44 +24,49 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.function.Supplier;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.RawProtoStreamWriter;
+import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
- * Marshaller for a {@link Map}.
  * @author Paul Ferraro
  */
-public class MapMarshaller<T extends Map<Object, Object>> extends AbstractMapMarshaller<T> {
+public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> implements ProtoStreamMarshaller<T> {
+    protected static final int ENTRY_INDEX = 1;
 
-    private final Supplier<T> factory;
+    private final Class<? extends T> mapClass;
 
-    @SuppressWarnings("unchecked")
-    public MapMarshaller(Supplier<T> factory) {
-        super((Class<T>) factory.get().getClass());
-        this.factory = factory;
+    public AbstractMapMarshaller(Class<? extends T> mapClass) {
+        this.mapClass = mapClass;
     }
 
     @Override
-    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        T map = this.factory.get();
-        boolean reading = true;
-        while (reading) {
-            int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
-            switch (index) {
-                case ENTRY_INDEX:
-                    Map.Entry<Object, Object> entry = ProtoStreamMarshaller.read(context, reader.readByteBuffer(), SimpleEntry.class);
-                    map.put(entry.getKey(), entry.getValue());
-                    break;
-                default:
-                    reading = (tag != 0) && reader.skipField(tag);
+    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T map) throws IOException {
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            writer.writeBytes(ENTRY_INDEX, ProtoStreamMarshaller.write(context, new SimpleEntry<>(entry)));
+        }
+    }
+
+    @Override
+    public OptionalInt size(ImmutableSerializationContext context, T map) {
+        int size = 0;
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            OptionalInt entrySize = Predictable.computeSize(context, ENTRY_INDEX, new SimpleEntry<>(entry));
+            if (entrySize.isPresent()) {
+                size += entrySize.getAsInt();
+            } else {
+                return entrySize;
             }
         }
-        return map;
+        return OptionalInt.of(size);
+    }
+
+    @Override
+    public Class<? extends T> getJavaClass() {
+        return this.mapClass;
     }
 }
