@@ -26,15 +26,10 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
-import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
-
-import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * {@link ObjectOutput} facade for a {@link RawProtoStreamWriter} allowing externalizers to write protobuf messages.
@@ -124,17 +119,11 @@ public class ProtoStreamObjectOutput implements ObjectOutput {
 
     @Override
     public void writeObject(Object object) throws IOException {
-        Predictable<Any> marshaller = (AnyMarshaller) this.context.getMarshaller(Any.class);
-        Any any = new Any(object);
-        OptionalInt size = marshaller.size(this.context, any);
-        try (ByteBufferOutputStream output = new ByteBufferOutputStream(size.isPresent() ? OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size.getAsInt()) + size.getAsInt()) : OptionalInt.empty())) {
-            ProtobufUtil.writeTo(this.context, output, any);
-            ByteBuffer buffer = output.getBuffer();
-            int offset = buffer.arrayOffset();
-            int length = buffer.limit() - offset;
-            this.writeChar(length); // unsigned varint
-            this.write(buffer.array(), offset, length);
-        }
+        ByteBuffer buffer = ProtoStreamMarshaller.write(this.context, new Any(object));
+        int offset = buffer.arrayOffset();
+        int length = buffer.limit() - offset;
+        this.writeChar(length); // unsigned varint
+        this.write(buffer.array(), offset, length);
     }
 
     @Override

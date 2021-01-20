@@ -26,14 +26,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
-import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
-
-import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * @author Paul Ferraro
@@ -50,33 +45,23 @@ public class TypedObjectMarshaller implements ProtoStreamMarshaller<Object> {
     public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
         ByteBuffer buffer = reader.readByteBuffer();
         Class<?> targetClass = this.typeMarshaller.readFrom(context, reader);
-        return ProtobufUtil.fromByteBuffer(context, buffer, targetClass);
+        return ProtoStreamMarshaller.read(context, buffer, targetClass);
     }
 
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-        try (ByteBufferOutputStream output = new ByteBufferOutputStream(objectSize(context, value))) {
-            ProtobufUtil.writeTo(context, output, value);
-            ByteBuffer buffer = output.getBuffer();
-            int offset = buffer.arrayOffset();
-            int size = buffer.limit() - offset;
-            writer.writeUInt32NoTag(size);
-            writer.writeRawBytes(buffer.array(), offset, size);
-        }
+        ByteBuffer buffer = ProtoStreamMarshaller.write(context, value);
+        int offset = buffer.arrayOffset();
+        int size = buffer.limit() - offset;
+        writer.writeUInt32NoTag(size);
+        writer.writeRawBytes(buffer.array(), offset, size);
 
         this.typeMarshaller.writeTo(context, writer, value.getClass());
     }
 
-    @SuppressWarnings("unchecked")
-    private static OptionalInt objectSize(ImmutableSerializationContext context, Object value) {
-        BaseMarshaller<?> marshaller = context.getMarshaller(value.getClass());
-        OptionalInt size = (marshaller instanceof Predictable) ? ((Predictable<Object>) marshaller).size(context, value) : OptionalInt.empty();
-        return size.isPresent() ? OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size.getAsInt()) + size.getAsInt()) : size;
-    }
-
     @Override
     public OptionalInt size(ImmutableSerializationContext context, Object value) {
-        OptionalInt objectSize = objectSize(context, value);
+        OptionalInt objectSize = Predictable.computeSizeNoTag(context, value);
         OptionalInt typeSize = this.typeMarshaller.size(context, value.getClass());
         return objectSize.isPresent() && typeSize.isPresent() ? OptionalInt.of(objectSize.getAsInt() + typeSize.getAsInt()) : OptionalInt.empty();
     }
