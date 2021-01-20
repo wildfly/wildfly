@@ -18,7 +18,8 @@
   ~ limitations under the License.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.jwt">
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.jwt">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -28,7 +29,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.security.enterprise.api" />
         <module name="javax.servlet.api"/>
         <module name="org.bitbucket.jose4j"/>

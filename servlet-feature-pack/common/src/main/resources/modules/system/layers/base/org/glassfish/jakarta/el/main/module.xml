@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.glassfish.jakarta.el">
+<module xmlns="urn:jboss:module:1.9" name="org.glassfish.jakarta.el">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -39,7 +39,8 @@
         </artifact>
     </resources>
     <dependencies>
-            <module name="javax.api"/>
+            <module name="java.desktop"/>
+            <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
             <module name="javax.el.api" services="import" export="true"/>
     </dependencies>
 </module>

@@ -23,6 +23,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.wildfly.microprofile.fault-tolerance-smallrye.executor">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,8 +33,9 @@
     </resources>
 
     <dependencies>
+        <module name="java.naming"/>
         <module name="io.smallrye.fault-tolerance"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.concurrent.api"/>
     </dependencies>
 </module>

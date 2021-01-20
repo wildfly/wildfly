@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.opensaml">
+<module xmlns="urn:jboss:module:1.9" name="org.opensaml">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -47,15 +47,17 @@
     </resources>
 
     <dependencies>
-      <module name="javax.api"/>
+      <module name="java.scripting"/>
+      <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
       <module name="org.slf4j"/>
       <module name="org.apache.santuario.xmlsec"/>
       <module name="org.apache.ws.security" />
       <module name="org.joda.time"/>
       <module name="com.google.guava"/>
-        <module name="org.bouncycastle.bcmail"/>
-        <module name="org.bouncycastle.bcpkix"/>
-        <module name="org.bouncycastle.bcprov"/>
+      <module name="org.bouncycastle.bcmail"/>
+      <module name="org.bouncycastle.bcpkix"/>
+      <module name="org.bouncycastle.bcprov"/>
       <module name="org.apache.commons.codec"/>
+      <module name="java.xml"/>
     </dependencies>
 </module>

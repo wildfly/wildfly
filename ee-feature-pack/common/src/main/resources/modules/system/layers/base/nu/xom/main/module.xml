@@ -20,7 +20,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="nu.xom">
+<module xmlns="urn:jboss:module:1.9" name="nu.xom">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -28,7 +29,8 @@
     <dependencies>
         <module name="org.jaxen"/>
         <module name="org.apache.xerces"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+        <module name="java.xml"/>
     </dependencies>
 
     <resources>

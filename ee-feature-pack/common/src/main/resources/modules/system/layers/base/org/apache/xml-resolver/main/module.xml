@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.apache.xml-resolver">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.xml-resolver">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -30,6 +31,7 @@
     <resources>
         <artifact name="${xml-resolver:xml-resolver}"/>
     </resources>
+
     <dependencies>
         <module name="java.xml" />
     </dependencies>

@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.clustering.web.undertow">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.web.undertow">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,7 +34,6 @@
 
     <dependencies>
         <module name="javax.servlet.api"/>
-
         <module name="io.undertow.core"/>
         <module name="io.undertow.servlet"/>
         <module name="org.infinispan.commons"/>

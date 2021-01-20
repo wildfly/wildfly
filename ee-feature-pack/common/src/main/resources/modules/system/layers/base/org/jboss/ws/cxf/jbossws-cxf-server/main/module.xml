@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.ws.cxf.jbossws-cxf-server">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.cxf.jbossws-cxf-server">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -33,7 +33,9 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api" />
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.security.auth.message.api"/>
         <module name="javax.servlet.api" />
         <module name="javax.jws.api" />
@@ -68,5 +70,6 @@
         <module name="org.jboss.logging" />
         <module name="org.apache.ws.security" />
         <module name="org.picketbox" />
+        <module name="java.xml"/>
     </dependencies>
 </module>

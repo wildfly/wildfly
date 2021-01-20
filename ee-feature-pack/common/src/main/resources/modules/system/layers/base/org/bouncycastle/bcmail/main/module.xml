@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.bouncycastle.bcmail">
+<module xmlns="urn:jboss:module:1.9" name="org.bouncycastle.bcmail">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -31,8 +31,9 @@
     <resources>
         <artifact name="${org.bouncycastle:bcmail-jdk15on}"/>
     </resources>
+
     <dependencies>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.mail.api" optional="true"/>
         <module name="javax.activation.api" optional="true"/>
         <module name="org.bouncycastle.bcpkix"/>

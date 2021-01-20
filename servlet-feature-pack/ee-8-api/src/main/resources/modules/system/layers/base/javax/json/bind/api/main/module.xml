@@ -17,13 +17,17 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="javax.json.bind.api">
+
     <properties>
         <property name="jboss.api" value="public"/>
     </properties>
+
     <resources>
         <artifact name="${jakarta.json.bind:jakarta.json.bind-api}"/>
     </resources>
+
     <dependencies>
+        <module name="java.logging"/>
         <module name="javax.json.api"/>
     </dependencies>
 </module>

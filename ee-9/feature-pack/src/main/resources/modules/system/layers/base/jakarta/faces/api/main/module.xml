@@ -22,8 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="jakarta.faces.api">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.faces.api">
+
+    <resources>
+        <!--<artifact name="${org.jboss.spec.javax.faces:jboss-jsf-api_2.3_spec}"/>-->
+        <artifact name="${jakarta.faces:jakarta.faces-api}"/>
+    </resources>
+
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
         <module name="com.sun.jsf-impl"/>
         <module name="javax.enterprise.api" export="true"/>
         <module name="javax.servlet.api" export="true"/>
@@ -31,12 +41,7 @@
         <module name="javax.servlet.jstl.api" export="true"/>
         <module name="javax.validation.api" export="true"/>
         <module name="org.glassfish.jakarta.el" export="true"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.websocket.api"/>
     </dependencies>
-
-    <resources>
-        <!--<artifact name="${org.jboss.spec.javax.faces:jboss-jsf-api_2.3_spec}"/>-->
-        <artifact name="${jakarta.faces:jakarta.faces-api}"/>
-    </resources>
 </module>

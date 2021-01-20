@@ -22,7 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="jakarta.enterprise.api">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.enterprise.api">
+
+    <resources>
+        <artifact name="${jakarta.enterprise:jakarta.enterprise.cdi-api}"/>
+    </resources>
+
     <dependencies>
         <module name="org.glassfish.jakarta.el" export="true"/>
         <module name="javax.inject.api" export="true"/>
@@ -32,9 +37,4 @@
         <module name="org.jboss.as.weld" services="import" optional="true"/>
         <module name="org.jboss.weld.core" optional="true"/>
     </dependencies>
-
-    <resources>
-        <artifact name="${jakarta.enterprise:jakarta.enterprise.cdi-api}"/>
-    </resources>
-
 </module>

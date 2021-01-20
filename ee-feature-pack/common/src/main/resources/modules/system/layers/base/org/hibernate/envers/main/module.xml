@@ -22,4 +22,4 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module-alias xmlns="urn:jboss:module:1.5" name="org.hibernate.envers" target-name="org.hibernate"/>
+<module-alias xmlns="urn:jboss:module:1.9" name="org.hibernate.envers" target-name="org.hibernate"/>

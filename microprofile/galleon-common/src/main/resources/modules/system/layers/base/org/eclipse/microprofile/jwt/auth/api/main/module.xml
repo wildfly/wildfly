@@ -18,7 +18,8 @@
   ~ limitations under the License.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.eclipse.microprofile.jwt.auth.api">
+<module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.jwt.auth.api">
+
     <resources>
         <artifact name="${org.eclipse.microprofile.jwt:microprofile-jwt-auth-api}"/>
     </resources>
