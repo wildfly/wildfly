@@ -23,7 +23,6 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -43,26 +42,20 @@ public class TypedObjectMarshaller implements ScalarMarshaller<Object> {
 
     @Override
     public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        ByteBuffer buffer = reader.readByteBuffer();
         Class<?> targetClass = this.typeMarshaller.readFrom(context, reader);
-        return ProtoStreamMarshaller.read(context, buffer, targetClass);
+        return ScalarMarshaller.readObject(context, reader, targetClass);
     }
 
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-        ByteBuffer buffer = ProtoStreamMarshaller.write(context, value);
-        int offset = buffer.arrayOffset();
-        int size = buffer.limit() - offset;
-        writer.writeUInt32NoTag(size);
-        writer.writeRawBytes(buffer.array(), offset, size);
-
         this.typeMarshaller.writeTo(context, writer, value.getClass());
+        ScalarMarshaller.writeObject(context, writer, value);
     }
 
     @Override
     public OptionalInt size(ImmutableSerializationContext context, Object value) {
-        OptionalInt objectSize = Predictable.computeSizeNoTag(context, value);
         OptionalInt typeSize = this.typeMarshaller.size(context, value.getClass());
+        OptionalInt objectSize = Predictable.computeSizeNoTag(context, value);
         return objectSize.isPresent() && typeSize.isPresent() ? OptionalInt.of(objectSize.getAsInt() + typeSize.getAsInt()) : OptionalInt.empty();
     }
 

@@ -23,7 +23,6 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -43,16 +42,12 @@ public enum ObjectMarshaller implements ScalarMarshaller<Object> {
 
     @Override
     public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return ProtoStreamMarshaller.read(context, reader.readByteBuffer(), Any.class).get();
+        return ScalarMarshaller.readObject(context, reader, Any.class).get();
     }
 
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-        ByteBuffer buffer = ProtoStreamMarshaller.write(context, new Any(value));
-        int offset = buffer.arrayOffset();
-        int size = buffer.limit() - offset;
-        writer.writeUInt32NoTag(size);
-        writer.writeRawBytes(buffer.array(), offset, size);
+        ScalarMarshaller.writeObject(context, writer, new Any(value));
     }
 
     @Override

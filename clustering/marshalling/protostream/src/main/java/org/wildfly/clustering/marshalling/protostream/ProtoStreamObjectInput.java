@@ -134,7 +134,7 @@ public class ProtoStreamObjectInput implements ObjectInput {
 
     @Override
     public Object readObject() throws IOException {
-        return ProtoStreamMarshaller.read(this.context, this.reader.readByteBuffer(), Any.class).get();
+        return ScalarMarshaller.readObject(this.context, this.reader, Any.class).get();
     }
 
     @Override

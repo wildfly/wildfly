@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 import java.util.IdentityHashMap;
@@ -154,9 +155,7 @@ public enum AnyField implements ScalarMarshallerProvider, Field<Object> {
 
         @Override
         public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            byte[] bytes = (byte[]) value;
-            writer.writeUInt32NoTag(bytes.length);
-            writer.writeRawBytes(bytes, 0, bytes.length);
+            ByteBufferMarshaller.INSTANCE.writeTo(context, writer, ByteBuffer.wrap((byte[]) value));
         }
     },
     SHORT_ARRAY(short[].class) {

@@ -24,7 +24,6 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -119,11 +118,7 @@ public class ProtoStreamObjectOutput implements ObjectOutput {
 
     @Override
     public void writeObject(Object object) throws IOException {
-        ByteBuffer buffer = ProtoStreamMarshaller.write(this.context, new Any(object));
-        int offset = buffer.arrayOffset();
-        int length = buffer.limit() - offset;
-        this.writeChar(length); // unsigned varint
-        this.write(buffer.array(), offset, length);
+        ScalarMarshaller.writeObject(this.context, this.writer, new Any(object));
     }
 
     @Override
