@@ -24,6 +24,7 @@ package org.jboss.as.jpa.subsystem;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -43,5 +44,10 @@ public class JPA10SubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         //no need to compare
+    }
+
+    @Test
+    public void testEmptySubsystem() throws Exception {
+        standardSubsystemTest("subsystem-1.0-empty.xml");
     }
 }
