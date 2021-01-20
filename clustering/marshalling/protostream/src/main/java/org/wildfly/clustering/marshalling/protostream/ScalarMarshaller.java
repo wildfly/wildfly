@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -75,4 +76,31 @@ public interface ScalarMarshaller<T> extends Predictable<T> {
      * @return the type of this marshaller
      */
     Class<? extends T> getJavaClass();
+
+    /**
+     * Reads an object from a specified ProtoStream reader.
+     * @param <T> the object type
+     * @param context a serialization context
+     * @param buffer a byte buffer
+     * @param targetClass the type of the object to read
+     * @return the unmarshalled object
+     * @throws IOException if the object could not be unmarshalled
+     */
+    static <T> T readObject(ImmutableSerializationContext context, RawProtoStreamReader reader, Class<T> targetClass) throws IOException {
+        ByteBuffer buffer = ByteBufferMarshaller.INSTANCE.readFrom(context, reader);
+        return ProtoStreamMarshaller.read(context, buffer, targetClass);
+    }
+
+    /**
+     * Writes an object to the specified ProtoStream writer.
+     * @param <T> the object type
+     * @param context a serialization context
+     * @param writer a ProtoStream writer
+     * @param value the object to write
+     * @throws IOException if the object could not be marshalled
+     */
+    static <T> void writeObject(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) throws IOException {
+        ByteBuffer buffer = ProtoStreamMarshaller.write(context, value);
+        ByteBufferMarshaller.INSTANCE.writeTo(context, writer, buffer);
+    }
 }
