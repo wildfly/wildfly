@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.CompositeName;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
+import javax.naming.OperationNotSupportedException;
 
 import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -137,7 +138,7 @@ public class WritableServiceBasedNamingStoreTestCase {
         try {
             store.bind(new CompositeName("test"), new Object());
             fail("Should have failed with a read-only context exception");
-        } catch (UnsupportedOperationException expected) {
+        } catch (OperationNotSupportedException expected) {
         }
     }
 
@@ -190,7 +191,7 @@ public class WritableServiceBasedNamingStoreTestCase {
         try {
             store.unbind(new CompositeName("test"));
             fail("Should have failed with a read-only context exception");
-        } catch (UnsupportedOperationException expected) {
+        } catch (OperationNotSupportedException expected) {
         }
     }
 
@@ -209,7 +210,7 @@ public class WritableServiceBasedNamingStoreTestCase {
         try {
             store.createSubcontext(new CompositeName("test"));
             fail("Should have failed with a read-only context exception");
-        } catch (UnsupportedOperationException expected) {
+        } catch (OperationNotSupportedException expected) {
         }
     }
 
@@ -233,7 +234,7 @@ public class WritableServiceBasedNamingStoreTestCase {
         try {
             store.rebind(new CompositeName("test"), new Object());
             fail("Should have failed with a read-only context exception");
-        } catch (UnsupportedOperationException expected) {
+        } catch (OperationNotSupportedException expected) {
         }
     }
 
