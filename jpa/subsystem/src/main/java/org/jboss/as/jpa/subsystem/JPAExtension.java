@@ -111,14 +111,10 @@ public class JPAExtension implements Extension {
                 final Element element = Element.forName(reader.getLocalName());
                 Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
 
-                switch (element) {
-                    case JPA: {
-                        subsystemAdd = parseJPA(reader, readerNS);
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
+                if (element == Element.JPA) {
+                    subsystemAdd = parseJPA(reader, readerNS);
+                } else {
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
             if (subsystemAdd == null) {
@@ -128,7 +124,6 @@ public class JPAExtension implements Extension {
         }
 
         private ModelNode parseJPA(XMLExtendedStreamReader reader, Namespace readerNS) throws XMLStreamException {
-            String dataSourceName = null;
             final ModelNode operation = Util.createAddOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME)));
 
             int count = reader.getAttributeCount();
@@ -137,7 +132,6 @@ public class JPAExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case DEFAULT_DATASOURCE_NAME: {
-                        dataSourceName = value;
                         JPADefinition.DEFAULT_DATASOURCE.parseAndSetParameter(value, operation, reader);
                         break;
                     }
@@ -151,9 +145,7 @@ public class JPAExtension implements Extension {
             }
             // Require no content
             ParseUtils.requireNoContent(reader);
-            if (dataSourceName == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.DEFAULT_DATASOURCE_NAME));
-            }
+
             return operation;
         }
 
@@ -165,22 +157,12 @@ public class JPAExtension implements Extension {
             XMLStreamException {
 
             ModelNode node = context.getModelNode();
-            if (node.hasDefined(CommonAttributes.DEFAULT_DATASOURCE) ||
-                    node.hasDefined(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
-                    ) {
-                context.startSubsystemElement(Namespace.JPA_1_1.getUriString(), false);
-                writer.writeStartElement(Element.JPA.getLocalName());
-                JPADefinition.DEFAULT_DATASOURCE.marshallAsAttribute(node, writer);
-                JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.marshallAsAttribute(node, writer);
-                writer.writeEndElement();
-                writer.writeEndElement();
-            } else {
-                //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
-                //context.startSubsystemElement(NewNamingExtension.NAMESPACE, true);
-                context.startSubsystemElement(Namespace.JPA_1_1.getUriString(), false);
-                writer.writeEndElement();
-            }
-
+            context.startSubsystemElement(Namespace.JPA_1_1.getUriString(), false);
+            writer.writeStartElement(Element.JPA.getLocalName());
+            JPADefinition.DEFAULT_DATASOURCE.marshallAsAttribute(node, writer);
+            JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.marshallAsAttribute(node, writer);
+            writer.writeEndElement();
+            writer.writeEndElement();
         }
     }
 
@@ -197,14 +179,10 @@ public class JPAExtension implements Extension {
                 final Element element = Element.forName(reader.getLocalName());
                 Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
 
-                switch (element) {
-                    case JPA: {
-                        subsystemAdd = parseJPA(reader, readerNS);
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
+                if (element == Element.JPA) {
+                    subsystemAdd = parseJPA(reader, readerNS);
+                } else {
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
             if (subsystemAdd == null) {
@@ -215,27 +193,19 @@ public class JPAExtension implements Extension {
 
         private ModelNode parseJPA(XMLExtendedStreamReader reader, Namespace readerNS) throws XMLStreamException {
             final ModelNode operation = Util.createAddOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME)));
-            String dataSourceName = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final String value = reader.getAttributeValue(i);
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case DEFAULT_DATASOURCE_NAME: {
-                        dataSourceName = value;
-                        JPADefinition.DEFAULT_DATASOURCE.parseAndSetParameter(value, operation, reader);
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
+                if (attribute == Attribute.DEFAULT_DATASOURCE_NAME) {
+                    JPADefinition.DEFAULT_DATASOURCE.parseAndSetParameter(value, operation, reader);
+                } else {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
             // Require no content
             ParseUtils.requireNoContent(reader);
-            if (dataSourceName == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.DEFAULT_DATASOURCE_NAME));
-            }
+
             return operation;
         }
     }
