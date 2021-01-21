@@ -64,7 +64,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-ee_5_0.xsd";
+        return "schema/jboss-as-ee_6_0.xsd";
     }
 
     @Override
@@ -77,7 +77,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         final ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.EAP_7_2_0;
         final ModelVersion legacyVersion = ModelVersion.create(4,0);
         final KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-        final List<ModelNode> xmlOps = builder.parseXml(readResource("subsystem.xml"));
+        final List<ModelNode> xmlOps = builder.parseXml(readResource("subsystem_5_0.xml"));
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, legacyVersion)
                 .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-ee:" + controllerVersion.getMavenGavVersion());
         final KernelServices mainServices = builder.build();
@@ -88,6 +88,25 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)),
                         new FailedOperationTransformationConfig.NewAttributesConfig(ManagedScheduledExecutorServiceResourceDefinition.THREAD_PRIORITY_AD))
                 .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.GLOBAL_DIRECTORY)), REJECTED_RESOURCE);
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, legacyVersion, xmlOps, config);
+    }
+
+    @Test
+    public void testTransformers6_0() throws Exception {
+        final ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.MASTER;
+        final ModelVersion legacyVersion = ModelVersion.create(5,0);
+        final KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        final List<ModelNode> xmlOps = builder.parseXml(readResource("subsystem.xml"));
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, legacyVersion)
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-ee:" + controllerVersion.getMavenGavVersion());
+        final KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        final FailedOperationTransformationConfig config =  new FailedOperationTransformationConfig()
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ManagedExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD_AD))
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD_AD));
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, legacyVersion, xmlOps, config);
     }

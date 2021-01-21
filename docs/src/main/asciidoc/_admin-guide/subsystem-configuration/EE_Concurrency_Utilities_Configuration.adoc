@@ -107,6 +107,7 @@ through the EE subsystem XML configuration:
         context-service="default"
         thread-factory="default"
         hung-task-threshold="60000"
+        hung-task-termination-period="60000"
         core-threads="5"
         max-threads="25"
         keepalive-time="5000"
@@ -155,6 +156,18 @@ created.
 The optional `hung-task-threshold` defines a runtime threshold value, in
 milliseconds, for tasks to be considered hung by the executor.
 A value of `0` will never consider tasks to be hung.
+
+The optional `hung-task-termination-period` defines the period, in
+milliseconds, for attempting the termination of hung tasks, by cancelling
+their execution, and interrupting their executing threads. Please note
+that the termination of a cancelled hung task is not guaranteed.
+A value of `0`, which is the default, deactivates the periodic
+cancellation of hung tasks. Management clients, such as the WildFly CLI,
+may still be used to manually attempt the termination of hung tasks:
+[source,options="nowrap"]
+----
+/subsystem=ee/managed-executor-service=other:terminate-hung-tasks
+----
 
 The optional `long-running-tasks` is a hint to optimize the execution of
 long running tasks, and defaults to `false`.
@@ -228,6 +241,18 @@ is no limit.
 The optional `hung-task-threshold` defines a runtime threshold value, in
 milliseconds, for tasks to be considered hung by the executor.
 A value of `0` will never consider tasks to be hung.
+
+The optional `hung-task-termination-period` defines the period, in
+milliseconds, for attempting the termination of hung tasks, by cancelling
+their execution, and interrupting their executing threads. Please note
+that the termination of a cancelled hung task is not guaranteed.
+A value of `0`, which is the default, deactivates the periodic
+cancellation of hung tasks. Management clients, such as the WildFly CLI,
+may still be used to manually attempt the termination of hung tasks:
+[source,options="nowrap"]
+----
+/subsystem=ee/managed-scheduled-executor-service=other:terminate-hung-tasks
+----
 
 The optional `long-running-tasks` is a hint to optimize the execution of
 long running tasks, and defaults to `false`.

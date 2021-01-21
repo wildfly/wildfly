@@ -46,7 +46,7 @@ public class EeExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "ee";
     private static final String RESOURCE_NAME = EeExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = EESubsystemModel.Version.v5_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = EESubsystemModel.Version.v6_0_0;
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -92,6 +92,7 @@ public class EeExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_3_0.getUriString(), EESubsystemParser20::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_4_0.getUriString(), EESubsystemParser40::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_5_0.getUriString(), EESubsystemParser50::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_6_0.getUriString(), EESubsystemParser60::new);
         context.setProfileParsingCompletionHandler(new BeanValidationProfileParsingCompletionHandler());
     }
 

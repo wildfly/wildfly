@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
    <extension-module>org.jboss.as.ee</extension-module>
-    <subsystem xmlns="urn:jboss:domain:ee:5.0">
+    <subsystem xmlns="urn:jboss:domain:ee:6.0">
         <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
         <concurrent>
             <context-services>
@@ -12,10 +12,10 @@
                 <managed-thread-factory name="default" jndi-name="java:jboss/ee/concurrency/factory/default" context-service="default"/>
             </managed-thread-factories>
             <managed-executor-services>
-                <managed-executor-service name="default" jndi-name="java:jboss/ee/concurrency/executor/default" context-service="default" hung-task-threshold="60000" keepalive-time="5000" />
+                <managed-executor-service name="default" jndi-name="java:jboss/ee/concurrency/executor/default" context-service="default" hung-task-termination-period="0" hung-task-threshold="60000" keepalive-time="5000" />
             </managed-executor-services>
             <managed-scheduled-executor-services>
-                <managed-scheduled-executor-service name="default" jndi-name="java:jboss/ee/concurrency/scheduler/default" context-service="default" hung-task-threshold="60000" keepalive-time="3000"/>
+                <managed-scheduled-executor-service name="default" jndi-name="java:jboss/ee/concurrency/scheduler/default" context-service="default" hung-task-termination-period="0" hung-task-threshold="60000" keepalive-time="3000"/>
             </managed-scheduled-executor-services>
         </concurrent>
         <?DEFAULT_BINDINGS?>

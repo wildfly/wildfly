@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ee.concurrent;
 
-import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 
@@ -36,13 +35,14 @@ import java.util.concurrent.TimeUnit;
 
 import static org.jboss.as.ee.concurrent.ControlPointUtils.doScheduledWrap;
 import static org.jboss.as.ee.concurrent.ControlPointUtils.doWrap;
+import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 
 /**
  * WildFly's extension of {@link org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl}.
  *
  * @author Eduardo Martins
  */
-public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl {
+public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl implements ManagedExecutorWithHungThreads {
 
     private final ControlPoint controlPoint;
     private final ManagedExecutorRuntimeStats runtimeStats;
@@ -146,5 +146,4 @@ public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterpris
             return trigger.skipRun(lastExecution, date);
         }
     }
-
 }
