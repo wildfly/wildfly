@@ -31,6 +31,7 @@
 
     <dependencies>
         <module name="java.logging"/>
+        <module name="java.xml"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
         <module name="javax.xml.bind.api"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
