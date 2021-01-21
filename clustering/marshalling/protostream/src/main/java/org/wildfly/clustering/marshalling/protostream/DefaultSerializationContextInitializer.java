@@ -27,10 +27,10 @@ import org.infinispan.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.util.UtilMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.util.concurrent.ConcurrentMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.AtomicMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.sql.SQLMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.time.TimeMarshallerProvider;
 import org.wildfly.clustering.marshalling.spi.MarshallingExternalizerProvider;
 import org.wildfly.clustering.marshalling.spi.net.NetExternalizerProvider;
-import org.wildfly.clustering.marshalling.spi.sql.SQLExternalizerProvider;
 
 /**
  * @author Paul Ferraro
@@ -38,8 +38,8 @@ import org.wildfly.clustering.marshalling.spi.sql.SQLExternalizerProvider;
 public enum DefaultSerializationContextInitializer implements SerializationContextInitializer {
     ANY(new AnySerializationContextInitializer()),
     NET(new ExternalizerSerializationContextInitializer<>("java.net.proto", NetExternalizerProvider.class)),
-    SQL(new ExternalizerSerializationContextInitializer<>("java.sql.proto", SQLExternalizerProvider.class)),
     TIME(new ProviderSerializationContextInitializer<>("java.time.proto", TimeMarshallerProvider.class)),
+    SQL(new ProviderSerializationContextInitializer<>("java.sql.proto", SQLMarshallerProvider.class)),
     UTIL(new ProviderSerializationContextInitializer<>("java.util.proto", UtilMarshallerProvider.class)),
     ATOMIC(new ProviderSerializationContextInitializer<>("java.util.concurrent.atomic.proto", AtomicMarshallerProvider.class)),
     CONCURRENT(new ProviderSerializationContextInitializer<>("java.util.concurrent.proto", ConcurrentMarshallerProvider.class)),
