@@ -30,6 +30,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.sql.Driver;
 import java.util.Set;
 
+import javax.resource.ResourceException;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -454,7 +455,7 @@ public interface ConnectorLogger extends BasicLogger {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 47, value = "Connection is not valid")
-    IllegalStateException invalidConnection();
+    IllegalStateException invalidConnection(@Cause ResourceException cause);
 
 //    /**
 //     * A message indicating the parameter name is invalid.

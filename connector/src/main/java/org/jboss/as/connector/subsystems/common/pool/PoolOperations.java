@@ -98,7 +98,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             }
 
                         } catch (Exception e) {
-                            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToInvokeOperation(e.getLocalizedMessage()));
+                            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToInvokeOperation(getRootCause(e).getLocalizedMessage()));
                         }
                         if (operationResult != null) {
                             context.getResult().set(operationResult);
@@ -108,6 +108,14 @@ public abstract class PoolOperations implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
+    }
+
+    private Throwable getRootCause(Exception e) {
+        Throwable rootCause = e;
+        while (rootCause.getCause() != null) {
+            rootCause = rootCause.getCause();
+        }
+        return rootCause;
     }
 
     protected abstract ModelNode invokeCommandOn(Pool pool, Object... parameters) throws Exception;
@@ -232,17 +240,14 @@ public abstract class PoolOperations implements OperationStepHandler {
 
         @Override
         protected ModelNode invokeCommandOn(Pool pool, Object... parameters) throws Exception {
-            boolean returnedValue;
             if (parameters != null) {
                 WrappedConnectionRequestInfo cri = new WrappedConnectionRequestInfo((String) parameters[0], (String) parameters[1]);
-                returnedValue = pool.testConnection(cri, null);
+                pool.testConnection(cri, null);
             } else {
-                returnedValue = pool.testConnection();
+                pool.testConnection();
             }
-            if (!returnedValue)
-                throw ConnectorLogger.ROOT_LOGGER.invalidConnection();
             ModelNode result = new ModelNode();
-            result.add(returnedValue);
+            result.add(true);
             return result;
         }
 
