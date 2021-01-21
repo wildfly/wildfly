@@ -131,7 +131,16 @@ public class UndertowEngineTestCase {
 
         assertNotEquals(engine1.getJvmRoute(), engine3.getJvmRoute());
         // just double check it is obfuscated for engine3 as well
-        assertNotEquals("adifferentrout", engine3.getJvmRoute());
+        assertNotEquals("adifferentroute", engine3.getJvmRoute());
+
+        // with a different server name, is the obfuscated route different from previous one?
+        final TestUndertowService service4 = new TestUndertowService("default-container", "another.server", this.hostName, "this.route", true, null);
+        final Server server4 = new TestServer("another.server", this.hostName, service4, this.host, this.listener);
+        final Engine engine4 = new UndertowEngine(this.serverName, server4, service4, this.connector);
+
+        assertNotEquals(engine1.getJvmRoute(), engine4.getJvmRoute());
+        // just double check it is obfuscated for engine4 as well
+        assertNotEquals(this.route, engine4.getJvmRoute());
     }
 
     @Test

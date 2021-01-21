@@ -32,7 +32,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
 import static org.wildfly.extension.undertow.Constants.OBFUSCATE_SESSION_ROUTE;
 
 /**
- * ServerSetupTask that sets Undertow subsystemm obfuscate-session-route attribute to true
+ * ServerSetupTask that sets Undertow subsystem obfuscate-session-route attribute to true
  * and reloads the server.
  *
  * @author Flavia Rainone

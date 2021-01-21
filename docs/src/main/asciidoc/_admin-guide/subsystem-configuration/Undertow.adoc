@@ -48,14 +48,21 @@ for most use cases and provides reasonable performance settings.
 |default-virtual-host | the default virtual host to use for deployments
 |default-servlet-container | the default servlet container to use for deployments
 |instance-id | the id of Undertow. Defaults to "${jboss.node.name}" if undefined
-|obfuscate-session-route | set this to true to indicate the instance-id and server
-name should be both obfuscated in routing. This prevents instance-id and server
-name data from being sent across HTTP connections when serving remote requests with
-the HTTP invoker
+|[[bookmark-obfuscate-session-route]]obfuscate-session-route | set this to `"true"` to indicate the
+`instance-id` should be obfuscated in routing. This prevents `instance-id` from being sent across
+HTTP connections when serving remote requests with the HTTP invoker.
 |default-security-domain |the default security domain used by web deployments
 |statistics-enabled | set this to true to enable statistics gathering for Undertow subsystem
 |=======================================================================
 
+[NOTE]
+====
+When setting <<bookmark-obfuscate-session-route,`obfuscate-session-route`>> to `"true"`, the server's
+<<bookmark-server-name,`name`>> is used as a salt in the hashing algorithm that obfuscates the value of `instance-id`.
+For that reason, it is strongly advised that the value of the server be changed from `"default-server"` to something
+else, or else it would be easy to reverse engineer the obfuscated route to its original value, using `"default-server"`
+bytes as the salt.
+====
 
 *Dependencies on other subsystems:*
 
@@ -110,6 +117,8 @@ a set of connectors and some configured handlers.
 [cols=",",options="header"]
 |=======================================================================
 |Attribute |Description
+
+|[[bookmark-server-name]]name| the name of this server
 
 |default-host |the virtual host that will be used if an incoming request
 as no Host: header
