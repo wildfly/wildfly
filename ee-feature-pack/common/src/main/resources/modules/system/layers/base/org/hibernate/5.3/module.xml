@@ -23,5 +23,5 @@
   -->
 
 <!-- Represents the Hibernate 5.3.x module-->
-<module-alias xmlns="urn:jboss:module:1.5" name="org.hibernate" slot="5.3"  target-name="org.hibernate"/>
+<module-alias xmlns="urn:jboss:module:1.9" name="org.hibernate:5.3" target-name="org.hibernate"/>
 

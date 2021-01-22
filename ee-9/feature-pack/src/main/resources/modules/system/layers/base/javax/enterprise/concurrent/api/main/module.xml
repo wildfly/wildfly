@@ -16,4 +16,4 @@
   ~ limitations under the License.
   -->
 
-<module-alias xmlns="urn:jboss:module:1.5" name="javax.enterprise.concurrent.api" target-name="jakarta.enterprise.concurrent.api"/>
+<module-alias xmlns="urn:jboss:module:1.9" name="javax.enterprise.concurrent.api" target-name="jakarta.enterprise.concurrent.api"/>

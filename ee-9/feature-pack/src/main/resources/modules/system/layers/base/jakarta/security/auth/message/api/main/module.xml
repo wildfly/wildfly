@@ -22,15 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.security.auth.message.api">
-
-    <dependencies>
-        <!-- Needed for javax.security.auth -->
-        <module name="javax.api" export="false"/>
-     </dependencies>
+<module xmlns="urn:jboss:module:1.9" name="jakarta.security.auth.message.api">
 
     <resources>
         <!--<artifact name="${org.jboss.spec.javax.security.auth.message:jboss-jaspi-api_1.1_spec}"/>-->
         <artifact name="${jakarta.authentication:jakarta.authentication-api}"/>
     </resources>
+
+    <dependencies>
+        <!-- Needed for javax.security.auth -->
+        <module name="javax.api" export="false"/>
+     </dependencies>
 </module>

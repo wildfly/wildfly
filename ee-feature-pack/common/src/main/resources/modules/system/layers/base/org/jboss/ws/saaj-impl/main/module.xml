@@ -22,18 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.ws.saaj-impl">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.saaj-impl">
 
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
-    <resources>
-    </resources>
-
     <dependencies>
         <module name="org.jboss.ws.jaxws-client" services="import"/> <!-- to pull the jbossws-cxf SOAPConnection impl -->
         <module name="com.sun.xml.messaging.saaj" services="import"/>
     </dependencies>
-
 </module>

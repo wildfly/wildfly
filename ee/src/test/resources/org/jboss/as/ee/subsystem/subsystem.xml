@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:ee:5.0" >
+<subsystem xmlns="urn:jboss:domain:ee:6.0" >
     <global-modules>
         <module name="org.jboss.logging" slot="main"/>
         <module name="org.apache.log4j" annotations="true" meta-inf="true" services="false"/>
@@ -18,10 +18,10 @@
             <managed-thread-factory name="thread-factory-name" jndi-name="${test-exp4:name}" context-service="context-service-name" priority="${test-exp6:1}" />
         </managed-thread-factories>
         <managed-executor-services>
-            <managed-executor-service name="${test-exp3:name}" jndi-name="${test-exp4:name}" context-service="context-service-name" thread-priority="5" hung-task-threshold="${test-exp7:60000}" core-threads="${test-exp8:5}" max-threads="${test-exp9:25}" keepalive-time="${test-exp10:5000}" queue-length="${test-exp11:1000000}" reject-policy="${test-exp12:RETRY_ABORT}"/>
+            <managed-executor-service name="${test-exp3:name}" jndi-name="${test-exp4:name}" context-service="context-service-name" thread-priority="5" hung-task-termination-period="10000" hung-task-threshold="${test-exp7:60000}" core-threads="${test-exp8:5}" max-threads="${test-exp9:25}" keepalive-time="${test-exp10:5000}" queue-length="${test-exp11:1000000}" reject-policy="${test-exp12:RETRY_ABORT}"/>
         </managed-executor-services>
         <managed-scheduled-executor-services>
-            <managed-scheduled-executor-service name="${test-exp3:name}" jndi-name="${test-exp4:name}" context-service="context-service-name" thread-priority="5" hung-task-threshold="${test-exp7:60000}" core-threads="${test-exp8:5}" keepalive-time="${test-exp10:5000}" reject-policy="${test-exp13:RETRY_ABORT}"/>
+            <managed-scheduled-executor-service name="${test-exp3:name}" jndi-name="${test-exp4:name}" context-service="context-service-name" thread-priority="5" hung-task-termination-period="10000" hung-task-threshold="${test-exp7:60000}" core-threads="${test-exp8:5}" keepalive-time="${test-exp10:5000}" reject-policy="${test-exp13:RETRY_ABORT}"/>
         </managed-scheduled-executor-services>
     </concurrent>
     <default-bindings context-service="${test-exp14:name}"

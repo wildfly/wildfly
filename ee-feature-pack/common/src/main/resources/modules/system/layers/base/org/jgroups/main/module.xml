@@ -22,16 +22,25 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="org.jgroups">
+<module xmlns="urn:jboss:module:1.9" name="org.jgroups">
 
     <resources>
         <artifact name="${org.jgroups:jgroups}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.scripting"/>
+        <module name="java.security.jgss"/>
+        <module name="java.security.sasl"/>
+        <module name="java.sql"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.jgroups.azure"/>
         <module name="org.jgroups.kubernetes"/>
+        <module name="java.xml"/>
     </dependencies>
 
 </module>

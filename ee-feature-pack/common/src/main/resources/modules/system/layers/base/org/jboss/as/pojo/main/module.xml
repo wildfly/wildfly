@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.pojo">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.pojo">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -36,7 +37,8 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.desktop"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.jboss.common-beans"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
@@ -46,5 +48,6 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>

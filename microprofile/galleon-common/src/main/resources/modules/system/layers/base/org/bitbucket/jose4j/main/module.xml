@@ -18,7 +18,8 @@
   ~ limitations under the License.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.bitbucket.jose4j">
+<module xmlns="urn:jboss:module:1.9" name="org.bitbucket.jose4j">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

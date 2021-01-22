@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.commons.io">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.commons.io">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -30,7 +31,4 @@
     <resources>
         <artifact name="${commons-io:commons-io}"/>
     </resources>
-
-    <dependencies>
-    </dependencies>
 </module>

@@ -58,4 +58,9 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testSchemaOfSubsystemTemplates() throws Exception {
         super.testSchemaOfSubsystemTemplates();
     }
+
+    @Test
+    public void testEmptySubsystem() throws Exception {
+        standardSubsystemTest("subsystem-1.1-empty.xml");
+    }
 }

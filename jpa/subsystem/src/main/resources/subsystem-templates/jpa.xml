@@ -3,6 +3,6 @@
 <config>
    <extension-module>org.jboss.as.jpa</extension-module>
    <subsystem xmlns="urn:jboss:domain:jpa:1.1">
-       <jpa default-datasource="" default-extended-persistence-inheritance="DEEP"/>
+       <jpa default-extended-persistence-inheritance="DEEP"/>
    </subsystem>
 </config>

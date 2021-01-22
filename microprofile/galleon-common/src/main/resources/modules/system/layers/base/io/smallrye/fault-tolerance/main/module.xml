@@ -23,6 +23,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="io.smallrye.fault-tolerance">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -37,7 +38,7 @@
         <module name="io.smallrye.config"/>
         <module name="io.smallrye.metrics"/>
         <module name="javax.annotation.api"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.enterprise.concurrent.api"/>
         <module name="org.eclipse.microprofile.config.api"/>

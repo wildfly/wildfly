@@ -31,6 +31,7 @@
     <resources>
         <artifact name="${jakarta.json:jakarta.json-api}"/>
     </resources>
+
     <dependencies>
         <!--
             This is required as a circular dependency because the RI does not include a META-INF/services provider file.

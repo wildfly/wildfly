@@ -22,17 +22,19 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="javax.xml.bind.api">
-
-
-    <dependencies>
-        <module name="javax.activation.api" export="true"/>
-        <module name="javax.xml.stream.api"/>
-        <module name="com.sun.xml.bind" services="import"/>
-        <module name="javax.api"/>
-    </dependencies>
+<module xmlns="urn:jboss:module:1.9" name="javax.xml.bind.api">
 
     <resources>
         <artifact name="${org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec}"/>
     </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.xml"/>
+        <module name="javax.activation.api" export="true"/>
+        <module name="javax.xml.stream.api"/>
+        <module name="com.sun.xml.bind" services="import"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+    </dependencies>
 </module>

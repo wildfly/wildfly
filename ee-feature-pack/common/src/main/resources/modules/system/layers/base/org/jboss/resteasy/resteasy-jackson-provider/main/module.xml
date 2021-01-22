@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-jackson-provider">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-jackson-provider">
+
     <properties>
         <property name="jboss.api" value="deprecated"/>
     </properties>
@@ -37,7 +38,7 @@
         <module name="org.codehaus.jackson.jackson-mapper-asl" export="true"/>
         <module name="org.codehaus.jackson.jackson-xc" export="true"/>
         <module name="javax.xml.bind.api"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>

@@ -33,6 +33,7 @@ import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import javax.naming.OperationNotSupportedException;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -426,10 +427,10 @@ public interface NamingLogger extends BasicLogger {
     /**
      * Creates an exception indicating the naming context is read-only.
      *
-     * @return an {@link UnsupportedOperationException} for the error.
+     * @return an {@link OperationNotSupportedException} for the error.
      */
     @Message(id = 43, value = "Naming context is read-only")
-    UnsupportedOperationException readOnlyNamingContext();
+    OperationNotSupportedException readOnlyNamingContext();
 
     /**
      * Creates an exception indicating the service name has already been bound.

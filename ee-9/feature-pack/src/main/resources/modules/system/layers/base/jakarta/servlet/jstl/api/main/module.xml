@@ -22,18 +22,24 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.servlet.jstl.api">
-    <dependencies>
-        <!-- org.xml.sax -->
-        <module name="javax.api" export="false"/>
-        <module name="javax.servlet.api" export="false"/>
-        <module name="javax.servlet.jsp.api" export="false"/>
-        <module name="org.apache.xalan" export="false"/>
-    </dependencies>
+<module xmlns="urn:jboss:module:1.9" name="jakarta.servlet.jstl.api">
 
     <resources>
         <artifact name="${org.apache.taglibs:taglibs-standard-spec}"/>
         <artifact name="${org.apache.taglibs:taglibs-standard-impl}"/>
         <artifact name="${org.apache.taglibs:taglibs-standard-compat}"/>
     </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+        <!-- org.xml.sax -->
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+        <module name="javax.servlet.api"/>
+        <module name="javax.servlet.jsp.api"/>
+        <module name="org.apache.xalan"/>
+        <module name="java.xml"/>
+    </dependencies>
 </module>

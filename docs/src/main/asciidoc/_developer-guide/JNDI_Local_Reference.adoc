@@ -63,8 +63,8 @@ example the following `web.xml` binds the string `"Hello World"` to
 For more details, see the http://jcp.org/en/jsr/detail?id=342[Java EE
 Platform Specification].
 
-[[programatically]]
-=== Programatically
+[[programmatically]]
+=== Programmatically
 
 [[java-ee-applications]]
 ==== Jakarta EE Applications
@@ -82,7 +82,7 @@ mandated by the Jakarta EE Platform Specification).
 
 [IMPORTANT]
 
-There is no need to unbind entries created programatically, since
+There is no need to unbind entries created programmatically, since
 WildFly tracks which bindings belong to a deployment, and the bindings
 are automatically removed when the deployment is undeployed.
 
@@ -124,7 +124,7 @@ Four different types of bindings are supported:
 
 * Simple - A primitive or java.net.URL entry (default is
 `java.lang.String`).
-* Object Factory - This allows to to specify the
+* Object Factory - This allows to specify the
 `javax.naming.spi.ObjectFactory` that is used to create the looked up
 value.
 * External Context - An external context to federate, such as an LDAP

@@ -21,12 +21,14 @@
  */
 package org.jboss.as.jpa.subsystem;
 
+import static org.jboss.as.jpa.subsystem.JPADefinition.DEFAULT_DATASOURCE;
+import static org.jboss.as.jpa.subsystem.JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.platform.PlatformImpl;
@@ -63,20 +65,13 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
 
     public static final JPASubSystemAdd INSTANCE = new JPASubSystemAdd();
 
-    private final ParametersValidator runtimeValidator = new ParametersValidator();
-
     private JPASubSystemAdd() {
-    }
-
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        JPADefinition.DEFAULT_DATASOURCE.validateAndSet(operation, model);
-        JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.validateAndSet(operation, model);
+        super(DEFAULT_DATASOURCE, DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
     }
 
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws
         OperationFailedException {
 
-        runtimeValidator.validate(operation.resolve());
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
@@ -125,16 +120,8 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        final ModelNode defaultDSNode = operation.require(CommonAttributes.DEFAULT_DATASOURCE);
-        final String dataSourceName = defaultDSNode.resolve().asString();
-
-        ExtendedPersistenceInheritance defaultExtendedPersistenceInheritance = ExtendedPersistenceInheritance.DEEP;
-        if (operation.hasDefined(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)) {
-            final ModelNode defaultExtendedPersistenceInheritanceNode = operation.get(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
-            defaultExtendedPersistenceInheritance =
-                ExtendedPersistenceInheritance.valueOf(defaultExtendedPersistenceInheritanceNode.resolve().asString());
-        }
-
+        final String dataSourceName = DEFAULT_DATASOURCE.resolveModelAttribute(context, model).asStringOrNull();
+        final ExtendedPersistenceInheritance defaultExtendedPersistenceInheritance = ExtendedPersistenceInheritance.valueOf(DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.resolveModelAttribute(context, model).asString());
 
         final ServiceTarget target = context.getServiceTarget();
         JPAService.addService(target, dataSourceName, defaultExtendedPersistenceInheritance);

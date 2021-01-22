@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.ws.tools.wsconsume">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.tools.wsconsume">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -36,5 +36,4 @@
         <module name="org.jboss.ws.tools.common"/>
         <module name="org.wildfly.security.elytron-private" services="import"/>
     </dependencies>
-
 </module>

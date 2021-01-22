@@ -24,12 +24,14 @@
 <!-- Hibernate Search ORM: integrates org.hibernate.search.engine with
      Hibernate ORM to provide Hibernate Search functionality to
      JPA Applications -->
-<module xmlns="urn:jboss:module:1.7" name="org.hibernate.search.orm">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.orm">
+
     <resources>
         <artifact name="${org.hibernate:hibernate-search-orm}"/>
     </resources>
 
     <dependencies>
+        <module name="java.sql" />
         <module name="javax.transaction.api" />
         <module name="org.hibernate" />
         <module name="org.hibernate.commons-annotations" />

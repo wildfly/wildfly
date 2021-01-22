@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<subsystem xmlns="urn:jboss:domain:ee:5.0" >
+<subsystem xmlns="urn:jboss:domain:ee:6.0" >
     <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
     <concurrent>
         <context-services>
