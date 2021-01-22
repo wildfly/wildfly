@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.dmr.PackageUtils.getClientConfigServiceName;
 
 import java.util.ArrayList;
@@ -72,8 +71,8 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
       //modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
       if (context.isBooting()) {
-         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-         final String name = address.getLastElement().getValue();
+         final PathAddress address = context.getCurrentAddress();
+         final String name = context.getCurrentAddressValue();
          final ServiceName serviceName = getClientConfigServiceName(name);
          final ServiceTarget target = context.getServiceTarget();
          final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName);
