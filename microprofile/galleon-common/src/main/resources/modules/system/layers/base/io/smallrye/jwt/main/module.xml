@@ -25,6 +25,7 @@
     
     <resources>
         <artifact name="${io.smallrye:smallrye-jwt}"/>
+        <artifact name="${io.smallrye:smallrye-jwt-common}"/>
     </resources>
 
     <dependencies>
