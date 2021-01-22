@@ -58,6 +58,7 @@ public abstract class AbstractNetTestCase {
     public void testInetAddress() throws IOException {
         MarshallingTester<InetAddress> tester = this.factory.createTester();
         tester.test(InetAddress.getLoopbackAddress());
+        tester.test(InetAddress.getLocalHost());
         tester.test(InetAddress.getByName("127.0.0.1"));
         tester.test(InetAddress.getByName("::1"));
     }
@@ -66,6 +67,10 @@ public abstract class AbstractNetTestCase {
     public void testInetSocketAddress() throws IOException {
         MarshallingTester<InetSocketAddress> tester = this.factory.createTester();
         tester.test(InetSocketAddress.createUnresolved("hostname", 0));
+        tester.test(InetSocketAddress.createUnresolved("hostname", Short.MAX_VALUE));
+        tester.test(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         tester.test(new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE));
+        tester.test(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+        tester.test(new InetSocketAddress(InetAddress.getLocalHost(), Short.MAX_VALUE));
     }
 }
