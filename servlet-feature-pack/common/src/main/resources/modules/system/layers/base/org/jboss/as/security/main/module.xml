@@ -39,7 +39,7 @@
         <module name="java.naming"/>
         <module name="java.security.sasl"/>
         <module name="java.xml"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+        <module name="javax.api"/>
         <module name="javax.security.jacc.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.transaction.api"/>
