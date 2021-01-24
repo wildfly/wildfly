@@ -280,17 +280,6 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         getResourceProperties(props, IIOPRootDefinition.INSTANCE, context, model);
 
-
-        // check if the node contains a list of generic properties.
-        ModelNode configNode = model.get(Constants.CONFIGURATION);
-        if (configNode.hasDefined(Constants.PROPERTIES)) {
-            for (Property property : configNode.get(Constants.PROPERTIES).get(Constants.PROPERTY)
-                    .asPropertyList()) {
-                String name = property.getName();
-                String value = property.getValue().get(Constants.PROPERTY_VALUE).asString();
-                props.setProperty(name, value);
-            }
-        }
         return props;
     }
 
