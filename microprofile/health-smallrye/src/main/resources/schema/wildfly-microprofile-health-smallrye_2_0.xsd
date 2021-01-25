@@ -32,9 +32,36 @@
     <!-- The subsystem root element -->
     <xs:element name="subsystem">
         <xs:complexType>
-            <xs:attribute name="security-enabled" type="xs:boolean" default="true" />
-            <xs:attribute name="empty-liveness-checks-status" default="UP" type="check-statusType" />
-            <xs:attribute name="empty-readiness-checks-status" default="UP" type="check-statusType" />
+            <xs:attribute name="security-enabled" type="xs:boolean" default="true">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+                        True if authentication is required to access the HTTP endpoints on the
+                        HTTP management interface.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="empty-liveness-checks-status" default="UP" type="check-statusType">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+                        Defines the global status returned by the Health checks endpoints if no
+                        liveness probes have been defined in deployments.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="empty-readiness-checks-status" default="UP" type="check-statusType">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+                        Defines the global status returned by the Health checks endpoints if no
+                        readiness probes have been defined in deployments.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
