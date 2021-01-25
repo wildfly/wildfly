@@ -1441,14 +1441,14 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-galleon-pruned</artifactId>
+                <artifactId>wildfly-servlet-feature-pack-galleon-legacy</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-galleon-pruned</artifactId>
+                <artifactId>wildfly-servlet-feature-pack-galleon-legacy</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>

@@ -1,9 +1,17 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="undertow">
     <dependencies>
-        <layer name="base-server"/>
+        <layer name="io"/>
+        <!-- security-negociation already brings picketbox
+        package but not picketbox optional deps (javax.stream.api -->
+        <layer name="vault"/>
     </dependencies>
-    <packages>
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <feature-group name="undertow-sockets"/>
+    </feature>
+    <feature-group name="undertow-base"/>
+     <packages>
        <!-- evolve undertow optional module injected in DU located in full FP -->
        <package name="io.undertow.js"/>
     </packages>

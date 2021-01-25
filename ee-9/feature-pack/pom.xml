@@ -262,6 +262,11 @@
                 <groupId>org.wildfly.maven.plugins</groupId>
                 <artifactId>licenses-plugin</artifactId>
                 <inherited>false</inherited>
+                <configuration>
+                    <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+                    <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
+                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-servlet-galleon-pack|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z</excludedArtifacts>
+                </configuration>
                 <executions>
                     <execution>
                         <id>update-licenses-xml</id>
@@ -270,7 +275,6 @@
                         </goals>
                         <phase>process-resources</phase>
                         <configuration>
-                            <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFiles>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
@@ -278,7 +282,6 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
-                            <excludedArtifacts>infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-servlet-galleon-pack|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-ee-8-api|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned</excludedArtifacts>
                         </configuration>
                     </execution>
                     <execution>
@@ -291,7 +294,6 @@
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFile>${basedir}/target/resources/license/microprofile-feature-pack-licenses.xml</licensesConfigFile>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
-                            <excludedArtifacts>wildfly-ee-galleon-pack</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
