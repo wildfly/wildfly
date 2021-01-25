@@ -316,7 +316,7 @@
         <version.io.smallrye.smallrye-health>3.0.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>3.0.0-RC3</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.0</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.open-api>2.1.0</version.io.smallrye.open-api>
+        <version.io.smallrye.open-api>2.1.1</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0-RC1</version.io.smallrye.opentracing>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
