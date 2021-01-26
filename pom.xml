@@ -1229,6 +1229,28 @@
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
                 <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+            
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
+                <version>${full.maven.version}</version>
+                <type>zip/</type>
+            </dependency>
+            
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-galleon-content</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+            
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-galleon-content</artifactId>
+                <version>${full.maven.version}</version>
+                <type>zip/</type>
             </dependency>
 
             <dependency>
