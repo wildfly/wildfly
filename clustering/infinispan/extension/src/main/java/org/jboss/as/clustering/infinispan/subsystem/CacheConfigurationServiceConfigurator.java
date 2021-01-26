@@ -28,6 +28,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefiniti
 import java.util.function.Consumer;
 
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.GroupsConfigurationBuilder;
@@ -120,6 +121,10 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
         builder.transaction().read(tx);
         builder.statistics().enabled(this.statisticsEnabled);
 
+        // See WFLY-14356
+        if (this.memory.get().storage().canStoreReferences()) {
+            builder.encoding().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
+        }
         try {
             // Configure invocation batching based on transaction configuration
             builder.invocationBatching().enable(tx.transactionMode().isTransactional() && (tx.transactionManagerLookup().getTransactionManager() != ContextTransactionManager.getInstance()));
