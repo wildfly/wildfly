@@ -30,6 +30,6 @@ import org.wildfly.clustering.marshalling.AbstractLangTestCase;
 public class JBossMarshallingLangTestCase extends AbstractLangTestCase {
 
     public JBossMarshallingLangTestCase() {
-        super(new JBossMarshallingTesterFactory());
+        super(JBossMarshallingTesterFactory.INSTANCE);
     }
 }

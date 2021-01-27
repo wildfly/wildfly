@@ -31,7 +31,6 @@ import org.wildfly.clustering.marshalling.AbstractUtilTestCase;
 public class ProtoStreamUtilTestCase extends AbstractUtilTestCase {
 
     public ProtoStreamUtilTestCase() {
-        // Need to load protostream schema/marshaller for test comparator
-        super(new ProtoStreamTesterFactory(Thread.currentThread().getContextClassLoader()));
+        super(ProtoStreamTesterFactory.INSTANCE);
     }
 }

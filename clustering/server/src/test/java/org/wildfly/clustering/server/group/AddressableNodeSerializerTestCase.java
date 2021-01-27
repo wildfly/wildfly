@@ -49,8 +49,8 @@ public class AddressableNodeSerializerTestCase {
     public void test() throws IOException {
         this.test(new ExternalizerTester<>(new AddressableNodeExternalizer()));
         this.test(new KeyFormatTester<>(new AddressableNodeKeyFormat()));
-        this.test(new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester());
-        this.test(new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester());
+        this.test(JBossMarshallingTesterFactory.INSTANCE.createTester());
+        this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
     }
 
     public void test(Tester<AddressableNode> tester) throws IOException {

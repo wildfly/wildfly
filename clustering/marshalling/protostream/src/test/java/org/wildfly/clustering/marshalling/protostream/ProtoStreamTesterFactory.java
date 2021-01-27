@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferTestMarshaller;
@@ -30,20 +29,11 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferTestMarshaller;
 /**
  * @author Paul Ferraro
  */
-public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
-
-    private final ImmutableSerializationContext context;
-
-    public ProtoStreamTesterFactory() {
-        this.context = new SerializationContextBuilder(new SimpleClassLoaderMarshaller(this.getClass().getClassLoader())).build();
-    }
-
-    public ProtoStreamTesterFactory(ClassLoader loader) {
-        this.context = new SerializationContextBuilder(new SimpleClassLoaderMarshaller(loader)).load(loader).build();
-    }
+public enum ProtoStreamTesterFactory implements MarshallingTesterFactory {
+    INSTANCE;
 
     @Override
     public <T> MarshallingTester<T> createTester() {
-        return new MarshallingTester<>(new ByteBufferTestMarshaller<>(new ProtoStreamByteBufferMarshaller(this.context)));
+        return new MarshallingTester<>(new ByteBufferTestMarshaller<>(TestProtoStreamByteBufferMarshaller.INSTANCE));
     }
 }

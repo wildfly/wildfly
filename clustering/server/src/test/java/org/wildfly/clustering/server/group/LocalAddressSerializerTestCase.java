@@ -44,8 +44,8 @@ public class LocalAddressSerializerTestCase {
     public void test() throws IOException {
         test(new ExternalizerTester<>(new LocalAddressExternalizer()));
         test(new KeyFormatTester<>(new LocalAddressKeyFormat()));
-        test(new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester());
-        test(new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester());
+        test(JBossMarshallingTesterFactory.INSTANCE.createTester());
+        test(ProtoStreamTesterFactory.INSTANCE.createTester());
     }
 
     static void test(Tester<Address> tester) throws IOException {

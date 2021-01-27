@@ -25,13 +25,9 @@ package org.wildfly.clustering.server.singleton;
 import java.io.IOException;
 
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceNotFoundException;
-import org.jboss.msc.service.StartException;
-import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.singleton.ServiceNameResolver.ServiceNameExternalizer;
@@ -49,7 +45,7 @@ public class ServiceNameResolverTestCase {
         new ExternalizerTester<>(new ServiceNameExternalizer()).test(this.name);
         new KeyFormatTester<>(new ServiceNameKeyFormat()).test(this.name);
 
-        new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester().test(this.name);
-        new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester().test(this.name);
+        JBossMarshallingTesterFactory.INSTANCE.createTester().test(this.name);
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(this.name);
     }
 }
