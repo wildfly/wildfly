@@ -32,7 +32,6 @@ import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.Ato
 import org.wildfly.clustering.marshalling.protostream.net.NetMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.sql.SQLMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.time.TimeMarshallerProvider;
-import org.wildfly.clustering.marshalling.spi.MarshallingExternalizerProvider;
 
 /**
  * @author Paul Ferraro
@@ -45,7 +44,7 @@ public enum DefaultSerializationContextInitializer implements SerializationConte
     UTIL(new ProviderSerializationContextInitializer<>("java.util.proto", UtilMarshallerProvider.class)),
     ATOMIC(new ProviderSerializationContextInitializer<>("java.util.concurrent.atomic.proto", AtomicMarshallerProvider.class)),
     CONCURRENT(new ProviderSerializationContextInitializer<>("java.util.concurrent.proto", ConcurrentMarshallerProvider.class)),
-    MARSHALLING(new ExternalizerSerializationContextInitializer<>("org.wildfly.clustering.marshalling.spi.proto", MarshallingExternalizerProvider.class)),
+    MARSHALLING(new ProviderSerializationContextInitializer<>("org.wildfly.clustering.marshalling.spi.proto", MarshallingMarshallerProvider.class)),
     ;
     private final SerializationContextInitializer initializer;
 
