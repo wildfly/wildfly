@@ -51,26 +51,5 @@ public class ServiceNameResolverTestCase {
 
         new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester().test(this.name);
         new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester().test(this.name);
-
-        Tester<Throwable> tester = new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester();
-        tester.test(new StartException(), ServiceNameResolverTestCase::assertEquals);
-        tester.test(new StartException("message"), ServiceNameResolverTestCase::assertEquals);
-        tester.test(new StartException(new Exception()), ServiceNameResolverTestCase::assertEquals);
-        tester.test(new StartException("message", new Exception()), ServiceNameResolverTestCase::assertEquals);
-
-        tester.test(new ServiceNotFoundException(), ServiceNameResolverTestCase::assertEquals);
-        tester.test(new ServiceNotFoundException("message"), ServiceNameResolverTestCase::assertEquals);
-        tester.test(new ServiceNotFoundException(new Exception()), ServiceNameResolverTestCase::assertEquals);
-        tester.test(new ServiceNotFoundException("message", new Exception()), ServiceNameResolverTestCase::assertEquals);
-    }
-
-    private static void assertEquals(Throwable exception1, Throwable exception2) {
-        if ((exception1 != null) && (exception2 != null)) {
-            Assert.assertSame(exception1.getClass(), exception2.getClass());
-            Assert.assertEquals(exception1.getMessage(), exception2.getMessage());
-            assertEquals(exception1.getCause(), exception2.getCause());
-        } else {
-            Assert.assertSame(exception1, exception2);
-        }
     }
 }
