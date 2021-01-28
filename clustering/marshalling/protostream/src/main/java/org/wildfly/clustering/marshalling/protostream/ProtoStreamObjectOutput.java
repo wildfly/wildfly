@@ -124,7 +124,7 @@ public class ProtoStreamObjectOutput implements ObjectOutput {
 
     @Override
     public void writeObject(Object object) throws IOException {
-        Predictable<Any> marshaller = (AnyMarshaller) this.context.getMarshaller(Any.class);
+        Marshallable<Any> marshaller = (AnyMarshaller) this.context.getMarshaller(Any.class);
         Any any = new Any(object);
         OptionalInt size = marshaller.size(this.context, any);
         try (ByteBufferOutputStream output = new ByteBufferOutputStream(size.isPresent() ? OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size.getAsInt()) + size.getAsInt()) : OptionalInt.empty())) {

@@ -70,7 +70,7 @@ public class TypedObjectMarshaller implements ProtoStreamMarshaller<Object> {
     @SuppressWarnings("unchecked")
     private static OptionalInt objectSize(ImmutableSerializationContext context, Object value) {
         BaseMarshaller<?> marshaller = context.getMarshaller(value.getClass());
-        OptionalInt size = (marshaller instanceof Predictable) ? ((Predictable<Object>) marshaller).size(context, value) : OptionalInt.empty();
+        OptionalInt size = (marshaller instanceof Marshallable) ? ((Marshallable<Object>) marshaller).size(context, value) : OptionalInt.empty();
         return size.isPresent() ? OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size.getAsInt()) + size.getAsInt()) : size;
     }
 

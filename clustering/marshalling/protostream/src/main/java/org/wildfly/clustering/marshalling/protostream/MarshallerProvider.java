@@ -37,6 +37,16 @@ public interface MarshallerProvider extends ProtoStreamMarshaller<Object> {
     ProtoStreamMarshaller<?> getMarshaller();
 
     @Override
+    default Object readFrom(ProtoStreamReader reader) throws IOException {
+        return this.getMarshaller().readFrom(reader);
+    }
+
+    @Override
+    default void writeTo(ProtoStreamWriter writer, Object value) throws IOException {
+        this.cast(Object.class).writeTo(writer, value);
+    }
+
+    @Override
     default Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
         return this.getMarshaller().readFrom(context, reader);
     }

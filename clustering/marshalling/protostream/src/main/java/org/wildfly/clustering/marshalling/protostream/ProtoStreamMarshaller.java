@@ -22,17 +22,44 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.RawProtobufMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Predictable<T> {
+public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Marshallable<T> {
 
     @Override
     default String getTypeName() {
         Class<?> targetClass = this.getJavaClass();
         Package targetPackage = targetClass.getPackage();
         return (targetPackage != null) ? (targetPackage.getName() + '.' + targetClass.getSimpleName()) : targetClass.getSimpleName();
+    }
+
+    @Override
+    default T readFrom(ProtoStreamReader reader) throws IOException {
+        // Temporary default implementation
+        return this.readFrom(reader.getSerializationContext(), reader);
+    }
+
+    @Override
+    default void writeTo(ProtoStreamWriter writer, T value) throws IOException {
+        // Temporary default implementation
+        this.writeTo(writer.getSerializationContext(), writer, value);
+    }
+
+    @Override
+    default T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        return this.readFrom(new SerializationContextProtoStreamReader(context, reader));
+    }
+
+    @Override
+    default void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) throws IOException {
+        this.writeTo(new SerializationContextProtoStreamWriter(context, writer), value);
     }
 }

@@ -68,7 +68,7 @@ public enum ObjectMarshaller implements MarshallerProvider {
 
     @Override
     public OptionalInt size(ImmutableSerializationContext context, Object value) {
-        Predictable<Any> marshaller = (AnyMarshaller) context.getMarshaller(Any.class);
+        Marshallable<Any> marshaller = (AnyMarshaller) context.getMarshaller(Any.class);
         OptionalInt size = marshaller.size(context, new Any(value));
         return size.isPresent() ? OptionalInt.of(CodedOutputStream.computeUInt32SizeNoTag(size.getAsInt()) + size.getAsInt()) : OptionalInt.empty();
     }
