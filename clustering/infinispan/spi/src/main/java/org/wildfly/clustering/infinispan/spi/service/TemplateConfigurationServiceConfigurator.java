@@ -21,13 +21,9 @@
  */
 package org.wildfly.clustering.infinispan.spi.service;
 
-import java.lang.reflect.Field;
-import java.security.PrivilegedAction;
 import java.util.function.Consumer;
 
-import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationChildBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
@@ -38,7 +34,6 @@ import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Configures a {@link Service} providing a cache configuration based on a configuration template.
@@ -88,32 +83,5 @@ public class TemplateConfigurationServiceConfigurator implements CapabilityServi
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         return this.configurator.require(this.template).build(target);
-    }
-
-    public static AttributeSet getAttributes(ConfigurationChildBuilder builder) {
-        PrivilegedAction<AttributeSet> action = () -> {
-            NoSuchFieldException exception = null;
-            Class<?> targetClass = builder.getClass();
-            while (targetClass != Object.class) {
-                try {
-                    Field field = builder.getClass().getDeclaredField("attributes");
-                    try {
-                        field.setAccessible(true);
-                        return (AttributeSet) field.get(builder);
-                    } catch (IllegalAccessException e) {
-                        throw new IllegalStateException(e);
-                    } finally {
-                        field.setAccessible(false);
-                    }
-                } catch (NoSuchFieldException e) {
-                    if (exception == null) {
-                        exception = e;
-                    }
-                    targetClass = targetClass.getSuperclass();
-                }
-            }
-            throw new IllegalStateException(exception);
-        };
-        return WildFlySecurityManager.doUnchecked(action);
     }
 }
