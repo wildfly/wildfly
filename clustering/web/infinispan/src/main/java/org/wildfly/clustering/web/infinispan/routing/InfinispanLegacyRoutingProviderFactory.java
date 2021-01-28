@@ -32,8 +32,8 @@ import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.ConfigurationBuilderAttributesAccessor;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
-import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.web.routing.LegacyRoutingProviderFactory;
 import org.wildfly.clustering.web.routing.RoutingProvider;
 
@@ -67,7 +67,7 @@ public class InfinispanLegacyRoutingProviderFactory implements LegacyRoutingProv
         clustering.cacheMode(mode.needsStateTransfer() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
         clustering.l1().disable();
         // Workaround for ISPN-8722
-        AttributeSet attributes = TemplateConfigurationServiceConfigurator.getAttributes(clustering);
+        AttributeSet attributes = ConfigurationBuilderAttributesAccessor.INSTANCE.apply(clustering);
         attributes.attribute(ClusteringConfiguration.BIAS_ACQUISITION).reset();
         attributes.attribute(ClusteringConfiguration.BIAS_LIFESPAN).reset();
         attributes.attribute(ClusteringConfiguration.INVALIDATION_BATCH_SIZE).reset();
@@ -79,7 +79,7 @@ public class InfinispanLegacyRoutingProviderFactory implements LegacyRoutingProv
         builder.memory().storage(StorageType.HEAP).maxCount(-1).whenFull(EvictionStrategy.NONE);
         builder.persistence().clearStores();
         StateTransferConfigurationBuilder stateTransfer = clustering.stateTransfer().fetchInMemoryState(mode.needsStateTransfer());
-        attributes = TemplateConfigurationServiceConfigurator.getAttributes(stateTransfer);
+        attributes = ConfigurationBuilderAttributesAccessor.INSTANCE.apply(stateTransfer);
         attributes.attribute(StateTransferConfiguration.AWAIT_INITIAL_TRANSFER).reset();
         attributes.attribute(StateTransferConfiguration.TIMEOUT).reset();
     }

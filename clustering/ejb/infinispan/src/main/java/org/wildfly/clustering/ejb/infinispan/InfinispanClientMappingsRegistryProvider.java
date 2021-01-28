@@ -46,6 +46,7 @@ import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.infinispan.spi.ConfigurationBuilderAttributesAccessor;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
@@ -89,7 +90,7 @@ public class InfinispanClientMappingsRegistryProvider implements ClientMappingsR
         clustering.cacheMode(mode.needsStateTransfer() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
         clustering.l1().disable();
         // Workaround for ISPN-8722
-        AttributeSet attributes = TemplateConfigurationServiceConfigurator.getAttributes(clustering);
+        AttributeSet attributes = ConfigurationBuilderAttributesAccessor.INSTANCE.apply(clustering);
         attributes.attribute(ClusteringConfiguration.BIAS_ACQUISITION).reset();
         attributes.attribute(ClusteringConfiguration.BIAS_LIFESPAN).reset();
         attributes.attribute(ClusteringConfiguration.INVALIDATION_BATCH_SIZE).reset();
@@ -101,7 +102,7 @@ public class InfinispanClientMappingsRegistryProvider implements ClientMappingsR
         builder.memory().storage(StorageType.HEAP).maxCount(-1).whenFull(EvictionStrategy.NONE);
         builder.persistence().clearStores();
         StateTransferConfigurationBuilder stateTransfer = clustering.stateTransfer().fetchInMemoryState(mode.needsStateTransfer());
-        attributes = TemplateConfigurationServiceConfigurator.getAttributes(stateTransfer);
+        attributes = ConfigurationBuilderAttributesAccessor.INSTANCE.apply(stateTransfer);
         attributes.attribute(StateTransferConfiguration.AWAIT_INITIAL_TRANSFER).reset();
         attributes.attribute(StateTransferConfiguration.TIMEOUT).reset();
     }
