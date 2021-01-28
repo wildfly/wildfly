@@ -244,7 +244,7 @@
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
-        <version.org.wildfly.galleon-plugins>5.0.0.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>5.1.0.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>3.0.0.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
