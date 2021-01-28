@@ -23,6 +23,7 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.io.Externalizable;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -60,7 +61,7 @@ import io.undertow.servlet.api.SessionManagerFactory;
  * Distributable {@link SessionManagerFactory} builder for Undertow.
  * @author Paul Ferraro
  */
-public class DistributableSessionManagerFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<org.wildfly.clustering.web.session.SessionManagerFactory<ServletContext, LocalSessionContext, Batch>, SessionManagerFactory> {
+public class DistributableSessionManagerFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<org.wildfly.clustering.web.session.SessionManagerFactory<ServletContext, Map<String, Object>, Batch>, SessionManagerFactory> {
 
     enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
         VERSION_1() {
@@ -102,7 +103,7 @@ public class DistributableSessionManagerFactoryServiceConfigurator extends Simpl
     }
 
     @Override
-    public SessionManagerFactory apply(org.wildfly.clustering.web.session.SessionManagerFactory<ServletContext, LocalSessionContext, Batch> factory) {
+    public SessionManagerFactory apply(org.wildfly.clustering.web.session.SessionManagerFactory<ServletContext, Map<String, Object>, Batch> factory) {
         return new DistributableSessionManagerFactory(factory, this.configuration);
     }
 
@@ -117,7 +118,7 @@ public class DistributableSessionManagerFactoryServiceConfigurator extends Simpl
         this.configurator.build(target).install();
 
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Supplier<org.wildfly.clustering.web.session.SessionManagerFactory<ServletContext, LocalSessionContext, Batch>> impl = builder.requires(this.configurator.getServiceName());
+        Supplier<org.wildfly.clustering.web.session.SessionManagerFactory<ServletContext, Map<String, Object>, Batch>> impl = builder.requires(this.configurator.getServiceName());
         Consumer<SessionManagerFactory> factory = builder.provides(this.getServiceName());
         Service service = new FunctionalService<>(factory, this, impl);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
