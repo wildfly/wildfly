@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import javax.servlet.ServletContext;
@@ -43,11 +44,11 @@ import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 /**
  * @author Paul Ferraro
  */
-public class SessionManagerFactoryConfigurationAdapter<C> extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, C, LocalSessionContext> {
+public class SessionManagerFactoryConfigurationAdapter<C> extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, C, Map<String, Object>> {
 
     private final Integer maxActiveSessions;
     private final MarshalledValueFactory<C> marshalledValueFactory;
-    private final LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
+    private final LocalContextFactory<Map<String, Object>> localContextFactory = new LocalSessionContextFactory();
     private final Immutability immutability;
 
     public SessionManagerFactoryConfigurationAdapter(SessionManagerFactoryConfiguration configuration, MarshalledValueFactory<C> marshalledValueFactory, Immutability immutability) {
@@ -69,7 +70,7 @@ public class SessionManagerFactoryConfigurationAdapter<C> extends WebDeploymentC
     }
 
     @Override
-    public LocalContextFactory<LocalSessionContext> getLocalContextFactory() {
+    public LocalContextFactory<Map<String, Object>> getLocalContextFactory() {
         return this.localContextFactory;
     }
 
