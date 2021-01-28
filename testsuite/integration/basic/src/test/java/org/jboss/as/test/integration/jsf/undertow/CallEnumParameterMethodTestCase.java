@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -46,8 +46,8 @@ import java.net.URL;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Test calls deployed application with a JSF page. No error should occur when
- * the class called from the JSF has a superclass and the called method has an
+ * Test calls deployed application with a Jakarta Server Faces page. No error should occur when
+ * the class called from the Jakarta Server Faces has a superclass and the called method has an
  * Enum as a parameter.
  *
  * Automated test for [ WFLY-11224 ].

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -48,7 +48,7 @@ import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Determines the JSF version that will be used by a deployment, and if JSF should be used at all
+ * Determines the Jakarta Server Faces version that will be used by a deployment, and if Jakarta Server Faces should be used at all
  *
  * @author Stuart Douglas
  * @author Stan Silvert
@@ -88,9 +88,9 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
 
 
     /**
-     * Create the JSFVersionProcessor and set the default JSF implementation slot.
+     * Create the Jakarta Server Faces VersionProcessor and set the default Jakarta Server Faces implementation slot.
      *
-     * @param jsfSlot The model for the JSF subsystem.
+     * @param jsfSlot The model for the Jakarta Server Faces subsystem.
      */
     public JSFVersionProcessor(String jsfSlot) {
         JSFModuleIdFactory.getInstance().setDefaultSlot(jsfSlot);
@@ -125,10 +125,10 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        //we need to set the JSF version for the whole deployment
+        //we need to set the Jakarta Server Faces version for the whole deployment
         //as otherwise linkage errors can occur
         //if the user does have an ear with two wars with two different
-        //JSF versions they are going to need to use deployment descriptors
+        //Jakarta Server Faces versions they are going to need to use deployment descriptors
         //to manually sort out the dependencies
         for (final ParamValueMetaData param : contextParams) {
             if ((param.getParamName().equals(WAR_BUNDLES_JSF_IMPL_PARAM) &&

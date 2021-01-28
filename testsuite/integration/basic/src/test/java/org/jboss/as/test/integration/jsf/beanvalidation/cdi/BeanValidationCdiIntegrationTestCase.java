@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2013, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -54,7 +54,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests for the integration of JSF, CDI, and Bean Validation.
+ * Tests for the integration of Jakarta Server Faces, CDI, and Bean Validation.
  *
  * @author Farah Juma
  */
@@ -121,7 +121,7 @@ public class BeanValidationCdiIntegrationTestCase {
             try {
                 String responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
 
-                // Get the JSF view state
+                // Get the Jakarta Server Faces view state
                 Matcher jsfViewMatcher = viewStatePattern.matcher(responseString);
                 if (jsfViewMatcher.find()) {
                     jsfViewState = jsfViewMatcher.group(1);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -39,8 +39,8 @@ import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ProfileParsingCompletionHandler} that installs a default JSF extension and subsystem if the
- * profile included legacy web subsystem versions and did not include a JSF subsystem.
+ * {@link ProfileParsingCompletionHandler} that installs a default Jakarta Server Faces extension and subsystem if the
+ * profile included legacy web subsystem versions and did not include a Jakarta Server Faces subsystem.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

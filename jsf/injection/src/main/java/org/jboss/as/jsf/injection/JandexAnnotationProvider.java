@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * {@link }AnnotationProvider} implementation which provides the JSF annotations which we parsed from from a
+ * {@link }AnnotationProvider} implementation which provides the Jakarta Server Faces annotations which we parsed from from a
  * Jandex index.
  *
  * @author John Bailey

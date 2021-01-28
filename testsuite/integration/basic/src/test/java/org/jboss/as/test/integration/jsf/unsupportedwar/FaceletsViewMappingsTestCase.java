@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Red Hat, Inc.
+ * Copyright 2021 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * <p>Tests the JSF deployment failure due to UnsupportedOperationException when
+ * <p>Tests the Jakarta Server Faces deployment failure due to UnsupportedOperationException when
  * <em>javax.faces.FACELETS_VIEW_MAPPINGS</em> is defined with something that
  * does not include <em>*.xhtml</em>.</p>
  *
@@ -72,7 +72,7 @@ public class FaceletsViewMappingsTestCase {
             HttpGet httpget = new HttpGet(Url);
 
             HttpResponse response = httpclient.execute(httpget);
-            Assert.assertEquals("JSF deployment failed due to UnsupportedOperationException when javax.faces.FACELETS_VIEW_MAPPINGS valued wrong", HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals("Jakarta Server Faces deployment failed due to UnsupportedOperationException when javax.faces.FACELETS_VIEW_MAPPINGS valued wrong", HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
             HttpEntity entity = response.getEntity();
             String result = EntityUtils.toString(entity);
             Assert.assertThat("Hello World is in place", result, CoreMatchers.containsString("Hello World!"));

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2017, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -60,7 +60,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests for disallowing and allowing DOCTYPE declarations in JSF apps.
+ * Tests for disallowing and allowing DOCTYPE declarations in Jakarta Server Faces apps.
  *
  * @author Farah Juma
  */
@@ -112,7 +112,7 @@ public class DoctypeDeclTestCase {
             HttpGet getRequest = new HttpGet(requestUrl);
             HttpResponse response = client.execute(getRequest);
             try {
-                // Get the JSF view state
+                // Get the Jakarta Server Faces view state
                 String responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
                 Matcher jsfViewMatcher = viewStatePattern.matcher(responseString);
                 if (jsfViewMatcher.find()) {

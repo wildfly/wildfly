@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2014, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test that JSF managed properties are injected before @PostConstruct methods
+ * Test that Jakarta Server Faces managed properties are injected before @PostConstruct methods
  * are called.
  *
  * @author Farah Juma

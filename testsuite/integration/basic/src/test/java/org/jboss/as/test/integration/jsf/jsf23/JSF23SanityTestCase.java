@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2018, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -53,7 +53,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A simple test to verify that JSF 2.3 is used.
+ * A simple test to verify that Jakarta Server Faces 2.3 is used.
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
@@ -94,7 +94,7 @@ public class JSF23SanityTestCase {
             try {
                 responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
 
-                // Get the JSF view state
+                // Get the Jakarta Server Faces view state
                 Matcher jsfViewMatcher = viewStatePattern.matcher(responseString);
                 if (jsfViewMatcher.find()) {
                     jsfViewState = jsfViewMatcher.group(1);
@@ -122,6 +122,6 @@ public class JSF23SanityTestCase {
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-        assertTrue(responseString.contains("JSF 2.3 Inject worked!"));
+        assertTrue(responseString.contains("Jakarta Server Faces 2.3 Inject worked!"));
     }
 }

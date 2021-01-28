@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -59,27 +59,27 @@ public interface JSFLogger extends BasicLogger {
     void viewHandlerImproperlyInitialized();
 
     @LogMessage(level = ERROR)
-    @Message(id = 2, value = "Could not load JSF managed bean class: %s")
+    @Message(id = 2, value = "Could not load Jakarta Server Faces managed bean class: %s")
     void managedBeanLoadFail(String managedBean);
 
     @LogMessage(level = ERROR)
-    @Message(id = 3, value = "JSF managed bean class %s has no default constructor")
+    @Message(id = 3, value = "Jakarta Server Faces managed bean class %s has no default constructor")
     void managedBeanNoDefaultConstructor(String managedBean);
 
     @LogMessage(level = ERROR)
-    @Message(id = 4, value = "Failed to parse %s, JSF artifacts defined in this file will not be available")
+    @Message(id = 4, value = "Failed to parse %s, Jakarta Server Faces artifacts defined in this file will not be available")
     void managedBeansConfigParseFailed(VirtualFile facesConfig);
 
     @LogMessage(level = WARN)
-    @Message(id = 5, value = "Unknown JSF version '%s'.  Default version '%s' will be used instead.")
+    @Message(id = 5, value = "Unknown Jakarta Server Faces version '%s'.  Default version '%s' will be used instead.")
     void unknownJSFVersion(String version, String defaultVersion);
 
     @LogMessage(level = WARN)
-    @Message(id = 6, value = "JSF version slot '%s' is missing from module %s")
+    @Message(id = 6, value = "Jakarta Server Faces version slot '%s' is missing from module %s")
     void missingJSFModule(String version, String module);
 
     @LogMessage(level = INFO)
-    @Message(id = 7, value = "Activated the following JSF Implementations: %s")
+    @Message(id = 7, value = "Activated the following Jakarta Server Faces Implementations: %s")
     void activatedJSFImplementations(List target);
 
     @Message(id = 8, value = "Failed to load annotated class: %s")
@@ -100,14 +100,14 @@ public interface JSFLogger extends BasicLogger {
     @Message(id = 13, value = "@ManagedBean is only allowed at class level %s")
     String invalidManagedBeanAnnotation(AnnotationTarget target);
 
-    @Message(id = 14, value = "Default JSF implementation slot '%s' is invalid")
+    @Message(id = 14, value = "Default Jakarta Server Faces implementation slot '%s' is invalid")
     DeploymentUnitProcessingException invalidDefaultJSFImpl(String defaultJsfVersion);
 
 //    @LogMessage(level = ERROR)
 //    @Message(id = 15, value = "Failed to parse %s, phase listeners defined in this file will not be available")
 //    void phaseListenersConfigParseFailed(VirtualFile facesConfig);
 
-    @Message(id = 16, value = "Failed to inject JSF from slot %s")
+    @Message(id = 16, value = "Failed to inject Jakarta Server Faces from slot %s")
     DeploymentUnitProcessingException jsfInjectionFailed(String slotName, @Cause Throwable cause);
 
     @LogMessage(level = DEBUG)
@@ -119,6 +119,6 @@ public interface JSFLogger extends BasicLogger {
     void loadingJsf2x();
 
     @LogMessage(level = INFO)
-    @Message(id = 19, value = "JSF artifact %s with class %s has no default constructor so it will not be considered for injection")
+    @Message(id = 19, value = "Jakarta Server Faces artifact %s with class %s has no default constructor so it will not be considered for injection")
     void jsfArtifactNoDefaultConstructor(String type, String className);
 }
