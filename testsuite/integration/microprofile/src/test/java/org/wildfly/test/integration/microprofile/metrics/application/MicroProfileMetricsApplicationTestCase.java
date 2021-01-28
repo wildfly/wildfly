@@ -151,7 +151,7 @@ public class MicroProfileMetricsApplicationTestCase {
         double counter = getMetricValueFromPrometheusOutput(metrics, "application", "hello");
         assertEquals(1.0, counter, 0.0);
 
-        performCall(url);
+        text = performCall(url);
         assertNotNull(text);
         assertTrue(text.contains("Hello From WildFly!"));
 
@@ -177,7 +177,7 @@ public class MicroProfileMetricsApplicationTestCase {
         counter = getMetricValueFromJSONOutput(metrics, "hello");
         assertEquals(3.0, counter, 0.0);
 
-        performCall(url);
+        text = performCall(url);
         assertNotNull(text);
         assertTrue(text.contains("Hello From WildFly!"));
 
