@@ -161,6 +161,9 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
         // pull in any XTS transaction
         LocalTransactionContext.getCurrent().importProviderTransaction();
         context.setTransaction(ContextTransactionManager.getInstance().getTransaction());
+        if (forceTargetBean) {
+            context.putPrivateData(ManagedReference.class, reference);
+        }
         // invoke method
         final Object retObj = componentView.invoke(context);
         // set return value
