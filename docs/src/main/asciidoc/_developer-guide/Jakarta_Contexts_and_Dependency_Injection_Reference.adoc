@@ -201,3 +201,5 @@ WildFly instance by executing the following command:
 API]* *properly and thus never required the non-portable mode. The
 non-portable mode only exists to preserve compatibility with legacy
 extensions!*
+
+NOTE: References in this document to CDI refer to Jakarta Contexts and Dependency Injection unless otherwise noted.

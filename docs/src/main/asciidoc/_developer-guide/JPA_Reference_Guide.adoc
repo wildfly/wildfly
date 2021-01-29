@@ -842,7 +842,7 @@ persistence.xml.
 
 |wildfly.jpa.twophasebootstrap |persistence providers (like Hibernate
 ORM 4.3+ via EntityManagerFactoryBuilder), allow a two phase persistence
-unit bootstrap, which improves JPA integration with CDI. Setting the
+unit bootstrap, which improves JPA integration with Jakarta Contexts and Dependency Injection. Setting the
 wildfly.jpa.twophasebootstrap hint to false, disables the two phase
 bootstrap (for the persistence unit that contains the hint).
 

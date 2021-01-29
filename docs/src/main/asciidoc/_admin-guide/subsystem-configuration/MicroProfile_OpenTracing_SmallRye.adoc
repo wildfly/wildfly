@@ -30,7 +30,7 @@ element to the xml or by using the following CLI operation:
 
 == Supported instrumentation libraries
 
-WildFly's MicroProfile OpenTracing subsystem implements MicroProfile 1.3, which includes support for tracing JAX-RS and CDI.
+WildFly's MicroProfile OpenTracing subsystem implements MicroProfile 1.3, which includes support for tracing JAX-RS and Jakarta Contexts and Dependency Injection.
 
 Currently the subsystem allows the configuration of https://github.com/jaegertracing/jaeger-client-java[Jaeger Java Client]. You can then specify which tracer to use in your deployment by specifying a `smallrye.opentracing.tracer.configuration` init-parameter in your deployment descriptor. If this value is wrong the deployment will fail.
 You can also set the default tracer to be injected by using the `default-tracer` attribute on the subsystem configuration.
@@ -71,13 +71,13 @@ Those are the configuration attributes:
 
 By default, the service name used with the Jaeger Client is derived from the deployment's name, which is usually the WAR file name.
 
-As defined by the MicroProfile OpenTracing specification, CDI beans are traced if the annotation
+As defined by the MicroProfile OpenTracing specification, Jakarta Contexts and Dependency Injection beans are traced if the annotation
 `org.eclipse.microprofile.opentracing.Traced` is present, either at the type or method level. Tracing can be disabled
 by setting the annotation's value to `false`. Similarly, a custom operation name can be set by specifying the parameter
 `operationName` for that annotation. The semantics are ruled by the MicroProfile OpenTracing specification.
 
-Note that CDI support for the deployment is required in order to activate the MicroProfile OpenTracing support. A simple
-JAX-RS application with no CDI support will *not* be traced.
+Note that Jakarta Contexts and Dependency Injection support for the deployment is required in order to activate the MicroProfile OpenTracing support. A simple
+JAX-RS application with no Jakarta Contexts and Dependency Injection support will *not* be traced.
 
 Managed beans with multiple facets, such as EJBs, can also be traced by annotating them with `@Traced`, but with
 limitations. For instance, asynchronous invocations will yield a new trace, instead of having the span to join an

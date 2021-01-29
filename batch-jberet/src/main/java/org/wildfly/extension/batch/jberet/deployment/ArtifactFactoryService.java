@@ -60,7 +60,7 @@ public class ArtifactFactoryService extends AbstractArtifactFactory implements S
     public void destroy(final Object instance) {
         final Holder holder = contexts.remove(instance);
         if (holder == null) {
-            // This bean was not created via CDI, we need to invoke the JBeret cleanup
+            // This bean was not created via Jakarta Contexts and Dependency Injection, we need to invoke the JBeret cleanup
             super.destroy(instance);
         } else {
             // Only release the context for @Dependent beans, Weld should take care of the other scopes

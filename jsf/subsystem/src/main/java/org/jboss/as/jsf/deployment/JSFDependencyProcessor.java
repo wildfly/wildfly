@@ -174,7 +174,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     // Add a flag to the sevlet context so that we know if we need to instantiate
-    // a CDI ViewHandler.
+    // a Jakarta Contexts and Dependency Injection ViewHandler.
     private void addCDIFlag(WarMetaData warMetaData, DeploymentUnit deploymentUnit) {
         JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
         if (webMetaData == null) {

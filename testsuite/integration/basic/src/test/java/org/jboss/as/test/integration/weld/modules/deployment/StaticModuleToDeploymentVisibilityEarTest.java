@@ -40,7 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Verifies that a bean (FooImpl3) in the top-level deployment unit is visible from a static CDI-enabled module.
+ * Verifies that a bean (FooImpl3) in the top-level deployment unit is visible from a static Jakarta Contexts and Dependency Injection enabled module.
  * At the same time beans from sub-deployments (FooImpl1, FooImpl2) are not visible.
  *
  * @author Jozef Hartinger

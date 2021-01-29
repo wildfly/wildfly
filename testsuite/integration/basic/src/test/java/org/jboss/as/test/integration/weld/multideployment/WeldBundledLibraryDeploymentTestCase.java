@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that CDI beans defined in a bundled library can be used in a deployment
+ * Tests that Jakarta Contexts and Dependency Injection beans defined in a bundled library can be used in a deployment
  *
  * @author Jozef Hartinger
  *

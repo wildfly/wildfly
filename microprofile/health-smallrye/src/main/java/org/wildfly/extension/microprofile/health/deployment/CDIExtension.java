@@ -63,7 +63,7 @@ public class CDIExtension implements Extension {
 
     }
 
-    // Use a single CDI instance to select and destroy all HealthCheck probes instances
+    // Use a single Jakarta Contexts and Dependency Injection instance to select and destroy all HealthCheck probes instances
     private Instance<Object> instance;
     private final List<HealthCheck> healthChecks = new ArrayList<>();
     private final List<HealthCheck> livenessChecks = new ArrayList<>();
@@ -78,7 +78,7 @@ public class CDIExtension implements Extension {
     }
 
     /**
-     * Get CDI <em>instances</em> of HealthCheck and
+     * Get Jakarta Contexts and Dependency Injection <em>instances</em> of HealthCheck and
      * add them to the {@link MicroProfileHealthReporter}.
      */
     private void afterDeploymentValidation(@Observes final AfterDeploymentValidation avd, BeanManager bm) {

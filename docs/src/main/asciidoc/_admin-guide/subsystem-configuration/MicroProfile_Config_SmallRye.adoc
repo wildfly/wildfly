@@ -147,8 +147,8 @@ All properties from the `ConfigSource`s provided by this `ConfigSourceProvider` 
 
 == Deployment
 
-Applications that are deployed in WildFly must have CDI enabled (e.g. with a `META-INF/beans.xml`
-or by having CDI Bean annotation) to be able to use MicroProfile Config in their code.
+Applications that are deployed in WildFly must have Jakarta Contexts and Dependency Injection enabled (e.g. with a `META-INF/beans.xml`
+or by having Jakarta Contexts and Dependency Injection Bean annotation) to be able to use MicroProfile Config in their code.
 
 
 == Component Reference

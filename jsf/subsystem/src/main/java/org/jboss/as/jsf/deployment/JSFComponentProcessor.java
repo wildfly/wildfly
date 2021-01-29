@@ -246,7 +246,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
 
     /**
      * According to JSF specification there is a table of eligible components
-     * for CDI injection (TABLE 5-3 JSF Artifacts Eligible for Injection in chapter
+     * for Jakarta Contexts and Dependency Injection (TABLE 5-3 JSF Artifacts Eligible for Injection in chapter
      * 5.4.1 JSF Managed Classes and Jakarta EE Annotations). This method parses
      * the faces-config configuration files and registers the classes.
      * The parser is quite simplistic. The tags are saved into a queue and
@@ -411,7 +411,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         try {
             final Class<?> componentClass = module.getClassLoader().loadClass(className);
             if (!isCDI) {
-                // if not CDI the default constructor is compulsory to inject the artifact
+                // if not Jakarta Contexts and Dependency Injection the default constructor is compulsory to inject the artifact
                 componentClass.getConstructor();
             }
         } catch (ClassNotFoundException e) {

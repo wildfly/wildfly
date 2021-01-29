@@ -35,7 +35,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.GetClassLoaderAction;
 
 /**
- * Utility class for working with CDI InjectionTargets
+ * Utility class for working with Jakarta Contexts and Dependency Injection InjectionTargets
  *
  * @author Jozef Hartinger
  *
@@ -76,7 +76,7 @@ public class InjectionTargets {
 
         if (Beans.getBeanConstructor(type) == null) {
             /*
-             * For example, AsyncListeners may be CDI-incompatible as long as the application never calls javax.servletAsyncContext#createListener(Class)
+             * For example, AsyncListeners may be Jakarta Contexts and Dependency Injection incompatible as long as the application never calls javax.servletAsyncContext#createListener(Class)
              * and only instantiates the listener itself.
              */
             return beanManager.getInjectionTargetFactory(type).createNonProducibleInjectionTarget();

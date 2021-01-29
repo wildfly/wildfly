@@ -85,7 +85,7 @@ public interface WeldLogger extends BasicLogger {
     void couldNotFindBeanManagerForDeployment(String beanManager);
 
     @LogMessage(level = Logger.Level.DEBUG)
-    @Message(id = 6, value = "Starting Services for CDI deployment: %s")
+    @Message(id = 6, value = "Starting Services for Jakarta Contexts and Dependency Injection deployment: %s")
     void startingServicesForCDIDeployment(String deploymentName);
 
     @LogMessage(level = Logger.Level.WARN)
@@ -113,7 +113,7 @@ public interface WeldLogger extends BasicLogger {
     void beansXmlValidationError(URL file, int line , String message);
 
     @LogMessage(level = Logger.Level.WARN)
-    @Message(id = 13, value = "Deployment %s contains CDI annotations but no bean archive was found (no beans.xml or class with bean defining annotations was present).")
+    @Message(id = 13, value = "Deployment %s contains Jakarta Contexts and Dependency Injection annotations but no bean archive was found (no beans.xml or class with bean defining annotations was present).")
     void cdiAnnotationsButNotBeanArchive(String deploymentUnit);
 
     @LogMessage(level = Logger.Level.ERROR)
@@ -129,7 +129,7 @@ public interface WeldLogger extends BasicLogger {
     void couldNotReadEntries(@Cause IOException ioe);
 
     @LogMessage(level = Logger.Level.WARN)
-    @Message(id = 17, value = "URL scanner does not understand the URL protocol %s, CDI beans will not be scanned.")
+    @Message(id = 17, value = "URL scanner does not understand the URL protocol %s, Jakarta Contexts and Dependency Injection beans will not be scanned.")
     void doNotUnderstandProtocol(URL url);
 
     @LogMessage(level = Logger.Level.WARN)
@@ -151,10 +151,10 @@ public interface WeldLogger extends BasicLogger {
     // @Message(id = 23, value = "EJB has been removed")
     // NoSuchEJBException ejbHashBeenRemoved();
 
-//    @Message(id = 24, value = "Failed to perform CDI injection of field: %s on %s")
+//    @Message(id = 24, value = "Failed to perform Jakarta Contexts and Dependency Injection injection of field: %s on %s")
 //    RuntimeException couldNotInjectField(Field field, Class<?> beanClass, @Cause Throwable cause);
 //
-//    @Message(id = 25, value = "Failed to perform CDI injection of method: %s on %s")
+//    @Message(id = 25, value = "Failed to perform Jakarta Contexts and Dependency Injection injection of method: %s on %s")
 //    RuntimeException couldNotInjectMethod(Method method, Class<?> beanClass, @Cause Throwable cause);
 //
 //    @Message(id = 26, value = "Class %s has more that one constructor annotated with @Inject")
@@ -163,13 +163,13 @@ public interface WeldLogger extends BasicLogger {
 //    @Message(id = 27, value = "Component %s is attempting to inject the InjectionPoint into a field: %s")
 //    RuntimeException attemptingToInjectInjectionPointIntoField(Class<?> clazz, Field field);
 //
-//    @Message(id = 28, value = "Could not resolve CDI bean for injection point %s with qualifiers %s")
+//    @Message(id = 28, value = "Could not resolve Jakarta Contexts and Dependency Injection bean for injection point %s with qualifiers %s")
 //    RuntimeException couldNotResolveInjectionPoint(String injectionPoint, Set<Annotation> qualifier);
 //
-//    @Message(id = 29, value = "Component %s is attempting to inject the InjectionPoint into a method on a component that is not a CDI bean %s")
+//    @Message(id = 29, value = "Component %s is attempting to inject the InjectionPoint into a method on a component that is not a Jakarta Contexts and Dependency Injection bean %s")
 //    RuntimeException attemptingToInjectInjectionPointIntoNonBean(Class<?> componentClass, Method injectionPoint);
 
-    @Message(id = 30, value = "Unknown interceptor class for CDI injection %s")
+    @Message(id = 30, value = "Unknown interceptor class for Jakarta Contexts and Dependency Injection %s")
     IllegalArgumentException unknownInterceptorClassForCDIInjection(Class<?> interceptorClass);
 
     @Message(id = 31, value = "%s cannot be null")
@@ -190,7 +190,7 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 36, value = "Could not determine bean class from injection point type of %s")
     IllegalArgumentException couldNotDetermineUnderlyingType(Type type);
 
-    @Message(id = 37, value = "Error injecting persistence unit into CDI managed bean. Can't find a persistence unit named '%s' in deployment %s for injection point %s")
+    @Message(id = 37, value = "Error injecting persistence unit into Jakarta Contexts and Dependency Injection managed bean. Can't find a persistence unit named '%s' in deployment %s for injection point %s")
     IllegalArgumentException couldNotFindPersistenceUnit(String unitName, String deployment, Member injectionPoint);
 
     @Message(id = 38, value = "Could not inject SecurityManager, security is not enabled")
@@ -211,7 +211,7 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 43, value = "BeanDeploymentArchive with id %s not found in deployment")
     IllegalArgumentException beanDeploymentNotFound(String beanDeploymentId);
 
-    @Message(id = 44, value = "Error injecting resource into CDI managed bean. Can't find a resource named %s")
+    @Message(id = 44, value = "Error injecting resource into Jakarta Contexts and Dependency Injection managed bean. Can't find a resource named %s")
     IllegalArgumentException couldNotFindResource(String resourceName, @Cause Throwable cause);
 
     @Message(id = 45, value = "Cannot determine resource name. Both jndiName and mappedName are null")
@@ -226,7 +226,7 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 48, value = "These attributes must be 'true' for use with CDI 1.0 '%s'")
     String rejectAttributesMustBeTrue(Set<String> keySet);
 
-    @Message(id = 49, value = "Error injecting resource into CDI managed bean. Can't find a resource named %s defined on %s")
+    @Message(id = 49, value = "Error injecting resource into Jakarta Contexts and Dependency Injection managed bean. Can't find a resource named %s defined on %s")
     IllegalArgumentException couldNotFindResource(String resourceName, String member, @Cause Throwable cause);
 
     @LogMessage(level = Logger.Level.DEBUG)

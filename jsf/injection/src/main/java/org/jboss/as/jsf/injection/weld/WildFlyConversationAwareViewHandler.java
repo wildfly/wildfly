@@ -29,7 +29,7 @@ import org.jboss.as.jsf.deployment.JSFDependencyProcessor;
 import org.jboss.weld.module.jsf.ConversationAwareViewHandler;
 
 /**
- * If this is a CDI-enabled app, then delegate to a wrapped Weld ViewHandler.
+ * If this is a Jakarta Contexts and Dependency Injection enabled app, then delegate to a wrapped Weld ViewHandler.
  * Otherwise, delegate to the parent ViewHandler in the chain.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2013 Red Hat Inc.
