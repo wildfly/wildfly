@@ -325,34 +325,6 @@ public enum AnyField implements ProtoStreamMarshallerProvider, Field<Object> {
             return size;
         }
     },
-    THROWABLE(Throwable.class) {
-        @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            Class<?> targetClass = ClassField.ANY.readFrom(context, reader);
-
-            return new ExceptionMarshaller<>(targetClass.asSubclass(Throwable.class)).readFrom(context, reader);
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            Throwable exception = (Throwable) value;
-            @SuppressWarnings("unchecked")
-            Class<Throwable> exceptionClass = (Class<Throwable>) exception.getClass();
-            ClassField.ANY.writeTo(context, writer, exceptionClass);
-
-            new ExceptionMarshaller<>(exceptionClass).writeTo(context, writer, exception);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            Throwable exception = (Throwable) value;
-            @SuppressWarnings("unchecked")
-            Class<Throwable> exceptionClass = (Class<Throwable>) exception.getClass();
-            OptionalInt classSize = ClassField.ANY.size(context, exceptionClass);
-            OptionalInt exceptionSize = new ExceptionMarshaller<>(exceptionClass).size(context, exception);
-            return classSize.isPresent() && exceptionSize.isPresent() ? OptionalInt.of(classSize.getAsInt() + exceptionSize.getAsInt()) : OptionalInt.empty();
-        }
-    },
     ;
     private final Class<?> targetClass;
 

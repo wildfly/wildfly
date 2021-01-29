@@ -32,7 +32,6 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import protostream.com.google.protobuf.CodedOutputStream;
 
@@ -124,11 +123,6 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
             } catch (IllegalArgumentException e) {
                 return AnyField.ARRAY;
             }
-        }
-
-        // Only handle JDK exceptions
-        if ((value instanceof Throwable) && (WildFlySecurityManager.getClassLoaderPrivileged(value.getClass()) == WildFlySecurityManager.getClassLoaderPrivileged(Throwable.class))) {
-            return AnyField.THROWABLE;
         }
 
         if (Proxy.isProxyClass(valueClass)) {
