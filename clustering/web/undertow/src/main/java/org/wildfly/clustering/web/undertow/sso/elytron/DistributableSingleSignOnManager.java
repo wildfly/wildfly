@@ -46,14 +46,14 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
     }
 
     @Override
-    public SingleSignOn create(String mechanismName, SecurityIdentity identity) {
+    public SingleSignOn create(String mechanismName, boolean programmatic, SecurityIdentity identity) {
         String id = this.manager.createIdentifier();
         Batcher<Batch> batcher = this.manager.getBatcher();
         // Batch will be closed when SSO is closed
         @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
-            SSO<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.createSSO(id, new ElytronAuthentication(mechanismName, identity.getPrincipal().getName()));
+            SSO<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.createSSO(id, new ElytronAuthentication(mechanismName, programmatic, identity.getPrincipal().getName()));
             sso.getLocalContext().setSecurityIdentity(identity);
             return new DistributableSingleSignOn(sso, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
