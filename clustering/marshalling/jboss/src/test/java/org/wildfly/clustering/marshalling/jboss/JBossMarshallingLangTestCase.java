@@ -22,14 +22,14 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import org.wildfly.clustering.marshalling.AbstractPrimitivesTestCase;
+import org.wildfly.clustering.marshalling.AbstractLangTestCase;
 
 /**
  * @author Paul Ferraro
  */
-public class JBossMarshallingPrimitivesTestCase extends AbstractPrimitivesTestCase {
+public class JBossMarshallingLangTestCase extends AbstractLangTestCase {
 
-    public JBossMarshallingPrimitivesTestCase() {
+    public JBossMarshallingLangTestCase() {
         super(new JBossMarshallingTesterFactory());
     }
 }

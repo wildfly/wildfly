@@ -22,15 +22,15 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.wildfly.clustering.marshalling.AbstractPrimitivesTestCase;
+import org.wildfly.clustering.marshalling.AbstractLangTestCase;
 
 /**
  * ProtoStream tests for primitives and arrays.
  * @author Paul Ferraro
  */
-public class ProtoStreamPrimitivesTestCase extends AbstractPrimitivesTestCase {
+public class ProtoStreamLangTestCase extends AbstractLangTestCase {
 
-    public ProtoStreamPrimitivesTestCase() {
+    public ProtoStreamLangTestCase() {
         // Need to load protostream schema/marshaller for invocation handler
         super(new ProtoStreamTesterFactory(Thread.currentThread().getContextClassLoader()));
     }

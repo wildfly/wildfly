@@ -33,11 +33,11 @@ import org.junit.Test;
  * Validates marshalling of primitives and arrays.
  * @author Paul Ferraro
  */
-public abstract class AbstractPrimitivesTestCase {
+public abstract class AbstractLangTestCase {
 
     private final MarshallingTesterFactory factory;
 
-    public AbstractPrimitivesTestCase(MarshallingTesterFactory factory) {
+    public AbstractLangTestCase(MarshallingTesterFactory factory) {
         this.factory = factory;
     }
 
@@ -166,7 +166,7 @@ public abstract class AbstractPrimitivesTestCase {
     @Test
     public void testFloatArray() throws IOException {
         float[] array = new float[] { Float.MIN_VALUE, 0f, Float.MAX_VALUE };
-        this.factory.<float[]>createTester().test(array, AbstractPrimitivesTestCase::assertArrayEquals);
+        this.factory.<float[]>createTester().test(array, AbstractLangTestCase::assertArrayEquals);
         this.factory.<float[][]>createTester().test(new float[][] { array, array }, Assert::assertArrayEquals);
         Float[] objectArray = new Float[] { Float.MIN_VALUE, 0f, Float.MAX_VALUE };
         this.factory.<Float[]>createTester().test(objectArray, Assert::assertArrayEquals);
@@ -176,7 +176,7 @@ public abstract class AbstractPrimitivesTestCase {
     @Test
     public void testDoubleArray() throws IOException {
         double[] array = new double[] { Double.MIN_VALUE, 0d, Double.MAX_VALUE };
-        this.factory.<double[]>createTester().test(array, AbstractPrimitivesTestCase::assertArrayEquals);
+        this.factory.<double[]>createTester().test(array, AbstractLangTestCase::assertArrayEquals);
         this.factory.<double[][]>createTester().test(new double[][] { array, array }, Assert::assertArrayEquals);
         Double[] objectArray = new Double[] { Double.MIN_VALUE, 0d, Double.MAX_VALUE };
         this.factory.<Double[]>createTester().test(objectArray, Assert::assertArrayEquals);
@@ -238,7 +238,7 @@ public abstract class AbstractPrimitivesTestCase {
                 throw new Exception(e);
             }
         } catch (Throwable e) {
-            this.factory.<Throwable>createTester().test(e, AbstractPrimitivesTestCase::assertEquals);
+            this.factory.<Throwable>createTester().test(e, AbstractLangTestCase::assertEquals);
         }
     }
 
@@ -246,7 +246,7 @@ public abstract class AbstractPrimitivesTestCase {
     public void testProxy() throws IOException {
         Object proxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[] { Iterable.class }, new TestInvocationHandler(UUID.randomUUID()));
 
-        this.factory.createTester().test(proxy, AbstractPrimitivesTestCase::assertProxyEquals);
+        this.factory.createTester().test(proxy, AbstractLangTestCase::assertProxyEquals);
     }
 
     private static void assertProxyEquals(Object expected, Object actual) {
