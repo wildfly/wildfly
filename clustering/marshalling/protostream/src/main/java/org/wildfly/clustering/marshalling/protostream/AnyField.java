@@ -35,7 +35,6 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
-import org.jboss.modules.Module;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import protostream.com.google.protobuf.CodedOutputStream;
@@ -294,39 +293,33 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
     PROXY(Void.class) {
         @Override
         public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            Module module = (Module) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-            ClassLoader loader = (module != null) ? module.getClassLoader() : WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            InvocationHandler handler = (InvocationHandler) ObjectMarshaller.INSTANCE.readFrom(context, reader);
             Class<?>[] interfaceClasses = new Class<?>[reader.readUInt32()];
             for (int i = 0; i < interfaceClasses.length; ++i) {
                 interfaceClasses[i] = ClassField.ANY.readFrom(context, reader);
             }
-            InvocationHandler handler = (InvocationHandler) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-            return Proxy.newProxyInstance(loader, interfaceClasses, handler);
+            return Proxy.newProxyInstance(WildFlySecurityManager.getClassLoaderPrivileged(handler.getClass()), interfaceClasses, handler);
         }
 
         @Override
         public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, Module.forClass(value.getClass()));
+            ObjectMarshaller.INSTANCE.writeTo(context, writer, Proxy.getInvocationHandler(value));
             Class<?>[] interfaceClasses = value.getClass().getInterfaces();
             writer.writeUInt32NoTag(interfaceClasses.length);
             for (Class<?> interfaceClass : interfaceClasses) {
                 ClassField.ANY.writeTo(context, writer, interfaceClass);
             }
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, Proxy.getInvocationHandler(value));
         }
 
         @Override
         public OptionalInt size(ImmutableSerializationContext context, Object value) {
             OptionalInt size = ObjectMarshaller.INSTANCE.size(context, Proxy.getInvocationHandler(value));
             if (size.isPresent()) {
-                OptionalInt moduleSize = ObjectMarshaller.INSTANCE.size(context, Module.forClass(value.getClass()));
-                if (moduleSize.isPresent()) {
-                    Class<?>[] interfaceClasses = value.getClass().getInterfaces();
-                    size = OptionalInt.of(size.getAsInt() + moduleSize.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(interfaceClasses.length));
-                    for (Class<?> interfaceClass : interfaceClasses) {
-                        OptionalInt interfaceSize = ClassField.ANY.size(context, interfaceClass);
-                        size = size.isPresent() && interfaceSize.isPresent() ? OptionalInt.of(size.getAsInt() + interfaceSize.getAsInt()) : OptionalInt.empty();
-                    }
+                Class<?>[] interfaceClasses = value.getClass().getInterfaces();
+                size = OptionalInt.of(size.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(interfaceClasses.length));
+                for (Class<?> interfaceClass : interfaceClasses) {
+                    OptionalInt interfaceSize = ClassField.ANY.size(context, interfaceClass);
+                    size = size.isPresent() && interfaceSize.isPresent() ? OptionalInt.of(size.getAsInt() + interfaceSize.getAsInt()) : OptionalInt.empty();
                 }
             }
             return size;
