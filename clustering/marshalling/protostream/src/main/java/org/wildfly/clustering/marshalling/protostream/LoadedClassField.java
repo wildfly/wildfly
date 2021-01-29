@@ -32,7 +32,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * A class field that marshals instances of {@link Class} using a {@link ClassResolver}.
  * @author Paul Ferraro
  */
-public class LoadedClassField implements Field<Class<?>> {
+public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<?>> {
 
     private final ClassLoaderMarshaller loaderMarshaller;
     private final int index;
@@ -42,6 +42,11 @@ public class LoadedClassField implements Field<Class<?>> {
         this.loaderMarshaller = loaderMarshaller;
         this.index = index;
         this.loaderIndex = index + 1;
+    }
+
+    @Override
+    public FieldMarshaller<Class<?>> getMarshaller() {
+        return this;
     }
 
     @Override
@@ -75,11 +80,16 @@ public class LoadedClassField implements Field<Class<?>> {
 
     @Override
     public Class<? extends Class<?>> getJavaClass() {
-        return ClassField.ANY.getJavaClass();
+        return ScalarClass.ANY.getJavaClass();
     }
 
     @Override
     public int getIndex() {
         return this.index;
+    }
+
+    @Override
+    public int getWireType() {
+        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     }
 }

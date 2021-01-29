@@ -25,15 +25,10 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.lang.reflect.Proxy;
-import java.util.OptionalInt;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
-
-import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * Marshaller for an {@link Any} object.
@@ -48,57 +43,42 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
     }
 
     @Override
-    public Any readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+    public Any readFrom(ProtoStreamReader reader) throws IOException {
+        Object value = null;
         int tag = reader.readTag();
-        if (tag == 0) return new Any(null);
+        if (tag != 0) {
+            AnyField field = AnyField.fromIndex(WireFormat.getTagFieldNumber(tag));
+            if (field == null) {
+                throw new StreamCorruptedException(String.valueOf(tag));
+            }
 
-        AnyField field = AnyField.fromIndex(WireFormat.getTagFieldNumber(tag));
-        if (field == null) {
-            throw new StreamCorruptedException(String.valueOf(tag));
-        }
+            value = field.getMarshaller().readFrom(reader);
 
-        Object value = field.readFrom(context, reader);
-
-        if (field == AnyField.REFERENCE) {
-            value = ProtoStreamReaderContext.INSTANCE.get().findByReference((Integer) value);
-        } else {
-            ProtoStreamReaderContext.INSTANCE.get().setReference(value);
-        }
-
-        if (reader.readTag() != 0) {
-            throw new StreamCorruptedException();
+            if (field == AnyField.REFERENCE) {
+                value = ProtoStreamReaderContext.INSTANCE.get().findByReference((Integer) value);
+            } else {
+                ProtoStreamReaderContext.INSTANCE.get().setReference(value);
+            }
         }
         return new Any(value);
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Any value) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, Any value) throws IOException {
         Object object = value.get();
-        if (object == null) return;
+        if (object != null) {
+            // If we already wrote this object to the stream, write the object reference
+            Integer referenceId = ProtoStreamWriterContext.INSTANCE.get().getReferenceId(object);
 
-        // If we already wrote this object to the stream, write the object reference
-        Integer referenceId = ProtoStreamWriterContext.INSTANCE.get().getReferenceId(object);
+            AnyField field = (referenceId == null) ? getField(writer.getSerializationContext(), object) : AnyField.REFERENCE;
+            writer.writeTag(field.getIndex(), field.getMarshaller().getWireType());
+            field.getMarshaller().writeTo(writer, (referenceId == null) ? object : referenceId);
 
-        AnyField field = (referenceId == null) ? getField(context, object) : AnyField.REFERENCE;
-
-        writer.writeTag(field.getIndex(), WireFormat.WIRETYPE_VARINT);
-        field.writeTo(context, writer, (referenceId == null) ? object : referenceId);
-
-        if (referenceId == null) {
-            ProtoStreamWriterContext.INSTANCE.get().setReference(object);
+            // Skip reference recording if writeTo was execute via a size operation
+            if ((referenceId == null) && !(writer instanceof SizeComputingProtoStreamWriter)) {
+                ProtoStreamWriterContext.INSTANCE.get().setReference(object);
+            }
         }
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, Any value) {
-        Object object = value.get();
-        if (object == null) return OptionalInt.of(0);
-
-        Integer referenceId = ProtoStreamWriterContext.INSTANCE.get().getReferenceId(object);
-        AnyField field = (referenceId == null) ? getField(context, object) : AnyField.REFERENCE;
-        OptionalInt size = field.size(context, (referenceId == null) ? object : referenceId);
-
-        return size.isPresent() ? OptionalInt.of(size.getAsInt() + CodedOutputStream.computeTagSize(field.getIndex())) : OptionalInt.empty();
     }
 
     private static AnyField getField(ImmutableSerializationContext context, Object value) {
@@ -109,19 +89,18 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
         if (value instanceof Enum) {
             Enum<?> enumValue = (Enum<?>) value;
             BaseMarshaller<?> marshaller = context.getMarshaller(enumValue.getDeclaringClass());
-            return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_ENUM : AnyField.ENUM;
+            return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_ENUM : AnyField.NAMED_ENUM;
         }
 
         if (valueClass.isArray()) {
             Class<?> componentType = valueClass.getComponentType();
             AnyField componentTypeField = AnyField.fromJavaType(componentType);
             if (componentTypeField != null) return AnyField.FIELD_ARRAY;
-            if (componentType.isArray()) return AnyField.MULTI_DIMENSIONAL_ARRAY;
             try {
                 BaseMarshaller<?> marshaller = context.getMarshaller(componentType);
-                return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_ARRAY : AnyField.ARRAY;
+                return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_ARRAY : AnyField.NAMED_ARRAY;
             } catch (IllegalArgumentException e) {
-                return AnyField.ARRAY;
+                return AnyField.ANY_ARRAY;
             }
         }
 
@@ -130,7 +109,7 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
         }
 
         BaseMarshaller<?> marshaller = context.getMarshaller(valueClass);
-        return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_OBJECT : AnyField.OBJECT;
+        return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_OBJECT : AnyField.NAMED_OBJECT;
     }
 
     private static boolean hasTypeId(ImmutableSerializationContext context, BaseMarshaller<?> marshaller) {

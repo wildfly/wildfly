@@ -23,53 +23,55 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 
-import org.infinispan.protostream.EnumMarshaller;
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-
-import protostream.com.google.protobuf.CodedOutputStream;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
+ * Marshaller for a typed enumeration.
  * @author Paul Ferraro
  */
-public class TypedEnumMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<E> {
+public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E> {
 
-    private final ProtoStreamMarshaller<Class<?>> typeMarshaller;
+    private final ScalarMarshaller<Class<?>> type;
 
-    public TypedEnumMarshaller(ProtoStreamMarshaller<Class<?>> typeMarshaller) {
-        this.typeMarshaller = typeMarshaller;
+    public TypedEnumMarshaller(ScalarMarshaller<Class<?>> type) {
+        this.type = type;
     }
 
     @Override
-    public E readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        int code = reader.readUInt32();
+    public E readFrom(ProtoStreamReader reader) throws IOException {
         @SuppressWarnings("unchecked")
-        Class<E> enumClass = (Class<E>) this.typeMarshaller.readFrom(context, reader);
-        EnumMarshaller<E> marshaller = (EnumMarshaller<E>) context.getMarshaller(enumClass);
-        return marshaller.decode(code);
+        Class<E> enumClass = (Class<E>) this.type.readFrom(reader);
+        E result = null;
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            int index = WireFormat.getTagFieldNumber(tag);
+            if (index == AnyField.ANY.getIndex()) {
+                result = reader.readEnum(enumClass);
+            } else {
+                reading = (tag != 0) && reader.skipField(tag);
+            }
+        }
+        return result;
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, E value) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, E value) throws IOException {
         Class<E> enumClass = value.getDeclaringClass();
-        EnumMarshaller<E> marshaller = (EnumMarshaller<E>) context.getMarshaller(enumClass);
+        this.type.writeTo(writer, enumClass);
 
-        int code = marshaller.encode(value);
-        writer.writeUInt32NoTag(code);
-        this.typeMarshaller.writeTo(context, writer, enumClass);
+        writer.writeEnum(AnyField.ANY.getIndex(), value);
     }
 
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, E value) {
-        OptionalInt typeSize = this.typeMarshaller.size(context, value.getDeclaringClass());
-        return typeSize.isPresent() ? OptionalInt.of(typeSize.getAsInt() + CodedOutputStream.computeUInt32SizeNoTag(value.ordinal())) : typeSize;
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
     public Class<? extends E> getJavaClass() {
-        return null;
+        return (Class<E>) (Class<?>) Enum.class;
+    }
+
+    @Override
+    public int getWireType() {
+        return this.type.getWireType();
     }
 }

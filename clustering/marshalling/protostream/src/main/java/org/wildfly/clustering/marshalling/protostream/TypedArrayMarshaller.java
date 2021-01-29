@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,42 +23,54 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.infinispan.protostream.impl.WireFormat;
 
 /**
- * Marshaller for a typed object.
+ * Marshaller for an Object array, using a repeated element field.
  * @author Paul Ferraro
  */
-public class TypedObjectMarshaller implements FieldMarshaller<Object> {
+public class TypedArrayMarshaller implements FieldMarshaller<Object> {
 
-    private final ScalarMarshaller<Class<?>> type;
+    private final ScalarMarshaller<Class<?>> componentType;
 
-    public TypedObjectMarshaller(ScalarMarshaller<Class<?>> typeValue) {
-        this.type = typeValue;
+    public TypedArrayMarshaller(ScalarMarshaller<Class<?>> componentType) {
+        this.componentType = componentType;
     }
 
     @Override
     public Object readFrom(ProtoStreamReader reader) throws IOException {
-        Class<?> targetClass = this.type.readFrom(reader);
-        Object result = null;
+        Class<?> componentType = this.componentType.readFrom(reader);
+        List<Object> list = new LinkedList<>();
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
             int index = WireFormat.getTagFieldNumber(tag);
             if (index == AnyField.ANY.getIndex()) {
-                result = reader.readObject(targetClass);
+                list.add(Scalar.ANY.readFrom(reader));
             } else {
                 reading = (tag != 0) && reader.skipField(tag);
             }
         }
-        return result;
+        Object array = Array.newInstance((componentType == Any.class) ? Object.class : componentType, list.size());
+        int index = 0;
+        for (Object element : list) {
+            Array.set(array, index++, element);
+        }
+        return array;
     }
 
     @Override
-    public void writeTo(ProtoStreamWriter writer, Object value) throws IOException {
-        this.type.writeTo(writer, value.getClass());
-        writer.writeObject(AnyField.ANY.getIndex(), value);
+    public void writeTo(ProtoStreamWriter writer, Object array) throws IOException {
+        this.componentType.writeTo(writer, array.getClass().getComponentType());
+        for (int i = 0; i < Array.getLength(array); ++i) {
+            Object element = Array.get(array, i);
+            writer.writeTag(AnyField.ANY.getIndex(), Scalar.ANY.getWireType());
+            Scalar.ANY.writeTo(writer, element);
+        }
     }
 
     @Override
@@ -68,6 +80,6 @@ public class TypedObjectMarshaller implements FieldMarshaller<Object> {
 
     @Override
     public int getWireType() {
-        return this.type.getWireType();
+        return this.componentType.getWireType();
     }
 }
