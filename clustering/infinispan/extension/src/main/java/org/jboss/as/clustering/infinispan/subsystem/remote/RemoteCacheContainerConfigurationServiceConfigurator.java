@@ -72,7 +72,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -227,7 +227,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     private Marshaller createMarshaller(ClassLoader loader) {
         ModuleLoader moduleLoader = this.loader.get();
         try {
-            return new ProtoStreamMarshaller(new ModuleClassResolver(moduleLoader), loader);
+            return new ProtoStreamMarshaller(new ModuleClassLoaderMarshaller(moduleLoader), loader);
         } catch (NoSuchElementException e) {
             return new JBossMarshaller(ModularClassResolver.getInstance(moduleLoader), loader);
         }

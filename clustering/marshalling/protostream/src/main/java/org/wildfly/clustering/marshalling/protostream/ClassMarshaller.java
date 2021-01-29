@@ -42,8 +42,8 @@ public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
     private final Field<Class<?>> field;
     private final Field<Class<?>>[] fields = ClassField.values();
 
-    public ClassMarshaller(ClassResolver resolver) {
-        this.field = new ClassResolverField(resolver, this.fields.length);
+    public ClassMarshaller(ClassLoaderMarshaller loaderMarshaller) {
+        this.field = new LoadedClassField(loaderMarshaller, this.fields.length);
     }
 
     @Override

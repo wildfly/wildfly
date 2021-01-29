@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,37 +23,34 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.InvalidClassException;
-
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
- * Resolves classes from a specific {@link ClassLoader}.
  * @author Paul Ferraro
  */
-public class ClassLoaderResolver implements ClassResolver {
+public class SimpleClassLoaderMarshaller implements ClassLoaderMarshaller {
 
     private final ClassLoader loader;
 
-    public ClassLoaderResolver(ClassLoader loader) {
+    public SimpleClassLoaderMarshaller(ClassLoader loader) {
         this.loader = loader;
     }
 
     @Override
-    public void annotate(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
-        // Nothing to annotate
+    public ClassLoader getBuilder() {
+        return this.loader;
     }
 
     @Override
-    public Class<?> resolve(ImmutableSerializationContext context, RawProtoStreamReader reader, String className) throws IOException {
-        try {
-            return this.loader.loadClass(className);
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
+    public int getFields() {
+        return 0;
+    }
+
+    @Override
+    public ClassLoader readField(ProtoStreamReader reader, int index, ClassLoader loader) throws IOException {
+        return loader;
+    }
+
+    @Override
+    public void writeFields(ProtoStreamWriter writer, int startIndex, ClassLoader value) throws IOException {
     }
 }
