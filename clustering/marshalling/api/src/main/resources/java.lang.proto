@@ -18,6 +18,10 @@ message StackTraceElement {
 	required	string	methodName	= 2;
 	optional	string	fileName	= 3;
 	optional	uint32	lineNumber	= 4;
+// JDK9+ fields
+	optional	string	classLoaderName	= 5;
+	optional	string	moduleName	= 6;
+	optional	string	moduleVersion	= 7;
 }
 
 /**
