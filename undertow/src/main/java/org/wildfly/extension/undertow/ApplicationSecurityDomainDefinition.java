@@ -295,7 +295,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             }
 
             final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> transformerSupplier;
-            final Function<HttpExchangeSpi, IdentityCache> identityCacheSupplier;
+            final BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier;
             if (resource.hasChild(UndertowExtension.PATH_SSO)) {
                 ModelNode ssoModel = resource.getChild(UndertowExtension.PATH_SSO).getModel();
 
@@ -331,7 +331,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 Supplier<SingleSignOnSessionFactory> singleSignOnSessionFactorySupplier = serviceBuilder.requires(factoryConfigurator.getServiceName());
                 UnaryOperator<HttpServerAuthenticationMechanismFactory> transformer = (factory) -> new SingleSignOnServerMechanismFactory(factory, singleSignOnSessionFactorySupplier.get(), singleSignOnConfiguration);
 
-                identityCacheSupplier = (HttpExchangeSpi httpExchangeSpi) -> ProgrammaticSingleSignOnCache.newInstance(httpExchangeSpi, singleSignOnSessionFactorySupplier.get(), singleSignOnConfiguration);
+                identityCacheSupplier = (HttpExchangeSpi httpExchangeSpi, String mechanismName) -> ProgrammaticSingleSignOnCache.newInstance(httpExchangeSpi, mechanismName, singleSignOnSessionFactorySupplier.get(), singleSignOnConfiguration);
                 transformerSupplier = () -> transformer;
 
             } else {
@@ -413,7 +413,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         private final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier;
         private final Supplier<SecurityDomain> securityDomainSupplier;
         private final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier;
-        private final Function<HttpExchangeSpi, IdentityCache> identityCacheSupplier;
+        private final BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier;
 
         private final Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer;
         private final Consumer<SecurityDomain> securityDomainConsumer;
@@ -429,7 +429,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private ApplicationSecurityDomainService(final boolean overrideDeploymentConfig, boolean enableJacc, boolean enableJaspi, boolean integratedJaspi,
                 final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier, final Supplier<SecurityDomain> securityDomainSupplier,
-                Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier, Function<HttpExchangeSpi, IdentityCache> identityCacheSupplier,
+                Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier, BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier,
                 Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer, Consumer<SecurityDomain> securityDomainConsumer) {
             this.overrideDeploymentConfig = overrideDeploymentConfig;
             this.enableJacc = enableJacc;
