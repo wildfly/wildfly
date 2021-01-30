@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -63,7 +63,7 @@ public class JAXBUsageTestCase {
     private URL url;
 
     /**
-     * Create a .ear, containing a web application (without any JSF constructs) and also the xerces jar in the .ear/lib
+     * Create a .ear, containing a web application (without any Jakarta Server Faces constructs) and also the xerces jar in the .ear/lib
      *
      * @return
      */

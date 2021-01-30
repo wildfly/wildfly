@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -70,7 +70,7 @@ public class XercesUsageTestCase {
     private URL withJsf;
 
     /**
-     * Create a .ear, containing a web application (without any JSF constructs) and also the xerces jar in the .ear/lib
+     * Create a .ear, containing a web application (without any Jakarta Server Faces constructs) and also the xerces jar in the .ear/lib
      *
      * @return
      */
@@ -98,7 +98,7 @@ public class XercesUsageTestCase {
     }
 
     /**
-     * Create a .ear, containing a JSF web application and also the xerces jar in the .ear/lib
+     * Create a .ear, containing a Jakarta Server Faces web application and also the xerces jar in the .ear/lib
      *
      * @return
      */
@@ -125,7 +125,7 @@ public class XercesUsageTestCase {
 
 
     /**
-     * Test that a non-JSF web application, with xerces jar packaged within the deployment, functions correctly
+     * Test that a non-Jakarta Server Faces web application, with xerces jar packaged within the deployment, functions correctly
      * while using the packaged xerces API.
      *
      * @throws Exception
@@ -149,7 +149,7 @@ public class XercesUsageTestCase {
     }
 
     /**
-     * Test that a JSF web application, with xerces jar packaged within the deployment, functions correctly while using
+     * Test that a Jakarta Server Faces web application, with xerces jar packaged within the deployment, functions correctly while using
      * the packaged xerces API.
      *
      * @throws Exception

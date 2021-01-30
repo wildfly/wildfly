@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Red Hat, Inc.
+ * Copyright (c) 2021. Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import static javax.faces.annotation.FacesConfig.Version;
 import javax.faces.annotation.FacesConfig;
 
 /**
- * Configuration bean to specify JSF 2.3 version.
+ * Configuration bean to specify Jakarta Server Faces 2.3 version.
  *
  * @author rmartinc
  */

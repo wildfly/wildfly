@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -45,7 +45,7 @@ import org.junit.runner.RunWith;
 /**
  * AS7-1429
  * <p/>
- * Tests that adding a web service does not break CDI + JSF
+ * Tests that adding a web service does not break CDI + Jakarta Server Faces
  *
  * @author Stuart Douglas
  */
