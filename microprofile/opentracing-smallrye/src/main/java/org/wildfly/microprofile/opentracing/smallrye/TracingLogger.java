@@ -52,7 +52,7 @@ public interface TracingLogger extends BasicLogger {
     void registeringTracer(String message);
 
     @LogMessage(level = WARN)
-    @Message(id = 5, value = "No tracer available to JAX-RS. Skipping MicroProfile OpenTracing configuration for JAX-RS")
+    @Message(id = 5, value = "No tracer available to Jakarta RESTful Web Services. Skipping MicroProfile OpenTracing configuration for Jakarta RESTful Web Services")
     void noTracerAvailable();
 
     @LogMessage(level = DEBUG)

@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests JAX-RS subresources.
+ * Tests Jakarta RESTful Web Services subresources.
  *
  * AS7-1349
  *

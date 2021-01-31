@@ -21,7 +21,7 @@ The list of {ProductName} new functionality is extensive, being the most relevan
 * Apache ActiveMQ Artemis - {ProductName}'s new JMS broker. Based on an code donation from HornetQ, this Apache subproject provides outstanding performance based on a proven non-blocking architecture.
 * IronJacamar 1.2 - The latest IronJacamar provides a stable and feature rich JCA & Datasources support.
 * JBossWS 5 - The fifth generation of JBossWS, a major leap forward, brings new features and performances improvements to {ProductName} Web Services
-* RESTEasy 3 - {ProductName} includes the latest generation of RESTEasy, which goes beyond the standard Jakarta EE REST APIs (JAX-RS 2.0), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, JSON-P, and Jettison.
+* RESTEasy 3 - {ProductName} which goes beyond the standard Jakarta EE REST APIs (Jakarta RESTful Web Services 2.1), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, Jakarta JSON Processing, and reactive facilities.
 * OpenJDK ORB - {ProductName} switched the IIOP implementation from JacORB, to a downstream branch of the OpenJDK Orb, leading to better interoperability with the JVM ORB and the Jakarta EE RI.
 * Feature Rich Clustering - Clustering support was heavily refactored in {ProductName}, and includes several APIs for applications
 * Port Reduction - By utilizing HTTP upgrade, {ProductName} has moved nearly all of its protocols to be multiplexed over just two HTTP ports: a management port (9990), and an application port (8080).
@@ -30,7 +30,7 @@ The list of {ProductName} new functionality is extensive, being the most relevan
 The support for some technologies was removed, due to the high maintenance cost, low community interest, and much better alternative solutions:
 
 * CMP EJB - JPA offers a much more performant and flexible API
-* JAX-RPC - JAX-WS offers a much more accurate and complete solution
+* Jakarta XML RPC - JAX-WS offers a much more accurate and complete solution
 * JSR-88 - With very little adoption, the more complete deployment APIs provided by vendors are preferred
 
 [[server-migration]]
@@ -771,12 +771,12 @@ The setup of web service's endpoints and clients, through a Spring XML descripto
 
 Any application containing a `jbossws-cxf.xml` must migrate all functionality specified in such XML descriptor, mostly already supported by the JAX-WS specification, included in Jakarta EE. It is still possible to rely on direct Apache CXF API usage, loosing the Jakarta EE portability of the application, for instance when specific Apache CXF functionalities are needed. See the Apache CXF Integration document for further information.
 
-[[jax-rpc]]
-==== JAX-RPC
+[[Jakarta-XML-RPC]]
+==== Jakarta XML RPC 
 
-JAX-RPC is an API for building Web services and clients that used remote procedure calls (RPC) and XML, which was deprecated in Jakarta EE, and is no longer supported by {ProductName}.
+Jakarta XML RPC is an API for building Web services and clients that used remote procedure calls (RPC) and XML, which was deprecated in Jakarta EE, and is no longer supported by {ProductName}.
 
-JAX-RPC Web Services may be identified by the presence of the XML descriptor named `webservices.xml`, containing a `<webservice-description/>` element that includes a child element named `<jaxrpc-mapping-file/>`. An example:
+Jakarta XML RPC Web Services may be identified by the presence of the XML descriptor named `webservices.xml`, containing a `<webservice-description/>` element that includes a child element named `<jaxrpc-mapping-file/>`. An example:
 
 [source,xml,options="nowrap"]
 ----
@@ -799,12 +799,12 @@ JAX-RPC Web Services may be identified by the presence of the XML descriptor nam
 </webservices>
 ----
 
-Applications using JAX-RPC should be migrated to use JAX-WS, the current Jakarta EE standard web service framework.
+Applications using Jakarta XML RPC should be migrated to use JAX-WS, the current Jakarta EE standard web service framework.
 
-[[jax-rs-2.0]]
-==== JAX-RS 2.0
+[[Jakarta-RESTful-Web-Services-2.1]]
+==== Jakarta RESTful Web Services 2.1
 
-JSR 339: JAX-RS 2.0: The Java API for RESTful Web Services specification is located at https://jcp.org/en/jsr/detail?id=339
+Jakarta RESTful Web Services 2.1: The Java API for RESTful Web Services specification is located at https://jakarta.ee/specifications/restful-ws/2.1/
 
 Some changes to the `MessageBodyWriter` interface may represent a backward incompatible change with respect to JAX-RS 1.X.
 
@@ -819,7 +819,7 @@ org.jboss.resteasy.core.NoMessageBodyWriterFoundFailure: Could not find MessageB
 ==== REST Client API
 
 Some REST Client API classes and methods are deprecated, for example: `org.jboss.resteasy.client.ClientRequest` and `org.jboss.resteasy.client.ClientResponse`. Instead, use
-https://docs.jboss.org/resteasy/docs/3.0-rc-1/javadocs/index.html?org/jboss/resteasy/client/jaxrs/ResteasyClient.html[﻿`org.jboss.resteasy.client.jaxrs.ResteasyClient`] and `javax.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external JAX-RS RestEasy client that interacts with a JAX-RS Web service.
+https://docs.jboss.org/resteasy/docs/3.0-rc-1/javadocs/index.html?org/jboss/resteasy/client/jaxrs/ResteasyClient.html[﻿`org.jboss.resteasy.client.jaxrs.ResteasyClient`] and `javax.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external Jakarta RESTful Web Services RestEasy client that interacts with a Jakarta RESTful Web Services.
 
 [[application-clustering]]
 === Application Clustering

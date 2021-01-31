@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests a JAX-RS deployment with an application bundled, that has an @ApplicationPath annotation.
+ * Tests a Jakarta RESTful Web Services deployment with an application bundled, that has an @ApplicationPath annotation.
  *
  * This annotation is overridden by a mapping in web.xml
  *

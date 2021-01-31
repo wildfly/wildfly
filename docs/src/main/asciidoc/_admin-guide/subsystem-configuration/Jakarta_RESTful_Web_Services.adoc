@@ -8,6 +8,8 @@ by the RESTEasy project (https://resteasy.github.io).
 jaxrs is a key facility and is implemented in the usual out of the box wildfly profiles, such as
 standalone.xml, standalone-full.xml, etc.
 
+NOTE: References in this document to Java API for RESTful Web Services(JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.
+
 *Required extension:*
 
 [source,xml,options="nowrap"]

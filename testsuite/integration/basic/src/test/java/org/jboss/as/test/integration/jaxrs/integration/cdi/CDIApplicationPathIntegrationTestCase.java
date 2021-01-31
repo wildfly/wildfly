@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests that JAX-RS + CDI work together when using @ApplicationPath
+ * Tests that Jakarta RESTful Web Services + CDI work together when using @ApplicationPath
  *
  * @author Stuart Douglas
  */

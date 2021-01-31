@@ -1,7 +1,7 @@
-[[JAX-RS_Reference_Guide]]
-= JAX-RS Reference Guide
+[[Jakarta_RESTful_Web_Services_Reference_Guide]]
+= Jakarta RESTful Web Services Reference Guide
 
-This page outlines the three options you have for deploying JAX-RS
+This page outlines the three options you have for deploying Jakarta RESTful Web Services
 applications in WildFly {wildflyVersion}. These three methods are specified in the
 JAX-RS 2.0 specification in section 2.3.2.
 
@@ -20,7 +20,7 @@ public class MyApplication extends Application {
 }
 ----
 
-This will make your JAX-RS resources available under `/`
+This will make your Jakarta RESTful Web Services resources available under `/`
 `mywebappcontext` `/mypath`.
 
 [WARNING]
@@ -31,7 +31,7 @@ Note that that the path is `/mypath` not `/mypath/*`
 == Subclassing javax.ws.rs.core.Application and using web.xml
 
 If you do not wish to use `@ApplicationPath` but still need to subclass
-`Application` you can set up the JAX-RS mapping in web.xml:
+`Application` you can set up the Jakarta RESTful Web Services mapping in web.xml:
 
 [source,java,options="nowrap"]
 ----
@@ -47,7 +47,7 @@ public class MyApplication extends Application {
 </servlet-mapping>
 ----
 
-This will make your JAX-RS resources available under `/`
+This will make your Jakarta RESTful Web Services resources available under `/`
 `mywebappcontext` `/hello`.
 
 [NOTE]
@@ -58,7 +58,7 @@ the `@ApplicationPath` annotation.
 [[using-web.xml]]
 == Using web.xml
 
-If you don't wan't to subclass `Application` you can set the JAX-RS
+If you don't wan't to subclass `Application` you can set the Jakarta RESTful Web Services
 mapping in web.xml as follows:
 
 [source,xml,options="nowrap"]
@@ -69,7 +69,7 @@ mapping in web.xml as follows:
 </servlet-mapping>
 ----
 
-This will make your JAX-RS resources available under `/`
+This will make your Jakarta RESTful Web Services resources available under `/`
 `mywebappcontext` `/hello`.
 
 [NOTE]
@@ -77,3 +77,5 @@ This will make your JAX-RS resources available under `/`
 Note that you only have to add the mapping, not the corresponding
 servlet. The server is responsible for adding the corresponding servlet
 automatically.
+
+NOTE: References in this document to Java API for RESTful Web Services(JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.
