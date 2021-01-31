@@ -1,5 +1,5 @@
-[[JAX_WS_Advanced_User_Guide]]
-= Advanced User Guide
+[[Jakarta_XML_Web_Services_Advanced_User_Guide]]
+= Jakarta XML Web Services Advanced User Guide
 
 [[logging]]
 == Logging
@@ -7,13 +7,13 @@
 Logging of inbound and outbound messages is a common need. Different
 approaches are available for achieving that:
 
-[[jax-ws-handler-approach]]
-=== JAX-WS Handler approach
+[[Jakarta-XML-Web-Services-handler-approach]]
+=== Jakarta XML Web Services Handler approach
 
-A portable way of performing logging is writing a simple JAX-WS handler
+A portable way of performing logging is writing a simple Jakarta XML Web Services handler
 dumping the messages that are passed in it; the handler can be added to
 the desired client/endpoints (programmatically / using `@HandlerChain`
-JAX-WS annotation).
+Jakarta XML Web Services annotation).
 
 The <<Predefined_client_and_endpoint_configurations,predefined client and endpoint configuration>>
 mechanism allows user to add the logging handler to any client/endpoint
@@ -319,22 +319,22 @@ them)
 </subsystem>
 ----
 
-[[jaxb-introductions]]
-== JAXB Introductions
+[[Jakarta-XML-Binding-introductions]]
+== Jakarta XML Binding Introductions
 
 As Kohsuke Kawaguchi wrote on
 http://weblogs.java.net/blog/kohsuke/archive/2007/07/binding_3rd_par.html[his
-blog], one common complaint from the JAXB users is the lack of support
+blog], one common complaint from the Jakarta XML Binding users is the lack of support
 for binding 3rd party classes. The scenario is this: you are trying to
-annotate your classes with JAXB annotations to make it XML bindable, but
+annotate your classes with Jakarta XML Binding annotations to make it XML bindable, but
 some of the classes are coming from libraries and JDK, and thus you
-cannot put necessary JAXB annotations on it.
+cannot put necessary Jakarta XML Binding annotations on it.
 
-To solve this JAXB has been designed to provide hooks for programmatic
+To solve this Jakarta XML Binding has been designed to provide hooks for programmatic
 introduction of annotations to the runtime.
 
-This is currently leveraged by the JBoss JAXB Introductions project,
-using which users can define annotations in XML and make JAXB see those
+This is currently leveraged by the JBoss Jakarta XML Binding Introductions project,
+using which users can define annotations in XML and make Jakarta XML Binding see those
 as if those were in the class files (perhaps coming from 3rd party
 libraries).
 
@@ -348,28 +348,28 @@ See <<Published_WSDL_customization,Published WSDL customization>>
 
 :leveloffset: +1
 
-include::jax-ws/Predefined_client_and_endpoint_configurations.adoc[]
+include::Jakarta_XML_Web_Services/Predefined_client_and_endpoint_configurations.adoc[]
 
-include::jax-ws/Authentication.adoc[]
+include::Jakarta_XML_Web_Services/Authentication.adoc[]
 
-include::jax-ws/Apache_CXF_integration.adoc[]
+include::Jakarta_XML_Web_Services/Apache_CXF_integration.adoc[]
 
-include::jax-ws/WS-Addressing.adoc[]
+include::Jakarta_XML_Web_Services/WS-Addressing.adoc[]
 
-include::jax-ws/WS-Security.adoc[]
+include::Jakarta_XML_Web_Services/WS-Security.adoc[]
 
-include::jax-ws/WS-Trust_and_STS.adoc[]
+include::Jakarta_XML_Web_Services/WS-Trust_and_STS.adoc[]
 
-include::jax-ws/WS-Reliable_Messaging.adoc[]
+include::Jakarta_XML_Web_Services/WS-Reliable_Messaging.adoc[]
 
-include::jax-ws/SOAP_over_JMS.adoc[]
+include::Jakarta_XML_Web_Services/SOAP_over_JMS.adoc[]
 
-include::jax-ws/HTTP_Proxy.adoc[]
+include::Jakarta_XML_Web_Services/HTTP_Proxy.adoc[]
 
-include::jax-ws/WS-Discovery.adoc[]
+include::Jakarta_XML_Web_Services/WS-Discovery.adoc[]
 
-include::jax-ws/WS-Policy.adoc[]
+include::Jakarta_XML_Web_Services/WS-Policy.adoc[]
 
-include::jax-ws/Published_WSDL_customization.adoc[]
+include::Jakarta_XML_Web_Services/Published_WSDL_customization.adoc[]
 
 :leveloffset: -1

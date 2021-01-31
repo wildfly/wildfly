@@ -271,7 +271,7 @@ requirements and choosing the most suitable security policy for them.
 [[endpoint-ws-security]]
 ==== Endpoint
 
-First of all you need to create the web service endpoint using JAX-WS.
+First of all you need to create the web service endpoint using Jakarta XML Web Services.
 While this can generally be achieved in different ways, it's required to
 use a contract-first approach when using WS-Security, as the policies
 declared in the wsdl are parsed by the Apache CXF engine on both server
@@ -584,7 +584,7 @@ Dependencies: org.apache.ws.security
 
 You start by consuming the published WSDL contract using the _wsconsume_
 tool on client side too. Then you simply invoke the the endpoint as a
-standard JAX-WS one:
+standard Jakarta XML Web Services one:
 
 [source,java,options="nowrap"]
 ----
@@ -968,7 +968,7 @@ Dependencies: org.apache.ws.security,org.apache.cxf
 
 Here too you start by consuming the published WSDL contract using the
 _wsconsume_ tool. Then you simply invoke the the endpoint as a standard
-JAX-WS one:
+Jakarta XML Web Services one:
 
 [source,java,options="nowrap"]
 ----

@@ -1801,7 +1801,7 @@
                                             </layers>
                                             <excluded-layers>
                                                 <!-- Not strictly necessary but it will avoid the provisioning of
-                                                     JSON-B brought in by ee layer. We removes JSON-B to make the tests cleaner -->
+                                                     Jakarta JSON Binding brought in by ee layer. We removes Jakarta JSON Binding to make the tests cleaner -->
                                                 <layer>jsonb</layer>
                                             </excluded-layers>
                                         </config>
@@ -1809,7 +1809,7 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Provision a server with JSON-B layer -->
+                            <!-- Provision a server with Jakarta JSON Binding layer -->
                             <execution>
                                 <id>jsonb-provisioning</id>
                                 <goals>

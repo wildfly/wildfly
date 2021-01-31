@@ -130,10 +130,10 @@ policies (the latter is a requirement of the former):
 </wsdl:definitions>
 ----
 
-Then we use the _wsconsume_ tool to generate both standard JAX-WS client
+Then we use the _wsconsume_ tool to generate both standard Jakarta XML Web Services client
 and endpoint.
 
-We provide a basic JAX-WS implementation for the endpoint, nothing
+We provide a basic Jakarta XML Web Services implementation for the endpoint, nothing
 special in it:
 
 [source,java,options="nowrap"]

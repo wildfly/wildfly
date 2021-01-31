@@ -73,7 +73,7 @@ request and returns an appropriate response.
 Apache CXF is an open-source, fully featured Web services framework. The
 JBossWS open source project integrates the JBoss Web Services (JBossWS)
 stack with the Apache CXF project modules thus providing WS-Trust and
-other JAX-WS functionality in WildFly. This integration makes it easy to
+other Jakarta XML Web Services functionality in WildFly. This integration makes it easy to
 deploy CXF STS implementations, however WildFly can run any WS-Trust
 compliant STS. In addition the Apache CXF API provides a STSClient
 utility to facilitate web service requester communication with its STS.

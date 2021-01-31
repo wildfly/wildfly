@@ -4,20 +4,20 @@
 [[jbossws-integration-layer-with-apache-cxf]]
 == JBossWS integration layer with Apache CXF
 
-All JAX-WS functionalities provided by JBossWS on top of WildFly are
+All Jakarta XML Web Services functionalities provided by JBossWS on top of WildFly are
 currently served through a proper integration of the JBoss Web Services
 stack with most of the http://cxf.apache.org/[Apache CXF] project
 modules.
 
 Apache CXF is an open source services framework. It allows building and
-developing services using frontend programming APIs (including JAX-WS),
+developing services using frontend programming APIs (including Jakarta XML Web Services),
 with services speaking a variety of protocols such as SOAP and XML/HTTP
 over a variety of transports such as HTTP and JMS.
 
 The integration layer ( _JBossWS-CXF_ in short hereafter) is mainly
 meant for:
 
-* allowing using standard webservices APIs (including JAX-WS) on
+* allowing using standard webservices APIs (including Jakarta XML Web Services) on
 WildFly; this is performed internally leveraging Apache CXF without
 requiring the user to deal with it;
 * allowing using Apache CXF advanced features (including WS-*) on top of
@@ -61,14 +61,14 @@ WildFly is much more then a servlet container; it actually provides
 users with a fully compliant target platform for Jakarta EE applications.
 
 Generally speaking, _users are encouraged to write portable
-applications_ by relying only on _JAX-WS specification_ whenever
+applications_ by relying only on _Jakarta XML Web Services specification_ whenever
 possible. That would by the way ensure easy migrations to and from other
 compliant platforms. Being a Jakarta EE container, WildFly already comes
-with a JAX-WS compliant implementation, which is basically Apache CXF
+with a Jakarta XML Web Services compliant implementation, which is basically Apache CXF
 plus the JBossWS-CXF integration layer. So users just need to write
-their JAX-WS application; _no need for embedding any Apache CXF or any
+their Jakarta XML Web Services application; _no need for embedding any Apache CXF or any
 ws related dependency library in user deployments_. Please refer to the
-<<JAX-WS_User_Guide,JAX-WS User Guide>> section of the documentation for
+<<Jakarta_XML_Web_Services_User_Guide,Jakarta XML Web Services User Guide>> section of the documentation for
 getting started.
 
 WS-* usage (including WS-Security, WS-Addressing, WS-ReliableMessaging,
@@ -88,7 +88,7 @@ descriptors_.
 === Direct Apache CXF API usage
 
 Whenever users can't really meet their application requirements with
-JAX-WS plus WS-Policy, it is of course still possible to rely on direct
+Jakarta XML Web Services plus WS-Policy, it is of course still possible to rely on direct
 Apache CXF API usage (given that's included in the AS), loosing the Java
 EE portability of the application. That could be the case of a user
 needing specific Apache CXF functionalities, or having to consume WS-*
@@ -109,7 +109,7 @@ CXF internals like _interceptors_, _features_, etc.
 === Creating a Bus instance
 
 Most of the Apache CXF features are configurable using the
-`org.apache.cxf.Bus` class. While for basic JAX-WS usage the user might
+`org.apache.cxf.Bus` class. While for basic Jakarta XML Web Services usage the user might
 never need to explicitly deal with Bus, using Apache CXF specific
 features generally requires getting a handle to a `org.apache.cxf.Bus`
 instance. This can happen on client side as well as in a ws endpoint or
@@ -425,7 +425,7 @@ desired in some cases. Here is an example:
 
 Schema validation of exchanged messages can also be enabled in
 `jboss-webservices.xml`. Further details available
-<<JAX-WS_User_Guide,here>>.
+<<Jakarta_XML_Web_Services_User_Guide,here>>.
 
 [[interceptors]]
 ==== Interceptors
@@ -483,7 +483,7 @@ xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
 ==== WS-Discovery enablement
 
 WS-Discovery support can be turned on in `jboss-webservices` for the
-current deployment. Further details available <<JAX-WS_User_Guide,here>>.
+current deployment. Further details available <<Jakarta_XML_Web_Services_User_Guide,here>>.
 
 [[apache-cxf-interceptors]]
 == Apache CXF interceptors
@@ -632,7 +632,7 @@ import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
  
-//set chunking threshold before using a JAX-WS port client
+//set chunking threshold before using a Jakarta XML Web Services port client
 ...
 HTTPConduit conduit = (HTTPConduit)ClientProxy.getClient(port).getConduit();
 HTTPClientPolicy client = conduit.getClient();

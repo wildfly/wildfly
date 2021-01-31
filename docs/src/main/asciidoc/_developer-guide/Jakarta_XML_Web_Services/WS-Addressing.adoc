@@ -71,7 +71,7 @@ WS-Policy.
 [[endpoint-ws-addressing]]
 === Endpoint
 
-A simple JAX-WS endpoint is prepared using a java-first approach;
+A simple Jakarta XML Web Services endpoint is prepared using a java-first approach;
 WS-Addressing is enforced through `@Addressing` annotation and no
 `wsdlLocation` is provided in `@WebService`:
 
@@ -143,7 +143,7 @@ like this:
 === Client
 
 Since the WS-Policy engine is on by default, the client side code is
-basically a pure JAX-WS client app:
+basically a pure Jakarta XML Web Services client app:
 
 [source,java,options="nowrap"]
 ----

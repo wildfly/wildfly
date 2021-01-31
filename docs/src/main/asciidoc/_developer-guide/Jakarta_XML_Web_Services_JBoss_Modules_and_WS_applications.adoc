@@ -52,12 +52,12 @@ dependency in your manifest. Otherwise your annotations are not picked
 up and added to the annotation index by WildFly, resulting in them being
 completely and silently ignored.
 
-[[using-jaxb]]
-==== Using JAXB
+[[using-Jakarta-XML-Binding]]
+==== Using Jakarta XML Binding
 
-In order for successfully directly using JAXB contexts, etc. in your
+In order for successfully directly using Jakarta XML Binding contexts, etc. in your
 client or endpoint running in-container, you need to properly setup a
-JAXB implementation; that is performed setting the following dependency:
+Jakarta XML Binding implementation; that is performed setting the following dependency:
 
 ....
 Dependencies: com.sun.xml.bind services export
@@ -113,7 +113,7 @@ extensions.
 [[annotation-scanning]]
 ==== Annotation scanning
 
-The application server uses an annotation index for detecting JAX-WS
+The application server uses an annotation index for detecting Jakarta XML Web Services
 endpoints in user deployments. When declaring WS endpoints whose class
 belongs to a different module (for instance referring that in the
 `web.xml` descriptor), be sure to have an `annotations` type dependency

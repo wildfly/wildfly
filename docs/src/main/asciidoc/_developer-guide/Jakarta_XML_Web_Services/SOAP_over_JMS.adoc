@@ -177,7 +177,7 @@ context factory class to use and the JNDI registry address.
 Have a look at the application server domain for finding out the
 configured connection factory JNDI locations.
 
-The endpoint implementation is a basic JAX-WS POJO using @WebService
+The endpoint implementation is a basic Jakarta XML Web Services POJO using @WebService
 annotation to refer to the consumed contract:
 
 [source,java,options="nowrap"]
@@ -245,7 +245,7 @@ Created-By: 17.0-b16 (Sun Microsystems Inc.)
 Dependencies: org.hornetq
 ....
 
-A JAX-WS client can interact with the JMS endpoint the usual way:
+A Jakarta XML Web Services client can interact with the JMS endpoint the usual way:
 
 [source,java,options="nowrap"]
 ----
@@ -533,7 +533,7 @@ endpoint publish:
 Here too the MANIFEST.MF needs to declare a dependency on _org.hornetq_
 module when deploying to WildFly.
 
-Finally, the JAX-WS client can ineract with both JMS and HTTP endpoints
+Finally, the Jakarta XML Web Services client can ineract with both JMS and HTTP endpoints
 as usual:
 
 [source,java,options="nowrap"]
@@ -564,7 +564,7 @@ finally
 === Use of Endpoint.publish() API
 
 An alternative to deploying an archive containing JMS endpoints is in
-starting them directly using the JAX-WS `Endpoint.publish(..)` API.
+starting them directly using the Jakarta XML Web Services `Endpoint.publish(..)` API.
 
 That's as easy as doing:
 

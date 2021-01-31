@@ -518,11 +518,11 @@ layer and in your views
 
 .  `index.xhtml` - Show that URL generation is just manual
 .  `JaxRsActivator.java` - simply activates Jakarta RESTful Web Services
-.  `Member.java` - add JAXB annotation to make JAXB process the class properly
+.  `Member.java` - add Jakarta XML Binding annotation to make Jakarta XML Binding process the class properly
 .  `MemberResourceRESTService.java`
 ..  `@Path` sets the Jakarta RESTful Web Services resource
 ..  Jakarta RESTful Web Services services can use injection
-..  `@GET` methods are auto transformed to XML using JAXB
+..  `@GET` methods are auto transformed to XML using Jakarta XML Binding
 .  And that is it!
 
 [[arquillian-getting-started]]
