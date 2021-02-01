@@ -22,57 +22,41 @@
 
 package org.wildfly.extension.microprofile.faulttolerance;
 
-import javax.enterprise.concurrent.ManagedThreadFactory;
-import javax.naming.InitialContext;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
+import java.util.OptionalInt;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-import io.smallrye.faulttolerance.ExecutorFactory;
+import javax.enterprise.concurrent.ManagedThreadFactory;
+import javax.enterprise.inject.Alternative;
+import javax.inject.Inject;
+import javax.naming.InitialContext;
+
+import io.smallrye.faulttolerance.DefaultAsyncExecutorProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
- * Implementation of {@link io.smallrye.faulttolerance.ExecutorFactory} specific to this container to provide context
- * propagation capabilities.
+ * Subclass of {@link io.smallrye.faulttolerance.DefaultAsyncExecutorProvider} that provides a ThreadFactory as
+ * configured in the server.
  *
  * @author Radoslav Husar
+ * @author Jason Lee
  */
-public class FaultToleranceContainerExecutorFactory implements ExecutorFactory {
-
-    // Default in use by io.smallrye.faulttolerance.DefaultExecutorFactory
-    private static final int KEEP_ALIVE_TIME = 600;
-
-    @Override
-    public ExecutorService createCoreExecutor(int size) {
-        return new ThreadPoolExecutor(1, size, KEEP_ALIVE_TIME, TimeUnit.SECONDS, new SynchronousQueue<>(), this.getThreadFactory());
+@Alternative
+public class FaultToleranceContainerExecutorFactory extends DefaultAsyncExecutorProvider {
+    @Inject
+    public FaultToleranceContainerExecutorFactory(
+            @ConfigProperty(name = "io.smallrye.faulttolerance.mainThreadPoolSize") OptionalInt mainThreadPoolSize,
+            @ConfigProperty(name = "io.smallrye.faulttolerance.mainThreadPoolQueueSize") OptionalInt mainThreadPoolQueueSize,
+            @ConfigProperty(name = "io.smallrye.faulttolerance.globalThreadPoolSize") OptionalInt globalThreadPoolSize
+    ) {
+        super(mainThreadPoolSize, mainThreadPoolQueueSize, globalThreadPoolSize);
     }
 
-    @Override
-    public ExecutorService createExecutor(int coreSize, int size) {
-        return new ThreadPoolExecutor(coreSize, size, KEEP_ALIVE_TIME, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), this.getThreadFactory());
-    }
-
-    @Override
-    public ScheduledExecutorService createTimeoutExecutor(int size) {
-        return Executors.newScheduledThreadPool(size, this.getThreadFactory());
-    }
-
-    private ThreadFactory getThreadFactory() {
+    protected ThreadFactory threadFactory() {
         try {
             InitialContext initialContext = new InitialContext();
             return (ManagedThreadFactory) initialContext.lookup("java:jboss/ee/concurrency/factory/default");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public int priority() {
-        // Needs to be higher than io.smallrye.faulttolerance.DefaultExecutorFactory.priority()
-        return 10;
     }
 }

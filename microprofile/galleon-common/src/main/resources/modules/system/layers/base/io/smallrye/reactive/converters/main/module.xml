@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2021, Red Hat, Inc., and individual contributors
@@ -21,21 +22,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.reactive.converters">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
-    <defaultProtocol type="jmx-as7" />
+    <resources>
+        <artifact name="${io.smallrye.reactive:smallrye-reactive-converter-api}"/>
+    </resources>
 
-    <container qualifier="jboss" default="true">
-        <configuration>
-            <property name="installDir">${install.dir}</property>
-            <property name="javaVmArguments">${microprofile.jvm.args}</property>
-            <property name="jarFile">${bootable.jar}</property>
-            <property name="managementAddress">127.0.0.1</property>
-            <property name="managementPort">9990</property>
-            <property name="allowConnectingToRunningServer">true</property>
-            <property name="waitForPorts">9990</property>
-            <property name="waitForPortsTimeoutInSeconds">10</property>
-        </configuration>
-    </container>
-</arquillian>
+    <dependencies>
+        <module name="org.jboss.logging"/>
+        <module name="sun.jdk" optional="true"/>
+    </dependencies>
+</module>
