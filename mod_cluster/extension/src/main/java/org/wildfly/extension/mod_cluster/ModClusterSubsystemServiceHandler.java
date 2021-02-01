@@ -126,7 +126,7 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
         }
         if (model.get(DynamicLoadProviderResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
             ModelNode node = model.get(DynamicLoadProviderResourceDefinition.PATH.getKeyValuePair());
-            int decayFactor = DynamicLoadProviderResourceDefinition.Attribute.DECAY.resolveModelAttribute(context, node).asInt();
+            float decayFactor = (float) DynamicLoadProviderResourceDefinition.Attribute.DECAY.resolveModelAttribute(context, node).asDouble();
             int history = DynamicLoadProviderResourceDefinition.Attribute.HISTORY.resolveModelAttribute(context, node).asInt();
             int initialLoad = DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD.resolveModelAttribute(context, node).asInt();
 
