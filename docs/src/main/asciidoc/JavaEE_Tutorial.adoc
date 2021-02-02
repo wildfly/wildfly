@@ -32,7 +32,7 @@ include::_javaee-guide/Jakarta_RESTful_Web_Services.adoc[]
 
 include::_javaee-guide/Java_Servlet_Technology.adoc[]
 
-include::_javaee-guide/Jakarta_Server_Faces_Technology_(Jakarta_Server_Faces).adoc[]
+include::_javaee-guide/Jakarta_Server_Faces_Technology.adoc[]
 
 include::_javaee-guide/Java_Persistence_API_(JPA).adoc[]
 
@@ -42,13 +42,13 @@ include::_javaee-guide/Managed_Beans.adoc[]
 
 include::_javaee-guide/Contexts_and_Dependency_Injection_(CDI).adoc[]
 
-include::_javaee-guide/Bean_Validation.adoc[]
+include::_javaee-guide/Jakarta_Bean_Validation.adoc[]
 
 include::_javaee-guide/Java_Message_Service_API_(JMS).adoc[]
 
 include::_javaee-guide/JavaEE_Connector_Architecture_(JCA).adoc[]
 
-include::_javaee-guide/JavaMail_API.adoc[]
+include::_javaee-guide/Jakarta_Mail.adoc[]
 
 include::_javaee-guide/Java_Authorization_Contract_for_Containers_(JACC).adoc[]
 

@@ -44,7 +44,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test for the integration of Jakarta RESTful Web Services and Bean Validation.
+ * Test for the integration of Jakarta RESTful Web Services and Jakarta Bean Validation.
  *
  * @author Stuart Douglas
  * @author Gunnar Morling
