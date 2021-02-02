@@ -740,10 +740,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             return null;
         }
         long time = date.getTime();
-        if(database != null && database.equals("mysql")) {
+        if(database != null && (database.equals("mysql") || database.equals("postgresql"))) {
             // truncate the milliseconds because MySQL 5.6.4+ and MariaDB 5.3+ do the same
             // and querying with a Timestamp containing milliseconds doesn't match the rows
             // with such truncated DATETIMEs
+            // truncate the milliseconds because postgres timestamp does not reliably support milliseconds
             time -= time % 1000;
         }
         return new Timestamp(time);
