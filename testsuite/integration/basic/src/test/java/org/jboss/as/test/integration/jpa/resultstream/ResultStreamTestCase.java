@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
  * using {@link ResultStreamTest} bean.
  * <p>
  * Note that this test uses an extended persistence context, so that the Hibernate session will stay open long enough
- * to complete each test.  A transaction scoped entity manager would be closed after each JTA transaction completes.
+ * to complete each test.  A transaction scoped entity manager would be closed after each Jakarta Transactions transaction completes.
  *
  * @author Zbyněk Roubalík
  * @author Gail Badner

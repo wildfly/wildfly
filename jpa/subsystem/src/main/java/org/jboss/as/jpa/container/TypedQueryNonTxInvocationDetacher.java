@@ -38,7 +38,7 @@ import javax.persistence.TypedQuery;
 
 /**
  * for JPA 2.0 section 3.8.6
- * used by TransactionScopedEntityManager to detach entities loaded by a query in a non-jta invocation.
+ * used by TransactionScopedEntityManager to detach entities loaded by a query in a non-Jakarta Transactions invocation.
  * This could be a proxy but wrapper classes give faster performance.
  *
  * @author Scott Marlow

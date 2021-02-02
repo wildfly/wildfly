@@ -40,7 +40,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-367: Java API for JSON Binding 1.0 |X |X |X |X
 
-|JSR-369: Java Servlet 4.0 |X |X |X |X
+|Jakarta Servlet 4.0 |X |X |X |X
 
 |JSR-372: Jakarta Server Faces 2.3 |X |X |X |X
 
@@ -74,7 +74,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-343: Java Message Service API 2.0 |X |-- |X |--
 
-|JSR-907: Java Transaction API 1.2 |X |X |X |X
+|Jakarta Transactions 1.3 |X |X |X |X
 
 |JSR-919: JavaMail 1.6 |X |-- |X |X
 
@@ -94,10 +94,9 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-222: Java Architecture for XML Binding (JAXB) 2.3 |X |X |X |X
 
-|JSR-196: Java Authentication Service Provider Interface for Containers
-1.1 |X |-- |X |--
+|Jakarta Authentication 1.1 |X |-- |X |--
 
-|JSR-115: Java Authorization Contract for Containers 1.5 |X |-- |X |--
+|Jakarta Authorization 1.5 |X |-- |X |--
 
 |JSR-88: Jakarta EE Application Deployment 1.2 |Optional |-- |-- |--
 

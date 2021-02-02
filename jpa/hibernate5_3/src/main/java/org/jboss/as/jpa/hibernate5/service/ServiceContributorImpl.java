@@ -41,7 +41,7 @@ public class ServiceContributorImpl implements ServiceContributor {
 
         if (serviceRegistryBuilder.getSettings().get(TRANSACTION_PLATFORM) != null) {
             // applications that already specify the transaction platform property which will override the WildFlyCustomJtaPlatform.
-            JPA_LOGGER.tracef("ServiceContributorImpl#contribute application configured the JTA Platform to be used instead of WildFlyCustomJtaPlatform (%s=%s)",
+            JPA_LOGGER.tracef("ServiceContributorImpl#contribute application configured the Jakarta Transactions Platform to be used instead of WildFlyCustomJtaPlatform (%s=%s)",
                     TRANSACTION_PLATFORM, serviceRegistryBuilder.getSettings().get(TRANSACTION_PLATFORM));
         } else if (jtaPlatformInitiatorEnabled == null ||
                 (jtaPlatformInitiatorEnabled instanceof Boolean && ((Boolean) jtaPlatformInitiatorEnabled).booleanValue()) ||

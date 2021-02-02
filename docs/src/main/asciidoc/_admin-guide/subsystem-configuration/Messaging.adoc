@@ -66,7 +66,7 @@ up in JNDI or injected.
 `user` and `password` attributes. This is useful if the remote server to
 which it is pointing is secured.
 * Resources acquired from it will be automatically enlisted any on-going
-JTA transaction. If you want to send a message from an EJB using CMT
+Jakarta Transactions. If you want to send a message from an EJB using CMT
 then this is likely the connection factory you want to use so the send
 operation will be atomically committed along with the rest of the EJB's
 transaction operations.

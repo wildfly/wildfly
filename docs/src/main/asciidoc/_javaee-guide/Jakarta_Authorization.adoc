@@ -1,4 +1,4 @@
-[[Java_Authorization_Contract_for_Containers_(JACC)]]
+[[Java_Authorization_Contract_for_Containers_JACC]]
 = Java Authorization Contract for Containers (JACC)
 
 In order to register your own JACC Module, you'll need to create a
@@ -48,3 +48,5 @@ classes from:
 ----
 [standalone@localhost:9990 /] /system-property=org.jboss.as.security.jacc-module:add(value=com.example.customjacc)
 ----
+
+NOTE: References in this document to Java Authorization Contract for Containers (JACC) refer to the Jakarta Authorization unless otherwise noted

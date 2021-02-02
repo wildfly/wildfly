@@ -375,7 +375,7 @@ instance at runtime
 
 The login quickstart builds on the knowledge of CDI and Jakarta Server Faces we have got
 from numberguess. New stuff we will learn about is how to use JPA to
-store data in a database, how to use JTA to control transactions, and
+store data in a database, how to use Jakarta Transactions to control transactions, and
 how to use EJB for declarative TX control.
 
 [[run-the-app-1]]
@@ -403,7 +403,7 @@ auto-create tables - as you always have.
 ..  `import.sql` Again, the same old thing you are used to in Hibernate
 - auto-import data when the app starts.
 .  `pom.xml` is the same again, but just adds in dependencies for JPA,
-JTA and EJB
+Jakarta Transactions and EJB
 
 [[views-1]]
 === Views

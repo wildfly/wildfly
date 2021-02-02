@@ -70,11 +70,11 @@ public interface SecurityLogger extends BasicLogger {
    void activatingSecuritySubsystem();
 
    /**
-    * Logs a message indicating that there was an exception while trying to delete the JACC Policy
+    * Logs a message indicating that there was an exception while trying to delete the Jakarta Authorization Policy
     * @param t the underlying exception
     */
    // @LogMessage(level = Level.WARN)
-   // @Message(id = 3, value = "Error deleting JACC Policy")
+   // @Message(id = 3, value = "Error deleting Jakarta Authorization Policy")
    // void errorDeletingJACCPolicy(@Cause Throwable t);
 
     /**

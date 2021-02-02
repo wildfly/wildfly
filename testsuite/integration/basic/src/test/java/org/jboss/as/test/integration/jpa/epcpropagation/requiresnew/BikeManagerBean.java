@@ -50,12 +50,12 @@ public class BikeManagerBean {
     private BikeShop bikeShop;
 
     /**
-     * When a XPC with pending DB changes should be associated with JTA TX when SFSB enters the SFSB transactional method.
+     * When a XPC with pending DB changes should be associated with Jakarta Transactions TX when SFSB enters the SFSB transactional method.
      * as per JPA 7.9.1 Container Responsibilities for XPC:
      * When a business method of the stateful session bean is invoked,
      * if the stateful session bean uses container managed transaction demarcation,
-     * and the entity manager is not already associated with the current JTA transaction,
-     * the container associates the entity manager with the current JTA transaction and
+     * and the entity manager is not already associated with the current Jakarta Transactions transaction,
+     * the container associates the entity manager with the current Jakarta Transactions transaction and
      * calls EntityManager.joinTransaction.
      */
     public void runTest2() {
@@ -67,8 +67,8 @@ public class BikeManagerBean {
         try {
             bikeShop.forceRollback(2);
         } catch (RuntimeException ignore) {}
-        Assert.assertNotNull("extended persistence context must be associated with JTA tx during " +
-                "call to purchaseNowAndFlushDbChanges() and db changes saved when that method ends its JTA tx.", bikeRace.find(2));
+        Assert.assertNotNull("extended persistence context must be associated with Jakarta Transactions tx during " +
+                "call to purchaseNowAndFlushDbChanges() and db changes saved when that method ends its Jakarta Transactions tx.", bikeRace.find(2));
     }
 
 }

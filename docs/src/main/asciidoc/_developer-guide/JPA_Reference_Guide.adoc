@@ -990,3 +990,5 @@ public class ExampleSFSB {
 == Tips for using the latest Hibernate ORM
 
 http://docs.jboss.org/hibernate/stable/orm/topical/html_single/wildfly/Wildfly.html[Read about using Hibernate ORM feature packs on WildFly].
+
+NOTE: References in this document to Java Transaction API(JTA) refer to Jakarta Transactions unless otherwise noted.

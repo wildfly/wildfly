@@ -477,7 +477,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
-        // adding JACC service
+        // adding Jakarta Authorization service
         final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
         final boolean legacyJacc = !elytronJacc && legacySecurityInstalled(deploymentUnit);
         if(legacyJacc || elytronJacc) {

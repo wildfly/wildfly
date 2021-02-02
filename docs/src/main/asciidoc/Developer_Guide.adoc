@@ -45,7 +45,7 @@ include::_developer-guide/EJB3_Reference_Guide.adoc[]
 
 include::_developer-guide/JPA_Reference_Guide.adoc[]
 
-include::_developer-guide/JTA_Reference.adoc[]
+include::_developer-guide/Jakarta_Transactions_Reference.adoc[]
 
 include::_developer-guide/JNDI_Reference.adoc[]
 

@@ -74,7 +74,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     protected abstract boolean isExtendedPersistenceContext();
 
     /**
-     * @return true if a JTA transaction is active
+     * @return true if a Jakarta Transactions transaction active
      *         <p/>
      *         Precondition: getEntityManager() must be called previous to calling isInTx
      */
@@ -873,7 +873,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     }
 
 
-    // JPA 7.9.1 if invoked without a JTA transaction and a transaction scoped persistence context is used,
+    // JPA 7.9.1 if invoked without a Jakarta Transactions transaction and a transaction scoped persistence context is used,
     // will throw TransactionRequiredException for any calls to entity manager remove/merge/persist/refresh.
     private void transactionIsRequired() {
         if (!this.isExtendedPersistenceContext() && !this.isInTx()) {

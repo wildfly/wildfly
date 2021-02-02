@@ -1,5 +1,5 @@
-[[Java_Transaction_API_(JTA)]]
-= Java Transaction API (JTA)
+[[Jakarta_Transactions]]
+= Jakarta Transactions
 
 Coming Soon
 

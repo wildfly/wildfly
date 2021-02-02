@@ -99,8 +99,8 @@ public class SendToQueueIgnoreJTATest {
     }
 
     /**
-     * JMS message is send using connection factory with transactional = false and with rollback of JTA transaction.
-     * Message should be still delivered as JTA transaction is ignored.
+     * JMS message is send using connection factory with transactional = false and with rollback of Jakarta Transactions transaction.
+     * Message should be still delivered as Jakarta Transactions transaction is ignored.
      */
     @Test
     public void sendAndRollbackIgnoreJTA() throws Exception {
@@ -113,7 +113,7 @@ public class SendToQueueIgnoreJTATest {
 
     /**
      * JMS message is send using connection factory with transactional = true.
-     * Messaging behaves as a part of JTA transaction, message should be delivered.
+     * Messaging behaves as a part of Jakarta Transactions transaction, message should be delivered.
      */
     @Test
     public void sendInJTA() throws Exception {
@@ -125,8 +125,8 @@ public class SendToQueueIgnoreJTATest {
     }
 
     /**
-     * JMS message is send using connection factory with transactional = true and JTA rollback
-     * Messaging behaves as a part of JTA transaction, message should NOT be delivered.
+     * JMS message is send using connection factory with transactional = true and Jakarta Transactions rollback
+     * Messaging behaves as a part of Jakarta Transactions transaction, message should NOT be delivered.
      */
     @Test
     public void sendAndRollbackInJTA() throws  Exception {

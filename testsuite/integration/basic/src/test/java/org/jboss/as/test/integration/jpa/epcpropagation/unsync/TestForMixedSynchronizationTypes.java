@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 /**
  * "
  * If there is a persistence context of type SynchronizationType.UNSYNCHRONIZED
- * associated with the JTA transaction and the target component specifies a persistence context of
+ * associated with the Jakarta Transactions transaction and the target component specifies a persistence context of
  * type SynchronizationType.SYNCHRONIZED, the IllegalStateException is
  * thrown by the container.
  * "

@@ -87,3 +87,5 @@ to enable JACC you can execute a command as follows:
 ----
 [standalone@localhost:9990 /] /subsystem=ejb3/application-security-domain=my-security-domain:write-attribute(name=enable-jacc,value=true)
 ----
+
+NOTE: References in this document to Java Authorization Contract for Containers (JACC) refer to Jakarta Authorization unless otherwise noted.
