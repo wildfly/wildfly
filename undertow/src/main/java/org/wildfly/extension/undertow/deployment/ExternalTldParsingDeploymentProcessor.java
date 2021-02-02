@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -84,7 +84,7 @@ public class ExternalTldParsingDeploymentProcessor implements DeploymentUnitProc
             while (resources.hasNext()) {
                 final Resource resource = resources.next();
                 //horrible hack
-                //we don't want to parse JSF TLD's
+                //we don't want to parse Jakarta Server Faces TLD's
                 //this would be picked up by the shared tlds check below, but this means we don't
                 //waste time re-parsing them
                 if(resource.getURL().toString().contains("com/sun/jsf-impl/main")) {

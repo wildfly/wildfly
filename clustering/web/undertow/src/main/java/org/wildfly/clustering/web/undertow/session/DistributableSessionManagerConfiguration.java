@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.Map;
 import java.util.concurrent.locks.StampedLock;
 
 import org.wildfly.clustering.ee.Batch;
@@ -34,7 +35,7 @@ import io.undertow.server.session.SessionListeners;
  */
 public interface DistributableSessionManagerConfiguration {
     String getDeploymentName();
-    SessionManager<LocalSessionContext, Batch> getSessionManager();
+    SessionManager<Map<String, Object>, Batch> getSessionManager();
     SessionListeners getSessionListeners();
     RecordableSessionManagerStatistics getStatistics();
     StampedLock getLifecycleLock();

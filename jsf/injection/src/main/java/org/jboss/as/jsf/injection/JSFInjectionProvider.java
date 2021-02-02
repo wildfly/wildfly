@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -57,9 +57,9 @@ public class JSFInjectionProvider extends DiscoverableInjectionProvider {
     public void invokePostConstruct(final Object managedBean) throws InjectionProviderException {
         if(managedBean.getClass().getName().startsWith(JAVAX_FACES) ||
                 (managedBean.getClass().getName().startsWith(COM_SUN_FACES) && !managedBean.getClass().getName().startsWith(COM_SUN_FACES_TEST))) {
-            //some internal JSF instances are not destroyed properly, and they do not need to have
+            //some internal Jakarta Server Faces instances are not destroyed properly, and they do not need to have
             //lifecycle callbacks anyway, so we don't use the instance manager to create them
-            // avoid excluding elements from the JSF test suite (tests fail because objects are not injected)
+            // avoid excluding elements from the Jakarta Server Faces test suite (tests fail because objects are not injected)
             return;
         }
         if(instanceManager == null) {

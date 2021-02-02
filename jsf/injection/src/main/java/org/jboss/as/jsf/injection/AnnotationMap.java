@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2021 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @author tags. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -38,13 +38,13 @@ import javax.servlet.ServletContext;
  * This class retrieves the annotation map from application scope.  This map was placed there by the JSFAnnotationProcessor
  * in the jsf subsystem.
  *
- * The class also reloads the map if needed.  The reason why the map must be reloaded is because the JSF Annotation classes used as the map keys are always
- * loaded by the JSF subsystem and thus always correspond to the default JSF implementation.  If a different JSF
- * implementation is used then the JSF impl will be looking for the wrong version of the map keys.  So, we replace
- * the default implementations of the JSF Annotation classes with whatever version the WAR is actually using.
+ * The class also reloads the map if needed.  The reason why the map must be reloaded is because the Jakarta Server Faces Annotation classes used as the map keys are always
+ * loaded by the Jakarta Server Faces subsystem and thus always correspond to the default Jakarta Server Faces implementation.  If a different Jakarta Server Faces
+ * implementation is used then the Jakarta Server Faces impl will be looking for the wrong version of the map keys.  So, we replace
+ * the default implementations of the Jakarta Server Faces Annotation classes with whatever version the WAR is actually using.
  *
- * The reason this works is because we have a "slot" for jsf-injection for each JSF implementation.  And jsf-injection
- * points to its corresponding JSF impl/api slots.
+ * The reason this works is because we have a "slot" for jsf-injection for each Jakarta Server Faces implementation.  And jsf-injection
+ * points to its corresponding Jakarta Server Faces impl/api slots.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -58,7 +58,7 @@ public class AnnotationMap {
     private static final Map<String, Class<? extends Annotation>> stringToAnnoMap = new HashMap<String, Class<? extends Annotation>>();
 
     static {
-        // These classes need to be loaded in order!  Some can't be loaded if the JSF version is too old.
+        // These classes need to be loaded in order!  Some can't be loaded if the Jakarta Server Faces version is too old.
 
         try { // all of the following classes are available from JSF 2.0 and JSF 2.1
             stringToAnnoMap.put(FacesComponent.class.getName(), FacesComponent.class);
@@ -89,7 +89,7 @@ public class AnnotationMap {
                 stringToAnnoMap.put(name, clazz);
             }
         } catch(ClassNotFoundException e) {
-            // ignore, annotation not found in the used JSF version
+            // ignore, annotation not found in the used Jakarta Server Faces version
         }
     }
 

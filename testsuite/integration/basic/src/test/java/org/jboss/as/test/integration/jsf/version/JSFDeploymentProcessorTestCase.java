@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2019, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -59,7 +59,7 @@ import org.junit.runner.RunWith;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
- * Tests different ways to add jsf implementation in ear files
+ * Tests different ways to add Jakarta Server Faces implementation in ear files
  * @author tmiyar
  *
  */
@@ -86,7 +86,7 @@ public class JSFDeploymentProcessorTestCase {
 
     /**
      * Creates a war with all the libraries needed in the war/lib folder, this sample does not call the
-     * ejb as it is not necessary to test if the bundled jsf is loaded
+     * ejb as it is not necessary to test if the bundled Jakarta Server Faces is loaded
      * @return
      */
     @Deployment(name = WEB_BUNDLED_JSF, testable = false)
@@ -110,7 +110,7 @@ public class JSFDeploymentProcessorTestCase {
         war.addAsWebResource(JSFVersion.class.getPackage(), "jsfmyfacesversion.xhtml", "jsfmyfacesversion.xhtml");
         war.addAsWebInfResource(JSFVersion.class.getPackage(), WEB_BUNDLED_JSF_WEB_XML, "web.xml");
 
-        //add jsf as webapp lib
+        //add Jakarta Server Faces as webapp lib
         war.addAsLibrary("myfaces/commons-beanutils-1.9.3.jar", "commons-beanutils-1.9.3.jar");
         war.addAsLibrary("myfaces/commons-collections-3.2.2.jar", "commons-collections-3.2.2.jar");
         war.addAsLibrary("myfaces/commons-digester-1.8.jar", "commons-digester-1.8.jar");
@@ -122,7 +122,7 @@ public class JSFDeploymentProcessorTestCase {
     }
 
     /**
-     * Creates a war with only the faces-config to indicate it is using jsf, that way it will load the one provided by Wildfly
+     * Creates a war with only the faces-config to indicate it is using Jakarta Server Faces, that way it will load the one provided by Wildfly
      * @return
      */
     @Deployment(name = WEB_FACES_CONFIG_XML, testable = false)

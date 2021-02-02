@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -80,11 +80,11 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         }
 
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
-            //if JSF is provided by the application we leave it alone
+            //if Jakarta Server Faces is provided by the application we leave it alone
             return;
         }
         //TODO: we should do that same check that is done in com.sun.faces.config.FacesInitializer
-        //and only add the dependency if JSF is actually needed
+        //and only add the dependency if Jakarta Server Faces is actually needed
 
 
         if (!moduleIdFactory.isValidJSFSlot(jsfVersion)) {
@@ -121,7 +121,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(jsfAPI);
     }
 
-    // Is JSF spec greater than 1.1?  If we add JSF 1.1 support we'll need this to keep from calling addJSFInjection()
+    // Is Jakarta Server Faces spec greater than 1.1?  If we add JSF 1.1 support we'll need this to keep from calling addJSFInjection()
   /*  private boolean isJSFSpecOver1_1(ModuleIdentifier jsfModule, ModuleDependency jsfAPI) throws DeploymentUnitProcessingException {
         try {
             return (jsfAPI.getModuleLoader().loadModule(jsfModule).getClassLoader().getResource("/javax/faces/component/ActionSource2.class") != null);

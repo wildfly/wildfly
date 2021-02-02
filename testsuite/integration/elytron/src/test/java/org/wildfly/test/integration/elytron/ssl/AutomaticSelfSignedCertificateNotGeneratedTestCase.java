@@ -201,6 +201,8 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
             ks.load(null, null);
             SelfSignedX509CertificateAndSigningKey selfSignedX509CertificateAndSigningKey = SelfSignedX509CertificateAndSigningKey.builder()
                     .setDn(new X500Principal("CN=existingHost"))
+                    .setKeyAlgorithmName("RSA")
+                    .setSignatureAlgorithmName("SHA256withRSA")
                     .build();
             PrivateKey privateKey = selfSignedX509CertificateAndSigningKey.getSigningKey();
             X509Certificate serverCert = selfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();

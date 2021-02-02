@@ -32,7 +32,7 @@ include::_javaee-guide/Java_API_for_RESTful_Web_Services_(JAX-RS).adoc[]
 
 include::_javaee-guide/Java_Servlet_Technology.adoc[]
 
-include::_javaee-guide/Java_Server_Faces_Technology_(JSF).adoc[]
+include::_javaee-guide/Jakarta_Server_Faces_Technology_(Jakarta_Server_Faces).adoc[]
 
 include::_javaee-guide/Java_Persistence_API_(JPA).adoc[]
 

@@ -202,7 +202,7 @@ public class KeystoreRealmTestCase extends CommonBase {
             SelfSignedX509CertificateAndSigningKey issuerSelfSignedX509CertificateAndSigningKey = SelfSignedX509CertificateAndSigningKey.builder()
                     .setDn(issuerDN)
                     .setKeyAlgorithmName("RSA")
-                    .setSignatureAlgorithmName("SHA1withRSA")
+                    .setSignatureAlgorithmName("SHA256withRSA")
                     .addExtension(false, "BasicConstraints", "CA:true,pathlen:2147483647")
                     .build();
             X509Certificate issuerCertificate = issuerSelfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
@@ -214,7 +214,7 @@ public class KeystoreRealmTestCase extends CommonBase {
             KeyPair serverKeys = keyPairGenerator.generateKeyPair();
             X509Certificate serverCertificate = new X509CertificateBuilder().setIssuerDn(issuerDN)
                     .setSubjectDn(new X500Principal("C=UK, O=elytron.com, CN=localhost"))
-                    .setSignatureAlgorithmName("SHA1withRSA")
+                    .setSignatureAlgorithmName("SHA256withRSA")
                     .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                     .setPublicKey(serverKeys.getPublic())
                     .setSerialNumber(new BigInteger("3"))
@@ -229,7 +229,7 @@ public class KeystoreRealmTestCase extends CommonBase {
             KeyPair user1Keys = keyPairGenerator.generateKeyPair();
             X509Certificate user1Certificate = new X509CertificateBuilder().setIssuerDn(issuerDN)
                     .setSubjectDn(new X500Principal("C=UK, O=elytron.com, CN=user1"))
-                    .setSignatureAlgorithmName("SHA1withRSA")
+                    .setSignatureAlgorithmName("SHA256withRSA")
                     .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
                     .setPublicKey(user1Keys.getPublic())
                     .setSerialNumber(new BigInteger("3"))

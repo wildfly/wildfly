@@ -32,7 +32,16 @@
     <!-- The subsystem root element -->
     <xs:element name="subsystem">
         <xs:complexType>
-            <xs:attribute name="security-enabled" type="xs:boolean" default="true" />
+            <xs:attribute name="security-enabled" type="xs:boolean" default="true">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+                        True if authentication is required to access the HTTP endpoints on the
+                        HTTP management interface.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 </xs:schema>

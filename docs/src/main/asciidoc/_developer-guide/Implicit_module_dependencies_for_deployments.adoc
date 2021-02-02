@@ -114,7 +114,7 @@ is a SAR archive
 |Security Subsystem |org.picketbox |  | 
 
 |Web Subsystem |  |javaee.api com.sun.jsf-impl org.hibernate.validator
-org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. JSF
+org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. Jakarta Server Faces
 is only added if used. Multiple version options exist for mojarra.
 
 |Web Services Subsystem |org.jboss.ws.api org.jboss.ws.spi |  | 

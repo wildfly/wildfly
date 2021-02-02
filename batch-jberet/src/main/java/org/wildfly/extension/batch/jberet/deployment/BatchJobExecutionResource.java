@@ -52,6 +52,19 @@ public class BatchJobExecutionResource implements Resource {
     // Should be guarded by it's instance
     private final Set<String> children = new LinkedHashSet<>();
 
+    /**
+     * Last time when job names were refreshed
+     */
+    private volatile long lastRefreshedTime;
+
+    /**
+     * The minimum interval in milliseconds in which the job names are to be refreshed.
+     * If the interval period has elapsed from the last refresh time,
+     * any incoming refresh request will be performed; otherwise, it is ignored
+     * and the current result is returned.
+     */
+    private final int refreshMinInterval = 3000;
+
     BatchJobExecutionResource(final WildFlyJobOperator jobOperator, final String jobName) {
         this(Factory.create(true), jobOperator, jobName);
     }
@@ -216,9 +229,13 @@ public class BatchJobExecutionResource implements Resource {
      * guarded.
      */
     private void refreshChildren() {
+        if (System.currentTimeMillis() - lastRefreshedTime < refreshMinInterval) {
+            return;
+        }
+
         final List<JobExecution> executions = new ArrayList<>();
         // Casting to (Supplier<List<JobInstance>>) is done here on purpose as a workaround for a bug in 1.8.0_45
-        final List<JobInstance> instances = jobOperator.allowMissingJob((Supplier<List<JobInstance>>)() -> jobOperator.getJobInstances(jobName, 0, jobOperator.getJobInstanceCount(jobName))
+        final List<JobInstance> instances = jobOperator.allowMissingJob((Supplier<List<JobInstance>>)() -> jobOperator.getJobInstances(jobName, 0, Integer.MAX_VALUE)
                 , Collections.emptyList());
         for (JobInstance instance : instances) {
             executions.addAll(jobOperator.getJobExecutions(instance));
@@ -228,5 +245,6 @@ public class BatchJobExecutionResource implements Resource {
             final String name = Long.toString(execution.getExecutionId());
             children.add(name);
         }
+        lastRefreshedTime = System.currentTimeMillis();
     }
 }

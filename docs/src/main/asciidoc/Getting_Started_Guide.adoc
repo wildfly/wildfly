@@ -42,7 +42,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-369: Java Servlet 4.0 |X |X |X |X
 
-|JSR-372: JavaServer Faces 2.3 |X |X |X |X
+|JSR-372: Jakarta Server Faces 2.3 |X |X |X |X
 
 |JSR-341: Expression Language 3.0 |X |X |X |X
 
