@@ -71,6 +71,16 @@ public class ExternalizerMarshaller<T> implements ProtoStreamMarshaller<T> {
     }
 
     @Override
+    public T readFrom(ProtoStreamReader reader) throws IOException {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
+        throw new IllegalStateException();
+    }
+
+    @Override
     public OptionalInt size(ImmutableSerializationContext context, T value) {
         return this.externalizer.size(value);
     }
