@@ -32,6 +32,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * Provider for externalizer-based marshallers.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ExternalizerMarshallerProvider extends AbstractMarshallerProvider {
 
     public ExternalizerMarshallerProvider(Externalizer<?>... externalizers) {

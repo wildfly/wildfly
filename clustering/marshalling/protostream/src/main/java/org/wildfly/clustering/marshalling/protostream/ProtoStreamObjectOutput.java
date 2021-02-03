@@ -41,6 +41,7 @@ import protostream.com.google.protobuf.CodedOutputStream;
  * This implementation intentionally does not conform to the binary layout prescribed by {@link ObjectOutput}.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ProtoStreamObjectOutput implements ObjectOutput {
 
     private final ImmutableSerializationContext context;
