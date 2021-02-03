@@ -158,6 +158,29 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions combine.children="append">
+                    <!-- Copy example configs. -->
+                    <execution>
+                        <id>ts.config-as.copy-docs-configs</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <inherited>true</inherited>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/wildfly/docs/examples/configs</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${jboss.dist}/docs/examples/configs/</directory>
+                                    <includes><include>standalone*.xml</include></includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Update server profile with shared configuration changes -->
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
@@ -251,7 +274,7 @@
                         <jvm.args>${jvm.args.ip.server} ${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</jvm.args>
                         <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} ${modular.jdk.args}</server.jvm2.args>
                         <arquillian.launch>manual-mode</arquillian.launch>
-                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                        <jboss.config.file.name>standalone-ha.xml</jboss.config.file.name>
                         <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
                         <javax.net.ssl.trustStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
                         <javax.net.ssl.keyStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>

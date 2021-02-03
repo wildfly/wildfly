@@ -105,6 +105,28 @@
         <copy todir="target/jbossas-dwm-manual-1" overwrite="true">
             <fileset dir="target/wildfly"/>
         </copy>
+        <copy todir="target/jbossas-custom" overwrite="true">
+            <fileset dir="target/wildfly"/>
+        </copy>
+
+        <xslt destdir="target/jbossas-custom/docs/examples/configs"
+              style="${jbossas.ts.integ.dir}/src/test/xslt/changeLdapStore.xsl"
+              extension=".xml.mod"
+              useImplicitFileset="false">
+            <fileset dir="target/jbossas-custom/docs/examples/configs">
+                <include name="**/standalone-picketlink.xml"/>
+            </fileset>
+        </xslt>
+
+        <!-- Move processed files back. -->
+        <move todir="target/jbossas-custom/docs/examples/configs">
+            <fileset dir="target/jbossas-custom/docs/examples/configs">
+                <include name="**/standalone-picketlink.xml.mod"/>
+            </fileset>
+            <mapper type="glob" from="*.mod" to="*"/>
+        </move>
+
+
         <ts.config-as.change-transport-stack name="jbossas-dwm-manual-0"
                                              stack="tcp"/>
         <ts.config-as.change-transport-stack name="jbossas-dwm-manual-1"
