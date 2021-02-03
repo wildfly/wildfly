@@ -174,6 +174,12 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             }
 
             addComponent(deploymentUnit, sessionBeanDescription);
+
+            final AnnotationValue mappedNameValue = sessionBeanAnnotation.value("mappedName");
+            if (mappedNameValue != null && !mappedNameValue.asString().isEmpty()) {
+                EjbLogger.ROOT_LOGGER.mappedNameNotSupported(mappedNameValue != null ? mappedNameValue.asString() : "",
+                        ejbName);
+            }
         }
 
         EjbDeploymentMarker.mark(deploymentUnit);

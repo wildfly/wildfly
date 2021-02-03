@@ -158,6 +158,12 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             beanDescription.setDeploymentDescriptorEnvironment(deploymentDescriptorEnvironment);
 
             addComponent(deploymentUnit, beanDescription);
+
+            final AnnotationValue mappedNameValue = messageBeanAnnotation.value("mappedName");
+            if (mappedNameValue != null && !mappedNameValue.asString().isEmpty()) {
+                EjbLogger.ROOT_LOGGER.mappedNameNotSupported(mappedNameValue != null ? mappedNameValue.asString() : "",
+                        ejbName);
+            }
         }
 
         EjbDeploymentMarker.mark(deploymentUnit);
