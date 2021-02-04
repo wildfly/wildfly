@@ -40,7 +40,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  */
 public class DistributedCacheServiceConfigurator extends SegmentedCacheServiceConfigurator {
 
-    private volatile int capacityFactor;
+    private volatile float capacityFactor;
     private volatile int owners;
     private volatile long l1Lifespan;
 
@@ -50,7 +50,7 @@ public class DistributedCacheServiceConfigurator extends SegmentedCacheServiceCo
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.capacityFactor = CAPACITY_FACTOR.resolveModelAttribute(context, model).asInt();
+        this.capacityFactor = (float) CAPACITY_FACTOR.resolveModelAttribute(context, model).asDouble();
         this.l1Lifespan = L1_LIFESPAN.resolveModelAttribute(context, model).asLong();
         this.owners = OWNERS.resolveModelAttribute(context, model).asInt();
 
