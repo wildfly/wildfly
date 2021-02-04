@@ -25,9 +25,13 @@ package org.wildfly.clustering.web.undertow.sso;
 import java.io.IOException;
 import java.util.Collections;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.extension.undertow.security.AccountImpl;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
@@ -35,14 +39,23 @@ import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession
 /**
  * @author Paul Ferraro
  */
-public class UndertowSecurityExternalizerTestCase {
+public class UndertowSecurityMarshallingTestCase {
 
     @Test
-    public void test() throws IOException {
-        new ExternalizerTester<>(new AuthenticatedSessionExternalizer()).test(new AuthenticatedSession(new AccountImpl("test"), "BASIC"), UndertowSecurityExternalizerTestCase::assertEquals);
-        new ExternalizerTester<>(new AuthenticatedSessionExternalizer()).test(new AuthenticatedSession(new AccountImpl(new AccountImpl("test").getPrincipal()), "BASIC"), UndertowSecurityExternalizerTestCase::assertEquals);
-        new ExternalizerTester<>(new AuthenticatedSessionExternalizer()).test(new AuthenticatedSession(new AccountImpl(new AccountImpl("test").getPrincipal(), Collections.singleton("user"), "password"), "BASIC"), UndertowSecurityExternalizerTestCase::assertEquals);
-        new ExternalizerTester<>(new AuthenticatedSessionExternalizer()).test(new AuthenticatedSession(new AccountImpl(new AccountImpl("test").getPrincipal(), Collections.singleton("user"), "password", new AccountImpl("original").getPrincipal()), "BASIC"), UndertowSecurityExternalizerTestCase::assertEquals);
+    public void testExternalizer() throws IOException {
+        test(new ExternalizerTester<>(new AuthenticatedSessionExternalizer()));
+    }
+
+    @Test
+    public void testProtoStream() throws IOException {
+        test(ProtoStreamTesterFactory.INSTANCE.createTester());
+    }
+
+    private static void test(Tester<AuthenticatedSession> tester) throws IOException {
+        tester.test(new AuthenticatedSession(new AccountImpl("test"), HttpServletRequest.BASIC_AUTH), UndertowSecurityMarshallingTestCase::assertEquals);
+        tester.test(new AuthenticatedSession(new AccountImpl(new AccountImpl("test").getPrincipal()), HttpServletRequest.CLIENT_CERT_AUTH), UndertowSecurityMarshallingTestCase::assertEquals);
+        tester.test(new AuthenticatedSession(new AccountImpl(new AccountImpl("test").getPrincipal(), Collections.singleton("user"), "password"), HttpServletRequest.DIGEST_AUTH), UndertowSecurityMarshallingTestCase::assertEquals);
+        tester.test(new AuthenticatedSession(new AccountImpl(new AccountImpl("test").getPrincipal(), Collections.singleton("user"), "password", new AccountImpl("original").getPrincipal()), HttpServletRequest.FORM_AUTH), UndertowSecurityMarshallingTestCase::assertEquals);
     }
 
     static void assertEquals(AuthenticatedSession session1, AuthenticatedSession session2) {

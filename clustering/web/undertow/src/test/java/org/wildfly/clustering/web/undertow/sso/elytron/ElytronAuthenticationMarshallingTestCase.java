@@ -24,18 +24,28 @@ package org.wildfly.clustering.web.undertow.sso.elytron;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class ElytronAuthenticationExternalizerTestCase {
+public class ElytronAuthenticationMarshallingTestCase {
 
     @Test
-    public void test() throws IOException {
-        new ExternalizerTester<>(new ElytronAuthenticationExternalizer()).test(new ElytronAuthentication("BASIC", "user"), ElytronAuthenticationExternalizerTestCase::assertEquals);
+    public void testProtoStream() throws IOException {
+        test(ProtoStreamTesterFactory.INSTANCE.createTester());
+    }
+
+    private static void test(Tester<ElytronAuthentication> tester) throws IOException {
+        tester.test(new ElytronAuthentication(HttpServletRequest.BASIC_AUTH, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
+        tester.test(new ElytronAuthentication(HttpServletRequest.CLIENT_CERT_AUTH, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
+        tester.test(new ElytronAuthentication(HttpServletRequest.DIGEST_AUTH, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
+        tester.test(new ElytronAuthentication(HttpServletRequest.FORM_AUTH, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
     }
 
     static void assertEquals(ElytronAuthentication auth1, ElytronAuthentication auth2) {
