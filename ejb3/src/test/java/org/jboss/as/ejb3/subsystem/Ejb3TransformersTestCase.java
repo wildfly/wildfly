@@ -12,6 +12,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_1_3_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_4_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_5_0_0;
+import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_6_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STATISTICS_ENABLED;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
@@ -86,7 +87,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_8_0.xsd";
+        return "schema/wildfly-ejb3_9_0.xsd";
     }
 
     @Override
@@ -158,6 +159,16 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                 "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.6.Final-redhat-1");
     }
 
+    @Test
+    public void testTransformerEAP730() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_7_3_0;
+
+        testTransformation(VERSION_6_0_0.getVersion(), controller,
+                formatEAPSubsystemArtifact(controller),
+                "org.wildfly.core:wildfly-threads:10.1.17.Final-redhat-00001",
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.6.Final-redhat-1");
+    }
+
     /*
      * Transformer tests involving rejection
      */
@@ -214,6 +225,16 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         this.testRejections(VERSION_5_0_0.getVersion(), controller,
                 formatEAPSubsystemArtifact(controller),
                 "org.wildfly.core:wildfly-threads:6.0.11.Final-redhat-00001",
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.6.Final-redhat-1");
+    }
+
+    @Test
+    public void testRejectionsEAP730() throws Exception {
+        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_7_3_0;
+
+        this.testRejections(VERSION_6_0_0.getVersion(), controller,
+                formatEAPSubsystemArtifact(controller),
+                "org.wildfly.core:wildfly-threads:10.1.17.Final-redhat-00001",
                 "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.6.Final-redhat-1");
     }
 
