@@ -31,10 +31,12 @@ public class ApplicationSecurityDomainConfig {
 
     private String name;
     private boolean enableJacc;
+    private boolean legacyCompliantPrincipalPropagation;
 
-    public ApplicationSecurityDomainConfig(String name, boolean enableJacc) {
+    public ApplicationSecurityDomainConfig(String name, boolean enableJacc, boolean legacyCompliantPrincipalPropagation) {
         this.name = name;
         this.enableJacc = enableJacc;
+        this.legacyCompliantPrincipalPropagation = legacyCompliantPrincipalPropagation;
     }
 
     public boolean isSameDomain(String other) {
@@ -43,6 +45,10 @@ public class ApplicationSecurityDomainConfig {
 
     public boolean isEnableJacc() {
         return enableJacc;
+    }
+
+    public boolean isLegacyCompliantPrincipalPropagation() {
+        return legacyCompliantPrincipalPropagation;
     }
 
     @Override

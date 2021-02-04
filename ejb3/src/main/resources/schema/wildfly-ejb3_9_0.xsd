@@ -478,6 +478,15 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="legacy-compliant-principal-propagation" type="xs:boolean" use="optional" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Option to switch between legacy compliant principal propagation or Elytron principal propagation.
+                    If there is no incoming run-as identity, then the current principal obtained from local unsecured bean is anonymous in Elytron.
+                    However in legacy it is the current authenticated principal.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="identityType">

@@ -110,7 +110,7 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         }
     }
 
-    private void parseApplicationSecurityDomain(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
+    protected void parseApplicationSecurityDomain(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
         String applicationSecurityDomain = null;
         ModelNode operation = Util.createAddOperation();
         final int count = reader.getAttributeCount();

@@ -85,6 +85,7 @@
     <!-- should be rejected -->
     <application-security-domains>
         <application-security-domain name="domain" security-domain="ApplicationDomain" enable-jacc="true"/>
+        <application-security-domain name="domain2" security-domain="ApplicationDomain" enable-jacc="true" legacy-compliant-principal-propagation="false"/>
     </application-security-domains>
     <!-- should be rejected -->
     <identity outflow-security-domains="ApplicationDomain"/>

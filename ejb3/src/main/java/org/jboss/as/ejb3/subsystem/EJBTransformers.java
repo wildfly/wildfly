@@ -321,6 +321,12 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         // Reject ejb3/remoting-profile=xxx/remote-http-connection
         subsystemBuilder.addChildResource(EJB3SubsystemModel.REMOTING_PROFILE_PATH)
                 .rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION));
+        // Reject attribute legacy-compliant-principal-propagation
+        subsystemBuilder.addChildResource(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN))
+                .getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, EJB3SubsystemModel.LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemModel.LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION)
+                .end();
     }
     /*
      * This transformer is used with the datastores in /subsystem=ejb3/service=timer

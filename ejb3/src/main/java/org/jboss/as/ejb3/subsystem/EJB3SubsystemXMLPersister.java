@@ -700,6 +700,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
         ApplicationSecurityDomainDefinition.SECURITY_DOMAIN.marshallAsAttribute(property.getValue(), writer);
         ApplicationSecurityDomainDefinition.ENABLE_JACC.marshallAsAttribute(property.getValue(), writer);
+        ApplicationSecurityDomainDefinition.LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION.marshallAsAttribute(property.getValue(), writer);
         writer.writeEndElement();
     }
 
