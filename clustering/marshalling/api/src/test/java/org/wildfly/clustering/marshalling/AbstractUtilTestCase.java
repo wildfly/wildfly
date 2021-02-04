@@ -24,7 +24,6 @@ package org.wildfly.clustering.marshalling;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.Month;
 import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -132,30 +131,33 @@ public abstract class AbstractUtilTestCase {
 
     @Test
     public void testEnumMap() throws IOException {
-        MarshallingTester<EnumMap<Month, String>> tester = this.factory.createTester();
-        EnumMap<Month, String> map = new EnumMap<>(Month.class);
+        MarshallingTester<EnumMap<Thread.State, String>> tester = this.factory.createTester();
+        EnumMap<Thread.State, String> map = new EnumMap<>(Thread.State.class);
         tester.test(map, AbstractUtilTestCase::assertMapEquals);
-        for (Month month : EnumSet.allOf(Month.class)) {
-            map.put(month, month.name());
+        for (Thread.State state : EnumSet.allOf(Thread.State.class)) {
+            map.put(state, ((state.ordinal() % 2) == 0) ? state.name() : null);
+            tester.test(map, AbstractUtilTestCase::assertMapEquals);
         }
-        tester.test(map, AbstractUtilTestCase::assertMapEquals);
     }
 
     @Test
     public void testEnumSet() throws IOException {
         MarshallingTester<EnumSet<Thread.State>> tester = this.factory.createTester();
-        tester.test(EnumSet.noneOf(Thread.State.class), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.of(Thread.State.NEW), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.complementOf(EnumSet.of(Thread.State.NEW)), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.allOf(Thread.State.class), AbstractUtilTestCase::assertCollectionEquals);
+        EnumSet<Thread.State> set = EnumSet.noneOf(Thread.State.class);
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+        for (Thread.State state : EnumSet.allOf(Thread.State.class)) {
+            set.add(state);
+            tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+        }
     }
 
     @Test
     public void testJumboEnumSet() throws IOException {
         MarshallingTester<EnumSet<Character.UnicodeScript>> tester = this.factory.createTester();
         tester.test(EnumSet.noneOf(Character.UnicodeScript.class), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.of(Character.UnicodeScript.LATIN), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.complementOf(EnumSet.of(Character.UnicodeScript.LATIN)), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(EnumSet.of(Character.UnicodeScript.UNKNOWN), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(EnumSet.of(Character.UnicodeScript.ARABIC, Character.UnicodeScript.ARMENIAN, Character.UnicodeScript.AVESTAN, Character.UnicodeScript.BALINESE, Character.UnicodeScript.BAMUM, Character.UnicodeScript.BATAK, Character.UnicodeScript.BENGALI, Character.UnicodeScript.BOPOMOFO, Character.UnicodeScript.BRAHMI, Character.UnicodeScript.BRAILLE, Character.UnicodeScript.BUGINESE, Character.UnicodeScript.BUHID, Character.UnicodeScript.CANADIAN_ABORIGINAL, Character.UnicodeScript.CARIAN), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(EnumSet.complementOf(EnumSet.of(Character.UnicodeScript.UNKNOWN)), AbstractUtilTestCase::assertCollectionEquals);
         tester.test(EnumSet.allOf(Character.UnicodeScript.class), AbstractUtilTestCase::assertCollectionEquals);
     }
 
