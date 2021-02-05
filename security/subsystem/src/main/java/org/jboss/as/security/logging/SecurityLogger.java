@@ -556,4 +556,7 @@ public interface SecurityLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id = 104, value = "Default %s cache capability missing.  Assuming %s as default-cache.")
     void defaultCacheRequirementMissing(String containerName, String legacyCacheName);
+
+    @Message(id=105, value = "Unable to initialize legacy JACC support while elytron JACC support is enabled.")
+    IllegalStateException unableToEnableJaccSupport();
 }
