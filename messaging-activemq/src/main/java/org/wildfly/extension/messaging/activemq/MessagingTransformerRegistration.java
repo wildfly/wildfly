@@ -108,6 +108,9 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
                 ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
                 ServerDefinition.JOURNAL_MAX_ATTIC_FILES);
         server.discardOperations(PrintDataOperation.OPERATION_NAME);
+
+        ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
+        rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.CALL_TIMEOUT);
     }
 
     private static void registerTransformers_WF_22(ResourceTransformationDescriptionBuilder subsystem) {

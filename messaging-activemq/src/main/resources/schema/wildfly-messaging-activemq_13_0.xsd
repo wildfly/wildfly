@@ -636,6 +636,7 @@
                     <xs:attribute name="password" type="xs:string"  use="optional" />
                     <xs:attribute name="static-connectors" type="stringList"  use="optional" />
                     <xs:attribute name="discovery-group" type="xs:string"  use="optional" />
+                    <xs:attribute name="call-timeout" type="xs:long"  use="optional" default="30000" />
                 </xs:complexType>
             </xs:element>
 

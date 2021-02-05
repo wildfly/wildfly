@@ -25,6 +25,7 @@ package org.wildfly.extension.messaging.activemq;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.ATTRIBUTES;
+import static org.wildfly.extension.messaging.activemq.BridgeDefinition.CALL_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.CREDENTIAL_REFERENCE;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.DISCOVERY_GROUP_NAME;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.FORWARDING_ADDRESS;
@@ -37,14 +38,17 @@ import static org.wildfly.extension.messaging.activemq.BridgeDefinition.RECONNEC
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.USER;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.USE_DUPLICATE_DETECTION;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.TransformerConfiguration;
+import org.apache.activemq.artemis.core.persistence.StorageManager;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -64,6 +68,8 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 public class BridgeAdd extends AbstractAddStepHandler {
 
     public static final BridgeAdd INSTANCE = new BridgeAdd();
+
+    static final String CALL_TIMEOUT_PROPERTY = "org.wildfly.messaging.core.bridge.call-timeout";
 
     private BridgeAdd() {
         super(ATTRIBUTES);
@@ -92,8 +98,9 @@ public class BridgeAdd extends AbstractAddStepHandler {
 
             BridgeConfiguration bridgeConfig = createBridgeConfiguration(context, name, model);
 
-            ActiveMQServerControl serverControl = ActiveMQServer.class.cast(service.getValue()).getActiveMQServerControl();
-            createBridge(name, bridgeConfig, serverControl);
+            //noinspection RedundantClassCall
+            ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+            createBridge(bridgeConfig, server);
 
         }
         // else the initial subsystem install is not complete; MessagingSubsystemAdd will add a
@@ -105,31 +112,36 @@ public class BridgeAdd extends AbstractAddStepHandler {
         rollbackCredentialStoreUpdate(CREDENTIAL_REFERENCE, context, resource);
     }
 
-    static BridgeConfiguration createBridgeConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
+    static BridgeConfiguration createBridgeConfiguration(final ExpressionResolver expressionResolver, final String name, final ModelNode model) throws OperationFailedException {
 
-        final String queueName = QUEUE_NAME.resolveModelAttribute(context, model).asString();
-        final ModelNode forwardingNode = FORWARDING_ADDRESS.resolveModelAttribute(context, model);
+        final String queueName = QUEUE_NAME.resolveModelAttribute(expressionResolver, model).asString();
+        final ModelNode forwardingNode = FORWARDING_ADDRESS.resolveModelAttribute(expressionResolver, model);
         final String forwardingAddress = forwardingNode.isDefined() ? forwardingNode.asString() : null;
-        final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(context, model);
+        final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(expressionResolver, model);
         final String filterString = filterNode.isDefined() ? filterNode.asString() : null;
-        final int minLargeMessageSize = CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt();
-        final long retryInterval = CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
-        final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
-        final long maxRetryInterval = CommonAttributes.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
-        final int initialConnectAttempts = INITIAL_CONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
-        final int reconnectAttempts = RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
-        final int reconnectAttemptsOnSameNode = RECONNECT_ATTEMPTS_ON_SAME_NODE.resolveModelAttribute(context, model).asInt();
-        final boolean useDuplicateDetection = USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
-        final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
-        final int producerWindowSize = PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
-        final long clientFailureCheckPeriod = CommonAttributes.CHECK_PERIOD.resolveModelAttribute(context, model).asLong();
-        final long connectionTTL = CommonAttributes.CONNECTION_TTL.resolveModelAttribute(context, model).asLong();
-        final ModelNode discoveryNode = DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
+        final int minLargeMessageSize = CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(expressionResolver, model).asInt();
+        final long retryInterval = CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(expressionResolver, model).asLong();
+        final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(expressionResolver, model).asDouble();
+        final long maxRetryInterval = CommonAttributes.MAX_RETRY_INTERVAL.resolveModelAttribute(expressionResolver, model).asLong();
+        final int initialConnectAttempts = INITIAL_CONNECT_ATTEMPTS.resolveModelAttribute(expressionResolver, model).asInt();
+        final int reconnectAttempts = RECONNECT_ATTEMPTS.resolveModelAttribute(expressionResolver, model).asInt();
+        final int reconnectAttemptsOnSameNode = RECONNECT_ATTEMPTS_ON_SAME_NODE.resolveModelAttribute(expressionResolver, model).asInt();
+        final boolean useDuplicateDetection = USE_DUPLICATE_DETECTION.resolveModelAttribute(expressionResolver, model).asBoolean();
+        final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(expressionResolver, model).asInt();
+        final int producerWindowSize = PRODUCER_WINDOW_SIZE.resolveModelAttribute(expressionResolver, model).asInt();
+        final long clientFailureCheckPeriod = CommonAttributes.CHECK_PERIOD.resolveModelAttribute(expressionResolver, model).asLong();
+        final long connectionTTL = CommonAttributes.CONNECTION_TTL.resolveModelAttribute(expressionResolver, model).asLong();
+        final ModelNode discoveryNode = DISCOVERY_GROUP_NAME.resolveModelAttribute(expressionResolver, model);
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;
-        final boolean ha = CommonAttributes.HA.resolveModelAttribute(context, model).asBoolean();
-        final String user = USER.resolveModelAttribute(context, model).asString();
-        final String password = PASSWORD.resolveModelAttribute(context, model).asString();
+        final boolean ha = CommonAttributes.HA.resolveModelAttribute(expressionResolver, model).asBoolean();
+        final String user = USER.resolveModelAttribute(expressionResolver, model).asString();
+        final String password = PASSWORD.resolveModelAttribute(expressionResolver, model).asString();
+
+        Long callTimeout = getCallTimeoutFromSystemProperty();
+        if (callTimeout == null) {
+            callTimeout = CALL_TIMEOUT.resolveModelAttribute(expressionResolver, model).asLong();
+        }
 
         BridgeConfiguration config = new BridgeConfiguration()
                 .setName(name)
@@ -150,14 +162,15 @@ public class BridgeAdd extends AbstractAddStepHandler {
                 .setProducerWindowSize(producerWindowSize)
                 .setHA(ha)
                 .setUser(user)
-                .setPassword(password);
+                .setPassword(password)
+                .setCallTimeout(callTimeout);
 
         if (discoveryGroupName != null) {
             config.setDiscoveryGroupName(discoveryGroupName);
         } else {
             config.setStaticConnectors(staticConnectors);
         }
-        final ModelNode transformerClassName = CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);
+        final ModelNode transformerClassName = CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(expressionResolver, model);
         if (transformerClassName.isDefined()) {
             config.setTransformerConfiguration(new TransformerConfiguration(transformerClassName.asString()));
         }
@@ -166,48 +179,77 @@ public class BridgeAdd extends AbstractAddStepHandler {
     }
 
     private static List<String> getStaticConnectors(ModelNode model) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (ModelNode connector : model.require(CommonAttributes.STATIC_CONNECTORS).asList()) {
             result.add(connector.asString());
         }
         return result;
     }
 
-    static void createBridge(String name, BridgeConfiguration bridgeConfig, ActiveMQServerControl serverControl) {
+    static void createBridge(BridgeConfiguration bridgeConfig, ActiveMQServer server) {
+        checkStarted(server);
+        clearIO(server);
+
         try {
-            String transformerClassName = bridgeConfig.getTransformerConfiguration() != null ? bridgeConfig.getTransformerConfiguration().getClassName() : null;
-            if (bridgeConfig.getDiscoveryGroupName() != null) {
-                serverControl.createBridge(name, bridgeConfig.getQueueName(), bridgeConfig.getForwardingAddress(),
-                        bridgeConfig.getFilterString(), transformerClassName, bridgeConfig.getRetryInterval(),
-                        bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getInitialConnectAttempts(),
-                        bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
-                        bridgeConfig.getConfirmationWindowSize(), bridgeConfig.getClientFailureCheckPeriod(),
-                        bridgeConfig.getDiscoveryGroupName(), true, bridgeConfig.isHA(), bridgeConfig.getUser(),
-                        bridgeConfig.getPassword());
-            } else {
-                boolean first = true;
-                String connectors = "";
-                for (String connector : bridgeConfig.getStaticConnectors()) {
-                    if (!first) {
-                        connectors += ",";
-                    } else {
-                        first = false;
-                    }
-                    connectors += connector;
-                }
-                serverControl.createBridge(name, bridgeConfig.getQueueName(), bridgeConfig.getForwardingAddress(),
-                        bridgeConfig.getFilterString(), transformerClassName, bridgeConfig.getRetryInterval(),
-                        bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getInitialConnectAttempts(),
-                        bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
-                        bridgeConfig.getConfirmationWindowSize(), bridgeConfig.getClientFailureCheckPeriod(),
-                        connectors, false, bridgeConfig.isHA(), bridgeConfig.getUser(),
-                        bridgeConfig.getPassword());
-            }
+            server.deployBridge(bridgeConfig);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             // TODO should this be an OFE instead?
             throw new RuntimeException(e);
+        } finally {
+            blockOnIO(server);
         }
+    }
+
+    static void checkStarted(ActiveMQServer server) {
+        // extracted from ActiveMQServerControlImpl#checkStarted()
+
+        if (!server.isStarted()) {
+            throw MessagingLogger.ROOT_LOGGER.brokerNotStarted();
+        }
+    }
+
+    static void clearIO(ActiveMQServer server) {
+        // extracted from ActiveMQServerControlImpl#clearIO()
+
+        StorageManager storageManager = server.getStorageManager();
+
+        // the storage manager could be null on the backup on certain components
+        if (storageManager != null) {
+            storageManager.clearContext();
+        }
+    }
+
+    static void blockOnIO(ActiveMQServer server) {
+        // extracted from ActiveMQServerControlImpl#blockOnIO()
+
+        StorageManager storageManager = server.getStorageManager();
+
+        // the storage manager could be null on the backup on certain components
+        if (storageManager != null && storageManager.isStarted()) {
+            try {
+                storageManager.waitOnOperations();
+                storageManager.clearContext();
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * In upstream this property is gonna be part of the management model. Here we need to get it from a system property.
+     */
+    static Long getCallTimeoutFromSystemProperty() {
+        String value;
+        if (System.getSecurityManager() == null) {
+            value = System.getProperty(CALL_TIMEOUT_PROPERTY);
+        } else {
+            value = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty(CALL_TIMEOUT_PROPERTY));
+        }
+        if (value == null) {
+            return null;
+        }
+        return Long.parseLong(value);
     }
 }
