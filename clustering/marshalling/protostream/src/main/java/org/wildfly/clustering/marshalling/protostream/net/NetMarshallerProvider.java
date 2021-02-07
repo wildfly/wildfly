@@ -29,6 +29,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvi
 import org.wildfly.clustering.marshalling.protostream.SimpleFieldSetMarshaller;
 
 /**
+ * Provider for java.net marshallers.
  * @author Paul Ferraro
  */
 public enum NetMarshallerProvider implements ProtoStreamMarshallerProvider {
