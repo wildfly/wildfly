@@ -32,6 +32,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Abstract collection marshaller that writes the elements of the collection.
  * @author Paul Ferraro
+ * @param <T> the collection type of this marshaller
  */
 public abstract class AbstractCollectionMarshaller<T extends Collection<Object>> implements ProtoStreamMarshaller<T> {
 

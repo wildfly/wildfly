@@ -35,6 +35,7 @@ import org.wildfly.common.function.ExceptionFunction;
 /**
  * Marshaller for copy-on-write implementations of {@link Collection}.
  * @author Paul Ferraro
+ * @param <T> the collection type of this marshaller
  */
 public class CopyOnWriteCollectionMarshaller<T extends Collection<Object>> extends SimpleFunctionalMarshaller<T, Collection<Object>> {
     private static final ProtoStreamMarshaller<Collection<Object>> MARSHALLER = new CollectionMarshaller<>(LinkedList::new);

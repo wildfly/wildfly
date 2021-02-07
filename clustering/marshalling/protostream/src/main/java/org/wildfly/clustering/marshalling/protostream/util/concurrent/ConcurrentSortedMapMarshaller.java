@@ -37,6 +37,7 @@ import org.wildfly.common.function.ExceptionFunction;
 /**
  * Marshaller for a concurrent {@link SortedMap} that does not allow null values.
  * @author Paul Ferraro
+ * @param <T> the map type of this marshaller
  */
 public class ConcurrentSortedMapMarshaller<T extends ConcurrentMap<Object, Object> & SortedMap<Object, Object>> extends SimpleFunctionalMarshaller<T, SortedMap<Object, Object>> {
     private static final ProtoStreamMarshaller<SortedMap<Object, Object>> MARSHALLER = new SortedMapMarshaller<>(TreeMap::new);

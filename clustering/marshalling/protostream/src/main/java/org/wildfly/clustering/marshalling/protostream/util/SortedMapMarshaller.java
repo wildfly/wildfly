@@ -34,7 +34,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * Marshaller for a {@link SortedMap}.
  * @author Paul Ferraro
+ * @param <T> the map type of this marshaller
  */
 public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends AbstractMapMarshaller<T> {
 

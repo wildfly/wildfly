@@ -49,6 +49,7 @@ import org.wildfly.clustering.marshalling.spi.util.UtilExternalizerProvider;
 import org.wildfly.common.function.Functions;
 
 /**
+ * Enumeration of java.util marshallers.
  * @author Paul Ferraro
  */
 public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {

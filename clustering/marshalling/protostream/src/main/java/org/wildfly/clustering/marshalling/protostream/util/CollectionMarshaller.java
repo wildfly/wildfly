@@ -33,6 +33,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 /**
  * Marshaller for a basic collection.
  * @author Paul Ferraro
+ * @param <T> the collection type of this marshaller
  */
 public class CollectionMarshaller<T extends Collection<Object>> extends AbstractCollectionMarshaller<T> {
 

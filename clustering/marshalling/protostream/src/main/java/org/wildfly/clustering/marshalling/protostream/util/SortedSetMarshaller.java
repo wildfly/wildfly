@@ -33,7 +33,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * Marshaller for a {@link SortedSet}.
  * @author Paul Ferraro
+ * @param <T> the set type of this marshaller
  */
 public class SortedSetMarshaller<T extends SortedSet<Object>> extends AbstractCollectionMarshaller<T> {
 

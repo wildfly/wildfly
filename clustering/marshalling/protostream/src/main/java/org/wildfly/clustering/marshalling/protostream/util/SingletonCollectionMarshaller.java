@@ -32,6 +32,7 @@ import org.wildfly.common.function.Functions;
 /**
  * Marshaller for singleton collections.
  * @author Paul Ferraro
+ * @param <T> the collection type of this marshaller
  */
 public class SingletonCollectionMarshaller<T extends Collection<Object>> extends FunctionalScalarMarshaller<T, Object> {
 

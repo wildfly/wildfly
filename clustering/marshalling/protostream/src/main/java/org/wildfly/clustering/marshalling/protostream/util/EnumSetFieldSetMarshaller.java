@@ -39,6 +39,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * Marshaller for the fields of an {@link EnumSet}.
  * @author Paul Ferraro
+ * @param <E> the enum type for this marshaller
  */
 public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMarshaller<EnumSet<E>, EnumSetBuilder<E>> {
 

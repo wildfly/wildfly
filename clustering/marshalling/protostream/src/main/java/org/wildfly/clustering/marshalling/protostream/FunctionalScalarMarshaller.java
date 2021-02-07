@@ -41,6 +41,8 @@ import protostream.com.google.protobuf.CodedOutputStream;
 /**
  * Marshaller that reads/writes a single field by applying functions to a {@link ScalarMarshaller}.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller
+ * @param <V> the type of the mapped scalar marshaller
  */
 public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T> {
 

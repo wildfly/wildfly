@@ -32,6 +32,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Abstract marshaller for a {@link Map} that writes the entries of the map.
  * @author Paul Ferraro
+ * @param <T> the map type of this marshaller
  */
 public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> implements ProtoStreamMarshaller<T> {
     protected static final int ENTRY_INDEX = 1;

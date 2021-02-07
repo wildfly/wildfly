@@ -33,6 +33,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 /**
  * Marshaller for a {@link Map}.
  * @author Paul Ferraro
+ * @param <T> the map type of this marshaller
  */
 public class MapMarshaller<T extends Map<Object, Object>> extends AbstractMapMarshaller<T> {
 

@@ -29,6 +29,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSet
 /**
  * Marshaller for an {@link EnumSet}.
  * @author Paul Ferraro
+ * @param <E> the enum type of this marshaller
  */
 public class EnumSetMarshaller<E extends Enum<E>> extends ProtoStreamBuilderFieldSetMarshaller<EnumSet<E>, EnumSetBuilder<E>> {
 

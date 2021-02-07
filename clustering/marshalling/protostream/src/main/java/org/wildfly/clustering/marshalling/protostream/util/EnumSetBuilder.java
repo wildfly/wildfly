@@ -30,6 +30,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilder;
 /**
  * Builder for an {@link EnumSet}.
  * @author Paul Ferraro
+ * @param <E> the enum type of this builder
  */
 public interface EnumSetBuilder<E extends Enum<E>> extends ProtoStreamBuilder<EnumSet<E>> {
 

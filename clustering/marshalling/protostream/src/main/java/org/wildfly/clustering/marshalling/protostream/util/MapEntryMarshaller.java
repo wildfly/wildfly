@@ -34,8 +34,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for a {@link Map.Entry}
+ * Marshaller for a {@link java.util.Map.Entry}
  * @author Paul Ferraro
+ * @param <T> the map entry type of this marshaller
  */
 public class MapEntryMarshaller<T extends Map.Entry<Object, Object>> implements ProtoStreamMarshaller<T> {
 

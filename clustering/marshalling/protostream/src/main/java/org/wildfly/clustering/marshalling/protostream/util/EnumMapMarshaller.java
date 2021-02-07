@@ -42,6 +42,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * Marshaller for an {@link EnumMap}.
  * @author Paul Ferraro
+ * @param <E> the enum key type of this marshaller
  */
 public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumMap<E, Object>> {
 

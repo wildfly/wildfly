@@ -32,6 +32,8 @@ import org.wildfly.common.function.ExceptionFunction;
 /**
  * Marshaller that uses a functional transformation of another marshaller.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller
+ * @param <V> the type of the mapped marshaller
  */
 public class FunctionalMarshaller<T, V> implements ProtoStreamMarshaller<T> {
 

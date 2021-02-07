@@ -29,6 +29,8 @@ import org.wildfly.common.function.ExceptionFunction;
 /**
  * Functional marshaller whose marshalled type is a subclass of the mapped marshaller.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller
+ * @param <V> the type of the mapped marshaller
  */
 public class SimpleFunctionalMarshaller<T extends V, V> extends FunctionalMarshaller<T, V> {
 

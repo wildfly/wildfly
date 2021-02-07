@@ -36,6 +36,7 @@ import org.wildfly.common.function.ExceptionFunction;
 /**
  * Marshaller for a {@link ConcurrentMap} that does not allow null values.
  * @author Paul Ferraro
+ * @param <T> the map type of this marshaller
  */
 public class ConcurrentMapMarshaller<T extends ConcurrentMap<Object, Object>> extends SimpleFunctionalMarshaller<T, Map<Object, Object>> {
     private static final ProtoStreamMarshaller<Map<Object, Object>> MARSHALLER = new MapMarshaller<>(HashMap::new);
