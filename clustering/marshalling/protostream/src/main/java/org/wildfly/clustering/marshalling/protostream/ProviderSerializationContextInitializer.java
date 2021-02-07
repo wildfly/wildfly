@@ -34,6 +34,7 @@ import org.infinispan.protostream.SerializationContext;
 /**
  * A {@link org.infinispan.protostream.SerializationContextInitializer} that registers enumerated marshallers.
  * @author Paul Ferraro
+ * @param <E> the marshaller provider provider type
  */
 public class ProviderSerializationContextInitializer<E extends Enum<E> & ProtoStreamMarshallerProvider> extends AbstractSerializationContextInitializer {
 

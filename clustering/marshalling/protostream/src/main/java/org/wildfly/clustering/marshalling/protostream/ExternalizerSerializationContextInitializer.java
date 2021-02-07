@@ -35,6 +35,7 @@ import org.wildfly.clustering.marshalling.spi.ExternalizerProvider;
 
 /**
  * @author Paul Ferraro
+ * @param <E> the externalizer provider type
  */
 @Deprecated
 public class ExternalizerSerializationContextInitializer<E extends Enum<E> & ExternalizerProvider> extends AbstractSerializationContextInitializer {
