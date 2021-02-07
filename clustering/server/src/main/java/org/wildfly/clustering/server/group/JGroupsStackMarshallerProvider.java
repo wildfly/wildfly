@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,25 +22,26 @@
 
 package org.wildfly.clustering.server.group;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 
 /**
+ * Provider of marshallers for the org.jgroups.stack package.
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
-public class PhysicalAddressSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public enum JGroupsStackMarshallerProvider implements ProtoStreamMarshallerProvider {
+    IP_ADDRESS(new ProtoStreamBuilderFieldSetMarshaller<>(IpAddressMarshaller.INSTANCE)),
+    IP_ADDRESS_UUID(new IpAddressUUIDMarshaller()),
+    ;
+    private final ProtoStreamMarshaller<?> marshaller;
 
-    public PhysicalAddressSerializationContextInitializer() {
-        super("org.jgroups.stack.proto");
+    JGroupsStackMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
     }
 
     @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new AddressSerializer.IpAddressExternalizer()));
-        context.registerMarshaller(new ExternalizerMarshaller<>(new AddressSerializer.IpAddressUUIDExternalizer()));
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

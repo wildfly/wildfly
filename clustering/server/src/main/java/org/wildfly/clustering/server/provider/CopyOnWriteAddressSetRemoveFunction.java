@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.server.provider;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.ee.cache.function.CopyOnWriteSetRemoveFunction;
 
 /**
+ * Copy-on-write {@link java.util.Set#remove(Object)} function for an {@link Address}.
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
-public class UUIDAddressSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class CopyOnWriteAddressSetRemoveFunction extends CopyOnWriteSetRemoveFunction<Address> {
 
-    public UUIDAddressSerializationContextInitializer() {
-        super("org.jgroups.util.proto");
-    }
-
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new AddressSerializer.UUIDExternalizer()));
+    public CopyOnWriteAddressSetRemoveFunction(Address address) {
+        super(address);
     }
 }

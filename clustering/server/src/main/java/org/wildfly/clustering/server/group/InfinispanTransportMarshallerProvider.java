@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.registry;
+package org.wildfly.clustering.server.group;
 
-import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
+import org.infinispan.remoting.transport.LocalModeAddress;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 
 /**
- * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
+ * Provider of marshallers for the org.infinispan.remoting.transport package.
  * @author Paul Ferraro
  */
-public class RegistrySerializationContextInitializer extends AbstractSerializationContextInitializer {
+public enum InfinispanTransportMarshallerProvider implements ProtoStreamMarshallerProvider {
+    LOCAL_ADDRESS(new ValueMarshaller<>(LocalModeAddress.INSTANCE)),
+    ;
+    private final ProtoStreamMarshaller<?> marshaller;
+
+    InfinispanTransportMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
+    }
 
     @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new EnumMarshaller<>(CacheRegistryFilter.class));
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

@@ -1,17 +1,15 @@
 package org.infinispan.remoting.transport.jgroups;
 
+import "org.jgroups.stack.proto";
+import "org.jgroups.util.proto";
+
 // IDs: 134 - 135
 
 /**
  * @TypeId(134)
  */
 message JGroupsAddress {
-	required	bytes	address	= 1;
-}
-
-/**
- * @TypeId(135)
- */
-message JGroupsTopologyAwareAddress {
-	required	bytes	address	= 1;
+	optional	org.jgroups.util.UUID	uuidAddress	= 1;
+	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
+	optional	org.jgroups.stack.IpAddressUUID	uuidIpAddress	= 3;
 }

@@ -23,21 +23,18 @@
 package org.wildfly.clustering.server.singleton;
 
 import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 
 /**
+ * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
 public class SingletonSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new SingletonElectionCommandExternalizer()));
+        context.registerMarshaller(new SingletonElectionCommandMarshaller());
         context.registerMarshaller(new ValueMarshaller<>(new StartCommand()));
         context.registerMarshaller(new ValueMarshaller<>(new StopCommand()));
         context.registerMarshaller(new ValueMarshaller<>(new PrimaryProviderCommand()));

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,25 +22,17 @@
 
 package org.wildfly.clustering.server.group;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.infinispan.remoting.transport.LocalModeAddress;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
+import java.io.IOException;
+
+import org.jgroups.stack.IpAddress;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilder;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
-public class LocalAddressSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public interface IpAddressBuilder extends ProtoStreamBuilder<IpAddress> {
 
-    public LocalAddressSerializationContextInitializer() {
-        super("org.infinispan.remoting.transport.proto");
-    }
+    IpAddressBuilder setAddress(byte[] address) throws IOException;
 
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ValueMarshaller<>(LocalModeAddress.INSTANCE));
-    }
+    IpAddressBuilder setPort(int port);
 }

@@ -57,10 +57,6 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.cache.function.ConcurrentSetAddFunction;
-import org.wildfly.clustering.ee.cache.function.ConcurrentSetRemoveFunction;
-import org.wildfly.clustering.ee.cache.function.CopyOnWriteSetAddFunction;
-import org.wildfly.clustering.ee.cache.function.CopyOnWriteSetRemoveFunction;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ee.infinispan.retry.RetryingInvoker;
 import org.wildfly.clustering.group.GroupListener;
@@ -79,6 +75,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * This factory can create multiple {@link ServiceProviderRegistration} instance,
  * all of which share the same {@link Cache} instance.
  * @author Paul Ferraro
+ * @param <T> the service identifier type
  */
 @org.infinispan.notifications.Listener
 public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, GroupListener, AutoCloseable {
@@ -160,7 +157,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         return new SimpleServiceProviderRegistration<>(service, this, () -> {
             Address localAddress = this.group.getAddress(this.group.getLocalMember());
             try (Batch batch = this.batcher.createBatch()) {
-                this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).compute(service, this.properties.isTransactional() ? new CopyOnWriteSetRemoveFunction<>(localAddress) : new ConcurrentSetRemoveFunction<>(localAddress));
+                this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).compute(service, this.properties.isTransactional() ? new CopyOnWriteAddressSetRemoveFunction(localAddress) : new ConcurrentAddressSetRemoveFunction(localAddress));
             } finally {
                 Map.Entry<Listener, ExecutorService> oldEntry = this.listeners.remove(service);
                 if (oldEntry != null) {
@@ -180,7 +177,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     }
 
     void register(Address address, T service) {
-        this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).compute(service, this.properties.isTransactional() ? new CopyOnWriteSetAddFunction<>(address) : new ConcurrentSetAddFunction<>(address));
+        this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).compute(service, this.properties.isTransactional() ? new CopyOnWriteAddressSetAddFunction(address) : new ConcurrentAddressSetAddFunction(address));
     }
 
     @Override

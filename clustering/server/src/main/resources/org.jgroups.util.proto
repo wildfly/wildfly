@@ -6,5 +6,6 @@ package org.jgroups.util;
  * @TypeId(136)
  */
 message UUID {
-	required	bytes	address	= 1;
+	optional	sfixed64	mostSignificantBits	= 1;
+	optional	sfixed64	leastSignificantBits	= 2;
 }
