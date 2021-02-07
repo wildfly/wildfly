@@ -29,6 +29,7 @@ import org.infinispan.protostream.impl.WireFormat;
 /**
  * Marshaller for a typed enumeration.
  * @author Paul Ferraro
+ * @param <E> the enum type of this marshaller
  */
 public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E> {
 

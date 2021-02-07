@@ -32,6 +32,7 @@ import org.wildfly.common.function.Functions;
 /**
  * ProtoStream marshaller for fixed values.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller
  */
 public class ValueMarshaller<T> implements ProtoStreamMarshaller<T> {
 

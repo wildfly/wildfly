@@ -33,7 +33,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
- * {@link ScalarProtoStreamWriter} implementation that does not write to any stream, but instead computes the number of bytes that would be written to a stream.
+ * {@link ProtoStreamWriter} implementation that does not write to any stream, but instead computes the number of bytes that would be written to a stream.
  * @author Paul Ferraro
  */
 public class SizeComputingProtoStreamWriter implements ProtoStreamWriter, Supplier<OptionalInt> {

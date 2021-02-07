@@ -30,6 +30,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 /**
  * A field marshaller based on a scaler marshaller.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller
  */
 public class ScalarFieldMarshaller<T> implements FieldMarshaller<T> {
 

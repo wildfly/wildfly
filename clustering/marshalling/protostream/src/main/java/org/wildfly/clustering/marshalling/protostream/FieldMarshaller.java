@@ -22,14 +22,12 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-
 /**
  * Marshaller for a field.
- * {@link #writeTo(ImmutableSerializationContext, org.infinispan.protostream.RawProtoStreamWriter, Object)} does not write a field tag, but may write additional tagged fields.
- * Likewise, {@link #readFrom(ImmutableSerializationContext, RawProtoStreamReader)} will continue to read fields until a zero tag is reached.
+ * {@link #writeTo(ProtoStreamWriter, Object)} does not write a field tag, but may write additional tagged fields.
+ * Likewise, {@link #readFrom(ProtoStreamReader)} will continue to read fields until a zero tag is reached.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller
  */
 public interface FieldMarshaller<T> extends Marshallable<T> {
 

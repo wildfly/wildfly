@@ -33,6 +33,7 @@ import org.infinispan.protostream.impl.WireFormat;
 /**
  * Generic marshaller for a Throwable.
  * @author Paul Ferraro
+ * @param <E> the target type of this marshaller
  */
 public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMarshaller<E> {
 

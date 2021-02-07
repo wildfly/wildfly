@@ -31,6 +31,7 @@ import org.infinispan.protostream.impl.WireFormat;
  * Marshaller for packed repeated fields, e.g. primitive arrays.
  * See https://developers.google.com/protocol-buffers/docs/encoding?hl=id#packed
  * @author Paul Ferraro
+ * @param <T> the component type of this marshaller
  */
 public class PackedArrayMarshaller<T> implements ScalarMarshaller<Object> {
 

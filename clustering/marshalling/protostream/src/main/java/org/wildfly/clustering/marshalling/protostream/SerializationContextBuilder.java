@@ -47,6 +47,7 @@ public class SerializationContextBuilder {
 
     /**
      * Constructs a builder for a {@link SerializationContext} using a default set of initializers.
+     * @param marshaller a class loader marshaller
      */
     public SerializationContextBuilder(ClassLoaderMarshaller marshaller) {
         // Load default schemas first, so they can be referenced by loader-specific schemas
@@ -56,6 +57,7 @@ public class SerializationContextBuilder {
 
     /**
      * Returns an immutable {@link SerializationContext}.
+     * @return the completed and immutable serialization context
      */
     public ImmutableSerializationContext build() {
         return this.context;
@@ -91,7 +93,7 @@ public class SerializationContextBuilder {
     }
 
     /**
-     * Loads {@link SerializationContextInitialzer} instances from the specified {@link ClassLoader} and registers then with the {@link SerializationContext}.
+     * Loads {@link SerializationContextInitializer} instances from the specified {@link ClassLoader} and registers then with the {@link SerializationContext}.
      * @param loader a class loader
      * @return this builder
      */
@@ -101,7 +103,7 @@ public class SerializationContextBuilder {
     }
 
     /**
-     * Similar to {@link #load(ClassLoader)}, but throws a {@link NoSuchElementException} if no {@link SerializationContextInitialzer} instances were found.
+     * Similar to {@link #load(ClassLoader)}, but throws a {@link NoSuchElementException} if no {@link SerializationContextInitializer} instances were found.
      * @param loader a class loader
      * @return this builder
      */

@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 /**
  * A field of a marshaller.
  * @author Paul Ferraro
+ * @param <T> the type of the associated marshaller
  */
 public interface Field<T> {
     /**

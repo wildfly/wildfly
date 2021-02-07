@@ -29,6 +29,7 @@ import org.infinispan.protostream.impl.WireFormat;
 /**
  * ProtoStream marshaller for enums.
  * @author Paul Ferraro
+ * @param <E> the enum type of this marshaller
  */
 public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protostream.EnumMarshaller<E>, ProtoStreamMarshaller<E> {
     private static final int ORDINAL_INDEX = 1;

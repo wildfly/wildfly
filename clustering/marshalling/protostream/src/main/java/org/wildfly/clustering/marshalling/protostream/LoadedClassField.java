@@ -29,7 +29,7 @@ import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A class field that marshals instances of {@link Class} using a {@link ClassResolver}.
+ * A class field that marshals instances of {@link Class} using a {@link ClassLoaderMarshaller}.
  * @author Paul Ferraro
  */
 public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<?>> {

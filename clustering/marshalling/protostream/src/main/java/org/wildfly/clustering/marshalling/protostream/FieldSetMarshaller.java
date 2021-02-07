@@ -50,7 +50,6 @@ public interface FieldSetMarshaller<T, B> {
 
     /**
      * Reads a single field from the specified reader at the specified index.
-     * @param context the serialization context
      * @param reader a ProtoStream reader
      * @param index the field index
      * @param builder the builder to be populated with the read field
@@ -61,7 +60,6 @@ public interface FieldSetMarshaller<T, B> {
 
     /**
      * Writes the set of fields from the specified object to the specified writer beginning at the specified index.
-     * @param context the serialization context
      * @param writer a ProtoStream writer
      * @param startIndex the start index for the embedded fields
      * @param value the value to be written
@@ -72,6 +70,8 @@ public interface FieldSetMarshaller<T, B> {
     /**
      * Predicts the payload size of the fields that would be written via the {@link #writeFields(ProtoStreamWriter, int, Object)} method.
      * @param context a serialization context
+     * @param startIndex the start index for the embedded fields
+     * @param value the value whose size is to be determined
      * @param the object to be written
      * @return the computed size of the fields, or empty if the size could not be determined.
      */

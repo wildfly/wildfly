@@ -30,7 +30,9 @@ import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.RawProtobufMarshaller;
 
 /**
+ * A {@link RawProtobufMarshaller} that include a facility for computing buffer sizes.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller.
  */
 public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Marshallable<T> {
 
