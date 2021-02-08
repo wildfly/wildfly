@@ -395,7 +395,7 @@
         <version.org.jboss.genericjms>2.0.9.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.2.12.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>1.4.25.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.4.27.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
