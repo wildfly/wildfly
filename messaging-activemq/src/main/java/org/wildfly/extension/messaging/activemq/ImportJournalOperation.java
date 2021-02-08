@@ -139,7 +139,7 @@ public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
         ModelNode model = connectorResource.getModel();
 
         Map<String, Object> params = new HashMap<>(CommonAttributes.PARAMS.unwrap(context, model));
-        params.put(InVMTransportDefinition.SERVER_ID.getName(), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, model).asInt());
+        params.put(org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, model).asInt());
         TransportConfiguration transportConfiguration = new TransportConfiguration(InVMConnectorFactory.class.getName(), params);
         return transportConfiguration;
     }
