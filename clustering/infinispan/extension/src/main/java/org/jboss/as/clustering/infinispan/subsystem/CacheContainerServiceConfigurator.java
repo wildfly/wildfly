@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.ALIASES;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute.ALIASES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONTAINER;
 
 import java.util.Collections;
@@ -55,7 +55,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -82,7 +81,6 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     private final PathAddress address;
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
-    private final SupplierDependency<Module> module;
 
     private volatile Registrar<String> registrar;
     private volatile ServiceName[] names;
@@ -92,7 +90,6 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         this.address = address;
         this.name = address.getLastElement().getValue();
         this.configuration = new ServiceSupplierDependency<>(CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(address));
-        this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
         this.registry = registry;
     }
 
@@ -151,7 +148,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
-        Consumer<CacheContainer> container = new CompositeDependency(this.configuration, this.module).register(builder).provides(this.names);
+        Consumer<CacheContainer> container = new CompositeDependency(this.configuration).register(builder).provides(this.names);
         Service service = new FunctionalService<>(container, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }

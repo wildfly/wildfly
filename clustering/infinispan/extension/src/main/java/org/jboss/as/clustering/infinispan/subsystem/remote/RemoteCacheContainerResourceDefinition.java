@@ -29,16 +29,20 @@ import org.infinispan.client.hotrod.ProtocolVersion;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ListAttributeTranslation;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
+import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
+import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
@@ -49,6 +53,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.AttributeConverter;
@@ -102,12 +107,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         },
         KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, new ModelNode(64)),
         MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
-        MODULE("module", ModelType.STRING, new ModelNode("org.jboss.as.clustering.infinispan")) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
-            }
-        },
         PROPERTIES("properties"),
         PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_30.toString())) {
             @Override
@@ -151,6 +150,65 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         }
     }
 
+    public enum ListAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<StringListAttributeDefinition.Builder> {
+        MODULES("modules") {
+            @Override
+            public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
+                return builder.setElementValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
+            }
+        },
+        ;
+        private final AttributeDefinition definition;
+
+        ListAttribute(String name) {
+            this.definition = this.apply(new StringListAttributeDefinition.Builder(name)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
+            return builder;
+        }
+    }
+
+    public enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        MODULE("module", ModelType.STRING, InfinispanModel.VERSION_14_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setFlags(AttributeAccess.Flag.ALIAS);
+            }
+        },
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            ).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
+        }
+    }
+
     @SuppressWarnings("deprecation")
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
@@ -158,6 +216,13 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
+            if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder()
+                        .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
+                        .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
+                        .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
+                        .end();
+            }
             if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version) || (InfinispanModel.VERSION_11_1_0.requiresTransformation(version) && !InfinispanModel.VERSION_12_0_0.requiresTransformation(version))) {
                 builder.getAttributeBuilder()
                         .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROPERTIES.getDefinition())
@@ -200,6 +265,9 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
+                .addAttributes(ListAttribute.class)
+                .addIgnoredAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MODULE)))
+                .addAttributeTranslation(DeprecatedAttribute.MODULE, new ListAttributeTranslation(ListAttribute.MODULES))
                 .addCapabilities(Capability.class)
                 .addRequiredChildren(ConnectionPoolResourceDefinition.PATH, ThreadPoolResourceDefinition.CLIENT.getPathElement(), SecurityResourceDefinition.PATH, RemoteTransactionResourceDefinition.PATH)
                 .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)

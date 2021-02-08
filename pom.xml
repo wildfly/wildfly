@@ -285,7 +285,7 @@
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
         <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
-        <version.com.sun.faces>2.3.14.SP02</version.com.sun.faces>
+        <version.com.sun.faces>2.3.14.SP04</version.com.sun.faces>
         <version.com.sun.istack>3.0.10</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
@@ -397,7 +397,7 @@
         <version.org.jboss.genericjms>2.0.9.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.2.12.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>1.4.25.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.4.27.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
@@ -460,7 +460,7 @@
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.core>14.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
-        <version.org.wildfly.http-client>1.1.4.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>1.1.5.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>1.1.13.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.26</version.org.yaml.snakeyaml>

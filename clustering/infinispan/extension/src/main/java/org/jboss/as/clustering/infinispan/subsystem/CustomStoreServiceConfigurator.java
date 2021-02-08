@@ -50,7 +50,7 @@ public class CustomStoreServiceConfigurator extends StoreServiceConfigurator<Cus
 
     CustomStoreServiceConfigurator(PathAddress address) {
         super(address, CustomStoreConfigurationBuilder.class);
-        this.module = new ServiceSupplierDependency<>(CacheComponent.MODULE.getServiceName(address.getParent()));
+        this.module = new ServiceSupplierDependency<>(CacheComponent.MODULES.getServiceName(address.getParent()));
     }
 
     @Override

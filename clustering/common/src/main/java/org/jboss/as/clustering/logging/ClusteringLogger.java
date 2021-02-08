@@ -59,4 +59,7 @@ public interface ClusteringLogger extends BasicLogger {
 
     @Message(id = 4, value = "The following attributes do not support zero values: %s")
     String attributesDoNotSupportZeroValues(Set<String> attributes);
+
+    @Message(id = 5, value = "Legacy host does not support multiple values for attributes: %s")
+    String rejectedMultipleValues(Set<String> attributes);
 }

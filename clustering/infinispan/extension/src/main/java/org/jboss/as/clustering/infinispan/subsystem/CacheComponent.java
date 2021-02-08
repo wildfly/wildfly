@@ -35,7 +35,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public enum CacheComponent implements ResourceServiceNameFactory {
 
-    MODULE("module"),
+    MODULES("modules"),
     EXPIRATION(ExpirationResourceDefinition.PATH),
     LOCKING(LockingResourceDefinition.PATH),
     MEMORY(MemoryResourceDefinition.WILDCARD_PATH),

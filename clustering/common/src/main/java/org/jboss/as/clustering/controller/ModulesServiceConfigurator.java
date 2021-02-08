@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,24 +22,26 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Collections;
 import java.util.List;
 
+import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Configures a service providing a {@link Module}.
  * @author Paul Ferraro
  */
-public class ModuleServiceConfigurator extends AbstractModulesServiceConfigurator<Module> {
+public class ModulesServiceConfigurator extends AbstractModulesServiceConfigurator<List<Module>> {
 
-    public ModuleServiceConfigurator(ServiceName name, Attribute attribute) {
-        super(name, attribute, Collections::singletonList);
+    private final List<Module> defaultModules;
+
+    public ModulesServiceConfigurator(ServiceName name, Attribute attribute, List<Module> defaultModules) {
+        super(name, attribute, ModelNode::asListOrEmpty);
+        this.defaultModules = defaultModules;
     }
 
     @Override
-    public Module apply(List<Module> modules) {
-        return !modules.isEmpty() ? modules.get(0) : null;
+    public List<Module> apply(List<Module> modules) {
+        return modules.isEmpty() ? this.defaultModules : modules;
     }
 }

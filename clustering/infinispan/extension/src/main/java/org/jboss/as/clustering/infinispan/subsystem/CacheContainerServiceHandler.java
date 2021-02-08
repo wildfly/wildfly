@@ -25,8 +25,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CAPABILITIES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.MODULE;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute.MODULES;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -35,7 +36,7 @@ import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.ModuleServiceConfigurator;
+import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
@@ -45,8 +46,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
@@ -75,7 +78,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        new ModuleServiceConfigurator(CacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new ModulesServiceConfigurator(CacheContainerComponent.MODULES.getServiceName(address), MODULES, Collections.singletonList(Module.forClass(CacheContainer.class))).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         GlobalConfigurationServiceConfigurator configBuilder = new GlobalConfigurationServiceConfigurator(address);
         configBuilder.configure(context, model).build(target).install();
@@ -137,7 +140,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());
 
-        context.removeService(CacheContainerComponent.MODULE.getServiceName(address));
+        context.removeService(CacheContainerComponent.MODULES.getServiceName(address));
 
         for (Capability capability : EnumSet.allOf(CacheContainerResourceDefinition.Capability.class)) {
             context.removeService(capability.getServiceName(address));

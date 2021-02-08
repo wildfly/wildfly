@@ -31,6 +31,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ListAttributeTranslation;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
@@ -39,8 +40,11 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
+import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -129,19 +133,10 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             .build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ALIASES("aliases"),
         DEFAULT_CACHE("default-cache", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION), InfinispanCacheRequirement.CONFIGURATION, WILDCARD_PATH));
-            }
-        },
-        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode("org.jboss.as.clustering.infinispan"))
-                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
-                        ;
             }
         },
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {
@@ -161,11 +156,33 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                     ).build();
         }
 
-        Attribute(String name) {
-            this.definition = new StringListAttributeDefinition.Builder(name)
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
+        }
+    }
+
+    enum ListAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<StringListAttributeDefinition.Builder> {
+        ALIASES("aliases"),
+        MODULES("modules") {
+            @Override
+            public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
+                return builder.setElementValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
+            }
+        },
+        ;
+        private final AttributeDefinition definition;
+
+        ListAttribute(String name) {
+            this.definition = this.apply(new StringListAttributeDefinition.Builder(name)
                     .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
+                    ).build();
         }
 
         @Override
@@ -174,7 +191,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         }
 
         @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+        public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
             return builder;
         }
     }
@@ -205,6 +222,12 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         JNDI_NAME("jndi-name", ModelType.STRING, InfinispanModel.VERSION_6_0_0),
+        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, InfinispanModel.VERSION_14_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setFlags(AttributeAccess.Flag.ALIAS);
+            }
+        },
         START("start", ModelType.STRING, InfinispanModel.VERSION_3_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -246,12 +269,19 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             pool.buildTransformation(builder, version);
         }
 
+        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
+                    .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
+                    .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
+                    .end();
+        }
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             OperationTransformer addAliasTransformer = new OperationTransformer() {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     String attributeName = Operations.getAttributeName(operation);
-                    if (Attribute.ALIASES.getName().equals(attributeName)) {
+                    if (ListAttribute.ALIASES.getName().equals(attributeName)) {
                         ModelNode value = Operations.getAttributeValue(operation);
                         PathAddress address = Operations.getPathAddress(operation);
                         ModelNode transformedOperation = Util.createOperation(ALIAS_ADD, address);
@@ -267,7 +297,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     String attributeName = Operations.getAttributeName(operation);
-                    if (Attribute.ALIASES.getName().equals(attributeName)) {
+                    if (ListAttribute.ALIASES.getName().equals(attributeName)) {
                         ModelNode value = Operations.getAttributeValue(operation);
                         PathAddress address = Operations.getPathAddress(operation);
                         ModelNode transformedOperation = Util.createOperation(ALIAS_REMOVE, address);
@@ -302,8 +332,10 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
+                .addAttributes(ListAttribute.class)
                 .addIgnoredAttributes(ExecutorAttribute.class)
-                .addIgnoredAttributes(DeprecatedAttribute.class)
+                .addIgnoredAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MODULE)))
+                .addAttributeTranslation(DeprecatedAttribute.MODULE, new ListAttributeTranslation(ListAttribute.MODULES))
                 .addCapabilities(Capability.class)
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CAPABILITIES.values())
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CLUSTERING_CAPABILITIES.values())
@@ -322,7 +354,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             @Override
             public void execute(OperationContext context, ModelNode legacyOperation) {
                 String value = legacyOperation.get(ALIAS.getName()).asString();
-                ModelNode operation = Operations.createListAddOperation(context.getCurrentAddress(), Attribute.ALIASES, value);
+                ModelNode operation = Operations.createListAddOperation(context.getCurrentAddress(), ListAttribute.ALIASES, value);
                 context.addStep(operation, ListOperations.LIST_ADD_HANDLER, context.getCurrentStage());
             }
         };
@@ -333,7 +365,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             @Override
             public void execute(OperationContext context, ModelNode legacyOperation) throws OperationFailedException {
                 String value = legacyOperation.get(ALIAS.getName()).asString();
-                ModelNode operation = Operations.createListRemoveOperation(context.getCurrentAddress(), Attribute.ALIASES, value);
+                ModelNode operation = Operations.createListRemoveOperation(context.getCurrentAddress(), ListAttribute.ALIASES, value);
                 context.addStep(operation, ListOperations.LIST_REMOVE_HANDLER, context.getCurrentStage());
             }
         };

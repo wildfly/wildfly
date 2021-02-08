@@ -21,9 +21,7 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
-import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceName;
 
@@ -71,8 +69,8 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         //modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
         if (context.isBooting()) {
-            final String protocolBindings = getAttributeValue(operation, PROTOCOL_BINDINGS);
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String protocolBindings = Attributes.PROTOCOL_BINDINGS.resolveModelAttribute(context, model).asStringOrNull();
+            final PathAddress address = context.getCurrentAddress();
             final PathElement confElem = address.getElement(address.size() - 2);
             final String configType = confElem.getKey();
             final String configName = confElem.getValue();
@@ -97,10 +95,6 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
         } else {
             context.reloadRequired();
         }
-    }
-
-    private static String getAttributeValue(final ModelNode node, final String propertyName) {
-        return node.hasDefined(propertyName) ? node.get(propertyName).asString() : null;
     }
 
     @Override
