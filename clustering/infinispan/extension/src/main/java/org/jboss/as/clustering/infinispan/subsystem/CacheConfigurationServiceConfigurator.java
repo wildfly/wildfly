@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CONFIGURATION;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.infinispan.commons.CacheException;
@@ -67,7 +68,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
     private final SupplierDependency<LockingConfiguration> locking;
     private final SupplierDependency<PersistenceConfiguration> persistence;
     private final SupplierDependency<TransactionConfiguration> transaction;
-    private final SupplierDependency<Module> module;
+    private final SupplierDependency<List<Module>> modules;
 
     private volatile boolean statisticsEnabled;
 
@@ -78,15 +79,17 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
         this.locking = new ServiceSupplierDependency<>(CacheComponent.LOCKING.getServiceName(address));
         this.persistence = new ServiceSupplierDependency<>(CacheComponent.PERSISTENCE.getServiceName(address));
         this.transaction = new ServiceSupplierDependency<>(CacheComponent.TRANSACTION.getServiceName(address));
-        this.module = new ServiceSupplierDependency<>(CacheComponent.MODULE.getServiceName(address));
+        this.modules = new ServiceSupplierDependency<>(CacheComponent.MODULES.getServiceName(address));
 
         String containerName = address.getParent().getLastElement().getValue();
         String cacheName = address.getLastElement().getValue();
         this.configurator = new ConfigurationServiceConfigurator(this.getServiceName(), containerName, cacheName, this.andThen(builder -> {
             if (builder.memory().storage() == StorageType.HEAP) {
                 GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
-                for (Grouper<?> grouper : this.module.get().loadService(Grouper.class)) {
-                    groupsBuilder.addGrouper(grouper);
+                for (Module module : this.modules.get()) {
+                    for (Grouper<?> grouper : module.loadService(Grouper.class)) {
+                        groupsBuilder.addGrouper(grouper);
+                    }
                 }
             }
         })).require(this);
@@ -99,7 +102,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return new CompositeDependency(this.memory, this.expiration, this.locking, this.persistence, this.transaction, this.module).register(builder);
+        return new CompositeDependency(this.memory, this.expiration, this.locking, this.persistence, this.transaction, this.modules).register(builder);
     }
 
     @Override

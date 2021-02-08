@@ -25,7 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefinition.Attribute.DATA_SOURCE;
 import static org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefinition.Attribute.DIALECT;
 
-import java.util.ServiceLoader;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -54,7 +54,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcStringBasedStoreConfiguration, JdbcStringBasedStoreConfigurationBuilder> {
 
     private final SupplierDependency<TableManipulationConfiguration> table;
-    private volatile SupplierDependency<Module> module;
+    private volatile SupplierDependency<List<Module>> modules;
     private volatile SupplierDependency<DataSource> dataSource;
     private volatile DatabaseType dialect;
 
@@ -63,12 +63,12 @@ public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcS
         PathAddress cacheAddress = address.getParent();
         PathAddress containerAddress = cacheAddress.getParent();
         this.table = new ServiceSupplierDependency<>(CacheComponent.STRING_TABLE.getServiceName(cacheAddress));
-        this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(containerAddress));
+        this.modules = new ServiceSupplierDependency<>(CacheContainerComponent.MODULES.getServiceName(containerAddress));
     }
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return super.register(new CompositeDependency(this.table, this.module, this.dataSource).register(builder));
+        return super.register(new CompositeDependency(this.table, this.modules, this.dataSource).register(builder));
     }
 
     @Override
@@ -82,14 +82,23 @@ public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcS
     @Override
     public void accept(JdbcStringBasedStoreConfigurationBuilder builder) {
         builder.table().read(this.table.get());
-        for (TwoWayKey2StringMapper mapper : ServiceLoader.load(TwoWayKey2StringMapper.class, this.module.get().getClassLoader())) {
+        TwoWayKey2StringMapper mapper = this.findMapper();
+        if (mapper != null) {
             builder.key2StringMapper(mapper.getClass());
-            break;
         }
         builder.segmented(true)
                 .transactional(false)
                 .dialect(this.dialect)
                 .connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class)
                 .setDataSourceDependency(this.dataSource);
+    }
+
+    private TwoWayKey2StringMapper findMapper() {
+        for (Module module : this.modules.get()) {
+            for (TwoWayKey2StringMapper mapper : module.loadService(TwoWayKey2StringMapper.class)) {
+                return mapper;
+            }
+        }
+        return null;
     }
 }

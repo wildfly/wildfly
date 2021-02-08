@@ -4,7 +4,7 @@
 
         <feature spec="subsystem.infinispan.cache-container">
             <param name="cache-container" value="web"/>
-            <param name="module" value="org.wildfly.clustering.web.infinispan"/>
+            <param name="modules" value="[org.wildfly.clustering.web.infinispan]"/>
             <param name="default-cache" value="dist"/>
             <feature spec="subsystem.infinispan.cache-container.transport.jgroups">
                 <param name="transport" value="jgroups"/>

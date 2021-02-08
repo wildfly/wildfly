@@ -26,8 +26,10 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -37,6 +39,7 @@ import java.util.function.Supplier;
 import javax.management.MBeanServer;
 
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
@@ -76,7 +79,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<GlobalConfiguration> {
 
     private final SupplierDependency<ModuleLoader> loader;
-    private final SupplierDependency<Module> module;
+    private final SupplierDependency<List<Module>> modules;
     private final SupplierDependency<TransportConfiguration> transport;
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
     private final Map<ScheduledThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> scheduledPools = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
@@ -90,7 +93,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         super(CONFIGURATION, address);
         this.name = address.getLastElement().getValue();
         this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
-        this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
+        this.modules = new ServiceSupplierDependency<>(CacheContainerComponent.MODULES.getServiceName(address));
         this.transport = new ServiceSupplierDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address));
         for (ThreadPoolResourceDefinition pool : EnumSet.of(ThreadPoolResourceDefinition.LISTENER, ThreadPoolResourceDefinition.BLOCKING, ThreadPoolResourceDefinition.NON_BLOCKING)) {
             this.pools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
@@ -118,8 +121,12 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
 
         builder.transport().read(this.transport.get());
 
-        Module module = this.module.get();
-        ClassLoader loader = module.getClassLoader();
+        List<Module> modules = this.modules.get();
+        List<ClassLoader> loaders = new ArrayList<>(modules.size());
+        for (Module module : modules) {
+            loaders.add(module.getClassLoader());
+        }
+        ClassLoader loader = loaders.size() > 1 ? new AggregatedClassLoader(loaders) : loaders.get(0);
         Marshaller marshaller = this.createMarshaller(loader);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", this.name, marshaller.getClass().getName());
         builder.serialization().marshaller(marshaller);
@@ -142,7 +149,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         // * The 2LC stack already overrides the interceptor for distribution caches
         // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
         // See ISPN-12252 for details
-        if (!module.getName().equals("org.infinispan.hibernate-cache")) {
+        if (modules.stream().map(Module::getName).noneMatch("org.infinispan.hibernate-cache"::equals)) {
             // Disable triangle algorithm - we optimize for originator as primary owner
             builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
         }
@@ -155,7 +162,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.module, this.transport, this.server).register(builder).provides(this.getServiceName());
+        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.modules, this.transport, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency: this.pools.values()) {
             dependency.register(builder);
         }

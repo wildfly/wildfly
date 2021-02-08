@@ -19,14 +19,14 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:11.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:12.0">
     <!-- Don't specify statistics-enabled="false" here so that we test undefined values too -->
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" module="org.infinispan" statistics-enabled="false">
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan" statistics-enabled="false">
         <transport channel="maximal-channel" lock-timeout="120000"/>
-        <local-cache name="local" module="org.infinispan" statistics-enabled="false">
+        <local-cache name="local" modules="org.infinispan" statistics-enabled="false">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="20000"/>
@@ -113,7 +113,7 @@
                             default-remote-cluster="primary-site"
                             key-size-estimate="512"
                             max-retries="2"
-                            module="org.infinispan"
+                            modules="org.infinispan org.infinispan.commons"
                             name="my-remote-container"
                             protocol-version="2.5"
                             socket-timeout="1000"
