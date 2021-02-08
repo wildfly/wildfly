@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.dmr.Constants.CLASS;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceName;
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerServiceName;
@@ -70,14 +68,14 @@ final class HandlerAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         // modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
         if (context.isBooting()) {
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final PathAddress address = context.getCurrentAddress();
             final PathElement confElem = address.getElement(address.size() - 3);
             final String configType = confElem.getKey();
             final String configName = confElem.getValue();
             final String handlerChainType = address.getElement(address.size() - 2).getKey();
             final String handlerChainId = address.getElement(address.size() - 2).getValue();
             final String handlerName = address.getElement(address.size() - 1).getValue();
-            final String handlerClass = operation.require(CLASS).asString();
+            final String handlerClass = Attributes.CLASS.resolveModelAttribute(context, model).asString();
 
             final ServiceTarget target = context.getServiceTarget();
             final ServiceName configServiceName = getConfigServiceName(configType, configName);
