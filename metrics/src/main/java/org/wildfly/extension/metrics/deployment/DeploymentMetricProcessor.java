@@ -52,10 +52,12 @@ public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
-        rootResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
-        managementResourceRegistration = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
 
-        DeploymentMetricService.install(phaseContext.getServiceTarget(), phaseContext.getDeploymentUnit(), rootResource, managementResourceRegistration,
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        rootResource = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+        managementResourceRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+
+        DeploymentMetricService.install(phaseContext.getServiceTarget(), deploymentUnit, rootResource, managementResourceRegistration,
                 exposeAnySubsystem, exposedSubsystems, prefix);
     }
 

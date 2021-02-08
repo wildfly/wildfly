@@ -99,8 +99,7 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 MetricRegistration registration = new MetricRegistration(new MicroProfileVendorMetricRegistry());
 
                 metricCollector.collectResourceMetrics(rootResource, rootResourceRegistration, Function.identity(),
-                        exposeAnySubsystem, exposedSubsystems, prefix,
-                        registration);
+                        exposeAnySubsystem, exposedSubsystems, prefix, registration);
 
                 JmxRegistrar jmxRegistrar = new JmxRegistrar();
                 try {
