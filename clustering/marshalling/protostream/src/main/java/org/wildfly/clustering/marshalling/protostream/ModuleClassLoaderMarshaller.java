@@ -85,7 +85,7 @@ public class ModuleClassLoaderMarshaller implements ClassLoaderMarshaller {
     @Override
     public void writeFields(ProtoStreamWriter writer, int startIndex, ClassLoader loader) throws IOException {
         Module module = Module.forClassLoader(loader, false);
-        if (!this.defaultModule.equals(module)) {
+        if (module != null && !this.defaultModule.equals(module)) {
             writer.writeString(startIndex + MODULE_INDEX, module.getName());
         }
     }
