@@ -40,16 +40,16 @@ import protostream.com.google.protobuf.CodedOutputStream;
  * {@link ProtoStreamWriter} implementation that writes to a {@link CodedOutputStream}.
  * @author Paul Ferraro
  */
-public class SerializationContextProtoStreamWriter implements ProtoStreamWriter {
+public class DefaultProtoStreamWriter implements ProtoStreamWriter {
 
     private final ImmutableSerializationContext context;
     private final CodedOutputStream output;
 
-    public SerializationContextProtoStreamWriter(ImmutableSerializationContext context, RawProtoStreamWriter writer) {
+    public DefaultProtoStreamWriter(ImmutableSerializationContext context, RawProtoStreamWriter writer) {
         this(context, ((RawProtoStreamWriterImpl) writer).getDelegate());
     }
 
-    public SerializationContextProtoStreamWriter(ImmutableSerializationContext context, CodedOutputStream output) {
+    public DefaultProtoStreamWriter(ImmutableSerializationContext context, CodedOutputStream output) {
         this.context = context;
         this.output = output;
     }
