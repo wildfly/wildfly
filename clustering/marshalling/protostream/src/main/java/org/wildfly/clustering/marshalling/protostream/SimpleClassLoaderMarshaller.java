@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,16 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.protostream;
 
-import org.wildfly.clustering.marshalling.AbstractPrimitivesTestCase;
+import java.io.IOException;
 
 /**
  * @author Paul Ferraro
  */
-public class JBossMarshallingPrimitivesTestCase extends AbstractPrimitivesTestCase {
+public class SimpleClassLoaderMarshaller implements ClassLoaderMarshaller {
 
-    public JBossMarshallingPrimitivesTestCase() {
-        super(new JBossMarshallingTesterFactory());
+    private final ClassLoader loader;
+
+    public SimpleClassLoaderMarshaller(ClassLoader loader) {
+        this.loader = loader;
+    }
+
+    @Override
+    public ClassLoader getBuilder() {
+        return this.loader;
+    }
+
+    @Override
+    public int getFields() {
+        return 0;
+    }
+
+    @Override
+    public ClassLoader readField(ProtoStreamReader reader, int index, ClassLoader loader) throws IOException {
+        return loader;
+    }
+
+    @Override
+    public void writeFields(ProtoStreamWriter writer, int startIndex, ClassLoader value) throws IOException {
     }
 }

@@ -38,6 +38,7 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferInputStream;
  * This implementation intentionally does not conform to the binary layout prescribed by {@link ObjectInput}.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ProtoStreamObjectInput implements ObjectInput {
 
     private final ImmutableSerializationContext context;

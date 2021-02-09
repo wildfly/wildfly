@@ -33,11 +33,11 @@ import java.util.OptionalInt;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.protostream.AnyField;
-import org.wildfly.clustering.marshalling.protostream.ClassField;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
+import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * ProtoStream optimized marshaller for an EnumSet
@@ -48,9 +48,9 @@ public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     @SuppressWarnings("unchecked")
     @Override
     public EnumSet<E> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        Class<E> enumClass = (Class<E>) ClassField.ANY.readFrom(context, reader);
+        Class<E> enumClass = (Class<E>) ObjectMarshaller.INSTANCE.readFrom(context, reader);
         EnumSet<E> set = EnumSet.noneOf(enumClass);
-        BitSet values = BitSet.valueOf(AnyField.BYTE_ARRAY.cast(byte[].class).readFrom(context, reader));
+        BitSet values = BitSet.valueOf(reader.readByteArray());
         E[] enumValues = enumClass.getEnumConstants();
         for (int i = 0; i < enumValues.length; ++i) {
             if (values.get(i)) {
@@ -63,27 +63,29 @@ public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     @Override
     public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, EnumSet<E> set) throws IOException {
         Class<?> enumClass = this.findEnumClass(set);
-        ClassField.ANY.writeTo(context, writer, enumClass);
+        ObjectMarshaller.INSTANCE.writeTo(context, writer, enumClass);
         Object[] enumValues = enumClass.getEnumConstants();
         // Represent EnumSet as a BitSet
         BitSet values = new BitSet(enumValues.length);
         for (int i = 0; i < enumValues.length; ++i) {
             values.set(i, set.contains(enumValues[i]));
         }
-        AnyField.BYTE_ARRAY.writeTo(context, writer, values.toByteArray());
+        byte[] bytes = values.toByteArray();
+        writer.writeUInt32NoTag(bytes.length);
+        writer.writeRawBytes(bytes, 0, bytes.length);
     }
 
     @Override
     public OptionalInt size(ImmutableSerializationContext context, EnumSet<E> set) {
         Class<?> enumClass = this.findEnumClass(set);
-        OptionalInt size = ClassField.ANY.size(context, enumClass);
+        OptionalInt size = ObjectMarshaller.INSTANCE.size(context, enumClass);
         Object[] enumValues = enumClass.getEnumConstants();
         // Determine number of bytes in BitSet
         int bytes = enumValues.length / Byte.SIZE;
         if (enumValues.length % Byte.SIZE > 0) {
             bytes += 1;
         }
-        return size.isPresent() ? OptionalInt.of(size.getAsInt() + bytes + Predictable.unsignedIntSize(bytes)) : OptionalInt.empty();
+        return size.isPresent() ? OptionalInt.of(size.getAsInt() + bytes + CodedOutputStream.computeUInt32SizeNoTag(bytes)) : OptionalInt.empty();
     }
 
     @SuppressWarnings("unchecked")

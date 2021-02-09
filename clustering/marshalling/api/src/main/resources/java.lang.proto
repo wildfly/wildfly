@@ -7,4 +7,30 @@ package java.lang;
  */
 message Class {
 	required	string	name	= 1;
+	optional	string	module	= 2;
+}
+
+/**
+ * @TypeId(3)
+ */
+message StackTraceElement {
+	required	string	className	= 1;
+	required	string	methodName	= 2;
+	optional	string	fileName	= 3;
+	optional	uint32	lineNumber	= 4;
+// JDK9+ fields
+	optional	string	classLoaderName	= 5;
+	optional	string	moduleName	= 6;
+	optional	string	moduleVersion	= 7;
+}
+
+/**
+ * @TypeId(4)
+ */
+message Throwable {
+	optional	Class	exceptionClass	= 1;
+	optional	string	message	= 2;
+	optional	Throwable	cause	= 3;
+	repeated	StackTraceElement	stackTraceElement	= 4;
+	repeated	Throwable	suppressed	= 5;
 }

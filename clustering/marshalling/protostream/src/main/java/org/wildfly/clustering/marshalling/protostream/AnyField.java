@@ -25,361 +25,167 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
-import org.jboss.modules.Module;
+import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A set of fields used by {@link AnyMarshaller}.
  * @author Paul Ferraro
  */
-public enum AnyField implements MarshallerProvider, Field<Object> {
-    BOOLEAN(Boolean.class) {
+public enum AnyField implements Field<Object> {
+    ANY(Scalar.ANY), // For re-use by other fields
+    REFERENCE(new ScalarMarshaller<Integer>() {
         @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.BOOLEAN;
-        }
-    },
-    BYTE(Byte.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.BYTE;
-        }
-    },
-    SHORT(Short.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.SHORT;
-        }
-    },
-    INTEGER(Integer.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.INTEGER;
-        }
-    },
-    LONG(Long.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.LONG;
-        }
-    },
-    FLOAT(Float.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.FLOAT;
-        }
-    },
-    DOUBLE(Double.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.DOUBLE;
-        }
-    },
-    CHARACTER(Character.class) {
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return PrimitiveMarshaller.CHARACTER;
-        }
-    },
-    STRING(String.class) {
-        private final byte[] empty = new byte[0];
-
-        @Override
-        public String readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            byte[] bytes = BYTE_ARRAY.cast(byte[].class).readFrom(context, reader);
-            return (bytes.length > 0) ? new String(bytes, StandardCharsets.UTF_8) : null;
+        public Integer readFrom(ProtoStreamReader reader) throws IOException {
+            return Integer.valueOf(reader.readUInt32());
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            String string = (String) value;
-            BYTE_ARRAY.cast(byte[].class).writeTo(context, writer, (string != null) ? string.getBytes(StandardCharsets.UTF_8) : this.empty);
+        public void writeTo(ProtoStreamWriter writer, Integer value) throws IOException {
+            writer.writeUInt32NoTag(value.intValue());
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            String string = (String) value;
-            return (string != null) ? OptionalInt.of(Predictable.stringSize(string)) : BYTE_ARRAY.size(context, this.empty);
+        public Class<? extends Integer> getJavaClass() {
+            return Integer.class;
         }
-    },
-    BOOLEAN_ARRAY(boolean[].class) {
+
         @Override
-        public boolean[] readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            int size = reader.readUInt32();
-            // Calculate number of bytes in BitSet
-            int bytes = (size / Byte.SIZE) + ((size % Byte.SIZE) > 0 ? 1 : 0);
-            BitSet set = BitSet.valueOf(((RawProtoStreamReaderImpl) reader).getDelegate().readRawBytes(bytes));
-            boolean[] values = new boolean[size];
-            for (int i = 0; i < size; ++i) {
+        public int getWireType() {
+            return WireFormat.WIRETYPE_VARINT;
+        }
+    }),
+    BOOLEAN(Scalar.BOOLEAN),
+    BYTE(Scalar.BYTE),
+    SHORT(Scalar.SHORT),
+    INTEGER(Scalar.INTEGER),
+    LONG(Scalar.LONG),
+    FLOAT(Scalar.FLOAT),
+    DOUBLE(Scalar.DOUBLE),
+    CHARACTER(Scalar.CHARACTER),
+    STRING(Scalar.STRING),
+    IDENTIFIED_OBJECT(new TypedObjectMarshaller(ScalarClass.ID)),
+    IDENTIFIED_ENUM(new TypedEnumMarshaller<>(ScalarClass.ID)),
+    IDENTIFIED_ARRAY(new TypedArrayMarshaller(ScalarClass.ID)),
+    FIELD_ARRAY(new TypedArrayMarshaller(ScalarClass.FIELD)),
+    // Prioritize the fields above:  https://developers.google.com/protocol-buffers/docs/proto#assigning_field_numbers
+    NAMED_OBJECT(new TypedObjectMarshaller(ScalarClass.NAME)),
+    NAMED_ENUM(new TypedEnumMarshaller<>(ScalarClass.NAME)),
+    NAMED_ARRAY(new TypedArrayMarshaller(ScalarClass.NAME)),
+    BOOLEAN_ARRAY(new FieldMarshaller<boolean[]>() {
+        // Optimize using a BitSet, rather than a packed array of booleans
+        @Override
+        public boolean[] readFrom(ProtoStreamReader reader) throws IOException {
+            byte[] bytes = Scalar.BYTE_ARRAY.cast(byte[].class).readFrom(reader);
+            int length = bytes.length;
+            boolean reading = true;
+            while (reading) {
+                int tag = reader.readTag();
+                int index = WireFormat.getTagFieldNumber(tag);
+                if (index == INTEGER.getIndex()) {
+                    // Adjust length of boolean[]
+                    length = ((bytes.length - 1) * Byte.SIZE) + reader.readUInt32();
+                } else {
+                    reading = (tag != 0) && reader.skipField(tag);
+                }
+            }
+            BitSet set = BitSet.valueOf(bytes);
+            boolean[] values = new boolean[length];
+            for (int i = 0; i < length; ++i) {
                 values[i] = set.get(i);
             }
             return values;
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            boolean[] values = (boolean[]) value;
-            int size = values.length;
-            // N.B. Write the length of the array, which corresponds to the number of used bits.
-            writer.writeUInt32NoTag(size);
+        public void writeTo(ProtoStreamWriter writer, boolean[] values) throws IOException {
+            int length = values.length;
             // Pack boolean values into BitSet
-            BitSet set = new BitSet(size);
-            for (int i = 0; i < size; ++i) {
+            BitSet set = new BitSet(length);
+            for (int i = 0; i < length; ++i) {
                 set.set(i, values[i]);
             }
             byte[] bytes = set.toByteArray();
-            writer.writeRawBytes(bytes, 0, bytes.length);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            boolean[] values = (boolean[]) value;
-            int size = values.length;
-            // Calculate number of bytes in BitSet
-            int bytes = (size / Byte.SIZE) + ((size % Byte.SIZE) > 0 ? 1 : 0);
-            return OptionalInt.of(Predictable.unsignedIntSize(size) + bytes);
-        }
-    },
-    BYTE_ARRAY(byte[].class) {
-        @Override
-        public byte[] readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return reader.readByteArray();
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            byte[] bytes = (byte[]) value;
-            writer.writeUInt32NoTag(bytes.length);
-            writer.writeRawBytes(bytes, 0, bytes.length);
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            byte[] bytes = (byte[]) value;
-            return OptionalInt.of(Predictable.byteArraySize(bytes.length));
-        }
-    },
-    SHORT_ARRAY(short[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Short.TYPE), PrimitiveMarshaller.SHORT);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    INTEGER_ARRAY(int[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Integer.TYPE), PrimitiveMarshaller.INTEGER);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    LONG_ARRAY(long[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Long.TYPE), PrimitiveMarshaller.LONG);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    FLOAT_ARRAY(float[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Float.TYPE), PrimitiveMarshaller.FLOAT);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    DOUBLE_ARRAY(double[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Double.TYPE), PrimitiveMarshaller.DOUBLE);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    CHAR_ARRAY(char[].class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(new ValueMarshaller<>(Character.TYPE), PrimitiveMarshaller.CHARACTER);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    REFERENCE(Void.class) {
-        @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            return reader.readUInt32();
-        }
-
-        @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            Integer id = (Integer) value;
-            writer.writeUInt32NoTag(id.intValue());
-        }
-
-        @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            Integer id = (Integer) value;
-            return OptionalInt.of(Predictable.unsignedIntSize(id));
-        }
-    },
-    IDENTIFIED_OBJECT(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ID);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    IDENTIFIED_ENUM(Void.class) {
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ID);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    IDENTIFIED_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ID, ObjectMarshaller.INSTANCE);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    OBJECT(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedObjectMarshaller(ClassField.ANY);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    ENUM(Void.class) {
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        private final ProtoStreamMarshaller<Object> marshaller = new TypedEnumMarshaller(ClassField.ANY);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    FIELD_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.FIELD, ObjectMarshaller.INSTANCE);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ANY, ObjectMarshaller.INSTANCE);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    MULTI_DIMENSIONAL_ARRAY(Void.class) {
-        private final ProtoStreamMarshaller<Object> marshaller = new ArrayMarshaller(ClassField.ARRAY, ObjectMarshaller.INSTANCE);
-
-        @Override
-        public ProtoStreamMarshaller<?> getMarshaller() {
-            return this.marshaller;
-        }
-    },
-    PROXY(Void.class) {
-        @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            Module module = (Module) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-            ClassLoader loader = (module != null) ? module.getClassLoader() : WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            Class<?>[] interfaceClasses = new Class<?>[reader.readUInt32()];
-            for (int i = 0; i < interfaceClasses.length; ++i) {
-                interfaceClasses[i] = ClassField.ANY.readFrom(context, reader);
+            Scalar.BYTE_ARRAY.cast(byte[].class).writeTo(writer, bytes);
+            // boolean[] length might be shorter than the BitSet, if so, write the difference
+            int remainder = length % Byte.SIZE;
+            if (remainder > 0) {
+                writer.writeUInt32(INTEGER.getIndex(), remainder);
             }
-            InvocationHandler handler = (InvocationHandler) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-            return Proxy.newProxyInstance(loader, interfaceClasses, handler);
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, Module.forClass(value.getClass()));
-            Class<?>[] interfaceClasses = value.getClass().getInterfaces();
-            writer.writeUInt32NoTag(interfaceClasses.length);
-            for (Class<?> interfaceClass : interfaceClasses) {
-                ClassField.ANY.writeTo(context, writer, interfaceClass);
-            }
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, Proxy.getInvocationHandler(value));
+        public Class<? extends boolean[]> getJavaClass() {
+            return boolean[].class;
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            OptionalInt size = ObjectMarshaller.INSTANCE.size(context, Proxy.getInvocationHandler(value));
-            if (size.isPresent()) {
-                OptionalInt moduleSize = ObjectMarshaller.INSTANCE.size(context, Module.forClass(value.getClass()));
-                if (moduleSize.isPresent()) {
-                    Class<?>[] interfaceClasses = value.getClass().getInterfaces();
-                    size = OptionalInt.of(size.getAsInt() + moduleSize.getAsInt() + Predictable.unsignedIntSize(interfaceClasses.length));
-                    for (Class<?> interfaceClass : interfaceClasses) {
-                        OptionalInt interfaceSize = ClassField.ANY.size(context, interfaceClass);
-                        size = size.isPresent() && interfaceSize.isPresent() ? OptionalInt.of(size.getAsInt() + interfaceSize.getAsInt()) : OptionalInt.empty();
-                    }
+        public int getWireType() {
+            return Scalar.BYTE_ARRAY.getWireType();
+        }
+    }),
+    BYTE_ARRAY(Scalar.BYTE_ARRAY),
+    SHORT_ARRAY(new PackedArrayMarshaller<>(Short.TYPE, Scalar.SHORT.cast(Short.class))),
+    INTEGER_ARRAY(new PackedArrayMarshaller<>(Integer.TYPE, Scalar.INTEGER.cast(Integer.class))),
+    LONG_ARRAY(new PackedArrayMarshaller<>(Long.TYPE, Scalar.LONG.cast(Long.class))),
+    FLOAT_ARRAY(new PackedArrayMarshaller<>(Float.TYPE, Scalar.FLOAT.cast(Float.class))),
+    DOUBLE_ARRAY(new PackedArrayMarshaller<>(Double.TYPE, Scalar.DOUBLE.cast(Double.class))),
+    CHAR_ARRAY(new PackedArrayMarshaller<>(Character.TYPE, Scalar.CHARACTER.cast(Character.class))),
+    ANY_ARRAY(new TypedArrayMarshaller(ScalarClass.ANY)),
+    PROXY(new FieldMarshaller<Object>() {
+        @Override
+        public Object readFrom(ProtoStreamReader reader) throws IOException {
+            InvocationHandler handler = (InvocationHandler) Scalar.ANY.readFrom(reader);
+            List<Class<?>> interfaces = new LinkedList<>();
+            boolean reading = true;
+            while (reading) {
+                int tag = reader.readTag();
+                int index = WireFormat.getTagFieldNumber(tag);
+                if (index == ANY.getIndex()) {
+                    interfaces.add(ScalarClass.ANY.readFrom(reader));
+                } else {
+                    reading = (tag != 0) && reader.skipField(tag);
                 }
             }
-            return size;
-        }
-    },
-    THROWABLE(Throwable.class) {
-        @Override
-        public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-            Class<?> targetClass = ClassField.ANY.readFrom(context, reader);
-
-            return new ExceptionMarshaller<>(targetClass.asSubclass(Throwable.class)).readFrom(context, reader);
+            return Proxy.newProxyInstance(WildFlySecurityManager.getClassLoaderPrivileged(handler.getClass()), interfaces.toArray(new Class<?>[0]), handler);
         }
 
         @Override
-        public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-            Throwable exception = (Throwable) value;
-            @SuppressWarnings("unchecked")
-            Class<Throwable> exceptionClass = (Class<Throwable>) exception.getClass();
-            ClassField.ANY.writeTo(context, writer, exceptionClass);
+        public void writeTo(ProtoStreamWriter writer, Object proxy) throws IOException {
+            Scalar.ANY.writeTo(writer, Proxy.getInvocationHandler(proxy));
 
-            new ExceptionMarshaller<>(exceptionClass).writeTo(context, writer, exception);
+            for (Class<?> interfaceClass : proxy.getClass().getInterfaces()) {
+                writer.writeTag(ANY.getIndex(), ScalarClass.ANY.getWireType());
+                ScalarClass.ANY.writeTo(writer, interfaceClass);
+            }
         }
 
         @Override
-        public OptionalInt size(ImmutableSerializationContext context, Object value) {
-            Throwable exception = (Throwable) value;
-            @SuppressWarnings("unchecked")
-            Class<Throwable> exceptionClass = (Class<Throwable>) exception.getClass();
-            OptionalInt classSize = ClassField.ANY.size(context, exceptionClass);
-            OptionalInt exceptionSize = new ExceptionMarshaller<>(exceptionClass).size(context, exception);
-            return classSize.isPresent() && exceptionSize.isPresent() ? OptionalInt.of(classSize.getAsInt() + exceptionSize.getAsInt()) : OptionalInt.empty();
+        public Class<? extends Object> getJavaClass() {
+            return Object.class;
         }
-    },
+
+        @Override
+        public int getWireType() {
+            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        }
+    }),
     ;
-    private final Class<?> targetClass;
+    private final FieldMarshaller<Object> marshaller;
 
-    AnyField(Class<?> targetClass) {
-        this.targetClass = targetClass;
+    AnyField(ScalarMarshaller<?> marshaller) {
+        this(new ScalarFieldMarshaller<>(marshaller));
     }
 
-    @Override
-    public Class<? extends Object> getJavaClass() {
-        return this.targetClass;
+    @SuppressWarnings("unchecked")
+    AnyField(FieldMarshaller<?> marshaller) {
+        this.marshaller = (FieldMarshaller<Object>) marshaller;
     }
 
     @Override
@@ -388,8 +194,8 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
     }
 
     @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this;
+    public FieldMarshaller<Object> getMarshaller() {
+        return this.marshaller;
     }
 
     private static final AnyField[] VALUES = AnyField.values();
@@ -401,8 +207,9 @@ public enum AnyField implements MarshallerProvider, Field<Object> {
     private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();
     static {
         for (AnyField field : VALUES) {
-            if (field.targetClass != Void.class) {
-                FIELDS.put(field.targetClass, field);
+            Class<?> fieldClass = field.getMarshaller().getJavaClass();
+            if ((fieldClass != Object.class) && (fieldClass != Enum.class) && fieldClass != Class.class) {
+                FIELDS.put(fieldClass, field);
             }
         }
     }

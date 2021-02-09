@@ -23,55 +23,54 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
-import org.infinispan.protostream.impl.WireFormat;
 
 /**
+ * Provides a {@link ProtoStreamMarshaller}.
  * @author Paul Ferraro
  */
-public class FieldProtoStreamMarshaller<T> implements ProtoStreamMarshaller<T> {
+public interface ProtoStreamMarshallerProvider extends ProtoStreamMarshaller<Object> {
+    ProtoStreamMarshaller<?> getMarshaller();
 
-    private final Field<T> field;
-
-    public FieldProtoStreamMarshaller(Field<T> field) {
-        this.field = field;
+    @Override
+    default Object readFrom(ProtoStreamReader reader) throws IOException {
+        return this.getMarshaller().readFrom(reader);
     }
 
     @Override
-    public String getTypeName() {
-        return this.field.getTypeName();
+    default void writeTo(ProtoStreamWriter writer, Object value) throws IOException {
+        this.cast(Object.class).writeTo(writer, value);
     }
 
     @Override
-    public Class<? extends T> getJavaClass() {
-        return this.field.getJavaClass();
+    default Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        return this.getMarshaller().readFrom(context, reader);
     }
 
     @Override
-    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        if (WireFormat.getTagFieldNumber(reader.readTag()) != this.field.getIndex()) {
-            throw new StreamCorruptedException();
+    default void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object object) throws IOException {
+        this.cast(Object.class).writeTo(context, writer, object);
+    }
+
+    @Override
+    default OptionalInt size(ImmutableSerializationContext context, Object value) {
+        return this.cast(Object.class).size(context, value);
+    }
+
+    @Override
+    default Class<? extends Object> getJavaClass() {
+        return this.getMarshaller().getJavaClass();
+    }
+
+    @SuppressWarnings("unchecked")
+    default <T> ProtoStreamMarshaller<T> cast(Class<T> type) {
+        if (!type.isAssignableFrom(this.getJavaClass())) {
+            throw new IllegalArgumentException(type.getName());
         }
-        T result = this.field.readFrom(context, reader);
-        if (reader.readTag() != 0) {
-            throw new StreamCorruptedException();
-        }
-        return result;
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T object) throws IOException {
-        this.field.writeTo(context, writer, object);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T value) {
-        OptionalInt size = this.field.size(context, value);
-        return size.isPresent() ? OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(this.field.getIndex() << 3 | WireFormat.WIRETYPE_VARINT)) : OptionalInt.empty();
+        return (ProtoStreamMarshaller<T>) this.getMarshaller();
     }
 }

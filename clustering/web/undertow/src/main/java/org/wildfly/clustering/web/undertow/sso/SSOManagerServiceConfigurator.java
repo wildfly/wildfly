@@ -35,7 +35,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
@@ -86,7 +86,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     @Override
     public SSOManager<A, D, S, L, Batch> get() {
         SSOManagerFactory<A, D, S, Batch> factory = this.factory.get();
-        this.marshaller = new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassResolver(this.loader.get())).load(WildFlySecurityManager.getClassLoaderPrivileged(this.getClass())).build());
+        this.marshaller = new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassLoaderMarshaller(this.loader.get())).load(WildFlySecurityManager.getClassLoaderPrivileged(this.getClass())).build());
         SSOManager<A, D, S, L, Batch> manager = factory.createSSOManager(this);
         manager.start();
         return manager;

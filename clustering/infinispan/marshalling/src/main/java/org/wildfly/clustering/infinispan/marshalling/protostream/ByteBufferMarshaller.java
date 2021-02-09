@@ -23,15 +23,12 @@
 package org.wildfly.clustering.infinispan.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.StreamCorruptedException;
-import java.util.OptionalInt;
 
 import org.infinispan.commons.io.ByteBufferImpl;
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
+import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * Marshaller for an Infinispan ByteBuffer.
@@ -40,24 +37,31 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 public enum ByteBufferMarshaller implements ProtoStreamMarshaller<ByteBufferImpl> {
     INSTANCE;
 
+    private static final int BUFFER_INDEX = 1;
+
     @Override
-    public ByteBufferImpl readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        byte[] bytes = reader.readByteArray();
-        if (reader.readTag() != 0) {
-            throw new StreamCorruptedException();
+    public ByteBufferImpl readFrom(ProtoStreamReader reader) throws IOException {
+        ByteBufferImpl buffer = ByteBufferImpl.EMPTY_INSTANCE;
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            switch (WireFormat.getTagFieldNumber(tag)) {
+                case BUFFER_INDEX:
+                    buffer = ByteBufferImpl.create(reader.readByteArray());
+                    break;
+                default:
+                    reading = (tag != 0) && reader.skipField(tag);
+            }
         }
-        return ByteBufferImpl.create(bytes);
+        return buffer;
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, ByteBufferImpl buffer) throws IOException {
-        writer.writeUInt32NoTag(buffer.getLength());
-        writer.writeRawBytes(buffer.getBuf(), buffer.getOffset(), buffer.getLength());
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, ByteBufferImpl buffer) {
-        return OptionalInt.of(Predictable.byteArraySize(buffer.getLength()));
+    public void writeTo(ProtoStreamWriter writer, ByteBufferImpl buffer) throws IOException {
+        int length = buffer.getLength();
+        if (length > 0) {
+            writer.writeBytes(BUFFER_INDEX, buffer.getBuf(), buffer.getOffset(), length);
+        }
     }
 
     @Override

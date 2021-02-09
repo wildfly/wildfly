@@ -41,7 +41,7 @@ import org.jgroups.JChannel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
@@ -111,7 +111,7 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
 
     @Override
     public ByteBufferMarshaller getMarshaller() {
-        return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassResolver(this.getModuleLoader())).load(this.module.get().getClassLoader()).build());
+        return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassLoaderMarshaller(this.getModuleLoader())).load(this.module.get().getClassLoader()).build());
     }
 
     @Override
