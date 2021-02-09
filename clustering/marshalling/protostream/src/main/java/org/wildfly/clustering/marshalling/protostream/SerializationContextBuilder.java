@@ -52,7 +52,7 @@ public class SerializationContextBuilder {
     public SerializationContextBuilder(ClassLoaderMarshaller marshaller) {
         // Load default schemas first, so they can be referenced by loader-specific schemas
         this.register(Collections.singleton(new LangSerializationContextInitializer(marshaller)));
-        this.register(EnumSet.allOf(DefaultSerializationContextInitializer.class));
+        this.register(EnumSet.allOf(DefaultSerializationContextInitializerProvider.class));
     }
 
     /**

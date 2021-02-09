@@ -24,7 +24,6 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.util.EnumSet;
 
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.util.UtilMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.util.concurrent.ConcurrentMarshallerProvider;
@@ -36,7 +35,7 @@ import org.wildfly.clustering.marshalling.protostream.time.TimeMarshallerProvide
 /**
  * @author Paul Ferraro
  */
-public enum DefaultSerializationContextInitializer implements SerializationContextInitializer {
+public enum DefaultSerializationContextInitializerProvider implements SerializationContextInitializerProvider {
     ANY(new AnySerializationContextInitializer()),
     NET(new ProviderSerializationContextInitializer<>("java.net.proto", EnumSet.of(NetMarshallerProvider.INET_ADDRESS))),
     SQL(new ProviderSerializationContextInitializer<>("java.sql.proto", SQLMarshallerProvider.class)),
@@ -48,29 +47,12 @@ public enum DefaultSerializationContextInitializer implements SerializationConte
     ;
     private final SerializationContextInitializer initializer;
 
-    DefaultSerializationContextInitializer(SerializationContextInitializer initializer) {
+    DefaultSerializationContextInitializerProvider(SerializationContextInitializer initializer) {
         this.initializer = initializer;
     }
 
-    @Deprecated
     @Override
-    public String getProtoFileName() {
-        return this.initializer.getProtoFileName();
-    }
-
-    @Deprecated
-    @Override
-    public String getProtoFile() {
-        return this.initializer.getProtoFile();
-    }
-
-    @Override
-    public void registerSchema(SerializationContext context) {
-        this.initializer.registerSchema(context);
-    }
-
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        this.initializer.registerMarshallers(context);
+    public SerializationContextInitializer getInitializer() {
+        return this.initializer;
     }
 }
