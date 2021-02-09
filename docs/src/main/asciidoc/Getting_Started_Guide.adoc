@@ -90,7 +90,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-67: Java APIs for XML Messaging 1.3 |X |-- |X |--
 
-|JSR-93: Java API for XML Registries |Optional |-- |-- |--
+|Jakarta XML Registries |Optional |-- |-- |--
 
 |JSR-222: Java Architecture for XML Binding (JAXB) 2.3 |X |X |X |X
 
