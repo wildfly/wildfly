@@ -896,6 +896,7 @@
                                 <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
                                 <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                 <!-- no ejb -->
+                                <exclude>org/jboss/as/test/integration/deployment/dependencies/EjbDependencyRestartTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/xacml/EjbXACMLAuthorizationModuleTestCase.java</exclude>

@@ -119,7 +119,8 @@ public class WeldStartService implements Service {
     public void stop(final StopContext context) {
         final WeldBootstrapService bootstrapService = bootstrapSupplier.get();
         if (!bootstrapService.isStarted()) {
-            throw WeldLogger.ROOT_LOGGER.notStarted("WeldContainer");
+            //this happens when the 'runOnce' code in start has been triggered
+            return;
         }
         WeldLogger.DEPLOYMENT_LOGGER.stoppingWeldService(bootstrapService.getDeploymentName());
         ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -131,7 +132,7 @@ public class WeldStartService implements Service {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
             ModuleGroupSingletonProvider.removeClassLoader(bootstrapService.getDeployment().getModule().getClassLoader());
         }
-        bootstrapService.setStarted(false);
+        bootstrapService.startServiceShutdown();
     }
 
 }
