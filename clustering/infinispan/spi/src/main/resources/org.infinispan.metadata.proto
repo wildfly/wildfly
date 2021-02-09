@@ -6,36 +6,36 @@ package org.infinispan.metadata;
  * @TypeId(410)
  */
 message EmbeddedMetadata {
-   optional uint64 numericVersion = 1;
-   optional uint32 clusteredVersion = 2;
+	optional	uint64	version	= 1;
+	optional	uint32	topologyId	= 2;
 }
 
 /**
  * @TypeId(411)
  */
 message EmbeddedExpirableMetadata {
-   optional uint64 numericVersion = 1;
-   optional uint64 clusteredVersion = 2;
-   optional uint64 lifespan = 3;
-   optional uint64 maxIdle = 4;
+	optional	uint64	version	= 1;
+	optional	uint32	topologyId	= 2;
+	optional	uint64	lifespan	= 3;
+	optional	uint64	maxIdle	= 4;
 }
 
 /**
  * @TypeId(412)
  */
 message EmbeddedLifespanExpirableMetadata {
-   optional uint64 numericVersion = 1;
-   optional uint64 clusteredVersion = 2;
-   optional uint64 lifespan = 3;
-   optional uint64 maxIdle = 4;
+	optional	uint64	version	= 1;
+	optional	uint32	topologyId	= 2;
+	optional	uint64	lifespan	= 3;
+	optional	uint64	maxIdle	= 4;
 }
 
 /**
  * @TypeId(413)
  */
 message EmbeddedMaxIdleExpirableMetadata {
-   optional uint64 numericVersion = 1;
-   optional uint64 clusteredVersion = 2;
-   optional uint64 lifespan = 3;
-   optional uint64 maxIdle = 4;
+	optional	uint64	version	= 1;
+	optional	uint32	topologyId	= 2;
+	optional	uint64	lifespan	= 3;
+	optional	uint64	maxIdle	= 4;
 }
