@@ -23,7 +23,6 @@
 package org.wildfly.clustering.infinispan.spi.metadata;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 
 import org.infinispan.container.versioning.NumericVersion;
 import org.infinispan.container.versioning.SimpleClusteredVersion;
@@ -32,7 +31,6 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
 import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 
 /**
@@ -97,24 +95,6 @@ public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements 
         if (metadata.maxIdle() != -1) {
             writer.writeUInt64(4, metadata.maxIdle());
         }
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, EmbeddedMetadata metadata) {
-        int size = 0;
-        if (metadata.getClusteredVersion() != null) {
-            size += Predictable.signedLongSize(metadata.getClusteredVersion().getVersion()) + 1;
-            size += Predictable.signedIntSize(metadata.getClusteredVersion().getTopologyId()) + 1;
-        } else if (metadata.getNumericVersion() != null) {
-            size += Predictable.signedLongSize(metadata.getNumericVersion().getVersion()) + 1;
-        }
-        if (metadata.lifespan() != -1) {
-            size += Predictable.signedLongSize(metadata.lifespan()) + 1;
-        }
-        if (metadata.maxIdle() != -1) {
-            size += Predictable.signedLongSize(metadata.maxIdle()) + 1;
-        }
-        return OptionalInt.of(size);
     }
 
     @Override

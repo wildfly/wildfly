@@ -22,15 +22,17 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.util.OptionalInt;
+import java.io.IOException;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
  * ProtoStream marshaller for enums.
  * @author Paul Ferraro
+ * @param <E> the enum type of this marshaller
  */
-public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protostream.EnumMarshaller<E>, Predictable<E> {
+public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protostream.EnumMarshaller<E>, ProtoStreamMarshaller<E> {
+    private static final int ORDINAL_INDEX = 1;
 
     private final Class<E> enumClass;
     private final E[] values;
@@ -46,23 +48,36 @@ public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protost
     }
 
     @Override
-    public String getTypeName() {
-        Package targetPackage = this.enumClass.getPackage();
-        return (targetPackage != null) ? (targetPackage.getName() + '.' + this.enumClass.getSimpleName()) : this.enumClass.getSimpleName();
-    }
-
-    @Override
     public E decode(int ordinal) {
         return this.values[ordinal];
     }
 
     @Override
-    public int encode(E value) throws IllegalArgumentException {
+    public int encode(E value) {
         return value.ordinal();
     }
 
     @Override
-    public OptionalInt size(ImmutableSerializationContext context, E value) {
-        return OptionalInt.of(Predictable.unsignedIntSize(value.ordinal()));
+    public E readFrom(ProtoStreamReader reader) throws IOException {
+        E result = null;
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            switch (WireFormat.getTagFieldNumber(tag)) {
+                case ORDINAL_INDEX:
+                    result = reader.readEnum(this.enumClass);
+                    break;
+                default:
+                    reading = (tag != 0) && reader.skipField(tag);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void writeTo(ProtoStreamWriter writer, E value) throws IOException {
+        if (value != null) {
+            writer.writeEnum(ORDINAL_INDEX, value);
+        }
     }
 }

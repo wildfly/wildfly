@@ -30,15 +30,17 @@ import org.infinispan.protostream.SerializationContext;
  */
 public class LangSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    private final ClassResolver resolver;
+    private final ClassLoaderMarshaller loaderMarshaller;
 
-    public LangSerializationContextInitializer(ClassResolver resolver) {
+    public LangSerializationContextInitializer(ClassLoaderMarshaller loaderMarshaller) {
         super("java.lang.proto");
-        this.resolver = resolver;
+        this.loaderMarshaller = loaderMarshaller;
     }
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ClassMarshaller(this.resolver));
+        context.registerMarshaller(new ClassMarshaller(this.loaderMarshaller));
+        context.registerMarshaller(StackTraceElementMarshaller.INSTANCE);
+        context.registerMarshallerProvider(new MarshallerProvider(Throwable.class::isAssignableFrom, new ExceptionMarshaller<>(Throwable.class)));
     }
 }

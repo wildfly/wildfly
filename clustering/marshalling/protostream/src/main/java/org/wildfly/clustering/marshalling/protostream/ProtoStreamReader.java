@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,29 +26,16 @@ import java.io.IOException;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
- * Resolver for class instances.
+ * A {@link RawProtoStreamReader} with the additional ability to read an arbitrary embedded object.
  * @author Paul Ferraro
  */
-public interface ClassResolver extends Predictable<Class<?>> {
-    /**
-     * Writes any additional context necessary to resolve the specified class.
-     * @param context a serialization context
-     * @param writer a ProtoStream writer
-     * @param targetClass the class to be annotated
-     * @throws IOException
-     */
-    void annotate(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException;
+public interface ProtoStreamReader extends RawProtoStreamReader {
 
-    /**
-     * Resolves a class with the specified name from the specified reader.
-     * @param context a serialization context
-     * @param reader a ProtoStream reader
-     * @param className a class name
-     * @return a resolved class instance
-     * @throws IOException
-     */
-    Class<?> resolve(ImmutableSerializationContext context, RawProtoStreamReader reader, String className) throws IOException;
+    ImmutableSerializationContext getSerializationContext();
+
+    <T> T readObject(Class<T> targetClass) throws IOException;
+
+    <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException;
 }

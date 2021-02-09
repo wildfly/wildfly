@@ -24,7 +24,7 @@ package org.wildfly.clustering.infinispan.spi.marshalling;
 
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.infinispan.spi.metadata.MetadataSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ClassResolver;
+import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 
 /**
@@ -32,7 +32,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
  */
 public class InfinispanProtoStreamMarshaller extends ProtoStreamMarshaller {
 
-    public InfinispanProtoStreamMarshaller(ClassResolver resolver, ClassLoader loader) {
-        super(new SerializationContextBuilder(resolver).register(new MetadataSerializationContextInitializer()).require(loader));
+    public InfinispanProtoStreamMarshaller(ClassLoaderMarshaller loaderMarshaller, ClassLoader loader) {
+        super(new SerializationContextBuilder(loaderMarshaller).register(new MetadataSerializationContextInitializer()).require(loader));
     }
 }

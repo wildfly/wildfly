@@ -30,14 +30,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Validates marshalling of primitives and arrays.
+ * Validates marshalling of java.lang* objects.
  * @author Paul Ferraro
  */
-public abstract class AbstractPrimitivesTestCase {
+public abstract class AbstractLangTestCase {
 
     private final MarshallingTesterFactory factory;
 
-    public AbstractPrimitivesTestCase(MarshallingTesterFactory factory) {
+    public AbstractLangTestCase(MarshallingTesterFactory factory) {
         this.factory = factory;
     }
 
@@ -48,69 +48,69 @@ public abstract class AbstractPrimitivesTestCase {
 
     @Test
     public void testByte() throws IOException {
+        Tester<Byte> tester = this.factory.createTester();
         for (int i = 0; i < Byte.SIZE; ++i) {
-            if (i > 0) {
-                this.factory.createTester().test(Integer.valueOf((1 << i) - 1).byteValue());
-            }
-            this.factory.createTester().test(Integer.valueOf(-1 << i).byteValue());
+            tester.test(Integer.valueOf((1 << i) - 1).byteValue());
+            tester.test(Integer.valueOf(-1 << i).byteValue());
         }
     }
 
     @Test
     public void testShort() throws IOException {
+        Tester<Short> tester = this.factory.createTester();
         for (int i = 0; i < Short.SIZE; ++i) {
-            if (i > 0) {
-                this.factory.createTester().test(Integer.valueOf((1 << i) - 1).shortValue());
-            }
-            this.factory.createTester().test(Integer.valueOf(-1 << i).shortValue());
+            tester.test(Integer.valueOf((1 << i) - 1).shortValue());
+            tester.test(Integer.valueOf(-1 << i).shortValue());
         }
     }
 
     @Test
     public void testInteger() throws IOException {
+        Tester<Integer> tester = this.factory.createTester();
         for (int i = 0; i < Integer.SIZE; ++i) {
-            if (i > 0) {
-                this.factory.createTester().test((1 << i) - 1);
-            }
-            this.factory.createTester().test(-1 << i);
+            tester.test((1 << i) - 1);
+            tester.test(-1 << i);
         }
     }
 
     @Test
     public void testLong() throws IOException {
+        Tester<Long> tester = this.factory.createTester();
         for (int i = 0; i < Long.SIZE; ++i) {
-            if (i > 0) {
-                this.factory.createTester().test((1L << i) - 1L);
-            }
-            this.factory.createTester().test(-1L << i);
+            tester.test((1L << i) - 1L);
+            tester.test(-1L << i);
         }
     }
 
     @Test
     public void testFloat() throws IOException {
-        this.factory.createTester().test(Float.MIN_VALUE);
-        this.factory.createTester().test(0F);
-        this.factory.createTester().test(Float.MAX_VALUE);
+        Tester<Float> tester = this.factory.createTester();
+        tester.test(Float.MIN_VALUE);
+        tester.test(0F);
+        tester.test(Float.MAX_VALUE);
     }
 
     @Test
     public void testDouble() throws IOException {
-        this.factory.createTester().test(Double.MIN_VALUE);
-        this.factory.createTester().test(0D);
-        this.factory.createTester().test(Double.MAX_VALUE);
+        Tester<Double> tester = this.factory.createTester();
+        tester.test(Double.MIN_VALUE);
+        tester.test(0D);
+        tester.test(Double.MAX_VALUE);
     }
 
     @Test
     public void testCharacter() throws IOException {
-        this.factory.createTester().test(Character.MIN_VALUE);
-        this.factory.createTester().test('A');
-        this.factory.createTester().test(Character.MAX_VALUE);
+        Tester<Character> tester = this.factory.createTester();
+        tester.test(Character.MIN_VALUE);
+        tester.test('A');
+        tester.test(Character.MAX_VALUE);
     }
 
     @Test
     public void testString() throws IOException {
-        this.factory.createTester().test("A");
-        this.factory.createTester().test(UUID.randomUUID().toString());
+        Tester<String> tester = this.factory.createTester();
+        tester.test("A");
+        tester.test(UUID.randomUUID().toString());
     }
 
     @Test
@@ -121,6 +121,7 @@ public abstract class AbstractPrimitivesTestCase {
         Boolean[] objectArray = new Boolean[] { true, false };
         this.factory.<Boolean[]>createTester().test(objectArray, Assert::assertArrayEquals);
         this.factory.<Boolean[][]>createTester().test(new Boolean[][] { objectArray, objectArray }, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assert::assertArrayEquals);
     }
 
     @Test
@@ -131,6 +132,7 @@ public abstract class AbstractPrimitivesTestCase {
         Byte[] objectArray = new Byte[] { Byte.MIN_VALUE, 0, Byte.MAX_VALUE };
         this.factory.<Byte[]>createTester().test(objectArray, Assert::assertArrayEquals);
         this.factory.<Byte[][]>createTester().test(new Byte[][] { objectArray, objectArray}, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray}, Assert::assertArrayEquals);
     }
 
     @Test
@@ -141,6 +143,7 @@ public abstract class AbstractPrimitivesTestCase {
         Short[] objectArray = new Short[] { Short.MIN_VALUE, 0, Short.MAX_VALUE };
         this.factory.<Short[]>createTester().test(objectArray, Assert::assertArrayEquals);
         this.factory.<Short[][]>createTester().test(new Short[][] { objectArray, objectArray }, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assert::assertArrayEquals);
     }
 
     @Test
@@ -151,6 +154,7 @@ public abstract class AbstractPrimitivesTestCase {
         Integer[] objectArray = new Integer[] { Integer.MIN_VALUE, 0, Integer.MAX_VALUE };
         this.factory.<Integer[]>createTester().test(objectArray, Assert::assertArrayEquals);
         this.factory.<Integer[][]>createTester().test(new Integer[][] { objectArray, objectArray }, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assert::assertArrayEquals);
     }
 
     @Test
@@ -161,26 +165,29 @@ public abstract class AbstractPrimitivesTestCase {
         Long[] objectArray = new Long[] { Long.MIN_VALUE, 0L, Long.MAX_VALUE };
         this.factory.<Long[]>createTester().test(objectArray, Assert::assertArrayEquals);
         this.factory.<Long[][]>createTester().test(new Long[][] { objectArray, objectArray }, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assert::assertArrayEquals);
     }
 
     @Test
     public void testFloatArray() throws IOException {
         float[] array = new float[] { Float.MIN_VALUE, 0f, Float.MAX_VALUE };
-        this.factory.<float[]>createTester().test(array, AbstractPrimitivesTestCase::assertArrayEquals);
+        this.factory.<float[]>createTester().test(array, AbstractLangTestCase::assertArrayEquals);
         this.factory.<float[][]>createTester().test(new float[][] { array, array }, Assert::assertArrayEquals);
         Float[] objectArray = new Float[] { Float.MIN_VALUE, 0f, Float.MAX_VALUE };
         this.factory.<Float[]>createTester().test(objectArray, Assert::assertArrayEquals);
         this.factory.<Float[][]>createTester().test(new Float[][] { objectArray, objectArray }, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assert::assertArrayEquals);
     }
 
     @Test
     public void testDoubleArray() throws IOException {
         double[] array = new double[] { Double.MIN_VALUE, 0d, Double.MAX_VALUE };
-        this.factory.<double[]>createTester().test(array, AbstractPrimitivesTestCase::assertArrayEquals);
+        this.factory.<double[]>createTester().test(array, AbstractLangTestCase::assertArrayEquals);
         this.factory.<double[][]>createTester().test(new double[][] { array, array }, Assert::assertArrayEquals);
         Double[] objectArray = new Double[] { Double.MIN_VALUE, 0d, Double.MAX_VALUE };
         this.factory.<Double[]>createTester().test(objectArray, Assert::assertArrayEquals);
         this.factory.<Double[][]>createTester().test(new Double[][] { objectArray, objectArray }, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assert::assertArrayEquals);
     }
 
     @Test
@@ -191,6 +198,7 @@ public abstract class AbstractPrimitivesTestCase {
         Character[] objectArray = new Character[] { Character.MIN_VALUE, 'A', Character.MAX_VALUE };
         this.factory.<Character[]>createTester().test(objectArray, Assert::assertArrayEquals);
         this.factory.<Character[][]>createTester().test(new Character[][] { objectArray, objectArray }, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assert::assertArrayEquals);
     }
 
     @Test
@@ -202,16 +210,7 @@ public abstract class AbstractPrimitivesTestCase {
         // Test array with shared object references
         this.factory.<String[]>createTester().test(new String[] { string1, string1 }, Assert::assertArrayEquals);
         this.factory.<String[][]>createTester().test(new String[][] { stringArray, stringArray }, Assert::assertArrayEquals);
-        UUID uuid1 = UUID.randomUUID();
-        UUID uuid2 = UUID.randomUUID();
-        UUID[] uuidArray = new UUID[] { uuid1, uuid2 };
-        this.factory.<UUID[]>createTester().test(uuidArray, Assert::assertArrayEquals);
-        // Test array with shared object references
-        this.factory.<UUID[]>createTester().test(new UUID[] { uuid1, uuid1 }, Assert::assertArrayEquals);
-        this.factory.<UUID[][]>createTester().test(new UUID[][] { uuidArray, uuidArray }, Assert::assertArrayEquals);
-        // Mixed type object arrays
-        this.factory.<Object[]>createTester().test(new Object[] { uuid1, string1 }, Assert::assertArrayEquals);
-        this.factory.<Object[][]>createTester().test(new Object[][] { stringArray, uuidArray }, Assert::assertArrayEquals);
+        this.factory.<Object[][]>createTester().test(new Object[][] { stringArray, stringArray }, Assert::assertArrayEquals);
     }
 
     @Test
@@ -221,8 +220,11 @@ public abstract class AbstractPrimitivesTestCase {
 
     @Test
     public void testClass() throws IOException {
-        this.factory.createTester().test(Object.class, Assert::assertSame);
-        this.factory.createTester().test(Exception.class, Assert::assertSame);
+        Tester<Class<?>> tester = this.factory.createTester();
+        tester.test(Object.class, Assert::assertSame);
+        tester.test(Integer.class, Assert::assertSame);
+        tester.test(Throwable.class, Assert::assertSame);
+        tester.test(Exception.class, Assert::assertSame);
     }
 
     @Test
@@ -238,15 +240,15 @@ public abstract class AbstractPrimitivesTestCase {
                 throw new Exception(e);
             }
         } catch (Throwable e) {
-            this.factory.<Throwable>createTester().test(e, AbstractPrimitivesTestCase::assertEquals);
+            this.factory.<Throwable>createTester().test(e, AbstractLangTestCase::assertEquals);
         }
     }
 
     @Test
     public void testProxy() throws IOException {
-        Object proxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[] { Iterable.class }, new TestInvocationHandler(UUID.randomUUID()));
+        Object proxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[] { Iterable.class }, new TestInvocationHandler("foo"));
 
-        this.factory.createTester().test(proxy, AbstractPrimitivesTestCase::assertProxyEquals);
+        this.factory.createTester().test(proxy, AbstractLangTestCase::assertProxyEquals);
     }
 
     private static void assertProxyEquals(Object expected, Object actual) {

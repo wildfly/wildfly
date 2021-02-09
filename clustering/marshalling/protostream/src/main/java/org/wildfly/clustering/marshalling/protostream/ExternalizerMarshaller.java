@@ -37,6 +37,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * @author Paul Ferraro
  * @param <T> the target type of the associated externalizer
  */
+@Deprecated
 public class ExternalizerMarshaller<T> implements ProtoStreamMarshaller<T> {
     private final Externalizer<T> externalizer;
 

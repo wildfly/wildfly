@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,16 +22,15 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.wildfly.clustering.marshalling.AbstractPrimitivesTestCase;
-
 /**
- * ProtoStream tests for primitives and arrays.
+ * Builder used during {@link ProtoStreamMarshaller#readFrom(org.infinispan.protostream.ImmutableSerializationContext, org.infinispan.protostream.RawProtoStreamReader)}.
  * @author Paul Ferraro
+ * @param <T> the target type of this builder
  */
-public class ProtoStreamPrimitivesTestCase extends AbstractPrimitivesTestCase {
-
-    public ProtoStreamPrimitivesTestCase() {
-        // Need to load protostream schema/marshaller for invocation handler
-        super(new ProtoStreamTesterFactory(Thread.currentThread().getContextClassLoader()));
-    }
+public interface ProtoStreamBuilder<T> {
+    /**
+     * Builds an object read from a ProtoStream reader.
+     * @return the built object
+     */
+    T build();
 }

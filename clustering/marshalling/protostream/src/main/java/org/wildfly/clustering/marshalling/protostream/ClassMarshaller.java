@@ -23,12 +23,9 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
 
 /**
@@ -38,51 +35,49 @@ import org.infinispan.protostream.impl.WireFormat;
 public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 
     private final Field<Class<?>> field;
-    private final Field<Class<?>>[] fields = ClassField.values();
 
-    public ClassMarshaller(ClassResolver resolver) {
-        this.field = new ClassResolverField(resolver, this.fields.length);
+    public ClassMarshaller(ClassLoaderMarshaller marshaller) {
+        ClassField[] fields = ClassField.values();
+        this.field = new LoadedClassField(marshaller, fields[fields.length - 1].getIndex() + 1);
     }
 
     @Override
-    public Class<?> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+    public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
+        Class<?> result = Object.class;
         int tag = reader.readTag();
-        if (tag == 0) return null;
-        int index = WireFormat.getTagFieldNumber(tag);
-        Field<Class<?>> field = index == this.field.getIndex() ? this.field : this.fields[index];
-        return field.readFrom(context, reader);
+        if (tag != 0) {
+            int index = WireFormat.getTagFieldNumber(tag);
+            Field<Class<?>> field = index == this.field.getIndex() ? this.field : ClassField.fromIndex(index);
+            result = field.getMarshaller().readFrom(reader);
+        }
+        return result;
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Class<?> targetClass) throws IOException {
-        Field<Class<?>> field = this.getField(context, targetClass);
-        writer.writeTag(field.getIndex(), WireFormat.WIRETYPE_VARINT);
-        field.writeTo(context, writer, targetClass);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, Class<?> targetClass) {
-        Field<Class<?>> field = this.getField(context, targetClass);
-        OptionalInt size = field.size(context, targetClass);
-        return size.isPresent() ? OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(field.getIndex() << 3 | WireFormat.WIRETYPE_VARINT)) : OptionalInt.empty();
+    public void writeTo(ProtoStreamWriter writer, Class<?> targetClass) throws IOException {
+        if (targetClass != Object.class) {
+            Field<Class<?>> field = this.getField(writer.getSerializationContext(), targetClass);
+            writer.writeTag(field.getIndex(), field.getMarshaller().getWireType());
+            field.getMarshaller().writeTo(writer, targetClass);
+        }
     }
 
     Field<Class<?>> getField(ImmutableSerializationContext context, Class<?> targetClass) {
-        if (targetClass == Object.class) return ClassField.OBJECT;
         AnyField classField = AnyField.fromJavaType(targetClass);
         if (classField != null) return ClassField.FIELD;
         if (targetClass.isArray()) return ClassField.ARRAY;
         try {
             BaseMarshaller<?> marshaller = context.getMarshaller(targetClass);
+            if (marshaller.getJavaClass() != targetClass) return this.field;
             return context.getDescriptorByName(marshaller.getTypeName()).getTypeId() != null ? ClassField.ID : ClassField.NAME;
         } catch (IllegalArgumentException e) {
-            // If class does not represent a registered type, then use resolver-based marshalling.
+            // If class does not represent a registered type, then use the loader based marshaller.
             return this.field;
         }
     }
 
     @Override
     public Class<? extends Class<?>> getJavaClass() {
-        return this.field.getJavaClass();
+        return this.field.getMarshaller().getJavaClass();
     }
 }

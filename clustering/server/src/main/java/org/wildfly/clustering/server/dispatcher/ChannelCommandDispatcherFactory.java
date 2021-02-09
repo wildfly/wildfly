@@ -74,7 +74,7 @@ import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.protostream.ModuleClassResolver;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
@@ -263,7 +263,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     private ByteBufferMarshaller createMarshaller(ClassLoader loader) {
         try {
-            return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassResolver(this.loader)).require(loader).build());
+            return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassLoaderMarshaller(this.loader)).require(loader).build());
         } catch (NoSuchElementException e) {
             return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, new AbstractMap.SimpleImmutableEntry<>(ModularClassResolver.getInstance(this.loader), loader)), loader);
         }

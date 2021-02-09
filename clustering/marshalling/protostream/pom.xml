@@ -45,6 +45,12 @@
         Also contains wildfly-clustering-marshalling-spi implementations using ProtoStream.
     </description>
 
+    <properties>
+        <jdk.max.version>9</jdk.max.version>
+        <!-- This property otherwise causes the java8-test execution to crash -->
+        <modular.jdk.args></modular.jdk.args>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -61,6 +67,10 @@
         <dependency>
             <groupId>org.jboss.modules</groupId>
             <artifactId>jboss-modules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.common</groupId>
+            <artifactId>wildfly-common</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

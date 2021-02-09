@@ -38,6 +38,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>
