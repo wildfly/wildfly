@@ -197,6 +197,8 @@ be relative to jboss.server.config.dir. This is similar to
 overwrite the file when the management model is changed. However a full
 versioned history is maintained of the file.
 
+|--graceful-startup | true | Start the servers in gracefully, queuing or cleanly rejecting incoming requests until the server is fully started.
+
 |--git-repo |- | remote Git repository URL to use for configuration directory and content repository content or `local` if only a local repository is to be used.
 
 |--git-branch |master |The Git branch or tag to be used. If a `tag` name is used then the future commits will go into the detached state.
