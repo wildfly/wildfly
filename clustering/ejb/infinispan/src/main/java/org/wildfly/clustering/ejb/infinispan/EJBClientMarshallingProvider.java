@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.bean;
-
-import java.io.IOException;
-import java.util.UUID;
+package org.wildfly.clustering.ejb.infinispan;
 
 import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.UUIDSessionID;
-import org.junit.Assert;
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 
 /**
- * Unit test for {@link InfinispanBeanEntryExternalizer}.
  * @author Paul Ferraro
  */
-public class InfinispanBeanEntryExternalizerTestCase {
+public enum EJBClientMarshallingProvider implements ProtoStreamMarshallerProvider {
 
-    @Test
-    public void test() throws IOException {
-        InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>("StatefulBean", new UUIDSessionID(UUID.randomUUID()));
-        new ExternalizerTester<>(new InfinispanBeanEntryExternalizer()).test(entry, InfinispanBeanEntryExternalizerTestCase::assertEquals);
+    SESSION_ID(new FunctionalScalarMarshaller<>(SessionID.class, Scalar.BYTE_ARRAY.cast(byte[].class), SessionID::getEncodedForm, SessionID::createSessionID)),
+    ;
+    private final ProtoStreamMarshaller<?> marshaller;
+
+    EJBClientMarshallingProvider(ProtoStreamMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
     }
 
-    static void assertEquals(InfinispanBeanEntry<SessionID> entry1, InfinispanBeanEntry<SessionID> entry2) {
-        Assert.assertEquals(entry1.getBeanName(), entry2.getBeanName());
-        Assert.assertEquals(entry1.getGroupId(), entry2.getGroupId());
+    @Override
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

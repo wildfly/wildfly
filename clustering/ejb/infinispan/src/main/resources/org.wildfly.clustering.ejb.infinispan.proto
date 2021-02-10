@@ -1,24 +1,13 @@
-package org.jboss.ejb.client;
+package org.wildfly.clustering.ejb.infinispan;
+
+import "org.jboss.as.network.proto";
 
 // IDs: 300 - 309
 
 /**
  * @TypeId(300)
  */
-message BasicSessionID {
-	required bytes	id	= 1;
-}
-
-/**
- * @TypeId(301)
- */
-message UUIDSessionID {
-	required bytes	id	= 1;
-}
-
-/**
- * @TypeId(302)
- */
-message UnknownSessionID {
-	required bytes	id	= 1;
+message ClientMappingsRegistryEntry {
+	required	string	name	= 1;
+	repeated	org.jboss.as.network.ClientMapping	mapping	= 2;
 }

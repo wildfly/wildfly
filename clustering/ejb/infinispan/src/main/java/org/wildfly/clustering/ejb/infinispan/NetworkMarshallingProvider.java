@@ -22,18 +22,24 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.protostream.CompositeSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 
 /**
- * {@link SerializationContextInitializer} service for this module
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
-public class EJBSerializationContextInitializer extends CompositeSerializationContextInitializer {
+public enum NetworkMarshallingProvider implements ProtoStreamMarshallerProvider {
 
-    public EJBSerializationContextInitializer() {
-        super(EJBSerializationContextInitializerProvider.class);
+    CLIENT_MAPPING(new ClientMappingMarshaller()),
+    ;
+    private final ProtoStreamMarshaller<?> marshaller;
+
+    NetworkMarshallingProvider(ProtoStreamMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
+    }
+
+    @Override
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

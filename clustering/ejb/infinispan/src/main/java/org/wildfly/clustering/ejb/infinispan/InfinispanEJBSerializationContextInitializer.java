@@ -22,18 +22,17 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.protostream.CompositeSerializationContextInitializer;
+import org.infinispan.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 
 /**
- * {@link SerializationContextInitializer} service for this module
+ * {@link SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
-public class EJBSerializationContextInitializer extends CompositeSerializationContextInitializer {
+public class InfinispanEJBSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    public EJBSerializationContextInitializer() {
-        super(EJBSerializationContextInitializerProvider.class);
+    @Override
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new ClientMappingsRegistryEntryMarshaller());
     }
 }
