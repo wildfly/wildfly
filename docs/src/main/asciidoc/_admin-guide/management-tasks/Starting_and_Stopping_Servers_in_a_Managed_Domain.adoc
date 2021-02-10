@@ -1,5 +1,5 @@
-[[Starting_&_stopping_Servers_in_a_Managed_Domain]]
-= Starting & stopping Servers in a Managed Domain
+[[Starting_and_Stopping_Servers_in_a_Managed_Domain]]
+= Starting and Stopping Servers in a Managed Domain
 
 Starting a standalone server is done through the `bin/standalone.sh`
 script. However in a managed domain server instances are managed by the
