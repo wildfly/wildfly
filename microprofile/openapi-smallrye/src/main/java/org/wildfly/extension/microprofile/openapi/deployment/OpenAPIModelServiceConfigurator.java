@@ -25,6 +25,7 @@ package org.wildfly.extension.microprofile.openapi.deployment;
 import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger.LOGGER;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.AbstractMap;
@@ -211,7 +212,13 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
                     Set<String> virtualHosts = new TreeSet<>(host.getAllAliases());
                     // The name of the host is not a real virtual host (e.g. default-host)
                     virtualHosts.remove(host.getName());
-                    virtualHosts.add(binding.getAddress().getCanonicalHostName());
+
+                    InetAddress address = binding.getAddress();
+                    // Omit wildcard addresses
+                    if (!address.isAnyLocalAddress()) {
+                        virtualHosts.add(address.getCanonicalHostName());
+                    }
+
                     for (String virtualHost : virtualHosts) {
                         Server server = createServer(listener.getProtocol(), virtualHost, binding.getPort(), contextPath);
                         if (server != null) {
