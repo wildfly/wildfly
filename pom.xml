@@ -338,8 +338,8 @@
         <version.org.apache.activemq.artemis>2.16.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
-        <version.org.apache.cxf>3.3.7</version.org.apache.cxf>
-        <version.org.apache.cxf.xjcplugins>3.3.0</version.org.apache.cxf.xjcplugins>
+        <version.org.apache.cxf>3.3.9</version.org.apache.cxf>
+        <version.org.apache.cxf.xjcplugins>3.3.1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M24</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.4</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
@@ -349,10 +349,10 @@
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.openjpa>2.4.2</version.org.apache.openjpa>
         <version.org.apache.qpid.proton>0.33.2</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>2.1.4</version.org.apache.santuario>
+        <version.org.apache.santuario>2.1.6</version.org.apache.santuario>
         <version.org.apache.thrift>0.13.0</version.org.apache.thrift>
         <version.org.apache.velocity>2.2</version.org.apache.velocity>
-        <version.org.apache.ws.security>2.2.5</version.org.apache.ws.security>
+        <version.org.apache.ws.security>2.2.6</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.5</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
         <version.org.bitbucket.jose4j>0.7.2</version.org.bitbucket.jose4j>
@@ -5094,17 +5094,16 @@
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.xml.ws</groupId>
-                        <artifactId>jaxws-api</artifactId>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
-
                     <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.activation</groupId>
@@ -5147,12 +5146,12 @@
                         <artifactId>commons-lang3</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
@@ -5186,13 +5185,9 @@
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-jms</artifactId>
                     </exclusion>
-                   <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
-                    </exclusion>
                     <exclusion>
-                        <groupId>javax.xml.ws</groupId>
-                        <artifactId>jaxws-api</artifactId>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.activation</groupId>
@@ -5239,16 +5234,16 @@
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.xml.ws</groupId>
-                        <artifactId>jaxws-api</artifactId>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.activation</groupId>
@@ -5287,16 +5282,16 @@
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
                    <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.xml.ws</groupId>
-                        <artifactId>jaxws-api</artifactId>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.activation</groupId>
@@ -5343,16 +5338,16 @@
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>javax.xml.ws</groupId>
-                        <artifactId>jaxws-api</artifactId>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.activation</groupId>
