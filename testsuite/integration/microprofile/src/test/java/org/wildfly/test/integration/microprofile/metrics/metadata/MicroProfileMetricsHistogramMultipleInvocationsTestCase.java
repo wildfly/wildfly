@@ -41,7 +41,6 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.metrics.TestApplication;
@@ -54,7 +53,6 @@ import org.wildfly.test.integration.microprofile.metrics.metadata.resources.Micr
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-11718")
 public class MicroProfileMetricsHistogramMultipleInvocationsTestCase {
 
 
@@ -109,21 +107,24 @@ public class MicroProfileMetricsHistogramMultipleInvocationsTestCase {
 
       json = getJSONMetrics(managementClient, "application/helloHistogram", true);
 
-      checkValue("min", 1.0);
-      checkValue("max", 5.0);
-      checkValue("mean", 3.0);
-      checkValue("stddev", 1.4142135623730951);
-      checkValue("count", 10.0);
-      checkValue("p50", 3.0);
-      checkValue("p75", 4.0);
-      checkValue("p95", 5.0);
-      checkValue("p98", 5.0);
-      checkValue("p99", 5.0);
-      checkValue("p999", 5.0);
+      checkValue("min", 1.0, 0.01);
+      checkValue("max", 5.0, 0.01);
+      checkValue("mean", 3.0, 0.075);
+      checkValue("stddev", 1.4142135623730951, 0.01);
+      checkValue("count", 10.0, 0.01);
+      checkValue("p50", 3.0, 0.01);
+      checkValue("p75", 4.0, 0.01);
+      checkValue("p95", 5.0, 0.01);
+      checkValue("p98", 5.0, 0.01);
+      checkValue("p99", 5.0, 0.0);
+      checkValue("p999", 5.0, 0.01);
    }
 
-   private static void checkValue(String key, Double expectedValue) {
+   private static void checkValue(String key, Double expectedValue, Double delta) {
       Double realValue = getMetricSubValueFromJSONOutput(json, "helloHistogram", key);
-      Assert.assertTrue("Expected value of '" + key + "' is " + expectedValue + ", but was " + realValue +".", expectedValue.equals(realValue));
+      Assert.assertEquals("Expected value of '" + key + "' is " + expectedValue + ", but was " + realValue +".",
+              expectedValue,
+              realValue,
+              delta);
    }
 }
