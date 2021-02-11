@@ -1,5 +1,7 @@
 package java.util;
 
+import "java.lang.proto";
+
 // IDs: 10 - 59
 
 // Empty collections
@@ -58,36 +60,22 @@ message EmptySet {
  * @TypeId(20)
  */
 message SingletonList {
-	required	bytes	value	= 1;
+	optional	bytes	value	= 1;
 }
 
 /**
  * @TypeId(21)
  */
 message SingletonMap {
-	required	SimpleEntry	entry	= 1;
+	optional	bytes	key	= 1;
+	optional	bytes	value	= 2;
 }
 
 /**
  * @TypeId(22)
  */
 message SingletonSet {
-	required	bytes	value	= 1;
-}
-
-// Comparators
-
-/**
- * @TypeId(28)
- */
-enum NaturalOrderComparator {
-	INSTANCE	= 0;
-}
-
-/**
- * @TypeId(29)
- */
-message ReverseComparator {
+	optional	bytes	value	= 1;
 }
 
 // Collections
@@ -96,24 +84,21 @@ message ReverseComparator {
  * @TypeId(30)
  */
 message ArrayDeque {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(31)
  */
 message ArrayList {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(32)
  */
 message BitSet {
-	required	uint32	size	= 1;
-	required	bytes	bits	= 2;
+	optional	bytes	value	= 1;
 }
 
 /**
@@ -132,7 +117,7 @@ message Calendar {
  * @TypeId(34)
  */
 message Currency {
-	required	string	id = 1;
+	optional	string	value	= 1;
 }
 
 /**
@@ -146,64 +131,64 @@ message Date {
  * @TypeId(36)
  */
 message EnumMap {
-	required	bytes	enumClass	= 1;
-	required	BitSet	keys	= 2;
-	repeated	bytes	values	= 3;
+	optional	java.lang.Class	enumClass	= 1;
+	optional	java.lang.Class	complementClass	= 2;
+	optional	bytes	bits	= 3;
+	repeated	uint32	element	= 4;
+	repeated	bytes	value	= 5;
 }
 
 /**
  * @TypeId(37)
  */
 message EnumSet {
-	required	bytes	enumClass	= 1;
-	required	BitSet	value	= 2;
+	optional	java.lang.Class	enumClass	= 1;
+	optional	java.lang.Class	complementClass	= 2;
+	optional	bytes	bits	= 3;
+	repeated	uint32	element	= 4;
 }
 
 /**
  * @TypeId(38)
  */
 message HashMap {
-	required	uint32	size	= 1;
-	repeated	SimpleEntry	entry	= 2;
+	repeated	bytes	entry	= 1;
 }
 
 /**
  * @TypeId(39)
  */
 message HashSet {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(40)
  */
 message LinkedHashMap {
-	required	uint32	size	= 1;
-	repeated	SimpleEntry	entry	= 2;
+	repeated	bytes	entry	= 1;
+	optional	bool	accessOrder	= 2;
 }
 
 /**
  * @TypeId(41)
  */
 message LinkedHashSet {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(42)
  */
 message LinkedList {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(43)
  */
 message Locale {
-	required	string	tag	= 1;
+	optional	string	value	= 1;
 }
 
 /**
@@ -224,21 +209,21 @@ message OptionalDouble {
  * @TypeId(46)
  */
 message OptionalInt {
-	optional	bytes	value = 1;
+	optional	sint32	value = 1;
 }
 
 /**
  * @TypeId(47)
  */
 message OptionalLong {
-	optional	bytes	value = 1;
+	optional	sint64	value = 1;
 }
 
 /**
  * @TypeId(48)
  */
 message SimpleEntry {
-	required	bytes	key	= 1;
+	optional	bytes	key	= 1;
 	optional	bytes	value	= 2;
 }
 
@@ -246,7 +231,7 @@ message SimpleEntry {
  * @TypeId(49)
  */
 message SimpleImmutableEntry {
-	required	bytes	key	= 1;
+	optional	bytes	key	= 1;
 	optional	bytes	value	= 2;
 }
 
@@ -254,31 +239,31 @@ message SimpleImmutableEntry {
  * @TypeId(50)
  */
 message TimeZone {
-	required	string	id	= 1;
+	optional	string	value	= 1;
 }
 
 /**
  * @TypeId(51)
  */
 message TreeMap {
-	required	bytes	comparator	= 1;
-	required	uint32	size	= 2;
-	repeated	SimpleEntry	entry	= 3;
+	repeated	bytes	entry	= 1;
+	optional	bool	reverse	= 2;
+	optional	bytes	comparator	= 3;
 }
 
 /**
  * @TypeId(52)
  */
 message TreeSet {
-	required	bytes	comparator	= 1;
-	required	uint32	size	= 2;
-	repeated	bytes	element	= 3;
+	repeated	bytes	element	= 1;
+	optional	bool	reverse	= 2;
+	optional	bytes	comparator	= 3;
 }
 
 /**
  * @TypeId(53)
  */
 message UUID {
-	required	int64	high	= 1;
-	required	int64	low	= 2;
+	optional	sfixed64	high	= 1;
+	optional	sfixed64	low	= 2;
 }

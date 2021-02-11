@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream.util;
+package org.wildfly.clustering.marshalling;
 
-import java.util.Set;
-import java.util.function.IntFunction;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
-import org.wildfly.clustering.marshalling.spi.util.BoundedCollectionExternalizer;
-import org.wildfly.clustering.marshalling.spi.util.HashSetExternalizer.CapacityFactory;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Marshaller for hash table based sets constructed with a capacity rather than a size.
  * @author Paul Ferraro
  */
-public class HashSetMarshaller<T extends Set<Object>> extends BoundedCollectionExternalizer<T> {
+@MetaInfServices(Externalizer.class)
+public class TestComparatorExternalizer implements Externalizer<TestComparator<Object>> {
 
-    public HashSetMarshaller(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, new CapacityFactory<>(factory));
+    @Override
+    public void writeObject(ObjectOutput output, TestComparator<Object> object) throws IOException {
+    }
+
+    @Override
+    public TestComparator<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new TestComparator<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<TestComparator<Object>> getTargetClass() {
+        return (Class<TestComparator<Object>>) (Class<?>) TestComparator.class;
     }
 }

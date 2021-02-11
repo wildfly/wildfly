@@ -25,7 +25,8 @@ package org.wildfly.clustering.marshalling.protostream;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.TestInvocationHandlerExternalizer;
+import org.wildfly.clustering.marshalling.TestComparator;
+import org.wildfly.clustering.marshalling.TestInvocationHandler;
 
 /**
  * @author Paul Ferraro
@@ -39,6 +40,7 @@ public class TestSerializationContextInitializer extends AbstractSerializationCo
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new TestInvocationHandlerExternalizer()));
+        context.registerMarshaller(new ValueMarshaller<>(new TestComparator<>()));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(TestInvocationHandler.class, Scalar.ANY, TestInvocationHandler::getValue, TestInvocationHandler::new));
     }
 }

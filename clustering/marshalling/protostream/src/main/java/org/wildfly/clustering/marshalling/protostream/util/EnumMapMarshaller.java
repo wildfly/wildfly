@@ -25,76 +25,66 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.PrivilegedAction;
-import java.util.BitSet;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.OptionalInt;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
+import org.infinispan.protostream.impl.WireFormat;
+import org.wildfly.clustering.marshalling.protostream.Any;
+import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import protostream.com.google.protobuf.CodedOutputStream;
-
 /**
+ * Marshaller for an {@link EnumMap}.
  * @author Paul Ferraro
+ * @param <E> the enum key type of this marshaller
  */
 public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumMap<E, Object>> {
 
-    @SuppressWarnings("unchecked")
+    private static final int ENUM_SET_INDEX = 1;
+
+    private final FieldSetMarshaller<EnumSet<E>, EnumSetBuilder<E>> marshaller = new EnumSetFieldSetMarshaller<>();
+    private final int valueIndex = this.marshaller.getFields() + 1;
+
     @Override
-    public EnumMap<E, Object> readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        Class<E> enumClass = (Class<E>) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-        EnumMap<E, Object> map = new EnumMap<>(enumClass);
-        BitSet keys = BitSet.valueOf(reader.readByteArray());
-        E[] enumValues = enumClass.getEnumConstants();
-        for (int i = 0; i < enumValues.length; ++i) {
-            if (keys.get(i)) {
-                map.put(enumValues[i], ObjectMarshaller.INSTANCE.readFrom(context, reader));
+    public EnumMap<E, Object> readFrom(ProtoStreamReader reader) throws IOException {
+        EnumSetBuilder<E> builder = this.marshaller.getBuilder();
+        List<Object> values = new LinkedList<>();
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            int index = WireFormat.getTagFieldNumber(tag);
+            if ((index >= ENUM_SET_INDEX) && (index < ENUM_SET_INDEX + this.marshaller.getFields())) {
+                builder = this.marshaller.readField(reader, index - ENUM_SET_INDEX, builder);
+            } else if (index == this.valueIndex) {
+                values.add(reader.readObject(Any.class).get());
+            } else {
+                reading = (tag != 0) && reader.skipField(tag);
             }
         }
-        return map;
+        EnumSet<E> enumSet = builder.build();
+        Iterator<E> enumValues = enumSet.iterator();
+        EnumMap<E, Object> enumMap = new EnumMap<>(builder.getEnumClass());
+        for (Object value : values) {
+            enumMap.put(enumValues.next(), value);
+        }
+        return enumMap;
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, EnumMap<E, Object> map) throws IOException {
-        Class<?> enumClass = this.findEnumClass(map);
-        ObjectMarshaller.INSTANCE.writeTo(context, writer, enumClass);
-        Object[] enumValues = enumClass.getEnumConstants();
-        // Represent EnumMap keys as a BitSet
-        BitSet keys = new BitSet(enumValues.length);
-        for (int i = 0; i < enumValues.length; ++i) {
-            keys.set(i, map.containsKey(enumValues[i]));
-        }
-        byte[] bytes = keys.toByteArray();
-        writer.writeUInt32NoTag(bytes.length);
-        writer.writeRawBytes(bytes, 0, bytes.length);
+    public void writeTo(ProtoStreamWriter writer, EnumMap<E, Object> map) throws IOException {
+        EnumSet<E> set = EnumSet.noneOf(this.findEnumClass(map));
+        set.addAll(map.keySet());
+        this.marshaller.writeFields(writer, ENUM_SET_INDEX, set);
+
         for (Object value : map.values()) {
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, value);
+            writer.writeObject(this.valueIndex, new Any(value));
         }
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, EnumMap<E, Object> map) {
-        Class<?> enumClass = this.findEnumClass(map);
-        OptionalInt size = ObjectMarshaller.INSTANCE.size(context, enumClass);
-        if (size.isPresent()) {
-            Object[] enumValues = enumClass.getEnumConstants();
-            // Determine number of bytes in BitSet
-            int bytes = enumValues.length / Byte.SIZE;
-            if (enumValues.length % Byte.SIZE > 0) {
-                bytes += 1;
-            }
-            size = OptionalInt.of(size.getAsInt() + bytes + CodedOutputStream.computeUInt32SizeNoTag(bytes));
-            for (Object value : map.values()) {
-                OptionalInt valueSize = ObjectMarshaller.INSTANCE.size(context, value);
-                size = size.isPresent() && valueSize.isPresent() ? OptionalInt.of(size.getAsInt() + valueSize.getAsInt()) : OptionalInt.empty();
-            }
-        }
-        return size;
     }
 
     @SuppressWarnings("unchecked")
@@ -103,19 +93,20 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
         return (Class<EnumMap<E, Object>>) (Class<?>) EnumMap.class;
     }
 
-    private Class<?> findEnumClass(EnumMap<E, Object> map) {
+    private Class<E> findEnumClass(EnumMap<E, Object> map) {
         Iterator<E> values = map.keySet().iterator();
         if (values.hasNext()) {
             return values.next().getDeclaringClass();
         }
         // If EnumMap is empty, we need to resort to reflection to obtain the enum type
-        return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Class<?>>() {
+        return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Class<E>>() {
+            @SuppressWarnings("unchecked")
             @Override
-            public Class<?> run() {
+            public Class<E> run() {
                 try {
                     Field field = EnumMap.class.getDeclaredField("keyType");
                     field.setAccessible(true);
-                    return (Class<?>) field.get(map);
+                    return (Class<E>) field.get(map);
                 } catch (NoSuchFieldException | IllegalAccessException e) {
                     throw new IllegalStateException(e);
                 }

@@ -8,66 +8,60 @@ import "java.util.proto";
  * @TypeId(60)
  */
 message ConcurrentHashMap {
-	required	uint32	size	= 1;
-	repeated	java.util.SimpleEntry	entry	= 2;
+	repeated	bytes	entry	= 1;
 }
 
 /**
  * @TypeId(61)
  */
 message KeySetView {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(62)
  */
 message ConcurrentLinkedDeque {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(63)
  */
 message ConcurrentLinkedQueue {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(64)
  */
 message ConcurrentSkipListMap {
-	required	bytes	comparator	= 1;
-	required	uint32	size	= 2;
-	repeated	java.util.SimpleEntry	entry	= 3;
+	repeated	bytes	entry	= 1;
+	optional	bool	reverse	= 2;
+	optional	bytes	comparator	= 3;
 }
 
 /**
  * @TypeId(65)
  */
 message ConcurrentSkipListSet {
-	required	bytes	comparator	= 1;
-	required	uint32	size	= 2;
-	repeated	bytes	element	= 3;
+	repeated	bytes	element	= 1;
+	optional	bool	reverse	= 2;
+	optional	bytes	comparator	= 3;
 }
 
 /**
  * @TypeId(66)
  */
 message	CopyOnWriteArrayList {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**
  * @TypeId(67)
  */
 message	CopyOnWriteArraySet {
-	required	uint32	size	= 1;
-	repeated	bytes	element	= 2;
+	repeated	bytes	element	= 1;
 }
 
 /**

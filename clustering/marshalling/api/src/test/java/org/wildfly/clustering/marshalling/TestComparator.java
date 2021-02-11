@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream.util;
+package org.wildfly.clustering.marshalling;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.IntFunction;
-
-import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
-import org.wildfly.clustering.marshalling.spi.ValueFunction;
+import java.util.Comparator;
 
 /**
- * Collection marshaller for bounded collections.
  * @author Paul Ferraro
  */
-public class BoundedCollectionMarshaller<T extends Collection<Object>> extends CollectionMarshaller<T, Void, Integer> {
+public class TestComparator<T> implements Comparator<T>, java.io.Serializable {
+    private static final long serialVersionUID = 2322453812130991741L;
 
-    public BoundedCollectionMarshaller(Class<T> targetClass, IntFunction<T> factory) {
-        super(targetClass, factory::apply, Map.Entry::getValue, ValueFunction.voidFunction(), PrimitiveMarshaller.VOID.cast(Void.class));
+    @Override
+    public int compare(T object1, T object2) {
+        return object1.hashCode() - object2.hashCode();
     }
 }

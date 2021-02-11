@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream.util;
+package org.wildfly.clustering.marshalling.protostream;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Supplier;
+import java.io.IOException;
 
-import org.wildfly.clustering.marshalling.protostream.PrimitiveMarshaller;
-import org.wildfly.clustering.marshalling.spi.ValueFunction;
-import org.wildfly.clustering.marshalling.spi.SupplierFunction;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
- * Collection marshaller for unbounded collections.
+ * Functional marshaller whose marshalled type is a subclass of the mapped marshaller.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller
+ * @param <V> the type of the mapped marshaller
  */
-public class UnboundedCollectionMarshaller<T extends Collection<Object>> extends CollectionMarshaller<T, Void, Void> {
+public class SimpleFunctionalMarshaller<T extends V, V> extends FunctionalMarshaller<T, V> {
 
-    public UnboundedCollectionMarshaller(Class<T> targetClass, Supplier<T> factory) {
-        super(targetClass, new SupplierFunction<>(factory), Map.Entry::getKey, ValueFunction.voidFunction(), PrimitiveMarshaller.VOID.cast(Void.class));
+    public SimpleFunctionalMarshaller(Class<T> targetClass, ProtoStreamMarshaller<V> marshaller, ExceptionFunction<V, T, IOException> factory) {
+        super(targetClass, marshaller, value -> value, factory);
     }
 }

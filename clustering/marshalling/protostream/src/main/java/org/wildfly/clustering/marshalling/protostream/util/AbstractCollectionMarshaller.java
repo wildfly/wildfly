@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,37 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.function.Function;
 
+import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Collection marshaller for collections constructed with a context.
+ * Abstract collection marshaller that writes the elements of the collection.
  * @author Paul Ferraro
+ * @param <T> the collection type of this marshaller
  */
-public class ContextualCollectionMarshaller<T extends Collection<Object>, C> extends CollectionMarshaller<T, C, C> {
+public abstract class AbstractCollectionMarshaller<T extends Collection<Object>> implements ProtoStreamMarshaller<T> {
 
-    public ContextualCollectionMarshaller(Class<T> targetClass, Function<C, T> factory, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
-        super(targetClass, factory, Map.Entry::getKey, context, contextMarshaller);
+    protected static final int ELEMENT_INDEX = 1;
+
+    private final Class<? extends T> collectionClass;
+
+    public AbstractCollectionMarshaller(Class<? extends T> collectionClass) {
+        this.collectionClass = collectionClass;
+    }
+
+    @Override
+    public void writeTo(ProtoStreamWriter writer, T collection) throws IOException {
+        for (Object element : collection) {
+            writer.writeObject(ELEMENT_INDEX, new Any(element));
+        }
+    }
+
+    @Override
+    public Class<? extends T> getJavaClass() {
+        return this.collectionClass;
     }
 }
