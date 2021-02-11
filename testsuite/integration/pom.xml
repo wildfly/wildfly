@@ -395,15 +395,18 @@
 
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
+                        <!-- nodes referenced -->
                         <node0>${node0}</node0>
-                        <node0.escaped>${node0.escaped}</node0.escaped>
                         <node1>${node1}</node1>
-                        <mcast>${mcast}</mcast>
-                        <mcast.ttl>${mcast.ttl}</mcast.ttl>
-
                         <node2>${node2}</node2>
                         <node3>${node3}</node3>
-
+                        <!-- nodes referenced from URLs -->
+                        <node0.escaped>${node0.escaped}</node0.escaped>
+                        <node1.escaped>${node1.escaped}</node1.escaped>
+                        <node2.escaped>${node2.escaped}</node2.escaped>
+                        <node3.escaped>${node3.escaped}</node3.escaped>
+                        <mcast>${mcast}</mcast>
+                        <mcast.ttl>${mcast.ttl}</mcast.ttl>
                         <jbossas.ts.submodule.dir>${basedir}</jbossas.ts.submodule.dir>
                         <jbossas.ts.integ.dir>${jbossas.ts.integ.dir}</jbossas.ts.integ.dir>
                         <jbossas.ts.dir>${jbossas.ts.dir}</jbossas.ts.dir>

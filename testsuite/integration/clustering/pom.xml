@@ -671,6 +671,7 @@
                                         <!-- These are run by ts.clustering.cluster.ha-infinispan-server.profile -->
                                         <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/sso/remote/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/ejb/remote/RemoteEJBClientTwoClustersTestCase.java</exclude>
                                         <!-- These are run by ts.clustering.cluster.byteman.profile -->
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                         <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
@@ -737,6 +738,70 @@
                                     <includes>
                                         <include>${test-group}/**/web/remote/*TestCase.java</include>
                                         <include>${test-group}/**/sso/remote/*TestCase.java</include>
+                                    </includes>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <!-- required by arquillian.xml -->
+                                        <wildfly1>wildfly-1</wildfly1>
+                                        <wildfly2>wildfly-2</wildfly2>
+                                        <wildfly3>wildfly-3</wildfly3>
+                                        <wildfly4>wildfly-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
+                                        <!-- end required by arquillian.xml -->
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Run cluster tests with standalone-ha.xml profile with reuseForks == false -->
+        <profile>
+            <id>ts.clustering.cluster.ha-no-reuse-forks.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${version.surefire.plugin}</version>
+                        <executions combine.children="append">
+                            <!-- Multi-node clustering tests -->
+                            <execution>
+                                <id>ts.surefire.clustering.ha-no-reuse-forks</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Fix test order to speed up execution by grouping tests that run against same group of containers -->
+                                    <runOrder>alphabetical</runOrder>
+                                    <!-- Don't reuse forked JVMs - required for EJB client tests which define custom client side configurations  -->
+                                    <reuseForks>false</reuseForks>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>${test-group}/**/ejb/remote/RemoteEJBClientTwoClustersTestCase.java</include>
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -1756,6 +1821,7 @@
                                         <exclude>${test-group}/ejb/forwarding/*TestCase.java</exclude>
                                         <exclude>${test-group}/ejb/remote/GlobalAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
                                         <exclude>${test-group}/ejb/remote/ThreadAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
+                                        <exclude>${test-group}/ejb/remote/RemoteEJBClientTwoClustersTestCase.java</exclude>
                                     </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -2404,6 +2470,8 @@
                                         <!-- These are run by ts.clustering.cluster.byteman.profile -->
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                         <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
+                                        <!-- These are run by ts.clustering.cluster.ha-infinispan-server.profile -->
+                                        <exclude>${test-group}/**/ejb/remote/RemoteEJBClientTwoClustersTestCase.java</exclude>
 
                                         <!-- TODO see why these aren't working and fix or exclude with a clear explanation -->
                                         <exclude>${test-group}/ejb/remote/GlobalAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
