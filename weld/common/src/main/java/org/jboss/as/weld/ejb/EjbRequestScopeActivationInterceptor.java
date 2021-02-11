@@ -41,7 +41,7 @@ import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.module.ejb.AbstractEJBRequestScopeActivationInterceptor;
 
 /**
- * Interceptor for activating the CDI request scope on some EJB invocations.
+ * Interceptor for activating the Jakarta Contexts and Dependency Injection request scope on some EJB invocations.
  * <p>
  * Remote EJB invocations must also have the request scope active, but it may already be active for in-VM requests.
  * <p>

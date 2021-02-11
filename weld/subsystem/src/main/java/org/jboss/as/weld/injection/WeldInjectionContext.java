@@ -33,7 +33,7 @@ class WeldInjectionContext implements Serializable {
     }
 
     /**
-     * Runs CDI injection on the instance. This should be called after resource injection has been performed
+     * Runs Jakarta Contexts and Dependency Injection on the instance. This should be called after resource injection has been performed
      */
     public void inject(Object instance) {
         injectionTarget.inject(instance, context);

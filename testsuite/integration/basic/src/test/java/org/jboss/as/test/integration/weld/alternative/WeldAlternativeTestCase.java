@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 
 /**
  *
- * A test of the CDI alternatives. This tests that the alternative
+ * A test of the Jakarta Contexts and Dependency Injection alternatives. This tests that the alternative
  * information in the beans.xml file is being parsed correctly.
  *
  * @author Stuart Douglas

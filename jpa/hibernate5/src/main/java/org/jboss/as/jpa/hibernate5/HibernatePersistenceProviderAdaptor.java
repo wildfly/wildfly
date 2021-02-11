@@ -176,7 +176,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     /**
      * org.hibernate.jpa.event.spi.jpa.ExtendedBeanManager is added to Hibernate 5.1 as an extension for delaying registration
-     * of entity listeners until the CDI AfterDeploymentValidation event is triggered.
+     * of entity listeners until the Jakarta Contexts and Dependency Injection AfterDeploymentValidation event is triggered.
      * This allows entity listener classes to reference the (origin) persistence unit (WFLY-2387).
      *
      * return true for Hibernate ORM 5.1+, which should contain the ExtendedBeanManager contract

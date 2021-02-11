@@ -144,7 +144,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final ArtifactFactoryService artifactFactoryService = new ArtifactFactoryService();
             final ServiceBuilder<ArtifactFactory> artifactFactoryServiceBuilder = serviceTarget.addService(artifactFactoryServiceName, artifactFactoryService);
 
-            // Register the bean manager if this is a CDI deployment
+            // Register the bean manager if this is a Jakarta Contexts and Dependency Injection deployment
             if (support.hasCapability(WELD_CAPABILITY_NAME)) {
                 final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
                 if (api.isPartOfWeldDeployment(deploymentUnit)) {

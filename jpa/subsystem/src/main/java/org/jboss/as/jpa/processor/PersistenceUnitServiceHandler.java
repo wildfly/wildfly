@@ -275,7 +275,7 @@ public class PersistenceUnitServiceHandler {
                                     pu.getPersistenceUnitName(), deploymentUnit.getName());
                             }
                             else {
-                                // we need class file transformer to work, don't allow cdi bean manager to be access since that
+                                // we need class file transformer to work, don't allow Jakarta Contexts and Dependency Injection bean manager to be access since that
                                 // could cause application classes to be loaded (workaround by setting jboss.as.jpa.classtransformer to false).  WFLY-1463
                                 final boolean allowCdiBeanManagerAccess = false;
                                 deployPersistenceUnit(deploymentUnit, eeModuleDescription, serviceTarget, classLoader, pu, provider, adaptor, allowCdiBeanManagerAccess);
@@ -334,7 +334,7 @@ public class PersistenceUnitServiceHandler {
             CapabilityServiceSupport css = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 if (css.hasCapability("org.wildfly.bean-validation")) {
-                    // Get the CDI-enabled ValidatorFactory
+                    // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
                     validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
                 }
             }
@@ -396,8 +396,8 @@ public class PersistenceUnitServiceHandler {
                 }
             }
 
-            // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
-            // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
+            // JPA 2.1 sections 3.5.1 + 9.1 require the Jakarta Contexts and Dependency Injection bean manager to be passed to the peristence provider
+            // if the persistence unit is contained in a deployment that is a Jakarta Contexts and Dependency Injection bean archive (has beans.xml).
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             if (support.hasCapability(WELD_CAPABILITY_NAME) && allowCdiBeanManagerAccess) {
                 support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
@@ -460,8 +460,8 @@ public class PersistenceUnitServiceHandler {
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
 
             ProxyBeanManager proxyBeanManager = null;
-            // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
-            // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
+            // JPA 2.1 sections 3.5.1 + 9.1 require the Jakarta Contexts and Dependency Injection bean manager to be passed to the peristence provider
+            // if the persistence unit is contained in a deployment that is a Jakarta Contexts and Dependency Injection bean archive (has beans.xml).
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             boolean partOfWeldDeployment = false;
             if (support.hasCapability(WELD_CAPABILITY_NAME)) {
@@ -470,7 +470,7 @@ public class PersistenceUnitServiceHandler {
             }
             if (partOfWeldDeployment) {
                 proxyBeanManager = new ProxyBeanManager();
-                registerJPAEntityListenerRegister(deploymentUnit, support); // register CDI extension before WeldDeploymentProcessor, which is important for
+                registerJPAEntityListenerRegister(deploymentUnit, support); // register Jakarta Contexts and Dependency Injection extension before WeldDeploymentProcessor, which is important for
                                                                             // EAR deployments that contain a WAR that has persistence units defined.
             }
 
@@ -577,7 +577,7 @@ public class PersistenceUnitServiceHandler {
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 if (capabilitySupport.hasCapability("org.wildfly.bean-validation")) {
-                    // Get the CDI-enabled ValidatorFactory
+                    // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
                     validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
                 }
             }
@@ -641,8 +641,8 @@ public class PersistenceUnitServiceHandler {
                 }
             }
 
-            // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the persistence provider
-            // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
+            // JPA 2.1 sections 3.5.1 + 9.1 require the Jakarta Contexts and Dependency Injection bean manager to be passed to the persistence provider
+            // if the persistence unit is contained in a deployment that is a Jakarta Contexts and Dependency Injection bean archive (has beans.xml).
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             if (support.hasCapability(WELD_CAPABILITY_NAME)) {
                 support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()

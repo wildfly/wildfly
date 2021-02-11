@@ -37,7 +37,7 @@ include::_developer-guide/Application_Client_Reference.adoc[]
 
 include::_developer-guide/Embedded_API.adoc[]
 
-include::_developer-guide/CDI_Reference.adoc[]
+include::_developer-guide/Jakarta_Contexts_and_Dependency_Injection_Reference.adoc[]
 
 include::_developer-guide/EE_Concurrency_Utilities.adoc[]
 

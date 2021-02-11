@@ -29,7 +29,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 /**
- * Class that performs CDI injection and calls initializer methods on interceptor classes after resource injection
+ * Class that performs Jakarta Contexts and Dependency Injection injection and calls initializer methods on interceptor classes after resource injection
  * has been run
  *
  * @author Stuart Douglas

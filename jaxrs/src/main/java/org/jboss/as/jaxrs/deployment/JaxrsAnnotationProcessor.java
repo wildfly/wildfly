@@ -43,7 +43,7 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         if (deploymentUnit.getParent() == null) {
-            //register resource, provider and application as CDI annotation defining types
+            //register resource, provider and application as Jakarta Contexts and Dependency Injection annotation defining types
             deploymentUnit.addToAttachmentList(INJECTION_TARGET_DEFINING_ANNOTATIONS, JaxrsAnnotations.PROVIDER.getDotName());
             deploymentUnit.addToAttachmentList(INJECTION_TARGET_DEFINING_ANNOTATIONS, JaxrsAnnotations.PATH.getDotName());
         }

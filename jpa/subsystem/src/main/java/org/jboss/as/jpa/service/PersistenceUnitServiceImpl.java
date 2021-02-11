@@ -154,7 +154,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                         phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
                                         if (beanManagerInjector.getOptionalValue() != null) {
                                             wrapperBeanManagerLifeCycle = phaseOnePersistenceUnitService.getBeanManagerLifeCycle();
-                                            // update the bean manager proxy to the actual CDI bean manager
+                                            // update the bean manager proxy to the actual Jakarta Contexts and Dependency Injection bean manager
                                             proxyBeanManager = phaseOnePersistenceUnitService.getBeanManager();
                                             proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
                                         }

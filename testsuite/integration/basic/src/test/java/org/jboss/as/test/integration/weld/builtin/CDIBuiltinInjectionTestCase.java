@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that CDI injection of built-in beans works.
+ * Tests that Jakarta Contexts and Dependency Injection of built-in beans works.
  *
  * @author Brian Stansberry
  */

@@ -13,8 +13,8 @@ in progress.
 deployment |  |This file can be used to control class loading for the
 deployment |Class Loading in WildFly
 
-|beans.xml |WEB-INF or META-INF |CDI |The presence of this descriptor
-(even if empty) activates CDI |Weld Reference Guide
+|beans.xml |WEB-INF or META-INF |Jakarta Contexts and Dependency Injection |The presence of this descriptor
+(even if empty) activates Jakarta Contexts and Dependency Injection |Weld Reference Guide
 
 |web.xml |WEB-INF |Servlet |Web deployment descriptor | 
 

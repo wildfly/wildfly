@@ -26,7 +26,7 @@ import org.jberet.spi.ArtifactFactory;
 public interface WildFlyArtifactFactory extends ArtifactFactory {
 
     /**
-     * Creates a {@linkplain ContextHandle context handle} required for setting up the CDI context.
+     * Creates a {@linkplain ContextHandle context handle} required for setting up the Jakarta Contexts and Dependency Injection context.
      *
      * @return the newly create context handle
      */

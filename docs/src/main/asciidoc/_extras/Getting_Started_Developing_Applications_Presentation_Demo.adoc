@@ -558,3 +558,5 @@ Right click on test, `Run As -> JUnit Test`
 .  Explain Arquilian allows you to use injection
 .  Explain that Arquillian allows you to concentrate just on your test
 logic
+
+NOTE: References in this document to CDI refer to Jakarta Contexts and Dependency Injection unless otherwise noted.
