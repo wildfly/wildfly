@@ -15,6 +15,6 @@ public class WithCustomOperationNameEndpoint {
     public String get() {
         customOperationNameBean.doSomething();
         customOperationNameBean.doSomethingElse();
-        return "wit-custom-operation-name-called";
+        return "with-custom-operation-name-called";
     }
 }

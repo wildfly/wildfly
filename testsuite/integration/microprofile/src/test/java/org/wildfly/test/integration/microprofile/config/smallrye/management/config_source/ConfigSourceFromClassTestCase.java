@@ -73,7 +73,6 @@ public class ConfigSourceFromClassTestCase extends AbstractMicroProfileConfigTes
     @ArquillianResource
     private URL url;
 
-
     @Test
     public void testGetWithConfigProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
