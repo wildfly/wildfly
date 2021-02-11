@@ -24,12 +24,15 @@ package org.wildfly.clustering.server.singleton;
 
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.StartException;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ExceptionMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -43,7 +46,7 @@ public class ServiceSerializationContextInitializer extends AbstractSerializatio
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshallerProvider(new ExternalizerMarshallerProvider(new ServiceNameResolver.ServiceNameExternalizer()));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(Scalar.STRING.cast(String.class), Functions.constantSupplier(ServiceName.JBOSS), ServiceName::getCanonicalName, ServiceName::parse));
         context.registerMarshaller(new ExceptionMarshaller<>(StartException.class));
         context.registerMarshaller(new ExceptionMarshaller<>(ServiceNotFoundException.class));
     }
