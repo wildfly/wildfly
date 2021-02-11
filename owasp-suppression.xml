@@ -502,4 +502,20 @@
         <packageUrl regex="true">^pkg:maven/org\.jboss\.spec\.javax\.websocket/jboss\-websocket\-api_1\.1_spec@.*$</packageUrl>
         <cve>CVE-2020-11050</cve>
     </suppress>
+    <!-- False-positive. See: https://issues.apache.org/jira/browse/ARTEMIS-2362 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
+        <cve>CVE-2016-4978</cve>
+    </suppress>
+    <!-- The activemq-artemis-native is not responsible for handling UDP/JGroups discovery. Furthermore, WildFly 21 uses Artemis 2.10.1 and fix was introduced in version 2.4.0.", -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
+        <cve>CVE-2017-12174</cve>
+    </suppress>
 </suppressions>
