@@ -43,7 +43,7 @@
           <security>
             <!--You have a CHOICE of the next 3 items at this level-->
             <!--Optional:-->
-            <application/>
+            <application>${test.expr:true}</application>
           </security>
           <!--Optional:-->
           <timeout>
