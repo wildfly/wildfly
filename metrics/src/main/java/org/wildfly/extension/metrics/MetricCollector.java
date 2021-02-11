@@ -49,7 +49,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 public class MetricCollector {
-
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
 
@@ -130,12 +129,10 @@ public class MetricCollector {
         }
 
         for (String type : current.getChildTypes()) {
-            if (current.hasChildren(type)) {
-                for (Resource.ResourceEntry entry : current.getChildren(type)) {
-                    final PathElement pathElement = entry.getPathElement();
-                    final PathAddress childAddress = address.append(pathElement);
-                    collectResourceMetrics0(entry, managementResourceRegistration, childAddress, resourceAddressResolver, registration, exposeAnySubsystem, exposedSubsystems, prefix);
-                }
+            for (Resource.ResourceEntry entry : current.getChildren(type)) {
+                final PathElement pathElement = entry.getPathElement();
+                final PathAddress childAddress = address.append(pathElement);
+                collectResourceMetrics0(entry, managementResourceRegistration, childAddress, resourceAddressResolver, registration, exposeAnySubsystem, exposedSubsystems, prefix);
             }
         }
     }

@@ -51,6 +51,9 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
             .build();
     static final RuntimeCapability<Void> MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY = RuntimeCapability.Builder.of(MetricsSubsystemDefinition.METRICS_HTTP_SECURITY_CAPABILITY, Boolean.class)
             .build();
+    static final RuntimeCapability<Void> MICROPROFILE_METRICS_SCAN = RuntimeCapability.Builder.of(MetricsSubsystemDefinition.METRICS_SCAN_CAPABILITY)
+            .addRequirements(METRICS_HTTP_CONTEXT_CAPABILITY, MP_CONFIG)
+            .build();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
             .setDefaultValue(ModelNode.TRUE)
@@ -77,7 +80,8 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
                 MicroProfileMetricsExtension.getResourceDescriptionResolver(MicroProfileMetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileMetricsSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileMetricsSubsystemAdd.INSTANCE))
-                .setCapabilities(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY));
+                .setCapabilities(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY,
+                        MICROPROFILE_METRICS_SCAN));
     }
 
     @Override
