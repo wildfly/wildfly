@@ -53,6 +53,7 @@ import org.jboss.dmr.ModelNode;
 public class ResourceAdaptersTransformers implements ExtensionTransformerRegistration {
     private static final String LEGACY_MCP = "org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool";
 
+    private static final ModelVersion EAP_7_3 = ModelVersion.create(6, 1, 0);
     private static final ModelVersion EAP_7_1 = ModelVersion.create(5, 0, 0);
     private static final ModelVersion EAP_7_0 = ModelVersion.create(4, 0, 0);
     private static final ModelVersion EAP_6_2 = ModelVersion.create(1, 3, 0);
@@ -65,7 +66,7 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
-        ResourceTransformationDescriptionBuilder parentBuilder = chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_1);
+        ResourceTransformationDescriptionBuilder parentBuilder = chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_3);
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(ModelNode.ZERO, true), INITIAL_POOL_SIZE)
@@ -73,6 +74,12 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
         builder.addChildResource(ConnectionDefinitionResourceDefinition.PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, RECOVERY_CREDENTIAL_REFERENCE)
+                .end();
+
+        parentBuilder = chainedBuilder.createBuilder(EAP_7_3, EAP_7_1);
+        builder = parentBuilder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Constants.REPORT_DIRECTORY)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.REPORT_DIRECTORY)
                 .end();
 
         parentBuilder = chainedBuilder.createBuilder(EAP_7_1, EAP_7_0);
@@ -121,6 +128,7 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
                 EAP_6_2,
                 EAP_7_0,
                 EAP_7_1,
+                EAP_7_3
         });
 
     }

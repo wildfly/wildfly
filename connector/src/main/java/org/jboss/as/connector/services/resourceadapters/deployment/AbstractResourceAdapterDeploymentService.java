@@ -56,6 +56,7 @@ import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryService
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.connector.util.JCAValidatorFactory;
@@ -130,6 +131,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
+    protected final InjectedValue<ResourceAdaptersSubsystemService> resourceAdaptersSubsystem = new InjectedValue<>();
     private final InjectedValue<ServerSecurityManager> secManager = new InjectedValue<ServerSecurityManager>();
 
     protected String raRepositoryRegistrationId;
@@ -292,6 +294,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     public Injector<ExecutorService> getExecutorServiceInjector() {
         return executorServiceInjector;
+    }
+
+    public Injector<ResourceAdaptersSubsystemService> getResourceAdaptersSubsystem() {
+        return resourceAdaptersSubsystem;
     }
 
     protected final ExecutorService getLifecycleExecutorService() {
@@ -590,9 +596,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected File getReportDirectory() {
-            // TODO: evaluate if provide something in config about that. atm
-            // returning null and so skip its use
-            return null;
+            return resourceAdaptersSubsystem.getValue().getReportDirectory();
         }
 
         @Override

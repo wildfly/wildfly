@@ -44,6 +44,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
@@ -207,6 +208,8 @@ public class Constants {
     public static final String TEST_CONNECTION_IN_POOL = "test-connection-in-pool";
 
     public static final String CLEAR_STATISTICS = "clear-statistics";
+
+    public static final String REPORT_DIRECTORY_NAME = "report-directory";
 
 
     static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder(CLASS_NAME_NAME, ModelType.STRING, false)
@@ -656,6 +659,14 @@ public class Constants {
     static PropertiesAttributeDefinition RECOVERLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVERLUGIN_PROPERTIES_NAME, true)
             .setAllowExpression(true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+            .setRestartAllServices()
+            .build();
+
+    static SimpleAttributeDefinition REPORT_DIRECTORY = new SimpleAttributeDefinitionBuilder(REPORT_DIRECTORY_NAME, ModelType.STRING)
+            .setXmlName("path")
+            .setDefaultValue(new ModelNode(new ValueExpression("${jboss.server.log.dir}")))
+            .setRequired(false)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 

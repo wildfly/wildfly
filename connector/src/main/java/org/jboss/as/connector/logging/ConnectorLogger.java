@@ -928,4 +928,7 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 119, value = "Unbinding connection factory named %s to alias %s")
     void unbindingAlias(String jndiName, String alias);
+
+    @Message(id = 120, value = "Report directory %s does not exist")
+    OperationFailedException reportDirectoryDoesNotExist(String reportDirectory);
 }

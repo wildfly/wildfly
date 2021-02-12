@@ -32,23 +32,32 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.io.File;
+
 /**
  * A ResourceAdaptersSubsystem Service.
  *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
-public final class ResourceAdaptersSubsystemService implements Service<CopyOnWriteArrayListMultiMap<String, ServiceName>> {
+public final class ResourceAdaptersSubsystemService implements Service<ResourceAdaptersSubsystemService> {
 
 
-    public static final AttachmentKey<CopyOnWriteArrayListMultiMap> ATTACHMENT_KEY = AttachmentKey
-            .create(CopyOnWriteArrayListMultiMap.class);
+    public static final AttachmentKey<ResourceAdaptersSubsystemService> ATTACHMENT_KEY = AttachmentKey
+            .create(ResourceAdaptersSubsystemService.class);
 
-    private final CopyOnWriteArrayListMultiMap<String, ServiceName> value = new CopyOnWriteArrayListMultiMap<>();
+    private final CopyOnWriteArrayListMultiMap<String, ServiceName> adapters = new CopyOnWriteArrayListMultiMap<>();
+
+    private File reportDirectory;
+
+    public ResourceAdaptersSubsystemService(final File reportDirectory){
+        this.reportDirectory = reportDirectory;
+    }
+
 
     @Override
-    public CopyOnWriteArrayListMultiMap<String, ServiceName> getValue() throws IllegalStateException {
-        return value;
+    public ResourceAdaptersSubsystemService getValue() throws IllegalStateException {
+        return this;
     }
 
 
@@ -62,4 +71,15 @@ public final class ResourceAdaptersSubsystemService implements Service<CopyOnWri
         SUBSYSTEM_RA_LOGGER.debugf("Stopping ResourceAdaptersSubsystem Service");
     }
 
+    public CopyOnWriteArrayListMultiMap<String, ServiceName> getAdapters() {
+        return adapters;
+    }
+
+    public File getReportDirectory() {
+        return reportDirectory;
+    }
+
+    public void setReportDirectory(File reportDirectory) {
+        this.reportDirectory = reportDirectory;
+    }
 }

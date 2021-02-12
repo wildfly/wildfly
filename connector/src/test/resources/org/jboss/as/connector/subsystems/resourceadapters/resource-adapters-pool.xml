@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:6.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -95,4 +95,5 @@
       </admin-objects>
     </resource-adapter>
   </resource-adapters>
+  <report-directory path="/tmp"/>
 </subsystem>

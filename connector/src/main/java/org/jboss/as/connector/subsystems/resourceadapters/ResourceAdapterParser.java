@@ -31,6 +31,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTS
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.REPORT_DIRECTORY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
@@ -48,6 +49,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -82,40 +85,28 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
 
-    public void parse(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
-
-        //iterate over tags
-        int iterate;
-        try {
-            iterate = reader.nextTag();
-        } catch (XMLStreamException e) {
-            //founding a non tag..go on. Normally non-tag found at beginning are comments or DTD declaration
-            iterate = reader.nextTag();
-        }
-        switch (iterate) {
-            case END_ELEMENT: {
-                // should mean we're done, so ignore it.
-                break;
-            }
-            case START_ELEMENT: {
-
-                switch (Tag.forName(reader.getLocalName())) {
-                    case RESOURCE_ADAPTERS: {
-                        parseResourceAdapters(reader, list, parentAddress);
-                        break;
+    public void parse(final XMLExtendedStreamReader reader, final ModelNode subsystemAddOperation, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT:
+                    return;
+                case START_ELEMENT: {
+                    switch (Tag.forName(reader.getLocalName())) {
+                        case RESOURCE_ADAPTERS:
+                            parseResourceAdapters(reader, list, parentAddress);
+                            break;
+                        case REPORT_DIRECTORY:
+                            parseReportDirectory(reader, subsystemAddOperation);
+                            break;
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }
-                    default:
-                        throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    break;
                 }
-
-                break;
+                default:
+                    throw new IllegalStateException();
             }
-            default:
-                throw new IllegalStateException();
         }
-
-        return;
-
     }
 
     private void parseResourceAdapters(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws XMLStreamException, ParserException,
@@ -601,6 +592,34 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
+    protected void parseReportDirectory(final XMLStreamReader reader, final ModelNode subsystemAddOperation) throws XMLStreamException,
+            ParserException, ValidateException {
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            String value = reader.getAttributeValue(i);
+            switch (attribute) {
+                case PATH:
+                    REPORT_DIRECTORY.parseAndSetParameter(value, subsystemAddOperation, reader);
+                    break;
+                default:
+                    throw new ParserException(bundle.unexpectedAttribute(attribute.getLocalName(), reader.getLocalName()));
+            }
+        }
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT:
+                    if (Tag.forName(reader.getLocalName()) == Tag.REPORT_DIRECTORY) {
+                        return;
+                    } else {
+                        throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                    }
+                default:
+                    throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+            }
+        }
+    }
+
     /**
      * A Tag.
      *
@@ -615,7 +634,9 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         /**
          * jboss-ra tag name
          */
-        RESOURCE_ADAPTERS("resource-adapters");
+        RESOURCE_ADAPTERS("resource-adapters"),
+
+        REPORT_DIRECTORY("report-directory");
 
         private final String name;
 
@@ -680,7 +701,11 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         /**
          * statistics-enabled attribute
          */
-        STATISTICS_ENABLED("statistics-enabled"),;
+        STATISTICS_ENABLED("statistics-enabled"),
+        /**
+         * path
+         */
+        PATH("path");
 
         private String name;
 
