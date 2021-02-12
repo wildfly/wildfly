@@ -47,8 +47,8 @@ public class AddressSerializerTestCase {
     @Test
     public void test() throws IOException {
         test(new ExternalizerTesterFactory(new UUIDExternalizer(), new IpAddressExternalizer(), new IpAddressUUIDExternalizer()).createTester());
-        test(new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester());
-        test(new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester());
+        test(JBossMarshallingTesterFactory.INSTANCE.createTester());
+        test(ProtoStreamTesterFactory.INSTANCE.createTester());
     }
 
     private static void test(Tester<Address> tester) throws IOException {

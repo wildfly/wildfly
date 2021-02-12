@@ -39,7 +39,7 @@ public class ExceptionTestCase {
 
     @Test
     public void test() throws IOException {
-        Tester<Throwable> tester = new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester();
+        Tester<Throwable> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
         tester.test(new StartException(), ExceptionTestCase::assertEquals);
         tester.test(new StartException("message"), ExceptionTestCase::assertEquals);
         tester.test(new StartException(new Exception()), ExceptionTestCase::assertEquals);

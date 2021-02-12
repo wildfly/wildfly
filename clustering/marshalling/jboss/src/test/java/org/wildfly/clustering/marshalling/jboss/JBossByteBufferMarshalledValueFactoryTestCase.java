@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.jboss;
 
-import org.wildfly.clustering.marshalling.AbstractTimeTestCase;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactoryTestCase;
 
 /**
- * ProtoStream tests for java.time package.
  * @author Paul Ferraro
  */
-public class ProtoStreamTimeTestCase extends AbstractTimeTestCase {
+public class JBossByteBufferMarshalledValueFactoryTestCase extends ByteBufferMarshalledValueFactoryTestCase {
 
-    public ProtoStreamTimeTestCase() {
-        super(ProtoStreamTesterFactory.INSTANCE);
+    public JBossByteBufferMarshalledValueFactoryTestCase() {
+        super(TestJBossByteBufferMarshaller.INSTANCE);
     }
 }

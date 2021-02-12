@@ -31,7 +31,6 @@ import org.wildfly.clustering.marshalling.AbstractLangTestCase;
 public class ProtoStreamLangTestCase extends AbstractLangTestCase {
 
     public ProtoStreamLangTestCase() {
-        // Need to load protostream schema/marshaller for invocation handler
-        super(new ProtoStreamTesterFactory(Thread.currentThread().getContextClassLoader()));
+        super(ProtoStreamTesterFactory.INSTANCE);
     }
 }

@@ -30,6 +30,6 @@ import org.wildfly.clustering.marshalling.AbstractConcurrentTestCase;
 public class JBossMarshallingConcurrentTestCase extends AbstractConcurrentTestCase {
 
     public JBossMarshallingConcurrentTestCase() {
-        super(new JBossMarshallingTesterFactory());
+        super(JBossMarshallingTesterFactory.INSTANCE);
     }
 }

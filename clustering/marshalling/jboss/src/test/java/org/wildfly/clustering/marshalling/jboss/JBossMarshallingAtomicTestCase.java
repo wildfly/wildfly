@@ -30,6 +30,6 @@ import org.wildfly.clustering.marshalling.AbstractAtomicTestCase;
 public class JBossMarshallingAtomicTestCase extends AbstractAtomicTestCase {
 
     public JBossMarshallingAtomicTestCase() {
-        super(new JBossMarshallingTesterFactory());
+        super(JBossMarshallingTesterFactory.INSTANCE);
     }
 }

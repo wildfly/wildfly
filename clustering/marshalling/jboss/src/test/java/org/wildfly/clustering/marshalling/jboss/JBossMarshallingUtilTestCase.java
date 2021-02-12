@@ -30,6 +30,6 @@ import org.wildfly.clustering.marshalling.AbstractUtilTestCase;
 public class JBossMarshallingUtilTestCase extends AbstractUtilTestCase {
 
     public JBossMarshallingUtilTestCase() {
-        super(new JBossMarshallingTesterFactory());
+        super(JBossMarshallingTesterFactory.INSTANCE);
     }
 }
