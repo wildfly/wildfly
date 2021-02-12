@@ -39,16 +39,16 @@ import protostream.com.google.protobuf.CodedInputStream;
  * {@link ProtoStreamWriter} implementation that reads from a {@link CodedInputStream}.
  * @author Paul Ferraro
  */
-public class SerializationContextProtoStreamReader implements ProtoStreamReader {
+public class DefaultProtoStreamReader implements ProtoStreamReader {
 
     private final ImmutableSerializationContext context;
     private final CodedInputStream input;
 
-    public SerializationContextProtoStreamReader(ImmutableSerializationContext context, RawProtoStreamReader reader) {
+    public DefaultProtoStreamReader(ImmutableSerializationContext context, RawProtoStreamReader reader) {
         this(context, ((RawProtoStreamReaderImpl) reader).getDelegate());
     }
 
-    public SerializationContextProtoStreamReader(ImmutableSerializationContext context, CodedInputStream input) {
+    public DefaultProtoStreamReader(ImmutableSerializationContext context, CodedInputStream input) {
         this.context = context;
         this.input = input;
     }

@@ -6,42 +6,29 @@ package java.net;
  * @TypeId(110)
  */
 message InetAddress {
-	required	uint32	length	= 1;
-	required	bytes	address	= 2;
+	optional	string	host	= 1;
+	optional	bytes	address	= 2;
 }
 
 /**
  * @TypeId(111)
  */
-message Inet4Address {
-	required	bytes	address	= 1;
+message InetSocketAddress {
+	optional	string	resolvedHost	= 1;
+	optional	bytes	address	= 2;
+	optional	string	unresolvedHost	= 3;
+	optional	uint32	port	= 4;
 }
 
 /**
  * @TypeId(112)
- */
-message Inet6Address {
-	required	bytes	address	= 1;
-}
-
-/**
- * @TypeId(113)
- */
-message InetSocketAddress {
-	optional	InetAddress address	= 1;
-	required	uint32	port	= 2;
-	optional	string	host	= 3;
-}
-
-/**
- * @TypeId(114)
  */
 message URI {
 	required	string	uri	= 1;
 }
 
 /**
- * @TypeId(115)
+ * @TypeId(113)
  */
 message URL {
 	required	string	url	= 1;

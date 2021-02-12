@@ -38,16 +38,20 @@ import org.infinispan.protostream.SerializationContext;
  */
 public class ProviderSerializationContextInitializer<E extends Enum<E> & ProtoStreamMarshallerProvider> extends AbstractSerializationContextInitializer {
 
-    private final Class<E> providerClass;
+    private final EnumSet<E> concreteSuperClassProviders;
 
     public ProviderSerializationContextInitializer(String resourceName, Class<E> providerClass) {
+        this(resourceName, EnumSet.noneOf(providerClass));
+    }
+
+    public ProviderSerializationContextInitializer(String resourceName, EnumSet<E> concreteSuperClassProviders) {
         super(resourceName);
-        this.providerClass = providerClass;
+        this.concreteSuperClassProviders = concreteSuperClassProviders;
     }
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        Set<E> providers = EnumSet.allOf(this.providerClass);
+        Set<E> providers = EnumSet.complementOf(this.concreteSuperClassProviders);
         List<ProtoStreamMarshaller<?>> abstractMarshallers = new ArrayList<>(providers.size());
         for (E provider : providers) {
             ProtoStreamMarshaller<?> marshaller = provider.getMarshaller();
@@ -60,6 +64,11 @@ public class ProviderSerializationContextInitializer<E extends Enum<E> & ProtoSt
         }
         if (!abstractMarshallers.isEmpty()) {
             context.registerMarshallerProvider(new MarshallerProvider(ABSTRACT, abstractMarshallers));
+        }
+        // If marshaller represents a non-abstract superclass, register as a marshaller provider
+        for (E provider : this.concreteSuperClassProviders) {
+            ProtoStreamMarshaller<?> marshaller = provider.getMarshaller();
+            context.registerMarshallerProvider(new MarshallerProvider(marshaller.getJavaClass()::isAssignableFrom, marshaller));
         }
     }
 }
