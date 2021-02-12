@@ -37,17 +37,16 @@ import org.jboss.logging.Logger;
 public abstract class AbstractForwardingStatefulSBImpl {
 
     private static final Logger log = Logger.getLogger(AbstractForwardingStatefulSBImpl.class.getName());
-    public static final String MODULE_NAME = "terminus";
+    public static final String MODULE_NAME = AbstractForwardingStatefulSBImpl.class.getSimpleName() + "-terminus";
 
     private RemoteStatefulSB bean;
 
-    @SuppressWarnings("unchecked")
     private RemoteStatefulSB forward() {
         if (bean == null) {
             try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
                 bean = directory.lookupStateful("RemoteStatefulSBImpl", RemoteStatefulSB.class);
             } catch (Exception e) {
-                log.debugf("exception occurred looking up ejb on forwarding node %s", getCurrentNode());
+                log.infof("exception occurred looking up ejb on forwarding node %s", getCurrentNode());
                 throw new RuntimeException(e);
             }
         }
