@@ -23,6 +23,8 @@ pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
+call "%DIRNAME%common.bat" :commonConf
+
 if "x%JBOSS_HOME%" == "x" (
   set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
 )
