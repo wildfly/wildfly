@@ -12,9 +12,6 @@ jobs:
     name: Compile (no tests) with JDK 8
     runs-on: ubuntu-latest
     steps:
-    - uses: n1hility/cancel-previous-runs@v2
-      with:
-          token: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/cache@v1
       with:
         path: ~/.m2/repository
