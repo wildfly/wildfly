@@ -98,6 +98,11 @@ public class DefaultProtoStreamReader implements ProtoStreamReader {
     }
 
     @Override
+    public byte readRawByte() throws IOException {
+        return this.input.readRawByte();
+    }
+
+    @Override
     public String readString() throws IOException {
         return this.input.readString();
     }

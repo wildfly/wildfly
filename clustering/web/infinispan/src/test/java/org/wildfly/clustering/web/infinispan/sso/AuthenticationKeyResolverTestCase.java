@@ -26,8 +26,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.web.infinispan.sso.AuthenticationKeyResolver.AuthenticationKeyExternalizer;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.web.infinispan.sso.AuthenticationKeyResolver.AuthenticationKeyFormat;
 
 /**
@@ -39,7 +38,7 @@ public class AuthenticationKeyResolverTestCase {
     @Test
     public void test() throws IOException {
         AuthenticationKey key = new AuthenticationKey("ABC123");
-        new ExternalizerTester<>(new AuthenticationKeyExternalizer()).test(key);
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
         new KeyFormatTester<>(new AuthenticationKeyFormat()).test(key);
     }
 }

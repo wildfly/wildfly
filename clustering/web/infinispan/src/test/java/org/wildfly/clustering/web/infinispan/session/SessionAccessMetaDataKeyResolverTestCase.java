@@ -26,8 +26,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaDataKeyResolver.SessionAccessMetaDataKeyExternalizer;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaDataKeyResolver.SessionAccessMetaDataKeyFormat;
 
 /**
@@ -39,7 +38,7 @@ public class SessionAccessMetaDataKeyResolverTestCase {
     @Test
     public void test() throws IOException {
         SessionAccessMetaDataKey key = new SessionAccessMetaDataKey("ABC123");
-        new ExternalizerTester<>(new SessionAccessMetaDataKeyExternalizer()).test(key);
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
         new KeyFormatTester<>(new SessionAccessMetaDataKeyFormat()).test(key);
     }
 }

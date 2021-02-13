@@ -286,4 +286,11 @@ public class SizeComputingProtoStreamWriter implements ProtoStreamWriter, Suppli
             this.size += CodedOutputStream.computeDoubleSizeNoTag(value);
         }
     }
+
+    @Override
+    public void writeRawByte(byte value) throws IOException {
+        if (this.present) {
+            this.size += 1;
+        }
+    }
 }

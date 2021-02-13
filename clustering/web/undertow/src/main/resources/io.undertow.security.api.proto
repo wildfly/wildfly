@@ -6,8 +6,8 @@ package io.undertow.security.api;
  * @TypeId(251)
  */
 message AuthenticatedSession {
-	required	string	mechanism	= 1;
-	required	string	principal	= 2;
+	optional	string	mechanism	= 1;
+	optional	string	principal	= 2;
 	repeated	string	roles	 = 3;
 	optional	bytes	credential	= 4;
 	optional	string	originalPrincipal	= 5;

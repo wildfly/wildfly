@@ -38,4 +38,6 @@ public interface ProtoStreamReader extends RawProtoStreamReader {
     <T> T readObject(Class<T> targetClass) throws IOException;
 
     <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException;
+
+    byte readRawByte() throws IOException;
 }

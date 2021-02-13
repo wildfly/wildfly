@@ -1,8 +1,10 @@
 package org.wildfly.clustering.web.infinispan.sso;
 
+// IDs: 230 - 234
+
 /**
- * @TypeId(240)
+ * @TypeId(230)
  */
 message AuthenticationKey {
-	required	string	id	= 1;
+	required	bytes	id	= 1;
 }

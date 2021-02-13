@@ -26,7 +26,6 @@ import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -36,6 +35,6 @@ public class ElytronSSOSerializationContextInitializer extends AbstractSerializa
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new ElytronAuthenticationExternalizer()));
+        context.registerMarshaller(new ElytronAuthenticationMarshaller());
     }
 }

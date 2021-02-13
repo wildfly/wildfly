@@ -1,14 +1,16 @@
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
+// IDs: 240 - 244
+
 /**
- * @TypeId(241)
+ * @TypeId(240)
  */
 message CoarseSessionsKey {
-	required	string	id	= 1;
+	required	bytes	id	= 1;
 }
 
 /**
- * @TypeId(242)
+ * @TypeId(241)
  */
 message SessionsFilterKey {
 }

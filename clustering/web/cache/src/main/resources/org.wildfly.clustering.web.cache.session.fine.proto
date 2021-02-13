@@ -1,0 +1,35 @@
+package org.wildfly.clustering.web.cache.session.fine;
+
+// IDs: 225 - 229
+
+/**
+ * @TypeId(225)
+ */
+message ConcurrentSessionAttributeMapPutFunction {
+	optional	string	attributeName	= 1;
+	optional	sfixed64	mostSignificantBits	= 2;
+	optional	sfixed64	leastSignificantBits	= 3;
+}
+
+/**
+ * @TypeId(226)
+ */
+message ConcurrentSessionAttributeMapRemoveFunction {
+	optional	string	attributeName	= 1;
+}
+
+/**
+ * @TypeId(227)
+ */
+message CopyOnWriteSessionAttributeMapPutFunction {
+	optional	string	attributeName	= 1;
+	optional	sfixed64	mostSignificantBits	= 2;
+	optional	sfixed64	leastSignificantBits	= 3;
+}
+
+/**
+ * @TypeId(228)
+ */
+message CopyOnWriteSessionAttributeMapRemoveFunction {
+	optional	string	attributeName	= 1;
+}

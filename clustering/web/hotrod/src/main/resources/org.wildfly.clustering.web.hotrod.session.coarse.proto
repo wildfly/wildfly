@@ -1,8 +1,10 @@
 package org.wildfly.clustering.web.hotrod.session.coarse;
 
+// IDs: 210 - 214
+
 /**
- * @TypeId(220)
+ * @TypeId(210)
  */
 message SessionAttributesKey {
-	required	string	id	= 1;
+	required	bytes	id	= 1;
 }

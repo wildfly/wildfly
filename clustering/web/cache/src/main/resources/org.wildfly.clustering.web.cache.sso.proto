@@ -1,9 +1,9 @@
 package org.wildfly.clustering.web.cache.sso;
 
-// IDs: 205
+// IDs: 235 - 239
 
 /**
- * @TypeId(205)
+ * @TypeId(235)
  */
 message AuthenticationEntry {
 	required	bytes	authentication	= 1;

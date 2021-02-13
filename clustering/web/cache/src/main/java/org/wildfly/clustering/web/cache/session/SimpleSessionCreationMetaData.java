@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.cache.session;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoField;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -42,7 +43,8 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
     }
 
     public SimpleSessionCreationMetaData(Instant creationTime) {
-        this.creationTime = creationTime;
+        // Only retain millisecond precision
+        this.creationTime = (creationTime.getNano() % 1_000_000 > 0) ? creationTime.with(ChronoField.MILLI_OF_SECOND, creationTime.get(ChronoField.MILLI_OF_SECOND)) : creationTime;
         this.newSession = false;
     }
 
