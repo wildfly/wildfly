@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.infinispan.protostream.SerializationContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A {@link org.infinispan.protostream.SerializationContextInitializer} that registers enumerated marshallers.
@@ -41,11 +42,19 @@ public class ProviderSerializationContextInitializer<E extends Enum<E> & ProtoSt
     private final EnumSet<E> concreteSuperClassProviders;
 
     public ProviderSerializationContextInitializer(String resourceName, Class<E> providerClass) {
-        this(resourceName, EnumSet.noneOf(providerClass));
+        this(resourceName, EnumSet.noneOf(providerClass), WildFlySecurityManager.getClassLoaderPrivileged(providerClass));
     }
 
     public ProviderSerializationContextInitializer(String resourceName, EnumSet<E> concreteSuperClassProviders) {
-        super(resourceName);
+        this(resourceName, concreteSuperClassProviders, WildFlySecurityManager.getClassLoaderPrivileged(findEnumClass(concreteSuperClassProviders)));
+    }
+
+    private static <E extends Enum<E>> Class<E> findEnumClass(EnumSet<E> set) {
+        return (set.isEmpty() ? EnumSet.complementOf(set) : set).iterator().next().getDeclaringClass();
+    }
+
+    private ProviderSerializationContextInitializer(String resourceName, EnumSet<E> concreteSuperClassProviders, ClassLoader loader) {
+        super(resourceName, loader);
         this.concreteSuperClassProviders = concreteSuperClassProviders;
     }
 

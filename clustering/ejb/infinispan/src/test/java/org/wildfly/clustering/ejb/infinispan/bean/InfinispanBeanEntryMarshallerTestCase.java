@@ -20,32 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.bean;
 
-import java.net.InetAddress;
+import java.io.IOException;
+import java.util.UUID;
 
-import org.jboss.as.network.ClientMapping;
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link ClientMappingExternalizer}.
+ * Unit test for {@link InfinispanBeanEntryMarshaller}.
  * @author Paul Ferraro
  */
-public class ClientMappingExternalizerTestCase {
+public class InfinispanBeanEntryMarshallerTestCase {
 
     @Test
-    public void test() throws Exception {
-        ClientMapping mapping = new ClientMapping(InetAddress.getLoopbackAddress(), 16, "localhost", Short.MAX_VALUE);
-
-        new ExternalizerTester<>(new ClientMappingExternalizer()).test(mapping, ClientMappingExternalizerTestCase::assertEquals);
+    public void test() throws IOException {
+        InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>("StatefulBean", new UUIDSessionID(UUID.randomUUID()));
+        Tester<InfinispanBeanEntry<SessionID>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+        tester.test(entry, InfinispanBeanEntryMarshallerTestCase::assertEquals);
     }
 
-    static void assertEquals(ClientMapping mapping1, ClientMapping mapping2) {
-        Assert.assertEquals(mapping1.getSourceNetworkAddress(), mapping2.getSourceNetworkAddress());
-        Assert.assertEquals(mapping1.getSourceNetworkMaskBits(), mapping2.getSourceNetworkMaskBits());
-        Assert.assertEquals(mapping1.getDestinationAddress(), mapping2.getDestinationAddress());
-        Assert.assertEquals(mapping1.getDestinationPort(), mapping2.getDestinationPort());
+    static void assertEquals(InfinispanBeanEntry<SessionID> entry1, InfinispanBeanEntry<SessionID> entry2) {
+        Assert.assertEquals(entry1.getBeanName(), entry2.getBeanName());
+        Assert.assertEquals(entry1.getGroupId(), entry2.getGroupId());
     }
 }

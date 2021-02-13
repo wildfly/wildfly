@@ -31,23 +31,25 @@ import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.marshalling.spi.JavaByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
- * Unit test for {@link InfinispanBeanGroupEntryExternalizer}.
+ * Unit test for {@link InfinispanBeanGroupEntryMarshaller}.
  * @author Paul Ferraro
  */
-public class InfinispanBeanGroupEntryExternalizerTestCase {
+public class InfinispanBeanGroupEntryMarshallerTestCase {
 
     @Test
     public void test() throws IOException {
         SessionID id = new UUIDSessionID(UUID.randomUUID());
         Map<SessionID, String> beans = Collections.singletonMap(id, "bean");
         InfinispanBeanGroupEntry<SessionID, String, ByteBufferMarshaller> entry = new InfinispanBeanGroupEntry<>(new ByteBufferMarshalledValue<>(beans, JavaByteBufferMarshaller.INSTANCE));
-        new ExternalizerTester<>(new InfinispanBeanGroupEntryExternalizer<SessionID, String, ByteBufferMarshaller>()).test(entry, InfinispanBeanGroupEntryExternalizerTestCase::assertEquals);
+        Tester<InfinispanBeanGroupEntry<SessionID, String, ByteBufferMarshaller>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+        tester.test(entry, InfinispanBeanGroupEntryMarshallerTestCase::assertEquals);
     }
 
     static void assertEquals(InfinispanBeanGroupEntry<SessionID, String, ByteBufferMarshaller> entry1, InfinispanBeanGroupEntry<SessionID, String, ByteBufferMarshaller> entry2) {

@@ -36,13 +36,19 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public abstract class AbstractSerializationContextInitializer implements SerializationContextInitializer {
 
     private final String resourceName;
+    private final ClassLoader loader;
 
     protected AbstractSerializationContextInitializer() {
-        this.resourceName = this.getClass().getPackage().getName() + ".proto";
+        this(null);
     }
 
     protected AbstractSerializationContextInitializer(String resourceName) {
-        this.resourceName = resourceName;
+        this(resourceName, null);
+    }
+
+    protected AbstractSerializationContextInitializer(String resourceName, ClassLoader loader) {
+        this.resourceName = (resourceName == null) ? this.getClass().getPackage().getName() + ".proto" : resourceName;
+        this.loader = (loader == null) ? WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()) : loader;
     }
 
     @Deprecated
@@ -59,9 +65,8 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 
     @Override
     public void registerSchema(SerializationContext context) {
-        ClassLoader loader = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
         try {
-            context.registerProtoFiles(FileDescriptorSource.fromResources(loader, this.resourceName));
+            context.registerProtoFiles(FileDescriptorSource.fromResources(this.loader, this.resourceName));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

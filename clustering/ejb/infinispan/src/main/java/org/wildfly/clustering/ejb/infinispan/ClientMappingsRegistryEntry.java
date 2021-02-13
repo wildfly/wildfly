@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,24 +22,19 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.List;
+
+import org.jboss.as.network.ClientMapping;
 
 /**
+ * Registry entry for the client mappings registry.
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
-public class NetworkSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class ClientMappingsRegistryEntry extends SimpleImmutableEntry<String, List<ClientMapping>> {
+    private static final long serialVersionUID = 2252091408161700077L;
 
-    public NetworkSerializationContextInitializer() {
-        super("org.jboss.as.network.proto");
-    }
-
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new ClientMappingExternalizer()));
+    public ClientMappingsRegistryEntry(String memberName, List<ClientMapping> mappings) {
+        super(memberName, mappings);
     }
 }

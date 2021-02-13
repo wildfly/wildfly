@@ -28,10 +28,9 @@ import java.util.UUID;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Test;
-import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupKeySerializer.InfinispanBeanGroupKeyExternalizer;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupKeySerializer.InfinispanBeanGroupKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
  * Unit test for {@link InfinispanBeanGroupKeySerializer}.
@@ -43,7 +42,7 @@ public class InfinispanBeanGroupKeySerializerTestCase {
     public void test() throws IOException {
         InfinispanBeanGroupKey<SessionID> key = new InfinispanBeanGroupKey<>(new UUIDSessionID(UUID.randomUUID()));
 
-        new ExternalizerTester<>(new InfinispanBeanGroupKeyExternalizer()).test(key);
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
         new KeyFormatTester<>(new InfinispanBeanGroupKeyFormat()).test(key);
     }
 }

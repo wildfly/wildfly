@@ -32,7 +32,9 @@ import org.junit.Test;
 import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.BasicSessionIDExternalizer;
 import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.UUIDSessionIDExternalizer;
 import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.UnknownSessionIDExternalizer;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
  * Unit test for {@link SessionIDSerializer}.
@@ -41,22 +43,31 @@ import org.wildfly.clustering.marshalling.ExternalizerTester;
 public class SessionIDSerializerTestCase {
 
     @Test
-    public void test() throws IOException {
+    public void testProtoStream() throws IOException {
+        test(ProtoStreamTesterFactory.INSTANCE.createTester());
+    }
+
+    @Test
+    public void testExternalizer() throws IOException {
+        test(new ExternalizerTesterFactory(new UUIDSessionIDExternalizer(), new BasicSessionIDExternalizer(), new UnknownSessionIDExternalizer()).createTester());
+    }
+
+    private static void test(Tester<SessionID> tester) throws IOException {
         UUID uuid = UUID.randomUUID();
 
-        new ExternalizerTester<>(new UUIDSessionIDExternalizer()).test(new UUIDSessionID(uuid));
+        tester.test(new UUIDSessionID(uuid));
 
-        ByteBuffer buffer = ByteBuffer.wrap(new byte[20]);
+        ByteBuffer buffer = ByteBuffer.allocate(20);
         buffer.putInt(0x07000000);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
 
-        new ExternalizerTester<>(new BasicSessionIDExternalizer()).test(SessionID.createSessionID(buffer.array()));
+        tester.test(SessionID.createSessionID(buffer.array()));
 
-        buffer = ByteBuffer.wrap(new byte[16]);
+        buffer = ByteBuffer.allocate(16);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
 
-        new ExternalizerTester<>(new UnknownSessionIDExternalizer()).test(SessionID.createSessionID(buffer.array()));
+        tester.test(SessionID.createSessionID(buffer.array()));
     }
 }
