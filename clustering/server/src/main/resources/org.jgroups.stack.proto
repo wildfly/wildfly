@@ -6,12 +6,16 @@ package org.jgroups.stack;
  * @TypeId(137)
  */
 message IpAddress {
-	required	bytes	address	= 1;
+	optional	bytes	address	= 1;
+	optional	uint32	port	= 2;
 }
 
 /**
  * @TypeId(138)
  */
 message IpAddressUUID {
-	required	bytes	address	= 1;
+	optional	bytes	address	= 1;
+	optional	uint32	port	= 2;
+	optional	sfixed64	low	= 3;
+	optional	sfixed32	high	= 4;
 }

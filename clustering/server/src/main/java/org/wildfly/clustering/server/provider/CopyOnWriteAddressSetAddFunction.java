@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.registry;
+package org.wildfly.clustering.server.provider;
 
-import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
+import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.ee.cache.function.CopyOnWriteSetAddFunction;
 
 /**
- * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
+ * Copy-on-write {@link java.util.Set#add(Object)} function for an {@link Address}.
  * @author Paul Ferraro
  */
-public class RegistrySerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class CopyOnWriteAddressSetAddFunction extends CopyOnWriteSetAddFunction<Address> {
 
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new EnumMarshaller<>(CacheRegistryFilter.class));
+    public CopyOnWriteAddressSetAddFunction(Address address) {
+        super(address);
     }
 }

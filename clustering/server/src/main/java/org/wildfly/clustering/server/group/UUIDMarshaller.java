@@ -22,20 +22,32 @@
 
 package org.wildfly.clustering.server.group;
 
-import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Scalar;
+import java.io.IOException;
+
+import org.jgroups.util.UUID;
+import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
- * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
+ * Marshaller for a {@link UUID} address.
  * @author Paul Ferraro
  */
-public class GroupSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class UUIDMarshaller extends FunctionalMarshaller<UUID, java.util.UUID> {
 
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new AddressableNodeMarshaller());
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(LocalNode.class, Scalar.STRING.cast(String.class), LocalNode::getName, LocalNode::new));
+    private static final ExceptionFunction<UUID, java.util.UUID, IOException> FUNCTION = new ExceptionFunction<UUID, java.util.UUID, IOException>() {
+        @Override
+        public java.util.UUID apply(UUID uuid) throws IOException {
+            return new java.util.UUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+        }
+    };
+    private static final ExceptionFunction<java.util.UUID, UUID, IOException> FACTORY = new ExceptionFunction<java.util.UUID, UUID, IOException>() {
+        @Override
+        public UUID apply(java.util.UUID uuid) throws IOException {
+            return new UUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+        }
+    };
+
+    public UUIDMarshaller() {
+        super(UUID.class, java.util.UUID.class, FUNCTION, FACTORY);
     }
 }

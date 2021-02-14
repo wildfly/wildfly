@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,32 +22,33 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.StartException;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ExceptionMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.common.function.Functions;
 
 /**
+ * Provider of marshallers for the org.jboss.msc.service package.
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
-public class ServiceSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public enum ServiceMarshallerProvider implements ProtoStreamMarshallerProvider {
+    SERVICE_NAME(new FunctionalScalarMarshaller<>(Scalar.STRING.cast(String.class), Functions.constantSupplier(ServiceName.JBOSS), ServiceName::getCanonicalName, ServiceName::parse)),
+    SERVICE_NOT_FOUND_EXCEPTION(new ExceptionMarshaller<>(ServiceNotFoundException.class)),
+    START_EXCEPTION(new ExceptionMarshaller<>(StartException.class)),
+    ;
+    private final ProtoStreamMarshaller<?> marshaller;
 
-    public ServiceSerializationContextInitializer() {
-        super("org.jboss.msc.service.proto");
+    ServiceMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
     }
 
     @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(Scalar.STRING.cast(String.class), Functions.constantSupplier(ServiceName.JBOSS), ServiceName::getCanonicalName, ServiceName::parse));
-        context.registerMarshaller(new ExceptionMarshaller<>(StartException.class));
-        context.registerMarshaller(new ExceptionMarshaller<>(ServiceNotFoundException.class));
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

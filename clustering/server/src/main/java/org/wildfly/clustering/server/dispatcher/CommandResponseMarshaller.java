@@ -33,8 +33,6 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 /**
  * Marshalling strategy for the command response.
  * @author Paul Ferraro
- *
- * @param <C> command execution context
  */
 public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller {
     private final ByteBufferMarshaller marshaller;
