@@ -27,7 +27,7 @@ import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ServiceRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -79,7 +79,7 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
         super(new SimpleResourceDefinition.Parameters(MicroProfileMetricsExtension.SUBSYSTEM_PATH,
                 MicroProfileMetricsExtension.getResourceDescriptionResolver(MicroProfileMetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileMetricsSubsystemAdd.INSTANCE)
-                .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileMetricsSubsystemAdd.INSTANCE))
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
                 .setCapabilities(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY,
                         MICROPROFILE_METRICS_SCAN));
     }
