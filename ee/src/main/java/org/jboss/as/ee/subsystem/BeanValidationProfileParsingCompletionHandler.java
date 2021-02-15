@@ -39,8 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
- * {@link org.jboss.as.controller.parsing.ProfileParsingCompletionHandler} that installs a default Bean Validation extension and subsystem if the
- * profile included a legacy EE subsystem version but not Bean Validation subsystem.
+ * {@link org.jboss.as.controller.parsing.ProfileParsingCompletionHandler} that installs a default Jakarta Bean Validation extension and subsystem if the
+ * profile included a legacy EE subsystem version but not Jakarta Bean Validation subsystem.
  *
  * @author Eduardo Martins
  */

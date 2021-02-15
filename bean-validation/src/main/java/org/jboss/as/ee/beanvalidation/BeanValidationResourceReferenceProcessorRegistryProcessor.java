@@ -29,7 +29,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
- * DU Processor responsible for registering EEResourceReferenceProcessors wrt bean validation.
+ * DU Processor responsible for registering EEResourceReferenceProcessors wrt Jakarta Bean Validation.
  *
  * @author Eduardo Martins
  */

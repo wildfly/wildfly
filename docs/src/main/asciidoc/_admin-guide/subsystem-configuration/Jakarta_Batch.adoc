@@ -1,5 +1,5 @@
-[[Batch_JSR-352]]
-= Batch (JSR-352) Subsystem Configuration
+[[Jakarta_Batch]]
+= Jakarta Batch Subsystem Configuration
 
 [abstract]
 

@@ -34,7 +34,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * Processor which adds each Bean Validation API module as dependency to all deployments.
+ * Processor which adds each Jakarta Bean Validation API module as dependency to all deployments.
  *
  * @author Eduardo Martins
  */

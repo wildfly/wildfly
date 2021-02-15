@@ -496,13 +496,13 @@ Validation as well. We add in Arquillian for testing.
 .  Hit finish
 .  Load the app at http://localhost:8080/jboss-as-kitchensink
 .  Register a member - make sure to enter an invalid email and phone -
-show bean validation at work
+show Jakarta Bean Validation at work
 .  Click on the member URL and show the output from Jakarta RESTful Web Services
 
-[[bean-validation]]
-=== Bean Validation
+[[Jakarta-Bean-Validation]]
+=== Jakarta Bean Validation
 
-.  Explain the benefits of bean validation - need your data always
+.  Explain the benefits of Jakarta Bean Validation - need your data always
 valid (protect your data) AND good errors for your user. BV allows you
 to express once, apply often.
 .  `index.xhtml`

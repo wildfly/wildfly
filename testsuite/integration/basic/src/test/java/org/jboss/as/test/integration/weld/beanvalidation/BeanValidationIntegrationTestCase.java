@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests for the integration of CDI and Bean Validation.
+ * Tests for the integration of CDI and Jakarta Bean Validation.
  *
  * @author Farah Juma
  */

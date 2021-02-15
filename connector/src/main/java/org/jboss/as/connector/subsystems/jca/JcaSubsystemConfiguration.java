@@ -37,7 +37,7 @@ import org.jboss.jca.deployers.common.Configuration;
  */
 public class JcaSubsystemConfiguration implements Configuration {
 
-    /** Preform bean validation */
+    /** Preform Jakarta Bean Validation */
     private final AtomicBoolean beanValidation = new AtomicBoolean(true);
 
     /** Preform archive validation */
@@ -62,7 +62,7 @@ public class JcaSubsystemConfiguration implements Configuration {
     }
 
     /**
-     * Set if bean validation should be performed
+     * Set if Jakarta Bean Validation should be performed
      * @param value The value
      */
     public void setBeanValidation(boolean value) {
@@ -70,7 +70,7 @@ public class JcaSubsystemConfiguration implements Configuration {
     }
 
     /**
-     * Should bean validation be performed
+     * Should Jakarta Bean Validation be performed
      * @return True if validation; otherwise false
      */
     public boolean getBeanValidation() {
@@ -87,7 +87,7 @@ public class JcaSubsystemConfiguration implements Configuration {
     }
 
     /**
-     * Should bean validation be performed
+     * Should Jakarta Bean Validation be performed
      *
      * @return True if validation; otherwise false
      */

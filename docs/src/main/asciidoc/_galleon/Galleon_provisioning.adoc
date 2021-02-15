@@ -99,7 +99,7 @@ that depends on _Jakarta-RESTful-Web-Services_ and _CDI_.
 Some layers _optionally_ depend on other layers; i.e. the features provided by layer can and by default do make use
 of those from another layer, but if those are not present things will still work fine. In such a case if you do not
 want the optional capabilities you can exclude the optional layer by prefixing its name with a '-'. For example
-to exclude the optional _CDI_ dependency on _Bean Validation_:
+to exclude the optional _CDI_ dependency on _Jakarta Bean Validation_:
 
 [source,options="nowrap"]
 ----

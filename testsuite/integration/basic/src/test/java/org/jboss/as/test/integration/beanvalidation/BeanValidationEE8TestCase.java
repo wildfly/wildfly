@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
- * A test validating the Bean Validation 2.0 support.
+ * A test validating the Jakarta Bean Validation 2.0 support.
  *
  * @author <a href="mailto:guillaume@hibernate.org">Guillaume Smet</a>
  */
