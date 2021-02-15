@@ -24,7 +24,6 @@ package org.wildfly.clustering.marshalling.protostream.time;
 
 import java.io.IOException;
 import java.time.Month;
-import java.time.Period;
 import java.time.Year;
 import java.time.YearMonth;
 
@@ -34,10 +33,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for {@link Period} instances, using the following strategy:
+ * Marshaller for {@link YearMonth} instances, using the following strategy:
  * <ol>
- * <li>Marshal year</li>
- * <li>Marshal month</li>
+ * <li>Marshal epoch year</li>
+ * <li>Marshal month as enum</li>
  * </ol>
  * @author Paul Ferraro
  */
