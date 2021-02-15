@@ -1084,8 +1084,8 @@ public interface EeLogger extends BasicLogger {
     DeploymentUnitProcessingException aroundInvokeAnnotationUsedTooManyTimes(DotName className, int numberOfAnnotatedMethods);
 
     @LogMessage(level = ERROR)
-    @Message(id = 110, value = "Failed to run scheduled task")
-    void failedToRunTask(@Cause Exception e);
+    @Message(id = 110, value = "Failed to run scheduled task: %s")
+    void failedToRunTask(Object delegate, @Cause Exception e);
 
     @Message(id = 111, value = "Cannot run scheduled task %s as container is suspended")
     IllegalStateException cannotRunScheduledTask(Object delegate);
@@ -1204,4 +1204,8 @@ public interface EeLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 130, value = "%s hung task %s not cancelled")
     void hungTaskNotCancelled(String executorName, String taskName);
+
+    @Message(id = 131, value = "Failed to run scheduled task: %s")
+    RuntimeException failureWhileRunningTask(Object delegate,@Cause Exception e);
+
 }

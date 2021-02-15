@@ -171,11 +171,15 @@ public class ControlPointUtils {
         public void run() {
             if (controlPoint == null) {
                 runnable.run();
-            } else
+            } else {
+                Exception runnableException = null;
                 try {
                     if (controlPoint.beginRequest() == RunResult.RUN) {
                         try {
                             runnable.run();
+                        } catch (Exception e) {
+                            runnableException = e;
+                            throw e;
                         } finally {
                             controlPoint.requestComplete();
                         }
@@ -184,8 +188,15 @@ public class ControlPointUtils {
                         throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(runnable);
                     }
                 } catch (Exception e) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(e);
+                    // WFLY-13043
+                    EeLogger.ROOT_LOGGER.failedToRunTask(runnable,e);
+                    if (runnableException == null) {
+                        return;
+                    } else {
+                        throw EeLogger.ROOT_LOGGER.failureWhileRunningTask(runnable, e);
+                    }
                 }
+            }
         }
     }
 
@@ -217,7 +228,7 @@ public class ControlPointUtils {
                         }
                     }
                 } catch (Exception e) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(e);
+                    EeLogger.ROOT_LOGGER.failedToRunTask(callable,e);
                 }
                 throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(callable);
             }
