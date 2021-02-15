@@ -486,6 +486,28 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-client-microprofile-base</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.reactivestreams</groupId>
+      <artifactId>reactive-streams</artifactId>
+      <licenses>
+        <license>
+          <name>Creative Commons Zero v1.0 Universal</name>
+          <url>http://creativecommons.org/publicdomain/zero/1.0/legalcode</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>${full.maven.groupId}</groupId>
       <artifactId>wildfly-microprofile-config-smallrye</artifactId>
       <licenses>

@@ -29,6 +29,7 @@
     </properties>
     <resources>
         <artifact name="${org.jboss.resteasy:resteasy-client-microprofile}" />
+        <artifact name="${org.jboss.resteasy:resteasy-client-microprofile-base}" />
     </resources>
 
     <dependencies>
@@ -41,5 +42,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs" services="import"/>
         <module name="org.jboss.resteasy.resteasy-cdi" services="import"/>
+        <module name="org.reactivestreams"/>
     </dependencies>
 </module>
