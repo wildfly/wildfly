@@ -46,6 +46,7 @@ public class ManagedScheduledExecutorExceptionTestCase {
                 .addClasses(ManagedScheduledExecutorExceptionTestCase.class);
     }
 
+    private static final String loggerMessage = "WFLYEE0136";
     private static final String message = "WFLY-17186";
 
     private static void badMethod() {
@@ -74,7 +75,8 @@ public class ManagedScheduledExecutorExceptionTestCase {
             future.get();
             fail("Exception did not propagate");
         } catch (ExecutionException e) {
-            assertTrue(e.toString(), e.getCause().getMessage().contains(message));
+            assertTrue(e.toString(), e.getCause().getMessage().contains(loggerMessage));
+            assertTrue(e.toString(), e.getCause().getCause().getMessage().contains(message));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             fail("Caught " + e);

@@ -172,10 +172,14 @@ public class ControlPointUtils {
             if (controlPoint == null) {
                 runnable.run();
             } else {
+                RuntimeException runnableException = null;
                 try {
                     if (controlPoint.beginRequest() == RunResult.RUN) {
                         try {
                             runnable.run();
+                        } catch (RuntimeException e) {
+                            runnableException = e;
+                            throw e;
                         } finally {
                             controlPoint.requestComplete();
                         }
@@ -183,11 +187,13 @@ public class ControlPointUtils {
                         throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(runnable);
                     }
                 } catch (RuntimeException re) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(re);  // note that this is now a DEBUG message as we rethrow re
-                    throw re;
-                } catch (Exception e) { // TODO when WFCORE-6153 is done, drop this block. The actual try code only throws RuntimeExceptions
-                    EeLogger.ROOT_LOGGER.failedToRunTask(e);  // note that this is now a DEBUG message as we rethrow e
-                    throw new RuntimeException(e);
+                    // WFLY-13043
+                    if (runnableException == null) {
+                        EeLogger.ROOT_LOGGER.failedToRunTask(runnable,re);
+                        return;
+                    } else {
+                        throw EeLogger.ROOT_LOGGER.failureWhileRunningTask(runnable, re);
+                    }
                 }
             }
         }
@@ -223,8 +229,7 @@ public class ControlPointUtils {
                         throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(callable);
                     }
                 } catch (Exception e) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(e); // note that this is now a DEBUG message as we rethrow e
-                    throw e;
+                    throw EeLogger.ROOT_LOGGER.failureWhileRunningTask(callable, e);
                 }
             }
         }
