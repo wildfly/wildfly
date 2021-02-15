@@ -52,7 +52,7 @@ link:#gal.datasources[datasources] (optional) +
 link:#gal.web-server[web-server] +
 
 |[[gal.jaxrs-server]]jaxrs-server
-|An extension of _datasources-web-server_ with support for JAX-RS, CDI and JPA.
+|An extension of _datasources-web-server_ with support for Jakarta RESTful Web Services, CDI and JPA.
 |
 link:#gal.bean-validation[bean-validation] (optional) +
 link:#gal.cdi[cdi] (optional) +
@@ -287,7 +287,7 @@ link:#gal.web-server[web-server] +
 link:#gal.base-server[base-server] +
 
 |[[gal.jsonp]]jsonp
-|Support for JSON Processing (JSON-P) provisioning the JSON-P API and Implementation modules.
+|Support for JSON Processing (Jakarta JSON Processing) provisioning the Jakarta JSON Processing API and Implementation modules.
 |
 link:#gal.base-server[base-server] +
 

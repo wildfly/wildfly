@@ -81,7 +81,7 @@ link:#wildfly_layers[WildFly Layers] that are used to compose the server.
 
 The set of Galleon layers to include is driven by the needs of the application you are developing.
 The list of link:#wildfly_layers[WildFly Layers] provides details on 
-the server features that each layer brings. Make sure that the API and server features you are using (eg: JAX-RS, Eclipse MicroProfile Config, datasources)
+the server features that each layer brings. Make sure that the API and server features you are using (eg: Jakarta RESTful Web Services, Eclipse MicroProfile Config, datasources)
 are provided by the layers you are choosing.
 
 If you decide not to specify Galleon layers, a server containing all MicroProfile subsystems is

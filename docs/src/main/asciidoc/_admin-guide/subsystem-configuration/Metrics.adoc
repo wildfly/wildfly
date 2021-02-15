@@ -91,7 +91,7 @@ For example Undertow exposes a metric attribute `request-count` for every Servle
 This attribute will be exposed to Prometheus with the name `wildfly_undertow_request_count`.
 Other information such as the name of the Servlet are added to the labels of the metrics.
 
-The [helloworld-rs quickstart](https://github.com/wildfly/quickstart/tree/master/helloworld-rs) creates a JAX-RS application
+The [helloworld-rs quickstart](https://github.com/wildfly/quickstart/tree/master/helloworld-rs) creates a Jakarta RESTful Web Services application
 that can be deployed in WildFly.
 A corresponding metric will be exposed for it with the name and labels:
 

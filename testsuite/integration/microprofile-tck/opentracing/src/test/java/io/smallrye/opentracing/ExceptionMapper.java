@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Temporal fix to catch exceptions thrown in JAX-RS endpoints, see https://issues.jboss.org/browse/RESTEASY-1758
+ * Temporal fix to catch exceptions thrown in Jakarta RESTful Web Services endpoints, see https://issues.jboss.org/browse/RESTEASY-1758
  *
  * @author Pavol Loffay
  */

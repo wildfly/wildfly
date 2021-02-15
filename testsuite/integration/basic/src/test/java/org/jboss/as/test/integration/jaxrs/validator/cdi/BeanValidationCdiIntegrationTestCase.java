@@ -45,7 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test for the integration of JAX-RS, Bean Validation and CDI. See WFLY-278.
+ * Test for the integration of Jakarta RESTful Web Services, Bean Validation and CDI. See WFLY-278.
  *
  * @author Gunnar Morling
  */

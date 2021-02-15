@@ -1,5 +1,5 @@
-[[Java_API_for_RESTful_Web_Services_JAX-RS]]
-= Java API for RESTful Web Services (JAX-RS)
+[[Jakarta_RESTful_Web_Services]]
+= Jakarta RESTful Web Services
 
 ifdef::env-github[:imagesdir: ../images/]
 
@@ -9,14 +9,14 @@ ifdef::env-github[:imagesdir: ../images/]
 [[tutorial-overview]]
 == Tutorial Overview
 
-This chapter describes the Java API for RESTful web services (JAX-RS,
-defined in http://jcp.org/en/jsr/detail?id=311[JSR331]).
+This chapter describes the Jakarta RESTful Web Services
+(defined in https://jakarta.ee/specifications/restful-ws/2.1/).
 http://www.jboss.org/resteasy[RESTEasy] is an portable implementation of
 this specification which can run in any Servlet container. Tight
 integration with JBoss Application Server is available for optimal user
-experience in that environment. While JAX-RS is only a server-side
-specification, RESTeasy has innovated to bring JAX-RS to the client
-through the RESTEasy JAX-RS Client Framework.
+experience in that environment. While Jakarta RESTful Web Services is client as well as
+server-side specification, RESTeasy has innovated to bring Jakarta RESTful Web Services to the client
+through the RESTEasy Jakarta RESTful Web Services Client Framework.
 
 Detailed documentation on RESTEasy is available
 http://www.jboss.org/resteasy/docs.html[here]. +
@@ -58,7 +58,7 @@ predictable URLs. Many well-known public web services expose RESTful
 APIs.
 
 The Jakarta specification for RESTful services is
-JAX-RS. It is covered by JSR-311 ( http://jcp.org/jsr/detail/311.jsp).
+Jakarta RESTful Web Services. It is covered by Jakarta RESTful Web Services 2.1 (https://jakarta.ee/specifications/restful-ws/2.1/).
 In the REST model, the server exposes APIs through specific URIs
 (typically URLs), and clients access those URIs to query or modify data.
 REST uses a stateless communication protocol. Typically, this is HTTP.
@@ -104,7 +104,7 @@ public class Book {
 ----
 
 The Library is the RESTful Root Resource. Here we use a set of standard
-JAX-RS annotations to define
+Jakarta RESTful Web Services annotations to define
 
 * The root path to the library resource
 * The wire representation of the data (MIME type)
@@ -149,7 +149,7 @@ public class Library {
 }
 ----
 
-The Library root resource uses these JAX-RS annotations:
+The Library root resource uses these Jakarta RESTful Web Services annotations:
 
 [cols=",",options="header"]
 |=======================================================================
@@ -224,7 +224,7 @@ http://www.jboss.org/arquillian[Arquillian], the test framework we use
 throughout this tutorial, can manage server startup/shutdown. It is
 however also possible to startup the server instance manually before you
 run the tests. The latter allows you to look at the console and see what
-log output the deployment phase and JAX-RS endpoint invocations produce.
+log output the deployment phase and Jakarta RESTful Web Services endpoint invocations produce.
 
 [source,java,options="nowrap"]
 ----
@@ -309,7 +309,7 @@ from the repository.
 $ rm -rf tutorial/src tutorial/pom.xml
 ----
 
-Now we copy the JAX-RS endpoint webapp that we build above to the
+Now we copy the Jakarta RESTful Web Services endpoint webapp that we built above to the
 'deployments' folder and commit the changes.
 
 [source,java,options="nowrap"]
@@ -334,7 +334,7 @@ Counting objects: 6, done.
 remote: Starting application...Done
 ----
 
-You can now use curl or your browser to see the JAX-RS endpoint in
+You can now use curl or your browser to see the Jakarta RESTful Web Services endpoint in
 action. The following URL lists the books that are currently registered
 in the library.
 
@@ -409,7 +409,7 @@ image:jaxrs/2_2_HVGA_Next.png[images/jaxrs/2_2_HVGA_Next.png]
 image:jaxrs/2_2_HVGA_Final.png[images/jaxrs/2_2_HVGA_Final.png]
 
 When you unlock the home screen by dragging the little green lock to the
-right. You should see the the running JAX-RS client application.
+right. You should see the the running Jakarta RESTful Web Services client application.
 
 image:jaxrs/NoBooks.png[images/jaxrs/NoBooks.png]
 
@@ -455,7 +455,7 @@ mobile device. Naturally, http://www.phonegap.com/about/features[not the
 full set] of mobile platform APIs would be available through this
 approach.
 
-The JAX-RS client application uses an annotated library client interface
+The Jakarta RESTful Web Services client application uses an annotated library client interface
 
 [source,java,options="nowrap"]
 ----
@@ -534,7 +534,7 @@ size of the application is considerably smaller in size (i.e. 40k)
 ----
 
 The second implementation uses the fabulous RESTEasy client proxy to
-interact with the JAX-RS endpoint. The details of Http connectivity and
+interact with the Jakarta RESTful Web Services endpoint. The details of Http connectivity and
 JSON data binding is transparently handled by RESTEasy. The total size
 of the application is considerably bigger in size (i.e. 400k)
 

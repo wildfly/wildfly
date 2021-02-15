@@ -88,7 +88,7 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
     }
 
     public MessageContext getMessageContext() throws IllegalStateException {
-        // JAX-RPC is not supported
+        // Jakarta XML RPC is not supported
         throw EjbLogger.ROOT_LOGGER.cannotCall("getMessageContext()", "MessageContext");
     }
 

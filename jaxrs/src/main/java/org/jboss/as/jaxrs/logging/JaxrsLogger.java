@@ -77,25 +77,25 @@ public interface JaxrsLogger extends BasicLogger {
     void classOrMethodAnnotationNotFound(String annotation, AnnotationTarget target);
 
     /**
-     * Logs an error message indicating more than one mapping found for JAX-RS servlet, represented by the
+     * Logs an error message indicating more than one mapping found for Jakarta RESTful Web Services servlet, represented by the
      * {@code servletName} parameter, the second mapping, represented by the {@code pattern} parameter, will not work.
      *
      * @param servletName the name of the servlet.
      * @param pattern     the pattern.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 3, value = "More than one mapping found for JAX-RS servlet: %s the second mapping %s will not work")
+    @Message(id = 3, value = "More than one mapping found for Jakarta RESTful Web Services servlet: %s the second mapping %s will not work")
     void moreThanOneServletMapping(String servletName, String pattern);
 
 //    /**
-//     * Logs a warning message indicating no servlet mappings found for the JAX-RS application, represented by the
+//     * Logs a warning message indicating no servlet mappings found for the Jakarta RESTful Web Services application, represented by the
 //     * {@code servletName} parameter, either annotate with {@link javax.ws.rs.ApplicationPath @ApplicationPath} or add
 //     * a {@code servlet-mapping} in the web.xml.
 //     *
 //     * @param servletName the servlet name.
 //     */
 //    @LogMessage(level = WARN)
-//    @Message(id = 4, value = "No Servlet mappings found for JAX-RS application: %s either annotate it with @ApplicationPath or add a servlet-mapping in web.xml")
+//    @Message(id = 4, value = "No Servlet mappings found for Jakarta RESTful Web Services application: %s either annotate it with @ApplicationPath or add a servlet-mapping in web.xml")
 //    void noServletMappingFound(String servletName);
 //
 //    /**
@@ -107,12 +107,12 @@ public interface JaxrsLogger extends BasicLogger {
 //    void resteasyScanWarning(String param);
 
     /**
-     * Creates an exception indicating the JAX-RS application class could not be loaded.
+     * Creates an exception indicating the Jakarta RESTful Web Services application class could not be loaded.
      *
      * @param cause the cause of the error.
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 6, value = "Could not load JAX-RS Application class")
+    @Message(id = 6, value = "Could not load Jakarta RESTful Web Services Application class")
     DeploymentUnitProcessingException cannotLoadApplicationClass(@Cause Throwable cause);
 
 //    /**
@@ -126,12 +126,12 @@ public interface JaxrsLogger extends BasicLogger {
 //    DeploymentUnitProcessingException moreThanOneApplicationClassFound(Class<? extends Application> app1, Class<? extends Application> app2);
 //
 //    /**
-//     * A message indicating only one JAX-RS application class is allowed.
+//     * A message indicating only one Jakarta RESTful Web Services application class is allowed.
 //     *
 //     * @param sb a builder with application classes.
 //     * @return the message.
 //     */
-//    @Message(id = 8, value = "Only one JAX-RS Application Class allowed. %s")
+//    @Message(id = 8, value = "Only one Jakarta RESTful Web Services Application Class allowed. %s")
 //    String onlyOneApplicationClassAllowed(StringBuilder sb);
 //
 //    /**
@@ -143,14 +143,14 @@ public interface JaxrsLogger extends BasicLogger {
 //    String conflictUrlMapping();
 
     /**
-     * JAX-RS resource @Path annotation is on a class or interface that is not a view
+     * Jakarta RESTful Web Services resource @Path annotation is on a class or interface that is not a view
      *
      *
      * @param type    The class with the annotation
      * @param ejbName The ejb
      * @return  the exception
      */
-    @Message(id = 10, value = "JAX-RS resource %s does not correspond to a view on the EJB %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of an EJB.")
+    @Message(id = 10, value = "Jakarta RESTful Web Services resource %s does not correspond to a view on the EJB %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of an EJB.")
     DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class<?>> type, String ejbName);
 
     @Message(id = 11, value = "Invalid value for parameter %s: %s")
@@ -168,7 +168,7 @@ public interface JaxrsLogger extends BasicLogger {
     void failedToRegisterManagementViewForRESTResources(String resClass, @Cause Exception e);
 
     @LogMessage(level = WARN)
-    @Message(id = 15, value = "No Servlet declaration found for JAX-RS application.  In %s either provide a class that extends javax.ws.rs.core.Application or declare a servlet class in web.xml.")
+    @Message(id = 15, value = "No Servlet declaration found for Jakarta RESTful Web Services application.  In %s either provide a class that extends javax.ws.rs.core.Application or declare a servlet class in web.xml.")
     void noServletDeclaration(String archiveName);
 
     @LogMessage(level = INFO)
@@ -176,11 +176,11 @@ public interface JaxrsLogger extends BasicLogger {
     void resteasyVersion(String version);
 
     @LogMessage(level = WARN)
-    @Message(id = 17, value = "Failed to read attribute from JAX-RS deployment at %s with name %s")
+    @Message(id = 17, value = "Failed to read attribute from Jakarta RESTful Web Services deployment at %s with name %s")
     void failedToReadAttribute(@Cause Exception ex, PathAddress address, ModelNode modelNode);
 
     @LogMessage(level = WARN)
-    @Message(id = 18, value = "Explicit usage of Jackson annotation in a JAX-RS deployment; the system will disable JSON-B processing for the current deployment. Consider setting the '%s' property to 'false' to restore JSON-B.")
+    @Message(id = 18, value = "Explicit usage of Jackson annotation in a Jakarta RESTful Web Services deployment; the system will disable JSON-B processing for the current deployment. Consider setting the '%s' property to 'false' to restore JSON-B.")
     void jacksonAnnotationDetected(String property);
 
     @LogMessage(level = WARN)

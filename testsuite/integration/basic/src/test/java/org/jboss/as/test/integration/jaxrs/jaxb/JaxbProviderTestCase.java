@@ -38,7 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests a JAX-RS deployment without an application bundled.
+ * Tests a Jakarta RESTful Web Services deployment without an application bundled.
  *
  * The container should register a servlet with the name
  *

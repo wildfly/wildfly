@@ -42,7 +42,7 @@ import org.jboss.modules.Module;
 import org.jboss.resteasy.util.GetRestful;
 
 /**
- * Integrates JAX-RS with managed beans and EJB's
+ * Integrates Jakarta RESTful Web Services with managed beans and EJB's
  *
  * @author Stuart Douglas
  */
@@ -51,7 +51,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
     /**
      * We use hard coded class names to avoid a direct dependency on EJB
      *
-     * This allows the use of JAX-RS in cut down servers without EJB
+     * This allows the use of Jakarta RESTful Web Services in cut down servers without EJB
      *
      * Kinda yuck, but there is not really any alternative if we want don't want the dependency
      */
@@ -100,9 +100,9 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
 
             if (isInstanceOf(component, SESSION_BEAN_DESCRIPTION_CLASS_NAME)) {
                 if (isInstanceOf(component, STATEFUL_SESSION_BEAN_DESCRIPTION_CLASS_NAME)) {
-                    //using SFSB's as JAX-RS endpoints is not recommended, but if people really want to do it they can
+                    //using SFSB's as Jakarta RESTful Web Services endpoints is not recommended, but if people really want to do it they can
 
-                    JAXRS_LOGGER.debugf("Stateful session bean %s is being used as a JAX-RS endpoint, this is not recommended", component.getComponentName());
+                    JAXRS_LOGGER.debugf("Stateful session bean %s is being used as a Jakarta RESTful Web Services endpoint, this is not recommended", component.getComponentName());
                     if (partOfWeldDeployment) {
                         //if possible just let CDI handle the integration
                         continue;
@@ -135,7 +135,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                     jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + component.getComponentName() + "!" + foundType;
                 }
 
-                JAXRS_LOGGER.debugf("Found JAX-RS Managed Bean: %s local jndi jaxRsTypeName: %s", component.getComponentClassName(), jndiName);
+                JAXRS_LOGGER.debugf("Found Jakarta RESTful Web Services Managed Bean: %s local jndi jaxRsTypeName: %s", component.getComponentClassName(), jndiName);
                 StringBuilder buf = new StringBuilder();
                 buf.append(jndiName).append(";").append(component.getComponentClassName()).append(";").append("true");
 
@@ -145,7 +145,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             } else if (component instanceof ManagedBeanComponentDescription) {
                 String jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + component.getComponentName();
 
-                JAXRS_LOGGER.debugf("Found JAX-RS Managed Bean: %s local jndi name: %s", component.getComponentClassName(), jndiName);
+                JAXRS_LOGGER.debugf("Found Jakarta RESTful Web Services Managed Bean: %s local jndi name: %s", component.getComponentClassName(), jndiName);
                 StringBuilder buf = new StringBuilder();
                 buf.append(jndiName).append(";").append(component.getComponentClassName()).append(";").append("true");
 

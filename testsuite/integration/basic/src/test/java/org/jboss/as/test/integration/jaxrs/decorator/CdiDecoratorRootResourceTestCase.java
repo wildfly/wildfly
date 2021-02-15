@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests a JAX-RS deployment with an application bundled, that has no @ApplicationPath annotation.
+ * Tests a Jakarta RESTful Web Services deployment with an application bundled, that has no @ApplicationPath annotation.
  * <p/>
  * The container should register a servlet with the name that matches the application name
  * <p/>

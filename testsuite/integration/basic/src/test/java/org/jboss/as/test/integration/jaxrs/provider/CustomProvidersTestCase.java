@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A JUnit 4 test for testing deployment multiple JAX-RS providers from different modules. It's mainly a regression test for
+ * A JUnit 4 test for testing deployment multiple Jakarta RESTful Web Services providers from different modules. It's mainly a regression test for
  * JBPAPP-9963 issue.
  *
  * @author Josef Cacek
@@ -84,7 +84,7 @@ public class CustomProvidersTestCase {
     }
 
     /**
-     * Test JAX-RS providers deployment, when 2 web applications are used.
+     * Test Jakarta RESTful Web Services providers deployment, when 2 web applications are used.
      *
      * @param webAppURL
      * @throws Exception

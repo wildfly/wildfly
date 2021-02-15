@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the JAX-RS async response functionality
+ * Tests the Jakarta RESTful Web Services async response functionality
  *
  * @author Stuart Douglas
  */

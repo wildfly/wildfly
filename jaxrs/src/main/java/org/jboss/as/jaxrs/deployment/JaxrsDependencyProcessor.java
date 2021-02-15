@@ -66,7 +66,7 @@ import org.jboss.modules.filter.PathFilters;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Deployment processor which adds a module dependencies for modules needed for JAX-RS deployments.
+ * Deployment processor which adds a module dependencies for modules needed for Jakarta RESTful Web Services deployments.
  *
  * @author Stuart Douglas
  */
@@ -84,7 +84,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, JAXB_API, false, false);
         addDependency(moduleSpecification, moduleLoader, JSON_API, false, false);
 
-        //we need to add these from all deployments, as they could be using the JAX-RS client
+        //we need to add these from all deployments, as they could be using the Jakarta RESTful Web Services client
 
         addDependency(moduleSpecification, moduleLoader, RESTEASY_ATOM, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR_11, true, false);

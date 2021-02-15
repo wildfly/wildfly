@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests a JAX-RS deployment without an application bundled and resteasy.scan specified will
+ * Tests a Jakarta RESTful Web Services deployment without an application bundled and resteasy.scan specified will
  * ignore the resteasy.scan property and still work.
  *
  * @author Stuart Douglas
