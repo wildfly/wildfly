@@ -44,8 +44,8 @@ public class LocalNodeResolverTestCase {
     public void test() throws IOException {
         this.test(new ExternalizerTester<>(new LocalNodeExternalizer()));
         this.test(new KeyFormatTester<>(new LocalNodeKeyFormat()));
-        this.test(new JBossMarshallingTesterFactory(this.getClass().getClassLoader()).createTester());
-        this.test(new ProtoStreamTesterFactory(this.getClass().getClassLoader()).createTester());
+        this.test(JBossMarshallingTesterFactory.INSTANCE.createTester());
+        this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
     }
 
     private void test(Tester<LocalNode> tester) throws IOException {

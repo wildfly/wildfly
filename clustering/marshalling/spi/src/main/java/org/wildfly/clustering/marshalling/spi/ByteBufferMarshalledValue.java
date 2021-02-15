@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 
 /**
  * @author Paul Ferraro
+ * @param <T> the type wrapped by this marshalled value
  */
 public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBufferMarshaller>, Serializable {
     private static final long serialVersionUID = -8419893544424515905L;
@@ -43,7 +44,11 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
         this.object = object;
     }
 
-    ByteBufferMarshalledValue(ByteBuffer buffer) {
+    public ByteBufferMarshalledValue() {
+        this(null);
+    }
+
+    public ByteBufferMarshalledValue(ByteBuffer buffer) {
         this.buffer = buffer;
     }
 
@@ -52,7 +57,11 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
         return this.object;
     }
 
-    synchronized ByteBuffer getBuffer() throws IOException {
+    public synchronized boolean isEmpty() {
+        return (this.buffer == null) && (this.object == null);
+    }
+
+    public synchronized ByteBuffer getBuffer() throws IOException {
         ByteBuffer buffer = this.buffer;
         if (buffer != null) return buffer;
         if (this.object == null) return null;

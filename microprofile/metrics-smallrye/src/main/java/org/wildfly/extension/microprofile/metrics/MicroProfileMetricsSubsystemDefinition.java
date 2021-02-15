@@ -27,7 +27,7 @@ import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ServiceRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -50,6 +50,9 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
             .addRequirements(METRICS_HTTP_CONTEXT_CAPABILITY, MP_CONFIG)
             .build();
     static final RuntimeCapability<Void> MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY = RuntimeCapability.Builder.of(MetricsSubsystemDefinition.METRICS_HTTP_SECURITY_CAPABILITY, Boolean.class)
+            .build();
+    static final RuntimeCapability<Void> MICROPROFILE_METRICS_SCAN = RuntimeCapability.Builder.of(MetricsSubsystemDefinition.METRICS_SCAN_CAPABILITY)
+            .addRequirements(METRICS_HTTP_CONTEXT_CAPABILITY, MP_CONFIG)
             .build();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
@@ -76,8 +79,9 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
         super(new SimpleResourceDefinition.Parameters(MicroProfileMetricsExtension.SUBSYSTEM_PATH,
                 MicroProfileMetricsExtension.getResourceDescriptionResolver(MicroProfileMetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileMetricsSubsystemAdd.INSTANCE)
-                .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileMetricsSubsystemAdd.INSTANCE))
-                .setCapabilities(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY));
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setCapabilities(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY,
+                        MICROPROFILE_METRICS_SCAN));
     }
 
     @Override

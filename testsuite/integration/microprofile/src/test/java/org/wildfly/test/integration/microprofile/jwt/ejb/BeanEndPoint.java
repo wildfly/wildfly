@@ -35,7 +35,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 /**
- * A simple JAX-RS endpoint deployed as an EJB.
+ * A simple Jakarta RESTful Web Services endpoint deployed as an EJB.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */

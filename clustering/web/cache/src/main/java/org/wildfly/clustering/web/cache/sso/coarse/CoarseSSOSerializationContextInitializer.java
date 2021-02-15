@@ -26,7 +26,8 @@ import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 
 /**
  * @author Paul Ferraro
@@ -36,6 +37,6 @@ public class CoarseSSOSerializationContextInitializer extends AbstractSerializat
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new SessionFilterExternalizer<>()));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(SessionFilter.class, Scalar.ANY, SessionFilter::getSession, SessionFilter::new));
     }
 }

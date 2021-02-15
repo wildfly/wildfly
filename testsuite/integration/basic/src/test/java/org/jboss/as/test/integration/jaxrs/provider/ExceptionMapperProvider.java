@@ -32,7 +32,7 @@ import javax.ws.rs.ext.Provider;
 import org.jboss.logging.Logger;
 
 /**
- * A JAX-RS test implementation for {@link ExceptionMapper}. If an Exception occurs, returns HTTP OK (200) and prints
+ * A Jakarta RESTful Web Services test implementation for {@link ExceptionMapper}. If an Exception occurs, returns HTTP OK (200) and prints
  * {@value #ERROR_MESSAGE} as the response body.
  *
  * @author Josef Cacek

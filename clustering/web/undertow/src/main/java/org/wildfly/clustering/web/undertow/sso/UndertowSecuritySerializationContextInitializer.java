@@ -26,7 +26,6 @@ import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -40,6 +39,6 @@ public class UndertowSecuritySerializationContextInitializer extends AbstractSer
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new AuthenticatedSessionExternalizer()));
+        context.registerMarshaller(new AuthenticatedSessionMarshaller());
     }
 }

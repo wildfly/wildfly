@@ -24,7 +24,8 @@ package org.wildfly.clustering.marshalling;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.Month;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ import org.junit.Test;
  * @author Paul Ferraro
  */
 public abstract class AbstractUtilTestCase {
-    private static final Map<Object, Object> BASIS = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(i)));
+    private static final Map<Object, Object> BASIS = Stream.of(1, 2, 3, 4, 5).collect(Collectors.toMap(i -> i, i -> Integer.toString(-i)));
 
     private final MarshallingTesterFactory factory;
 
@@ -94,65 +95,73 @@ public abstract class AbstractUtilTestCase {
 
     @Test
     public void testBitSet() throws IOException {
+        MarshallingTester<BitSet> tester = this.factory.createTester();
+
+        tester.test(new BitSet(0));
         BitSet set = new BitSet(7);
         set.set(1);
         set.set(3);
         set.set(5);
-        MarshallingTester<BitSet> tester = this.factory.createTester();
         tester.test(set);
     }
 
     @Test
     public void testCalendar() throws IOException {
         MarshallingTester<Calendar> tester = this.factory.createTester();
-        // Validate default calendar
-        tester.test(Calendar.getInstance());
-        // Validate Gregorian calendar w/locale
-        tester.test(new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).build());
-        // Validate Japanese Imperial calendar
-        tester.test(Calendar.getInstance(TimeZone.getTimeZone("Asia/Tokyo"), Locale.JAPAN));
+        LocalDateTime time = LocalDateTime.now();
+        // Validate default calendar w/date only
+        tester.test(new Calendar.Builder().setDate(time.getYear(), time.getMonthValue(), time.getDayOfMonth()).build());
+        // Validate Gregorian calendar w/locale and date + time
+        tester.test(new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).setDate(time.getYear(), time.getMonthValue(), time.getDayOfMonth()).setTimeOfDay(time.getHour(), time.getMinute(), time.getSecond()).build());
+        // Validate Japanese Imperial calendar w/full date/time
+        tester.test(new Calendar.Builder().setLocale(Locale.JAPAN).setTimeZone(TimeZone.getTimeZone("Asia/Tokyo")).setInstant(Date.from(time.toInstant(ZoneOffset.UTC))).build());
         // Validate Buddhist calendar
-        tester.test(Calendar.getInstance(TimeZone.getTimeZone("Asia/Bangkok"), Locale.forLanguageTag("th_TH")));
+        tester.test(new Calendar.Builder().setLocale(Locale.forLanguageTag("th_TH")).setTimeZone(TimeZone.getTimeZone("Asia/Bangkok")).build());
     }
 
     @Test
     public void testCurrency() throws IOException {
         MarshallingTester<Currency> tester = this.factory.createTester();
-        tester.test(Currency.getInstance(Locale.US));
+        tester.test(Currency.getInstance(Locale.getDefault()));
+        tester.test(Currency.getInstance(Locale.UK));
     }
 
     @Test
     public void testDate() throws IOException {
         MarshallingTester<Date> tester = this.factory.createTester();
+        tester.test(Date.from(Instant.EPOCH));
         tester.test(Date.from(Instant.now()));
     }
 
     @Test
     public void testEnumMap() throws IOException {
-        MarshallingTester<EnumMap<Month, String>> tester = this.factory.createTester();
-        EnumMap<Month, String> map = new EnumMap<>(Month.class);
+        MarshallingTester<EnumMap<Thread.State, String>> tester = this.factory.createTester();
+        EnumMap<Thread.State, String> map = new EnumMap<>(Thread.State.class);
         tester.test(map, AbstractUtilTestCase::assertMapEquals);
-        for (Month month : EnumSet.allOf(Month.class)) {
-            map.put(month, month.name());
+        for (Thread.State state : EnumSet.allOf(Thread.State.class)) {
+            map.put(state, ((state.ordinal() % 2) == 0) ? state.name() : null);
+            tester.test(map, AbstractUtilTestCase::assertMapEquals);
         }
-        tester.test(map, AbstractUtilTestCase::assertMapEquals);
     }
 
     @Test
     public void testEnumSet() throws IOException {
         MarshallingTester<EnumSet<Thread.State>> tester = this.factory.createTester();
-        tester.test(EnumSet.noneOf(Thread.State.class), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.of(Thread.State.NEW), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.complementOf(EnumSet.of(Thread.State.NEW)), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.allOf(Thread.State.class), AbstractUtilTestCase::assertCollectionEquals);
+        EnumSet<Thread.State> set = EnumSet.noneOf(Thread.State.class);
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+        for (Thread.State state : EnumSet.allOf(Thread.State.class)) {
+            set.add(state);
+            tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+        }
     }
 
     @Test
     public void testJumboEnumSet() throws IOException {
         MarshallingTester<EnumSet<Character.UnicodeScript>> tester = this.factory.createTester();
         tester.test(EnumSet.noneOf(Character.UnicodeScript.class), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.of(Character.UnicodeScript.LATIN), AbstractUtilTestCase::assertCollectionEquals);
-        tester.test(EnumSet.complementOf(EnumSet.of(Character.UnicodeScript.LATIN)), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(EnumSet.of(Character.UnicodeScript.UNKNOWN), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(EnumSet.of(Character.UnicodeScript.ARABIC, Character.UnicodeScript.ARMENIAN, Character.UnicodeScript.AVESTAN, Character.UnicodeScript.BALINESE, Character.UnicodeScript.BAMUM, Character.UnicodeScript.BATAK, Character.UnicodeScript.BENGALI, Character.UnicodeScript.BOPOMOFO, Character.UnicodeScript.BRAHMI, Character.UnicodeScript.BRAILLE, Character.UnicodeScript.BUGINESE, Character.UnicodeScript.BUHID, Character.UnicodeScript.CANADIAN_ABORIGINAL, Character.UnicodeScript.CARIAN), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(EnumSet.complementOf(EnumSet.of(Character.UnicodeScript.UNKNOWN)), AbstractUtilTestCase::assertCollectionEquals);
         tester.test(EnumSet.allOf(Character.UnicodeScript.class), AbstractUtilTestCase::assertCollectionEquals);
     }
 
@@ -192,14 +201,16 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testLocale() throws IOException {
         MarshallingTester<Locale> tester = this.factory.createTester();
-        tester.test(Locale.US);
+        tester.test(Locale.getDefault());
+        tester.test(Locale.ENGLISH);
+        tester.test(Locale.CANADA_FRENCH);
     }
 
     @Test
     public void testOptional() throws IOException {
         MarshallingTester<Optional<Object>> tester = this.factory.createTester();
         tester.test(Optional.empty());
-        tester.test(Optional.of(UUID.randomUUID()));
+        tester.test(Optional.of("foo"));
     }
 
     @Test
@@ -226,16 +237,22 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testSimpleEntry() throws IOException {
         MarshallingTester<AbstractMap.SimpleEntry<Object, Object>> tester = this.factory.createTester();
-        tester.test(new AbstractMap.SimpleEntry<>("key", "value"));
-        UUID value = UUID.randomUUID();
+        String key = "key";
+        String value = "value";
+        tester.test(new AbstractMap.SimpleEntry<>(null, null));
+        tester.test(new AbstractMap.SimpleEntry<>(key, null));
+        tester.test(new AbstractMap.SimpleEntry<>(key, value));
         tester.test(new AbstractMap.SimpleEntry<>(value, value));
     }
 
     @Test
     public void testSimpleImmutableEntry() throws IOException {
         MarshallingTester<AbstractMap.SimpleImmutableEntry<Object, Object>> tester = this.factory.createTester();
-        tester.test(new AbstractMap.SimpleImmutableEntry<>("key", "value"));
-        UUID value = UUID.randomUUID();
+        String key = "key";
+        String value = "value";
+        tester.test(new AbstractMap.SimpleImmutableEntry<>(null, null));
+        tester.test(new AbstractMap.SimpleImmutableEntry<>(key, null));
+        tester.test(new AbstractMap.SimpleImmutableEntry<>(key, value));
         tester.test(new AbstractMap.SimpleImmutableEntry<>(value, value));
     }
 
@@ -243,38 +260,49 @@ public abstract class AbstractUtilTestCase {
     public void testTimeZone() throws IOException {
         MarshallingTester<TimeZone> tester = this.factory.createTester();
         tester.test(TimeZone.getDefault());
-        tester.test(TimeZone.getTimeZone("America/New_York"));
+        tester.test(TimeZone.getTimeZone("GMT"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testTreeMap() throws IOException {
         MarshallingTester<TreeMap<Object, Object>> tester = this.factory.createTester();
-        tester.test(new TreeMap<>(BASIS), AbstractUtilTestCase::assertMapEquals);
+
+        TreeMap<Object, Object> map = new TreeMap<>();
+        map.putAll(BASIS);
+        tester.test(map, AbstractUtilTestCase::assertMapEquals);
+
+        map = new TreeMap<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
+        map.putAll(BASIS);
+        tester.test(map, AbstractUtilTestCase::assertMapEquals);
+
+        map = new TreeMap<>(new TestComparator<>());
+        map.putAll(BASIS);
+        tester.test(map, AbstractUtilTestCase::assertMapEquals);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testTreeSet() throws IOException {
         MarshallingTester<TreeSet<Object>> tester = this.factory.createTester();
-        tester.test(new TreeSet<>(BASIS.keySet()), AbstractUtilTestCase::assertCollectionEquals);
+
+        TreeSet<Object> set = new TreeSet<>();
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+
+        set = new TreeSet<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+
+        set = new TreeSet<>(new TestComparator<>());
+        set.addAll(BASIS.keySet());
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
     }
 
     @Test
     public void testUUID() throws IOException {
         MarshallingTester<UUID> tester = this.factory.createTester();
         tester.test(UUID.randomUUID());
-    }
-
-    // java.util.Comparator.xxxOrder() methods
-    @Test
-    public void testNaturalOrderComparator() throws IOException {
-        MarshallingTester<Comparator<?>> tester = this.factory.createTester();
-        tester.test(Comparator.naturalOrder(), Assert::assertSame);
-    }
-
-    @Test
-    public void testReverseOrderComparator() throws IOException {
-        MarshallingTester<Comparator<?>> tester = this.factory.createTester();
-        tester.test(Comparator.reverseOrder(), Assert::assertSame);
     }
 
     // java.util.Collections.emptyXXX() methods
@@ -342,19 +370,23 @@ public abstract class AbstractUtilTestCase {
     @Test
     public void testSingletonList() throws IOException {
         MarshallingTester<List<Object>> tester = this.factory.createTester();
-        tester.test(Collections.singletonList(UUID.randomUUID()), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Collections.singletonList(null), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Collections.singletonList("foo"), AbstractUtilTestCase::assertCollectionEquals);
     }
 
     @Test
     public void testSingletonMap() throws IOException {
         MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
-        tester.test(Collections.singletonMap(UUID.randomUUID(), UUID.randomUUID()), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Collections.singletonMap(null, null), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Collections.singletonMap("foo", null), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Collections.singletonMap("foo", "bar"), AbstractUtilTestCase::assertMapEquals);
     }
 
     @Test
     public void testSingletonSet() throws IOException {
         MarshallingTester<Set<Object>> tester = this.factory.createTester();
-        tester.test(Collections.singleton(UUID.randomUUID()), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Collections.singleton(null), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Collections.singleton("foo"), AbstractUtilTestCase::assertCollectionEquals);
     }
 
     static <T extends Collection<?>> void assertCollectionEquals(T expected, T actual) {
@@ -364,7 +396,7 @@ public abstract class AbstractUtilTestCase {
 
     static <T extends Map<?, ?>> void assertMapEquals(T expected, T actual) {
         Assert.assertEquals(expected.size(), actual.size());
-        Assert.assertTrue(expected.keySet().containsAll(actual.keySet()));
+        Assert.assertTrue(actual.keySet().toString(), expected.keySet().containsAll(actual.keySet()));
         for (Map.Entry<?, ?> entry : expected.entrySet()) {
             Assert.assertEquals(entry.getValue(), actual.get(entry.getKey()));
         }

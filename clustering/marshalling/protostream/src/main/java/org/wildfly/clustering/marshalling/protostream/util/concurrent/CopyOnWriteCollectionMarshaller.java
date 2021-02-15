@@ -23,51 +23,32 @@
 package org.wildfly.clustering.marshalling.protostream.util.concurrent;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.OptionalInt;
-import java.util.function.Function;
+import java.util.LinkedList;
+import java.util.function.Supplier;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.util.BoundedCollectionMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SimpleFunctionalMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.CollectionMarshaller;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
- * ProtoStream optimized marshaller for copy-on-write implementations of {@link Collection}.
+ * Marshaller for copy-on-write implementations of {@link Collection}.
  * @author Paul Ferraro
+ * @param <T> the collection type of this marshaller
  */
-public class CopyOnWriteCollectionMarshaller<T extends Collection<Object>> implements ProtoStreamMarshaller<T> {
+public class CopyOnWriteCollectionMarshaller<T extends Collection<Object>> extends SimpleFunctionalMarshaller<T, Collection<Object>> {
+    private static final ProtoStreamMarshaller<Collection<Object>> MARSHALLER = new CollectionMarshaller<>(LinkedList::new);
+
     @SuppressWarnings("unchecked")
-    private static final ProtoStreamMarshaller<Collection<Object>> COLLECTION_MARSHALLER = new BoundedCollectionMarshaller<>((Class<Collection<Object>>) (Class<?>) Collection.class, ArrayList::new);
-
-    private final Class<T> targetClass;
-    private final Function<Collection<Object>, T> factory;
-
-    public CopyOnWriteCollectionMarshaller(Class<T> targetClass, Function<Collection<Object>, T> factory) {
-        this.targetClass = targetClass;
-        this.factory = factory;
-    }
-
-    @Override
-    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        Collection<Object> collection = COLLECTION_MARSHALLER.readFrom(context, reader);
-        return this.factory.apply(collection);
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T collection) throws IOException {
-        COLLECTION_MARSHALLER.writeTo(context, writer, collection);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T collection) {
-        return COLLECTION_MARSHALLER.size(context, collection);
-    }
-
-    @Override
-    public Class<? extends T> getJavaClass() {
-        return this.targetClass;
+    public CopyOnWriteCollectionMarshaller(Supplier<T> factory) {
+        super((Class<T>) factory.get().getClass(), MARSHALLER, new ExceptionFunction<Collection<Object>, T, IOException>() {
+            @Override
+            public T apply(Collection<Object> collection) {
+                T result = factory.get();
+                result.addAll(collection);
+                return result;
+            }
+        });
     }
 }

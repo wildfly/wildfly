@@ -96,11 +96,11 @@ public interface XtsAsLogger extends BasicLogger {
 //    IllegalStateException commonConfigurationUnavailable();
 
 //    /**
-//     * Creates an exception indicating that the CDI extension could not be loaded.
+//     * Creates an exception indicating that the Jakarta Contexts and Dependency Injection extension could not be loaded.
 //     *
 //     * @return a {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} for the error.
 //     */
-    // @Message(id = 7, value = "Cannot load CDI Extension")
+    // @Message(id = 7, value = "Cannot load Jakarta Contexts and Dependency Injection Extension")
     // DeploymentUnitProcessingException cannotLoadCDIExtension();
 
 //    /**

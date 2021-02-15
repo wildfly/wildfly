@@ -483,7 +483,7 @@ The kitchensink quickstart is generated from an archetype available for
 JBoss AS (tell people to check the
 link:/pages/createpage.action?spaceKey=WFLY&title=Getting+Started+Developing+Applications&linkCreation=true&fromPageId=557131[Getting
 Started Developing Applications] Guide for details). It demonstrates
-CDI, Jakarta Server Faces, Jakarta Enterprise Beans, JPA (which we've seen before) and JAX-RS and Bean
+CDI, Jakarta Server Faces, Jakarta Enterprise Beans, JPA (which we've seen before) and Jakarta RESTful Web Services and Bean
 Validation as well. We add in Arquillian for testing.
 
 [[run-the-app-2]]
@@ -497,7 +497,7 @@ Validation as well. We add in Arquillian for testing.
 .  Load the app at http://localhost:8080/jboss-as-kitchensink
 .  Register a member - make sure to enter an invalid email and phone -
 show bean validation at work
-.  Click on the member URL and show the output from JAX-RS
+.  Click on the member URL and show the output from Jakarta RESTful Web Services
 
 [[bean-validation]]
 === Bean Validation
@@ -513,15 +513,15 @@ to express once, apply often.
 .  Jakarta EE automatically applies the validators in both the persistence
 layer and in your views
 
-[[jax-rs]]
-=== JAX-RS
+[[Jakarta-RESTful-Web-Services]]
+=== Jakarta RESTful Web Services
 
 .  `index.xhtml` - Show that URL generation is just manual
-.  `JaxRsActivator.java` - simply activates JAX-RS
+.  `JaxRsActivator.java` - simply activates Jakarta RESTful Web Services
 .  `Member.java` - add JAXB annotation to make JAXB process the class properly
 .  `MemberResourceRESTService.java`
-..  `@Path` sets the JAX-RS resource
-..  JAX-RS services can use injection
+..  `@Path` sets the Jakarta RESTful Web Services resource
+..  Jakarta RESTful Web Services services can use injection
 ..  `@GET` methods are auto transformed to XML using JAXB
 .  And that is it!
 
@@ -558,3 +558,5 @@ Right click on test, `Run As -> JUnit Test`
 .  Explain Arquilian allows you to use injection
 .  Explain that Arquillian allows you to concentrate just on your test
 logic
+
+NOTE: References in this document to CDI refer to Jakarta Contexts and Dependency Injection unless otherwise noted.

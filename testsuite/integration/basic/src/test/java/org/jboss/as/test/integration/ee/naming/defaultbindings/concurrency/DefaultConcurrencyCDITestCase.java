@@ -35,7 +35,7 @@ import javax.inject.Inject;
 
 /**
  *
- * Test for EE's default data source on a CDI Bean
+ * Test for EE's default data source on a Jakarta Contexts and Dependency Injection Bean
  *
  * @author Eduardo Martins
  */

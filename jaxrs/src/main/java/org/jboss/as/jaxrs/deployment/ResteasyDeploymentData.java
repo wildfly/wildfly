@@ -46,7 +46,7 @@ public class ResteasyDeploymentData {
     private final Set<String> scannedJndiComponentResources = new LinkedHashSet<String>();
 
     /**
-     * Merges a list of additional JAX-RS deployment data with this lot of deployment data.
+     * Merges a list of additional Jakarta RESTful Web Services deployment data with this lot of deployment data.
      *
      * @param deploymentData
      */

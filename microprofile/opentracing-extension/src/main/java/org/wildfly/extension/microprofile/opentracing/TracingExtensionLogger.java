@@ -47,7 +47,7 @@ public interface TracingExtensionLogger extends BasicLogger {
     void processingDeployment();
 
     @LogMessage(level = DEBUG)
-    @Message(id = 3, value = "The deployment does not have CDI enabled. Skipping MicroProfile OpenTracing integration.")
+    @Message(id = 3, value = "The deployment does not have Jakarta Contexts and Dependency Injection enabled. Skipping MicroProfile OpenTracing integration.")
     void noCdiDeployment();
 
     @LogMessage(level = DEBUG)

@@ -37,7 +37,7 @@ include::_developer-guide/Application_Client_Reference.adoc[]
 
 include::_developer-guide/Embedded_API.adoc[]
 
-include::_developer-guide/CDI_Reference.adoc[]
+include::_developer-guide/Jakarta_Contexts_and_Dependency_Injection_Reference.adoc[]
 
 include::_developer-guide/EE_Concurrency_Utilities.adoc[]
 
@@ -49,7 +49,7 @@ include::_developer-guide/JTA_Reference.adoc[]
 
 include::_developer-guide/JNDI_Reference.adoc[]
 
-include::_developer-guide/JAX-RS_Reference_Guide.adoc[]
+include::_developer-guide/Jakarta_RESTful_Web_Services_Reference_Guide.adoc[]
 
 include::_developer-guide/Web_(Undertow)_Reference_Guide.adoc[]
 

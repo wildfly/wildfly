@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recognize Spring deployment and add the JAX-RS integration to it
+ * Recognize Spring deployment and add the Jakarta RESTful Web Services integration to it
  */
 public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
 

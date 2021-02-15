@@ -32,7 +32,6 @@ import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer;
 import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.spi.Serializer;
-import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
 /**
  * Serializer for an {@link InfinispanBeanGroupKey}.
@@ -49,13 +48,6 @@ public enum InfinispanBeanGroupKeySerializer implements Serializer<InfinispanBea
     @Override
     public InfinispanBeanGroupKey<SessionID> read(DataInput input) throws IOException {
         return new InfinispanBeanGroupKey<>(SessionIDSerializer.INSTANCE.read(input));
-    }
-
-    public static class InfinispanBeanGroupKeyExternalizer extends SerializerExternalizer<InfinispanBeanGroupKey<SessionID>> {
-        @SuppressWarnings("unchecked")
-        public InfinispanBeanGroupKeyExternalizer() {
-            super((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, INSTANCE);
-        }
     }
 
     @MetaInfServices(KeyFormat.class)

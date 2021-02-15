@@ -28,7 +28,7 @@ Coming Soon
 This guide is still under development, check back soon!
 ====
 
-include::_javaee-guide/Java_API_for_RESTful_Web_Services_(JAX-RS).adoc[]
+include::_javaee-guide/Jakarta_RESTful_Web_Services.adoc[]
 
 include::_javaee-guide/Java_Servlet_Technology.adoc[]
 

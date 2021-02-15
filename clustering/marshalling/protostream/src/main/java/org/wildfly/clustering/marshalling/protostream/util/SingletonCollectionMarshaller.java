@@ -25,16 +25,18 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.util.Collection;
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
-import org.wildfly.clustering.marshalling.spi.util.SingletonCollectionExternalizer;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.wildfly.common.function.Functions;
 
 /**
+ * Marshaller for singleton collections.
  * @author Paul Ferraro
+ * @param <T> the collection type of this marshaller
  */
-public class SingletonCollectionMarshaller<T extends Collection<Object>> extends FunctionalObjectMarshaller<T> {
+public class SingletonCollectionMarshaller<T extends Collection<Object>> extends FunctionalScalarMarshaller<T, Object> {
 
-    @SuppressWarnings("unchecked")
     public SingletonCollectionMarshaller(Function<Object, T> factory) {
-        super((Class<T>) factory.apply(null).getClass(), factory, SingletonCollectionExternalizer.accessor());
+        super(Scalar.ANY, Functions.constantSupplier(factory.apply(null)), collection -> collection.iterator().next(), factory::apply);
     }
 }

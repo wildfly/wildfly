@@ -90,3 +90,5 @@ The Eclipse MicroProfile OpenAPI implementation is provided by the SmallRye Open
 * http://github.com/smallrye/smallrye-open-api/[SmallRye OpenAPI]
 
 ****
+
+NOTE: References in this document to Java API for RESTful Web Services(JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.

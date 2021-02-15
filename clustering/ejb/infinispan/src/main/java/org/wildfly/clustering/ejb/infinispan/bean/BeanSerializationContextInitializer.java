@@ -23,20 +23,19 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ejb.infinispan.EJBClientMarshallingProvider;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 
 /**
+ * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
 public class BeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new InfinispanBeanKeySerializer.InfinispanBeanKeyExternalizer()));
-        context.registerMarshaller(new ExternalizerMarshaller<>(new InfinispanBeanEntryExternalizer()));
+        context.registerMarshaller(new FunctionalMarshaller<>(InfinispanBeanKey.class, EJBClientMarshallingProvider.SESSION_ID, InfinispanBeanKey::getId, InfinispanBeanKey::new));
+        context.registerMarshaller(new InfinispanBeanEntryMarshaller());
     }
 }

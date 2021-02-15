@@ -33,6 +33,8 @@
     </resources>
 
     <dependencies>
+        <module name="java.sql"/>
+
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>

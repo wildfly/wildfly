@@ -65,7 +65,7 @@ public class JaxrsExtension implements Extension {
      */
     @Override
     public void initialize(final ExtensionContext context) {
-        JAXRS_LOGGER.debug("Activating JAX-RS Extension");
+        JAXRS_LOGGER.debug("Activating Jakarta RESTful Web Services Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JaxrsSubsystemDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);

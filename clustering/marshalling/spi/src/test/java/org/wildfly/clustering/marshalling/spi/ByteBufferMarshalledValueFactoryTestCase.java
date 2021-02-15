@@ -43,7 +43,17 @@ import org.junit.Test;
  */
 public class ByteBufferMarshalledValueFactoryTestCase {
 
-    private final ByteBufferMarshalledValueFactory factory = new ByteBufferMarshalledValueFactory(JavaByteBufferMarshaller.INSTANCE);
+    private final ByteBufferMarshaller marshaller;
+    private final ByteBufferMarshalledValueFactory factory;
+
+    public ByteBufferMarshalledValueFactoryTestCase() {
+        this(JavaByteBufferMarshaller.INSTANCE);
+    }
+
+    protected ByteBufferMarshalledValueFactoryTestCase(ByteBufferMarshaller marshaller) {
+        this.marshaller = marshaller;
+        this.factory = new ByteBufferMarshalledValueFactory(marshaller);
+    }
 
     @Test
     public void get() throws Exception {
@@ -52,24 +62,24 @@ public class ByteBufferMarshalledValueFactoryTestCase {
 
         assertNotNull(mv.peek());
         assertSame(uuid, mv.peek());
-        assertSame(uuid, mv.get(JavaByteBufferMarshaller.INSTANCE));
+        assertSame(uuid, mv.get(this.marshaller));
 
         ByteBufferMarshalledValue<UUID> copy = replicate(mv);
 
         assertNull(copy.peek());
 
-        UUID uuid2 = copy.get(JavaByteBufferMarshaller.INSTANCE);
+        UUID uuid2 = copy.get(this.marshaller);
         assertNotSame(uuid, uuid2);
         assertEquals(uuid, uuid2);
 
         copy = replicate(copy);
-        uuid2 = copy.get(JavaByteBufferMarshaller.INSTANCE);
+        uuid2 = copy.get(this.marshaller);
         assertEquals(uuid, uuid2);
 
         mv = this.factory.createMarshalledValue(null);
         assertNull(mv.peek());
         assertNull(mv.getBuffer());
-        assertNull(mv.get(JavaByteBufferMarshaller.INSTANCE));
+        assertNull(mv.get(this.marshaller));
     }
 
     @Test
@@ -112,8 +122,8 @@ public class ByteBufferMarshalledValueFactoryTestCase {
     }
 
     @SuppressWarnings("unchecked")
-    static <V> ByteBufferMarshalledValue<V> replicate(ByteBufferMarshalledValue<V> value) throws IOException {
-        ByteBuffer buffer = JavaByteBufferMarshaller.INSTANCE.write(value);
-        return (ByteBufferMarshalledValue<V>) JavaByteBufferMarshaller.INSTANCE.read(buffer);
+    <V> ByteBufferMarshalledValue<V> replicate(ByteBufferMarshalledValue<V> value) throws IOException {
+        ByteBuffer buffer = this.marshaller.write(value);
+        return (ByteBufferMarshalledValue<V>) this.marshaller.read(buffer);
     }
 }

@@ -257,7 +257,7 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 57, value = "Unable to get URL for: %s")
     DeploymentUnitProcessingException cannotGetURLForDescriptor(@Cause Throwable cause, String resourcePath);
 
-    @Message(id = 58, value = "JAX-RPC not supported")
+    @Message(id = 58, value = "Jakarta XML RPC not supported")
     DeploymentUnitProcessingException jaxRpcNotSupported();
 
     @Message(id = 59, value = "%s library (%s) detected in ws endpoint deployment; either provide a proper deployment replacing embedded libraries with container module "

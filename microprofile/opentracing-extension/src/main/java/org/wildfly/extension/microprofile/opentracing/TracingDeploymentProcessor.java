@@ -82,7 +82,7 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             final WeldCapability weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
             if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
-                // SmallRye JAX-RS requires CDI. Without CDI, there's no integration needed
+                // SmallRye Jakarta RESTful Web Services require Jakarta Contexts and Dependency Injection. Without Jakarta Contexts and Dependency Injection, there's no integration needed
                 ROOT_LOGGER.noCdiDeployment();
                 return;
             }

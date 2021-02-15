@@ -1,9 +1,48 @@
 package org.wildfly.clustering.server.provider;
 
+import "org.jgroups.stack.proto";
+import "org.jgroups.util.proto";
+
 // IDs: 140 -144
 
 /**
  * @TypeId(140)
  */
 message GetLocalServicesCommand {
+}
+
+/**
+ * @TypeId(141)
+ */
+message ConcurrentAddressSetAddFunction {
+	optional	org.jgroups.util.UUID	uuidAddress	= 1;
+	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
+	optional	org.jgroups.stack.IpAddressUUID	uuidIpAddress	= 3;
+}
+
+/**
+ * @TypeId(142)
+ */
+message ConcurrentAddressSetRemoveFunction {
+	optional	org.jgroups.util.UUID	uuidAddress	= 1;
+	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
+	optional	org.jgroups.stack.IpAddressUUID	uuidIpAddress	= 3;
+}
+
+/**
+ * @TypeId(143)
+ */
+message CopyOnWriteAddressSetAddFunction {
+	optional	org.jgroups.util.UUID	uuidAddress	= 1;
+	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
+	optional	org.jgroups.stack.IpAddressUUID	uuidIpAddress	= 3;
+}
+
+/**
+ * @TypeId(144)
+ */
+message CopyOnWriteAddressSetRemoveFunction {
+	optional	org.jgroups.util.UUID	uuidAddress	= 1;
+	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
+	optional	org.jgroups.stack.IpAddressUUID	uuidIpAddress	= 3;
 }

@@ -47,7 +47,7 @@ import org.jboss.vfs.VFSUtils;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Deployment processor that loads CDI portable extensions.
+ * Deployment processor that loads Jakarta Contexts and Dependency Injection portable extensions.
  *
  * @author Stuart Douglas
  * @author Ales Justin

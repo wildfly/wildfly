@@ -31,7 +31,7 @@ import javax.enterprise.inject.spi.Extension;
 import org.jboss.metadata.property.PropertyReplacer;
 
 /**
- * CDI extension to provide injection of JMSContext resources.
+ * Jakarta Contexts and Dependency Injection extension to provide injection of JMSContext resources.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
@@ -40,7 +40,7 @@ class JMSCDIExtension implements Extension {
     static PropertyReplacer propertyReplacer;
 
     JMSCDIExtension(PropertyReplacer propertyReplacer) {
-        // store the propertyReplacer in a static field so that it can be used in JMSInfo by beans instantiated by CDI
+        // store the propertyReplacer in a static field so that it can be used in JMSInfo by beans instantiated by Jakarta Contexts and Dependency Injection
         JMSCDIExtension.propertyReplacer = propertyReplacer;
     }
 

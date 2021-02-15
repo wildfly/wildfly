@@ -40,7 +40,7 @@ import org.jboss.weld.manager.api.ExecutorServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Weld's ExecutorServices implementation. The executor is shared across all CDI-enabled deployments and used primarily for parallel Weld bootstrap.
+ * Weld's ExecutorServices implementation. The executor is shared across all Jakarta Contexts and Dependency Injection enabled deployments and used primarily for parallel Weld bootstrap.
  *
  * @author Jozef Hartinger
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

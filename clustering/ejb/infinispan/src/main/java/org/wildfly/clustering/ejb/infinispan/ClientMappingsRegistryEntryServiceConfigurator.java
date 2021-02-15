@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -81,6 +80,6 @@ public class ClientMappingsRegistryEntryServiceConfigurator extends SimpleServic
 
     @Override
     public Map.Entry<String, List<ClientMapping>> get() {
-        return new AbstractMap.SimpleImmutableEntry<>(this.group.get().getLocalMember().getName(), this.clientMappings.get());
+        return new ClientMappingsRegistryEntry(this.group.get().getLocalMember().getName(), this.clientMappings.get());
     }
 }

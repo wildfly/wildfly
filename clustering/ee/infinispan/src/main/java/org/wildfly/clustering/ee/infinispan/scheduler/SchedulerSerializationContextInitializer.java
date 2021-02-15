@@ -26,7 +26,8 @@ import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalObjectMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 
 /**
  * @author Paul Ferraro
@@ -36,7 +37,7 @@ public class SchedulerSerializationContextInitializer extends AbstractSerializat
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalObjectMarshaller<>(CancelCommand.class, CancelCommand::new, CancelCommand::getId));
-        context.registerMarshaller(new FunctionalObjectMarshaller<>(ScheduleCommand.class, ScheduleCommand::new, ScheduleCommand::getId));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(CancelCommand.class, Scalar.ANY, CancelCommand::getId, CancelCommand::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(ScheduleCommand.class, Scalar.ANY, ScheduleCommand::getId, ScheduleCommand::new));
     }
 }

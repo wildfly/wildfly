@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,25 +22,18 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.BasicSessionIDExternalizer;
-import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.UUIDSessionIDExternalizer;
-import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.UnknownSessionIDExternalizer;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.CompositeSerializationContextInitializer;
 
 /**
+ * {@link SerializationContextInitializer} service for this module
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
-public class EJBSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class EJBSerializationContextInitializer extends CompositeSerializationContextInitializer {
 
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new BasicSessionIDExternalizer()));
-        context.registerMarshaller(new ExternalizerMarshaller<>(new UUIDSessionIDExternalizer()));
-        context.registerMarshaller(new ExternalizerMarshaller<>(new UnknownSessionIDExternalizer()));
+    public EJBSerializationContextInitializer() {
+        super(EJBSerializationContextInitializerProvider.class);
     }
 }

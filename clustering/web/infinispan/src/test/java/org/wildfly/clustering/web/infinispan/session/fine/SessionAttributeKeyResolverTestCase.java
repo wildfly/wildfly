@@ -27,7 +27,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
  * Unit test for {@link SessionAttributeKeyResolver}.
@@ -38,7 +38,7 @@ public class SessionAttributeKeyResolverTestCase {
     @Test
     public void test() throws IOException {
         SessionAttributeKey key = new SessionAttributeKey("ABC123", UUID.randomUUID());
-        new ExternalizerTester<>(new SessionAttributeKeyExternalizer()).test(key);
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
         new KeyFormatTester<>(new SessionAttributeKeyFormat()).test(key);
     }
 }

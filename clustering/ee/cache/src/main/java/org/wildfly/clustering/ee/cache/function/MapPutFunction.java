@@ -37,6 +37,11 @@ public class MapPutFunction<K, V> extends MapFunction<K, V, Map.Entry<K, V>> {
     }
 
     @Override
+    public Map.Entry<K, V> getOperand() {
+        return super.getOperand();
+    }
+
+    @Override
     public void accept(Map<K, V> map, Map.Entry<K, V> entry) {
         map.put(entry.getKey(), entry.getValue());
     }

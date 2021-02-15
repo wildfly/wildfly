@@ -44,24 +44,12 @@ public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Mars
     }
 
     @Override
-    default T readFrom(ProtoStreamReader reader) throws IOException {
-        // Temporary default implementation
-        return this.readFrom(reader.getSerializationContext(), reader);
-    }
-
-    @Override
-    default void writeTo(ProtoStreamWriter writer, T value) throws IOException {
-        // Temporary default implementation
-        this.writeTo(writer.getSerializationContext(), writer, value);
-    }
-
-    @Override
     default T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.readFrom(new SerializationContextProtoStreamReader(context, reader));
+        return this.readFrom(new DefaultProtoStreamReader(context, reader));
     }
 
     @Override
     default void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) throws IOException {
-        this.writeTo(new SerializationContextProtoStreamWriter(context, writer), value);
+        this.writeTo(new DefaultProtoStreamWriter(context, writer), value);
     }
 }

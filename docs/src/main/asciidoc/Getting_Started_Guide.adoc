@@ -36,7 +36,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-356: Java API for Web Socket |X |X |X |X
 
-|JSR-374: Java API for JSON Processing 1.1 |X |X |X |X
+|Jakarta JSON Processing 1.1 |X |X |X |X
 
 |JSR-367: Java API for JSON Binding 1.0 |X |X |X |X
 
@@ -48,7 +48,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-245: JavaServer Pages 2.3 |X |X |X |X
 
-|JSR-52: Standard Tag Library for JavaServer Pages (JSTL) 1.2 |X |X |X
+|Jakarta Standard Tag Library 1.2 |X |X |X
 |X
 
 |JSR-352: Batch Applications for the Java Platform 1.0 |X |-- |X |--
@@ -78,7 +78,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-919: JavaMail 1.6 |X |-- |X |X
 
-|JSR-370: Java API for RESTFul Web Services 2.1 |X |X |X |X
+|Jakarta RESTful Web Services 2.1 |X |X |X |X
 
 |JSR-109: Implementing Enterprise Web Services 1.3 |X |-- |X |--
 
@@ -86,7 +86,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-181: Web Services Metadata for the Java Platform |X |-- |X |--
 
-|JSR-101: Java API for XML-Based RPC 1.1 |Optional |-- |-- |--
+|Jakarta XML RPC 1.1 |Optional |-- |-- |--
 
 |JSR-67: Java APIs for XML Messaging 1.3 |X |-- |X |--
 
@@ -305,8 +305,8 @@ high availability
 
 * standalone-microprofile.xml
 ** A configuration oriented toward microservices, providing our
-MicroProfile platform implementations combined with JAX-RS and
-technologies JAX-RS application's commonly use to integrate with
+MicroProfile platform implementations combined with Jakarta RESTful Web Services and
+technologies Jakarta RESTful Web Services applications commonly use to integrate with
 external services.
 
 * standalone-microprofile-ha.xml

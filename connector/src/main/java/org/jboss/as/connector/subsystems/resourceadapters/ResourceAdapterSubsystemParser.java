@@ -110,6 +110,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.Capacity;
 import org.jboss.jca.common.api.metadata.common.Pool;
@@ -373,7 +374,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 || conDef.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName())
                 || conDef.hasDefined(ELYTRON_ENABLED.getName())) {
             streamWriter.writeStartElement(ConnectionDefinition.Tag.SECURITY.getLocalName());
-            if (conDef.hasDefined(APPLICATION.getName()) && conDef.get(APPLICATION.getName()).asBoolean()) {
+            if (conDef.hasDefined(APPLICATION.getName()) && conDef.get(APPLICATION.getName()).getType().equals(ModelType.BOOLEAN) && conDef.get(APPLICATION.getName()).asBoolean()) {
                 streamWriter.writeEmptyElement(APPLICATION.getXmlName());
             } else {
                 APPLICATION.marshallAsElement(conDef, streamWriter);

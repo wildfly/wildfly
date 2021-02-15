@@ -2,7 +2,7 @@ package org.jboss.as.network;
 
 import "java.net.proto";
 
-// IDs: 330 - 339
+// IDs: 330 - 334
 
 /**
  * @TypeId(330)

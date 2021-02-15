@@ -23,46 +23,78 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.io.StreamCorruptedException;
-import java.util.OptionalInt;
 import java.util.UUID;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.infinispan.protostream.impl.RawProtoStreamWriterImpl;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * Marshaller for a {@link UUID} using fixed size longs.
  * @author Paul Ferraro
  */
-public enum UUIDMarshaller implements ProtoStreamMarshaller<UUID> {
+public enum UUIDMarshaller implements FieldSetMarshaller<UUID, UUIDBuilder> {
     INSTANCE;
 
+    private static final long DEFAULT_SIGNIFICANT_BITS = 0;
+
+    private static final int MOST_SIGNIFICANT_BITS_INDEX = 0;
+    private static final int LEAST_SIGNIFICANT_BITS_INDEX = 1;
+    private static final int FIELDS = 2;
+
     @Override
-    public Class<? extends UUID> getJavaClass() {
-        return UUID.class;
+    public UUIDBuilder getBuilder() {
+        return new DefaultUUIDBuilder();
     }
 
     @Override
-    public UUID readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        long mostSignificantBits = reader.readFixed64();
-        long leastSignificantBits = reader.readFixed64();
-        if (reader.readTag() != 0) {
-            throw new StreamCorruptedException();
+    public int getFields() {
+        return FIELDS;
+    }
+
+    @Override
+    public UUIDBuilder readField(ProtoStreamReader reader, int index, UUIDBuilder builder) throws IOException {
+        switch (index) {
+            case MOST_SIGNIFICANT_BITS_INDEX:
+                return builder.setMostSignificantBits(reader.readSFixed64());
+            case LEAST_SIGNIFICANT_BITS_INDEX:
+                return builder.setLeastSignificantBits(reader.readSFixed64());
+            default:
+                return builder;
         }
-        return new UUID(mostSignificantBits, leastSignificantBits);
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, UUID uuid) throws IOException {
-        ((RawProtoStreamWriterImpl) writer).getDelegate().writeFixed64NoTag(uuid.getMostSignificantBits());
-        ((RawProtoStreamWriterImpl) writer).getDelegate().writeFixed64NoTag(uuid.getLeastSignificantBits());
+    public void writeFields(ProtoStreamWriter writer, int startIndex, UUID uuid) throws IOException {
+        long mostSignificantBits = uuid.getMostSignificantBits();
+        if (mostSignificantBits != DEFAULT_SIGNIFICANT_BITS) {
+            writer.writeSFixed64(startIndex + MOST_SIGNIFICANT_BITS_INDEX, mostSignificantBits);
+        }
+        long leastSignificantBits = uuid.getLeastSignificantBits();
+        if (leastSignificantBits != DEFAULT_SIGNIFICANT_BITS) {
+            writer.writeSFixed64(startIndex + LEAST_SIGNIFICANT_BITS_INDEX, leastSignificantBits);
+        }
     }
 
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, UUID value) {
-        return OptionalInt.of(Long.BYTES + Long.BYTES);
+    static class DefaultUUIDBuilder implements UUIDBuilder {
+        private long mostSignificantBits = DEFAULT_SIGNIFICANT_BITS;
+        private long leastSignificantBits = DEFAULT_SIGNIFICANT_BITS;
+
+        @Override
+        public UUIDBuilder setMostSignificantBits(long bits) {
+            this.mostSignificantBits = bits;
+            return this;
+        }
+
+        @Override
+        public UUIDBuilder setLeastSignificantBits(long bits) {
+            this.leastSignificantBits = bits;
+            return this;
+        }
+
+        @Override
+        public UUID build() {
+            return new UUID(this.mostSignificantBits, this.leastSignificantBits);
+        }
     }
 }

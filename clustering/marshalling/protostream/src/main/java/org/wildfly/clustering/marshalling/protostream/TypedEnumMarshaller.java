@@ -32,6 +32,8 @@ import org.infinispan.protostream.impl.WireFormat;
  * @param <E> the enum type of this marshaller
  */
 public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E> {
+    // Optimize for singleton enums
+    private static final int DEFAULT_ORDINAL = 0;
 
     private final ScalarMarshaller<Class<?>> type;
 
@@ -43,7 +45,7 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E
     public E readFrom(ProtoStreamReader reader) throws IOException {
         @SuppressWarnings("unchecked")
         Class<E> enumClass = (Class<E>) this.type.readFrom(reader);
-        E result = null;
+        E result = enumClass.getEnumConstants()[DEFAULT_ORDINAL];
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
@@ -62,7 +64,9 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E
         Class<E> enumClass = value.getDeclaringClass();
         this.type.writeTo(writer, enumClass);
 
-        writer.writeEnum(AnyField.ANY.getIndex(), value);
+        if (value.ordinal() != DEFAULT_ORDINAL) {
+            writer.writeEnum(AnyField.ANY.getIndex(), value);
+        }
     }
 
     @SuppressWarnings("unchecked")

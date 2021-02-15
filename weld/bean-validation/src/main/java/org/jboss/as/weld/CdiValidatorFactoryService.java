@@ -44,7 +44,7 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Service that replaces the delegate of LazyValidatorFactory with a CDI-enabled
+ * Service that replaces the delegate of LazyValidatorFactory with a Jakarta Contexts and Dependency Injection enabled
  * ValidatorFactory.
  *
  * @author Farah Juma
@@ -78,7 +78,7 @@ public class CdiValidatorFactoryService implements Service {
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
 
-            // Get the CDI-enabled ValidatorFactory
+            // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
             ValidatorFactory validatorFactory = getReference(ValidatorFactory.class, beanManagerSupplier.get());
 
             // Replace the delegate of LazyValidatorFactory

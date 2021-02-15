@@ -30,6 +30,6 @@ import org.wildfly.clustering.marshalling.AbstractTimeTestCase;
 public class JBossMarshallingTimeUnitTest extends AbstractTimeTestCase {
 
     public JBossMarshallingTimeUnitTest() {
-        super(new JBossMarshallingTesterFactory());
+        super(JBossMarshallingTesterFactory.INSTANCE);
     }
 }

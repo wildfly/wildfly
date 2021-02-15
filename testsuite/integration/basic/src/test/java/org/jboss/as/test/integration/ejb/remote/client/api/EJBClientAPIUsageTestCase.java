@@ -355,7 +355,7 @@ public class EJBClientAPIUsageTestCase {
     /**
      * AS7-3129
      * <p/>
-     * Make sure that the CDI request scope is activated for remote EJB invocations
+     * Make sure that the Jakarta Contexts and Dependency Injection request scope is activated for remote EJB invocations
      */
     @Test
     public void testCdiRequestScopeActive() {

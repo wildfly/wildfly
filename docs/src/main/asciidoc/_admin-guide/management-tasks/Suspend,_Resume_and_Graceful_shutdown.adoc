@@ -92,8 +92,8 @@ request controller subsystem.
 
 The following subsystems support graceful shutdown. Note that only
 subsystems that provide an external entry point to the server need
-graceful shutdown support. For example the JAX-RS subsystem does not
-require suspend/resume support as all access to JAX-RS is through the
+graceful shutdown support. For example the Jakarta RESTful Web Services subsystem does not
+require suspend/resume support as all access to Jakarta RESTful Web Services is through the
 web connector.
 
 * *Undertow* - Undertow will wait for all requests to finish.

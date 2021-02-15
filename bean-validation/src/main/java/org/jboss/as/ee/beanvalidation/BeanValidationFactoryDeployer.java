@@ -125,7 +125,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
                     .get().isPartOfWeldDeployment(context);
         }
         if (validatorFactory != null && !partOfWeldDeployment) {
-            // If the ValidatorFactory is not CDI-enabled, close it here. Otherwise, it's
+            // If the ValidatorFactory is not Jakarta Contexts and Dependency Injection enabled, close it here. Otherwise, it's
             // closed via CdiValidatorFactoryService before the Weld service is stopped.
             validatorFactory.close();
         }

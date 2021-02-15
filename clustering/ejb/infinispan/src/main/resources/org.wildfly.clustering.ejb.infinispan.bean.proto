@@ -1,12 +1,15 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
+import "java.time.proto";
+import "org.jboss.ejb.client.proto";
+
 // IDs: 310 - 319
 
 /**
  * @TypeId(310)
  */
 message InfinispanBeanKey {
-	required	bytes	id	= 1;
+	required	bytes	encoded	= 1;
 }
 
 /**
@@ -14,6 +17,6 @@ message InfinispanBeanKey {
  */
 message InfinispanBeanEntry {
 	required	string	name	= 1;
-	required	bytes	group	= 2;
-	required	sint64	lastAccessed	= 3;
+	required	org.jboss.ejb.client.SessionID	group	= 2;
+	required	java.time.Instant	lastAccessed	= 3;
 }

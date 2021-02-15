@@ -31,9 +31,9 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.hibernate.jpa.event.spi.jpa.ExtendedBeanManager;
 
 /**
- * HibernateExtendedBeanManager helps defer the registering of entity listeners, with the CDI BeanManager until
- * after the persistence unit is available for lookup by CDI bean(s).
- * This solves the WFLY-2387 issue of JPA entity listeners referencing the CDI bean, when the bean cycles back
+ * HibernateExtendedBeanManager helps defer the registering of entity listeners, with the Jakarta Contexts and Dependency Injection BeanManager until
+ * after the persistence unit is available for lookup by Jakarta Contexts and Dependency Injection bean(s).
+ * This solves the WFLY-2387 issue of JPA entity listeners referencing the Jakarta Contexts and Dependency Injection bean, when the bean cycles back
  * to the persistence unit, or a different persistence unit.
  *
  * @author Scott Marlow
@@ -48,8 +48,8 @@ public class HibernateExtendedBeanManager implements ExtendedBeanManager {
 
     /**
      * Hibernate calls registerLifecycleListener to register N callbacks to be notified
-     * when the CDI BeanManager can safely be used.  The CDI BeanManager can safely be used
-     * when the CDI AfterDeploymentValidation event is reached.
+     * when the Jakarta Contexts and Dependency Injection BeanManager can safely be used.  The Jakarta Contexts and Dependency Injection BeanManager can safely be used
+     * when the Jakarta Contexts and Dependency Injection AfterDeploymentValidation event is reached.
      *
      * @param lifecycleListener
      *

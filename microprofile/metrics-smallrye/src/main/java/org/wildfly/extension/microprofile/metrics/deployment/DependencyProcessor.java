@@ -32,7 +32,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * Add dependencies required by deployment unit to access the Metrics API (programmatically or using CDI).
+ * Add dependencies required by deployment unit to access the Metrics API (programmatically or using Jakarta Contexts and Dependency Injection).
  */
 public class DependencyProcessor implements DeploymentUnitProcessor {
 

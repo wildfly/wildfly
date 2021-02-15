@@ -1,0 +1,10 @@
+package org.wildfly.clustering.web.infinispan.routing;
+
+// IDs: 195 - 199
+
+/**
+ * @TypeId(195)
+ */
+message RouteRegistryEntry {
+	required	string	route	= 1;
+}
