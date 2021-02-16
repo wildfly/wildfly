@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.security.CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT;
@@ -57,6 +56,7 @@ import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
 /**
  * {@link org.jboss.as.controller.transform.ExtensionTransformerRegistration} for the messaging-activemq subsystem.
+ *
  * @author Paul Ferraro
  */
 @MetaInfServices
@@ -71,6 +71,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        registerTransformers_WF_23(builder.createBuilder(MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_12_0_0));
         registerTransformers_WF_22(builder.createBuilder(MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_11_0_0));
         registerTransformers_WF_21(builder.createBuilder(MessagingExtension.VERSION_11_0_0, MessagingExtension.VERSION_10_0_0));
         registerTransformers_WF_20(builder.createBuilder(MessagingExtension.VERSION_10_0_0, MessagingExtension.VERSION_9_0_0));
@@ -83,10 +84,14 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         registerTransformers_EAP_7_1_0(builder.createBuilder(MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_2_0_0));
         registerTransformers_EAP_7_0_0(builder.createBuilder(MessagingExtension.VERSION_2_0_0, MessagingExtension.VERSION_1_0_0));
 
-        builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0,
+        builder.buildAndRegister(registration, new ModelVersion[]{MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0,
             MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_4_0_0, MessagingExtension.VERSION_5_0_0,
             MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_8_0_0,
-            MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_10_0_0, MessagingExtension.VERSION_11_0_0, MessagingExtension.VERSION_12_0_0});
+            MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_10_0_0, MessagingExtension.VERSION_11_0_0,
+            MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_13_0_0});
+    }
+
+    private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {
     }
 
     private static void registerTransformers_WF_22(ResourceTransformationDescriptionBuilder subsystem) {
@@ -260,6 +265,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     }
 
     static class JGroupsChannelDiscardAttributeChecker implements DiscardAttributeChecker {
+
         @Override
         public boolean isDiscardExpressions() {
             return false;
@@ -301,10 +307,10 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
                 ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
                 ServerDefinition.JOURNAL_DATABASE,
                 ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT
-                );
+        );
         server.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.ALWAYS, ServerDefinition.CREDENTIAL_REFERENCE)
-                    .addRejectCheck(DEFINED, ServerDefinition.CREDENTIAL_REFERENCE);
+                .setDiscard(DiscardAttributeChecker.ALWAYS, ServerDefinition.CREDENTIAL_REFERENCE)
+                .addRejectCheck(DEFINED, ServerDefinition.CREDENTIAL_REFERENCE);
         ResourceTransformationDescriptionBuilder replicationMaster = server.addChildResource(MessagingExtension.REPLICATION_MASTER_PATH);
         replicationMaster.getAttributeBuilder()
                 // reject if the attribute is undefined as its default value was changed from false to true in EAP 7.1.0
