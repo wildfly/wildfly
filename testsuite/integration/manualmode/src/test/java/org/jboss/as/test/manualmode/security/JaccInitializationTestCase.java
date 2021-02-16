@@ -43,6 +43,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -118,6 +119,7 @@ public class JaccInitializationTestCase {
     }
 
     @Test
+    @Ignore("Requires WFCORE-5272")
     public void testEnableElytronJaccRequiresRestart() throws Exception {
         ModelNode res = disableLegacyJacc(client);
         assertOperationRequiresRestart(res);
@@ -127,12 +129,14 @@ public class JaccInitializationTestCase {
     }
 
     @Test
+    @Ignore("Requires WFCORE-5272")
     public void testEnableElytronWhenLegacyJaccActiveThrowsException() throws Exception {
         ModelNode res = enableElytronJacc();
         assertOperationFailed(res, "WFLYELY01086");
     }
 
     @Test
+    @Ignore("Requires WFCORE-5272")
     public void testEnableLegayJaccWhenElytronActiveThrowsException() throws Exception {
         disableLegacyJacc(client);
         enableElytronJacc();
@@ -143,6 +147,7 @@ public class JaccInitializationTestCase {
     }
 
     @Test
+    @Ignore("Requires WFCORE-5272")
     public void testSwitchJaccBack() throws Exception {
         ModelNode res = disableLegacyJacc(client);
         assertOperationRequiresRestart(res);
