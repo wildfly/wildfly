@@ -57,7 +57,7 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     ARRAY_LIST(new CollectionMarshaller<>(ArrayList::new)),
     BIT_SET(new FunctionalScalarMarshaller<>(Scalar.BYTE_ARRAY.cast(byte[].class), BitSet::new, BitSet::isEmpty, BitSet::toByteArray, BitSet::valueOf)),
     CALENDAR(new CalendarMarshaller()),
-    CURRENCY(new FunctionalScalarMarshaller<>(Scalar.STRING.cast(String.class), Functions.constantSupplier(Currency.getInstance(Locale.getDefault())), Currency::getCurrencyCode, Currency::getInstance)),
+    CURRENCY(new FunctionalScalarMarshaller<>(Currency.class, Scalar.STRING.cast(String.class), Functions.constantSupplier(getDefaultCurrency()), Currency::getCurrencyCode, Currency::getInstance)),
     DATE(new FunctionalMarshaller<>(Date.class, Instant.class, Date::toInstant, Date::from)),
     EMPTY_ENUMERATION(new ValueMarshaller<>(Collections.emptyEnumeration())),
     EMPTY_ITERATOR(new ValueMarshaller<>(Collections.emptyIterator())),
@@ -100,5 +100,13 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     @Override
     public ProtoStreamMarshaller<?> getMarshaller() {
         return this.marshaller;
+    }
+
+    private static Currency getDefaultCurrency() {
+        try {
+            return Currency.getInstance(Locale.getDefault());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }
