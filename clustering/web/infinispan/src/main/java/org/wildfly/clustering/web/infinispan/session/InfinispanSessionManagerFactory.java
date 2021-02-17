@@ -58,7 +58,6 @@ import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
 import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionAttributesFactory;
 import org.wildfly.clustering.web.infinispan.session.fine.FineSessionAttributesFactory;
-import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -153,7 +152,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
             }
 
             @Override
-            public Recordable<ImmutableSession> getInactiveSessionRecorder() {
+            public Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder() {
                 return configuration.getInactiveSessionRecorder();
             }
 

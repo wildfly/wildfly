@@ -30,14 +30,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.InactiveSessionStatistics;
 
 /**
  * Records statistics for inactive sessions.
  * @author Paul Ferraro
  */
-public class RecordableInactiveSessionStatistics implements InactiveSessionStatistics, Recordable<ImmutableSession> {
+public class RecordableInactiveSessionStatistics implements InactiveSessionStatistics, Recordable<ImmutableSessionMetaData> {
 
     private final AtomicLong expiredSessions = new AtomicLong();
     private final AtomicReference<Duration> maxLifetime = new AtomicReference<>();
@@ -49,8 +49,8 @@ public class RecordableInactiveSessionStatistics implements InactiveSessionStati
     }
 
     @Override
-    public void record(ImmutableSession session) {
-        Duration lifetime = Duration.between(session.getMetaData().getCreationTime(), Instant.now());
+    public void record(ImmutableSessionMetaData metaData) {
+        Duration lifetime = Duration.between(metaData.getCreationTime(), Instant.now());
         Duration currentMaxLifetime = this.maxLifetime.get();
 
         while (lifetime.compareTo(currentMaxLifetime) > 0) {
@@ -67,7 +67,7 @@ public class RecordableInactiveSessionStatistics implements InactiveSessionStati
             sessions = createNewTotals(currentTotals, lifetime);
         }
 
-        if (session.getMetaData().isExpired()) {
+        if (metaData.isExpired()) {
             this.expiredSessions.incrementAndGet();
         }
     }
