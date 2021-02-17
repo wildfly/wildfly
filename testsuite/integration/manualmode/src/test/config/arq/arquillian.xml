@@ -39,6 +39,23 @@
             </configuration>
         </container>
 
+        <container qualifier="default-full-jbossas-byteman" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas -Dorg.jboss.byteman.verbose -Djboss.modules.system.pkgs=org.jboss.byteman -Dorg.jboss.byteman.transform.all -javaagent:${basedir}/target/lib/byteman.jar=listener:true,port:${byteman.port},address:${byteman.host},policy:true</property>
+                <property name="serverConfig">standalone-full.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
         <container qualifier="jbossas-non-clustered" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly</property>
