@@ -136,6 +136,8 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
         checkSubsystemBasics(model);
         checkEndpointConfigs(model);
         checkClientConfigs(model);
+        checkExtraCongfigs(model);
+
     }
 
     private void checkSubsystemBasics(ModelNode model) throws Exception {
@@ -168,6 +170,10 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
         assertEquals("my-handlers", preHandlers.get(0).getName());
         assertEquals("org.jboss.ws.common.invocation.MyHandler", preHandlers.get(1).getValue().get(Constants.HANDLER).asPropertyList().get(0).getValue().get(Constants.CLASS).asString());
         assertEquals("my-handlers2", postHandlers.get(0).getName());
+    }
+
+    private void checkExtraCongfigs(ModelNode model) throws Exception {
+        assertEquals("https", Attributes.WSDL_URI_SCHEME.resolveModelAttribute(ExpressionResolver.TEST_RESOLVER, model).asString());
     }
 
     @Test
