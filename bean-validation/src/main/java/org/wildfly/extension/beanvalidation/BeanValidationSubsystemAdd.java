@@ -38,7 +38,7 @@ import static org.wildfly.extension.beanvalidation.logging.BeanValidationLogger.
 
 
 /**
- * Handler that adds the bean validation subsystem.
+ * Handler that adds the Jakarta Bean Validation subsystem.
  *
  * @author Eduardo Martins
  */
@@ -53,7 +53,7 @@ class BeanValidationSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                ROOT_LOGGER.debug("Activating Bean Validation subsystem");
+                ROOT_LOGGER.debug("Activating Jakarta Bean Validation subsystem");
                 processorTarget.addDeploymentProcessor(BeanValidationExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_BEAN_VALIDATION_RESOURCE_INJECTION_REGISTRY, new BeanValidationResourceReferenceProcessorRegistryProcessor());
                 processorTarget.addDeploymentProcessor(BeanValidationExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_BEAN_VALIDATION, new BeanValidationDeploymentDependenciesProcessor());
                 processorTarget.addDeploymentProcessor(BeanValidationExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_VALIDATOR_FACTORY, new BeanValidationFactoryDeployer());

@@ -26,7 +26,7 @@
     <wsdl-host>${jboss.bind.address:localhost}</wsdl-host>
     <wsdl-port>${ws.wsdl-port:9090}</wsdl-port>
     <wsdl-secure-port>${ws.wsdl-secure-port:9443}</wsdl-secure-port>
-    <wsdl-uri-scheme>https</wsdl-uri-scheme>
+    <wsdl-uri-scheme>${ws.wsdl-uri-scheme:https}</wsdl-uri-scheme>
     <wsdl-path-rewrite-rule>s/jaxws-jbws2150-codefirst/xx\/jaxws-jbws2150-codefirst/g</wsdl-path-rewrite-rule>
     <endpoint-config name="Standard-Endpoint-Config"/>
     <endpoint-config name="Recording-Endpoint-Config">

@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test bean validation is propagated on inherited attributes
+ * Test Jakarta Bean Validation is propagated on inherited attributes
  *
  * @author Madhumita Sadhukhan
  */
@@ -79,7 +79,7 @@ public class BeanValidationJPAInheritanceTestCase {
                 .cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
-    /* Ensure that bean validation works for inheritance across persistent objects */
+    /* Ensure that Jakarta Bean Validation works for inheritance across persistent objects */
 
     @Test
     public void testConstraintValidationforJPA() throws NamingException, SQLException {

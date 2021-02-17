@@ -36,7 +36,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /*
- * This class implements the bean validation extension.
+ * This class implements the Jakarta Bean Validation extension.
  *
  * @author Eduardo Martins
  */
