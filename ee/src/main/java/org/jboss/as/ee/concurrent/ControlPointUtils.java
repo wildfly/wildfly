@@ -31,6 +31,7 @@ import javax.enterprise.concurrent.ManagedTask;
 import javax.enterprise.concurrent.ManagedTaskListener;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -172,29 +173,20 @@ public class ControlPointUtils {
             if (controlPoint == null) {
                 runnable.run();
             } else {
-                Exception runnableException = null;
                 try {
                     if (controlPoint.beginRequest() == RunResult.RUN) {
                         try {
                             runnable.run();
-                        } catch (Exception e) {
-                            runnableException = e;
-                            throw e;
+                        } catch (RuntimeException e) {
+                            throw new ExecutionException(e);
                         } finally {
                             controlPoint.requestComplete();
                         }
-                        return;
-                    } else {
-                        throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(runnable);
                     }
+                } catch (ExecutionException e) {
+                    throw EeLogger.ROOT_LOGGER.failureWhileRunningTask(runnable, (Exception) e.getCause());
                 } catch (Exception e) {
-                    // WFLY-13043
-                    EeLogger.ROOT_LOGGER.failedToRunTask(runnable,e);
-                    if (runnableException == null) {
-                        return;
-                    } else {
-                        throw EeLogger.ROOT_LOGGER.failureWhileRunningTask(runnable, e);
-                    }
+                    EeLogger.ROOT_LOGGER.failedToRunTask(runnable, e);
                 }
             }
         }
@@ -223,12 +215,18 @@ public class ControlPointUtils {
                     if (controlPoint.beginRequest() == RunResult.RUN) {
                         try {
                             return callable.call();
+                        } catch (Exception e) {
+                            throw new ExecutionException(e);
                         } finally {
                             controlPoint.requestComplete();
                         }
                     }
+                } catch (ExecutionException e) {
+                    // from callable
+                    throw (Exception) e.getCause();
                 } catch (Exception e) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(callable,e);
+                    // from controlPoint.beginRequest(), Callable mandates exception
+                    throw EeLogger.ROOT_LOGGER.failureWhileRunningTask(callable, e);
                 }
                 throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(callable);
             }

@@ -1206,6 +1206,6 @@ public interface EeLogger extends BasicLogger {
     void hungTaskNotCancelled(String executorName, String taskName);
 
     @Message(id = 131, value = "Failed to run scheduled task: %s")
-    RuntimeException failureWhileRunningTask(Object delegate,@Cause Exception e);
+    IllegalStateException failureWhileRunningTask(Object delegate, @Cause Exception e);
 
 }
