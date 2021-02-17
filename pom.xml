@@ -318,7 +318,7 @@
         <version.io.smallrye.smallrye-jwt>3.0.0</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.1</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.open-api>2.1.1</version.io.smallrye.open-api>
-        <version.io.smallrye.opentracing>2.0.0-RC1</version.io.smallrye.opentracing>
+        <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
         <version.io.smallrye.smallrye-reactive-converters>2.0.0.RC3</version.io.smallrye.smallrye-reactive-converters>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
@@ -369,7 +369,7 @@
         <version.org.eclipse.microprofile.jwt.api>1.2</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.metrics.api>3.0</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.openapi>2.0</version.org.eclipse.microprofile.openapi>
-        <version.org.eclipse.microprofile.opentracing>2.0-RC2</version.org.eclipse.microprofile.opentracing>
+        <version.org.eclipse.microprofile.opentracing>2.0</version.org.eclipse.microprofile.opentracing>
         <version.org.eclipse.microprofile.rest.client.api>1.4.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.yasson>1.0.5</version.org.eclipse.yasson>
         <version.org.eclipselink.version>2.7.3</version.org.eclipselink.version>
