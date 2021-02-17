@@ -313,7 +313,7 @@
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <version.io.smallrye.smallrye-config>1.6.2</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>4.3.2</version.io.smallrye.smallrye-fault-tolerance>
-        <version.io.smallrye.smallrye-health>2.2.0</version.io.smallrye.smallrye-health>
+        <version.io.smallrye.smallrye-health>2.2.5</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>2.0.13</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>2.4.4</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.open-api>2.0.16</version.io.smallrye.open-api>
