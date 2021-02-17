@@ -639,6 +639,38 @@ This is done from the CLI:
     }
 }
 ----
+
+=== Critical analysis of the broker
+
+When things go wrong on the broker, the critical analyzer may act as a safeguard shutting down the broker or the JVM. +
+If the response time goes beyond a configured timeout, the broker is considered unstable and an action can be taken to either shutdown the broker or halt the VM.
+Currently in WildFly this will only be logged but you can change that behaviour by setting the `critical-analyzer-policy` attribute to *HALT* or *SHUTDOWN*.
+For this, the critical analyzer measures the response time in:
+
+ * Queue delivery (adding to the queue)
+ * Journal storage
+ * Paging operations
+
+You can configure the critical analyzer on the broker using the CLI.
+To disable the critical analyzer, you can execute the following CLI command:
+----
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default:write-attribute(name=critical-analyzer-enabled, value=false)
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+You can configure the critical analyzer with the following attributes:
+
+ * critical-analyzer-enabled
+ * critical-analyzer-timeout
+ * critical-analyzer-check-period
+ * critical-analyzer-policy
+
+----
+
 :leveloffset: +1
 
 include::Messaging_Connect_a_pooled-connection-factory_to_a_Remote_Artemis_Server.adoc[]

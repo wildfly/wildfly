@@ -72,6 +72,10 @@
             network-check-ping6-command="ping6 -c 1 %2$s"
             network-check-timeout="1000"/>
 
+        <critical-analyzer enabled="true" 
+                           timeout="120000" 
+                           policy="LOG"/>
+
         <bindings-directory path="${my.bindings.dir:test}" relative-to="test"/>
         <journal-directory path="${my.journal.dir:test}" relative-to="test"/>
         <large-messages-directory path="${my.largemessages.dir:test}" relative-to="test"/>

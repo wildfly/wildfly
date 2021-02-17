@@ -122,6 +122,12 @@
             network-check-timeout="10000"
             network-check-url-list="127.0.0.1"/>
 
+        <critical-analyzer
+            enabled="false"
+            check-period="120000"
+            timeout="240000"
+            policy="HALT"/>
+
         <replication-colocated>
             <master />
         </replication-colocated>

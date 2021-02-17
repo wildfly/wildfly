@@ -141,6 +141,7 @@ import org.apache.activemq.artemis.core.security.Role;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -670,6 +671,12 @@ class ServerAdd extends AbstractAddStepHandler {
                 configuration.setNetworkCheckTimeout(NETWORK_CHECK_TIMEOUT.resolveModelAttribute(context, model).asInt());
                 configuration.setNetworkCheckURLList(NETWORK_CHECK_URL_LIST.resolveModelAttribute(context, model).asStringOrNull());
             }
+
+            configuration.setCriticalAnalyzer(ServerDefinition.CRITICAL_ANALYZER_ENABLED.resolveModelAttribute(context, model).asBoolean());
+            configuration.setCriticalAnalyzerCheckPeriod(ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD.resolveModelAttribute(context, model).asLong());
+            configuration.setCriticalAnalyzerPolicy(CriticalAnalyzerPolicy.valueOf(ServerDefinition.CRITICAL_ANALYZER_POLICY.resolveModelAttribute(context, model).asString()));
+            configuration.setCriticalAnalyzerTimeout(ServerDefinition.CRITICAL_ANALYZER_TIMEOUT.resolveModelAttribute(context, model).asLong());
+
             processStorageConfiguration(context, model, configuration);
             HAPolicyConfigurationBuilder.getInstance().addHAPolicyConfiguration(context, configuration, model);
 

@@ -280,7 +280,11 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
                                 ServerDefinition.NETWORK_CHECK_PING_COMMAND,
                                 ServerDefinition.NETWORK_CHECK_TIMEOUT,
-                                ServerDefinition.NETWORK_CHECK_URL_LIST
+                                ServerDefinition.NETWORK_CHECK_URL_LIST,
+                                ServerDefinition.CRITICAL_ANALYZER_ENABLED,
+                                ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
+                                ServerDefinition.CRITICAL_ANALYZER_POLICY,
+                                ServerDefinition.CRITICAL_ANALYZER_TIMEOUT
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
@@ -339,7 +343,11 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
                                 ServerDefinition.NETWORK_CHECK_PING_COMMAND,
                                 ServerDefinition.NETWORK_CHECK_TIMEOUT,
-                                ServerDefinition.NETWORK_CHECK_URL_LIST
+                                ServerDefinition.NETWORK_CHECK_URL_LIST,
+                                ServerDefinition.CRITICAL_ANALYZER_ENABLED,
+                                ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
+                                ServerDefinition.CRITICAL_ANALYZER_POLICY,
+                                ServerDefinition.CRITICAL_ANALYZER_TIMEOUT
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
@@ -361,7 +369,11 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
                             ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
                             ServerDefinition.NETWORK_CHECK_PING_COMMAND,
                             ServerDefinition.NETWORK_CHECK_TIMEOUT,
-                            ServerDefinition.NETWORK_CHECK_URL_LIST));
+                            ServerDefinition.NETWORK_CHECK_URL_LIST,
+                            ServerDefinition.CRITICAL_ANALYZER_ENABLED,
+                            ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
+                            ServerDefinition.CRITICAL_ANALYZER_POLICY,
+                            ServerDefinition.CRITICAL_ANALYZER_TIMEOUT));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
@@ -373,7 +385,11 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
                     ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
                     ServerDefinition.NETWORK_CHECK_PING_COMMAND,
                     ServerDefinition.NETWORK_CHECK_TIMEOUT,
-                    ServerDefinition.NETWORK_CHECK_URL_LIST
+                    ServerDefinition.NETWORK_CHECK_URL_LIST,
+                    ServerDefinition.CRITICAL_ANALYZER_ENABLED,
+                    ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
+                    ServerDefinition.CRITICAL_ANALYZER_POLICY,
+                    ServerDefinition.CRITICAL_ANALYZER_TIMEOUT
             ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
@@ -485,7 +501,11 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
                     ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
                     ServerDefinition.NETWORK_CHECK_PING_COMMAND,
                     ServerDefinition.NETWORK_CHECK_TIMEOUT,
-                    ServerDefinition.NETWORK_CHECK_URL_LIST
+                    ServerDefinition.NETWORK_CHECK_URL_LIST,
+                    ServerDefinition.CRITICAL_ANALYZER_ENABLED,
+                    ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
+                    ServerDefinition.CRITICAL_ANALYZER_POLICY,
+                    ServerDefinition.CRITICAL_ANALYZER_TIMEOUT
             ));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);

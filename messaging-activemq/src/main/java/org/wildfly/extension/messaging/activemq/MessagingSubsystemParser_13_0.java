@@ -236,7 +236,11 @@ public class MessagingSubsystemParser_13_0 extends PersistentResourceXMLParser {
                                         ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
                                         ServerDefinition.NETWORK_CHECK_PING_COMMAND,
                                         ServerDefinition.NETWORK_CHECK_TIMEOUT,
-                                        ServerDefinition.NETWORK_CHECK_URL_LIST)
+                                        ServerDefinition.NETWORK_CHECK_URL_LIST,
+                                        ServerDefinition.CRITICAL_ANALYZER_ENABLED,
+                                        ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
+                                        ServerDefinition.CRITICAL_ANALYZER_POLICY,
+                                        ServerDefinition.CRITICAL_ANALYZER_TIMEOUT)
                                 .addChild(
                                         builder(LiveOnlyDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(

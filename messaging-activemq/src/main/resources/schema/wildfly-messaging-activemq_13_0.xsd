@@ -303,6 +303,23 @@
                 </xs:complexType>
             </xs:element>
 
+            <xs:element maxOccurs="1" minOccurs="0" name="critical-analyzer">
+                <xs:complexType>
+                    <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+                    <xs:attribute name="check-period" type="xs:long" default="0"/>
+                    <xs:attribute name="timeout" type="xs:long" default="120000"/>
+                    <xs:attribute name="policy" default="LOG">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="HALT"/>
+                                <xs:enumeration value="LOG"/>
+                                <xs:enumeration value="SHUTDOWN"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+
             <xs:choice>
                 <xs:element name="live-only" minOccurs="0" maxOccurs="1">
                     <xs:complexType>

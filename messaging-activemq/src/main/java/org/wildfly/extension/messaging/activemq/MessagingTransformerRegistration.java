@@ -92,6 +92,19 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     }
 
     private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+        rejectDefinedAttributeWithDefaultValue(server,
+                ServerDefinition.NETWORK_CHECK_LIST,
+                ServerDefinition.NETWORK_CHECK_NIC,
+                ServerDefinition.NETWORK_CHECK_PERIOD,
+                ServerDefinition.NETWORK_CHECK_PING6_COMMAND,
+                ServerDefinition.NETWORK_CHECK_PING_COMMAND,
+                ServerDefinition.NETWORK_CHECK_TIMEOUT,
+                ServerDefinition.NETWORK_CHECK_URL_LIST,
+                ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
+                ServerDefinition.CRITICAL_ANALYZER_ENABLED,
+                ServerDefinition.CRITICAL_ANALYZER_POLICY,
+                ServerDefinition.CRITICAL_ANALYZER_TIMEOUT);
     }
 
     private static void registerTransformers_WF_22(ResourceTransformationDescriptionBuilder subsystem) {
