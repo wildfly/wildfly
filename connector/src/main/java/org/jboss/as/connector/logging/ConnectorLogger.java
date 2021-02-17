@@ -295,14 +295,14 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 31, value = "unable to validate and deploy ds or xads")
     DeployException cannotDeployAndValidate(@Cause Throwable cause);
 
-    /**
-     * Creates an exception indicating the data source was unable to start because it create more than one connection
-     * factory.
-     *
-     * @return a {@link StartException} for the error.
-     */
-    @Message(id = 32, value = "Unable to start the ds because it generated more than one cf")
-    StartException cannotStartDs();
+//    /**
+//     * Creates an exception indicating the data source was unable to start because it create more than one connection
+//     * factory.
+//     *
+//     * @return a {@link StartException} for the error.
+//     */
+//    @Message(id = 32, value = "Unable to start the ds because it generated more than one cf")
+//    StartException cannotStartDs();
 
     /**
      * Creates an exception indicating an error occurred during deployment.
@@ -928,4 +928,25 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 119, value = "Unbinding connection factory named %s to alias %s")
     void unbindingAlias(String jndiName, String alias);
+
+    /**
+     * Creates an exception indicating the data source was unable to start because it create more than one connection
+     * factory.
+     * @param dataSourceJNDIName
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 120, value = "Unable to start the data source '%s' because there are no connection factories, either not defined or failed, please check log.")
+    StartException cannotStartDSNoConnectionFactory(String dataSourceJNDIName);
+
+    /**
+     * Creates an exception indicating the data source was unable to start because it create more than one connection
+     * factory.
+     * @param dataSourceJNDIName
+     * @param factoriesCount
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 121, value = "Unable to start the data source '%s' because there is more than one(%s) connection factory defined.")
+    StartException cannotStartDSTooManyConnectionFactories(String dataSourceJNDIName, int factoriesCount);
 }
