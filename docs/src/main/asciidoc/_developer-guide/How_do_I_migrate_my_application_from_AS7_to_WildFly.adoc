@@ -819,7 +819,7 @@ org.jboss.resteasy.core.NoMessageBodyWriterFoundFailure: Could not find MessageB
 ==== REST Client API
 
 Some REST Client API classes and methods are deprecated, for example: `org.jboss.resteasy.client.ClientRequest` and `org.jboss.resteasy.client.ClientResponse`. Instead, use
-https://docs.jboss.org/resteasy/docs/3.0-rc-1/javadocs/index.html?org/jboss/resteasy/client/jaxrs/ResteasyClient.html[﻿`org.jboss.resteasy.client.jaxrs.ResteasyClient`] and `javax.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external Jakarta RESTful Web Services RestEasy client that interacts with a Jakarta RESTful Web Services.
+https://docs.jboss.org/resteasy/docs/3.15.0.Final/javadocs/index.html?org/jboss/resteasy/client/jaxrs/ResteasyClient.html[﻿`org.jboss.resteasy.client.jaxrs.ResteasyClient`] and `javax.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external Jakarta RESTful Web Services RestEasy client that interacts with a Jakarta RESTful Web Services.
 
 [[application-clustering]]
 === Application Clustering
