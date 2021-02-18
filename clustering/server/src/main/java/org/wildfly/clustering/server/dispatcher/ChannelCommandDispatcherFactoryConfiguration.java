@@ -21,11 +21,12 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.jgroups.JChannel;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
@@ -33,7 +34,7 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
  * @author Paul Ferraro
  */
 public interface ChannelCommandDispatcherFactoryConfiguration {
-    ChannelFactory getChannelFactory();
+    Predicate<ByteBuffer> getUnknownForkPredicate();
     JChannel getChannel();
     ByteBufferMarshaller getMarshaller();
     Duration getTimeout();

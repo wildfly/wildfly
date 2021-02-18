@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -69,7 +71,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Builds a channel-based {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, ChannelCommandDispatcherFactoryConfiguration, Supplier<AutoCloseableCommandDispatcherFactory>, Function<ClassLoader, ByteBufferMarshaller> {
+public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, ChannelCommandDispatcherFactoryConfiguration, Supplier<AutoCloseableCommandDispatcherFactory>, Function<ClassLoader, ByteBufferMarshaller>, Predicate<ByteBuffer> {
 
     enum MarshallingVersion implements Function<Map.Entry<ClassResolver, ClassLoader>, MarshallingConfiguration> {
         VERSION_1() {
@@ -160,7 +162,12 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     }
 
     @Override
-    public ChannelFactory getChannelFactory() {
-        return this.channelFactory.get();
+    public Predicate<ByteBuffer> getUnknownForkPredicate() {
+        return this;
+    }
+
+    @Override
+    public boolean test(ByteBuffer buffer) {
+        return this.channelFactory.get().isUnknownForkResponse(buffer);
     }
 }
