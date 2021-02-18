@@ -35,6 +35,9 @@
     <mail-session name="default2" debug="true" jndi-name="java:jboss/mail/Default">
         <smtp-server outbound-socket-binding-ref="mail-smtp"/>
     </mail-session>
+    <mail-session name="default3" debug="${exp.debug:true}" jndi-name="${exp.jndi-name:java:jboss/mail/Default3}" from="${exp.from:from@from.org}">
+        <smtp-server outbound-socket-binding-ref="${exp.outbound-socket-binding-ref:mail-smtp}" tls="${exp.tls:true}" ssl="${exp.ssl:false}" username="${exp.username:nobody}" password="${exp.password:empty}" />
+    </mail-session>
     <mail-session name="custom" debug="true" jndi-name="java:jboss/mail/Custom">
         <custom-server name="smtp" username="username" password="password">
             <property name="host" value="mail.example.com"/>
@@ -48,6 +51,11 @@
         <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3" username="user1">
             <credential-reference clear-text="user1-pass"/>
             <property name="custom_prop" value="some-custom-prop-value"/>
+        </custom-server>
+    </mail-session>
+    <mail-session name="custom3" debug="true" jndi-name="java:jboss/mail/Custom3">
+        <custom-server name="smtp" username="username" password="password">
+            <property name="host" value="${exp.value:mail.example.com}"/>
         </custom-server>
     </mail-session>
 </subsystem>
