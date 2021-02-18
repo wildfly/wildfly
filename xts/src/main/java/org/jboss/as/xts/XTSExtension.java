@@ -56,7 +56,7 @@ public class XTSExtension implements Extension {
 
     public void initialize(ExtensionContext context) {
         XtsAsLogger.ROOT_LOGGER.debug("Initializing XTS Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION, true);
         subsystem.registerSubsystemModel(new XTSSubsystemDefinition());
         subsystem.registerXMLElementWriter(new XTSSubsystemParser());
     }

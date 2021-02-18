@@ -45,6 +45,7 @@ import org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
 public class JAXRExtension extends AbstractLegacyExtension {
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 2, 0);
+    static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1, 2, 0);
     static final String SUBSYSTEM_NAME = "jaxr";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -64,7 +65,7 @@ public class JAXRExtension extends AbstractLegacyExtension {
 
     @Override
     protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
-        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
+        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION, true);
 
         subsystemRegistration.registerXMLElementWriter(JAXRSubsystemWriter.INSTANCE);
 

@@ -50,6 +50,7 @@ class JAXRSubsystemRootResource extends ModelOnlyResourceDefinition {
         super(JAXRExtension.SUBSYSTEM_PATH,
                 JAXRExtension.getResolver(),
                 CONNECTION_FACTORY_ATTRIBUTE, CONNECTION_FACTORY_IMPL_ATTRIBUTE);
+        this.setDeprecated(JAXRExtension.DEPRECATED_SINCE);
     }
 
     @Override
