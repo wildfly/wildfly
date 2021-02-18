@@ -121,9 +121,9 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
         }
 
         /**
-         * Set if JACC should be enabled for this application-security-domain.
+         * Set if Jakarta Authorization should be enabled for this application-security-domain.
          *
-         * @param enableJacc if JACC should be enabled for this application-security-domain.
+         * @param enableJacc if Jakarta Authorization should be enabled for this application-security-domain.
          * @return this {@link Builder} to allow method chaining.
          */
         public Builder withEnableJacc(final boolean enableJacc) {

@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
 
 /**
  * <p>
- * Simple set of starting JTA transaction and getting it bridged to the XTS-AT.
+ * Simple set of starting Jakarta Transactions transaction and getting it bridged to the XTS-AT.
  * <p>
  * Test ported from https://github.com/jbosstm/quickstart repository.
  */
@@ -93,9 +93,9 @@ public class BridgeFromJTATestCase {
     }
 
     /**
-     * Test starts the JTA transaction while calling the 'incrementCounter' on the stub.
-     * Expecting the interceptor bridges from JTA to WS-AT.
-     * The commit of the JTA transaction should cause the commit of the WS-AT transaction as well.
+     * Test starts the Jakarta Transactions transaction while calling the 'incrementCounter' on the stub.
+     * Expecting the interceptor bridges from Jakarta Transactions to WS-AT.
+     * The commit of the Jakarta Transactions transaction should cause the commit of the WS-AT transaction as well.
      */
     @Test
     public void testCommit() throws Exception {
@@ -103,19 +103,19 @@ public class BridgeFromJTATestCase {
         firstClient.incrementCounter(1);
         ut.commit();
 
-        // second JTA checks if the counter was really incremented
+        // second Jakarta Transactions checks if the counter was really incremented
         ut.begin();
         int counter = firstClient.getCounter();
         ut.commit();
 
-        Assert.assertEquals("Bridged JTA transaction should commit the WS-AT and the counter is expected to be incremented",
+        Assert.assertEquals("Bridged Jakarta Transactions transaction should commit the WS-AT and the counter is expected to be incremented",
                 1, counter);
     }
 
     /**
-     * Test starts the JTA transaction while calling the 'incrementCounter' on the stub.
-     * Expecting the interceptor bridges from JTA to WS-AT.
-     * The rollback of the JTA transaction should cause the rollback of the WS-AT transaction as well.
+     * Test starts the Jakarta Transactions transaction while calling the 'incrementCounter' on the stub.
+     * Expecting the interceptor bridges from Jakarta Transactions to WS-AT.
+     * The rollback of the Jakarta Transactions transaction should cause the rollback of the WS-AT transaction as well.
      */
     @Test
     public void testRollback() throws Exception {
@@ -123,7 +123,7 @@ public class BridgeFromJTATestCase {
         firstClient.incrementCounter(1);
         ut.rollback();
 
-        // second JTA checks if the counter was not incremented
+        // second Jakarta Transactions checks if the counter was not incremented
         ut.begin();
         int counter = firstClient.getCounter();
         ut.commit();

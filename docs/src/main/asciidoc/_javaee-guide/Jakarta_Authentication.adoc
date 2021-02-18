@@ -1,5 +1,5 @@
-[[Java_Authentication_Service_Provider_Interface_for_Containers_(JASPIC)]]
-= Java Authentication Service Provider Interface for Containers (JASPIC)
+[[Jakarta_Authentication]]
+= Jakarta Authentication
 
 JASPI is not available by default for deployments, and a specific
 Security Domain must be created to use it. For a simplified developer

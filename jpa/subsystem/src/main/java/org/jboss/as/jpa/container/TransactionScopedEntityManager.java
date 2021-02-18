@@ -218,7 +218,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
 
 
     /**
-     * throw error if jta transaction already has an UNSYNCHRONIZED persistence context and a SYNCHRONIZED persistence context
+     * throw error if Jakarta Transactions transaction already has an UNSYNCHRONIZED persistence context and a SYNCHRONIZED persistence context
      * is requested.  We are only fussy in this test, if the target component persistence context is SYNCHRONIZED.
      *
      * WFLY-7075 introduces two extensions, allow a (transaction) joined UNSYNCHRONIZED persistence context to be treated as SYNCHRONIZED,

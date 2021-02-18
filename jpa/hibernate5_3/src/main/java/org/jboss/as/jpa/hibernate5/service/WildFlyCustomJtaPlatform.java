@@ -25,7 +25,7 @@ import org.hibernate.engine.transaction.jta.platform.internal.JtaSynchronization
 import org.wildfly.common.Assert;
 
 /**
- * WildFlyCustomJtaPlatform can obtain the JTA TransactionSynchronizationRegistry to be used by
+ * WildFlyCustomJtaPlatform can obtain the Jakarta Transactions TransactionSynchronizationRegistry to be used by
  * Hibernate ORM JPA + native applications.
  * For JPA applications, we could of passed the TransactionSynchronizationRegistry into the
  * constructor but Hibernate native apps wouldn't be able to do that, so this covers all app types.

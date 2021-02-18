@@ -42,7 +42,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A service for JACC policies
+ * A service for Jakarta Authorization policies
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */

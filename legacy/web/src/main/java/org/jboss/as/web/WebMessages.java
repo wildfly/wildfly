@@ -210,7 +210,7 @@ public interface WebMessages {
     @Message(id = 18055, value = "Security context creation failed")
     RuntimeException failToCreateSecurityContext(@Cause Throwable t);
 
-    @Message(id = 18056, value = "Catalina Context is null while creating JACC permissions")
+    @Message(id = 18056, value = "Catalina Context is null while creating Jakarta Authorization permissions")
     IllegalStateException noCatalinaContextForJacc();
 
     @Message(id = 18096, value = "Error instantiating container component: %s")

@@ -699,7 +699,7 @@ public interface JpaLogger extends BasicLogger {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 64, value =
-            "JTA transaction already has a 'SynchronizationType.UNSYNCHRONIZED' persistence context (EntityManager) joined to it " +
+            "Jakarta Transactions transaction already has a 'SynchronizationType.UNSYNCHRONIZED' persistence context (EntityManager) joined to it " +
             "but a component with a 'SynchronizationType.SYNCHRONIZED' is now being used.  " +
             "Change the calling component code to join the persistence context (EntityManager) to the transaction or "+
             "change the called component code to also use 'SynchronizationType.UNSYNCHRONIZED'.  "+

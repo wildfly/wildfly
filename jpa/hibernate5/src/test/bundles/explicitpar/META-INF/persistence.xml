@@ -38,7 +38,7 @@
 
             <!-- event overriding -->
             <property name="hibernate.ejb.event.pre-insert" value="org.hibernate.jpa.test.NoOpListener"/>
-            <!-- remove JACC and validator -->
+            <!-- remove Jakarta Authorization and validator -->
 
             <!-- alternatively to <class> and <property> declarations, you can use a regular hibernate.cfg.xml file -->
             <!-- property name="hibernate.ejb.cfgfile" value="/resource-path/to/hibernate.cfg.xml"/ -->

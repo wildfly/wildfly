@@ -41,7 +41,7 @@ public class InnerUnsynchronizedSFSB {
         return em.find(Employee.class, id);
     }
 
-    // join persistence context to jta transaction to save pending changes to database
+    // join persistence context to Jakarta Transactions transaction to save pending changes to database
     public void joinTransaction() {
         em.joinTransaction();
     }

@@ -61,7 +61,7 @@ public class SFSBXPC {
      * <p>
      * "When a business method of the stateful session bean is invoked, if the stateful session bean
      * uses bean managed transaction demarcation and a UserTransaction is begun within the method,
-     * the container associates the persistence context with the JTA transaction and calls
+     * the container associates the persistence context with the Jakarta Transactions transaction and calls
      * EntityManager.joinTransaction.
      * "
      */

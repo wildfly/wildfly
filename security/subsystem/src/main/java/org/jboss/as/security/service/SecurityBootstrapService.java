@@ -105,10 +105,10 @@ public class SecurityBootstrapService implements Service<Void> {
 
     private void initializeJacc() throws StartException {
         if (!initializeJacc) {
-            SecurityLogger.ROOT_LOGGER.debugf("Legacy subsystem configured to not initialize JACC. If you want JACC support, make sure you have it properly configured in Elytron subsystem.");
+            SecurityLogger.ROOT_LOGGER.debugf("Legacy subsystem configured to not initialize Jakarta Authorization. If you want Jakarta Authorization support, make sure you have it properly configured in Elytron subsystem.");
             return;
         }
-        SecurityLogger.ROOT_LOGGER.debugf("Initializing JACC from legacy subsystem.");
+        SecurityLogger.ROOT_LOGGER.debugf("Initializing Jakarta Authorization from legacy subsystem.");
         try {
             // Get the current Policy impl
             oldPolicy = Policy.getPolicy();
@@ -134,7 +134,7 @@ public class SecurityBootstrapService implements Service<Void> {
                 }
             }
 
-            // Install the JACC policy provider
+            // Install the Jakarta Authorization policy provider
             Policy.setPolicy(jaccPolicy);
 
             // Have the policy load/update itself
@@ -144,14 +144,14 @@ public class SecurityBootstrapService implements Service<Void> {
             SubjectPolicyContextHandler handler = new SubjectPolicyContextHandler();
             PolicyContext.registerHandler(SecurityConstants.SUBJECT_CONTEXT_KEY, handler, true);
 
-            // Register the JAAS CallbackHandler JACC PolicyContextHandlers
+            // Register the JAAS CallbackHandler Jakarta Authorization PolicyContextHandlers
             CallbackHandlerPolicyContextHandler chandler = new CallbackHandlerPolicyContextHandler();
             PolicyContext.registerHandler(SecurityConstants.CALLBACK_HANDLER_KEY, chandler, true);
 
             //Register a module classloader locator
             ClassLoaderLocatorFactory.set(new ModuleClassLoaderLocator(moduleLoaderValue.getValue()));
 
-            // Ensure the JACC PolicyConfigurationFactory is initialised during Bootstrap.
+            // Ensure the Jakarta Authorization PolicyConfigurationFactory is initialised during Bootstrap.
             PolicyConfigurationFactory.getPolicyConfigurationFactory();
         } catch (Exception e) {
             throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);

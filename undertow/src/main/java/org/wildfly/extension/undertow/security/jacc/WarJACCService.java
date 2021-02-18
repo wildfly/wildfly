@@ -56,7 +56,7 @@ import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 
 /**
- * A service that creates JACC permissions for a web deployment
+ * A service that creates Jakarta Authorization permissions for a web deployment
  * @author Scott.Stark@jboss.org
  * @author Anil.Saldhana@jboss.org
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
@@ -442,7 +442,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
     }
 
     /**
-     * JACC url pattern Qualified URL Pattern Names.
+     * Jakarta Authorization url pattern Qualified URL Pattern Names.
      *
      * The rules for qualifying a URL pattern are dependent on the rules for determining if one URL pattern matches another as
      * defined in Section 3.1.3.3, Servlet URL-Pattern Matching Rules, and are described as follows: - If the pattern is a path
