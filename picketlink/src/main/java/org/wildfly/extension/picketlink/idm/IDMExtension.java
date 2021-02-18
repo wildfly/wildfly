@@ -61,7 +61,7 @@ public class IDMExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION, true);
 
         subsystem.registerSubsystemModel(IDMSubsystemRootResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(Namespace.CURRENT.getXMLWriter());

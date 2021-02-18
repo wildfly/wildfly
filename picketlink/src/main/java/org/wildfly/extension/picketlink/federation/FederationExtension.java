@@ -63,7 +63,7 @@ public class FederationExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
+        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION, true);
 
         subsystemRegistration.registerSubsystemModel(new FederationSubsystemRootResourceDefinition(context));
         subsystemRegistration.registerXMLElementWriter(FederationSubsystemWriter.INSTANCE);
