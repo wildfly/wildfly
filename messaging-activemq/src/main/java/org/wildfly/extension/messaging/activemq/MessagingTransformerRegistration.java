@@ -105,6 +105,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
                 ServerDefinition.CRITICAL_ANALYZER_ENABLED,
                 ServerDefinition.CRITICAL_ANALYZER_POLICY,
                 ServerDefinition.CRITICAL_ANALYZER_TIMEOUT);
+        server.discardOperations(PrintDataOperation.OPERATION_NAME);
     }
 
     private static void registerTransformers_WF_22(ResourceTransformationDescriptionBuilder subsystem) {

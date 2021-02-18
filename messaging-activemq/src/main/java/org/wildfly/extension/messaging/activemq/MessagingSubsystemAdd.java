@@ -156,7 +156,8 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
             MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
             ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
         }
-        context.getServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL, new ThreadPoolService())
+        context.getServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
+                .setInstance( new ThreadPoolService())
                 .install();
         context.addStep(new OperationStepHandler() {
             @Override

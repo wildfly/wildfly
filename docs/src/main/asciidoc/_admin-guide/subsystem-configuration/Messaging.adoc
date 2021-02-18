@@ -669,6 +669,41 @@ You can configure the critical analyzer with the following attributes:
  * critical-analyzer-check-period
  * critical-analyzer-policy
 
+
+=== Importing / Exporting the Journal 
+
+WildFly provides an operation to `export` the journal to a file which *MUST* be run in `admin-mode`. 
+This is done from the CLI:
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default:export-journal()
+{
+    "outcome" => "success",
+    "result" => "$JBOSS_HOME/standalone/data/activemq/journal-20210125-103331692+0100-dump.xml"
+}
+----
+You can now import such a dump file, in `normal` mode, using the command:
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default:import-journal(file=$FILE_PATH/journal-20210125-103331692+0100-dump.xml)
+{
+    "outcome" => "success"
+}
+----
+If you need to troubleshoot the journal you can use the `print-data` operation. Like the `export` operation, it needs to be executed in `admin-mode`.
+Also this will send back a file so it must be coupled with the `attachment` operation to display or save the result. Note that the `display` operation won't work properly if you are asking for a zipped version of the data.
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] attachment display --operation=/subsystem=messaging-activemq/server=default:print-data(secret)
+ATTACHMENT a69b87f3-ffeb-4596-be51-d73ebdc48b66:
+     _        _               _
+    / \  ____| |_  ___ __  __(_) _____
+   / _ \|  _ \ __|/ _ \  \/  | |/  __/
+  / ___ \ | \/ |_/  __/ |\/| | |\___ \
+ /_/   \_\|   \__\____|_|  |_|_|/___ /
+ Apache ActiveMQ Artemis 2.16.0
+
+ ....
 ----
 
 :leveloffset: +1
