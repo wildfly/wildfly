@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -124,9 +125,20 @@ public class CompositeSessionMetaDataTestCase {
 
     @Test
     public void setLastAccessedTime() {
+        // New session
         Instant endTime = Instant.now();
         Duration lastAccess = Duration.ofSeconds(1L);
         Instant startTime = endTime.minus(lastAccess);
+
+        when(this.creationMetaData.getCreationTime()).thenReturn(startTime);
+
+        this.metaData.setLastAccess(startTime, endTime);
+
+        verify(this.accessMetaData).setLastAccessDuration(Duration.ZERO, lastAccess);
+
+        reset(this.creationMetaData, this.accessMetaData);
+
+        // Existing session
         Duration sinceCreated = Duration.ofSeconds(10L);
 
         when(this.creationMetaData.getCreationTime()).thenReturn(startTime.minus(sinceCreated));

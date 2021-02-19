@@ -69,7 +69,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         this.entry = new SimpleImmutableEntry<>(session, config);
         this.batch = batch;
         this.closeTask = closeTask;
-        this.startTime = !session.getMetaData().isNew() ? Instant.now() : null;
+        this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
     }
 
     @Override
@@ -90,11 +90,9 @@ public class DistributableSession implements io.undertow.server.session.Session 
                     }
                     // If batch is closed, close session in a new batch
                     try (Batch batch = (this.batch.getState() == Batch.State.CLOSED) ? batcher.createBatch() : this.batch) {
-                        if (this.startTime != null) {
-                            // According to §7.6 of the servlet specification:
-                            // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-                            session.getMetaData().setLastAccess(this.startTime, Instant.now());
-                        }
+                        // According to §7.6 of the servlet specification:
+                        // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+                        session.getMetaData().setLastAccess(this.startTime, Instant.now());
                         session.close();
                     }
                 } catch (Throwable e) {
