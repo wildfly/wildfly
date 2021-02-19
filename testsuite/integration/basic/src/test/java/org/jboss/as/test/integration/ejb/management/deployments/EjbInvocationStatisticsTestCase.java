@@ -55,6 +55,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -143,6 +144,7 @@ public class EjbInvocationStatisticsTestCase {
     }
 
     @Test
+    @Ignore("WFLY-14107 intermittent failure")
     public void testSingletonWaitTime() throws Exception {
         validateWaitTimeStatistic(SINGLETON, WaitTimeSingletonBean.class);
     }
