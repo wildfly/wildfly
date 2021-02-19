@@ -494,4 +494,6 @@ or you can list all the configuration options of the subsystem in `jboss-cli`
 ```bash
 /subsystem=transactions:read-resource-description(recursive=true)
 ```
+
 NOTE: References in this document to CDI refer to Jakarta Contexts and Dependency Injection unless otherwise noted.
+      References in this document to Java Transaction API(JTA) refer to Jakarta Transactions unless otherwise noted.

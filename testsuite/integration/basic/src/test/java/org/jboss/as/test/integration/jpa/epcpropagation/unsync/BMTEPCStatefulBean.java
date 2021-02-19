@@ -43,7 +43,7 @@ import javax.transaction.UserTransaction;
 /**
  * "
  * If there is a persistence context of type SynchronizationType.UNSYNCHRONIZED
- * associated with the JTA transaction and the target component specifies a persistence context of
+ * associated with the Jakarta Transactions transaction and the target component specifies a persistence context of
  * type SynchronizationType.SYNCHRONIZED, the IllegalStateException is
  * thrown by the container.
  * "
@@ -84,7 +84,7 @@ public class BMTEPCStatefulBean {
         UserTransaction userTxn = sessionContext.getUserTransaction();
         userTxn.begin();
         try {
-            //Join Transaction to force unsynchronized persistence context to be associated with jta tx
+            //Join Transaction to force unsynchronized persistence context to be associated with Jakarta Transactions tx
             em.joinTransaction();
             cmtpcStatefulBean.getEmpAllowJoinedUnsync(1);
         } finally {
@@ -96,7 +96,7 @@ public class BMTEPCStatefulBean {
         UserTransaction userTxn = sessionContext.getUserTransaction();
         userTxn.begin();
         try {
-            //Join Transaction to force unsynchronized persistence context to be associated with jta tx
+            //Join Transaction to force unsynchronized persistence context to be associated with Jakarta Transactions tx
             emAllowjoinedunsyncPU.joinTransaction();
             cmtpcStatefulBean.getEmpAllowJoinedUnsyncPersistenceXML(1);
         } finally {

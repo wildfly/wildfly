@@ -61,6 +61,7 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
+import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
@@ -93,7 +94,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
-    private final Recordable<ImmutableSession> recorder;
+    private final Recordable<ImmutableSessionMetaData> recorder;
     private final SC context;
     private final SpecificationProvider<S, SC, AL> provider;
     private final Runnable startTask;
@@ -289,18 +290,17 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
             if (this.recorder != null) {
-                try (TransactionBatch batch = this.batcher.suspendBatch()) {
-                    return CompletableFuture.runAsync(() -> {
-                        try (BatchContext context = this.batcher.resumeBatch(batch)) {
-                            Map.Entry<MV, AV> value = this.factory.tryValue(id);
-                            if (value != null) {
-                                ImmutableSession session = this.factory.createImmutableSession(id, value);
-                                this.recorder.record(session);
-                            }
-                        }
-                    }, this.executor);
-                } catch (RejectedExecutionException e) {
-                    // Session manager is stopped
+                SessionMetaDataFactory<MV> factory = this.factory.getMetaDataFactory();
+                MV value = factory.tryValue(id);
+                if (value != null) {
+                    try {
+                        return CompletableFuture.runAsync(() -> {
+                            ImmutableSessionMetaData metaData = factory.createImmutableSessionMetaData(id, value);
+                            this.recorder.record(metaData);
+                        }, this.executor);
+                    } catch (RejectedExecutionException e) {
+                        // Session manager is stopped
+                    }
                 }
             }
         }

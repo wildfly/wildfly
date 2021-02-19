@@ -936,6 +936,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
         if (registerRuntimeOnly) {
             ExportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
             ImportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
+            PrintDataOperation.INSTANCE.registerOperation(resourceRegistration, getResourceDescriptionResolver());
 
             ActiveMQServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
             JMSServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());

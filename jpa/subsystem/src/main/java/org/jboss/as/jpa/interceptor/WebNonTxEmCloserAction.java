@@ -46,7 +46,7 @@ public class WebNonTxEmCloserAction implements SetupAction {
 
     @Override
     public void teardown(final Map<String, Object> properties) {
-        NonTxEmCloser.popCall();    // close any transactional entity managers that were created without a jta transaction.
+        NonTxEmCloser.popCall();    // close any transactional entity managers that were created without a Jakarta Transactions transaction.
     }
 
     @Override

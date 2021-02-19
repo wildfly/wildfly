@@ -277,8 +277,8 @@ Authorization in the AS container is normally done with RBAC (role based
 access control) but there are situations where a more fine grained
 authorization policy is required. The authorization element allows
 definition of different authorization modules to used, such that
-authorization can be checked with JACC (Java Authorization Contract for
-Containers) or XACML (eXtensible Access Control Markup Language). The
+authorization can be checked with Jakarta Authorization
+or XACML (eXtensible Access Control Markup Language). The
 structure of the authorization element is:
 
 [source,xml,options="nowrap"]
@@ -307,7 +307,7 @@ abbreviated names from the following list:
 
 |Web |org.jboss.security.authorization.modules.WebAuthorizationModule
 
-|JACC |org.jboss.security.authorization.modules.JACCAuthorizationModule
+|Jakarta Authorization |org.jboss.security.authorization.modules.JACCAuthorizationModule
 
 |XACML
 |org.jboss.security.authorization.modules.XACMLAuthorizationModule

@@ -52,7 +52,7 @@ Roles where PrincipalID=?, where Role is the role name and RoleGroup
 column value should always be "Roles" with capital R.
 
 |suspendResume |optional |A boolean flag that specifies that any
-existing JTA transaction be suspended during DB operations. The default
+existing Jakarta Transactions transaction be suspended during DB operations. The default
 is true
 |=======================================================================
 
@@ -135,7 +135,7 @@ column value should always be "Roles" with capital R. Default is select
 Role, RoleGroup from Roles where PrincipalID=?
 
 |suspendResume |optional |A boolean flag that specifies that any
-existing JTA transaction be suspended during DB operations. The default
+existing Jakarta Transactions transaction be suspended during DB operations. The default
 is *true*
 select Role, RoleGroup from Roles where PrincipalID=?
 |=======================================================================

@@ -1,5 +1,5 @@
-[[Java_Servlet_Technology]]
-= Java Servlet Technology
+[[Jakarta_Servlet_Technology]]
+= Jakarta Servlet Technology
 
 Coming Soon
 

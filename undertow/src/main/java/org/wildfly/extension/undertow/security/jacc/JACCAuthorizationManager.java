@@ -51,7 +51,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * <p>
- * An implementation of {@link AuthorizationManager} that uses JACC permissions to grant or deny access to web resources.
+ * An implementation of {@link AuthorizationManager} that uses Jakarta Authorization permissions to grant or deny access to web resources.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>

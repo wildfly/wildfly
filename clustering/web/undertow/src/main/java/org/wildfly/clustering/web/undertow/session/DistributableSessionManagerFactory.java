@@ -31,7 +31,7 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
@@ -83,7 +83,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
 
             @Override
-            public Recordable<ImmutableSession> getInactiveSessionRecorder() {
+            public Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder() {
                 return inactiveSessionStatistics;
             }
         };

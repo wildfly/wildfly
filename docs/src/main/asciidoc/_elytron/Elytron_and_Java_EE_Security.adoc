@@ -43,4 +43,5 @@ The simplest approach is to add a mapping for `other`, then no further configura
 ----
 
 The EE Security API is built on JASPI.  Within JASPI we support two different modes of operation 'integrated', and 'non-integrated'.  In integrated mode any identity being established during authentication is expected to exist in the associated security domain.  With the EE Security APIs however it is quite likely an alternative store will be in use so configuration the mapping to use 'non-integrated' JASPI allows for identities to be dynamically created as required.
- 
+
+NOTE: References in this document to Java Authorization Contract for Containers (JACC) refer to the Jakarta Authorization unless otherwise noted 

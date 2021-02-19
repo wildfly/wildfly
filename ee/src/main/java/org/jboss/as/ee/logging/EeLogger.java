@@ -1164,7 +1164,7 @@ public interface EeLogger extends BasicLogger {
     OperationFailedException oneGlobalDirectory(String newGlobalDirectory, String existingGlobalDirectory);
 
     @LogMessage(level = Level.WARN)
-    @Message(id = 124, value = "Error deleting JACC Policy")
+    @Message(id = 124, value = "Error deleting Jakarta Authorization Policy")
     void errorDeletingJACCPolicy(@Cause Throwable t);
 
     @Message(id = 125, value = "Unable to start the %s service")

@@ -48,8 +48,8 @@ public class FirstServiceATImpl implements FirstServiceAT {
     protected EntityManager em;
 
     /**
-     * Increment the first counter. This is done by updating the counter within a JTA transaction.
-     * The JTA transaction was automatically bridged from the WS-AT transaction.
+     * Increment the first counter. This is done by updating the counter within Jakarta Transactions transaction.
+     * The Jakarta Transactions transaction was automatically bridged from the WS-AT transaction.
      */
     @WebMethod
     public void incrementCounter(int num) {
