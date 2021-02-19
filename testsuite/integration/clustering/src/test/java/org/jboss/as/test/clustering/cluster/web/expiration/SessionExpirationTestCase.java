@@ -36,8 +36,10 @@ import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
+import org.jboss.as.test.clustering.cluster.web.EnableUndertowStatisticsSetupTask;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -50,6 +52,7 @@ import org.junit.runner.RunWith;
  *
  * @author Paul Ferraro
  */
+@ServerSetup(EnableUndertowStatisticsSetupTask.class)
 @RunWith(Arquillian.class)
 public abstract class SessionExpirationTestCase extends AbstractClusteringTestCase {
 

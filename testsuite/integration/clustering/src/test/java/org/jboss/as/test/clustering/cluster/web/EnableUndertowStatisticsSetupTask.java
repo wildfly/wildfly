@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,14 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
 
-import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.IdentifierFactory;
+package org.jboss.as.test.clustering.cluster.web;
 
-public interface SessionManagerConfiguration<SC> {
-    SC getServletContext();
-    IdentifierFactory<String> getIdentifierFactory();
-    SessionExpirationListener getExpirationListener();
-    Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder();
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.CLIServerSetupTask;
+
+/**
+ * Task that enable Undertow statistics.
+ * @author Paul Ferraro
+ */
+public class EnableUndertowStatisticsSetupTask extends CLIServerSetupTask {
+
+    public EnableUndertowStatisticsSetupTask() {
+        this.builder.node(AbstractClusteringTestCase.FOUR_NODES)
+                .setup("/subsystem=undertow:write-attribute(name=statistics-enabled, value=true)")
+                .teardown("/subsystem=undertow:undefine-attribute(name=statistics-enabled)")
+                ;
+    }
 }
