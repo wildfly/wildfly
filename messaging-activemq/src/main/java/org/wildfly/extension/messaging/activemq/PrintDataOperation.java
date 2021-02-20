@@ -86,13 +86,13 @@ public class PrintDataOperation extends AbstractArtemisActionHandler {
         final File journal = resolveFile(context, JOURNAL_DIRECTORY_PATH);
 
         try {
-            final TemporaryFileInputStream temp = new TemporaryFileInputStream(Files.createTempFile("data-print", ".txt"));
+            final TemporaryFileInputStream temp = new TemporaryFileInputStream(Files.createTempFile(getServerTempDir(context), "data-print", ".txt"));
             try ( PrintStream out = new PrintStream(temp.getFile().toFile())) {
                 PrintData.printData(bindings, journal, paging, out, secret);
             }
             String uuid;
             if (archive) {
-                final TemporaryFileInputStream tempZip = new TemporaryFileInputStream(Files.createTempFile("data-print", ".zip"));
+                final TemporaryFileInputStream tempZip = new TemporaryFileInputStream(Files.createTempFile(getServerTempDir(context), "data-print", ".zip"));
                 try ( ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(tempZip.getFile()))) {
                     out.putNextEntry(new ZipEntry("data-print-report.txt"));
                     byte[] bytes = new byte[1024];
