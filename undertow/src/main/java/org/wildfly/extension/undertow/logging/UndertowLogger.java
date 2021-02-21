@@ -65,7 +65,7 @@ public interface UndertowLogger extends BasicLogger {
      */
 
     @LogMessage(level = Logger.Level.ERROR)
-    @Message(id = 1, value = "Could not initialize JSP")
+    @Message(id = 1, value = "Could not initialize Jakarta Server Pages")
     void couldNotInitJsp(@Cause ClassNotFoundException e);
 
     // @LogMessage(level = ERROR)

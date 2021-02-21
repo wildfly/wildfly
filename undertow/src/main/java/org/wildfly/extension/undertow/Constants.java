@@ -73,7 +73,7 @@ public interface Constants {
     String SCHEME = "scheme";
     String MAX_POST_SIZE = "max-post-size";
     String DEFAULT_RESPONSE_CODE = "default-response-code";
-    /*JSP config */
+    /*Jakarta Server Pages config */
     String CHECK_INTERVAL = "check-interval";
     String CONTAINER = "container";
     String DEVELOPMENT = "development";

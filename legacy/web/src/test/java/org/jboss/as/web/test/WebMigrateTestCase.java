@@ -231,7 +231,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("${prop.default-session-timeout:30}", servletContainer.get(Constants.DEFAULT_SESSION_TIMEOUT).asString());
         assertEquals("${prop.listings:true}", servletContainer.get(Constants.DIRECTORY_LISTING).asString());
 
-        //jsp settings
+        //Jakarta Server Pages settings
         ModelNode jsp = servletContainer.get(Constants.SETTING, Constants.JSP);
         assertNotNull(jsp);
         assertEquals("${prop.recompile-on-fail:true}", jsp.get(Constants.RECOMPILE_ON_FAIL).asString());

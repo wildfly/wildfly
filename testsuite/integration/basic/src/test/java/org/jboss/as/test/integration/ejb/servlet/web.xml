@@ -11,7 +11,7 @@
       <servlet-class>org.jboss.as.test.integration.ejb.servlet.EJBServlet</servlet-class>
    </servlet>
 
-   <!-- The servlet and jsp page mappings -->
+   <!-- The servlet and Jakarta Server Pages page mappings -->
    <servlet-mapping>
       <servlet-name>EJBServlet</servlet-name>
       <url-pattern>/EJBServlet</url-pattern>

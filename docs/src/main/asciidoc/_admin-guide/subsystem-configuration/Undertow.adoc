@@ -344,8 +344,8 @@ point to the resource being forwarded to.
 
 |=======================================================================
 
-[[jsp-configuration]]
-=== JSP configuration
+[[Jakarta-Server-Pages-configuration]]
+=== Jakarta Server Pages configuration
 
 [[session-cookie-configuration]]
 === Session Cookie Configuration

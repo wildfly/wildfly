@@ -110,7 +110,7 @@ public class TagLibInJarTestCase {
 
     /**
      * Tests if deployment with taglib-location pointing to jar fails during deployment phase.
-     * Test passes if the correct response is returned from the JSP.
+     * Test passes if the correct response is returned from the Jakarta Server Pages.
      *
      * @throws Exception
      */

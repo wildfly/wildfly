@@ -36,7 +36,7 @@ import org.jboss.as.web.common.WebInjectionContainer;
  *
  *
  * We don't use web injection container for instances of org.apache.jasper.runtime.HttpJspBase, as it causes problems
- * with JSP hot reload. Because a new JSP class has the same name the generated ID is exactly the same.
+ * with Jakarta Server Pages hot reload. Because a new Jakarta Server Pages class has the same name the generated ID is exactly the same.
  *
  *
  * @author Stuart Douglas
