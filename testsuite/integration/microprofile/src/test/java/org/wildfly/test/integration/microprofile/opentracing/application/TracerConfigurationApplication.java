@@ -1,15 +1,15 @@
 package org.wildfly.test.integration.microprofile.opentracing.application;
 
+import java.lang.reflect.Field;
+
 import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
+
 import io.opentracing.Tracer;
-import java.lang.reflect.Field;
-import java.net.DatagramSocket;
-import org.jboss.as.network.NetworkUtils;
 
 /**
  * @author Sultan Zhantemirov (c) 2019 Red Hat, Inc.
@@ -42,14 +42,16 @@ public class TracerConfigurationApplication extends Application {
                     senderField.setAccessible(true);
                     Object sender = senderField.get(reporter);
                     if (checkClass(sender, "UdpSender")) {
-                        Field transportField = sender.getClass().getDeclaredField("udpTransport");
-                        transportField.setAccessible(true);
-                        Object transport = transportField.get(sender);
-                        if (checkClass(transport, "ThriftUdpTransport")) {
-                            Field socketField = transport.getClass().getDeclaredField("socket");
-                            socketField.setAccessible(true);
-                            DatagramSocket socket = (DatagramSocket) socketField.get(transport);
-                            return "sender-binding=" + NetworkUtils.formatIPAddressForURI(socket.getInetAddress()) + ":" + socket.getPort();
+                        Field portField = sender.getClass().getDeclaredField("port");
+                        portField.setAccessible(true);
+                        Object port = portField.get(sender);
+
+                        Field hostField = sender.getClass().getDeclaredField("host");
+                        hostField.setAccessible(true);
+                        Object host = hostField.get(sender);
+
+                        if (host != null && port != null) {
+                            return ", sender-binding=" + host + ":" + port;
                         }
                     }
                 }
@@ -60,7 +62,7 @@ public class TracerConfigurationApplication extends Application {
         }
 
         private boolean checkClass(Object obj, String simpleName) {
-            return simpleName.equals(obj.getClass().getSimpleName());
+            return obj != null && simpleName.equals(obj.getClass().getSimpleName());
         }
     }
 }

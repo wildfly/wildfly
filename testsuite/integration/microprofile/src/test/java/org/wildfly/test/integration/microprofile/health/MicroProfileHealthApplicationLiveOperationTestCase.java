@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
-public class MicroProfileHealthCheckOperationTestCase extends MicroProfileHealthTestBase{
+public class MicroProfileHealthApplicationLiveOperationTestCase extends MicroProfileHealthApplicationLiveTestBase {
 
     void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException {
         final ModelNode address = new ModelNode();

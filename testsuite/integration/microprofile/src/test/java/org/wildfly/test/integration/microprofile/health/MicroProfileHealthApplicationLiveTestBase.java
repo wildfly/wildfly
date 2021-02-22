@@ -58,14 +58,14 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class MicroProfileHealthTestBase {
+public abstract class MicroProfileHealthApplicationLiveTestBase {
 
     abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException;
 
     @Deployment(name = "MicroProfileHealthTestCase", managed = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class, MyProbe.class, MyLiveProbe.class, HealthConfigSource.class)
+                .addClasses(TestApplication.class, TestApplication.Resource.class, MyLiveProbe.class, HealthConfigSource.class)
                 .addAsServiceProvider(ConfigSource.class, HealthConfigSource.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
@@ -93,18 +93,18 @@ public abstract class MicroProfileHealthTestBase {
     public void testHealthCheckAfterDeployment(@ArquillianResource URL url) throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
 
-            checkGlobalOutcome(managementClient, "check", true, "myProbe");
+            checkGlobalOutcome(managementClient, "check", true, "myLiveProbe");
             checkGlobalOutcome(managementClient, "check-live", true, "myLiveProbe");
 
             HttpPost request = new HttpPost(url + "microprofile/myApp");
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            List<NameValuePair> nvps = new ArrayList<>();
             nvps.add(new BasicNameValuePair("up", "false"));
             request.setEntity(new UrlEncodedFormEntity(nvps));
 
             CloseableHttpResponse response = client.execute(request);
             assertEquals(200, response.getStatusLine().getStatusCode());
 
-            checkGlobalOutcome(managementClient, "check", false, "myProbe");
+            checkGlobalOutcome(managementClient, "check", false, "myLiveProbe");
             checkGlobalOutcome(managementClient, "check-live", false, "myLiveProbe");
         }
     }
