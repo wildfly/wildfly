@@ -2,6 +2,7 @@ package org.wildfly.test.integration.microprofile.health;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
@@ -11,7 +12,7 @@ public class HealthConfigSource implements ConfigSource {
 
     public HealthConfigSource() {
         props = new HashMap<>();
-        props.put("org.wildfly.test.integration.microprofile.health.MyProbe.propertyConfiguredByTheDeployment", Boolean.TRUE.toString());
+        props.put("org.wildfly.test.integration.microprofile.health.MyLiveProbe.propertyConfiguredByTheDeployment", Boolean.TRUE.toString());
     }
 
     @Override
@@ -27,5 +28,10 @@ public class HealthConfigSource implements ConfigSource {
     @Override
     public String getName() {
         return "ConfigSource local to the deployment";
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return props.keySet();
     }
 }

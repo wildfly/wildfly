@@ -11,7 +11,7 @@ ifdef::env-github[:imagesdir: ../images/]
 
 This chapter describes the Jakarta RESTful Web Services
 (defined in https://jakarta.ee/specifications/restful-ws/2.1/).
-http://www.jboss.org/resteasy[RESTEasy] is an portable implementation of
+https://resteasy.github.io/[RESTEasy] is an portable implementation of
 this specification which can run in any Servlet container. Tight
 integration with JBoss Application Server is available for optimal user
 experience in that environment. While Jakarta RESTful Web Services is client as well as
@@ -19,7 +19,7 @@ server-side specification, RESTeasy has innovated to bring Jakarta RESTful Web S
 through the RESTEasy Jakarta RESTful Web Services Client Framework.
 
 Detailed documentation on RESTEasy is available
-http://www.jboss.org/resteasy/docs.html[here]. +
+https://resteasy.github.io/docs/[here]. +
 The source for this tutorial is in github repository
 https://github.com/tdiesler/javaee-tutorial[git://github.com/tdiesler/javaee-tutorial.git]
 
@@ -492,7 +492,7 @@ There are two implementations of this interface available.
 
 The first uses APIs that are available in the Android SDK natively. The
 code is much more involved, but there would be no need to add external
-libraries (i.e. resteasy, jackson, etc). The effect is that the total
+libraries (i.e. RESTEasy, jackson, etc). The effect is that the total
 size of the application is considerably smaller in size (i.e. 40k)
 
 [source,java,options="nowrap"]

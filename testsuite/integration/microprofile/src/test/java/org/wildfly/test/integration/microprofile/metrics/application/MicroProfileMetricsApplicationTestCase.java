@@ -90,10 +90,21 @@ public class MicroProfileMetricsApplicationTestCase {
             return Operations.createWriteAttributeOperation(address, STATISTICS_ENABLED, enabled);
         }
     }
+    private static final String DEPLOYMENT_NAME = "MicroProfileMetricsApplicationTestCase";
+    private static final String DUPLICATE_DEPLOYMENT_NAME = "MicroProfileMetricsApplication2TestCase";
 
-    @Deployment(name = "MicroProfileMetricsApplicationTestCase", managed = false)
+    @Deployment(name = DEPLOYMENT_NAME, managed = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileMetricsApplicationTestCase.war")
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war")
+                .addClasses(TestApplication.class)
+                .addClass(ResourceSimple.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        return war;
+    }
+
+    @Deployment(name = DUPLICATE_DEPLOYMENT_NAME, managed = false)
+    public static Archive<?> deploySecond() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DUPLICATE_DEPLOYMENT_NAME + ".war")
                 .addClasses(TestApplication.class)
                 .addClass(ResourceSimple.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
@@ -115,12 +126,13 @@ public class MicroProfileMetricsApplicationTestCase {
         getJSONMetrics(managementClient, "application", false);
 
         // deploy the archive
-        deployer.deploy("MicroProfileMetricsApplicationTestCase");
+        deployer.deploy(DEPLOYMENT_NAME);
+        deployer.deploy(DUPLICATE_DEPLOYMENT_NAME);
     }
 
     @Test
     @InSequence(2)
-    @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
+    @OperateOnDeployment(DEPLOYMENT_NAME)
     public void testApplicationMetricWithPrometheusAfterDeployment(@ArquillianResource URL url) throws Exception {
         getPrometheusMetrics(managementClient, "application", true);
 
@@ -143,7 +155,7 @@ public class MicroProfileMetricsApplicationTestCase {
 
     @Test
     @InSequence(3)
-    @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
+    @OperateOnDeployment(DEPLOYMENT_NAME)
     public void testApplicationMetricWithJSONAfterDeployment(@ArquillianResource URL url) throws Exception {
         // hello counter is at 2.0 from previous testApplicationMetricWithPrometheusAfterDeployment invocations
         String metrics = getJSONMetrics(managementClient, "application", true);
@@ -170,22 +182,38 @@ public class MicroProfileMetricsApplicationTestCase {
 
     @Test
     @InSequence(4)
-    @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
+    @OperateOnDeployment(DEPLOYMENT_NAME)
     public void testDeploymentWildFlyMetrics(@ArquillianResource URL url) throws Exception {
         // test the request-count metric on the deployment's undertow resources
-        checkRequestCount(requestCalled, true);
+        checkRequestCount(requestCalled, DEPLOYMENT_NAME, true);
         performCall(url);
-        checkRequestCount(requestCalled, true);
+        checkRequestCount(requestCalled, DEPLOYMENT_NAME, true);
     }
 
     @Test
     @InSequence(5)
-    public void tesApplicationMetricAfterUndeployment() throws Exception {
-        deployer.undeploy("MicroProfileMetricsApplicationTestCase");
+    @OperateOnDeployment(DUPLICATE_DEPLOYMENT_NAME)
+    public void testDuplicateDeployment(@ArquillianResource URL url) throws Exception {
+        checkRequestCount(0, DUPLICATE_DEPLOYMENT_NAME, true);
+        HttpRequest.get(new URL(url.toExternalForm() + "microprofile-metrics-app/hello").toExternalForm(), 10, TimeUnit.SECONDS);
+        checkRequestCount(1, DUPLICATE_DEPLOYMENT_NAME, true);
+    }
 
-        checkRequestCount(requestCalled, false);
+    @Test
+    @InSequence(6)
+    public void testApplicationMetricAfterUndeployment() throws Exception {
+        deployer.undeploy(DEPLOYMENT_NAME);
+
+        checkRequestCount(requestCalled, DEPLOYMENT_NAME, false);
         getPrometheusMetrics(managementClient, "application", false);
         getJSONMetrics(managementClient, "application", false);
+    }
+
+    @Test
+    @InSequence(7)
+    @OperateOnDeployment(DUPLICATE_DEPLOYMENT_NAME)
+    public void testDuplicateApplicationMetricAfterUndeployment(@ArquillianResource URL url) throws Exception {
+        checkRequestCount(1, DUPLICATE_DEPLOYMENT_NAME, true);
     }
 
     private static String performCall(URL url) throws Exception {
@@ -194,7 +222,7 @@ public class MicroProfileMetricsApplicationTestCase {
         return HttpRequest.get(appURL.toExternalForm(), 10, TimeUnit.SECONDS);
     }
 
-    private void checkRequestCount(int expectedCount, boolean deploymentMetricMustExist) throws IOException {
+    private void checkRequestCount(int expectedCount, String deploymentName, boolean deploymentMetricMustExist) throws IOException {
         String prometheusMetricName = "wildfly_undertow_request_count_total";
         String metrics = getPrometheusMetrics(managementClient, "", true);
         for (String line : metrics.split("\\R")) {
@@ -203,12 +231,12 @@ public class MicroProfileMetricsApplicationTestCase {
                 String labels = split[0].substring((prometheusMetricName).length());
 
                 // we are only interested by the metric for this deployment
-                if (labels.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\"")) {
+                if (labels.contains("deployment=\"" + deploymentName + ".war\"")) {
                     if (deploymentMetricMustExist) {
                         Double value = Double.valueOf(split[1]);
 
-                        assertTrue(labels.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\""));
-                        assertTrue(labels.contains("subdeployment=\"MicroProfileMetricsApplicationTestCase.war\""));
+                        assertTrue(labels.contains("deployment=\"" + deploymentName + ".war\""));
+                        assertTrue(labels.contains("subdeployment=\"" + deploymentName + ".war\""));
                         assertTrue(labels.contains("servlet=\"org.wildfly.test.integration.microprofile.metrics.TestApplication\""));
                         assertEquals(Integer.valueOf(expectedCount).doubleValue(), value, 0);
 

@@ -43,7 +43,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
-public class MicroProfileHealthHTTPEndpointTestCase extends MicroProfileHealthTestBase{
+public class MicroProfileHealthApplicationLiveHTTPEndpointTestCase extends MicroProfileHealthApplicationLiveTestBase {
 
     void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException {
 

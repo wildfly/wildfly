@@ -27,14 +27,19 @@
     <resources>
         <artifact name="${io.smallrye.config:smallrye-config}"/>
         <artifact name="${io.smallrye.config:smallrye-config-common}"/>
+        <artifact name="${io.smallrye.config:smallrye-config-core}"/>
         <artifact name="${io.smallrye.config:smallrye-config-source-file-system}"/>
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+        <module name="asm.asm"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.jboss.logging" />
         <module name="javax.enterprise.api" />
         <module name="javax.annotation.api" />
+        <module name="io.smallrye.common.constraint"/>
+        <module name="io.smallrye.common.classloader"/>
+        <module name="io.smallrye.common.expression"/>
+        <module name="io.smallrye.common.function"/>
     </dependencies>
 </module>
