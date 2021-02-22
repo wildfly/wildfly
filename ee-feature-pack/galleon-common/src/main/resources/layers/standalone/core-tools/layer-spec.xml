@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="core-tools">
+    <dependencies>
+        <layer name="management" optional="true"/>
+    </dependencies>
+   <packages>
+       <!-- required for CLI and users management -->
+        <package name="org.jboss.as.cli"/>
+        <package name="org.jboss.as.domain-add-user"/>
+        <!-- We can't include "tools" package that contain all of them in ee FP -->
+        <package name="core-tools"/>
+    </packages>
+</layer-spec>

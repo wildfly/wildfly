@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO Eliminate the use of this in wildfly-preview -->
+<feature-group-spec name="management-legacy-security" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- attach legacy security to management -->
+    <feature spec="core-service.management.management-interface.http-interface">
+        <param name="socket-binding" value="management-http"/>
+        <param name="security-realm" value="ManagementRealm"/>
+    </feature>
+</feature-group-spec>

@@ -46,8 +46,6 @@
         <license.directory>${project.build.directory}/${project.build.finalName}/content/docs/licenses</license.directory>
         <common.resources.directory>${basedir}/../common/src/main/resources</common.resources.directory>
         <ee-8-api.resources.directory>${basedir}/../ee-8-api/src/main/resources</ee-8-api.resources.directory>
-        <common.license.directory>${basedir}/../common/src/license</common.license.directory>
-        <ee-8-api.license.directory>${basedir}/../ee-8-api/src/license</ee-8-api.license.directory>
     </properties>
 
     <dependencies>
@@ -242,8 +240,8 @@
                                 <configuration>
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                                     <licensesConfigFiles>
-                                        <licensesConfigFile>${common.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
-                                        <licensesConfigFile>${ee-8-api.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
+                                        <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
+                                        <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-ee-8-api-licenses.xml</licensesConfigFile>
                                     </licensesConfigFiles>
                                     <licensesOutputFile>${license.directory}/servlet-feature-pack-licenses.xml</licensesOutputFile>
                                     <excludedArtifacts>wildfly-core-feature-pack|wildfly-servlet-feature-pack-common|wildfly-servlet-feature-pack-ee-8-api</excludedArtifacts>
