@@ -24,10 +24,13 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.AbstractMap.SimpleEntry;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.infinispan.protostream.impl.WireFormat;
+import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 
 /**
@@ -48,18 +51,27 @@ public class MapMarshaller<T extends Map<Object, Object>> extends AbstractMapMar
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
         T map = this.factory.get();
+        List<Object> keys = new LinkedList<>();
+        List<Object> values = new LinkedList<>();
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
             int index = WireFormat.getTagFieldNumber(tag);
             switch (index) {
-                case ENTRY_INDEX:
-                    Map.Entry<Object, Object> entry = reader.readObject(SimpleEntry.class);
-                    map.put(entry.getKey(), entry.getValue());
+                case KEY_INDEX:
+                    keys.add(reader.readObject(Any.class).get());
+                    break;
+                case VALUE_INDEX:
+                    values.add(reader.readObject(Any.class).get());
                     break;
                 default:
                     reading = (tag != 0) && reader.skipField(tag);
             }
+        }
+        Iterator<Object> keyIterator = keys.iterator();
+        Iterator<Object> valueIterator = values.iterator();
+        while (keyIterator.hasNext() || valueIterator.hasNext()) {
+            map.put(keyIterator.next(), valueIterator.next());
         }
         return map;
     }

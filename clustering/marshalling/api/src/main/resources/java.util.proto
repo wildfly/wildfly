@@ -31,7 +31,7 @@ message EmptyListIterator {
 }
 
 /**
- * @TypeId(24)
+ * @TypeId(14)
  */
 message EmptyMap {
 }
@@ -155,7 +155,8 @@ message EnumSet {
  * @TypeId(38)
  */
 message HashMap {
-	repeated	bytes	entry	= 1;
+	repeated	bytes	key	= 1;
+	repeated	bytes	value	= 2;
 }
 
 /**
@@ -169,8 +170,9 @@ message HashSet {
  * @TypeId(40)
  */
 message LinkedHashMap {
-	repeated	bytes	entry	= 1;
-	optional	bool	accessOrder	= 2;
+	repeated	bytes	key	= 1;
+	repeated	bytes	value	= 2;
+	optional	bool	accessOrder	= 3;
 }
 
 /**
@@ -249,9 +251,10 @@ message TimeZone {
  * @TypeId(51)
  */
 message TreeMap {
-	repeated	bytes	entry	= 1;
-	optional	bool	reverse	= 2;
-	optional	bytes	comparator	= 3;
+	repeated	bytes	key	= 1;
+	repeated	bytes	value	= 2;
+	optional	bool	reverse	= 3;
+	optional	bytes	comparator	= 4;
 }
 
 /**

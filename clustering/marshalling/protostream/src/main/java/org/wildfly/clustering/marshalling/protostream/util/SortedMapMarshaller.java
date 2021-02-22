@@ -24,12 +24,14 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.SortedMap;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.function.Function;
 
 import org.infinispan.protostream.impl.WireFormat;
+import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
@@ -40,7 +42,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  */
 public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends AbstractMapMarshaller<T> {
 
-    private static final int COMPARATOR_INDEX = 2;
+    private static final int COMPARATOR_INDEX = VALUE_INDEX + 1;
 
     private final Function<Comparator<? super Object>, T> factory;
 
@@ -55,21 +57,27 @@ public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends Ab
     public T readFrom(ProtoStreamReader reader) throws IOException {
         Comparator<Object> comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.getBuilder();
         T map = this.factory.apply(comparator);
+        List<Object> keys = new LinkedList<>();
+        List<Object> values = new LinkedList<>();
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
             int index = WireFormat.getTagFieldNumber(tag);
-            if (index == ENTRY_INDEX) {
-                Map.Entry<Object, Object> entry = reader.readObject(SimpleEntry.class);
-                map.put(entry.getKey(), entry.getValue());
+            if (index == KEY_INDEX) {
+                keys.add(reader.readObject(Any.class).get());
+            } else if (index == VALUE_INDEX) {
+                values.add(reader.readObject(Any.class).get());
             } else if ((index >= COMPARATOR_INDEX) && (index < COMPARATOR_INDEX + ComparatorMarshaller.INSTANCE.getFields())) {
-                T existingMap = map;
                 comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.readField(reader, index - COMPARATOR_INDEX, comparator);
                 map = this.factory.apply(comparator);
-                map.putAll(existingMap);
             } else {
                 reading = (tag != 0) && reader.skipField(tag);
             }
+        }
+        Iterator<Object> keyIterator = keys.iterator();
+        Iterator<Object> valueIterator = values.iterator();
+        while (keyIterator.hasNext() || valueIterator.hasNext()) {
+            map.put(keyIterator.next(), valueIterator.next());
         }
         return map;
     }

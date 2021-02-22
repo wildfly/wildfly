@@ -24,8 +24,8 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.AbstractMap.SimpleEntry;
 
+import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
@@ -35,7 +35,8 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @param <T> the map type of this marshaller
  */
 public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> implements ProtoStreamMarshaller<T> {
-    protected static final int ENTRY_INDEX = 1;
+    protected static final int KEY_INDEX = 1;
+    protected static final int VALUE_INDEX = 2;
 
     private final Class<? extends T> mapClass;
 
@@ -46,7 +47,8 @@ public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> imple
     @Override
     public void writeTo(ProtoStreamWriter writer, T map) throws IOException {
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            writer.writeObject(ENTRY_INDEX, new SimpleEntry<>(entry));
+            writer.writeObject(KEY_INDEX, new Any(entry.getKey()));
+            writer.writeObject(VALUE_INDEX, new Any(entry.getValue()));
         }
     }
 
