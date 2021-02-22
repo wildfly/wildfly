@@ -2,9 +2,7 @@
 
 <feature-group-spec name="servlet-security-realms" xmlns="urn:jboss:galleon:feature-group:1.0">
 
-    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
-        <feature-group name="standalone-security-realms"/>
-    </origin>
+    <feature-group name="standalone-security-realms"/>
 
     <feature spec="core-service.management">
         <feature spec="core-service.management.security-realm">
