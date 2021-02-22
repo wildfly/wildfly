@@ -57,10 +57,11 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
         this.removeFunction = new BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>>() {
             @Override
             public Map.Entry<Integer, AtomicReference<V>> apply(K key, Map.Entry<Integer, AtomicReference<V>> entry) {
-                int count = entry.getKey().intValue();
-                AtomicReference<V> reference = entry.getValue();
+                // Entry can be null if entry was already removed, i.e. managed object was already closed
+                int count = (entry != null) ? entry.getKey().intValue() : 0;
+                AtomicReference<V> reference = (entry != null) ? entry.getValue() : null;
                 if (count == 0) {
-                    V value = reference.get();
+                    V value = (reference != null) ? reference.get() : null;
                     if (value != null) {
                         closeTask.accept(value);
                     }
