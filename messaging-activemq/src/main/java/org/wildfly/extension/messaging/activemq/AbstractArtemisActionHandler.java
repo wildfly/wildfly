@@ -19,6 +19,7 @@ import static org.jboss.as.controller.AbstractControllerService.PATH_MANAGER_CAP
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 
 import java.io.File;
+import java.nio.file.Path;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -26,6 +27,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -46,6 +48,10 @@ public abstract class AbstractArtemisActionHandler extends AbstractRuntimeOnlyHa
         return getPathManager(context).resolveRelativePathEntry(path, relativeTo);
     }
 
+    protected Path getServerTempDir(OperationContext context) {
+        return new File(getPathManager(context).getPathEntry(ServerEnvironment.CONTROLLER_TEMP_DIR).resolvePath()).toPath();
+    }
+
     protected File resolveFile(OperationContext context, PathElement pathElement) throws OperationFailedException {
         return new File(resolvePath(context, pathElement));
     }
@@ -57,6 +63,7 @@ public abstract class AbstractArtemisActionHandler extends AbstractRuntimeOnlyHa
         }
     }
 
+    @SuppressWarnings("unchecked")
     private PathManager getPathManager(OperationContext context) {
         final ServiceController<PathManager> service = (ServiceController<PathManager>) context.getServiceRegistry(false).getService(PATH_MANAGER_CAPABILITY.getCapabilityServiceName());
         return service.getService().getValue();

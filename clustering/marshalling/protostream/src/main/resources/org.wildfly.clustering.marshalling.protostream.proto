@@ -4,23 +4,32 @@ package org.wildfly.clustering.marshalling.protostream;
  * @TypeId(0)
  */
 message Any {
-	oneof value {
-		bool	boolean	= 1;
-		sint32	byte	= 2;
-		sint32	short	= 3;
-		sint32	integer	= 4;
-		sint64	long	= 5;
-		float	float	= 6;
-		double	double	= 7;
-		uint32	char	= 8;
-		bytes	string	= 9;
-		bytes	boolean_array	= 10;
-		bytes	byte_array	= 11;
-		uint32	short_array	= 12;
-		uint32	integer_array	= 13;
-		uint32	long_array	= 14;
-		uint32	float_array	= 15;
-		uint32	double_array	= 16;
-		uint32	char_array	= 17;
-	}
+	repeated	bytes	any	= 1;
+	optional	uint32	reference	= 2;
+	optional	bool	boolean	= 3;
+	optional	sint32	byte	= 4;
+	optional	sint32	short	= 5;
+	optional	sint32	integer	= 6;
+	optional	sint64	long	= 7;
+	optional	float	float	= 8;
+	optional	double	double	= 9;
+	optional	uint32	char	= 10;
+	optional	string	string	= 11;
+	optional	uint32	idObject	= 12;
+	optional	uint32	idEnum	= 13;
+	optional	uint32	idArray	= 14;
+	optional	uint32	fieldArray	= 15;
+	optional	string	namedObject	= 16;
+	optional	string	namedEnum	= 17;
+	optional	string	namedArray	= 18;
+	optional	bytes	booleanArray	= 19;
+	optional	bytes	byteArray	= 20;
+	repeated	sint32	shortArray	= 21	[packed=true];
+	repeated	sint32	integerArray	= 22	[packed=true];
+	repeated	sint64	longArray	= 23	[packed=true];
+	repeated	float	floatArray	= 24	[packed=true];
+	repeated	double	doubleArray	= 25	[packed=true];
+	repeated	uint32	charArray	= 26	[packed=true];
+	optional	bytes	anyArray	= 27;
+	optional	bytes	proxy	= 28;
 }

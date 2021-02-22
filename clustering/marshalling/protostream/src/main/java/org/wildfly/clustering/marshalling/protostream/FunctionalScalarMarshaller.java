@@ -29,8 +29,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.common.function.ExceptionFunction;
 import org.wildfly.common.function.ExceptionPredicate;
@@ -58,7 +56,7 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
     /**
      * Constructs a new single field marshaller based on single scalar marshaller.
      * @param marshaller the scalar marshaller used by this marshaller
-     * @param defaultFactory generates a default value returned by {@link #readFrom(ImmutableSerializationContext, RawProtoStreamReader)} if no field was written.
+     * @param defaultFactory generates a default value returned by {@link #readFrom(ProtoStreamReader)} if no field was written.
      * @param function a function that returns a value suitable for use by the specified scalar marshaller
      * @param factory a function applied to the value read from the specified scalar marshaller
      */
@@ -70,8 +68,8 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
     /**
      * Constructs a new single field marshaller based on single scalar marshaller.
      * @param marshaller the scalar marshaller used by this marshaller
-     * @param defaultFactory generates a default value returned by {@link #readFrom(ImmutableSerializationContext, RawProtoStreamReader)} if no field was written.
-     * @param equals a predicate used to determine if {@link #writeTo(ImmutableSerializationContext, RawProtoStreamWriter, Object)} should skip writing the field.
+     * @param defaultFactory generates a default value returned by {@link #readFrom(ProtoStreamReader)} if no field was written.
+     * @param equals a predicate used to determine if {@link #writeTo(ProtoStreamWriter, Object)} should skip writing the field.
      * @param function a function that returns a value suitable for use by the specified scalar marshaller
      * @param factory a function applied to the value read from the specified scalar marshaller
      */
@@ -83,8 +81,8 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
     /**
      * Constructs a new single field marshaller based on single scalar marshaller.
      * @param marshaller the scalar marshaller used by this marshaller
-     * @param defaultFactory generates a default value returned by {@link #readFrom(ImmutableSerializationContext, RawProtoStreamReader)} if no field was written.
-     * @param skipWrite a predicate used to determine if {@link #writeTo(ImmutableSerializationContext, RawProtoStreamWriter, Object)} should skip writing the field.
+     * @param defaultFactory generates a default value returned by {@link #readFrom(ProtoStreamReader)} if no field was written.
+     * @param skipWrite a predicate used to determine if {@link #writeTo(ProtoStreamWriter, Object)} should skip writing the field.
      * @param function a function that returns a value suitable for use by the specified scalar marshaller
      * @param factory a function applied to the value read from the specified scalar marshaller
      */
@@ -108,7 +106,7 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
      * Constructs a new single field marshaller based on single scalar marshaller.
      * @param targetClass the type of this marshaller
      * @param marshaller the scalar marshaller used by this marshaller
-     * @param defaultFactory generates a default value returned by {@link #readFrom(ImmutableSerializationContext, RawProtoStreamReader)} if no field was written.
+     * @param defaultFactory generates a default value returned by {@link #readFrom(ProtoStreamReader)} if no field was written.
      * @param function a function that returns a value suitable for use by the specified scalar marshaller
      * @param factory a function applied to the value read from the specified scalar marshaller
      */
@@ -120,8 +118,8 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
      * Constructs a new single field marshaller based on single scalar marshaller.
      * @param targetClass the type of this marshaller
      * @param marshaller the scalar marshaller used by this marshaller
-     * @param defaultFactory generates a default value returned by {@link #readFrom(ImmutableSerializationContext, RawProtoStreamReader)} if no field was written.
-     * @param equals a predicate comparing the default value with the value to write, used to determine if {@link #writeTo(ImmutableSerializationContext, RawProtoStreamWriter, Object)} should skip writing the field.
+     * @param defaultFactory generates a default value returned by {@link #readFrom(ProtoStreamReader)} if no field was written.
+     * @param equals a predicate comparing the default value with the value to write, used to determine if {@link #writeTo(ProtoStreamWriter, Object)} should skip writing the field.
      * @param function a function that returns a value suitable for use by the specified scalar marshaller
      * @param factory a function applied to the value read from the specified scalar marshaller
      */
@@ -138,8 +136,8 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
      * Constructs a new single field marshaller based on single scalar marshaller.
      * @param targetClass the type of this marshaller
      * @param marshaller the scalar marshaller used by this marshaller
-     * @param defaultFactory generates a default value returned by {@link #readFrom(ImmutableSerializationContext, RawProtoStreamReader)} if no field was written.
-     * @param skipWrite a predicate used to determine if {@link #writeTo(ImmutableSerializationContext, RawProtoStreamWriter, Object)} should skip writing the field.
+     * @param defaultFactory generates a default value returned by {@link #readFrom(ProtoStreamReader)} if no field was written.
+     * @param skipWrite a predicate used to determine if {@link #writeTo(ProtoStreamWriter, Object)} should skip writing the field.
      * @param function a function that returns a value suitable for use by the specified scalar marshaller
      * @param factory a function applied to the value read from the specified scalar marshaller
      */

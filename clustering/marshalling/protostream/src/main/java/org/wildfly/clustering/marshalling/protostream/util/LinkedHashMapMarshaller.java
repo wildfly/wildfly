@@ -23,11 +23,13 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.AbstractMap.SimpleEntry;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.infinispan.protostream.impl.WireFormat;
+import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
@@ -38,7 +40,7 @@ import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
  */
 public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap<Object, Object>> {
 
-    private static final int ACCESS_ORDER_INDEX = 2;
+    private static final int ACCESS_ORDER_INDEX = VALUE_INDEX + 1;
 
     @SuppressWarnings("unchecked")
     public LinkedHashMapMarshaller() {
@@ -48,23 +50,30 @@ public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap
     @Override
     public LinkedHashMap<Object, Object> readFrom(ProtoStreamReader reader) throws IOException {
         LinkedHashMap<Object, Object> map = new LinkedHashMap<>(16, 0.75f, false);
+        List<Object> keys = new LinkedList<>();
+        List<Object> values = new LinkedList<>();
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
             int index = WireFormat.getTagFieldNumber(tag);
             switch (index) {
-                case ENTRY_INDEX:
-                    Map.Entry<Object, Object> entry = reader.readObject(SimpleEntry.class);
-                    map.put(entry.getKey(), entry.getValue());
+                case KEY_INDEX:
+                    keys.add(reader.readObject(Any.class).get());
+                    break;
+                case VALUE_INDEX:
+                    values.add(reader.readObject(Any.class).get());
                     break;
                 case ACCESS_ORDER_INDEX:
-                    LinkedHashMap<Object, Object> existing = map;
                     map = new LinkedHashMap<>(16, 0.75f, reader.readBool());
-                    map.putAll(existing);
                     break;
                 default:
                     reading = (tag != 0) && reader.skipField(tag);
             }
+        }
+        Iterator<Object> keyIterator = keys.iterator();
+        Iterator<Object> valueIterator = values.iterator();
+        while (keyIterator.hasNext() || valueIterator.hasNext()) {
+            map.put(keyIterator.next(), valueIterator.next());
         }
         return map;
     }

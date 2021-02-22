@@ -24,7 +24,7 @@ import java.nio.file.Path;
  *
  * @author Emmanuel Hugonnet (c) 2020 Red Hat, Inc.
  */
-public class TemporaryFileInputStream extends InputStream {
+class TemporaryFileInputStream extends InputStream {
 
     private final InputStream delegate;
     private final Path file;

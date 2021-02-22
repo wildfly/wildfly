@@ -61,8 +61,7 @@ public class CompositeSessionMetaDataTestCase {
 
         assertFalse(this.metaData.isExpired());
 
-        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(5L));
-        when(this.accessMetaData.getLastAccessDuration()).thenReturn(Duration.ofMinutes(0L));
+        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(5L).minus(Duration.ofSeconds(1, 1)));
 
         assertTrue(this.metaData.isExpired());
 
