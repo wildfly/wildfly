@@ -442,6 +442,15 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setValidator(new EnumValidator<>(JournalType.class, true, true))
             .setRestartAllServices()
             .build();
+    public static final SimpleAttributeDefinition JOURNAL_MAX_ATTIC_FILES = create("journal-max-attic-files", ModelType.INT)
+            .setAttributeGroup("journal")
+            .setXmlName("max-attic-files")
+            .setDefaultValue(new ModelNode(10))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     /**
      * @see ActiveMQDefaultConfiguration#isDefaultJournalLogWriteRate
      */
@@ -911,7 +920,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
             JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_JMS_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
             JOURNAL_NODE_MANAGER_STORE_TABLE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
-            JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_FILE_OPEN_TIMEOUT, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
+            JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_FILE_OPEN_TIMEOUT, JOURNAL_COMPACT_PERCENTAGE,
+            JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO, JOURNAL_MAX_ATTIC_FILES,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
             GLOBAL_MAX_DISK_USAGE, DISK_SCAN_PERIOD, GLOBAL_MAX_MEMORY_SIZE,
             NETWORK_CHECK_NIC, NETWORK_CHECK_PERIOD, NETWORK_CHECK_TIMEOUT,

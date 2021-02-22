@@ -93,6 +93,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
 
     private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+
         rejectDefinedAttributeWithDefaultValue(server,
                 ServerDefinition.NETWORK_CHECK_LIST,
                 ServerDefinition.NETWORK_CHECK_NIC,
@@ -104,7 +105,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
                 ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                 ServerDefinition.CRITICAL_ANALYZER_ENABLED,
                 ServerDefinition.CRITICAL_ANALYZER_POLICY,
-                ServerDefinition.CRITICAL_ANALYZER_TIMEOUT);
+                ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
+                ServerDefinition.JOURNAL_MAX_ATTIC_FILES);
         server.discardOperations(PrintDataOperation.OPERATION_NAME);
     }
 

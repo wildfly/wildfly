@@ -44,7 +44,8 @@
                 create-journal-dir="${create.journal.dir:true}"
                 global-max-disk-usage="100"
                 disk-scan-period="5000"
-                global-max-memory-size="-1"/>
+                global-max-memory-size="-1"
+                max-attic-files="10"/>
 
         <statistics
                 enabled="${statistics.enabled:true}"

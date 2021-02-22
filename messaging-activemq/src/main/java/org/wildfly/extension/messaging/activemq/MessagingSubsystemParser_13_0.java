@@ -195,6 +195,7 @@ public class MessagingSubsystemParser_13_0 extends PersistentResourceXMLParser {
                                         ServerDefinition.JOURNAL_COMPACT_PERCENTAGE,
                                         ServerDefinition.JOURNAL_COMPACT_MIN_FILES,
                                         ServerDefinition.JOURNAL_MAX_IO,
+                                        ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
                                         ServerDefinition.CREATE_BINDINGS_DIR,
                                         ServerDefinition.CREATE_JOURNAL_DIR,
                                         ServerDefinition.JOURNAL_DATASOURCE,
