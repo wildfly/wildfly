@@ -140,7 +140,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         if (external || targetsPooledConnectionFactory(getActiveMQServerName(properties), resourceAdapter, phaseContext.getServiceRegistry())) {
             startActiveMQDestination(context, serviceBuilder, phaseContext, injector, external);
         } else {
-            // delegate to the resource-adapter subsystem to create a generic JCA admin object.
+            // delegate to the resource-adapter subsystem to create a generic Jakarta Connectors admin object.
             AdministeredObjectDefinitionInjectionSource aodis = new AdministeredObjectDefinitionInjectionSource(jndiName, className, resourceAdapter);
             aodis.setInterface(interfaceName);
             aodis.setDescription(description);

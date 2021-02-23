@@ -132,7 +132,7 @@ public class GetDataSourceClassInfoOperationHandler implements OperationStepHand
     }
 
     /**
-     * Check whether the types that JCA Injection knows.
+     * Check whether the types that Jakarta Connectors Injection knows.
      *
      * @see Injection.findMethod()
      * @param clz the class

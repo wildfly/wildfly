@@ -44,7 +44,7 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 
 /**
- * Test security inflow with JCA work manager where RA is configured with Elytron security domain
+ * Test security inflow with Jakarta Connectors work manager where RA is configured with Elytron security domain
  * and Workmanager is configured with legacy security (it doesn't have elytron-enabled=true),
  * it is not allowed to mix security configuration and it should fail
  */

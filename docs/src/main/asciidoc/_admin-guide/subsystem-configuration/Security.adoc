@@ -128,7 +128,7 @@ class name to use.
 
 The subject factory is responsible for creating subject instances, this
 also makes use of the authentication manager to actually verify the
-caller. It is used mainly by JCA components to establish a subject. It
+caller. It is used mainly by Jakarta Connectors components to establish a subject. It
 is not likely this would need to be overridden but if it is required the
 "subject-factory-class-name" attribute can be specified on the
 subject-factory element.

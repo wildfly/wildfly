@@ -83,7 +83,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .build();
     /**
      * Provides access to the special TransactionSynchronizationRegistry impl that ensures proper ordering between
-     * JCA and other synchronizations.
+     * Jakarta Connectors and other synchronizations.
      */
     public static final RuntimeCapability<Void> TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class)

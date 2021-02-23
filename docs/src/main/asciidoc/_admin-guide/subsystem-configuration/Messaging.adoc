@@ -46,13 +46,13 @@ on the type of connectors that is used.
 
 There is also a `pooled-connection-factory` which is special in that it
 is essentially a configuration facade for _both_ the inbound and
-outbound connectors of the the Artemis JCA Resource Adapter. An MDB can
+outbound connectors of the the Artemis Jakarta Connectors Resource Adapter. An MDB can
 be configured to use a `pooled-connection-factory` (e.g. using
 `@ResourceAdapter`). In this context, the MDB leverages the _inbound
-connector_ of the Artemis JCA RA. Other kinds of clients can look up the
+connector_ of the Artemis Jakarta Connectors RA. Other kinds of clients can look up the
 pooled-connection-factory in JNDI (or inject it) and use it to send
 messages. In this context, such a client would leverage the _outbound
-connector_ of the Artemis JCA RA. A `pooled-connection-factory` is also
+connector_ of the Artemis Jakarta Connectors RA. A `pooled-connection-factory` is also
 special because:
 
 * It is only available to local clients, although it can be configured
@@ -71,8 +71,8 @@ then this is likely the connection factory you want to use so the send
 operation will be atomically committed along with the rest of the EJB's
 transaction operations.
 
-To be clear, the _inbound connector_ of the Artemis JCA RA (which is for
-consuming messages) is only used by MDBs and other JCA-based components.
+To be clear, the _inbound connector_ of the Artemis Jakarta Connectors RA (which is for
+consuming messages) is only used by MDBs and other Jakarta Connectors based components.
 It is not available to traditional clients.
 
 Both a `connection-factory` and a `pooled-connection-factory` reference

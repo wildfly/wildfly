@@ -179,7 +179,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
                 throw new DeploymentUnitProcessingException(e);
             }
         } else {
-            // delegate to the resource-adapter subsystem to create a generic JCA connection factory.
+            // delegate to the resource-adapter subsystem to create a generic Jakarta Connectors connection factory.
             ConnectionFactoryDefinitionInjectionSource cfdis = new ConnectionFactoryDefinitionInjectionSource(jndiName, interfaceName, resourceAdapter);
             cfdis.setMaxPoolSize(maxPoolSize);
             cfdis.setMinPoolSize(minPoolSize);
@@ -375,7 +375,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
 
 
     /**
-     * Return whether the definition targets an existing pooled connection factory or use a JCA-based ConnectionFactory.
+     * Return whether the definition targets an existing pooled connection factory or use a Jakarta Connectors-based ConnectionFactory.
      *
      * Checks the service registry for a PooledConnectionFactoryService with the ServiceName
      * created by the {@code server} property (or {@code "default") and the {@code resourceAdapter} property.

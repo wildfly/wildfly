@@ -104,14 +104,14 @@ public interface ConnectorLogger extends BasicLogger {
     void boundDataSource(String jndiName);
 
     /**
-     * Logs an informational message indicating the JCA bound the object represented by the {@code description}
+     * Logs an informational message indicating the Jakarta Connectors bound the object represented by the {@code description}
      * parameter.
      *
      * @param description the description of what was bound.
      * @param jndiName    the JNDI name.
      */
     @LogMessage(level = INFO)
-    @Message(id = 2, value = "Bound JCA %s [%s]")
+    @Message(id = 2, value = "Bound Jakarta Connectors %s [%s]")
     void boundJca(String description, String jndiName);
 
     /**
@@ -195,14 +195,14 @@ public interface ConnectorLogger extends BasicLogger {
     void unboundDataSource(String jndiName);
 
     /**
-     * Logs an informational message indicating the JCA inbound the object represented by the {@code description}
+     * Logs an informational message indicating the Jakarta Connectors inbound the object represented by the {@code description}
      * parameter.
      *
      * @param description the description of what was unbound.
      * @param jndiName    the JNDI name.
      */
     @LogMessage(level = INFO)
-    @Message(id = 11, value = "Unbound JCA %s [%s]")
+    @Message(id = 11, value = "Unbound Jakarta Connectors %s [%s]")
     void unboundJca(String description, String jndiName);
 
     @LogMessage(level = WARN)

@@ -347,7 +347,7 @@
             <artifactId>jipijapa-spi</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- This is not desired, however the JCA tests seem to require this -->
+        <!-- This is not desired, however the Jakarta Connectors tests seem to require this -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-connector</artifactId>
@@ -952,7 +952,7 @@
                                 <exclude>org/jboss/as/test/integration/deployment/xml/datasource/DeployedXmlJpaDataSourceTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/jaxrs/integration/ejb/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/jaxrs/packaging/ear/*TestCase.java</exclude>
-                                <!-- JCA TBD -->
+                                <!-- Jakarta Connectors TBD -->
                                 <exclude>org/jboss/as/test/integration/jca/ear/*TestCase.java</exclude>
                                 <!-- No legacy security -->
                                 <exclude>org/jboss/as/test/integration/jca/anno/*TestCase.java</exclude>

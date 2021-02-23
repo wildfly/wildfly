@@ -52,7 +52,7 @@ final class JcaConfigService implements Service<JcaSubsystemConfiguration> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        ROOT_LOGGER.startingSubsystem("JCA", Version.FULL_VERSION);
+        ROOT_LOGGER.startingSubsystem("Jakarta Connectors", Version.FULL_VERSION);
         ROOT_LOGGER.tracef("config=%s", value);
     }
 

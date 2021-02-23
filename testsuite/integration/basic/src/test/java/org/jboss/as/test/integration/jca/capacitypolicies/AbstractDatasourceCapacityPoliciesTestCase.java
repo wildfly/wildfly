@@ -67,7 +67,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Integration test for JCA capacity policies JBJCA-986 using datasource/xa-datasource
+ * Integration test for Jakarta Connectors capacity policies JBJCA-986 using datasource/xa-datasource
  *
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>
  */

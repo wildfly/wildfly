@@ -1,0 +1,4 @@
+[[Jakarta_Connectors_Architecture]]
+= Jakarta Connectors Architecture
+
+

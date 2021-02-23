@@ -19,7 +19,7 @@ The list of {ProductName} new functionality is extensive, being the most relevan
 * Jakarta EE - {ProductName} is a certified implementation of Jakarta EE, meeting both the Web and the Full Platform, and already includes support for the latest iterations of CDI (1.2) and Web Sockets (1.1).
 * Undertow - A new cutting-edge web server in {ProductName}, designed for maximum throughput and scalability, including environments with over a million connections. And the latest web technologies, such as the new HTTP/2 standard, are already onboard.
 * Apache ActiveMQ Artemis - {ProductName}'s new JMS broker. Based on an code donation from HornetQ, this Apache subproject provides outstanding performance based on a proven non-blocking architecture.
-* IronJacamar 1.2 - The latest IronJacamar provides a stable and feature rich JCA & Datasources support.
+* IronJacamar 1.2 - The latest IronJacamar provides a stable and feature rich Jakarta Connectors & Datasources support.
 * JBossWS 5 - The fifth generation of JBossWS, a major leap forward, brings new features and performances improvements to {ProductName} Web Services
 * RESTEasy 3 - {ProductName} which goes beyond the standard Jakarta EE REST APIs (Jakarta RESTful Web Services 2.1), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, Jakarta JSON Processing, and reactive facilities.
 * OpenJDK ORB - {ProductName} switched the IIOP implementation from JacORB, to a downstream branch of the OpenJDK Orb, leading to better interoperability with the JVM ORB and the Jakarta EE RI.

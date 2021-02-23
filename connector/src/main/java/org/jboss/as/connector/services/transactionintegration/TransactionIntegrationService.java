@@ -70,7 +70,7 @@ public final class TransactionIntegrationService implements Service<TransactionI
     public void start(StartContext context) throws StartException {
         this.value = new TransactionIntegrationImpl(ContextTransactionManager.getInstance(), tsr.getValue(), utr.getValue(), terminator.getValue(),
                 rr.getValue());
-        ROOT_LOGGER.debugf("Starting JCA TransactionIntegrationService");
+        ROOT_LOGGER.debugf("Starting Jakarta Connectors TransactionIntegrationService");
     }
 
     @Override
