@@ -443,9 +443,9 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (entityModelNode.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING)) {
             // <optimistic-locking>
             writer.writeStartElement(EJB3SubsystemXMLElement.OPTIMISTIC_LOCKING.getLocalName());
-            final Boolean locking = entityModelNode.get(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING).asBoolean();
+            final String locking = entityModelNode.get(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING).asString();
             // write the value
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), locking.toString());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), locking);
             // <optimistic-locking>
             writer.writeEndElement();
         }
