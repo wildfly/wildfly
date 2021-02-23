@@ -28,6 +28,17 @@ e.g. To set "bar" as the default cache of the "foo" container:
 /subsystem=infinispan/cache-container=foo:write-attribute(name=default-cache, value=bar)
 ----
 
+A cache container can be injected directly into Jakarta EE applications using the `@Resource` annotation, e.g.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/container/foo")
+private org.infinispan.manager.EmbeddedCacheManager container;
+----
+
+Note that the server will not manage the lifecycle of any caches created from the injected cache manager.
+The application is responsible for managing the lifecycle of manually created caches.
+
 [[transport]]
 === Transport
 
@@ -398,7 +409,7 @@ e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
 ----
 
 [[hotrod_store]]
-=== HotRod store
+===== HotRod store
 
 The HotRod store uses one dedicated remote cache for each cache created by the server.
 For Infinispan Server versions supporting protocol version 2.7 and above (Infinispan Server version 9.2)
@@ -444,6 +455,25 @@ e.g. To configure a non-blocking state transfer:
 ----
 
 For a complete list of state-transfer attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+
+==== Injecting a cache into Jakarta EE applications
+
+A cache can be injected directly into Jakarta EE applications using the `@Resource` annotation, e.g.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/cache/foo/bar") // <1>
+private org.infinispan.Cache<Integer, Object> cache;
+----
+<1> where `foo` is the name of the cache container and `bar` is the name of the cache to inject
+
+or in order to inject the default cache of the cache container use the following resource lookup:
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/cache/foo/default")
+----
 
 [[remote_cache_container]]
 == Remote Cache Container

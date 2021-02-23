@@ -22,10 +22,6 @@
   -->
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan.commons">
 
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
     <resources>
         <artifact name="${org.infinispan:infinispan-commons}"/>
     </resources>
