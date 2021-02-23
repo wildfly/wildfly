@@ -255,6 +255,7 @@
                     <xs:attribute name="global-max-memory-size" type="xs:long" />
                     <xs:attribute name="global-max-disk-usage" type="xs:int" />
                     <xs:attribute name="disk-scan-period" type="xs:int" />
+                    <xs:attribute name="max-attic-files" type="xs:int" default="10"/>
                 </xs:complexType>
             </xs:element>
 

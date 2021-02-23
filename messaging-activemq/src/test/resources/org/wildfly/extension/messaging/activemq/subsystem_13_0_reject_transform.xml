@@ -111,7 +111,8 @@
                  global-max-disk-usage="70"
                  global-max-memory-size="100000"
                  disk-scan-period="10000"
-                 file-open-timeout="7"/>
+                 file-open-timeout="7"
+                 max-attic-files="15"/>
 
        <network-isolation
             network-check-list="127.0.0.1,[::1]"

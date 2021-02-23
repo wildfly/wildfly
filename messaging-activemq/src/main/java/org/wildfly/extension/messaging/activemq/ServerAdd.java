@@ -73,6 +73,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MAX_ATTIC_FILES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MAX_IO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MESSAGES_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MIN_FILES;
@@ -626,6 +627,7 @@ class ServerAdd extends AbstractAddStepHandler {
             configuration.setJournalFileOpenTimeout(JOURNAL_FILE_OPEN_TIMEOUT.resolveModelAttribute(context, model).asInt());
             configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
             configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
+            configuration.setJournalMaxAtticFiles(JOURNAL_MAX_ATTIC_FILES.resolveModelAttribute(context, model).asInt());
             configuration.setLogJournalWriteRate(LOG_JOURNAL_WRITE_RATE.resolveModelAttribute(context, model).asBoolean());
 
             configuration.setManagementAddress(SimpleString.toSimpleString(MANAGEMENT_ADDRESS.resolveModelAttribute(context, model).asString()));

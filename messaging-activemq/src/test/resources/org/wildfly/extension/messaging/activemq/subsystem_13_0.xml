@@ -205,7 +205,8 @@
                 jms-bindings-table="${journal.jms.bindings.table:JMS_BINDINGS}"
                 large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}"
                 page-store-table="${journal.page-store.table:PAGE_STORE}"
-                node-manager-store-table="${journal.node-manager-store-table:NODE_MANAGER_STORE}" />
+                node-manager-store-table="${journal.node-manager-store-table:NODE_MANAGER_STORE}"
+                max-attic-files="${journal.max-attic-files:15}"/>
 
         <statistics
             enabled="${statistics.enabled:true}"
