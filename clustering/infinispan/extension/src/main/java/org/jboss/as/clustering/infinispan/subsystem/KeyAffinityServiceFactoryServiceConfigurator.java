@@ -24,18 +24,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.KEY_AFFINITY_FACTORY;
 
-import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
-import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
-import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
@@ -44,6 +39,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.infinispan.spi.affinity.DefaultKeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.FunctionalService;
@@ -75,13 +71,7 @@ public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServ
 
     @Override
     public KeyAffinityServiceFactory apply(ExecutorService executor) {
-        int bufferSize = this.bufferSize;
-        return new KeyAffinityServiceFactory() {
-            @Override
-            public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
-                return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
-            }
-        };
+        return new DefaultKeyAffinityServiceFactory(executor, this.bufferSize);
     }
 
     @Override
@@ -95,39 +85,5 @@ public class KeyAffinityServiceFactoryServiceConfigurator extends CapabilityServ
         Consumer<KeyAffinityServiceFactory> affinityFactory = builder.provides(this.getServiceName());
         Service service = new FunctionalService<>(affinityFactory, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    private static class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {
-        private final KeyGenerator<K> generator;
-        private volatile boolean started = false;
-
-        SimpleKeyAffinityService(KeyGenerator<K> generator) {
-            this.generator = generator;
-        }
-
-        @Override
-        public void start() {
-            this.started = true;
-        }
-
-        @Override
-        public void stop() {
-            this.started = false;
-        }
-
-        @Override
-        public K getKeyForAddress(Address address) {
-            return this.generator.getKey();
-        }
-
-        @Override
-        public K getCollocatedKey(K otherKey) {
-            return this.generator.getKey();
-        }
-
-        @Override
-        public boolean isStarted() {
-            return this.started;
-        }
     }
 }
