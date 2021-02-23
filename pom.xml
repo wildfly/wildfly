@@ -269,7 +269,7 @@
         <version.antlr>2.7.7</version.antlr>
         <version.com.beust>1.78</version.com.beust>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.11.3</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.12.1</version.com.fasterxml.jackson>
         <version.com.github.ben-manes.caffeine>2.8.8</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
@@ -300,24 +300,26 @@
         <version.groovy-all>2.4.21</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
         <version.io.agroal>1.3</version.io.agroal>
-        <version.io.jaegertracing>0.34.3</version.io.jaegertracing>
+        <version.io.jaegertracing>1.5.0</version.io.jaegertracing>
         <version.io.netty>4.1.58.Final</version.io.netty>
-        <version.io.opentracing>0.31.0</version.io.opentracing>
-        <version.io.opentracing.concurrent>0.2.1</version.io.opentracing.concurrent>
-        <version.io.opentracing.interceptors>0.0.4.1</version.io.opentracing.interceptors>
-        <version.io.opentracing.jaxrs2>0.4.1</version.io.opentracing.jaxrs2>
-        <version.io.opentracing.tracerresolver>0.1.5</version.io.opentracing.tracerresolver>
-        <version.io.opentracing.servlet>0.2.3</version.io.opentracing.servlet>
+        <version.io.opentracing>0.33.0</version.io.opentracing>
+        <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
+        <version.io.opentracing.interceptors>0.1.3</version.io.opentracing.interceptors>
+        <version.io.opentracing.jaxrs2>1.0.0</version.io.opentracing.jaxrs2>
+        <version.io.opentracing.tracerresolver>0.1.8</version.io.opentracing.tracerresolver>
+        <version.io.opentracing.servlet>0.4.1</version.io.opentracing.servlet>
         <version.io.reactivex.rxjava2>2.2.19</version.io.reactivex.rxjava2>
         <version.io.reactivex.rxjava3>3.0.9</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
-        <version.io.smallrye.smallrye-config>1.6.2</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-fault-tolerance>4.3.2</version.io.smallrye.smallrye-fault-tolerance>
-        <version.io.smallrye.smallrye-health>2.2.5</version.io.smallrye.smallrye-health>
-        <version.io.smallrye.smallrye-jwt>2.0.13</version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-metrics>2.4.4</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.open-api>2.0.16</version.io.smallrye.open-api>
-        <version.io.smallrye.opentracing>1.3.4</version.io.smallrye.opentracing>
+        <version.io.smallrye.smallrye-common>1.5.0</version.io.smallrye.smallrye-common>
+        <version.io.smallrye.smallrye-config>2.0.2</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-fault-tolerance>5.0.0</version.io.smallrye.smallrye-fault-tolerance>
+        <version.io.smallrye.smallrye-health>3.0.0</version.io.smallrye.smallrye-health>
+        <version.io.smallrye.smallrye-jwt>3.0.0</version.io.smallrye.smallrye-jwt>
+        <version.io.smallrye.smallrye-metrics>3.0.1</version.io.smallrye.smallrye-metrics>
+        <version.io.smallrye.smallrye-reactive-utils>2.1.1</version.io.smallrye.smallrye-reactive-utils>
+        <version.io.smallrye.open-api>2.1.1</version.io.smallrye.open-api>
+        <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
@@ -354,21 +356,21 @@
         <version.org.apache.ws.security>2.2.6</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.5</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
-        <version.org.bitbucket.jose4j>0.7.0</version.org.bitbucket.jose4j>
+        <version.org.bitbucket.jose4j>0.7.2</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.9.11</version.org.bytebuddy>
         <version.org.codehaus.jackson>1.9.13.redhat-00007</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.4.0</version.org.codehaus.jettison>
         <version.org.cryptacular>1.2.4</version.org.cryptacular>
         <version.org.eclipse.jdt.core.compiler>4.6.1</version.org.eclipse.jdt.core.compiler>
-        <version.org.eclipse.microprofile.config.api>1.4</version.org.eclipse.microprofile.config.api>
-        <version.org.eclipse.microprofile.fault-tolerance.api>2.1.1</version.org.eclipse.microprofile.fault-tolerance.api>
+        <version.org.eclipse.microprofile.config.api>2.0</version.org.eclipse.microprofile.config.api>
+        <version.org.eclipse.microprofile.fault-tolerance.api>3.0</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
-        <version.org.eclipse.microprofile.health.api>2.2</version.org.eclipse.microprofile.health.api>
-        <version.org.eclipse.microprofile.jwt.api>1.1.1</version.org.eclipse.microprofile.jwt.api>
-        <version.org.eclipse.microprofile.metrics.api>2.3</version.org.eclipse.microprofile.metrics.api>
-        <version.org.eclipse.microprofile.openapi.api>1.1.2</version.org.eclipse.microprofile.openapi.api>
-        <version.org.eclipse.microprofile.opentracing>1.3.3</version.org.eclipse.microprofile.opentracing>
-        <version.org.eclipse.microprofile.rest.client.api>1.4.0</version.org.eclipse.microprofile.rest.client.api>
+        <version.org.eclipse.microprofile.health.api>3.0</version.org.eclipse.microprofile.health.api>
+        <version.org.eclipse.microprofile.jwt.api>1.2</version.org.eclipse.microprofile.jwt.api>
+        <version.org.eclipse.microprofile.metrics.api>3.0</version.org.eclipse.microprofile.metrics.api>
+        <version.org.eclipse.microprofile.openapi>2.0</version.org.eclipse.microprofile.openapi>
+        <version.org.eclipse.microprofile.opentracing>2.0</version.org.eclipse.microprofile.opentracing>
+        <version.org.eclipse.microprofile.rest.client.api>2.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.yasson>1.0.5</version.org.eclipse.yasson>
         <version.org.eclipselink.version>2.7.3</version.org.eclipselink.version>
         <version.org.glassfish.jakarta.el>3.0.3.jbossorg-2</version.org.glassfish.jakarta.el>
@@ -404,7 +406,7 @@
         <version.org.jboss.mod_cluster>1.4.1.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.10.6.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.4.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>3.14.0.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.15.0.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.6.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
@@ -2072,6 +2074,43 @@
             </dependency>
 
             <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-annotation</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-constraint</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-classloader</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-expression</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-function</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-converter-api</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-utils}</version>
+            </dependency>
+
+
+            <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config</artifactId>
                 <version>${version.io.smallrye.smallrye-config}</version>
@@ -2094,6 +2133,12 @@
             <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config-common</artifactId>
+                <version>${version.io.smallrye.smallrye-config}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.config</groupId>
+                <artifactId>smallrye-config-core</artifactId>
                 <version>${version.io.smallrye.smallrye-config}</version>
             </dependency>
 
@@ -2134,6 +2179,21 @@
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-jwt</artifactId>
+                <version>${version.io.smallrye.smallrye-jwt}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-jwt-cdi-extension</artifactId>
+                <version>${version.io.smallrye.smallrye-jwt}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-jwt-common</artifactId>
+                <version>${version.io.smallrye.smallrye-jwt}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-jwt-http-mechanism</artifactId>
                 <version>${version.io.smallrye.smallrye-jwt}</version>
             </dependency>
             <dependency>
@@ -5843,12 +5903,12 @@
             <dependency>
                 <groupId>org.eclipse.microprofile.openapi</groupId>
                 <artifactId>microprofile-openapi-api</artifactId>
-                <version>${version.org.eclipse.microprofile.openapi.api}</version>
+                <version>${version.org.eclipse.microprofile.openapi}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.microprofile.openapi</groupId>
                 <artifactId>microprofile-openapi-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.openapi.api}</version>
+                <version>${version.org.eclipse.microprofile.openapi}</version>
             </dependency>
 
             <dependency>
@@ -7319,6 +7379,18 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client-microprofile-base</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-crypto</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
@@ -8711,6 +8783,13 @@
             <dependency>
                 <groupId>org.reactivestreams</groupId>
                 <artifactId>reactive-streams</artifactId>
+                <version>${version.org.reactivestreams}</version>
+            </dependency>
+
+            <!-- Required by the org.eclipse.microprofile.rest.client:microprofile-rest-client-tck -->
+            <dependency>
+                <groupId>org.reactivestreams</groupId>
+                <artifactId>reactive-streams-tck</artifactId>
                 <version>${version.org.reactivestreams}</version>
             </dependency>
 

@@ -106,7 +106,7 @@ public class MicroProfileHealthReporterService implements Service<MicroProfileHe
                 ServerProbe.Outcome outcome = delegate.getOutcome();
 
                 HealthCheckResponseBuilder check = HealthCheckResponse.named(delegate.getName())
-                        .state(outcome.isSuccess());
+                        .status(outcome.isSuccess());
                 if (outcome.getData().isDefined()) {
                     for (Property property : outcome.getData().asPropertyList()) {
                         check.withData(property.getName(), property.getValue().asString());

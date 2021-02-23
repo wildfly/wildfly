@@ -35,8 +35,10 @@
     </resources>
 
     <dependencies>
+        <module name="io.smallrye.common.annotation"/>
         <module name="io.smallrye.config"/>
         <module name="io.smallrye.metrics"/>
+        <module name="io.smallrye.reactive.converters"/>
         <module name="javax.annotation.api"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>

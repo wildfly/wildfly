@@ -25,6 +25,7 @@ package org.wildfly.test.integration.microprofile.config.smallrye.management.con
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
@@ -59,5 +60,10 @@ public class CustomConfigSource implements ConfigSource{
     @Override
     public String getName() {
         return this.getClass().getName();
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return props.keySet();
     }
 }

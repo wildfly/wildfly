@@ -1,7 +1,0 @@
-<jboss-deployment-structure>
-    <deployment>
-        <exclusions>
-            <module name="org.jboss.resteasy.resteasy-json-binding-provider"/>
-        </exclusions>
-    </deployment>
-</jboss-deployment-structure>
