@@ -27,6 +27,8 @@
         <module name="org.glassfish.jakarta.el" export="true"/>
         <module name="javax.inject.api" export="true"/>
         <module name="javax.interceptor.api" export="true"/>
+        <!-- This is so that all modules depending on CDI automatically get access to annotations such as @PreDestroy -->
+        <module name="javax.annotation.api" export="true" />
 
         <!-- CDIProvider -->
         <module name="org.jboss.as.weld" services="import" optional="true"/>
