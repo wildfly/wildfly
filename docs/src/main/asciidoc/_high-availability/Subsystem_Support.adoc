@@ -9,7 +9,6 @@ todo look into moving this into admin guide!
 
 include::subsystem-support/Infinispan_Subsystem.adoc[]
 include::subsystem-support/Distributable_Web_Applications.adoc[]
-include::subsystem-support/Offloading_session_state_to_remote_Infinispan_server_cluster.adoc[]
 include::subsystem-support/ranked_affinity.adoc[]
 include::subsystem-support/JGroups_Subsystem.adoc[]
 include::subsystem-support/Kubernetes.adoc[]
