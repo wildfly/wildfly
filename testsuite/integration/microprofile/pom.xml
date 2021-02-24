@@ -79,6 +79,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
+            <artifactId>microprofile-reactive-messaging-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
+            <artifactId>microprofile-reactive-streams-operators-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
@@ -153,6 +163,68 @@
             <artifactId>transformer</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!-- MicroProfile Reactive Messaging Kafka Connector Test Dependencies -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--
+            The org.springframework.kafka:spring-kafka-test dependency excludes all
+             org.apache.kafka:* dependencies in the dependency management.
+             Add them again here, so as not to pollute the parent pom with all these
+             test dependencies
+         -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <classifier>test</classifier>
+            <scope>test</scope>
+            <version>${version.org.apache.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+            <scope>test</scope>
+            <version>${version.org.apache.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams-test-utils</artifactId>
+            <scope>test</scope>
+            <version>${version.org.apache.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.13</artifactId>
+            <scope>test</scope>
+            <version>${version.org.apache.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.13</artifactId>
+            <classifier>test</classifier>
+            <scope>test</scope>
+            <version>${version.org.apache.kafka}</version>
+        </dependency>
+
+        <!-- Other test dependencies -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -222,6 +294,9 @@
                                 <layer>microprofile-jwt</layer>
                                 <layer>microprofile-fault-tolerance</layer>
                                 <layer>microprofile-opentracing</layer>
+                                <!-- Dependencies for reactive specs -->
+                                <layer>microprofile-reactive-messaging-kafka</layer>
+                                <layer>h2-default-datasource</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -269,6 +344,10 @@
                             <systemPropertyVariables>
                                 <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                             </systemPropertyVariables>
+                            <excludes>
+                                <!-- The enable-microprofile.cli script does not enable the reactive extensions/subsystems -->
+                                <exclude>org/wildfly/test/integration/microprofile/reactive/**</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>
@@ -356,6 +435,9 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>microprofile-platform</layer>
                                                 <layer>ejb</layer>
+                                                <!-- Dependencies for reactive specs -->
+                                                <layer>microprofile-reactive-messaging-kafka</layer>
+                                                <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -475,6 +557,9 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>microprofile-platform</layer>
                                                 <layer>ejb</layer>
+                                                <!-- Dependencies for reactive specs -->
+                                                <layer>microprofile-reactive-messaging-kafka</layer>
+                                                <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
                                     </configurations>

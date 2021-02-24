@@ -394,6 +394,23 @@ link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 |
 link:#gal.microprofile-config[microprofile-config] +
 
+|[[gal.microprofile-reactive-messaging]]microprofile-reactive-messaging
+|Support for MicroProfile Reactive Messaging
+|
+link:#gal.cdi[cdi] +
+link:#gal.microprofile-reactive-streams-operators[reactive-streams-operators] +
+
+|[[gal.microprofile-reactive-messaging-kafka]]microprofile-reactive-messaging-kafka
+|Support for MicroProfile Reactive Messaging Kafka connector
+|
+link:#gal.microprofile-reactive-messaging[reactive-messaging] +
+
+|[[gal.microprofile-reactive-streams-operators]]microprofile-reactive-streams-operators
+|Support for MicroProfile Reactive Streams Operators
+|
+link:#gal.cdi[cdi] +
+
+
 |[[gal.naming]]naming
 |Support for JNDI.
 |
