@@ -1,5 +1,11 @@
 package org.jboss.as.test.manualmode.server.nongraceful;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.FilePermission;
+import java.net.SocketPermission;
+import java.util.PropertyPermission;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -8,6 +14,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.manualmode.server.nongraceful.deploymenta.TestApplicationA;
 import org.jboss.as.test.manualmode.server.nongraceful.deploymentb.TestApplicationB;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -56,7 +63,15 @@ public class NongracefulStartTestCase {
         return ShrinkWrap
                 .create(WebArchive.class, name + ".war")
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
-                .addClass(TimeoutUtil.class);
+                .addClass(TimeoutUtil.class)
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        // Required for the ClientBuilder.newBuilder() so the ServiceLoader will work
+                        new FilePermission("<<ALL FILES>>", "read"),
+                        // Required for the TimeoutUtil.adjust call when determining how long DEPLOYMENTB should poll
+                        new PropertyPermission("ts.timeout.factor", "read"),
+                        // Required for the client to connect
+                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
+                ), "permissions.xml");
     }
 
     /**
