@@ -374,7 +374,7 @@ instance at runtime
 === Introduction
 
 The login quickstart builds on the knowledge of CDI and Jakarta Server Faces we have got
-from numberguess. New stuff we will learn about is how to use JPA to
+from numberguess. New stuff we will learn about is how to use Jakarta Persistence to
 store data in a database, how to use Jakarta Transactions to control transactions, and
 how to use EJB for declarative TX control.
 
@@ -402,7 +402,7 @@ datasource to use in sample applications. We also tell Hibernate to
 auto-create tables - as you always have.
 ..  `import.sql` Again, the same old thing you are used to in Hibernate
 - auto-import data when the app starts.
-.  `pom.xml` is the same again, but just adds in dependencies for JPA,
+.  `pom.xml` is the same again, but just adds in dependencies for Jakarta Persistence,
 Jakarta Transactions and EJB
 
 [[views-1]]
@@ -444,7 +444,7 @@ session or until they log out}}
 messages to Jakarta Server Faces as needed
 ..  Uses a producer method to expose the @LoggedIn user (producer
 methods used as we don't know which user at development time)
-.  `User.java` Is a pretty straightforward JPA entity. Mapped with
+.  `User.java` Is a pretty straightforward Jakarta Persistence entity. Mapped with
 `@Entity`, has an natural id.
 .  `UserManager.java` This is an interface, and by default we use the
 ManagedBean version, which requires manual TX control
@@ -452,9 +452,9 @@ ManagedBean version, which requires manual TX control
 ..  Injects a logger (we'll see how that is produced in a minute)
 ..  Injects the entity manager (again, just a min)
 ..  Inject the UserTransaction (this is provided by CDI)
-..  `getUsers()` standard JPA-QL that we know and love - but lots of
+..  `getUsers()` standard Jakarta Persistence-QL that we know and love - but lots of
 ugly TX handling code.
-..  Same for `addUser()` and `findUser()` methods - very simple JPA
+..  Same for `addUser()` and `findUser()` methods - very simple Jakarta Persistence
 but...
 ..  Got a couple of producer methods.
 ...  `getUsers()` is obvious - loads all the users in the database. No
@@ -483,7 +483,7 @@ The kitchensink quickstart is generated from an archetype available for
 JBoss AS (tell people to check the
 link:/pages/createpage.action?spaceKey=WFLY&title=Getting+Started+Developing+Applications&linkCreation=true&fromPageId=557131[Getting
 Started Developing Applications] Guide for details). It demonstrates
-CDI, Jakarta Server Faces, Jakarta Enterprise Beans, JPA (which we've seen before) and Jakarta RESTful Web Services and Bean
+CDI, Jakarta Server Faces, Jakarta Enterprise Beans, Jakarta Persistence (which we've seen before) and Jakarta RESTful Web Services and Bean
 Validation as well. We add in Arquillian for testing.
 
 [[run-the-app-2]]

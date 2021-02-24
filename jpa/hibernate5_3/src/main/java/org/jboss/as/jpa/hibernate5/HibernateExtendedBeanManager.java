@@ -33,7 +33,7 @@ import org.hibernate.jpa.event.spi.jpa.ExtendedBeanManager;
 /**
  * HibernateExtendedBeanManager helps defer the registering of entity listeners, with the Jakarta Contexts and Dependency Injection BeanManager until
  * after the persistence unit is available for lookup by Jakarta Contexts and Dependency Injection bean(s).
- * This solves the WFLY-2387 issue of JPA entity listeners referencing the Jakarta Contexts and Dependency Injection bean, when the bean cycles back
+ * This solves the WFLY-2387 issue of Jakarta Persistence entity listeners referencing the Jakarta Contexts and Dependency Injection bean, when the bean cycles back
  * to the persistence unit, or a different persistence unit.
  *
  * @author Scott Marlow

@@ -32,7 +32,7 @@ https://docs.jboss.org/author/display/AS7/Implicit+module+dependencies+for+deplo
 Depending on the strategy being used, Spring applications can be:
 
 * native Hibernate applications;
-* JPA-based applications;
+* Jakarta Persistence based applications;
 * native JDBC applications;
 
 [[native-springhibernate-applications]]
@@ -47,10 +47,10 @@ Spring 3.1 (and may be supported by Spring 3.2 as described in
 https://jira.springsource.org/browse/SPR-8096[SPR-8096]), so adding this
 module as a dependency is not a solution.
 
-[[jpa-based-applications]]
-== JPA-based applications
+[[Jakarta-Persistence-based-applications]]
+== Jakarta Persistence based applications
 
-Spring applications using JPA may choose between:
+Spring applications using Jakarta Persistence may choose between:
 
 * using a server-deployed persistence unit;
 * using a Spring-managed persistence unit.

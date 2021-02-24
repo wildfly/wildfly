@@ -36,8 +36,8 @@ import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
  * This class was added to:
  *
  * 1. workaround an issue discussed in https://java.net/jira/browse/JTA_SPEC-4 whereby the JCA Synchronization(s) need to be
- * called after the JPA Synchronization(s). Currently the implementation orders JCA relative to all interposed Synchronizations,
- * if this is not desirable it would be possible to modify this class to store just the JPA and JCA syncs and the other syncs
+ * called after the Jakarta Persistence Synchronization(s). Currently the implementation orders JCA relative to all interposed Synchronizations,
+ * if this is not desirable it would be possible to modify this class to store just the Jakarta Persistence and JCA syncs and the other syncs
  * can simply be passed to a delegate (would need the reference to this in the constructor).
  *
  * 2. During afterCompletion the JCA synchronizations should be called last as that allows JCA to detect connection leaks from

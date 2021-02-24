@@ -27,7 +27,7 @@ import org.jipijapa.management.spi.Statistics;
  */
 public class HibernateManagementAdaptor implements ManagementAdaptor {
 
-    // shared (per classloader) instance for all Hibernate 4.3 JPA deployments
+    // shared (per classloader) instance for all Hibernate 4.3 Jakarta Persistence deployments
     private static final HibernateManagementAdaptor INSTANCE = new HibernateManagementAdaptor();
 
     private final Statistics statistics = new HibernateStatistics();
@@ -36,8 +36,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
     private static final String VERSION = "Hibernate ORM 4.3.x";
 
     /**
-     * The management statistics are shared across all Hibernate 4 JPA deployments
-     * @return shared instance for all Hibernate 4 JPA deployments
+     * The management statistics are shared across all Hibernate 4 Jakarta Persistence deployments
+     * @return shared instance for all Hibernate 4 Jakarta Persistence deployments
      */
     public static HibernateManagementAdaptor getInstance() {
         return INSTANCE;

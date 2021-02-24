@@ -46,7 +46,7 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 /**
  * Represents the PersistenceUnit injected into a component.
  * TODO:  support injecting into a HibernateSessionFactory.  Initially, hack it by checking injectionTypeName parameter
- * for HibernateSessionFactory.  If/when JPA supports unwrap on the EMF, switch to that.
+ * for HibernateSessionFactory.  If/when Jakarta Persistence supports unwrap on the EMF, switch to that.
  *
  * @author Scott Marlow
  */
@@ -112,9 +112,9 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                 } catch (ClassNotFoundException e) {
                     throw JpaLogger.ROOT_LOGGER.cannotLoadFromJpa(e, injectionTypeName);
                 }
-                // TODO:  when/if jpa supports unwrap, change to
+                // TODO:  when/if Jakarta Persistence supports unwrap, change to
                 //   Object targetValueToInject = emf.unwrap(extensionClass);
-                // Until jpa supports unwrap on sessionfactory, only support hibernate
+                // Until Jakarta Persistence supports unwrap on sessionfactory, only support hibernate
 
                 Method getSessionFactory;
                 try {

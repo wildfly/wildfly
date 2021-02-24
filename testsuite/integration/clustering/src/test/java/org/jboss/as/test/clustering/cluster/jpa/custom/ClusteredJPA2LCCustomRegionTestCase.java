@@ -51,7 +51,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test of clustered JPA 2nd level cache implemented by Infinispan using entity custom region.
+ * Test of clustered Jakarta Persistence 2nd level cache implemented by Infinispan using entity custom region.
  * <p>
  * In persistence.xml we add the following:
  * <code>

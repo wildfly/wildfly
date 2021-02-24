@@ -52,7 +52,7 @@ public class PersistenceProviderLoader {
     }
 
     /**
-     * Loads the specified JPA persistence provider module
+     * Loads the specified Jakarta Persistence persistence provider module
      *
      * @param moduleName is the static module to be loaded
      * @throws ModuleLoadException

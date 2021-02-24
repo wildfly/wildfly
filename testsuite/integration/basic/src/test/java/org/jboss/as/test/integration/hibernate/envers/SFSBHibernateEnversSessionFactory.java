@@ -39,7 +39,7 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 
 /**
- * Test that Hibernate Envers is working over Native Hibernate API in AS7 container without any JPA assistance
+ * Test that Hibernate Envers is working over Native Hibernate API in AS7 container without any Jakarta Persistence assistance
  *
  * @author Madhumita Sadhukhan
  */

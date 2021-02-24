@@ -2702,3 +2702,5 @@ And then finally we do the conversion:
  
     }
 ----
+
+NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.

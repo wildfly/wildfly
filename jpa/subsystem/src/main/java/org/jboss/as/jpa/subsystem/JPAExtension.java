@@ -52,7 +52,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Domain extension used to initialize the JPA subsystem element handlers.
+ * Domain extension used to initialize the Jakarta Persistence subsystem element handlers.
  *
  * @author Scott Marlow
  */

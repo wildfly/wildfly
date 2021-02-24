@@ -32,7 +32,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 /**
  * <p>A helper that knows how to associate {@link javax.persistence.EntityManager} instances with active transactions.</p>
  *
- * @author Pedro Igor (reusing code from JPA subsystem)
+ * @author Pedro Igor (reusing code from Jakarta Persistence subsystem)
  */
 public class TransactionalEntityManagerHelper {
 

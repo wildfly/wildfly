@@ -47,7 +47,7 @@ import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.Platform;
 
 /**
- * Deploy JPA Persistence providers that are found in the application deployment.
+ * Deploy Jakarta Persistence Persistence providers that are found in the application deployment.
  *
  * @author Scott Marlow
  */

@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests for the integration of JPA, CDI, and Jakarta Bean Validation.
+ * Tests for the integration of Jakarta Persistence, Jakarta Contexts and Dependency Injection, and Jakarta Bean Validation.
  *
  * @author Farah Juma
  */

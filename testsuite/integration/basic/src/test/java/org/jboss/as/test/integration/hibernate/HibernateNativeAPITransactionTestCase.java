@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test operations including rollback using Hibernate transaction and Sessionfactory inititated from hibernate.cfg.xml and
- * properties added to Hibernate Configuration in AS7 container without any JPA assistance
+ * properties added to Hibernate Configuration in AS7 container without any Jakarta Persistence assistance
  *
  * @author Madhumita Sadhukhan
  */

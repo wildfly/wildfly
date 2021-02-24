@@ -33,11 +33,11 @@ import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 /**
  * Most of this implementation delegates down to the underlying transactions implementation to provide the services of the
  * TransactionSynchronizationRegistry. The one area it modifies is the registration of the interposed Synchronizations. The
- * reason this implementation needs to differ is because the JCA Synchronization and JPA Synchronizations are both specified as
+ * reason this implementation needs to differ is because the JCA Synchronization and Jakarta Persistence Synchronizations are both specified as
  * Interposed however there are defined ordering requirements between them both.
  *
  * The current implementation orders JCA relative to all other Synchronizations. For beforeCompletion, it would be possible to
- * restrict this to the one case where JCA is ordered before JPA, however it is possible that other interposed Synchronizations
+ * restrict this to the one case where JCA is ordered before Jakarta Persistence, however it is possible that other interposed Synchronizations
  * would require the services of JCA and as such if the JCA is allowed to execute delistResource during beforeCompletion as
  * mandated in JCA spec the behaviour of those subsequent interactions would be broken. For afterCompletion the JCA
  * synchronizations are called last as that allows JCA to detect connection leaks from frameworks that have not closed the JCA

@@ -36,7 +36,7 @@ from ejb-jar.xml, and to set WildFly specific settings | 
 descriptor, can be used to override settings application.xml, and to set
 WildFly specific settings | 
 
-|persistence.xml |META-INF |JPA |JPA descriptor used for defining
+|persistence.xml |META-INF |Jakarta Persistence |Jakarta Persistence descriptor used for defining
 persistence units |Hibernate Reference Guide
 
 |jboss-ejb-client.xml |WEB-INF of a war, or META-INF of an EJB jar | 

@@ -141,7 +141,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                                     Object wrapperBeanManagerLifeCycle=null;
 
-                                    // as per JPA specification contract, always pass ValidatorFactory in via standard property before
+                                    // as per Jakarta Persistence specification contract, always pass ValidatorFactory in via standard property before
                                     // creating container EntityManagerFactory
                                     if (validatorFactory != null) {
                                         properties.put(VALIDATOR_FACTORY, validatorFactory);

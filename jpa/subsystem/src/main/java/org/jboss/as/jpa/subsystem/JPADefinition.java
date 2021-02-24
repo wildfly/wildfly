@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * JPA ResourceDefinition
+ * Jakarta Persistence ResourceDefinition
  *
  */
 public class JPADefinition extends SimpleResourceDefinition {

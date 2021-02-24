@@ -97,10 +97,10 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     // optional:  validation mode can be "auto", "callback", "none".
     private volatile ValidationMode validationMode;
 
-    // optional: version of the JPA specification
+    // optional: version of the Jakarta Persistence specification
     private volatile String version;
 
-    // transformers will be written to when the JPA persistence provider adds their transformer.
+    // transformers will be written to when the Jakarta Persistence persistence provider adds their transformer.
     // there should be very few calls to add transformers but potentially many calls to get the
     // transformer list (once per application class loaded).
     private final List<ClassTransformer> transformers = new CopyOnWriteArrayList<ClassTransformer>();
@@ -366,7 +366,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     /**
      * Return a classloader that the provider can use to load the entity classes.
      * <p/>
-     * Note from JPA 8.2:
+     * Note from Jakarta Persistence 8.2:
      * All persistence classes defined at the level of the Jakarta EE EAR must be accessible to other Java EE
      * components in the application—i.e. loaded by the application classloader—such that if the same entity
      * class is referenced by two different Jakarta EE components (which may be using different persistence

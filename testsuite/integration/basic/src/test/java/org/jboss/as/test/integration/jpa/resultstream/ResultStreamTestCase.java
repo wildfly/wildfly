@@ -42,7 +42,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Hibernate test using JPA 2.2 API javax.persistence.Query#getResultStream
+ * Hibernate test using Jakarta Persistence 2.2 API javax.persistence.Query#getResultStream
  * using {@link ResultStreamTest} bean.
  * <p>
  * Note that this test uses an extended persistence context, so that the Hibernate session will stay open long enough

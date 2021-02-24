@@ -100,7 +100,7 @@ org.jboss.logging org.jboss.ironjacamar.api org.jboss.ironjacamar.impl
 org.hibernate.validator |If the deployment is a resource adaptor (RAR)
 deployment.
 
-|JPA (Hibernate) subsystem |javax.persistence.api |javaee.api
+|Jakarta Persistence (Hibernate) subsystem |javax.persistence.api |javaee.api
 org.jboss.as.jpa org.hibernate |The presence of an @PersistenceUnit or
 @PersistenceContext annotation, or a <persistence-unit-ref> or
 <persistence-context-ref> in a deployment descriptor..

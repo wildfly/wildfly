@@ -29,7 +29,7 @@ The list of {ProductName} new functionality is extensive, being the most relevan
 
 The support for some technologies was removed, due to the high maintenance cost, low community interest, and much better alternative solutions:
 
-* CMP EJB - JPA offers a much more performant and flexible API
+* CMP EJB - Jakarta Persistence offers a much more performant and flexible API
 * Jakarta XML RPC - Jakarta XML Web Services offer a much more accurate and complete solution
 * JSR-88 - With very little adoption, the more complete deployment APIs provided by vendors are preferred
 
@@ -636,7 +636,7 @@ CMP entity beans are defined in the `ejb-jar.xml` descriptor, in concrete an ent
 </ejb-jar> 
 ----
 
-CMP entity beans should be replaced by JPA entities.
+CMP entity beans should be replaced by Jakarta Persistence entities.
 
 [[ejb-client]]
 ==== EJB Client
@@ -698,13 +698,13 @@ The deprecated descriptors are files bundled in the application package, which n
 
 JMS Resources are remotely looked up using JNDI, and looking up resources in a {ProductName} {ProductVersion} server may require changes in the application code, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
 
-[[jpa-and-hibernate]]
-=== JPA (and Hibernate)
+[[Jakarta-Persistence-and-hibernate]]
+=== Jakarta Persistence (and Hibernate)
 
 [[applications-that-plan-to-use-hibernate-orm-5.0]]
 ==== Applications That Plan to Use Hibernate ORM 5.0
 
-{ProductName} ships with Hibernate ORM 5.0 and those libraries are implicitly added to the application classpath when a `persistence.xml` is detected during deployment. If your application uses JPA, it will default to using the Hibernate ORM 5.0 libraries.
+{ProductName} ships with Hibernate ORM 5.0 and those libraries are implicitly added to the application classpath when a `persistence.xml` is detected during deployment. If your application uses Jakarta Persistence, it will default to using the Hibernate ORM 5.0 libraries.
 
 Hibernate ORM 5.0 introduces:
 

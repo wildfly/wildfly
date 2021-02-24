@@ -58,7 +58,7 @@ import org.jipijapa.management.spi.Statistics;
 import org.jipijapa.plugin.spi.ManagementAdaptor;
 
 /**
- * represents the global JPA Service
+ * represents the global Jakarta Persistence Service
  *
  * @author Scott Marlow
  */
@@ -141,7 +141,7 @@ public class JPAService implements Service<Void> {
 
             if (false == existingResourceDescriptionResolver.contains(managementAdaptor.getVersion())) {
 
-                // setup statistics (this used to be part of JPA subsystem startup)
+                // setup statistics (this used to be part of Jakarta Persistence subsystem startup)
                 ResourceDescriptionResolver resourceDescriptionResolver = new StandardResourceDescriptionResolver(
                         statistics.getResourceBundleKeyPrefix(), statistics.getResourceBundleName(), statistics.getClass().getClassLoader()){
                     private ResourceDescriptionResolver fallback = JPAExtension.getResourceDescriptionResolver();

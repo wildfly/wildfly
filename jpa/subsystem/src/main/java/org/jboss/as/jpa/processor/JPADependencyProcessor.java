@@ -50,7 +50,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
- * Deployment processor which adds a module dependencies for modules needed for JPA deployments.
+ * Deployment processor which adds a module dependencies for modules needed for Jakarta Persistence deployments.
  *
  * @author Scott Marlow (copied from WeldDepedencyProcessor)
  */
@@ -63,7 +63,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier HIBERNATE_TRANSFORMER_ID = ModuleIdentifier.create("org.hibernate.bytecodetransformer");
 
     /**
-     * Add dependencies for modules required for JPA deployments
+     * Add dependencies for modules required for Jakarta Persistence deployments
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

@@ -44,7 +44,7 @@ import org.wildfly.transaction.client.AssociationListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
- * Transaction utilities for JPA
+ * Transaction utilities for Jakarta Persistence
  *
  * @author Scott Marlow (forked from code by Gavin King)
  */

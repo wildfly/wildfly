@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test deployment of -ds.xml files as JPA data sources
+ * Test deployment of -ds.xml files as Jakarta Persistence data sources
  *
  * @author Stuart Douglas
  */

@@ -54,7 +54,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
     static {
         Version defaultVersion;
         try {
-            // Try and load a jakarta namespace JPA API class to see if we're EE 8 or a later EE
+            // Try and load a jakarta namespace Jakarta Persistence API class to see if we're EE 8 or a later EE
             PersistenceUnitXmlParser.class.getClassLoader().loadClass("jakarta.persistence.SharedCacheMode");
             defaultVersion = Version.JPA_3_0;
         } catch (Throwable t) {

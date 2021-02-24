@@ -43,7 +43,7 @@ include::_developer-guide/EE_Concurrency_Utilities.adoc[]
 
 include::_developer-guide/EJB3_Reference_Guide.adoc[]
 
-include::_developer-guide/JPA_Reference_Guide.adoc[]
+include::_developer-guide/Jakarta_Persistence_Reference_Guide.adoc[]
 
 include::_developer-guide/Jakarta_Transactions_Reference.adoc[]
 
