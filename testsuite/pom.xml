@@ -69,6 +69,7 @@
 
     <modules>
         <module>integration</module>
+        <module>scripts</module>
     </modules>
 
 
@@ -404,6 +405,7 @@
                 <module>integration</module>
                 <module>compat</module>
                 <module>domain</module>
+                <module>scripts</module>
             </modules>
         </profile>
 
