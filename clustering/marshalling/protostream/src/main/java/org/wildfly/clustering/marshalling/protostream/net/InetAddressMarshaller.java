@@ -24,18 +24,22 @@ package org.wildfly.clustering.marshalling.protostream.net;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.PrivilegedActionException;
 import java.util.Arrays;
 
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.common.net.Inet;
+import org.wildfly.security.ParametricPrivilegedExceptionAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Marshaller for an {@link InetAddress}.
  * @author Paul Ferraro
  */
-public enum InetAddressMarshaller implements FieldSetMarshaller<InetAddress, InetAddress> {
+public enum InetAddressMarshaller implements FieldSetMarshaller<InetAddress, InetAddress>, ParametricPrivilegedExceptionAction<InetAddress, String> {
     INSTANCE;
 
     private static final InetAddress DEFAULT = InetAddress.getLoopbackAddress();
@@ -58,7 +62,15 @@ public enum InetAddressMarshaller implements FieldSetMarshaller<InetAddress, Ine
     public InetAddress readField(ProtoStreamReader reader, int index, InetAddress address) throws IOException {
         switch (index) {
             case HOST_NAME_INDEX:
-                return InetAddress.getByName(reader.readString());
+                try {
+                    return WildFlySecurityManager.doUnchecked(reader.readString(), this);
+                } catch (PrivilegedActionException e) {
+                    Exception exception = e.getException();
+                    if (exception instanceof IOException) {
+                        throw (IOException) exception;
+                    }
+                    throw new IllegalStateException(e);
+                }
             case ADDRESS_INDEX:
                 return InetAddress.getByAddress(reader.readByteArray());
             default:
@@ -81,5 +93,10 @@ public enum InetAddressMarshaller implements FieldSetMarshaller<InetAddress, Ine
                 writer.writeBytes(startIndex + ADDRESS_INDEX, address.getAddress());
             }
         }
+    }
+
+    @Override
+    public InetAddress run(String host) throws UnknownHostException {
+        return InetAddress.getByName(host);
     }
 }
