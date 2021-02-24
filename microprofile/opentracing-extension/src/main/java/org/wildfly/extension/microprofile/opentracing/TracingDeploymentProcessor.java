@@ -201,10 +201,11 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
             boolean isRegistered = (Boolean) globalTracerClass.getMethod("isRegistered").invoke(null);
             if (isRegistered) {
                 TracingLogger.ROOT_LOGGER.alreadyRegistered();
-                return;
+                tracer = (Tracer) globalTracerClass.getMethod("get").invoke(null);
+            } else {
+                Class tracerResolverClass = moduleCL.loadClass("io.opentracing.contrib.tracerresolver.TracerResolver");
+                tracer = (Tracer) tracerResolverClass.getMethod("resolveTracer").invoke(null);
             }
-            Class tracerResolverClass = moduleCL.loadClass("io.opentracing.contrib.tracerresolver.TracerResolver");
-            tracer = (Tracer) tracerResolverClass.getMethod("resolveTracer").invoke(null);
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             ROOT_LOGGER.errorResolvingTracer(ex);
         } finally {
