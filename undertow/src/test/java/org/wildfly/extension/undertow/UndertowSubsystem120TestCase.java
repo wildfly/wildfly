@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,27 +29,34 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 
 /**
- * This is the barebone test example that tests subsystem
+ * Test for UndertowSubsystem with subsystem schema version 12.0.
  *
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * @author Flavia Rainone
  */
-public class UndertowSubsystem70TestCase extends AbstractUndertowSubsystemTestCase {
+public class UndertowSubsystem120TestCase extends AbstractUndertowSubsystemTestCase {
 
-    private static final int SCHEMA_VERSION = 7;
+    private static final int SCHEMA_VERSION = 12;
     private final String virtualHostName = "some-server";
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-7.0.xml");
+        return readResource("undertow-12.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_7_0.xsd";
+        return "schema/wildfly-undertow_12_0.xsd";
     }
 
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    @Override
+    protected String[] getSubsystemTemplatePaths() {
+        return new String[] { "/subsystem-templates/undertow.xml" };
+    }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     @Test

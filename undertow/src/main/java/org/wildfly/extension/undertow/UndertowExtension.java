@@ -106,6 +106,7 @@ public class UndertowExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_9_0.getUriString(), UndertowSubsystemParser_9_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_10_0.getUriString(), UndertowSubsystemParser_10_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_11_0.getUriString(), UndertowSubsystemParser_11_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_12_0.getUriString(), UndertowSubsystemParser_12_0::new);
     }
 
     @Override
@@ -118,7 +119,7 @@ public class UndertowExtension implements Extension {
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentWebSocketDefinition.INSTANCE);
 
-        subsystem.registerXMLElementWriter(UndertowSubsystemParser_11_0::new);
+        subsystem.registerXMLElementWriter(UndertowSubsystemParser_12_0::new);
     }
 
 }

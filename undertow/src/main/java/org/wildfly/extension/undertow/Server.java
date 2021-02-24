@@ -22,12 +22,17 @@
 
 package org.wildfly.extension.undertow;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.inject.Injector;
@@ -36,7 +41,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -45,6 +49,7 @@ import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import io.undertow.util.Headers;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -169,8 +174,23 @@ public class Server implements Service<Server> {
     }
 
     public String getRoute() {
-        UndertowService service = this.undertowService.getValue();
-        String defaultServerRoute = service.getInstanceId();
+        final UndertowService service = this.undertowService.getValue();
+        final String defaultServerRoute = service.getInstanceId();
+        if (service.isObfuscateSessionRoute()) {
+            try {
+                final MessageDigest md = MessageDigest.getInstance("MD5");
+                // salt
+                md.update(this.name.getBytes(UTF_8));
+                // encode
+                final byte[] digestedBytes = md.digest(defaultServerRoute.getBytes(UTF_8));
+                final Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding(); // = is not allowed in V0 Cookie
+                final String encodedRoute = new String(encoder.encode(digestedBytes), UTF_8);
+                UndertowLogger.ROOT_LOGGER.obfuscatedSessionRoute(encodedRoute, defaultServerRoute);
+                return encodedRoute;
+            } catch (NoSuchAlgorithmException e) {
+                UndertowLogger.ROOT_LOGGER.unableToObfuscateSessionRoute(defaultServerRoute, e);
+            }
+        }
         return this.name.equals(service.getDefaultServer()) ? defaultServerRoute : String.join("-", defaultServerRoute, this.name);
     }
 
