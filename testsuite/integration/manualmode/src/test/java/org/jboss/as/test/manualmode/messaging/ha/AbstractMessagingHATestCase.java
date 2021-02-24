@@ -23,12 +23,10 @@ package org.jboss.as.test.manualmode.messaging.ha;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 import static org.junit.Assert.assertEquals;
@@ -83,9 +81,10 @@ public abstract class AbstractMessagingHATestCase {
     public static final String SERVER1 = "jbossas-messaging-ha-server1";
     public static final String SERVER2 = "jbossas-messaging-ha-server2";
     private static final Logger log = Logger.getLogger(AbstractMessagingHATestCase.class);
+    private static final int OFFSET = 100;
 
     // maximum time for HornetQ activation to detect node failover/failback
-    protected static int ACTIVATION_TIMEOUT = 30000;
+    protected static int ACTIVATION_TIMEOUT = TimeoutUtil.adjust(30000);
 
     private String snapshotForServer1;
     private String snapshotForServer2;
@@ -99,7 +98,7 @@ public abstract class AbstractMessagingHATestCase {
 
     protected static ModelControllerClient createClient2() throws UnknownHostException {
         return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddressNode1()),
-                TestSuiteEnvironment.getServerPort() + 100,
+                TestSuiteEnvironment.getServerPort() + OFFSET,
                 Authentication.getCallbackHandler());
     }
 
@@ -114,15 +113,9 @@ public abstract class AbstractMessagingHATestCase {
         long start = System.currentTimeMillis();
         long now;
         do {
-            ModelNode operation = new ModelNode();
-            operation.get(OP_ADDR).set(operations.getServerAddress());
-            operation.get(OP).set(READ_RESOURCE_OPERATION);
-            operation.get(INCLUDE_RUNTIME).set(true);
-            operation.get(RECURSIVE).set(true);
             try {
-                ModelNode result = execute(operations.getControllerClient(), operation);
-                boolean started = result.get("started").asBoolean();
-                boolean active = result.get("active").asBoolean();
+                boolean started = isHornetQServerStarted(operations);
+                boolean active = isHornetQServerActive(operations);
                 if (started && expectedActive == active) {
                     // leave some time to the hornetq children resources to be installed after the server is activated
                     Thread.sleep(TimeoutUtil.adjust(500));
@@ -141,22 +134,26 @@ public abstract class AbstractMessagingHATestCase {
         fail("Server did not become active in the imparted time.");
     }
 
+    protected static boolean isHornetQServerStarted(JMSOperations operations) throws Exception {
+        ModelNode operation = Operations.createReadAttributeOperation(operations.getServerAddress(), "started");
+        return execute(operations.getControllerClient(), operation).asBoolean();
+    }
+
+    protected static boolean isHornetQServerActive(JMSOperations operations) throws Exception {
+        ModelNode operation = Operations.createReadAttributeOperation(operations.getServerAddress(), "active");
+        return execute(operations.getControllerClient(), operation).asBoolean();
+    }
+
     protected static void checkHornetQServerStartedAndActiveAttributes(JMSOperations operations, boolean expectedStarted, boolean expectedActive) throws Exception {
-        ModelNode operation = new ModelNode();
-        ModelNode address = operations.getServerAddress();
-        operation.get(OP_ADDR).set(address);
-        operation.get(OP).set(READ_RESOURCE_OPERATION);
-        operation.get(INCLUDE_RUNTIME).set(true);
-        ModelNode result = execute(operations.getControllerClient(), operation);
-        assertEquals(expectedStarted, result.get("started").asBoolean());
-        assertEquals(expectedActive, result.get("active").asBoolean());
+        assertEquals(expectedStarted, isHornetQServerStarted(operations));
+        assertEquals(expectedActive, isHornetQServerActive(operations));
     }
 
     protected static InitialContext createJNDIContextFromServer1() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
         String ipAdddress = TestSuiteEnvironment.getServerAddress("node0");
-        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":8080"));
+        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":" + TestSuiteEnvironment.getHttpPort()));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);
@@ -166,7 +163,7 @@ public abstract class AbstractMessagingHATestCase {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
         String ipAdddress = TestSuiteEnvironment.getServerAddressNode1();
-        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":8180"));
+        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":" + (TestSuiteEnvironment.getHttpPort() + OFFSET)));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);
@@ -180,7 +177,7 @@ public abstract class AbstractMessagingHATestCase {
         Destination destination = (Destination) ctx.lookup(destinationLookup);
         assertNotNull(destination);
 
-        try (JMSContext context = cf.createContext("guest", "guest")) {
+        try ( JMSContext context = cf.createContext("guest", "guest")) {
             context.createProducer().send(destination, text);
         }
     }
@@ -193,8 +190,8 @@ public abstract class AbstractMessagingHATestCase {
         Destination destination = (Destination) ctx.lookup(destinationLookup);
         assertNotNull(destination);
 
-        try (JMSContext context = cf.createContext("guest", "guest")) {
-            JMSConsumer consumer = context.createConsumer(destination);
+        try ( JMSContext context = cf.createContext("guest", "guest");
+              JMSConsumer consumer = context.createConsumer(destination)) {
             String text = consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
             assertNotNull(text);
             assertEquals(expectedText, text);
@@ -213,13 +210,14 @@ public abstract class AbstractMessagingHATestCase {
         Destination destination = (Destination) ctx.lookup(destinationLookup);
         assertNotNull(destination);
 
-        try (JMSContext context = cf.createContext("guest", "guest")) {
-            JMSConsumer consumer = context.createConsumer(destination);
-            String text = consumer.receiveBody(String.class, 5000);
+        try ( JMSContext context = cf.createContext("guest", "guest");
+              JMSConsumer consumer = context.createConsumer(destination)) {
+            String text = consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
             assertNull(text);
         }
 
     }
+
     protected static void checkJMSQueue(JMSOperations operations, String jmsQueueName, boolean active) throws Exception {
         ModelNode address = operations.getServerAddress().add("jms-queue", jmsQueueName);
         checkQueue0(operations.getControllerClient(), address, "queue-address", active);
@@ -263,7 +261,7 @@ public abstract class AbstractMessagingHATestCase {
 
     @Before
     public void setUp() throws Exception {
-
+        clearArtemisFiles();
         // start server1 and reload it in admin-only
         container.start(SERVER1);
         ModelControllerClient client1 = createClient1();
@@ -316,16 +314,41 @@ public abstract class AbstractMessagingHATestCase {
             container.stop(SERVER2);
         }
         restoreSnapshot(snapshotForServer2);
+        clearArtemisFiles();
     }
 
     private void executeReloadAndWaitForCompletionOfServer1(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
-        executeReloadAndWaitForCompletion(initialClient, adminOnly);
+        executeReloadAndWaitForCompletion(initialClient, ServerReload.TIMEOUT,
+                adminOnly,
+                TestSuiteEnvironment.getServerAddress(),
+                TestSuiteEnvironment.getServerPort());
     }
 
     private void executeReloadAndWaitForCompletionOfServer2(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
         executeReloadAndWaitForCompletion(initialClient, ServerReload.TIMEOUT,
                 adminOnly,
                 TestSuiteEnvironment.getServerAddressNode1(),
-                TestSuiteEnvironment.getServerPort() + 100);
+                TestSuiteEnvironment.getServerPort() + OFFSET);
+    }
+
+    protected static void clearArtemisFiles() {
+        File server1 = new File(SERVER1).toPath().resolve("standalone").resolve("data").resolve("activemq").toFile();
+        deleteRecursive(server1);
+        File server2 = new File(SERVER2).toPath().resolve("standalone").resolve("data").resolve("activemq").toFile();
+        deleteRecursive(server2);
+    }
+
+    protected static void deleteRecursive(File file) {
+        File[] files = file.listFiles();
+        if(files != null) {
+            File[] var2 = files;
+            int var3 = files.length;
+
+            for(int var4 = 0; var4 < var3; ++var4) {
+                File f = var2[var4];
+                deleteRecursive(f);
+            }
+        }
+        file.delete();
     }
 }
