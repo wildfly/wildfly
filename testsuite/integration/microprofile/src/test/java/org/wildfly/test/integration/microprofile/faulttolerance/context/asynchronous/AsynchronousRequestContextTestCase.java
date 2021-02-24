@@ -19,14 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.test.integration.microprofile.faulttolerance.async.requestcontext;
+package org.wildfly.test.integration.microprofile.faulttolerance.context.asynchronous;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.FilePermission;
-import java.util.PropertyPermission;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -44,19 +41,13 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-public class AsynchronousRequestContextTest {
+public class AsynchronousRequestContextTestCase {
 
     @Deployment
     public static WebArchive createTestArchive() {
-        return ShrinkWrap.create(WebArchive.class, AsynchronousRequestContextTest.class.getSimpleName() + ".war")
+        return ShrinkWrap.create(WebArchive.class, AsynchronousRequestContextTestCase.class.getSimpleName() + ".war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addPackage(AsynchronousRequestContextTest.class.getPackage())
-                .addAsManifestResource(createPermissionsXmlAsset(
-                        new FilePermission("<<ALL FILES>>", "read"),
-                        new PropertyPermission("*", "read,write"),
-                        new RuntimePermission("getenv.*"),
-                        new RuntimePermission("modifyThread")
-                ), "permissions.xml")
+                .addPackage(AsynchronousRequestContextTestCase.class.getPackage())
                 ;
     }
 
