@@ -29,7 +29,7 @@
      or use module org.hibernate which contains the Jakarta Persistence integration classes for Hibernate 4.3.x
 -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.jpa.hibernate" slot="4">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jpa.hibernate:4">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

@@ -23,7 +23,7 @@
   -->
 
 <!-- Represents the Hibernate 5.1.x module-->
-<module xmlns="urn:jboss:module:1.5" name="org.hibernate" slot="5.0">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate:5.0">
    <resources>
     </resources>
 

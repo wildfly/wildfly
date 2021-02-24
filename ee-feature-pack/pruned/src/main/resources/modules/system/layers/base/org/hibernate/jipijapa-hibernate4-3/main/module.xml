@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.hibernate.jipijapa-hibernate4-3">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.jipijapa-hibernate4-3">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,7 +32,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.hibernate" slot="4.3" />
+        <module name="org.hibernate:4.3" />
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>

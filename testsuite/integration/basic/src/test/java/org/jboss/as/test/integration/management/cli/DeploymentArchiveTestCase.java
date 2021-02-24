@@ -76,7 +76,7 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
 
     private static final String MODULE_XML =
               "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-              "<module xmlns=\"urn:jboss:module:1.5\" name=\"" + MODULE_NAME + "\" slot=\"main\">" +
+              "<module xmlns=\"urn:jboss:module:1.9\" name=\"" + MODULE_NAME + ">" +
               "    <resources>" +
               "        <resource-root path=\"" + MODULE_ARCHIVE + "\"/>" +
               "    </resources>" +
