@@ -21,6 +21,7 @@
 */
 package org.jboss.as.weld;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -179,6 +180,21 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
                                 .addConfig(new NewAttributesConfig(WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE)).build()
 
                 ));
+    }
+
+    @Test
+    public void testExpressionInAttributeValue() throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(3, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("subsystem_with_expression.xml");
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        ModelNode weldNode = mainServices.readWholeModel().get("subsystem", getMainSubsystemName());
+
+        assertEquals(true, weldNode.get("require-bean-descriptor").resolve().asBoolean());
+        assertEquals(9, weldNode.get("thread-pool-size").resolve().asInt());
+        assertEquals(true, weldNode.get("development-mode").resolve().asBoolean());
+        assertEquals(true, weldNode.get("non-portable-mode").resolve().asBoolean());
     }
 
 
