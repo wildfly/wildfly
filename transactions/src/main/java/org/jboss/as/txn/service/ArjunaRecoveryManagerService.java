@@ -28,6 +28,7 @@ import java.util.List;
 
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinateAtomicActionRecoveryModule;
 import com.arjuna.ats.internal.jta.recovery.jts.JCAServerTransactionRecoveryModule;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
@@ -74,6 +75,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
     private final InjectedValue<SocketBinding> recoveryBindingInjector = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
+    private final InjectedValue<ProcessStateNotifier> processStateInjector = new InjectedValue<>();
 
     private RecoveryManagerService recoveryManagerService;
     private RecoverySuspendController recoverySuspendController;
@@ -162,11 +164,13 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         }
 
         recoverySuspendController = new RecoverySuspendController(recoveryManagerService);
+        processStateInjector.getValue().addPropertyChangeListener(recoverySuspendController);
         suspendControllerInjector.getValue().registerActivity(recoverySuspendController);
     }
 
     public synchronized void stop(StopContext context) {
         suspendControllerInjector.getValue().unRegisterActivity(recoverySuspendController);
+        processStateInjector.getValue().removePropertyChangeListener(recoverySuspendController);
         try {
             recoveryManagerService.stop();
         } catch (Exception e) {
@@ -195,6 +199,10 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
     public Injector<SuspendController> getSuspendControllerInjector() {
         return suspendControllerInjector;
+    }
+
+    public Injector<ProcessStateNotifier> getProcessStateInjector() {
+        return processStateInjector;
     }
 
     public Injector<SocketBindingManager> getBindingManager() {

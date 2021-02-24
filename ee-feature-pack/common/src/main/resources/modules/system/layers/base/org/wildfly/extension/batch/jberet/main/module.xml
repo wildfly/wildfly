@@ -65,5 +65,6 @@
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="java.xml"/>
+        <module name="java.desktop"/>
     </dependencies>
 </module>

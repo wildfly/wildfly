@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -55,6 +57,8 @@ import javax.batch.runtime.StepExecution;
 import org.jberet.operations.AbstractJobOperator;
 import org.jberet.runtime.JobExecutionImpl;
 import org.jberet.spi.BatchEnvironment;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.as.server.suspend.SuspendController;
@@ -92,6 +96,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     private final InjectedValue<SecurityAwareBatchEnvironment> batchEnvironmentInjector = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
+    private final InjectedValue<ProcessStateNotifier> processStateInjector = new InjectedValue<>();
 
     private volatile SecurityAwareBatchEnvironment batchEnvironment;
     private volatile ClassLoader classLoader;
@@ -114,6 +119,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
         final BatchEnvironment batchEnvironment = this.batchEnvironment = batchEnvironmentInjector.getValue();
         // Get the class loader from the environment
         classLoader = batchEnvironment.getClassLoader();
+        processStateInjector.getValue().addPropertyChangeListener(serverActivity);
         suspendControllerInjector.getValue().registerActivity(serverActivity);
     }
 
@@ -121,6 +127,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     public void stop(final StopContext context) {
         // Remove the server activity
         suspendControllerInjector.getValue().unRegisterActivity(serverActivity);
+        processStateInjector.getValue().removePropertyChangeListener(serverActivity);
         final ExecutorService service = executorInjector.getValue();
 
         final Runnable task = () -> {
@@ -368,6 +375,10 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
         return suspendControllerInjector;
     }
 
+    Injector<ProcessStateNotifier> getProcessStateInjector() {
+        return processStateInjector;
+    }
+
     private void checkState() {
         checkState(null);
     }
@@ -411,10 +422,12 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     }
 
 
-    private class BatchJobServerActivity implements ServerActivity {
+    private class BatchJobServerActivity implements ServerActivity, PropertyChangeListener {
         private final AtomicBoolean jobsStopped = new AtomicBoolean(false);
         private final AtomicBoolean jobsRestarted = new AtomicBoolean(false);
         private final Collection<Long> stoppedIds = Collections.synchronizedCollection(new ArrayList<>());
+        private boolean suspended;
+        private boolean running;
 
         @Override
         public void preSuspend(final ServerActivityCallback serverActivityCallback) {
@@ -423,6 +436,9 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
 
         @Override
         public void suspended(final ServerActivityCallback serverActivityCallback) {
+            synchronized (this) {
+                suspended = true;
+            }
             try {
                 stopRunningJobs(isRestartOnResume());
             } finally {
@@ -432,7 +448,27 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
 
         @Override
         public void resume() {
-            restartStoppedJobs();
+            boolean doResume;
+            synchronized (this) {
+                suspended = false;
+                doResume = running;
+            }
+            if (doResume) {
+                restartStoppedJobs();
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            boolean doResume;
+            synchronized (this) {
+                ControlledProcessState.State newState = (ControlledProcessState.State) evt.getNewValue();
+                running = newState.isRunning();
+                doResume = running && !suspended;
+            }
+            if (doResume) {
+                restartStoppedJobs();
+            }
         }
 
         private void stopRunningJobs(final boolean queueForRestart) {

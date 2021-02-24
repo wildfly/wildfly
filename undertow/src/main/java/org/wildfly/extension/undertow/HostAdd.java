@@ -86,7 +86,11 @@ class HostAdd extends AbstractAddStepHandler {
         final boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
         final int defaultResponseCode = HostDefinition.DEFAULT_RESPONSE_CODE.resolveModelAttribute(context, model).asInt();
         final boolean enableConsoleRedirect = !HostDefinition.DISABLE_CONSOLE_REDIRECT.resolveModelAttribute(context, model).asBoolean();
-        final boolean queueRequestsOnStart = HostDefinition.QUEUE_REQUESTS_ON_START.resolveModelAttribute(context, model).asBoolean();
+        Boolean queueRequestsOnStart = null;
+
+        if (model.hasDefined(HostDefinition.QUEUE_REQUESTS_ON_START.getName())) {
+            queueRequestsOnStart = HostDefinition.QUEUE_REQUESTS_ON_START.resolveModelAttribute(context, model).asBoolean();
+        }
 
         if (!defaultWebModule.equals(HostDefinition.DEFAULT_WEB_MODULE_DEFAULT) || DefaultDeploymentMappingProvider.instance().getMapping(HostDefinition.DEFAULT_WEB_MODULE_DEFAULT) == null) {
             DefaultDeploymentMappingProvider.instance().addMapping(defaultWebModule, serverName, name);

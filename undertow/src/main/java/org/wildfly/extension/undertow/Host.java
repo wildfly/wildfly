@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.HostDefinition.QUEUE_REQUESTS_ON_START;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -87,7 +89,7 @@ public class Host implements Service<Host>, FilterLocation {
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
     private volatile GateHandlerWrapper gateHandlerWrapper;
     private final DefaultResponseCodeHandler defaultHandler;
-    private final boolean queueRequestsOnStart;
+    private final Boolean queueRequestsOnStart;
     private final int defaultResponseCode;
 
     private volatile Function<HttpHandler, HttpHandler> accessLogHttpHandler;
@@ -113,7 +115,7 @@ public class Host implements Service<Host>, FilterLocation {
         }
     };
 
-    public Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode, final boolean queueRequestsOnStart ) {
+    public Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode, final Boolean queueRequestsOnStart ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
@@ -133,7 +135,8 @@ public class Host implements Service<Host>, FilterLocation {
     @Override
     public void start(StartContext context) throws StartException {
         suspendControllerInjectedValue.getValue().registerActivity(suspendListener);
-        if(suspendControllerInjectedValue.getValue().getState() == SuspendController.State.RUNNING) {
+        SuspendController.State state = suspendControllerInjectedValue.getValue().getState();
+        if(state == SuspendController.State.RUNNING) {
             defaultHandler.setSuspended(false);
         } else {
             defaultHandler.setSuspended(true);
@@ -141,18 +144,33 @@ public class Host implements Service<Host>, FilterLocation {
         ControlledProcessStateService controlledProcessStateService = controlledProcessStateServiceInjectedValue.getValue();
         //may be null for tests
         if(controlledProcessStateService != null && controlledProcessStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
-            gateHandlerWrapper = new GateHandlerWrapper(queueRequestsOnStart ? -1 : defaultResponseCode);
-            controlledProcessStateService.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    controlledProcessStateService.removePropertyChangeListener(this);
-                    if(gateHandlerWrapper != null) {
-                        gateHandlerWrapper.open();
-                        gateHandlerWrapper = null;
-                    }
-                    rootHandler = null;
+            // Non-graceful is ControlledProcessState.State.STARTING && SuspendController.State.RUNNING. We know from above
+            // that we are STARTING, so we just need to check that state of the SuspendController
+            boolean nonGraceful = state == SuspendController.State.RUNNING;
+
+            int statusCode = defaultResponseCode;
+            if (nonGraceful && queueRequestsOnStart == null) {
+                UndertowLogger.ROOT_LOGGER.debug("Running in non-graceful mode and " + QUEUE_REQUESTS_ON_START.getName() +
+                        " not explicitly set. Requests will not be queued.");
+            } else {
+                if (queueRequestsOnStart == null || Boolean.TRUE.equals(queueRequestsOnStart)) {
+                    UndertowLogger.ROOT_LOGGER.info("Queuing requests.");
+                    statusCode = -1;
                 }
-            });
+
+                gateHandlerWrapper = new GateHandlerWrapper(statusCode);
+                controlledProcessStateService.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        controlledProcessStateService.removePropertyChangeListener(this);
+                        if (gateHandlerWrapper != null) {
+                            gateHandlerWrapper.open();
+                            gateHandlerWrapper = null;
+                        }
+                        rootHandler = null;
+                    }
+                });
+            }
         }
         server.getValue().registerHost(this);
         UndertowLogger.ROOT_LOGGER.hostStarting(name);

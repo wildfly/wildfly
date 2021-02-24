@@ -247,6 +247,15 @@ be matched
 
 |default-web-module |The name of a deployment that should be used to
 serve up requests that do not match anything.
+
+|queue-requests-on-start| If requests should be queued on start for this host. If this is set to false the default
+response code will be returned instead.
+
+Note: If a <<non-graceful-startup>> is requested, and the queue-requests-on-start attribute is not set, requests will NOT be
+queued despite the default value of true for the property. In the instance of a non-graceful startup, non-queued requests
+are required. However, if non-graceful is configured, but queue-requests-on-start is explicitly set to true, then requests
+will be queued, effectively disabling the non-graceful mode for requests to that host.
+
 |=======================================================================
 
 ==== Console Access Logging

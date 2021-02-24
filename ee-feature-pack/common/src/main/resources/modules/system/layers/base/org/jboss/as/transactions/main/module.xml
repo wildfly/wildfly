@@ -75,5 +75,6 @@
         <module name="org.jboss.remoting" optional="true"/>
 
         <module name="java.xml"/>
+        <module name="java.desktop"/>
     </dependencies>
 </module>

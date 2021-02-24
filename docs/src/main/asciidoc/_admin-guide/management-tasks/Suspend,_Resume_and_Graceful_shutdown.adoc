@@ -232,3 +232,42 @@ the proper way to control the lifecycle of a domain mode server process is via t
 management API and its managing Host Controller, not via direct signals to the server
 process.
 
+[[non-graceful-startup]]
+== Non-graceful Startup
+
+By default, WildFly starts up gracefully, meaning that incoming requests are queued or cleanly rejected
+until the server is ready to process them. In some instances, though, it may be desirable to allow the
+server to begin to process requests at the earliest possible moment. One such example might be
+when two deployed applications need to interact with one another during the deployment or
+application startup. In one such scenario, Application A needs to make a REST request to
+Application B to get information vital to its own startup. Under a graceful startup, the request
+to Application B will block until the server is fully started. However, the server can't fully
+start, as Application A is waiting for data from Application B before its deploy/startup can
+complete. In this situation, a deadlock occurs, and the server startup times out.
+
+A non-graceful startup is intended to address this situation in that it will allow WildFly to
+begin attempting to answer requests as soon as possible. In the scenario above, assuming
+Application B has successfully deployed/started, Application A can also start immediately, as its
+request will be fulfilled. Note, however, that a race condition can occur: if Application B is
+not yet deployed (e.g., the deploy order is incorrect, or B has not finished starting), then
+Application A may still fail to start since Application B is not available. WildFly users making
+use of non-graceful startups must be aware of this and take steps to remedy those scenarios. With
+a non-graceful startup, however, WildFly will no longer be the cause of a deployment failure in
+such a configuration.
+
+Some discussion here of how this relates to reloading and restarting, as well as to suspended starts, is
+important. When reloading, the `ApplicationServerService` is stopped, and a new one started. It is equivalent
+to if it was being started the first time: all the same stuff happens, but it happens faster because a lot of
+classloading and static initialization doesn't have to happen again. This includes honoring the value of
+`graceful-startup`, so if the server was initially started non-gracefully, it will be reloaded in the same manner.
+
+Restarting the server is similar. A restart means a new JVM, so all the initialization happens again, exactly
+as it did on the first start. When restarting in domain mode, the Host Controller simply rereads the config
+file and does the same thing it did the first time. In standalone, the restart is driven by `standalone.[sh|ps1|bat]`.
+The running JVM exits with a specific exit code, which the script recognizes and starts a new server, using the
+same parameters as the first start, so if you start a server non-gracefully, you will restart a server
+non-gracefully.
+
+Finally, there's `start-mode=suspend`. In the event that an administrator specifies a suspended start as well as a
+non-graceful start, the suspended start will "win". That is to say, the server will start in a suspended mode,
+the `graceful-start=false` will be disregarded, and the server will log a message indicating that this is happening.
