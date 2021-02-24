@@ -872,4 +872,8 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 102, value = "HTTP Upgrade request missing Sec-JbossRemoting-Key header")
     IOException upgradeRequestMissingKey();
+
+    @Message(id = 103, value = "Broker is not started. It cannot be managed yet.")
+    IllegalStateException brokerNotStarted();
+
 }

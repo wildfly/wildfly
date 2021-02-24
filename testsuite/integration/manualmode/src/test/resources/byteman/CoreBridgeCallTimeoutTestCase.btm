@@ -1,0 +1,9 @@
+RULE Introduce delay to blocking bridge calls
+CLASS org.apache.activemq.artemis.core.protocol.core.impl.ChannelImpl
+METHOD handlePacket
+AT ENTRY
+IF $1.getType() != 22 && $1.isResponse()
+DO
+  System.out.println("Introducing artificial delay");
+  Thread.sleep(1000);
+ENDRULE

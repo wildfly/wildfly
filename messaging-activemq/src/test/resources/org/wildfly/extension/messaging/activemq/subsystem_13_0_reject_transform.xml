@@ -172,7 +172,8 @@
                 forwarding-address="${forwarding.address:forwardingaddress1}"
                 producer-window-size="${producer.windows.size:5678}"
                 static-connectors="in-vm netty"
-                user="${user:Brian}">
+                user="${user:Brian}"
+                call-timeout="${call.timeout:60000}">
             <credential-reference clear-text="secret1"/>
         </bridge>
         <bridge name="bridge2"

@@ -79,7 +79,7 @@ public class BridgeRemove extends AbstractRemoveStepHandler {
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
             final BridgeConfiguration bridgeConfiguration = BridgeAdd.createBridgeConfiguration(context, name, model);
             ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-            BridgeAdd.createBridge(name, bridgeConfiguration, server.getActiveMQServerControl());
+            BridgeAdd.createBridge(bridgeConfiguration, server);
         }
     }
 }

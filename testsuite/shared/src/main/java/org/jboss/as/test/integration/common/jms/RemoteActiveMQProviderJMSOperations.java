@@ -192,6 +192,20 @@ public class RemoteActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
+    public void addCoreBridge(String name, ModelNode attributes) {
+        ModelNode address = getServerAddress();
+        address.add("bridge", name);
+        executeOperation(address, ADD, attributes);
+    }
+
+    @Override
+    public void removeCoreBridge(String name) {
+        ModelNode address = getServerAddress();
+        address.add("bridge", name);
+        executeOperation(address, REMOVE_OPERATION, null);
+    }
+
+    @Override
     public void addCoreQueue(String queueName, String queueAddress, boolean durable, String routing) {
         ModelNode address = getServerAddress()
                 .add("queue", queueName);
@@ -501,4 +515,35 @@ public class RemoteActiveMQProviderJMSOperations implements JMSOperations {
     public boolean isRemoteBroker() {
         return true;
     }
+
+    @Override
+    public void disableSecurity() {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(getServerAddress());
+        operation.get(NAME).set("security-enabled");
+        operation.get(VALUE).set(false);
+
+        try {
+            execute(client, operation);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void enableSecurity() {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(getServerAddress());
+        operation.get(NAME).set("security-enabled");
+        operation.get(VALUE).set(true);
+
+        try {
+            execute(client, operation);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

@@ -512,7 +512,8 @@ public class MessagingSubsystemParser_13_0 extends PersistentResourceXMLParser {
                                                         BridgeDefinition.PASSWORD,
                                                         BridgeDefinition.CREDENTIAL_REFERENCE,
                                                         BridgeDefinition.CONNECTOR_REFS,
-                                                        BridgeDefinition.DISCOVERY_GROUP_NAME))
+                                                        BridgeDefinition.DISCOVERY_GROUP_NAME,
+                                                        BridgeDefinition.CALL_TIMEOUT))
                                 .addChild(
                                         builder(ConnectorServiceDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(

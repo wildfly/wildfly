@@ -429,7 +429,8 @@
                 producer-window-size="${producer.windows.size:5678}"
                 user="${user:Brian}"
                 password="${password:secret}"
-                static-connectors="in-vm netty" />
+                static-connectors="in-vm netty"
+                call-timeout="${call.timeout:60000}" />
         <bridge name="bridge2"
                 queue-name="coreQueueB"
                 discovery-group="groupC" />
