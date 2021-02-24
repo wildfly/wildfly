@@ -3233,4 +3233,9 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 524, value = "Timer %s cannot be added")
     RuntimeException timerCannotBeAdded(TimerImpl timer);
+
+    @LogMessage(level = WARN)
+    @Message(id = 525, value = "The 'mappedName' in EJB annotations is not supported. Value of '%s' for EJB '%s' will be ignored.")
+    void mappedNameNotSupported(String mappedName, String ejb);
+
 }
