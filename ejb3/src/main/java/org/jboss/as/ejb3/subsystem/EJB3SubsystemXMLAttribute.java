@@ -112,6 +112,7 @@ public enum EJB3SubsystemXMLAttribute {
     APP_NAME("app-name"),
     MODULE_NAME("module-name"),
     DISTINCT_NAME("distinct-name"),
+    LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION("legacy-compliant-principal-propagation"),
 
 
     // server interceptors

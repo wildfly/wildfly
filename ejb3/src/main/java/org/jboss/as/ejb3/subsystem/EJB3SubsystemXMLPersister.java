@@ -78,7 +78,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_8_0.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_9_0.getUriString(), false);
         writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();
@@ -700,6 +700,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
         ApplicationSecurityDomainDefinition.SECURITY_DOMAIN.marshallAsAttribute(property.getValue(), writer);
         ApplicationSecurityDomainDefinition.ENABLE_JACC.marshallAsAttribute(property.getValue(), writer);
+        ApplicationSecurityDomainDefinition.LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION.marshallAsAttribute(property.getValue(), writer);
         writer.writeEndElement();
     }
 

@@ -139,6 +139,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final Function<SecurityIdentity, Set<SecurityIdentity>> identityOutflowFunction;
     private final boolean securityRequired;
     private final EJBComponentDescription componentDescription;
+    private final boolean legacyCompliantPrincipalPropagation;
 
     /**
      * Construct a new instance.
@@ -190,6 +191,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
         this.securityDomain = ejbComponentCreateService.getSecurityDomain();
         this.enableJacc = ejbComponentCreateService.isEnableJacc();
+        this.legacyCompliantPrincipalPropagation = ejbComponentCreateService.isLegacyCompliantPrincipalPropagation();
         this.incomingRunAsIdentity = null;
         this.identityOutflowFunction = ejbComponentCreateService.getIdentityOutflowFunction();
         this.securityRequired = ejbComponentCreateService.isSecurityRequired();
@@ -650,7 +652,9 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private SecurityIdentity getCallerSecurityIdentity() {
         InvocationType invocationType = CurrentInvocationContext.get().getPrivateData(InvocationType.class);
         boolean isRemote = invocationType != null && invocationType.equals(InvocationType.REMOTE);
-        if (isRemote) {
+        if (legacyCompliantPrincipalPropagation && !isRemote) {
+            return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
+        } else {
             if (incomingRunAsIdentity != null) {
                 return incomingRunAsIdentity;
             } else if (securityRequired) {
@@ -659,8 +663,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
                 // unsecured EJB
                 return securityDomain.getAnonymousSecurityIdentity();
             }
-        } else {
-            return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
         }
     }
 

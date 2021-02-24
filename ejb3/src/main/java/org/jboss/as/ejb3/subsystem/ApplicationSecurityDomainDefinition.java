@@ -96,7 +96,12 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             .setRestartAllServices()
             .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SECURITY_DOMAIN, ENABLE_JACC };
+    static final SimpleAttributeDefinition LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION, ModelType.BOOLEAN, true)
+            .setDefaultValue(ModelNode.TRUE)
+            .setRestartAllServices()
+            .build();
+
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SECURITY_DOMAIN, ENABLE_JACC, LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION };
 
     static final ApplicationSecurityDomainDefinition INSTANCE = new ApplicationSecurityDomainDefinition();
 
@@ -149,18 +154,24 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             super.populateModel(context, operation, resource);
             ModelNode model = resource.getModel();
             boolean enableJacc = false;
+            boolean legacyCompliantPrincipalPropagation = true;
 
             if (model.hasDefined(ENABLE_JACC.getName())) {
                 enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
             }
 
-            knownApplicationSecurityDomains.add(new ApplicationSecurityDomainConfig(context.getCurrentAddressValue(), enableJacc));
+            if (model.hasDefined(LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION.getName())) {
+                legacyCompliantPrincipalPropagation = LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION.resolveModelAttribute(context, model).asBoolean();
+            }
+
+            knownApplicationSecurityDomains.add(new ApplicationSecurityDomainConfig(context.getCurrentAddressValue(), enableJacc, legacyCompliantPrincipalPropagation));
         }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             String securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
             boolean enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
+            boolean legacyCompliantPrincipalPropagation = LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION.resolveModelAttribute(context, model).asBoolean();
 
             RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
             ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);

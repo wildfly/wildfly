@@ -164,6 +164,7 @@ public interface EJB3SubsystemModel {
     String REFERENCING_DEPLOYMENTS = "referencing-deployments";
     String SECURITY_DOMAIN = "security-domain";
     String ENABLE_JACC = "enable-jacc";
+    String LEGACY_COMPLIANT_PRINCIPAL_PROPAGATION = "legacy-compliant-principal-propagation";
 
     PathElement IDENTITY_PATH = PathElement.pathElement(SERVICE, IDENTITY);
 

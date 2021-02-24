@@ -180,6 +180,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                             ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
                             ejbComponentDescription.setSecurityDomainServiceName(elytronDomainServiceName);
                             ejbComponentDescription.setRequiresJacc(selectedElytronDomainConfig.isEnableJacc());
+                            ejbComponentDescription.setLegacyCompliantPrincipalPropagation(selectedElytronDomainConfig.isLegacyCompliantPrincipalPropagation());
                             ejbComponentDescription.getConfigurators().add((context, description, configuration) ->
                                             configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName))
                             );
@@ -187,6 +188,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                             ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
                             ejbComponentDescription.setSecurityDomainServiceName(defaultElytronDomainServiceName);
                             ejbComponentDescription.setRequiresJacc(defaultDomainMapping.isEnableJacc());
+                            ejbComponentDescription.setLegacyCompliantPrincipalPropagation(defaultDomainMapping.isLegacyCompliantPrincipalPropagation());
                             ejbComponentDescription.getConfigurators().add((context, description, configuration) ->
                                             configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName))
                             );
