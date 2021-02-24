@@ -21,11 +21,9 @@
 
 <feature-group-spec name="domain-interfaces" xmlns="urn:jboss:galleon:feature-group:1.0">
 
-    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
-        <feature-group name="domain-interfaces"/>
-        <feature spec="domain.interface">
-            <param name="interface" value="private"/>
-        </feature>
-    </origin>
+    <feature-group name="core-domain-interfaces"/>
+    <feature spec="domain.interface">
+        <param name="interface" value="private"/>
+    </feature>
 
 </feature-group-spec>

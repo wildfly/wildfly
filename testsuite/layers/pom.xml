@@ -36,15 +36,20 @@
     </dependencies>
     
     <properties>
-        <servlet.layers.install.dir>${project.build.directory}/servlet-layers-results</servlet.layers.install.dir>
-        <servlet.layers.install.root>${project.build.directory}/servlet-layers-results</servlet.layers.install.root>
         <layers.install.dir>${project.build.directory}/layers-results</layers.install.dir>
+        <!-- Put 'servlet' installations in the same dir as others. Set this to
+             a different dir if testing the servlet feature pack. -->
+        <servlet.layers.install.dir>${layers.install.dir}</servlet.layers.install.dir>
+        <!-- An empty layer for this will disable 'servlet dist' tests which are meant for testing
+             the servlet feature pack. -->
+        <servlet.layers.install.root>${project.build.directory}/servlet-layers-results</servlet.layers.install.root>
         <layers.delete.installations>true</layers.delete.installations>
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
         
         <!-- GAVs to use for feature packs. Profiles can reset to trigger provisioning
              using alternative feature packs. -->
-        <servlet.feature.pack.artifactId>wildfly-servlet-galleon-pack</servlet.feature.pack.artifactId>
+        <servlet.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</servlet.feature.pack.groupId>
+        <servlet.feature.pack.artifactId>${testsuite.ee.galleon.pack.artifactId}</servlet.feature.pack.artifactId>
         <ee.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</ee.feature.pack.groupId>
         <ee.feature.pack.artifactId>${testsuite.ee.galleon.pack.artifactId}</ee.feature.pack.artifactId>
         <ee.feature.pack.version>${testsuite.ee.galleon.pack.version}</ee.feature.pack.version>
@@ -684,19 +689,24 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <!-- servlet layers -->
+                            <!-- servlet layers. Most of these we now by default provision
+                                 from the wildfly-ee feature pack -->
                             <execution>
+                                <!-- Build the test-standalone-reference from the servlet feature pack.
+                                     This is not a layer test. It's a test of the standard standalone.xml
+                                      produced by a feature pack and we have another execution that
+                                      does the same for wildfly-ee. -->
                                 <id>test-standalone-reference-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
                                 <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/test-standalone-reference</install-dir>
+                                    <install-dir>${servlet.layers.install.root}/test-standalone-reference</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <included-configs>
@@ -719,7 +729,7 @@
                                     <install-dir>${servlet.layers.install.dir}/ee</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${servlet.feature.pack.groupId}</groupId>
                                             <artifactId>${servlet.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -747,7 +757,7 @@
                                     <install-dir>${servlet.layers.install.dir}/undertow-legacy-https</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${servlet.feature.pack.groupId}</groupId>
                                             <artifactId>${servlet.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -775,7 +785,7 @@
                                     <install-dir>${servlet.layers.install.dir}/undertow-load-balancer</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${servlet.feature.pack.groupId}</groupId>
                                             <artifactId>${servlet.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -803,7 +813,7 @@
                                     <install-dir>${servlet.layers.install.dir}/naming</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${servlet.feature.pack.groupId}</groupId>
                                             <artifactId>${servlet.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -821,6 +831,10 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- Test the vault layer from the servlet feature pack.
+                                 It is overridden in the wildfly-ee feature pack, which we test below.
+                                  So, here we specifically use the servlet feature pack
+                                  and the output location for dists produced from it. -->
                             <execution>
                                 <id>vault-provisioning</id>
                                 <goals>
@@ -828,11 +842,11 @@
                                 </goals>
                                 <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/vault</install-dir>
+                                    <install-dir>${servlet.layers.install.root}/vault</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -859,7 +873,7 @@
                                     <install-dir>${servlet.layers.install.dir}/legacy-security</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${servlet.feature.pack.groupId}</groupId>
                                             <artifactId>${servlet.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -887,7 +901,7 @@
                                     <install-dir>${servlet.layers.install.dir}/undertow</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${servlet.feature.pack.groupId}</groupId>
                                             <artifactId>${servlet.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -915,7 +929,7 @@
                                     <install-dir>${servlet.layers.install.dir}/web-server</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
+                                            <groupId>${servlet.feature.pack.groupId}</groupId>
                                             <artifactId>${servlet.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -933,6 +947,9 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- Build the test-all-layers from the servlet feature pack.
+                                 LayersTest.test expects to find this installation
+                                 We have another execution that does the same for wildfly-ee. -->
                             <execution>
                                 <id>all-layers-provisioning</id>
                                 <goals>
@@ -940,11 +957,11 @@
                                 </goals>
                                 <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/test-all-layers</install-dir>
+                                    <install-dir>${servlet.layers.install.root}/test-all-layers</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -2481,7 +2498,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase}</phase>
+                                <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/legacy-remoting</install-dir>
                                     <feature-packs>

@@ -49,9 +49,6 @@
         <common.resources.directory>${basedir}/../common/src/main/resources</common.resources.directory>
         <ee-8-api.resources.directory>${basedir}/../ee-8-api/src/main/resources</ee-8-api.resources.directory>
         <pruned.resources.directory>${basedir}/../pruned/src/main/resources</pruned.resources.directory>
-        <common.license.directory>${basedir}/../common/src/license</common.license.directory>
-        <ee-8-api.license.directory>${basedir}/../ee-8-api/src/license</ee-8-api.license.directory>
-        <pruned.license.directory>${basedir}/../pruned/src/license</pruned.license.directory>
     </properties>
 
     <build>
@@ -279,9 +276,9 @@
                                 <configuration>
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                                     <licensesConfigFiles>
-                                        <licensesConfigFile>${common.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
-                                        <licensesConfigFile>${ee-8-api.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
-                                        <licensesConfigFile>${pruned.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
+                                        <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-common-licenses.xml</licensesConfigFile>
+                                        <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-ee-8-api-licenses.xml</licensesConfigFile>
+                                        <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-legacy-licenses.xml</licensesConfigFile>
                                     </licensesConfigFiles>
                                     <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
                                     <excludedArtifacts>infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-feature-pack|wildfly-servlet-feature-pack|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-ee-8-api|wildfly-ee-feature-pack-pruned</excludedArtifacts>

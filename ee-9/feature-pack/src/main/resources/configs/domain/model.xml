@@ -1,9 +1,26 @@
 <?xml version="1.0" ?>
 
 <config xmlns="urn:jboss:galleon:config:1.0" model="domain">
+    <props>
+        <prop name="config.branch-is-batch" value="true"/>
+        <prop name="config.merge-independent-branches" value="true"/>
+        <prop name="--empty-domain-config" value=""/>
+        <prop name="--remove-existing-domain-config" value=""/>
+        <prop name="--empty-host-config" value=""/>
+        <prop name="--remove-existing-host-config" value=""/>
+    </props>
     <packages>
         <package name="product.conf" optional="true"/>
         <package name="misc.domain"/>
+        <package name="org.jboss.as.domain-management"/>
+        <!-- is not required but useful even if elytron subsystem is not installed -->
+        <package name="org.wildfly.security.elytron"/>
+        <!-- cleanup runtime dirs -->
+        <package name="cleanup.domain.config.history.dir" optional="true"/>
+        <package name="cleanup.domain.servers.dir" optional="true"/>
+        <package name="cleanup.domain.log.dir" optional="true"/>
+        <package name="cleanup.domain.data.dir" optional="true"/>
+
         <package name="org.wildfly.deployment.transformation"/>
     </packages>
 </config>

@@ -1,0 +1,95 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2014, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly@maven(org.jboss.universe:community-universe):current">
+
+    <dependencies>
+        <dependency group-id="org.wildfly" artifact-id="wildfly-ee-galleon-pack">
+            <name>org.wildfly:wildfly-ee-galleon-pack</name>
+            <packages inherit="false">
+                <!--exclude name="docs.licenses.merge"/-->
+                <include name="docs"/>
+                <!-- appclient is not referenced from standalone nor domain configuration models.-->
+                <include name="appclient"/>
+                <include name="bin"/>
+                <include name="product.conf"/>
+            </packages>
+            <default-configs inherit="false">
+                <include name="host.xml" model="host"/>
+                <include name="host-master.xml" model="host"/>
+                <include name="host-slave.xml" model="host"/>
+                <include name="standalone-load-balancer.xml" model="standalone"/>
+            </default-configs>
+        </dependency>
+    </dependencies>
+    <default-packages>
+        <package name="modules.all"/>
+        <package name="docs.licenses.merge"/>
+        <package name="docs.examples"/>
+    </default-packages>
+    <package-schemas>
+        <group name="org.wildfly"/>
+    </package-schemas>
+
+    <config name="standalone.xml" model="standalone"/>
+    <config name="standalone-ha.xml" model="standalone"/>
+    <config name="standalone-full.xml" model="standalone"/>
+    <config name="standalone-full-ha.xml" model="standalone"/>
+    <config name="standalone-load-balancer.xml" model="standalone"/>
+    <config name="standalone-microprofile.xml" model="standalone"/>
+    <config name="standalone-microprofile-ha.xml" model="standalone"/>
+    <config name="domain.xml" model="domain"/>
+    <config name="host.xml" model="host"/>
+    <config name="host-master.xml" model="host"/>
+    <config name="host-slave.xml" model="host"/>
+
+    <plugins>
+        <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
+    </plugins>
+
+
+    <generate-feature-specs>
+        <extensions>
+            <standalone>
+                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
+            </standalone>
+            <domain>
+                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
+            </domain>
+        </extensions>
+    </generate-feature-specs>
+
+</build>
