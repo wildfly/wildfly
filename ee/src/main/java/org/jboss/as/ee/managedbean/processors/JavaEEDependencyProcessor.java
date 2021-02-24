@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -60,7 +60,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.rmi.api"),
             ModuleIdentifier.create("javax.xml.bind.api"),
             ModuleIdentifier.create("javax.api"),
-            // (JSON-B) implementation
+            // (Jakarta JSON Binding) implementation
             ModuleIdentifier.create("org.eclipse.yasson"),
             ModuleIdentifier.create(GLASSFISH_EL),
             ModuleIdentifier.create("org.glassfish.javax.enterprise.concurrent")

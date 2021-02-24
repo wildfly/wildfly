@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -180,7 +180,7 @@ public interface JaxrsLogger extends BasicLogger {
     void failedToReadAttribute(@Cause Exception ex, PathAddress address, ModelNode modelNode);
 
     @LogMessage(level = WARN)
-    @Message(id = 18, value = "Explicit usage of Jackson annotation in a Jakarta RESTful Web Services deployment; the system will disable JSON-B processing for the current deployment. Consider setting the '%s' property to 'false' to restore JSON-B.")
+    @Message(id = 18, value = "Explicit usage of Jackson annotation in a Jakarta RESTful Web Services deployment; the system will disable Jakarta JSON Binding processing for the current deployment. Consider setting the '%s' property to 'false' to restore Jakarta JSON Binding.")
     void jacksonAnnotationDetected(String property);
 
     @LogMessage(level = WARN)

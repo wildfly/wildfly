@@ -2,7 +2,7 @@
 = wsprovide
 
 _wsprovide_ is a command line tool, Maven plugin and Ant task that
-generates portable JAX-WS artifacts for a service endpoint
+generates portable Jakarta XML Web Services artifacts for a service endpoint
 implementation. It also has the option to "provide" the abstract
 contract for offline usage.
 

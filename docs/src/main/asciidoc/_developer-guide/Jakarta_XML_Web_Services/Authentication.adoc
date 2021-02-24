@@ -1,7 +1,7 @@
-[[jax-ws-Authentication]]
+[[Jakarta-XML-Web-Services-Authentication]]
 = Authentication
 
-[[jax-ws-authentication]]
+[[Jakarta-XML-Web-Services-authentication]]
 == Authentication
 
 Here the simplest way to authenticate a web service user with JBossWS is

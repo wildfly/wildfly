@@ -30,7 +30,7 @@ The list of {ProductName} new functionality is extensive, being the most relevan
 The support for some technologies was removed, due to the high maintenance cost, low community interest, and much better alternative solutions:
 
 * CMP EJB - JPA offers a much more performant and flexible API
-* Jakarta XML RPC - JAX-WS offers a much more accurate and complete solution
+* Jakarta XML RPC - Jakarta XML Web Services offer a much more accurate and complete solution
 * JSR-88 - With very little adoption, the more complete deployment APIs provided by vendors are preferred
 
 [[server-migration]]
@@ -769,7 +769,7 @@ can be replaced by
 
 The setup of web service's endpoints and clients, through a Spring XML descriptor, driving a CXF bus creation, is no longer supported in {ProductName}.
 
-Any application containing a `jbossws-cxf.xml` must migrate all functionality specified in such XML descriptor, mostly already supported by the JAX-WS specification, included in Jakarta EE. It is still possible to rely on direct Apache CXF API usage, loosing the Jakarta EE portability of the application, for instance when specific Apache CXF functionalities are needed. See the Apache CXF Integration document for further information.
+Any application containing a `jbossws-cxf.xml` must migrate all functionality specified in such XML descriptor, mostly already supported by the Jakarta XML Web Services specification, included in Jakarta EE. It is still possible to rely on direct Apache CXF API usage, loosing the Jakarta EE portability of the application, for instance when specific Apache CXF functionalities are needed. See the Apache CXF Integration document for further information.
 
 [[Jakarta-XML-RPC]]
 ==== Jakarta XML RPC 
@@ -799,7 +799,7 @@ Jakarta XML RPC Web Services may be identified by the presence of the XML descri
 </webservices>
 ----
 
-Applications using Jakarta XML RPC should be migrated to use JAX-WS, the current Jakarta EE standard web service framework.
+Applications using Jakarta XML RPC should be migrated to use Jakarta XML Web Services, the current Jakarta EE standard web service framework.
 
 [[Jakarta-RESTful-Web-Services-2.1]]
 ==== Jakarta RESTful Web Services 2.1

@@ -12,7 +12,7 @@ CXF documentation].
 [[configuration]]
 == Configuration
 
-The HTTP proxy configuration for a given JAX-WS client can be set in the
+The HTTP proxy configuration for a given Jakarta XML Web Services client can be set in the
 following ways:
 
 * through the `http.proxyHost` and `http.proxyPort` system properties,

@@ -5,9 +5,9 @@
 
 JBossWS permits extra setup configuration data to be predefined and
 associated with an endpoint or a client. Configurations can include
-JAX-WS handlers and key/value property declarations that control JBossWS
+Jakarta XML Web Services handlers and key/value property declarations that control JBossWS
 and Apache CXF internals. Predefined configurations can be used for
-JAX-WS client and JAX-WS endpoint setup.
+Jakarta XML Web Services client and Jakarta XML Web Services endpoint setup.
 
 Configurations can be defined in the webservice subsystem and in an
 application's deployment descriptor file. There can be many
@@ -76,7 +76,7 @@ model.
 [[endpoint-configuration-deployment-descriptor]]
 === Endpoint Configuration Deployment Descriptor
 
-Jakarta EE archives that can contain JAX-WS client and endpoint
+Jakarta EE archives that can contain Jakarta XML Web Services client and endpoint
 implementations can also contain predefined client and endpoint
 configuration declarations. All endpoint/client configuration
 definitions for a given archive must be provided in a single deployment
@@ -278,7 +278,7 @@ messages schema-validation on
 
 Once a configuration is available to a given application, the
 `org.jboss.ws.api.annotation.EndpointConfig` annotation is used to
-assign an endpoint configuration to a JAX-WS endpoint implementation.
+assign an endpoint configuration to a Jakarta XML Web Services endpoint implementation.
 When assigning a configuration that is defined in the webservices
 subsystem only the configuration name is specified. When assigning a
 configuration that is defined in the application, the relative path to
@@ -433,9 +433,9 @@ If the configuration name is also not specified, JBossWS automatically
 looks for a configuration named the same as
 
 * the endpoint implementation class (full qualified name), in case of
-JAX-WS endpoints;
+Jakarta XML Web Services endpoints;
 * the service endpoint interface (full qualified name), in case of
-JAX-WS clients.
+Jakarta XML Web Services clients.
 
 No automatic configuration name is selected for `Dispatch` clients.
 
@@ -455,7 +455,7 @@ descriptor.
 JBossWS fall-backs to getting predefined configurations from the
 container setup whenever no explicit configuration has been provided and
 the default descriptors are either not available or do not contain
-relevant configurations. This gives additional control on the JAX-WS
+relevant configurations. This gives additional control on the Jakarta XML Web Services
 client and endpoint setup to administrators, as the container setup can
 be managed independently from the deployed applications. +
 JBossWS hence accesses the webservices subsystem the same as explained
@@ -463,9 +463,9 @@ above for explicitly named configuration; the default configuration
 names used for look are
 
 * the endpoint implementation class (full qualified name), in case of
-JAX-WS endpoints;
+Jakarta XML Web Services endpoints;
 * the service endpoint interface (full qualified name), in case of
-JAX-WS clients. +
+Jakarta XML Web Services clients. +
 `Dispatch` clients are not automatically configured. If no configuration
 is found using names computed as above, the `Standard-Client-Config` and
 `Standard-Endpoint-Config` configurations are used for clients and

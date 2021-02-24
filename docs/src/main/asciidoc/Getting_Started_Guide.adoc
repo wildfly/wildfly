@@ -38,7 +38,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |Jakarta JSON Processing 1.1 |X |X |X |X
 
-|JSR-367: Java API for JSON Binding 1.0 |X |X |X |X
+|Jakarta JSON Binding Specification 1.0 |X |X |X |X
 
 |Jakarta Servlet 4.0 |X |X |X |X
 
@@ -82,7 +82,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-109: Implementing Enterprise Web Services 1.3 |X |-- |X |--
 
-|JSR-224: Java API for XML-Based Web Services 2.3 |X |X |X |X
+|Jakarta XML Web Services Specification 2.3 |X |X |X |X
 
 |JSR-181: Web Services Metadata for the Java Platform |X |-- |X |--
 
@@ -92,7 +92,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |Jakarta XML Registries |Optional |-- |-- |--
 
-|JSR-222: Java Architecture for XML Binding (JAXB) 2.3 |X |X |X |X
+|Jakarta XML Binding Specification 2.3 |X |X |X |X
 
 |Jakarta Authentication 1.1 |X |-- |X |--
 

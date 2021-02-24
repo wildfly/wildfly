@@ -282,7 +282,7 @@ link:#gal.cdi[cdi] (optional) +
 link:#gal.web-server[web-server] +
 
 |[[gal.jsonb]]jsonb
-|Support for JSON Binding (JSON-B) provisioning the JSON-B API and Implementation modules.
+|Support for JSON Binding (Jakarta JSON Binding) provisioning the Jakarta JSON Binding API and Implementation modules.
 |
 link:#gal.base-server[base-server] +
 

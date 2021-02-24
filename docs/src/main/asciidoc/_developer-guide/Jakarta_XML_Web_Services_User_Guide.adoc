@@ -1,5 +1,5 @@
-[[JAX-WS_User_Guide]]
-= JAX-WS User Guide
+[[Jakarta_XML_Web_Services_User_Guide]]
+= Jakarta XML Web Services User Guide
 
 The http://www.jcp.org/en/jsr/detail?id=224[Java API for XML-Based Web
 Services (JAX-WS / JSR-224)] defines the mapping between WSDL and Java
@@ -11,9 +11,9 @@ need. Below is a brief overview of the most basic functionalities.
 [[web-service-endpoints]]
 == Web Service Endpoints
 
-JAX-WS simplifies the development model for a web service endpoint a
+Jakarta XML Web Services simplifies the development model for a web service endpoint a
 great deal. In short, an endpoint implementation bean is annotated with
-JAX-WS annotations and deployed to the server. The server automatically
+Jakarta XML Web Services annotations and deployed to the server. The server automatically
 generates and publishes the abstract contract (i.e. wsdl+schema) for
 client consumption. All marshalling/unmarshalling is delegated to
 http://www.jcp.org/en/jsr/summary?id=jaxb[JAXB].
@@ -41,7 +41,7 @@ public class JSEBean01
 [[the-endpoint-as-a-web-application]]
 ==== The endpoint as a web application
 
-A JAX-WS java service endpoint (JSE) is deployed as a web application.
+A Jakarta XML Web Services java service endpoint (JSE) is deployed as a web application.
 Here is a sample _web.xml_ descriptor:
 
 ....
@@ -89,7 +89,7 @@ WSDL).
 [[ejb3-stateless-session-bean-slsb]]
 === EJB3 Stateless Session Bean (SLSB)
 
-The JAX-WS programming model supports the same set of annotations on
+The Jakarta XML Web Services programming model supports the same set of annotations on
 EJB3 stateless session beans as on POJO endpoints.
 
 ....
@@ -143,7 +143,7 @@ WSDL).
 [[endpoint-provider]]
 === Endpoint Provider
 
-JAX-WS services typically implement a native Java service endpoint
+Jakarta XML Web Services services typically implement a native Java service endpoint
 interface (SEI), perhaps mapped from a WSDL port type, either directly
 or via the use of annotations.
 
@@ -258,9 +258,9 @@ Service service = Service.create(wsdlLocation, serviceName);
 [[handler-resolver]]
 ==== Handler Resolver
 
-JAX-WS provides a flexible plug-in framework for message processing
+Jakarta XML Web Services provides a flexible plug-in framework for message processing
 modules, known as handlers, that may be used to extend the capabilities
-of a JAX-WS runtime system. Handler Framework describes the handler
+of a Jakarta XML Web Services runtime system. Handler Framework describes the handler
 framework in detail. A Service instance provides access to a
 `HandlerResolver` via a pair of `getHandlerResolver` /
 `setHandlerResolver` methods that may be used to configure a set of
@@ -304,7 +304,7 @@ public <T> T getPort(QName portName, Class<T> serviceEndpointInterface)
  * The getPort method returns a proxy. The parameter
  * <code>serviceEndpointInterface</code> specifies the service
  * endpoint interface that is supported by the returned proxy.
- * In the implementation of this method, the JAX-WS
+ * In the implementation of this method, the Jakarta XML Web Services
  * runtime system takes the responsibility of selecting a protocol
  * binding (and a port) and configuring the proxy accordingly.
  * The returned proxy should not be reconfigured by the client.
@@ -381,7 +381,7 @@ public class EJB3Client implements EJB3Remote
 === Dispatch
 
 XMLWeb Services use XML messages for communication between services and
-service clients. The higher level JAX-WS APIs are designed to hide the
+service clients. The higher level Jakarta XML Web Services APIs are designed to hide the
 details of converting between Java method invocations and the
 corresponding XML messages, but in some cases operating at the XML
 message level is desirable. The Dispatch interface provides support for
@@ -505,7 +505,7 @@ Endpoints and Web Service Clients.
 [[handler-framework]]
 === Handler Framework
 
-The handler framework is implemented by a JAX-WS protocol binding in
+The handler framework is implemented by a Jakarta XML Web Services protocol binding in
 both client and server side runtimes. Proxies, and Dispatch instances,
 known collectively as binding providers, each use protocol bindings to
 bind their abstract functionality to specific protocols.
@@ -585,7 +585,7 @@ bindingProvider.getBinding().setHandlerChain(handlerChain); // important!
 [[message-context]]
 === Message Context
 
-`MessageContext` is the super interface for all JAX-WS message contexts.
+`MessageContext` is the super interface for all Jakarta XML Web Services message contexts.
 It extends `Map<String,Object>` with additional methods and constants to
 manage a set of properties that enable handlers in a handler chain to
 share processing related state. For example, a handler may use the put
@@ -652,8 +652,8 @@ public void throwApplicationException() throws UserException
 In case of the latter, JBossWS generates the required fault wrapper
 beans at runtime if they are not part of the deployment
 
-[[jax-ws-annotations]]
-== JAX-WS Annotations
+[[Jakarta-XML-Web-Services-annotations]]
+== Jakarta XML Web Services Annotations
 
 For details, see http://www.jcp.org/en/jsr/detail?id=224[JSR-224 - Java
 API for XML-Based Web Services (JAX-WS) 2.2]
@@ -671,7 +671,7 @@ envelope).
 
 The `WebFault` annotation is used when mapping WSDL faults to Java
 exceptions, see section 2.5. It is used to capture the name of the fault
-element used when marshalling the JAXB type generated from the global
+element used when marshalling the Jakarta XML Binding type generated from the global
 element referenced by the WSDL fault message. It can also be used to
 customize the mapping of service specific exceptions to WSDL faults.
 
@@ -679,7 +679,7 @@ customize the mapping of service specific exceptions to WSDL faults.
 === javax.xml.ws.RequestWrapper
 
 The `RequestWrapper` annotation is applied to the methods of an SEI. It
-is used to capture the JAXB generated request wrapper bean and the
+is used to capture the Jakarta XML Binding generated request wrapper bean and the
 element name and namespace for marshalling / unmarshalling the bean. The
 default value of localName element is the operationName as defined in
 `WebMethod` annotation and the default value for the targetNamespace
@@ -691,7 +691,7 @@ mode. Only the className element is required in this case.
 === javax.xml.ws.ResponseWrapper
 
 The `ResponseWrapper` annotation is applied to the methods of an SEI. It
-is used to capture the JAXB generated response wrapper bean and the
+is used to capture the Jakarta XML Binding generated response wrapper bean and the
 element name and namespace for marshalling / unmarshalling the bean. The
 default value of the localName element is the operationName as defined
 in the `WebMethod` appended with "Response" and the default value of the
@@ -847,4 +847,6 @@ and service implementation bean. The service implementation bean's
 `@HandlerChain` is used if `@HandlerChain` is present on both.
 
 The `@HandlerChain` annotation MAY be specified on the type only. The
-annotation target includes `METHOD` and `FIELD` for use by JAX-WS-2.x.
+annotation target includes `METHOD` and `FIELD` for use by Jakarta XML Web Services Specification-2.x.
+
+NOTE: References in this document to Java API for XML-Based Web Services(JAX-WS) refer to the Jakarta XML Web Services unless otherwise noted

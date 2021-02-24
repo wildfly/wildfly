@@ -2,7 +2,7 @@
 = wsconsume
 
 _wsconsume_ is a command line tool and ant task that "consumes" the
-abstract contract (WSDL file) and produces portable JAX-WS service and
+abstract contract (WSDL file) and produces portable Jakarta XML Web Services and
 client artifacts.
 
 [[command-line-tool]]
@@ -14,7 +14,7 @@ The command line tool has the following usage:
 usage: wsconsume [options] <wsdl-url>
 options:
   -h, --help                  Show this help message
-  -b, --binding=<file>        One or more JAX-WS or JAXB binding files
+  -b, --binding=<file>        One or more Jakarta XML Web Services or Jakarta XML Binding binding files
   -k, --keep                  Keep/Generate Java source
   -c  --catalog=<file>        Oasis XML Catalog file for entity resolution
   -j  --clientjar=<name>      Create a jar file of the generated artifacts for calling the webservice
@@ -22,7 +22,7 @@ options:
   -w  --wsdlLocation=<loc>    Value to use for @WebServiceClient.wsdlLocation
   -o, --output=<directory>    The directory to put generated artifacts
   -s, --source=<directory>    The directory to put Java source
-  -t, --target=<2.0|2.1|2.2>  The JAX-WS specification target
+  -t, --target=<2.0|2.1|2.2>  The Jakarta XML Web Services specification target
   -q, --quiet                 Be somewhat more quiet
   -v, --verbose               Show full exception stack traces
   -l, --load-consumer         Load the consumer and exit (debug utility)
@@ -89,7 +89,7 @@ The _wsconsume_ plugin has the following parameters:
 |=======================================================================
 |Attribute |Description |Default
 
-|bindingFiles |JAXWS or JAXB binding file |true
+|bindingFiles |Jakarta XML Web Services or Jakarta XML Binding binding file |true
 
 |classpathElements |Each classpathElement provides alibrary file to be
 added to classpath
@@ -99,7 +99,7 @@ added to classpath
 
 |targetPackage |The target Java package for generated code. |generated
 
-|bindingFiles |One or more JAX-WS or JAXB binding file |none
+|bindingFiles |One or more Jakarta XML Web Services or Jakarta XML Binding binding file |none
 
 |wsdlLocation |Value to use for @WebServiceClient.wsdlLocation
 |generated
@@ -127,7 +127,7 @@ etc.Example<argLine>-Djava.endorsed.dirs=...</argLine> |none
 |fork |Whether or not to run the generation task in a separate VM.
 |false
 
-|target |A preference for the JAX-WS specification target |Depends on
+|target |A preference for the Jakarta XML Web Services specification target |Depends on
 the underlying stack and endorsed dirs if any
 |=======================================================================
 
@@ -276,7 +276,7 @@ the following attributes:
 
 |package |The target Java package for generated code. |generated
 
-|binding |A JAX-WS or JAXB binding file |none
+|binding |A Jakarta XML Web Services or Jakarta XML Binding binding file |none
 
 |wsdlLocation |Value to use for @WebServiceClient.wsdlLocation
 |generated
@@ -287,7 +287,7 @@ the following attributes:
 
 |sourcedestdir |The output directory for Java source. |value of destdir
 
-|target |The JAX-WS specification target. Allowed values are 2.0, 2.1
+|target |The Jakarta XML Web Services specification target. Allowed values are 2.0, 2.1
 and 2.2 | 
 
 |verbose |Enables more informational output about command progress.
@@ -319,14 +319,14 @@ Also, the following nested elements are supported:
 [cols=",,",options="header"]
 |=================================================
 |Element |Description |Default
-|binding |A JAXWS or JAXB binding file |none
+|binding |A Jakarta XML Web Services or Jakarta XML Binding binding file |none
 |jvmarg |Allows setting of custom jvm arguments | 
 |=================================================
 
 [[examples-wsconsume-2]]
 === Examples
 
-Generate JAX-WS source and classes in a separate JVM with separate
+Generate Jakarta XML Web Services source and classes in a separate JVM with separate
 directories, a custom wsdl location attribute, and a list of binding
 files from foo.wsdl:
 

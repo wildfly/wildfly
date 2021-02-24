@@ -1,16 +1,16 @@
-[[Java_API_for_XML_Web_Services_(JAX-WS)]]
-= Java API for XML Web Services (JAX-WS)
+[[Jakarta_XML_Web_Services]]
+= Jakarta XML Web Services
 
 JBossWS uses the JBoss Application Server as its target container. The
 following examples focus on web service deployments that leverage EJB3
-service implementations and the JAX-WS programming models. For further
+service implementations and the Jakarta XML Web Services programming models. For further
 information on POJO service implementations and advanced topics you need
-consult the link:Developer_Guide{outfilesuffix}#JAX-WS_User_Guide[user guide].
+consult the link:Developer_Guide{outfilesuffix}#Jakarta_XML_Web_Services_User_Guide[user guide].
 
 [[developing-web-service-implementations]]
 == Developing web service implementations
 
-JAX-WS does leverage annotations in order to express web service meta
+Jakarta XML Web Services does leverage annotations in order to express web service meta
 data on Java components and to describe the mapping between Java data
 types and XML. When developing web service implementations you need to
 decide whether you are going to start with an abstract contract (WSDL)
@@ -186,7 +186,7 @@ in the application server management console.
 == Consuming web services
 
 When creating web service clients you would usually start from the WSDL.
-JBossWS ships with a set of tools to generate the required JAX-WS
+JBossWS ships with a set of tools to generate the required Jakarta XML Web Services
 artefacts to build client implementations. In the following section we
 will look at the most basic usage patterns. For a more detailed
 introduction to web service client please consult the user guide.
@@ -205,13 +205,13 @@ consult the user guide.
 
 ....
 wsconsume is a command line tool that generates
-portable JAX-WS artifacts from a WSDL file.
+portable Jakarta XML Web Services artifacts from a WSDL file.
 
 usage: org.jboss.ws.tools.jaxws.command.wsconsume [options] <wsdl-url>
 
 options:
     -h, --help                  Show this help message
-    -b, --binding=<file>        One or more JAX-WS or JAXB binding files
+    -b, --binding=<file>        One or more Jakarta XML Web Services or JAXB binding files
     -k, --keep                  Keep/Generate Java source
     -c  --catalog=<file>        Oasis XML Catalog file for entity resolution
     -p  --package=<name>        The target package for generated source
@@ -265,7 +265,7 @@ Web service clients make use of a service stubs that hide the details of
 a remote web service invocation. To a client application a WS invocation
 just looks like an invocation of any other business component. In this
 case the service endpoint interface acts as the business interface.
-JAX-WS does use a service factory class to construct this as particular
+Jakarta XML Web Services does use a service factory class to construct this as particular
 service stub:
 
 [source,java,options="nowrap"]

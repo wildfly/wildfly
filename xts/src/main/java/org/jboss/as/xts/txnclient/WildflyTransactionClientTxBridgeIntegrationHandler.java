@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -48,7 +48,7 @@ import java.util.List;
  *   Check the handler enlistment at {@link XTSHandlerDeploymentProcessor#updateXTSEndpoint(String, EndpointMetaData, List, DeploymentUnit)}.
  * <p>
  * <p>
- *   <i>NOTE:</i> the order of the JAX-WS handlers are defined as:
+ *   <i>NOTE:</i> the order of the Jakarta XML Web Services handlers are defined as:
  *   <q>For outbound messages handler processing starts with the first handler in the chain
  *      and proceeds in the same order as the handler chain.
  *      For inbound messages the order of processing is reversed.

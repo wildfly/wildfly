@@ -1,4 +1,4 @@
-[[JAX-WS_Reference_guide]]
+[[Jakarta_XML_Web_Services_Reference_guide]]
 = Webservices reference guide
 
 The Web Services functionalities of WildFly are provided by the JBossWS
@@ -12,9 +12,9 @@ available on WildFly {wildflyVersion}.
 
 :leveloffset: +1
 
-include::JAX-WS_User_Guide.adoc[]
+include::Jakarta_XML_Web_Services_User_Guide.adoc[]
 
-include::JAX-WS_Tools.adoc[]
+include::Jakarta_XML_Web_Services_Tools.adoc[]
 
 include::JAX_WS_Advanced_User_Guide.adoc[]
 

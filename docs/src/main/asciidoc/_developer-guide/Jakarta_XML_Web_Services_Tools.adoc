@@ -1,7 +1,7 @@
-[[JAX-WS_Tools]]
-= JAX-WS Tools
+[[Jakarta_XML_Web_Services_Tools]]
+= Jakarta XML Web Services Tools
 
-The JAX-WS tools provided by JBossWS can be used in a variety of ways.
+The Jakarta XML Web Services tools provided by JBossWS can be used in a variety of ways.
 First we will look at server-side development strategies, and then
 proceed to the client.
 
@@ -34,13 +34,13 @@ protocol).
 * Creating a service that adheres to the XML Schema and WSDL you
 developed by hand up front
 
-The following JAX-WS command line tools are included in JBossWS:
+The following Jakarta XML Web Services command line tools are included in JBossWS:
 
 [cols=",",options="header"]
 |=======================================================================
 |Command |Description
 
-|wsprovide |Generates JAX-WS portable artifacts, and provides the
+|wsprovide |Generates Jakarta XML Web Services portable artifacts, and provides the
 abstract contract. Used for bottom-up development.
 
 |wsconsume |Consumes the abstract contract (WSDL and Schema files), and
@@ -52,7 +52,7 @@ client development
 === Bottom-Up (Using wsprovide)
 
 The bottom-up strategy involves developing the Java code for your
-service, and then annotating it using JAX-WS annotations. These
+service, and then annotating it using Jakarta XML Web Services annotations. These
 annotations can be used to customize the contract that is generated for
 your service. For example, you can change the operation name to map to
 anything you like. However, all of the annotations have sensible
@@ -77,7 +77,7 @@ public class Echo
 A JSE or EJB3 deployment can be built using this class, and it is the
 only Java code needed to deploy on JBossWS. The WSDL, and all other Java
 artifacts called "wrapper classes" will be generated for you at deploy
-time. This actually goes beyond the JAX-WS specification, which requires
+time. This actually goes beyond the Jakarta XML Web Services specification, which requires
 that wrapper classes be generated using an offline tool. The reason for
 this requirement is purely a vender implementation problem, and since we
 do not believe in burdening a developer with a bunch of additional
@@ -86,7 +86,7 @@ to be portable to other application servers, you will unfortunately need
 to use a tool and add the generated classes to your deployment.
 
 This is the primary purpose of the _wsprovide_ tool, to generate
-portable JAX-WS artifacts. Additionally, it can be used to "provide" the
+portable Jakarta XML Web Services artifacts. Additionally, it can be used to "provide" the
 abstract contract (WSDL file) for your service. This can be obtained by
 invoking _wsprovide_ using the "-w" option:
 
@@ -172,7 +172,7 @@ invoke wsprovide, which will generate the WSDL. If deployment was
 successful, and you are using the default settings, it should be
 available in the server management console.
 
-For a portable JAX-WS deployment, the wrapper classes generated earlier
+For a portable Jakarta XML Web Services deployment, the wrapper classes generated earlier
 could be added to the deployment.
 
 [[top-down-using-wsconsume]]
@@ -216,9 +216,9 @@ The following table shows the purpose of each generated file:
 |Echo.java |Service Endpoint Interface
 |Echo_Type.java |Wrapper bean for request message
 |EchoResponse.java |Wrapper bean for response message
-|ObjectFactory.java |JAXB XML Registry
-|package-info.java |Holder for JAXB package annotations
-|EchoService.java |Used only by JAX-WS clients
+|ObjectFactory.java |Jakarta XML Binding XML Registry
+|package-info.java |Holder for Jakarta XML Binding package annotations
+|EchoService.java |Used only by Jakarta XML Web Services clients
 |======================================================
 
 Examining the Service Endpoint Interface reveals annotations that are
@@ -366,7 +366,7 @@ public class EchoService extends Service
 ----
 
 As you can see, this generated class extends the main client entry point
-in JAX-WS, `javax.xml.ws.Service`. While you can use `Service` directly,
+in Jakarta XML Web Services, `javax.xml.ws.Service`. While you can use `Service` directly,
 this is far simpler since it provides the configuration info for you.
 The only method we really care about is the `getEchoPort()` method,
 which returns an instance of our Service Endpoint Interface. Any WS
