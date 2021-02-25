@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,38 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.test.integration.microprofile.faulttolerance.async.requestcontext;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+package org.wildfly.test.integration.microprofile.faulttolerance.context.timeout;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+
+import org.eclipse.microprofile.faulttolerance.Timeout;
 
 /**
- * Adapted from Thorntail.
- *
  * @author Radoslav Husar
  */
-@RequestScoped
-public class RequestFoo {
+public class TimeoutBean {
 
-    static final AtomicBoolean DESTROYED = new AtomicBoolean(false);
+    @Inject
+    RequestScopedService service;
 
-    private String foo;
-
-    @PostConstruct
-    void init() {
-        foo = "ok";
+    @Timeout
+    public String greet() throws InterruptedException {
+        return "Hello " + service.call();
     }
-
-    public String getFoo() {
-        return foo;
-    }
-
-    @PreDestroy
-    void destroy() {
-        DESTROYED.set(true);
-    }
-
 }
