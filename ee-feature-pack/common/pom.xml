@@ -1790,17 +1790,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.thrift</groupId>
-            <artifactId>libthrift</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.ws.xmlschema</groupId>
             <artifactId>xmlschema-core</artifactId>
         </dependency>
