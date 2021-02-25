@@ -119,6 +119,14 @@
                                     <groupId>org.eclipse.microprofile.opentracing</groupId>
                                     <artifactId>microprofile-opentracing-api</artifactId>
                                 </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
+                                    <artifactId>microprofile-reactive-messaging-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
+                                    <artifactId>microprofile-reactive-streams-operators-api</artifactId>
+                                </dependency>
                                 <!-- include jakarta specs APIs -->
                                 <dependency>
                                     <groupId>jakarta.enterprise</groupId>
@@ -137,6 +145,12 @@
                                     <groupId>org.jboss.spec.javax.ws.rs</groupId>
                                     <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
                                 </dependency>
+                                <!-- include Kafka client API -->
+                                <dependency>
+                                    <groupId>org.apache.kafka</groupId>
+                                    <artifactId>kafka-clients</artifactId>
+                                </dependency>
+
                             </includeDependencies>
                         </configuration>
                     </execution>
