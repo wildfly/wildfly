@@ -32,6 +32,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import javax.security.auth.x500.X500Principal;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicHeader;
@@ -190,6 +192,9 @@ public class KeystoreRealmTestCase extends CommonBase {
 
         @Override
         protected void setup(ModelControllerClient modelControllerClient) throws Exception {
+            if (WORKING_DIR_CA.exists()) {
+                FileUtils.deleteQuietly(WORKING_DIR_CA);
+            }
             Assert.assertTrue(WORKING_DIR_CA.mkdirs());
             keyStore = createKeyStore();
             trustStore = createKeyStore();
