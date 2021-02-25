@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>23.0.0.Beta1</version>
+        <version>23.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-microprofile-reactive-streams-operators</artifactId>
