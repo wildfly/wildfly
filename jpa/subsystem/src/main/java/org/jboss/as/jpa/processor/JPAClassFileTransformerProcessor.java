@@ -56,7 +56,7 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
     }
 
     /**
-     * Add dependencies for modules required for JPA deployments
+     * Add dependencies for modules required for Jakarta Persistence deployments
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

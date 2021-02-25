@@ -55,7 +55,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
  */
 public class InfinispanCacheDeploymentListener implements EventListener {
 
-    public static final String CACHE_TYPE = "cachetype";    // shared (jpa) or private (for native applications)
+    public static final String CACHE_TYPE = "cachetype";    // shared (Jakarta Persistence) or private (for native applications)
     public static final String CACHE_PRIVATE = "private";
     public static final String CONTAINER = "container";
     public static final String NAME = "name";

@@ -40,7 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Verify deployed applications can use the default Hibernate Search module via JPA APIs.
+ * Verify deployed applications can use the default Hibernate Search module via Jakarta Persistence APIs.
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2014 Red Hat Inc.
  */
@@ -72,7 +72,7 @@ public class HibernateSearchJPATestCase {
     public static Archive<?> deploy() throws Exception {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        // add JPA configuration
+        // add Jakarta Persistence configuration
         jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         // add testing Bean and entities
         jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class);

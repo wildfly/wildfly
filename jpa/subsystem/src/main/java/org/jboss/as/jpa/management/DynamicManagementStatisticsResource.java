@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 import org.jipijapa.management.spi.Statistics;
 
 /**
- * Resource representing a JPA PersistenceUnit (from a persistence.xml) deployment.
+ * Resource representing a Jakarta Persistence PersistenceUnit (from a persistence.xml) deployment.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author Scott Marlow

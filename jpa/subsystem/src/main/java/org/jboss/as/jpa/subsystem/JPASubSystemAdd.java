@@ -55,7 +55,7 @@ import org.jipijapa.cache.spi.Classification;
 
 
 /**
- * Add the JPA subsystem directive.
+ * Add the Jakarta Persistence subsystem directive.
  * <p/>
  *
  * @author Scott Marlow
@@ -96,7 +96,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
 
                 // handles persistence unit / context annotations in components
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_PERSISTENCE_ANNOTATION, new JPAAnnotationProcessor());
-                // injects JPA dependencies into an application
+                // injects Jakarta Persistence dependencies into an application
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
                 // Inject Hibernate Search dependencies into an application
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES,Phase.DEPENDENCIES_HIBERNATE_SEARCH , new HibernateSearchProcessor());

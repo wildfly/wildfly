@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Smoke test of clustered JPA 2nd level cache implemented by Infinispan.
+ * Smoke test of clustered Jakarta Persistence 2nd level cache implemented by Infinispan.
  * @author Jan Martiska
  */
 @RunWith(Arquillian.class)

@@ -32,7 +32,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.EntityManager;
 
 /**
- * Stateful session bean for testing JPA 2.2 API
+ * Stateful session bean for testing Jakarta Persistence 2.2 API
  * javax.persistence.Query#getResultStream
  *
  * @author Gail Badner

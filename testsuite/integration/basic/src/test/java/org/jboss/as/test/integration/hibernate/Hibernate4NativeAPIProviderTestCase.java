@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test that a Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to Hibernate Configuration
- * in AS7 container without any JPA assistance
+ * in AS7 container without any Jakarta Persistence assistance
  *
  * @author Madhumita Sadhukhan
  */

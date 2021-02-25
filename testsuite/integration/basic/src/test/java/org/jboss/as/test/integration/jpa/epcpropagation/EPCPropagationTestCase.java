@@ -165,7 +165,7 @@ public class EPCPropagationTestCase {
     }
 
     /**
-     * JPA 7.6.2 XPC is closed when dependent session bean(s) are closed/destroyed.
+     * Jakarta Persistence 7.6.2 XPC is closed when dependent session bean(s) are closed/destroyed.
      * <p>
      * During this test, an entity (X) will be created in the XPC but not persisted to the database.
      * When the last SFSB referencing the XPC is closed, the entity (X) will no longer be found.

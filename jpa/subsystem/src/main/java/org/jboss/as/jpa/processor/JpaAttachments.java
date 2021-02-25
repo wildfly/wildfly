@@ -45,7 +45,7 @@ public final class JpaAttachments {
     public static final AttachmentKey<TransactionSynchronizationRegistry> TRANSACTION_SYNCHRONIZATION_REGISTRY= AttachmentKey.create(TransactionSynchronizationRegistry.class);
 
     /**
-     * List<PersistenceUnitMetadataImpl> that represents the JPA persistent units
+     * List<PersistenceUnitMetadataImpl> that represents the Jakarta Persistence persistent units
      */
     public static final AttachmentKey<PersistenceProviderDeploymentHolder> DEPLOYED_PERSISTENCE_PROVIDER = AttachmentKey.create(PersistenceProviderDeploymentHolder.class);
 

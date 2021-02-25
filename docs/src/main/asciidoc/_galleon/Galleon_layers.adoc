@@ -534,3 +534,5 @@ link:#gal.messaging-activemq[messaging-activemq] (optional) +
 link:#gal.web-server[web-server] +
 
 |===
+
+NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.

@@ -36,7 +36,7 @@ import javax.validation.ValidatorFactory;
 
 /**
  * This class lazily initialize the ValidatorFactory on the first usage One benefit is that no domain class is loaded until the
- * ValidatorFactory is really needed. Useful to avoid loading classes before JPA is initialized and has enhanced its classes.
+ * ValidatorFactory is really needed. Useful to avoid loading classes before Jakarta Persistence is initialized and has enhanced its classes.
  * <p/>
  * Note: This class is a copy of {@code org.jboss.as.ee.beanvalidation.LazyValidatorFactory}.
  *

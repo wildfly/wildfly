@@ -34,7 +34,7 @@ include::_javaee-guide/Java_Servlet_Technology.adoc[]
 
 include::_javaee-guide/Jakarta_Server_Faces_Technology.adoc[]
 
-include::_javaee-guide/Java_Persistence_API_(JPA).adoc[]
+include::_javaee-guide/Jakarta_Persistence_API.adoc[]
 
 include::_javaee-guide/Jakarta_Transactions.adoc[]
 

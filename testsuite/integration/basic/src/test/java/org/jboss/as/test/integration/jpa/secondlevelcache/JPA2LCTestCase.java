@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * JPA Second level cache tests
+ * Jakarta Persistence Second level cache tests
  *
  * @author Scott Marlow and Zbynek Roubalik and Tommaso Borgato
  */
@@ -162,8 +162,8 @@ public class JPA2LCTestCase {
     // stored some entities in transactional context and when you attempted to
     // read it from cache, it transparently provided the updated data. With
     // non-transactional caches the *Infinispan layer* (as opposed to *2LC
-    // layer*) does not do that. Instead the 2LC provider registers JPA
-    // synchronization to execute the update if the JPA transaction commits.
+    // layer*) does not do that. Instead the 2LC provider registers Jakarta Persistence
+    // synchronization to execute the update if the Jakarta Persistence transaction commits.
     // "
     //
     // In response to this change, the current sameSessionCheck doesn't make sense anymore,

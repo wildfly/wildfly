@@ -25,8 +25,8 @@
 <!-- deprecated module that some applications might have a dependency on.
      
      Instead applications should use module org.hibernate:4 which contains the 
-     JPA integration classes for Hibernate 4.1.x (Hibernate jars need to be added)
-     or use module org.hibernate which contains the JPA integration classes for Hibernate 4.3.x
+     Jakarta Persistence integration classes for Hibernate 4.1.x (Hibernate jars need to be added)
+     or use module org.hibernate which contains the Jakarta Persistence integration classes for Hibernate 4.3.x
 -->
 
 <module xmlns="urn:jboss:module:1.5" name="org.jboss.as.jpa.hibernate" slot="4">

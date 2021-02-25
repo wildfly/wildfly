@@ -26,7 +26,7 @@ import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * For JPA service names
+ * For Jakarta Persistence service names
  *
  * @author Scott Marlow
  */

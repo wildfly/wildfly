@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * JPA statistics test
+ * Jakarta Persistence statistics test
  *
  * @author Scott Marlow
  */
@@ -95,7 +95,7 @@ public class JpaStatisticsTestCase extends ContainerResourceMgmtTestBase {
         op.get(ModelDescriptionConstants.RECURSIVE).set(true);
         // ensure that the WFLY-10964 regression doesn't occur,
         // "org.hibernate.MappingException: Unknown entity: entity-update-count" was being thrown due to
-        // a bug in the (WildFly) Hibernate integration code.  This causes JPA statistics to not be shown
+        // a bug in the (WildFly) Hibernate integration code.  This causes Jakarta Persistence statistics to not be shown
         // in WildFly management console.
         ModelNode result = executeOperation(op);
 

@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Jakarta Bean Validation with JPA test
+ * Jakarta Bean Validation with Jakarta Persistence test
  *
  * @author Scott Marlow
  */

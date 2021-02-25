@@ -42,7 +42,7 @@
             </identity-configuration>
         </partition-manager>
 
-    <!-- A configuration using a JPA-based identity store. The store is configured using a existing datasource. -->
+    <!-- A configuration using a Jakarta Persistence based identity store. The store is configured using a existing datasource. -->
     <partition-manager jndi-name="picketlink/JPADSBasedPartitionManager" name="jpa.ds.based.partition.manager">
             <identity-configuration name="jpa.config">
                 <jpa-store data-source="jboss/datasources/ExampleDS">
@@ -51,7 +51,7 @@
             </identity-configuration>
         </partition-manager>
 
-    <!-- A configuration using a JPA-based identity store. The store is configured using a existing JPA EntityManagerFactory, obtained via JNDI. -->
+    <!-- A configuration using a Jakarta Persistence based identity store. The store is configured using a existing Jakarta Persistence EntityManagerFactory, obtained via JNDI. -->
     <partition-manager jndi-name="picketlink/JPAEMFBasedPartitionManager" name="jpa.emf.based.partition.manager">
             <identity-configuration name="jpa.config">
                 <jpa-store entity-manager-factory="jboss/TestingIDMEMF">
@@ -64,7 +64,7 @@
           </identity-configuration>
         </partition-manager>
 
-    <!-- A configuration using a JPA-based identity store. The store is configured using a existing JPA Persistence Unit from a static module. -->
+    <!-- A configuration using a Jakarta Persistence based identity store. The store is configured using a existing Jakarta Persistence Persistence Unit from a static module. -->
     <partition-manager jndi-name="picketlink/JPAEMFModulePartitionManager" name="jpa.emf.modules.partition.manager">
             <identity-configuration name="jpa.config">
                 <jpa-store entity-module="my.module" entity-module-unit-name="my-persistence-unit-name">
@@ -111,7 +111,7 @@
             </identity-configuration>
         </partition-manager>
 
-    <!-- A configuration using a LDAP and JPA identity store. In this example we use JPA to store relationships and LDAP for users, roles and groups. -->
+    <!-- A configuration using a LDAP and Jakarta Persistence identity store. In this example we use Jakarta Persistence to store relationships and LDAP for users, roles and groups. -->
     <partition-manager name="multiple.store.idm" jndi-name="picketlink/MultipleStoreBasedPartitionManager">
             <identity-configuration name="multiple.store">
                 <jpa-store data-source="jboss/datasources/ExampleDS" support-credential="false" support-attribute="false">
@@ -148,7 +148,7 @@
             </identity-configuration>
         </partition-manager>
 
-    <!-- A configuration using two identity configurations. Each identity configuration has a JPA store. -->
+    <!-- A configuration using two identity configurations. Each identity configuration has a Jakarta Persistence store. -->
     <partition-manager jndi-name="picketlink/MultipleConfigurationPartitionManager" name="multiple.config.partition.manager">
             <identity-configuration name="partition.jboss.config">
                 <jpa-store data-source="jboss/datasources/JBossIdentityDS">

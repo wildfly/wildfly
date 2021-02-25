@@ -305,14 +305,14 @@ public interface JpaLogger extends BasicLogger {
     //RuntimeException cannotLoadEntityClass(@Cause Throwable cause, String className);
 
     /**
-     * Creates an exception indicating the {@code injectionTypeName} could not be loaded from the JPA modules class
+     * Creates an exception indicating the {@code injectionTypeName} could not be loaded from the Jakarta Persistence modules class
      * loader.
      *
      * @param cause             the cause of the error.
      * @param injectionTypeName the name of the type.
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 25, value = "Couldn't load %s from JPA modules classloader")
+    @Message(id = 25, value = "Couldn't load %s from Jakarta Persistence modules classloader")
     RuntimeException cannotLoadFromJpa(@Cause Throwable cause, String injectionTypeName);
 
 //    /**

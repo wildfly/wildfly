@@ -184,3 +184,5 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,u
 ----
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=core-server
 ----
+
+NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.

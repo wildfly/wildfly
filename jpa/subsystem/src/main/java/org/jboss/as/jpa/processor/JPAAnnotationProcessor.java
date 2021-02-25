@@ -114,7 +114,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
         // create binding and injection configurations out of the @PersistenceUnit annotations
         this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceUnits, applicationClasses);
 
-        // if we found any @PersistenceContext or @PersistenceUnit annotations then mark this as a JPA deployment
+        // if we found any @PersistenceContext or @PersistenceUnit annotations then mark this as a Jakarta Persistence deployment
         if (!persistenceContexts.isEmpty() || !persistenceUnits.isEmpty() ||
                 !collectionPersistenceContexts.isEmpty() || !collectionPersistenceunits.isEmpty()) {
             JPADeploymentMarker.mark(deploymentUnit);
