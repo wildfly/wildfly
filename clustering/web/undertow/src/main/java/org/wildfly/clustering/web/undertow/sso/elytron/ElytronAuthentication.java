@@ -31,15 +31,21 @@ public class ElytronAuthentication implements Serializable {
     private static final long serialVersionUID = -8708162054415948335L;
 
     private final String mechanism;
+    private final boolean programmatic;
     private final String name;
 
-    public ElytronAuthentication(String mechanism, String name) {
+    public ElytronAuthentication(String mechanism, boolean programmatic, String name) {
         this.mechanism = mechanism;
+        this.programmatic = programmatic;
         this.name = name;
     }
 
     public String getMechanism() {
         return this.mechanism;
+    }
+
+    public boolean isProgrammatic() {
+        return programmatic;
     }
 
     public String getName() {

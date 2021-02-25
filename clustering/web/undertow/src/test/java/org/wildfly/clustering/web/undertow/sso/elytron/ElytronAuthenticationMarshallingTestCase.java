@@ -42,14 +42,16 @@ public class ElytronAuthenticationMarshallingTestCase {
     }
 
     private static void test(Tester<ElytronAuthentication> tester) throws IOException {
-        tester.test(new ElytronAuthentication(HttpServletRequest.BASIC_AUTH, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
-        tester.test(new ElytronAuthentication(HttpServletRequest.CLIENT_CERT_AUTH, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
-        tester.test(new ElytronAuthentication(HttpServletRequest.DIGEST_AUTH, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
-        tester.test(new ElytronAuthentication(HttpServletRequest.FORM_AUTH, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
+        tester.test(new ElytronAuthentication(HttpServletRequest.BASIC_AUTH, false, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
+        tester.test(new ElytronAuthentication(HttpServletRequest.CLIENT_CERT_AUTH, false, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
+        tester.test(new ElytronAuthentication(HttpServletRequest.DIGEST_AUTH, false, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
+        tester.test(new ElytronAuthentication(HttpServletRequest.FORM_AUTH, false, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
+        tester.test(new ElytronAuthentication("Programmatic", true, "user"), ElytronAuthenticationMarshallingTestCase::assertEquals);
     }
 
     static void assertEquals(ElytronAuthentication auth1, ElytronAuthentication auth2) {
         Assert.assertEquals(auth1.getMechanism(), auth2.getMechanism());
         Assert.assertEquals(auth1.getName(), auth2.getName());
+        Assert.assertEquals(auth1.isProgrammatic(), auth2.isProgrammatic());
     }
 }

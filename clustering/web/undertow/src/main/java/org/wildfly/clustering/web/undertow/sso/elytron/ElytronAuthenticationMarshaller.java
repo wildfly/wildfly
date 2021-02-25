@@ -39,6 +39,7 @@ public class ElytronAuthenticationMarshaller implements ProtoStreamMarshaller<El
 
     private static final int MECHANISM_INDEX = 1;
     private static final int NAME_INDEX = 2;
+    private static final int PROGRAMMATIC_INDEX = 3;
 
     private static final String DEFAULT_MECHANISM = HttpServletRequest.FORM_AUTH;
 
@@ -46,6 +47,7 @@ public class ElytronAuthenticationMarshaller implements ProtoStreamMarshaller<El
     public ElytronAuthentication readFrom(ProtoStreamReader reader) throws IOException {
         String mechanism = DEFAULT_MECHANISM;
         String name = null;
+        boolean programmatic = false;
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
@@ -56,11 +58,14 @@ public class ElytronAuthenticationMarshaller implements ProtoStreamMarshaller<El
                 case NAME_INDEX:
                     name = reader.readString();
                     break;
+                case PROGRAMMATIC_INDEX:
+                    programmatic = reader.readBool();
+                    break;
                 default:
                     reading = (tag != 0) && reader.skipField(tag);
             }
         }
-        return new ElytronAuthentication(mechanism, name);
+        return new ElytronAuthentication(mechanism, programmatic, name);
     }
 
     @Override
@@ -72,6 +77,10 @@ public class ElytronAuthenticationMarshaller implements ProtoStreamMarshaller<El
         String name = auth.getName();
         if (name != null) {
             writer.writeString(NAME_INDEX, name);
+        }
+        boolean programmatic = auth.isProgrammatic();
+        if (programmatic) {
+            writer.writeBool(PROGRAMMATIC_INDEX, programmatic);
         }
     }
 
