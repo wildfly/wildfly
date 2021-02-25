@@ -44,7 +44,7 @@ If you need to use destinations without those prefixes, you can configure your c
 [[configuration-of-a-mdb-using-a-pooled-connection-factory]]
 == JMS Queues and Topics on a remote Artemis Server
 
-You can also add queues and topics defined on a remote Artemis server to be used as if they were local to the server. This mean,s that you can make those remote destinations available viza JNDI just like local destinations. Those destinations are defined out-of the server element:
+You can also add queues and topics defined on a remote Artemis server to be used as if they were local to the server. This means that you can make those remote destinations available viza JNDI just like local destinations. Those destinations are defined out-of the server element:
 
 [source,xml]
 ----
