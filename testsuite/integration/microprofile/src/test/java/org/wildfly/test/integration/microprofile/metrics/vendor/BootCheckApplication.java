@@ -108,14 +108,14 @@ public class BootCheckApplication extends HttpServlet implements ServletContextL
                     overallResponseCode = overallResponse.responseCode;
                     overallResponseContent = overallResponse.content;
                     if (overallResponseCode == 200) {
-                        overallSawVendor = checkSawVendor(overallResponse.content, true);
+                        overallSawVendor = checkSawVendor(overallResponse.content, false);
                     }
 
                     // Now try a scoped request
                     Response scopedResponse = invoke(managementURL + "/metrics/vendor");
                     scopedResponseCode = scopedResponse.responseCode;
                     if (scopedResponseCode == 200) {
-                        scopedSawVendor = checkSawVendor(scopedResponse.content, true);
+                        scopedSawVendor = checkSawVendor(scopedResponse.content, false);
                     }
                 } else {
                     // Management socket may not be open yet; try again
