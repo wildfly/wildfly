@@ -314,17 +314,15 @@
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <version.io.smallrye.open-api>2.1.1</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0-RC1</version.io.smallrye.opentracing>
-        <version.io.smallrye.reactive-utils>2.0.0</version.io.smallrye.reactive-utils>
+        <version.io.smallrye.reactive-utils>2.1.1</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>1.5.0</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>2.0.2</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>5.0.0</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>3.0.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>3.0.0</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.1</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-mutiny>0.13.0</version.io.smallrye.smallrye-mutiny>
-        <version.io.smallrye.smallrye-reactive-utils>2.1.1</version.io.smallrye.smallrye-reactive-utils>
+        <version.io.smallrye.smallrye-mutiny>0.14.0</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-reactive-messaging>3.0.0</version.io.smallrye.smallrye-reactive-messaging>
-        <version.io.smallrye.smallrye-reactive-streams-operators>1.2.2</version.io.smallrye.smallrye-reactive-streams-operators>
         <version.io.smallrye.open-api>2.1.1</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
@@ -2207,13 +2205,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.smallrye.reactive</groupId>
-                <artifactId>smallrye-reactive-converter-api</artifactId>
-                <version>${version.io.smallrye.smallrye-reactive-utils}</version>
-            </dependency>
-
-
-            <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config</artifactId>
                 <version>${version.io.smallrye.smallrye-config}</version>
@@ -2336,7 +2327,7 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-converter-api</artifactId>
-                <version>${version.io.smallrye.smallrye-reactive-streams-operators}</version>
+                <version>${version.io.smallrye.reactive-utils}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
