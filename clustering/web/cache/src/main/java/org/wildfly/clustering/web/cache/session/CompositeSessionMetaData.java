@@ -75,7 +75,8 @@ public class CompositeSessionMetaData implements InvalidatableSessionMetaData {
 
     @Override
     public void setLastAccess(Instant startTime, Instant endTime) {
-        this.accessMetaData.setLastAccessDuration(Duration.between(this.creationMetaData.getCreationTime(), startTime), Duration.between(startTime, endTime));
+        Instant creationTime = this.creationMetaData.getCreationTime();
+        this.accessMetaData.setLastAccessDuration(!startTime.equals(creationTime) ? Duration.between(creationTime, startTime) : Duration.ZERO, Duration.between(startTime, endTime));
     }
 
     @Override
