@@ -351,7 +351,11 @@
                 <property>
                     <name>ts.bootable.ee9</name>
                 </property>
-            </activation>           
+            </activation>
+            <properties>
+                <!-- Re-enable the default surefire execution -->
+                <surefire.default-test.phase>test</surefire.default-test.phase>
+            </properties>
             <modules>
                 <module>basic</module>
                 <module>clustering</module>
