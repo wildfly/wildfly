@@ -624,7 +624,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             JSPConfig jspConfig = servletContainer.getJspConfig();
             final Set<String> seenMappings = new HashSet<>();
 
-            //default JSP servlet
+            //default Jakarta Server Pages servlet
             final ServletInfo jspServlet = jspConfig != null ? jspConfig.createJSPServletInfo() : null;
             if (jspServlet != null) { //this would be null if jsp support is disabled
                 HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
@@ -644,7 +644,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     }
                 }
                 seenMappings.addAll(jspPropertyGroupMappings);
-                //setup JSP application context initializing listener
+                //setup Jakarta Server Pages application context initializing listener
                 d.addListener(new ListenerInfo(JspInitializationListener.class));
                 d.addServletContextAttribute(JspInitializationListener.CONTEXT_KEY, expressionFactoryWrappers);
             }
@@ -1128,10 +1128,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     private static HashMap<String, JspPropertyGroup> createJspConfig(JBossWebMetaData metaData) {
         final HashMap<String, JspPropertyGroup> result = new HashMap<>();
-        // JSP Config
+        // Jakarta Server Pages Config
         JspConfigMetaData config = metaData.getJspConfig();
         if (config != null) {
-            // JSP Property groups
+            // Jakarta Server Pages Property groups
             List<JspPropertyGroupMetaData> groups = config.getPropertyGroups();
             if (groups != null) {
                 for (JspPropertyGroupMetaData group : groups) {

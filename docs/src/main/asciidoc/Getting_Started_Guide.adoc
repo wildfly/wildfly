@@ -46,7 +46,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |Jakarta Expression Language 3.0 |X |X |X |X
 
-|JSR-245: JavaServer Pages 2.3 |X |X |X |X
+|Jakarta Server Pages 2.3 |X |X |X |X
 
 |Jakarta Standard Tag Library 1.2 |X |X |X
 |X

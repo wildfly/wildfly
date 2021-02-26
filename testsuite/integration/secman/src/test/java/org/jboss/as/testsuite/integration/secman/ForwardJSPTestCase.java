@@ -38,7 +38,7 @@ import java.net.URL;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Test that the servlet should be able to forward jsp resource within same deployment.
+ * Test that the servlet should be able to forward Jakarta Server Pages resource within same deployment.
  *
  * @author Lin Gao
  */

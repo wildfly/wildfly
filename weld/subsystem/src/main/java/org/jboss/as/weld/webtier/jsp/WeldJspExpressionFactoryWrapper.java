@@ -34,7 +34,7 @@ import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.weld.util.Reflections;
 
 /**
- * The Web Beans JSP initialization listener
+ * The Web Beans Jakarta Server Pages initialization listener
  *
  * @author Pete Muir
  * @author Stuart Douglas
@@ -53,7 +53,7 @@ public class WeldJspExpressionFactoryWrapper implements ExpressionFactoryWrapper
         // get JspApplicationContext.
         JspApplicationContext jspAppContext = JspFactory.getDefaultFactory().getJspApplicationContext( servletContext);
 
-        // register compositeELResolver with JSP
+        // register compositeELResolver with Jakarta Server Pages
         jspAppContext.addELResolver(beanManager.getELResolver());
         jspAppContext.addELContextListener(Reflections.<ELContextListener>newInstance("org.jboss.weld.module.web.el.WeldELContextListener", getClass().getClassLoader()));
 

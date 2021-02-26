@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test case for JSP pattern declaration in web.xml
+ * Test case for Jakarta Server Pages pattern declaration in web.xml
  *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2014
  * Red Hat, inc.

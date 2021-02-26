@@ -40,7 +40,7 @@ public class ReflectiveClassIntrospector implements EEClassIntrospector, Service
     @Override
     public ManagedReferenceFactory createFactory(final Class<?> clazz) {
         if (WildFlySecurityManager.isChecking()) {
-            // Execute in a privileged block for executions, such as JSP's, that do not copy the security
+            // Execute in a privileged block for executions, such as Jakarta Server Pages, that do not copy the security
             // context/protection domains onto class loaders. The permission check is done on the constructor.
             return AccessController.doPrivileged(new PrivilegedAction<ManagedReferenceFactory>() {
                 @Override
