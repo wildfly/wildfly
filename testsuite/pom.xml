@@ -69,7 +69,6 @@
 
     <modules>
         <module>integration</module>
-        <module>scripts</module>
     </modules>
 
 
@@ -496,12 +495,25 @@
                 <module>layers</module>
             </modules>
         </profile>
+
         <profile>
-            <id>ee9.module.profile</id>
+            <id>scripts.module.profile</id>
+            <activation><property><name>scripts.module</name></property></activation>
+            <modules><module>scripts</module></modules>
+        </profile>
+        <profile>
+            <id>scripts_.module.profile</id>
+            <activation><property><name>ts.scripts</name></property></activation>
+            <modules><module>scripts</module></modules>
+        </profile>
+
+        <profile>
+            <id>ee9.profile</id>
             <activation><property><name>ts.ee9</name></property></activation>
             <modules>
                 <module>integration</module>
                 <module>layers</module>
+                <module>scripts</module>
             </modules>
         </profile>
 
