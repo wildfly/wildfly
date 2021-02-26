@@ -3761,6 +3761,7 @@
                                         <exclude>org/jboss/as/test/integration/ee/appclient/basic/SimpleApplicationClientTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/descriptor/ejbnamewildcard/EJBNameWildcardTestCase.java</exclude><!-- use of @Test(expected = EJBAccessException.class) ??? -->
                                         <exclude>org/jboss/as/test/integration/ejb/mapbased/MapBasedInitialContextEjbClientTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/remote/httpobfuscatedroute/*RemoteIdentityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/remote/security/*RemoteIdentityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/stateful/persistencecontext/StatefulUnitTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/stateless/callerprincipal/Ejb2GetCallerPrincipalTestCase.java</exclude>
