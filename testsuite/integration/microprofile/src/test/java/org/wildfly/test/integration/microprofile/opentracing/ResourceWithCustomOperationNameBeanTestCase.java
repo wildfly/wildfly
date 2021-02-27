@@ -76,7 +76,8 @@ public class ResourceWithCustomOperationNameBeanTestCase {
 
         Assert.assertEquals("my-custom-method-operation-name", spans.get(0).operationName());
         Assert.assertEquals("my-custom-class-operation-name", spans.get(1).operationName());
-        Assert.assertTrue(spans.get(2).operationName().contains(WithCustomOperationNameEndpoint.class.getName()));
+        String opName = spans.get(2).operationName();
+        Assert.assertTrue(opName, opName.contains(WithCustomOperationNameEndpoint.class.getName()));
 
     }
 
