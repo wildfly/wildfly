@@ -45,6 +45,9 @@ import org.jboss.msc.service.Service;
  * The construction parameter set passed in to an abstract component.
  * <p/>
  * <h4>Interceptors</h4>
+ *
+ * NOTE: References in this file to Interceptors refer to the Jakarta Interceptors unless otherwise noted.
+ *
  * The interceptor factories provided herein are assembled from the component's EE module class as well as the EE
  * module classes of the declared interceptor classes for this component by way of a configurator.
  *

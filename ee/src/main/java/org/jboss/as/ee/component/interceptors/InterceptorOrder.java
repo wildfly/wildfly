@@ -44,7 +44,7 @@ public class InterceptorOrder {
         public static final int JPA_SFSB_INTERCEPTOR = 0x560;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR = 0x600;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR = 0x800;
-        // WS handlers, user and Jakarta Contexts and Dependency Injection interceptors plus the bean method are considered user execution time
+        // WS handlers, user and Jakarta Contexts and Dependency Injection Interceptors plus the bean method are considered user execution time
         public static final int EJB_EXECUTION_TIME_INTERCEPTOR = 0x850;
         // JSR 109 - Version 1.3 - 6.2.2.4 Security
         // For EJB based service implementations, Handlers run after method level authorization has occurred.

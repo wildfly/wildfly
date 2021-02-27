@@ -64,7 +64,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 |JSR-345: Enterprise JavaBeans 3.2 |XCMP 2.0Optional |X(Lite) |XCMP
 2.0Not Available |X(Lite)
 
-|JSR-318: Interceptors 1.2 |X |X |X |X
+|Jakarta Interceptors 1.2 |X |X |X |X
 
 |Jakarta EE Connector Architecture 1.7 |X |-- |X |X
 

@@ -41,7 +41,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
 
 /**
- * Interceptor for applying the JSR-299 specific interceptor bindings.
+ * Jakarta Interceptors for applying interceptors bindings.
  * <p/>
  * It is a separate interceptor, as it needs to be applied after all
  * the other existing interceptors.
