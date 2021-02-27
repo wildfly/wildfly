@@ -42,7 +42,8 @@ class AttributeParsers {
     static final AttributeParser VALUE = new AttributeParser() {
         @Override
         public void parseElement(final AttributeDefinition attribute, final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
-            operation.get(attribute.getName()).set(readValueAttribute(reader));
+            final ModelNode valueNode = ParseUtils.parseAttributeValue(readValueAttribute(reader), attribute.isAllowExpression(), attribute.getType());
+            operation.get(attribute.getName()).set(valueNode);
             ParseUtils.requireNoContent(reader);
         }
 

@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.batch.jberet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -35,7 +38,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.junit.Assert;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -91,6 +95,42 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
         standardSubsystemTest("/security-domain-subsystem.xml");
     }
 
+    /**
+     * Verifies that attributes with expression are handled properly.
+     * @throws Exception for any test failure
+     */
+    @Test
+    public void testExpressionInAttributeValue() throws Exception {
+        final KernelServices kernelServices = boot(getSubsystemXml("/with-expression-subsystem.xml"));
+        final ModelNode batchModel = kernelServices.readWholeModel().get("subsystem", getMainSubsystemName());
+        final boolean expectedRestartOnResume = false;
+        final boolean restartOnResume = batchModel.get("restart-jobs-on-resume").resolve().asBoolean();
+        assertEquals("Expecting restart-jobs-on-resume " + expectedRestartOnResume + ", but got " + restartOnResume,
+                expectedRestartOnResume, restartOnResume);
+
+        final ModelNode threadPool = batchModel.get("thread-pool").asProperty().getValue();
+        final int expectedMaxThreads = 10;
+        final int maxThreads = threadPool.get("max-threads").resolve().asInt();
+        assertEquals("Expecting max-threads " + expectedMaxThreads + ", but got " + maxThreads,
+                expectedMaxThreads, maxThreads);
+
+        final ModelNode threadFactory = batchModel.get("thread-factory").asProperty().getValue();
+        final String expectedGroupName = "batch";
+        final String groupName = threadFactory.get("group-name").resolve().asString();
+        assertEquals("Expecting thread-factory group-name " + expectedGroupName + ", but got " + groupName,
+                expectedGroupName, groupName);
+
+        final int expectedPriority = 5;
+        final int priority = threadFactory.get("priority").resolve().asInt();
+        assertEquals("Expecting thread-factory priority " + expectedPriority + ", but got " + priority,
+                expectedPriority, priority);
+
+        final String expectedThreadNamePattern = "%i-%g";
+        final String threadNamePattern = threadFactory.get("thread-name-pattern").resolve().asString();
+        assertEquals("Expecting thread-factory thread-name-pattern " + expectedThreadNamePattern + ", but got " + threadNamePattern,
+                expectedThreadNamePattern, threadNamePattern);
+    }
+
     @Test
     public void testLegacySubsystems() throws Exception {
         // Get a list of all the logging_x_x.xml files
@@ -116,7 +156,7 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
         }
 
         // The paths shouldn't be empty
-        Assert.assertFalse("No configs were found", configs.isEmpty());
+        assertFalse("No configs were found", configs.isEmpty());
 
         for (String configId : configs) {
             // Run the standard subsystem test, but don't compare the XML as it should never match
