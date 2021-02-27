@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.jboss.as.clustering.context.Contextualizer;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
@@ -39,4 +40,5 @@ public interface ChannelCommandDispatcherFactoryConfiguration {
     ByteBufferMarshaller getMarshaller();
     Duration getTimeout();
     Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
+    Function<ClassLoader, Contextualizer> getContextualizerFactory();
 }
