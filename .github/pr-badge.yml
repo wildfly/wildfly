@@ -1,0 +1,5 @@
+- label: "JIRA"
+  message: "$issuePrefix"
+  color: "#0052CC"
+  url: "https://issues.redhat.com/browse/$issuePrefix"
+  when: "$issuePrefix"
