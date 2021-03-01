@@ -72,6 +72,12 @@ if $cygwin; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
 fi
 
+if [ ! -f "$JBOSS_HOME/bin/client/jboss-cli-client.jar" ]; then
+    echo "WARNING Jar not found: \"$JBOSS_HOME/bin/client/jboss-cli-client.jar\""
+    echo "WARNING If this jar is missing, jconsole will fail to connect to Wildfly."
+    exit 2
+fi
+
 cd "$JBOSS_HOME"
 
 "$JAVA_HOME/bin/java" --add-modules=java.se -version > /dev/null 2>&1 && MODULAR_JDK=true || MODULAR_JDK=false

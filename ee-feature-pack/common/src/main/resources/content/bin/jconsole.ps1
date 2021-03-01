@@ -11,6 +11,12 @@ if (!$JAVA_HOME){
   exit
 }
 
+if (!(Test-Path $JBOSS_HOME\bin\client\jboss-cli-client.jar)) {
+    Write-Warning "Jar not found: $JBOSS_HOME/bin/client/jboss-cli-client.jar\"
+    Write-Warning "If this jar is missing, jconsole will fail to connect to Wildfly."
+    exit
+}
+
 $CLASSPATH= "$JAVA_HOME\lib\jconsole.jar;$JAVA_HOME\lib\tools.jar;$JBOSS_HOME\bin\client\jboss-cli-client.jar"
 
 & $JAVA_HOME\bin\java.exe --add-modules=java.se -version 2> $nul

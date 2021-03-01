@@ -46,6 +46,12 @@ rem Setup The Classpath
 
 set "CLASSPATH=%JAVA_HOME%\lib\jconsole.jar"
 set "CLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar"
+
+if not exist "%JBOSS_HOME%\bin\client\jboss-cli-client.jar" (
+    echo   WARNING: Jar not found: %JBOSS_HOME%\bin\client\jboss-cli-client.jar
+    echo   WARNING: If this jar is missing, jconsole will fail to connect to Wildfly.
+    goto END
+)
 set "CLASSPATH=%CLASSPATH%;%JBOSS_HOME%\bin\client\jboss-cli-client.jar"
 
 rem echo %CLASSPATH%
