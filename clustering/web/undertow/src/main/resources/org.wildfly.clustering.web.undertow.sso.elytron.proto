@@ -7,6 +7,6 @@ package org.wildfly.clustering.web.undertow.sso.elytron;
  */
 message ElytronAuthentication {
 	optional	string	mechanism	= 1;
-	optional	string	name	= 2;
-	optional	bool	programmatic	= 3;
+	optional	string	nonProgrammaticName	= 2;
+	optional	string	programmaticName	= 3;
 }
