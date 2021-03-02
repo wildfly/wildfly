@@ -30,12 +30,12 @@ import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.infinispan.factories.threads.EnhancedQueueExecutorFactory;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
-import org.jboss.as.clustering.infinispan.DefaultNonBlockingThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.management.ManageableThreadPoolExecutorService;
+import org.wildfly.clustering.infinispan.spi.DefaultNonBlockingThreadFactory;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**

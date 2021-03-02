@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.wildfly.clustering.infinispan.spi;
 
 import java.util.concurrent.ThreadFactory;
 
@@ -33,7 +33,15 @@ import org.jboss.as.clustering.context.DefaultThreadFactory;
  */
 public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingResource {
 
+    public DefaultNonBlockingThreadFactory(Class<?> targetClass) {
+        super(targetClass);
+    }
+
     public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
         super(factory);
+    }
+
+    public DefaultNonBlockingThreadFactory(ThreadFactory factory, Class<?> targetClass) {
+        super(factory, targetClass);
     }
 }
