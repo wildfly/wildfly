@@ -13,7 +13,7 @@ if (!$JAVA_HOME){
 
 if (!(Test-Path $JBOSS_HOME\bin\client\jboss-cli-client.jar)) {
     Write-Warning "Jar not found: $JBOSS_HOME/bin/client/jboss-cli-client.jar\"
-    Write-Warning "If this jar is missing, jconsole will fail to connect to Wildfly."
+    Write-Warning "If this jar is missing, jconsole will fail to connect to the server."
     exit
 }
 

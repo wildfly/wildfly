@@ -49,7 +49,7 @@ set "CLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar"
 
 if not exist "%JBOSS_HOME%\bin\client\jboss-cli-client.jar" (
     echo   WARNING: Jar not found: %JBOSS_HOME%\bin\client\jboss-cli-client.jar
-    echo   WARNING: If this jar is missing, jconsole will fail to connect to Wildfly.
+    echo   WARNING: If this jar is missing, jconsole will fail to connect to the server.
     goto END
 )
 set "CLASSPATH=%CLASSPATH%;%JBOSS_HOME%\bin\client\jboss-cli-client.jar"
