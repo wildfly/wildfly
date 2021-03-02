@@ -138,7 +138,6 @@ public class Subsystem_3_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.getLegacyServices(opentracingVersion).isSuccessfulBoot());
 
         List<ModelNode> ops = builder.parseXmlResource("subsystem_3_0_reject_transform.xml");
-        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SubsystemExtension.SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
