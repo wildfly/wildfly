@@ -1,0 +1,17 @@
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:2.1">
+    <properties>
+        <property name="${sysprop:some_property}" value="${sysprop:some_value}"/>
+    </properties>
+    <!-- test both values being default because there is a bug that nothing gets persisted -->
+    <orb giop-version="${sysprop:1.2}" socket-binding="${sysprop:iiop}" ssl-socket-binding="${sysprop:iiop-ssl}"/>
+    <tcp high-water-mark="${sysprop:500}" number-to-reclaim="${sysprop:30}"/>
+    <initializers security="${sysprop:elytron}" authentication-context="${sysprop:iiop}" transactions="${sysprop:spec}"/>
+    <naming root-context="${sysprop:JBoss/Naming/root2}" export-corbaloc="${sysprop:false}"/>
+    <security support-ssl="${sysprop:true}" security-domain="domain" add-component-via-interceptor="${sysprop:false}" client-requires-ssl="${sysprop:false}" server-requires-ssl="${sysprop:false}"/>
+    <interop iona="${sysprop:false}"/>
+    <transport-config integrity="${sysprop:required}" confidentiality="${sysprop:required}" detect-replay="${sysprop:supported}"
+                      detect-misordering="${sysprop:supported}"
+                      trust-in-client="${sysprop:required}" trust-in-target="${sysprop:supported}"/>
+    <as-context auth-method="${sysprop:none}" realm="${sysprop:test_realm2}" required="${sysprop:true}"/>
+    <sas-context caller-propagation="${sysprop:supported}"/>
+</subsystem>
