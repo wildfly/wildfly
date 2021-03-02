@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -49,8 +49,10 @@ public final class LocalTransactionContextService implements Service<LocalTransa
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerInjector = new InjectedValue<>();
     private final InjectedValue<XAResourceRecoveryRegistry> xaResourceRecoveryRegistryInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentInjector = new InjectedValue<>();
+    private final int staleTransactionTime;
 
-    public LocalTransactionContextService() {
+    public LocalTransactionContextService(final int staleTransactionTime) {
+        this.staleTransactionTime = staleTransactionTime;
     }
 
     public void start(final StartContext context) throws StartException {
@@ -61,6 +63,7 @@ public final class LocalTransactionContextService implements Service<LocalTransa
         builder.setXATerminator(transactionManagerInjector.getValue().getJbossXATerminator());
         builder.setXAResourceRecoveryRegistry(xaResourceRecoveryRegistryInjector.getValue());
         builder.setXARecoveryLogDirRelativeToPath(serverEnvironmentInjector.getValue().getServerDataDir().toPath());
+        builder.setStaleTransactionTime(staleTransactionTime);
         final LocalTransactionContext transactionContext = this.context = new LocalTransactionContext(builder.build());
         // TODO: replace this with per-CL settings for embedded use and to support remote UserTransaction
         doPrivileged((PrivilegedAction<Void>) () -> {

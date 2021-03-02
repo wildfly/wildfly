@@ -150,6 +150,12 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             }
             writer.writeEndElement();
         }
+
+        if (TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME.isMarshallable(node)){
+            writer.writeStartElement(Element.CLIENT.getLocalName());
+            TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME.marshallAsAttribute(node, writer);
+            writer.writeEndElement();
+        }
         writer.writeEndElement();
     }
 
