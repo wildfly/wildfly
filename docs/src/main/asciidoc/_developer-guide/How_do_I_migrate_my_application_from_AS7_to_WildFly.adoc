@@ -975,3 +975,6 @@ A JSR-88 deployment plan is identified by a XML descriptor named `deployment-pla
 ==== Module Dependencies
 
 Applications defining dependencies to {ProductName} modules, through the application's package `MANIFEST.MF` or `jboss-deployment-structure.xml`, may be referencing missing modules. When migrating an application, relying on such functionality, the presence of the referenced modules should be validated in advance.
+----
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

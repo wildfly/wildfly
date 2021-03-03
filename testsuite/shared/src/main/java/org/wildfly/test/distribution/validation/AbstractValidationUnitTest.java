@@ -94,7 +94,7 @@ public class AbstractValidationUnitTest {
     private static final File JBOSS_DIST_DIR;
 
     static {
-        // exclude JBoss EJB specific files which redefine the javaee namespace
+        // exclude JBoss Jakarta Enterprise Beans specific files which redefine the javaee namespace
         // triggering the https://issues.apache.org/jira/browse/XERCESJ-1130 bug
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-2_1.xsd");

@@ -42,15 +42,15 @@ import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 abstract class AbstractMetaDataBuilderEJB {
 
     /**
-     * Builds universal EJB meta data model that is AS agnostic.
+     * Builds universal Jakarta Enterprise Beans meta data model that is AS agnostic.
      *
      * @param dep
      *            webservice deployment
-     * @return universal EJB meta data model
+     * @return universal Jakarta Enterprise Beans meta data model
      */
     final EJBArchiveMetaData create(final Deployment dep) {
         if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            WSLogger.ROOT_LOGGER.tracef("Building JBoss agnostic meta data for EJB webservice deployment: %s", dep.getSimpleName());
+            WSLogger.ROOT_LOGGER.tracef("Building JBoss agnostic meta data for Jakarta Enterprise Beans webservice deployment: %s", dep.getSimpleName());
         }
         final EJBArchiveMetaData.Builder ejbArchiveMDBuilder = new EJBArchiveMetaData.Builder();
 
@@ -66,7 +66,7 @@ abstract class AbstractMetaDataBuilderEJB {
      * @param dep
      *            webservice deployment
      * @param ejbMetaData
-     *            universal EJB meta data model
+     *            universal Jakarta Enterprise Beans meta data model
      */
     protected abstract void buildEnterpriseBeansMetaData(Deployment dep, EJBArchiveMetaData.Builder ejbMetaDataBuilder);
 
@@ -80,7 +80,7 @@ abstract class AbstractMetaDataBuilderEJB {
      * </ul>
      *
      * @param dep webservice deployment
-     * @param ejbArchiveMD universal EJB meta data model
+     * @param ejbArchiveMD universal Jakarta Enterprise Beans meta data model
      */
     private void buildWebservicesMetaData(final Deployment dep, final EJBArchiveMetaData.Builder ejbArchiveMDBuilder) {
        final JBossWebservicesMetaData webservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
@@ -119,15 +119,15 @@ abstract class AbstractMetaDataBuilderEJB {
     }
 
     /**
-     * Builds JBoss agnostic EJB meta data.
+     * Builds JBoss agnostic Jakarta Enterprise Beans meta data.
      *
      * @param wsEjbsMD
-     *            jboss agnostic EJBs meta data
+     *            jboss agnostic Jakarta Enterprise Beans meta data
      */
     protected void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint ejbEndpoint, final JBossWebservicesMetaData jbossWebservicesMD) {
         final SLSBMetaData.Builder wsEjbMDBuilder = new SLSBMetaData.Builder();
 
-        // set EJB name and class
+        // set Jakarta Enterprise Beans name and class
         wsEjbMDBuilder.setEjbName(ejbEndpoint.getName());
         wsEjbMDBuilder.setEjbClass(ejbEndpoint.getClassName());
 

@@ -36,7 +36,7 @@ import java.net.URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
- * Setup for ssl ejb remote connection.
+ * Setup for ssl Jakarta Enterprise Beans remote connection.
  * Keystore created on basis of tutorial at https://community.jboss.org/wiki/SSLSetup.
  *
  * @author Ondrej Chaloupka

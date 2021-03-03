@@ -121,6 +121,9 @@ import org.wildfly.security.authz.Roles;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ *
+ * NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ *
  */
 public abstract class EJBComponentDescription extends ComponentDescription {
 

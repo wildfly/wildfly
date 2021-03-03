@@ -108,9 +108,9 @@ public abstract class AbstractSecuredEJBFederationTestCase {
         webForm.setParameter("j_password", TOMCAT_PSWD);
         webForm.getSubmitButtons()[0].click();
 
-        // it runs secured ejb
+        // it runs secured Jakarta Enterprise Beans
         response = conversation.getCurrentPage();
-        assertEquals("The ejb authentication did not succeed",200, response.getResponseCode());
+        assertEquals("The Jakarta Enterprise Beans authentication did not succeed",200, response.getResponseCode());
     }
 
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {

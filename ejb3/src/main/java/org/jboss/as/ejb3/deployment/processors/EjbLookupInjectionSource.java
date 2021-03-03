@@ -35,7 +35,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
- * Injection source for remote ejb lookups. If the target type is known
+ * Injection source for remote Jakarta Enterprise Beans lookups. If the target type is known
  * then the bean will be narrowed to that type
  *
  * @author Stuart Douglas

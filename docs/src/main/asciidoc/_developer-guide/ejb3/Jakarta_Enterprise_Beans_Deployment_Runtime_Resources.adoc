@@ -1,5 +1,5 @@
-[[EJB_Deployment_Runtime_Resources]]
-= EJB Deployment Runtime Resources
+[[Jakarta_Enterprise_Beans_Deployment_Runtime_Resources]]
+= Jakarta Enterprise Beans Deployment Runtime Resources
 
 Enterprise bean deployment exposes certain management runtime resources to help users inspect enterprise bean metadata
 and monitor invocation statistics. Bean metadata is configured in the application via deployment descriptor and

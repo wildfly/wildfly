@@ -61,7 +61,7 @@ public class StatefulRemoveInterceptor implements Interceptor {
         if (view != null) {
             Ejb2xViewType viewType = view.getPrivateData(Ejb2xViewType.class);
             if (viewType != null) {
-                //this means it is an EJB 2.x view
+                //this means it is an Enterprise Beans 2.x view
                 //which is not allowed to remove while enrolled in a TX
                 final StatefulTransactionMarker marker = context.getPrivateData(StatefulTransactionMarker.class);
                 if(marker != null && !marker.isFirstInvocation()) {

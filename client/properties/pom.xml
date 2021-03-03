@@ -40,10 +40,10 @@
     <artifactId>wildfly-client-properties</artifactId>
     <packaging>jar</packaging>
 
-    <name>WildFly: EJB and JMS client combined properties</name>
+    <name>WildFly: Jakarta Enterprise Beans and Jakarta Messaging client combined properties</name>
 
     <description>
-        This artifact provides a single jar that contains all properties required to use remote EJB and JMS
+        This artifact provides a single jar that contains all properties required to use remote Jakarta Enterprise Beans and Jakarta Messaging
     </description>
 
 </project>

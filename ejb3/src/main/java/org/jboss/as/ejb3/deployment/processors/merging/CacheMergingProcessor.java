@@ -81,7 +81,7 @@ public class CacheMergingProcessor extends AbstractMergingProcessor<StatefulComp
         String cacheName = null;
         if (caches != null) {
             for (final EJBBoundCacheMetaData cacheMetaData : caches) {
-                // if this applies for all EJBs and if there isn't a pool name already explicitly specified
+                // if this applies for all Jakarta Enterprise Beans and if there isn't a pool name already explicitly specified
                 // for the specific bean (i.e. via an ejb-name match)
                 if ("*".equals(cacheMetaData.getEjbName()) && cacheName == null) {
                     cacheName = cacheMetaData.getCacheName();

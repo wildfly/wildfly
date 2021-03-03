@@ -62,7 +62,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
- * Testing transaction recovery on cases where WildFly calls remote EJB on the other WildFly instance.
+ * Testing transaction recovery on cases where WildFly calls remote Jakarta Enterprise Beans on the other WildFly instance.
  * The transaction context is propagated along this remote call and then some failure or JVM crash happens.
  * When the failure (e.g. simulation of intermittent erroneous state) or when servers are restarted
  * (in case the JVM had been crashed) then the transaction recovery must make the system data consistent again.
@@ -156,7 +156,7 @@ public class TransactionPropagationFailureTestCase {
      * <p>
      * Test scenario:
      * <ol>
-     *   <li>client WildFly starts the transactions and calls remote EJB bean at server WildFly</li>
+     *   <li>client WildFly starts the transactions and calls remote Jakarta Enterprise Beans bean at server WildFly</li>
      *   <li>{@link ClientBean} method finishes and transaction manager starts 2PC</li>
      *   <li>client WildFly asks the server WildFly to <code>prepare</code> as part of the 2PC procesing</li>
      *   <li>server WildFly prepares but after the call is returned the client WildFly JVM crashes</li>
@@ -202,7 +202,7 @@ public class TransactionPropagationFailureTestCase {
      * <p>
      * Test scenario:
      *   <ol>
-     *     <li>client WildFly starts the transactions and calls remote EJB bean at server WildFly,
+     *     <li>client WildFly starts the transactions and calls remote Jakarta Enterprise Beans bean at server WildFly,
      *         there are two resources enlisted on the client side and one resource is enlisted on the other server</li>
      *     <li>{@link ClientBean} method finishes and transaction manager starts 2PC</li>
      *     <li>client WildFly asks the server WildFly to <code>prepare</code> and <code>commit</code></li>
@@ -244,7 +244,7 @@ public class TransactionPropagationFailureTestCase {
      * <p>
      * Test scenario:
      *   <ol>
-     *     <li>client WildFly starts the transactions and calls remote EJB bean at server WildFly,
+     *     <li>client WildFly starts the transactions and calls remote Jakarta Enterprise Beans bean at server WildFly,
      *         there is one resource enlisted on the client side but two resources are enlisted on the other server</li>
      *     <li>{@link ClientBean} method finishes and transaction manager starts 1PC as only one resource was enslited
      *         on the client side which is the owner of the transaction</li>
@@ -266,9 +266,9 @@ public class TransactionPropagationFailureTestCase {
             bean.onePhaseIntermittentCommitFailureOnServer(SERVER_DEPLOYMENT);
         } catch (EJBException ejbe) {
             if (!(ejbe.getCausedByException() instanceof HeuristicMixedException)) {
-                log.errorf(ejbe,"Wrong exception type was obtained on 1PC remote EJB call. Expected %s to be caught..",
+                log.errorf(ejbe,"Wrong exception type was obtained on 1PC remote Jakarta Enterprise Beans call. Expected %s to be caught..",
                         HeuristicMixedException.class.getName());
-                Assert.fail("Expecting the remote 1PC EJB call fails with HeuristicMixedException but it did not happen" +
+                Assert.fail("Expecting the remote 1PC Jakarta Enterprise Beans call fails with HeuristicMixedException but it did not happen" +
                         " and the " + ejbe + " was caught instead.");
             }
         }

@@ -12,7 +12,7 @@ when and which modules are added as implicit dependencies.
 [[whats-an-implicit-module-dependency]]
 == What's an implicit module dependency?
 
-Consider an application deployment which contains EJBs. EJBs typically
+Consider an application deployment which contains Jakarta Enterprise Beans. Jakarta Enterprise Beans typically
 need access to classes from the javax.ejb.* package and other Jakarta EE
 API packages. The jars containing these packages are already shipped in
 WildFly and are available as "modules". The module which contains the
@@ -35,7 +35,7 @@ When a deployment is being processed by the server, it goes through a
 chain of "deployment processors". Each of these processors will have a
 way to check if the deployment meets a certain criteria and if it does,
 the deployment processor adds an implicit module dependency to that
-deployment. Let's take an example - Consider (again) an EJB3 deployment
+deployment. Let's take an example - Consider (again) an Jakarta Enterprise Beans 3 deployment
 which has the following class:
 
 .MySuperDuperBean.java
@@ -50,12 +50,12 @@ public class MySuperDuperBean {
 }
 ----
 
-As can be seen, we have a simple @Stateless EJB. When the deployment
-containing this class is being processed, the EJB deployment processor
+As can be seen, we have a simple @Stateless Jakarta Enterprise Beans. When the deployment
+containing this class is being processed, the Jakarta Enterprise Beans deployment processor
 will see that the deployment contains a class with the @Stateless
-annotation and thus identifies this as an EJB deployment. *This is just
+annotation and thus identifies this as an Jakarta Enterprise Beans deployment. *This is just
 one of the several ways, various deployment processors can identify a
-deployment of some specific type.* The EJB deployment processor will
+deployment of some specific type.* The Jakarta Enterprise Beans deployment processor will
 then add an implicit dependency on the Jakarta EE API module, so that all
 the Jakarta EE API classes are visible to the deployment.
 
@@ -81,9 +81,9 @@ being added
 
 |EE Subsystem |javaee.api |  | 
 
-|EJB3 subsystem |  |javaee.api |The presence of ejb-jar.xml (in valid
+|Jakarta Enterprise Beans 3 subsystem |  |javaee.api |The presence of ejb-jar.xml (in valid
 locations in the deployment, as specified by spec) or the presence of
-annotation based EJBs (ex: @Stateless, @Stateful, @MessageDriven etc)
+annotation based Jakarta Enterprise Beans (ex: @Stateless, @Stateful, @MessageDriven etc)
 
 |Jakarta RESTful Web Services (Resteasy) subsystem |javax.xml.bind.api
 |org.jboss.resteasy.resteasy-atom-provider

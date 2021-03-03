@@ -672,3 +672,5 @@ required for remote invocation of the EJBs. The location of the jar is
 mentioned above. You'll also need to have your application's bean
 interface jars and other jars that are required by your application, in
 the client classpath
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

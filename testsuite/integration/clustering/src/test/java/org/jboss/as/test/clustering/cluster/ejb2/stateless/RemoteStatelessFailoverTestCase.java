@@ -57,7 +57,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * EJB2 stateless bean - basic cluster tests - failover and load balancing.
+ * Enterprise Beans 2 stateless bean - basic cluster tests - failover and load balancing.
  *
  * @author Paul Ferraro
  * @author Ondrej Chaloupka
@@ -184,8 +184,8 @@ public class RemoteStatelessFailoverTestCase {
         this.start(NODE_1);
         this.deploy(NODE_1, deployment1);
 
-        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
-        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // TODO Elytron: Once support for legacy Jakarta Enterprise Beans properties has been added back, actually set the Jakarta Enterprise Beans properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the Jakarta Enterprise Beans client context is reset
         // to its original state at the end of the test
         // EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
@@ -233,8 +233,8 @@ public class RemoteStatelessFailoverTestCase {
         this.start(NODE_2);
         this.deploy(NODE_2, deployment2);
 
-        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
-        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // TODO Elytron: Once support for legacy Jakarta Enterprise Beans properties has been added back, actually set the Jakarta Enterprise Beans properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the Jakarta Enterprise Beans client context is reset
         // to its original state at the end of the test
         // EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 

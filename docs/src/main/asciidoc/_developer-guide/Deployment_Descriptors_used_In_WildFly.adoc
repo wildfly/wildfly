@@ -22,11 +22,11 @@ deployment |Class Loading in WildFly
 use to override settings from web.xml, and to set WildFly specific
 options | 
 
-|ejb-jar.xml |WEB-INF of a war, or META-INF of an EJB jar |EJB |The EJB
+|ejb-jar.xml |WEB-INF of a war, or META-INF of an Jakarta Enterprise Beans jar |Jakarta Enterprise Beans |The Jakarta Enterprise Beans
 spec deployment descriptor |ejb-jar.xml schema
 
-|jboss-ejb3.xml |WEB-INF of a war, or META-INF of an EJB jar |  |The
-JBoss EJB deployment descriptor, this can be used to override settings
+|jboss-ejb3.xml |WEB-INF of a war, or META-INF of an Jakarta Enterprise Beans jar |  |The
+JBoss Jakarta Enterprise Beans deployment descriptor, this can be used to override settings
 from ejb-jar.xml, and to set WildFly specific settings | 
 
 |application.xml |META-INF of an EAR |Jakarta EE Platform Specification | 
@@ -39,12 +39,12 @@ WildFly specific settings | 
 |persistence.xml |META-INF |Jakarta Persistence |Jakarta Persistence descriptor used for defining
 persistence units |Hibernate Reference Guide
 
-|jboss-ejb-client.xml |WEB-INF of a war, or META-INF of an EJB jar | 
-|Remote EJB settings. This file is used to setup the EJB client context
-for a deployment that is used for remote EJB invocations |EJB
+|jboss-ejb-client.xml |WEB-INF of a war, or META-INF of an Jakarta Enterprise Beans jar | 
+|Remote Jakarta Enterprise Beans settings. This file is used to setup the Jakarta Enterprise Beans client context
+for a deployment that is used for remote Jakarta Enterprise Beans invocations |Jakarta Enterprise Beans
 invocations from a remote server instance
 
-|jbosscmp-jdbc.xml |META-INF of an EJB jar |  |CMP deployment
+|jbosscmp-jdbc.xml |META-INF of an Jakarta Enterprise Beans jar |  |CMP deployment
 descriptor. Used to map CMP entity beans to a database. The format is
 largely unchanged from previous versions. | 
 
@@ -67,8 +67,8 @@ client deployments |application-client.xml schema
 |jboss-client.xml |META-INF of an application client jar |  |The WildFly
 specific deployment descriptor for application client deployments | 
 
-|jboss-webservices.xml |META-INF for EJB webservice deployments or
-WEB-INF for POJO webservice deployments/EJB webservice endpoints bundled
+|jboss-webservices.xml |META-INF for Jakarta Enterprise Beans webservice deployments or
+WEB-INF for POJO webservice deployments/Jakarta Enterprise Beans webservice endpoints bundled
 in .war |  |The JBossWS 4.0.x specific deployment descriptor for
 webservice endpoints | 
 |=======================================================================

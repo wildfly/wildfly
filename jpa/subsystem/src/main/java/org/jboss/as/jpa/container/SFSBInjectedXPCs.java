@@ -34,9 +34,9 @@ import java.util.Map;
  * see http://java.net/projects/jpa-spec/lists/jsr338-experts/archive/2012-06/message/13 and the rest of the thread.
  *
  * Deep (JBoss legacy) mode will inherit across sibling beans and travel several levels up the beans in the
- * current EJB container instance.
+ * current Jakarta Enterprise Beans container instance.
  *
- * Shallow (EE standard) mode will inherit only from the immediate parent bean (in the current EJB container instance).
+ * Shallow (EE standard) mode will inherit only from the immediate parent bean (in the current Jakarta Enterprise Beans container instance).
  *
  * @author Scott Marlow
  */

@@ -49,8 +49,8 @@ import java.util.function.Function;
 
 /**
  * A {@link DeploymentUnitProcessor} which looks for {@link EJBComponentDescription}s in the deployment
- * unit and sets the default security domain name, that's configured at the EJB subsystem level,
- * {@link EJBComponentDescription#setDefaultSecurityDomain(String) to each of the EJB component descriptions}.
+ * unit and sets the default security domain name, that's configured at the Jakarta Enterprise Beans subsystem level,
+ * {@link EJBComponentDescription#setDefaultSecurityDomain(String) to each of the Jakarta Enterprise Beans component descriptions}.
  *
  * @author Jaikiran Pai
  */
@@ -112,7 +112,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                     EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
                     ejbComponentDescription.setDefaultSecurityDomain(defaultSecurityDomain);
 
-                    // Ensure the EJB components within a deployment are associated with at most one Elytron security domain
+                    // Ensure the Jakarta Enterprise Beans components within a deployment are associated with at most one Elytron security domain
 
                     String definedSecurityDomain = ejbComponentDescription.getDefinedSecurityDomain();
                     defaultRequired = defaultRequired || definedSecurityDomain == null;
@@ -133,7 +133,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
 
             final boolean useDefaultElytronMapping;
             /*
-             * We only need to fall into the default handling if at least one EJB Component has no defined
+             * We only need to fall into the default handling if at least one Jakarta Enterprise Beans Component has no defined
              * security domain.
              */
             if (defaultRequired && selectedElytronDomainName == null && defaultDomainMapping != null) {
@@ -146,7 +146,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                 useDefaultElytronMapping = false;
             }
 
-            // If this EJB deployment is associated with an Elytron security domain, set up the security domain mapping
+            // If this Jakarta Enterprise Beans deployment is associated with an Elytron security domain, set up the security domain mapping
             if (selectedElytronDomainConfig != null) {
                 final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
 
@@ -166,9 +166,9 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                         /*
                          * Only apply the Elytron domain if one of the following is true:
                          *  - No security domain was defined within the deployment so the default is being applied to all components.
-                         *  - The security domain defined on the EJB Component matches the name mapped to the Elytron domain.
+                         *  - The security domain defined on the Jakarta Enterprise Beans Component matches the name mapped to the Elytron domain.
                          *
-                         * Otherwise EJBComponents will be in one of the following states:
+                         * Otherwise Jakarta Enterprise Beans Components will be in one of the following states:
                          *  - No associated security domain.
                          *  - Using configured domain as PicketBox domain.
                          *  - Fallback to subsystem defined default PicketBox domain.
@@ -197,7 +197,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                 }
             }
         } else {
-            // We will use the defined Elytron domain for all EJBs and ignore individual configuration.
+            // We will use the defined Elytron domain for all Jakarta Enterprise Beans and ignore individual configuration.
             // Bean level activation remains dependent on configuration of bean - i.e. does it actually need security?
             final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
 
@@ -224,7 +224,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
     }
 
     /**
-     * Sets the default security domain name to be used for EJB components, if no explicit security domain
+     * Sets the default security domain name to be used for Jakarta Enterprise Beans components, if no explicit security domain
      * is configured for the bean.
      *
      * @param securityDomainName The security domain name. Can be null.

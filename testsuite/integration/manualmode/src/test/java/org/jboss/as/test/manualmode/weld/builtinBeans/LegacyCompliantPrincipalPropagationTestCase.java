@@ -45,7 +45,7 @@ import static org.junit.Assume.assumeTrue;
 
 
 /**
- * Functionality tests for legacy-compliant-principal-propagation attribute of EJB3 subsystem.
+ * Functionality tests for legacy-compliant-principal-propagation attribute of Enterprise Beans 3 subsystem.
  * See <a href="https://issues.jboss.org/browse/WFLY-11587">WFLY-14074</a>.
  */
 @RunWith(Arquillian.class)
@@ -83,7 +83,7 @@ public class LegacyCompliantPrincipalPropagationTestCase {
         if (!serverController.isStarted(DEFAULT_FULL_JBOSSAS)) {
             serverController.start(DEFAULT_FULL_JBOSSAS);
         }
-        // add application-security-domain called "other" that is mapped with an Elytron security domain (ApplicationDomain) in the EJB subsystem
+        // add application-security-domain called "other" that is mapped with an Elytron security domain (ApplicationDomain) in the Jakarta Enterprise Beans subsystem
         ManagementClient managementClient = getManagementClient();
         ModelNode modelNode = createAddOperation(PathAddress.parseCLIStyleAddress(("/subsystem=ejb3/application-security-domain=other")).toModelNode());
         modelNode.get("security-domain").set("ApplicationDomain");

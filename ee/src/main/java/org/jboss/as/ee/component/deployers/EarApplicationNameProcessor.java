@@ -30,14 +30,14 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.ear.spec.EarMetaData;
 
 /**
- * The Java EE6 spec and EJB3.1 spec contradict each other on what the "application-name" semantics are.
+ * The Java EE6 spec and Enterprise Beans 3.1 spec contradict each other on what the "application-name" semantics are.
  * The Java EE6 spec says that in the absence of a (top level) .ear, the application-name is same as the
  * (top level) module name. So if a blah.jar is deployed, as per Java EE6 spec, both the module name and
- * application name are "blah". This is contradictory to the EJB3.1 spec (JNDI naming section) which says
+ * application name are "blah". This is contradictory to the Enterprise Beans 3.1 spec (JNDI naming section) which says
  * that in the absence of a (top level) .ear, the application-name is null.
  * <p/>
  * This deployment processor, sets up the {@link Attachments#EAR_APPLICATION_NAME} attachment with the value
- * that's semantically equivalent to what the EJB3.1 spec expects.
+ * that's semantically equivalent to what the Enterprise Beans 3.1 spec expects.
  *
  * @author Jaikiran Pai
  */

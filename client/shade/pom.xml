@@ -40,12 +40,12 @@
     <artifactId>wildfly-client-all</artifactId>
     <packaging>jar</packaging>
 
-    <name>WildFly: EJB and JMS client combined jar</name>
+    <name>WildFly: Jakarta Enterprise Beans and Jakarta Messaging client combined jar</name>
     <!-- todo remove this combined (25mb+) jar from distribution, make it an optional download and move shaded generation to separate repo-->
     <description>
-        This artifact provides a single jar that contains all classes required to use remote EJB and JMS, including
-        all dependencies. It is intended for use by those not using maven, maven users should just import the EJB and
-        JMS BOM's instead (shaded JAR's cause lots of problems with maven, as it is very easy to inadvertently end up
+        This artifact provides a single jar that contains all classes required to use remote Jakarta Enterprise Beans and Jakarta Messaging, including
+        all dependencies. It is intended for use by those not using maven, maven users should just import the Jakarta Enterprise Beans and
+        Jakarta Messaging BOM's instead (shaded JAR's cause lots of problems with maven, as it is very easy to inadvertently end up
         with different versions on classes on the class path).
     </description>
 

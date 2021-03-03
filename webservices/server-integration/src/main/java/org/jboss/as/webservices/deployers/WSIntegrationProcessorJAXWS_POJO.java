@@ -189,7 +189,7 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
     }
 
     private boolean exclude(final DeploymentUnit unit, final EEModuleClassDescription classDescription) {
-        //exclude if it's ejb3 and jms endpoint
+        //exclude if it's Enterprise Beans 3 and jms endpoint
         ClassInfo classInfo = null;
         ClassAnnotationInformation<WebService, WebServiceAnnotationInfo> annotationInfo = classDescription
                 .getAnnotationInformation(WebService.class);

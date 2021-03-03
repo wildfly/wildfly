@@ -36,7 +36,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * A {@link Service} which can be used by other components like WS to get the security metadata associated with methods on an EJB view.
+ * A {@link Service} which can be used by other components like WS to get the security metadata associated with methods on an Jakarta Enterprise Beans view.
  *
  * @author: Jaikiran Pai
  * @see https://issues.jboss.org/browse/WFLY-308 for more details.

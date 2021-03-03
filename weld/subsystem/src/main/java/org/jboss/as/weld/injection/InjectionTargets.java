@@ -48,7 +48,7 @@ public class InjectionTargets {
     /**
     * Creates a new InjectionTarget for a given class. If the interceptionSupport flag is set to true the resulting instance will support
     * interception (support provided by Weld). If an InjectionTarget is created for a component where interception support is implemented
-    * through component's view (EJBs, managed beans) the flag must be set to false.
+    * through component's view (Jakarta Enterprise Beans, managed beans) the flag must be set to false.
     *
     * @param componentClass
     * @param bean

@@ -58,7 +58,7 @@ import org.wildfly.security.permission.ElytronPermission;
  * <h3>Given</h3>
  *
  * <pre>
- * Another EJBs used for testing:
+ * Another Jakarta Enterprise Beans used for testing:
  * - FirstServerChainBean - protected (entry, admin and no-server2-identity roles are allowed), stateless,
  * configures identity propagation and calls a remote EntryBean
  *
@@ -173,10 +173,10 @@ public class ServerChainSecurityContextPropagationTestCase extends AbstractSecur
     }
 
     /**
-     * Test forwarding authentication (credential forwarding) works for EJB calls after another authentication forwarding.
+     * Test forwarding authentication (credential forwarding) works for Jakarta Enterprise Beans calls after another authentication forwarding.
      *
      * <pre>
-     * When: EJB client calls FirstServerChainBean as admin user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls FirstServerChainBean as admin user and Elytron AuthenticationContext API is used to
      *       authentication forwarding to EntryBean call and Elytron AuthenticationContext API is used to
      *       authentication forwarding to WhoAmIBean call.
      * Then: credentials are reused for EntryBean as well as WhoAmIBean call and it correctly returns "admin" username for both
@@ -194,11 +194,11 @@ public class ServerChainSecurityContextPropagationTestCase extends AbstractSecur
     }
 
     /**
-     * Test forwarding authentication (credential forwarding) for EJB calls after another authentication forwarding is not
+     * Test forwarding authentication (credential forwarding) for Jakarta Enterprise Beans calls after another authentication forwarding is not
      * possible when given identity does not exist in intermediate server.
      *
      * <pre>
-     * When: EJB client calls FirstServerChainBean as no-server2-identity user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls FirstServerChainBean as no-server2-identity user and Elytron AuthenticationContext API is used to
      *       authentication forwarding to EntryBean call and Elytron AuthenticationContext API is used to
      *       authentication forwarding to WhoAmIBean call.
      * Then: authentication for EntryBean should fail because no-server2-identity does not exist on seccontext-server2.
@@ -218,11 +218,11 @@ public class ServerChainSecurityContextPropagationTestCase extends AbstractSecur
     }
 
     /**
-     * Test forwarding authorization (credential less forwarding) works for EJB calls after another authorization forwarding.
+     * Test forwarding authorization (credential less forwarding) works for Jakarta Enterprise Beans calls after another authorization forwarding.
      * {@link RunAsPrincipalPermission} is assigned to caller server and another-server identity.
      *
      * <pre>
-     * When: EJB client calls FirstServerChainBean as admin user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls FirstServerChainBean as admin user and Elytron AuthenticationContext API is used to
      *       authorization forwarding to EntryBean call with "server" user used as caller server identity and
      *       Elytron AuthenticationContext API is used to
      *       authorization forwarding to WhoAmIBean call with "another-server" user used as caller server identity.
@@ -241,12 +241,12 @@ public class ServerChainSecurityContextPropagationTestCase extends AbstractSecur
     }
 
     /**
-     * Test forwarding authorization (credential less forwarding) for EJB calls after another authorization forwarding is not
+     * Test forwarding authorization (credential less forwarding) for Jakarta Enterprise Beans calls after another authorization forwarding is not
      * possible when given authorization identity does not exist in intermediate server. {@link RunAsPrincipalPermission} is
      * assigned to caller server and another-server identity.
      *
      * <pre>
-     * When: EJB client calls FirstServerChainBean as no-server2-identity user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls FirstServerChainBean as no-server2-identity user and Elytron AuthenticationContext API is used to
      *       authorization forwarding to EntryBean call with "server" user used as caller server identity
      *       and Elytron AuthenticationContext API is used to
      *       authorization forwarding to WhoAmIBean call with "another-server" user used as caller server identity.
@@ -267,11 +267,11 @@ public class ServerChainSecurityContextPropagationTestCase extends AbstractSecur
     }
 
     /**
-     * Test forwarding authentication (credential forwarding) for EJB calls is not possible after authorization forwarding.
+     * Test forwarding authentication (credential forwarding) for Jakarta Enterprise Beans calls is not possible after authorization forwarding.
      * {@link RunAsPrincipalPermission} is assigned to caller server and another-server identity.
      *
      * <pre>
-     * When: EJB client calls FirstServerChainBean as admin user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls FirstServerChainBean as admin user and Elytron AuthenticationContext API is used to
      *       authorization forwarding to EntryBean call with "server" user used as caller server identity and
      *       Elytron AuthenticationContext API is used to authentication forwarding to WhoAmIBean.
      * Then: WhoAmIBean call is fails because credentails should not be available on seccontext-server2 after authorization

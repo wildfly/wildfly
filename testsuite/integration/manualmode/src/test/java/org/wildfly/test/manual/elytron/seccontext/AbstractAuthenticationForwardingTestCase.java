@@ -56,10 +56,10 @@ import org.wildfly.security.sasl.SaslMechanismSelector;
 public abstract class AbstractAuthenticationForwardingTestCase extends AbstractSecurityContextPropagationTestBase {
 
     /**
-     * Test forwarding authentication (credential forwarding) works for EJB calls.
+     * Test forwarding authentication (credential forwarding) works for Jakarta Enterprise Beans calls.
      *
      * <pre>
-     * When: EJB client calls EntryBean as admin user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls EntryBean as admin user and Elytron AuthenticationContext API is used to
      *       authentication forwarding  to WhoAmIBean call
      * Then: credentials are reused for WhoAmIBean call and it correctly returns "admin" username
      * </pre>
@@ -74,10 +74,10 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
     }
 
     /**
-     * Test the EJB call fails when using forwarding authentication (credential forwarding) and user has insufficient roles.
+     * Test the Jakarta Enterprise Beans call fails when using forwarding authentication (credential forwarding) and user has insufficient roles.
      *
      * <pre>
-     * When: EJB client calls EntryBean as entry user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls EntryBean as entry user and Elytron AuthenticationContext API is used to
      *       authentication forwarding to WhoAmIBean call
      * Then: calling WhoAmIBean fails
      * </pre>
@@ -96,7 +96,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
      * Test the authentication propagation (credentials forwarding) works for OAUTHBEARER SASL mechanism.
      *
      * <pre>
-     * When: EJB client calls EntryBean with valid OAuth bearer token of "admin" user. The
+     * When: Jakarta Enterprise Beans client calls EntryBean with valid OAuth bearer token of "admin" user. The
      *       authentication forwarding is configured and WhoAmIBean is called
      * Then: the bearer token is forwarded and WhoAmIBean call returns "admin" username
      * </pre>
@@ -118,7 +118,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
      * insufficient roles for the call.
      *
      * <pre>
-     * When: EJB client calls EntryBean with valid OAuth bearer token of "entry" user. The
+     * When: Jakarta Enterprise Beans client calls EntryBean with valid OAuth bearer token of "entry" user. The
      *       authentication forwarding is configured and WhoAmIBean is called
      * Then: the WhoAmIBean call fails as the "entry" user has not roles allowed for the call
      * </pre>
@@ -137,10 +137,10 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
     }
 
     /**
-     * Test the EJB call using OAUTHBEARER SASL mechanism authentication fails when user has insufficient roles for the call.
+     * Test the Jakarta Enterprise Beans call using OAUTHBEARER SASL mechanism authentication fails when user has insufficient roles for the call.
      *
      * <pre>
-     * When: EJB client calls EntryBean with valid OAuth bearer token of "whoami" user
+     * When: Jakarta Enterprise Beans client calls EntryBean with valid OAuth bearer token of "whoami" user
      * Then: the EntryBean call fails as the "whoami" user has not roles allowed for the call
      * </pre>
      */
@@ -179,14 +179,14 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
         // call with user who doesn't have sufficient roles on Servlet
         Utils.makeCallWithBasicAuthn(entryServletUrl, "entry", "entry", SC_FORBIDDEN);
 
-        // call with user who doesn't have sufficient roles on EJB
+        // call with user who doesn't have sufficient roles on Jakarta Enterprise Beans
         assertThat(Utils.makeCallWithBasicAuthn(entryServletUrl, "servlet", "servlet", SC_OK), isEjbAccessException());
 
         // call with user who has all necessary roles
         assertEquals("Unexpected username returned", "admin",
                 Utils.makeCallWithBasicAuthn(entryServletUrl, "admin", "admin", SC_OK));
 
-        // call (again) with the user who doesn't have sufficient roles on EJB
+        // call (again) with the user who doesn't have sufficient roles on Jakarta Enterprise Beans
         assertThat(Utils.makeCallWithBasicAuthn(entryServletUrl, "servlet", "servlet", SC_OK), isEjbAccessException());
     }
 
@@ -308,7 +308,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
                     doHttpRequestTokenAuthn(httpClient, entryServletUrl, jwtToken, SC_OK));
         }
 
-        // do the call without sufficient role in EJB (server2)
+        // do the call without sufficient role in Jakarta Enterprise Beans (server2)
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             final String jwtToken = createJwtToken("servlet");
             assertThat("Unexpected result from EntryServlet",
@@ -323,7 +323,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
      * Test propagation of RuntimeException back to server1 during a call using the authentication forwarding.
      *
      * <pre>
-     * When: EJB client calls EntryBean as admin user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls EntryBean as admin user and Elytron AuthenticationContext API is used to
      *       authentication forwarding to WhoAmIBean call with "server" user used as caller server identity
      * Then: WhoAmIBean.throwIllegalStateException call should result in expected IllegalStateException.
      * </pre>
@@ -345,7 +345,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
      * forwarding.
      *
      * <pre>
-     * When: EJB client calls EntryBean as admin user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls EntryBean as admin user and Elytron AuthenticationContext API is used to
      *       authentication forwarding to WhoAmIBean call with "server" user used as caller server identity
      * Then: WhoAmIBean.throwServer2Exception call should result in expected ClassNotFoundException.
      * </pre>

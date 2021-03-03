@@ -45,8 +45,8 @@ failures. For example, consider a Jakarta EE application which makes use of
 the following features:
 
 * session-oriented servlets to provide user interaction
-* session-oriented EJBs to perform state-dependent business computation
-* EJB entity beans to store critical data in a persistent store (e.g.
+* session-oriented Jakarta Enterprise Beans to perform state-dependent business computation
+* Jakarta Enterprise Beans entity beans to store critical data in a persistent store (e.g.
 database)
 * SSO login to the application
 
@@ -54,8 +54,8 @@ If the application makes use of WildFly's fail-over services, a client
 interacting with an instance of that application will not be interrupted
 even when the node on which that instance executes crashes. Behind the
 scenes, WildFly makes sure that all of the user data that the
-application make use of (HTTP session data, EJB SFSB sessions, EJB
-entities and SSO credentials) are available at other nodes in the
+application make use of (HTTP session data, Jakarta Enterprise Beans SFSB sessions,
+Jakarta Enterprise Beans entities and SSO credentials) are available at other nodes in the
 cluster, so that when a failure occurs and the client is redirected to
 that new node for continuation of processing (i.e. the client "fails
 over" to the new node), the user's data is available and processing can
@@ -102,7 +102,7 @@ high-availability/clustering
 == Organization of the guide
 
 As high availability features and their configuration depend on the
-particular component they affect (e.g. HTTP sessions, EJB SFSB sessions,
+particular component they affect (e.g. HTTP sessions, Jakarta Enterprise Beans SFSB sessions,
 Hibernate), we organize the discussion around those Jakarta EE features. We
 strive to make each section as self-contained as possible. Also, when
 discussing a feature, we will introduce any WildFly subsystems upon

@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * A servlet that accesses an EJB and tests whether the call argument is
+ * A servlet that accesses an Jakarta Enterprise Beans and tests whether the call argument is
  * serialized.
  *
  * @author Scott.Stark@jboss.org

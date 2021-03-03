@@ -4,7 +4,7 @@
 The Jakarta EE platform specification defines the following JNDI contexts:
 
 * `java:comp` - The namespace is scoped to the current component (i.e.
-EJB)
+Jakarta Enterprise Beans)
 * `java:module` - Scoped to the current module
 * `java:app` - Scoped to the current application
 * `java:global` - Scoped to the application server
@@ -22,7 +22,7 @@ over remote JNDI.
 
 [IMPORTANT]
 
-For web deployments `java:comp` is aliased to `java:module`, so EJB's
+For web deployments `java:comp` is aliased to `java:module`, so Jakarta Enterprise Beans's
 deployed in a war do not have their own comp namespace.
 
 [[binding-entries-to-jndi]]

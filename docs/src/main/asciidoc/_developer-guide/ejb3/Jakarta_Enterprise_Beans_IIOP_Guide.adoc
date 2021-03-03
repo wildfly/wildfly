@@ -1,5 +1,5 @@
-[[EJB_IIOP_Guide]]
-= EJB IIOP Guide
+[[Jakarta_Enterprise_Beans_IIOP_Guide]]
+= Jakarta Enterprise Beans IIOP Guide
 
 [[enabling-iiop]]
 == Enabling IIOP
@@ -39,7 +39,7 @@ you do not wish to pre-generate your stub classes JDK Dynamic stubs can
 be used instead. The enable JDK dynamic stubs simply set the
 `com.sun.CORBA.ORBUseDynamicStub` system property to `true`.
 
-[[configuring-ejb-iiop-settings-via-jboss-ejb3.xml]]
-== Configuring EJB IIOP settings via jboss-ejb3.xml
+[[configuring-Jakarta-Enterprise-Beans-iiop-settings-via-jboss-ejb3.xml]]
+== Configuring Jakarta Enterprise Beans IIOP settings via jboss-ejb3.xml
 
 TODO

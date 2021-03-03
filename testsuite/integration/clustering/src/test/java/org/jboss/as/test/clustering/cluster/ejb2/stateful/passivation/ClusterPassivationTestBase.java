@@ -44,7 +44,7 @@ import org.junit.Assert;
 import org.junit.Before;
 
 /**
- * Base class for passivation tests on EJB2 beans.
+ * Base class for passivation tests on Enterprise Beans 2 beans.
  *
  * @author Ondrej Chaloupka
  */
@@ -83,12 +83,12 @@ public abstract class ClusterPassivationTestBase {
     }
 
     /**
-     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers based on this testcase
+     * Sets up the Jakarta Enterprise Beans client context to use a selector which processes and sets up Jakarta Enterprise Beans receivers based on this testcase
      * specific jboss-ejb-client.properties file
      */
     protected void setupEJBClientContextSelector() throws IOException {
-        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
-        // that should be used for this test using sfsb-failover-jboss-ejb-client.properties and ensure the EJB client
+        // TODO Elytron: Once support for legacy Jakarta Enterprise Beans properties has been added back, actually set the Jakarta Enterprise Beans properties
+        // that should be used for this test using sfsb-failover-jboss-ejb-client.properties and ensure the Jakarta Enterprise Beans client
         // context is reset to its original state at the end of the test
         //EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
     }
@@ -107,7 +107,7 @@ public abstract class ClusterPassivationTestBase {
     protected void waitForClusterContext() throws InterruptedException {
         int counter = 0;
         EJBClientContext ejbClientContext = EJBClientContext.getCurrent();
-        // TODO Elytron: Determine how this should be adapted once the clustering and EJB client changes are in
+        // TODO Elytron: Determine how this should be adapted once the clustering and Jakarta Enterprise Beans client changes are in
         // ClusterContext clusterContext;
         //do {
         //    clusterContext = ejbClientContext.getClusterContext(CLUSTER_NAME);
@@ -136,7 +136,7 @@ public abstract class ClusterPassivationTestBase {
 
         // A small hack - deleting node (by name) from cluster which this client knows
         // It means that the next request (ejb call) will be passed to the server #2
-        // TODO Elytron: Determine how this should be adapted once the clustering and EJB client changes are in
+        // TODO Elytron: Determine how this should be adapted once the clustering and Jakarta Enterprise Beans client changes are in
         //EJBClientContext.requireCurrent().getClusterContext(CLUSTER_NAME).removeClusterNode(calledNodeFirst);
 
         Assert.assertEquals("Supposing to get passivation node which was set", calledNodeFirst, statefulBean.getPassivatedBy());

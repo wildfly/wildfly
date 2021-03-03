@@ -49,7 +49,7 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeansMetaData;
  */
 public class AnnotatedEJBComponentDescriptionDeploymentUnitProcessor implements DeploymentUnitProcessor {
     /**
-     * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
+     * If this is an appclient we want to make the components as not installable, so we can still look up which Jakarta Enterprise Beans's are in
      * the deployment, but do not actual install them
      */
     private final boolean appclient;
@@ -74,10 +74,10 @@ public class AnnotatedEJBComponentDescriptionDeploymentUnitProcessor implements 
 
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
-            EjbLogger.DEPLOYMENT_LOGGER.tracef("Skipping EJB annotation processing since no composite annotation index found in unit: %s", deploymentUnit);
+            EjbLogger.DEPLOYMENT_LOGGER.tracef("Skipping Jakarta Enterprise Beans annotation processing since no composite annotation index found in unit: %s", deploymentUnit);
         } else {
             if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
-                EjbLogger.DEPLOYMENT_LOGGER.trace("Skipping EJB annotation processing due to deployment being metadata-complete. ");
+                EjbLogger.DEPLOYMENT_LOGGER.trace("Skipping Jakarta Enterprise Beans annotation processing due to deployment being metadata-complete. ");
             } else {
                 processAnnotations(deploymentUnit, compositeIndex);
             }
@@ -101,7 +101,7 @@ public class AnnotatedEJBComponentDescriptionDeploymentUnitProcessor implements 
     }
 
     private void processDeploymentDescriptor(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
-        // find the EJB jar metadata and start processing it
+        // find the Jakarta Enterprise Beans jar metadata and start processing it
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData == null) {
             return;
@@ -129,12 +129,12 @@ public class AnnotatedEJBComponentDescriptionDeploymentUnitProcessor implements 
                 }
             };
         }
-        // process EJBs
+        // process Jakarta Enterprise Beans
         final EnterpriseBeansMetaData ejbs = ejbJarMetaData.getEnterpriseBeans();
         if (ejbs != null && !ejbs.isEmpty()) {
             for (final EnterpriseBeanMetaData ejb : ejbs) {
                 final String beanName = ejb.getName();
-                // the important bit is to skip already processed EJBs via annotations
+                // the important bit is to skip already processed Jakarta Enterprise Beans via annotations
                 if (annotatedEJBs.contains(beanName)) {
                     continue;
                 }

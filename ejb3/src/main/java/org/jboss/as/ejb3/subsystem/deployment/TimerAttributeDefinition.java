@@ -53,7 +53,7 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 /**
- * Attribute definition for the list of timers associated with an EJB.
+ * Attribute definition for the list of timers associated with an Jakarta Enterprise Beans.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

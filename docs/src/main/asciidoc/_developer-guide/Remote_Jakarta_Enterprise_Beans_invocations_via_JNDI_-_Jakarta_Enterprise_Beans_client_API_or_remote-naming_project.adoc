@@ -1,5 +1,5 @@
-[[Remote_EJB_invocations_via_JNDI_-_EJB_client_API_or_remote-naming_project]]
-= Remote EJB invocations via JNDI - EJB client API or remote-naming project
+[[Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_remote-naming_project]]
+= Remote Jakarta Enterprise Beans invocations via JNDI - Jakarta Enterprise Beans client API or remote-naming project
 
 [[purpose]]
 == Purpose
@@ -633,3 +633,5 @@ garbage-collected. In this case the underlying EJBContext is destroyed
 and the conections are closed.
 * It is not possible to use remote-naming if the client is an
 application deployed on another JBoss instance
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

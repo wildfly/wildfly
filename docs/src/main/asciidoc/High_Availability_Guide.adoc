@@ -23,7 +23,7 @@ include::_high-availability/Introduction_To_High_Availability_Services.adoc[]
 
 include::_high-availability/HTTP_Services.adoc[]
 
-include::_high-availability/EJB_Services.adoc[]
+include::_high-availability/Jakarta_Enterprise_Beans_Services.adoc[]
 
 include::_high-availability/Clustering_API.adoc[]
 

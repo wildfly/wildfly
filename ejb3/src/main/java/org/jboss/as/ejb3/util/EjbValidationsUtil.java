@@ -46,7 +46,7 @@ public final class EjbValidationsUtil {
     }
 
     /**
-     * Returns true if the passed <code>mdbClass</code> meets the requirements set by the EJB3 spec about bean implementation
+     * Returns true if the passed <code>mdbClass</code> meets the requirements set by the Enterprise Beans 3 spec about bean implementation
      * classes. The passed <code>mdbClass</code> must not be an interface and must be public and not final and not abstract. If
      * it passes these requirements then this method returns true. Else it returns false.
      *

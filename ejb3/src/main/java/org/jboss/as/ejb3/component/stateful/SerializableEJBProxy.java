@@ -29,7 +29,7 @@ import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBLocator;
 
 /**
- * A serializable EJB proxy which serializes the {@link EJBLocator} and the associated with the EJB proxy
+ * A serializable Jakarta Enterprise Beans proxy which serializes the {@link EJBLocator} and the associated with the Jakarta Enterprise Beans proxy
  *
  * @author Jaikiran Pai
  */
@@ -40,17 +40,17 @@ class SerializableEJBProxy implements Serializable {
     private final EJBLocator<?> ejbLocator;
 
     /**
-     * @param ejbProxy The EJB proxy
-     * @throws IllegalArgumentException If the passed proxy is not an EJB proxy
+     * @param ejbProxy The Jakarta Enterprise Beans proxy
+     * @throws IllegalArgumentException If the passed proxy is not an Jakarta Enterprise Beans proxy
      */
     SerializableEJBProxy(final Object ejbProxy) {
-        // we hold on to the EJB locator and the EJB client context identifier
+        // we hold on to the Jakarta Enterprise Beans locator and the Jakarta Enterprise Beans client context identifier
         this.ejbLocator = EJBClient.getLocatorFor(ejbProxy);
     }
 
     @SuppressWarnings("unused")
     private Object readResolve() throws ObjectStreamException {
-        // recreate the proxy using the locator and the EJB client context identifier
+        // recreate the proxy using the locator and the Jakarta Enterprise Beans client context identifier
         return EJBClient.createProxy(this.ejbLocator);
     }
 }

@@ -30,7 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
  * {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} responsible for determining if property replacement should be
- * done on EJB annotations.
+ * done on Jakarta Enterprise Beans annotations.
  */
 public class AnnotationPropertyReplacementProcessor implements DeploymentUnitProcessor {
 

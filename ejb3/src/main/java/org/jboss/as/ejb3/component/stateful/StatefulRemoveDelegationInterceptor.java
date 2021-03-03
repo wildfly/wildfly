@@ -29,7 +29,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Interceptor that delegates calls to EJB 2.x remove methods to the component remove method interceptor chain
+ * Interceptor that delegates calls to Enterprise Beans 2.x remove methods to the component remove method interceptor chain
  *
  * @author Stuart Douglas
  */

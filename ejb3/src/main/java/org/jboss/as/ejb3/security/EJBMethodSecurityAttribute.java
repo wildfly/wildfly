@@ -28,9 +28,9 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Holds security metadata of a method corresponding to an EJB's view.
+ * Holds security metadata of a method corresponding to an Jakarta Enterprise Beans's view.
  * <p/>
- * For security metadata that's applicable at EJB component level (for ex: security domain) take a look at {@link EJBSecurityMetaData}
+ * For security metadata that's applicable at Jakarta Enterprise Beans component level (for ex: security domain) take a look at {@link EJBSecurityMetaData}
  * <p/>
  * User: Jaikiran Pai
  */

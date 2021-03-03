@@ -35,7 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 
 /**
- * Deployment processor responsible for detecting EJB components and adding a {@link BindingConfiguration} for the
+ * Deployment processor responsible for detecting Jakarta Enterprise Beans components and adding a {@link BindingConfiguration} for the
  * java:comp/TimerService entry.
  * <p/>
  *
@@ -46,9 +46,9 @@ public class TimerServiceJndiBindingProcessor extends AbstractComponentConfigPro
     @Override
     protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, CompositeIndex index, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         if (!(componentDescription instanceof EJBComponentDescription)) {
-            return;  // Only process EJBs
+            return;  // Only process Jakarta Enterprise Beans
         }
-        // if the EJB is packaged in a .war, then we need to bind the java:comp/TimerService only once for the entire module
+        // if the Jakarta Enterprise Beans are packaged in a .war, then we need to bind the java:comp/TimerService only once for the entire module
         if (componentDescription.getNamingMode() != ComponentNamingMode.CREATE) {
             // get the module description
             final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
@@ -58,7 +58,7 @@ public class TimerServiceJndiBindingProcessor extends AbstractComponentConfigPro
             // a web ENC. So binding to java:module/TimerService is OK.
             final BindingConfiguration timerServiceBinding = new BindingConfiguration("java:module/TimerService", new TimerServiceBindingSource());
             moduleDescription.getBindingConfigurations().add(timerServiceBinding);
-        } else { // EJB packaged outside of a .war. So process normally.
+        } else { // Jakarta Enterprise Beans packaged outside of a .war. So process normally.
             // add the binding configuration to the component description
             final BindingConfiguration timerServiceBinding = new BindingConfiguration("java:comp/TimerService", new TimerServiceBindingSource());
             componentDescription.getBindingConfigurations().add(timerServiceBinding);

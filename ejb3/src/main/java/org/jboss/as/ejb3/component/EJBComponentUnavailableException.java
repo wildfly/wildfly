@@ -3,8 +3,9 @@ package org.jboss.as.ejb3.component;
 import javax.ejb.EJBException;
 
 /**
- * An exception which can be used to indicate that a particular EJB component is (no longer) available for handling invocations. This typically is thrown when an EJB is invoked
- * after the EJB component has been marked for shutdown.
+ * An exception which can be used to indicate that a particular Jakarta Enterprise Beans component is (no longer) available for handling invocations.
+ * This typically is thrown when an Jakarta Enterprise Beans are invoked
+ * after the Jakarta Enterprise Beans component has been marked for shutdown.
  *
  * @author: Jaikiran Pai
  */

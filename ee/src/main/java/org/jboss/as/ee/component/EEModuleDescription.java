@@ -250,7 +250,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
     /**
      * Unlike the {@link #getApplicationName()} which follows the Jakarta EE spec semantics i.e. application name is the
      * name of the top level deployment (even if it is just a jar and not an ear), this method returns the
-     * application name which follows the EJB spec semantics i.e. the application name is the
+     * application name which follows the Jakarta Enterprise Beans spec semantics i.e. the application name is the
      * .ear name or any configured value in application.xml. This method returns null in the absence of a .ear
      *
      * @return

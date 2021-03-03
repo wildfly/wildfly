@@ -1,10 +1,10 @@
-[[EJB_over_HTTP]]
-= EJB over HTTP
+[[Jakarta_Enterprise_Beans_over_HTTP]]
+= Jakarta Enterprise Beans over HTTP
 
 Beginning with WildFly 11 it is now possible to use HTTP as the
-transport (instead of remoting) for remote EJB and JNDI invocations.
+transport (instead of remoting) for remote Jakarta Enterprise Beans and JNDI invocations.
 
-Everything mentioned below is applicable for both JNDI and EJB
+Everything mentioned below is applicable for both JNDI and Jakarta Enterprise Beans
 functionality.
 
 [[server-configuration]]
@@ -31,7 +31,7 @@ authentication factory.
 == Performing Invocations
 
 The mechanism for performing invocations is exactly the same as for the
-remoting based EJB client, the only difference is that instead of a
+remoting based Jakarta Enterprise Beans client, the only difference is that instead of a
 'remote+http' URI you use a 'http' URI (which must include the path that
 was configured in the invoker). For example if you are currently using
 'remote+ http://localhost:8080' as the target URI, you would change this

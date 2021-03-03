@@ -298,7 +298,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         Set<String> classes = resteasy.getScannedResourceClasses();
         for (String jndiComp : resteasy.getScannedJndiComponentResources()) {
             String[] jndiCompArray = jndiComp.split(";");
-            classes.add(jndiCompArray[1]); // REST as EJB is added into jndiComponents
+            classes.add(jndiCompArray[1]); // REST as Jakarta Enterprise Beans are added into jndiComponents
         }
         List<String> rootRestClasses = new ArrayList<>(classes);
         Collections.sort(rootRestClasses);

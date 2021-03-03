@@ -58,8 +58,8 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 
 /**
- * A {@link AbstractAddStepHandler} to handle the add operation for the EJB
- * remote service, in the EJB subsystem
+ * A {@link AbstractAddStepHandler} to handle the add operation for the Jakarta Enterprise Beans
+ * remote service, in the Jakarta Enterprise Beans subsystem
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -121,7 +121,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         }
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
-        // Install the EJB remoting connector service which will listen for client connections on the remoting channel
+        // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(channelCreationOptions,
                 FilterSpecClassResolverFilter.getFilterForOperationContext(context));

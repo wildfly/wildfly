@@ -41,7 +41,7 @@ import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.pool.Pool;
 
 /**
- * Enumeration of types of manageable EJB components.
+ * Enumeration of types of manageable Jakarta Enterprise Beans components.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

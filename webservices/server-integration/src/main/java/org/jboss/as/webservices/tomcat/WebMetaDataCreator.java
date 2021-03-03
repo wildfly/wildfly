@@ -58,7 +58,7 @@ final class WebMetaDataCreator {
     }
 
     /**
-     * Creates web meta data for EJB deployments.
+     * Creates web meta data for Jakarta Enterprise Beans deployments.
      *
      * @param dep webservice deployment
      */

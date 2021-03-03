@@ -3,7 +3,7 @@
 
 Within WildFly we make use of security realms to secure access to the
 management interfaces, these same realms are used to secure inbound
-access as exposed by JBoss Remoting such as remote JNDI and EJB access,
+access as exposed by JBoss Remoting such as remote JNDI and Jakarta Enterprise Beans access,
 the realms are also used to define an identity for the server - this
 identity can be used for both inbound connections to the server and
 outbound connections being established by the server.
@@ -53,7 +53,7 @@ connection using a username and password.
 * `authorization` - This is the final optional element and is used to
 define how roles are loaded for an authenticated identity. At the moment
 this is more applicable for realms used for access to EE deployments
-such as web applications or EJBs but this will also become relevant as
+such as web applications or Jakarta Enterprise Beans but this will also become relevant as
 we add role based authorization checks to the management model.
 
 [[using-a-realm]]
@@ -94,7 +94,7 @@ will be able to control and administer the WildFly installation.
 ==== Remoting Subsystem
 
 The Remoting subsystem exposes a connector to allow for inbound
-comunications with JNDI and the EJB subsystem by default we associate
+comunications with JNDI and the Jakarta Enterprise Beans subsystem by default we associate
 the `ApplicationRealm` with this connection.
 
 [source,xml,options="nowrap"]
@@ -111,7 +111,7 @@ the `ApplicationRealm` with this connection.
 ==== Remoting Subsystem
 
 Outbound connections can also be defined within the Remoting subsystem,
-these are typically used for remote EJB invocations from one AS server
+these are typically used for remote Jakarta Enterprise Beans invocations from one AS server
 to another, in this scenario the security realm is used to obtain the
 server identity either it's password for X.509 certificate and possibly
 a trust store to verify the certificate of the remote host.
@@ -479,7 +479,7 @@ is disabled.
 
 To enable remote access to JMX uncomment the `<remoting-connector />`
 element however be aware that this will make the MBeanServer accessible
-over the same Remoting connector used for remote JNDI and EJB access -
+over the same Remoting connector used for remote JNDI and Jakarta Enterprise Beans access -
 this means that any user that can authenticate against the realm
 `ApplicationRealm` will be able to access the MBeanServer.
 

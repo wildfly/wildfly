@@ -59,7 +59,7 @@ package org.jboss.as.ejb3.component;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public enum MethodIntf {
-    BEAN, // represents a direct call to the EJB (temporary)
+    BEAN, // represents a direct call to the Jakarta Enterprise Beans (temporary)
     HOME,
     REMOTE,
     LOCAL_HOME,

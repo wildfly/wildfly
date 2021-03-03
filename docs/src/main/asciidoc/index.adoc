@@ -53,7 +53,7 @@ on using the CLI and web management interface, shows you how to administer a Wil
 domain, and shows you how to configure key subsystems.
 
 * The link:High_Availability_Guide{outfilesuffix}[High Availability Guide] shows
-you how to create a cluster, how to configure the web container and EJB
+you how to create a cluster, how to configure the web container and Jakarta Enterprise Beans
 container for clustering and how to configure load balancing
 and failover.
 
@@ -64,7 +64,7 @@ and failover.
 Started Developing Applications Guide] shows you how to build Jakarta EE
 applications and deploy them to WildFly. The guide starts by showing you
 the simplest _helloworld_ application using just Servlet and Jakarta Contexts and Dependency Injection, and
-then adds in Jakarta Server Faces, persistence and transactions, EJB, Bean Validation,
+then adds in Jakarta Server Faces, persistence and transactions, Jakarta Enterprise Beans, Bean Validation,
 RESTful web services and more. Finally, you'll get the opportunity to create
 your own skeleton project. Each tutorial is accompanied by a quickstart,
 which contains the source code, deployment descriptors and a Maven based

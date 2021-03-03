@@ -152,10 +152,10 @@ Where an `application-security-domain` mapping is in use it can be useful to dou
 
 In this output the `referencing-deployments` attribute shows that the deployment `simple-webapp.war` has been deployed using this mapping.
 
-[[ejb-subsystem]]
-== EJB Subsystem
+[[Jakarta-Enterprise-Beans-subsystem]]
+== Jakarta Enterprise Beans Subsystem
 
-Configuration can be added to the EJB subsystem to map a security domain
+Configuration can be added to the Jakarta Enterprise Beans subsystem to map a security domain
 name referenced in a deployment to an Elytron security domain:
 
 [source,options="nowrap"]
@@ -206,8 +206,8 @@ descriptor or annotation to secure webservice endpoint.
 
 When Elytron security is enabled, JAAS subject or principal can be pushed
 to jbossws-cxf endpoint’s SecurityContext to propagate authenticated
-identity to EJB container. Here is a CXF interceptor example to
-propagate authenticated information to EJB container :
+identity to Jakarta Enterprise Beans container. Here is a CXF interceptor example to
+propagate authenticated information to Jakarta Enterprise Beans container :
 [source,java,options="nowrap"]
 ----
 public class PropagateSecurityInterceptor extends WSS4JInInterceptor {

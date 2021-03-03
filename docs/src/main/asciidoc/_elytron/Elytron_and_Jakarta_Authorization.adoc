@@ -89,3 +89,4 @@ to enable JACC you can execute a command as follows:
 ----
 
 NOTE: References in this document to Java Authorization Contract for Containers (JACC) refer to Jakarta Authorization unless otherwise noted.
+      References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

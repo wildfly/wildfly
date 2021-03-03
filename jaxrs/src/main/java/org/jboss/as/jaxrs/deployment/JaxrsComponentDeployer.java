@@ -42,16 +42,16 @@ import org.jboss.modules.Module;
 import org.jboss.resteasy.util.GetRestful;
 
 /**
- * Integrates Jakarta RESTful Web Services with managed beans and EJB's
+ * Integrates Jakarta RESTful Web Services with managed beans and Jakarta Enterprise Beans's
  *
  * @author Stuart Douglas
  */
 public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
 
     /**
-     * We use hard coded class names to avoid a direct dependency on EJB
+     * We use hard coded class names to avoid a direct dependency on Jakarta Enterprise Beans
      *
-     * This allows the use of Jakarta RESTful Web Services in cut down servers without EJB
+     * This allows the use of Jakarta RESTful Web Services in cut down servers without Jakarta Enterprise Beans
      *
      * Kinda yuck, but there is not really any alternative if we want don't want the dependency
      */

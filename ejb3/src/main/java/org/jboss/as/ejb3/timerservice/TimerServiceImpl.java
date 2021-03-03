@@ -77,7 +77,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 import org.xnio.IoUtils;
 
 /**
- * MK2 implementation of EJB3.1 {@link TimerService}
+ * MK2 implementation of Enterprise Beans 3.1 {@link TimerService}
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
@@ -456,7 +456,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (this.timerServiceRegistry != null) {
             return this.timerServiceRegistry.getAllActiveTimers();
         }
-        // if we don't have the registry (shouldn't really happen) which stores the timer services applicable for the EJB module to which
+        // if we don't have the registry (shouldn't really happen) which stores the timer services applicable for the Jakarta Enterprise Beans module to which
         // this timer service belongs, then let's at least return the active timers that are applicable only for this timer service
         return this.getTimers();
     }
@@ -473,7 +473,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param persistent        True if the newly created timer has to be persistent
      * @return Returns the newly created timer
      * @throws IllegalArgumentException If <code>initialExpiration</code> is null or <code>intervalDuration</code> is negative
-     * @throws IllegalStateException    If this method was invoked during a lifecycle callback on the EJB
+     * @throws IllegalStateException    If this method was invoked during a lifecycle callback on the Jakarta Enterprise Beans
      */
     private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent) {
         if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
@@ -512,7 +512,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
-     * @return The primary key of the current EJB, or null if not applicable
+     * @return The primary key of the current Jakarta Enterprise Beans, or null if not applicable
      */
     private Object currentPrimaryKey() {
         return null;
@@ -527,7 +527,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param persistent True if the newly created timer has to be persistent
      * @return Returns the newly created timer
      * @throws IllegalArgumentException If the passed <code>schedule</code> is null
-     * @throws IllegalStateException    If this method was invoked during a lifecycle callback on the EJB
+     * @throws IllegalStateException    If this method was invoked during a lifecycle callback on the Jakarta Enterprise Beans
      */
     private TimerImpl createCalendarTimer(ScheduleExpression schedule,
                                           Serializable info, boolean persistent, Method timeoutMethod) {

@@ -51,7 +51,7 @@ public class StatelessBean {
 
     private InitialContext getInitialContext() throws NamingException {
         final Properties props = new Properties();
-        // setup the ejb: namespace URL factory
+        // setup the Jakarta Enterprise Beans: namespace URL factory
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         return new InitialContext(props);
     }

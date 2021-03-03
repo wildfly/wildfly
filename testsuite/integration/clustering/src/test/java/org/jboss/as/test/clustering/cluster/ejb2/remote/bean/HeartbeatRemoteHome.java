@@ -3,7 +3,7 @@ package org.jboss.as.test.clustering.cluster.ejb2.remote.bean;
 import javax.ejb.EJBHome;
 
 /**
- * The remote home interface for the Heartbeat EJB 2.x bean
+ * The remote home interface for the Heartbeat Enterprise Beans 2.x bean
  *
  * @author Richard Achmatowicz
  */

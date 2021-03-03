@@ -60,7 +60,7 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.
- * Note:  This processor only supports JSR-316 compliant managed beans.  So it will not handle complimentary spec additions (ex. EJB).
+ * Note:  This processor only supports JSR-316 compliant managed beans.  So it will not handle complimentary spec additions (ex. Jakarta Enterprise Beans).
  *
  * @author John E. Bailey
  */

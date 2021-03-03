@@ -30,8 +30,8 @@ import org.jboss.marshalling.Unmarshaller;
 import java.io.IOException;
 
 /**
- * By default, EJB proxies don't serialize the {@link org.jboss.ejb.client.EJBClientContextIdentifier} associated with them,
- * so this {@link ObjectTable} marshals such EJB proxies to serializable even the {@link org.jboss.ejb.client.EJBClientContextIdentifier} (if any)
+ * By default, Jakarta Enterprise Beans proxies don't serialize the {@link org.jboss.ejb.client.EJBClientContextIdentifier} associated with them,
+ * so this {@link ObjectTable} marshals such Jakarta Enterprise Beans proxies to serializable even the {@link org.jboss.ejb.client.EJBClientContextIdentifier} (if any)
  * associated with that proxy.
  *
  * @author Jaikiran Pai
@@ -43,7 +43,7 @@ public class EJBClientContextIdentifierObjectTable implements ObjectTable {
         if (o == null) {
             return null;
         }
-        // we just care about EJB proxies
+        // we just care about Jakarta Enterprise Beans proxies
         if (!EJBClient.isEJBProxy(o)) {
             return null;
         }
@@ -57,7 +57,7 @@ public class EJBClientContextIdentifierObjectTable implements ObjectTable {
 
     /**
      * A {@link Writer} which writes out a {@link SerializableEJBProxy} for a
-     * EJB proxy
+     * Jakarta Enterprise Beans proxy
      */
     private static class EJBClientContextIdentifierWriter implements Writer {
 

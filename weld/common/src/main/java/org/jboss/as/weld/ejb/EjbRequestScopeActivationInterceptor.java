@@ -41,13 +41,13 @@ import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.module.ejb.AbstractEJBRequestScopeActivationInterceptor;
 
 /**
- * Interceptor for activating the Jakarta Contexts and Dependency Injection request scope on some EJB invocations.
+ * Interceptor for activating the Jakarta Contexts and Dependency Injection request scope on some Jakarta Enterprise Beans invocations.
  * <p>
- * Remote EJB invocations must also have the request scope active, but it may already be active for in-VM requests.
+ * Remote Jakarta Enterprise Beans invocations must also have the request scope active, but it may already be active for in-VM requests.
  * <p>
  * This interceptor is largely stateless, and can be re-used
  * <p>
- * Note that {@link EjbRequestContext} is actually bound to {@link InvocationContext} and so it's ok to use this interceptor for other components than ejbs.
+ * Note that {@link EjbRequestContext} is actually bound to {@link InvocationContext} and so it's ok to use this interceptor for other components than Jakarta Enterprise Beans.
  *
  * @author Stuart Douglas
  * @author Jozef Hartinger

@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 
 /**
- * Injection source for EJB remote views.
+ * Injection source for Jakarta Enterprise Beans remote views.
  *
  * @author Stuart Douglas
  */

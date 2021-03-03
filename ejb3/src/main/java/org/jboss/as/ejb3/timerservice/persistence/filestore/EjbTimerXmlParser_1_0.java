@@ -80,7 +80,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * Parser for persistent EJB timers that are stored in XML.
+ * Parser for persistent Jakarta Enterprise Beans timers that are stored in XML.
  *
  * @author Stuart Douglas
  */

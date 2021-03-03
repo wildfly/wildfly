@@ -3,7 +3,7 @@
 
 Prior to WildFly 11, many WildFly client libraries used different configuration strategies. WildFly 11 introduces a new `wildfly-config.xml` file which unifies all client configuration in a single place. In addition to being able to configure authentication using Elytron as described in the previous section, a `wildfly-config.xml` file can also be used to:
 
-== Configure EJB client connections, global interceptors, and invocation timeout
+== Configure Jakarta Enterprise Beans client connections, global interceptors, and invocation timeout
 
 Schema location: [https://github.com/wildfly/jboss-ejb-client/blob/4.0.2.Final/src/main/resources/schema/wildfly-client-ejb_3_0.xsd]
 

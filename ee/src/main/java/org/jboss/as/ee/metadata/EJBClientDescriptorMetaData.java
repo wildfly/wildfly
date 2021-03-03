@@ -97,7 +97,7 @@ public class EJBClientDescriptorMetaData {
     }
 
     /**
-     * Set the pass-by-value semantics for the local receiver belonging to the EJB client context
+     * Set the pass-by-value semantics for the local receiver belonging to the Jakarta Enterprise Beans client context
      * represented by this metadata
      *
      * @param passByValue True if pass-by-value. False otherwise.
@@ -107,7 +107,7 @@ public class EJBClientDescriptorMetaData {
     }
 
     /**
-     * If pass-by-value semantics for the local EJB receiver has been explicitly set, then returns that value.
+     * If pass-by-value semantics for the local Jakarta Enterprise Beans receiver has been explicitly set, then returns that value.
      * Else returns null.
      *
      * @return
@@ -117,16 +117,16 @@ public class EJBClientDescriptorMetaData {
     }
 
     /**
-     * Exclude/include the local receiver in the EJB client context represented by this metadata.
+     * Exclude/include the local receiver in the Jakarta Enterprise Beans client context represented by this metadata.
      *
-     * @param excludeLocalReceiver True if local receiver has to be excluded in the EJB client context. False otherwise.
+     * @param excludeLocalReceiver True if local receiver has to be excluded in the Jakarta Enterprise Beans client context. False otherwise.
      */
     public void setExcludeLocalReceiver(final Boolean excludeLocalReceiver) {
         this.excludeLocalReceiver = excludeLocalReceiver;
     }
 
     /**
-     * Returns true if the local receiver is disabled in the EJB client context represented by this metadata.
+     * Returns true if the local receiver is disabled in the Jakarta Enterprise Beans client context represented by this metadata.
      * Else returns false.
      *
      * @return

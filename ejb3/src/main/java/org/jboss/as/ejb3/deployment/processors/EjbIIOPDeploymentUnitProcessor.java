@@ -78,7 +78,7 @@ import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.iiop.openjdk.service.IORSecConfigMetaDataService;
 
 /**
- * This is the DUP that sets up IIOP for EJB's
+ * This is the DUP that sets up IIOP for Jakarta Enterprise Beans's
  */
 public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 

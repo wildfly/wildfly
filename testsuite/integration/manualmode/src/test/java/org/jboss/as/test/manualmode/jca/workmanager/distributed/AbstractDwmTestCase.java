@@ -74,7 +74,7 @@ import org.wildfly.test.api.Authentication;
  * Tests distributed work manager and whether it really distributes work over multiple nodes. Test cases use two servers
  * both with a deployed resource adapter configured to use the DWM.
  *
- * Work is scheduled via a stateless ejb proxy. This allows us to schedule work from within the test, without the need
+ * Work is scheduled via a stateless Jakarta Enterprise Beans proxy. This allows us to schedule work from within the test, without the need
  * to marshall anything not serializable (such as the resource adapter).
  */
 public abstract class AbstractDwmTestCase {
@@ -216,11 +216,11 @@ public abstract class AbstractDwmTestCase {
         client1.close();
         client2.close();
 
-        // now deploy the ejbs
+        // now deploy the Jakarta Enterprise Beans
         deployer.deploy(DEPLOYMENT_0);
         deployer.deploy(DEPLOYMENT_1);
 
-        // set up ejb proxies
+        // set up Jakarta Enterprise Beans proxies
         try {
             server1Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddress(), "8080");
             server2Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddressNode1(), "8180");

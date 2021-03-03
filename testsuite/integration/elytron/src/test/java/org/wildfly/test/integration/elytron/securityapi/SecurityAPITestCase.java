@@ -140,7 +140,7 @@ public class SecurityAPITestCase {
             }
 
             if (ejbSupported) {
-                // Verify a good username and password establishes an identity with the EJB SessionContext
+                // Verify a good username and password establishes an identity with the Jakarta Enterprise Beans SessionContext
                 request = new HttpGet(new URI(url.toExternalForm() + "/test?ejb=true"));
                 request.addHeader(USERNAME_HEADER, USERNAME);
                 request.addHeader(PASSWORD_HEADER, PASSWORD);
@@ -150,7 +150,7 @@ public class SecurityAPITestCase {
                     assertEquals("Unexpected content of HTTP response.", USERNAME, EntityUtils.toString(response.getEntity()));
                 }
 
-                // Verify a good username and password establishes an identity with the SecurityDomain within an EJB
+                // Verify a good username and password establishes an identity with the SecurityDomain within an Jakarta Enterprise Beans
                 request = new HttpGet(new URI(url.toExternalForm() + "/test?ejb=true&source=SecurityDomain"));
                 request.addHeader(USERNAME_HEADER, USERNAME);
                 request.addHeader(PASSWORD_HEADER, PASSWORD);
@@ -160,7 +160,7 @@ public class SecurityAPITestCase {
                     assertEquals("Unexpected content of HTTP response.", USERNAME, EntityUtils.toString(response.getEntity()));
                 }
 
-                // Verify a good username and password establishes an identity with the SecurityContext within an EJB
+                // Verify a good username and password establishes an identity with the SecurityContext within an Jakarta Enterprise Beans
                 request = new HttpGet(new URI(url.toExternalForm() + "/test?ejb=true&source=SecurityContext"));
                 request.addHeader(USERNAME_HEADER, USERNAME);
                 request.addHeader(PASSWORD_HEADER, PASSWORD);

@@ -30,7 +30,7 @@ import org.jboss.msc.service.StopContext;
 
 /**
  * Allows enabling/disabling access to the {@link javax.transaction.UserTransaction} at runtime. Typically, components (like the
- * EJB component), at runtime, based on a certain criteria decide whether or not access to the
+ * Jakarta Enterprise Beans component), at runtime, based on a certain criteria decide whether or not access to the
  * {@link javax.transaction.UserTransaction} is allowed during an invocation associated with a thread. The
  * {@link UserTransactionService} and the {@link UserTransactionBindingService} which are responsible for handing out the
  * {@link javax.transaction.UserTransaction} use this service to decide whether or not they should hand out the

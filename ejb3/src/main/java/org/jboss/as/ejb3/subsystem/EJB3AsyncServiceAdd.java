@@ -37,8 +37,8 @@ import org.jboss.msc.service.ServiceName;
 import java.util.concurrent.Executor;
 
 /**
- * A {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
- * remote service, in the EJB subsystem
+ * A {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler} to handle the add operation for the Jakarta Enterprise Beans
+ * remote service, in the Jakarta Enterprise Beans subsystem
  * <p/>
  *
  * @author Stuart Douglas
@@ -58,7 +58,7 @@ public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                ROOT_LOGGER.debug("Adding EJB @Asynchronous support");
+                ROOT_LOGGER.debug("Adding Jakarta Enterprise Beans @Asynchronous support");
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_ASYNCHRONOUS_MERGE, new AsynchronousMergingProcessor(threadPoolServiceName));
             }
         }, OperationContext.Stage.RUNTIME);

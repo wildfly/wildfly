@@ -455,3 +455,5 @@ doEJBInvocation() since the EJB client context is no longer available.
 
 That's the reason why the EJB client API doesn't automatically close the
 EJB client context.
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

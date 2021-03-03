@@ -35,7 +35,7 @@ The most significant part of the configuration in `domain.xml` and
 more (in `domain.xml`) "profiles". A profile is a named set of subsystem
 configurations. A subsystem is an added set of capabilities added to the
 core server by an extension (see "Extensions" above). A subsystem
-provides servlet handling capabilities; a subsystem provides an EJB
+provides servlet handling capabilities; a subsystem provides an Jakarta Enterprise Beans
 container; a subsystem provides Jakarta Transactions, etc. A profile is a named list of
 subsystems, along with the details of each subsystem's configuration. A
 profile with a large number of subsystems results in a server with a

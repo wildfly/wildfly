@@ -88,9 +88,9 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
     }
 
     /*
-     * Set up JNDI properties to support HTTP based EJB client invocations via HTTP Upgrade
+     * Set up JNDI properties to support HTTP based Jakarta Enterprise Beans client invocations via HTTP Upgrade
      *
-     * NOTE: there are several ways to connect to the EJB container on the server:
+     * NOTE: there are several ways to connect to the Jakarta Enterprise Beans container on the server:
      *   protocol           URL
      *   remoting           remote://localhost:4447
      *   HTTP Upgrade       remote+http://localhost:8080

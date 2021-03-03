@@ -41,7 +41,7 @@
 
     <name>WildFly: SFSB clustering</name>
     <description>
-        Parent module for modules related to distributable @Stateful EJBs.
+        Parent module for modules related to distributable @Stateful Jakarta Enterprise Beans.
     </description>
 
     <modules>

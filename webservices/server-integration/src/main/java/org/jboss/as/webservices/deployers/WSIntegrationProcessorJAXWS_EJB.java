@@ -186,7 +186,7 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
                 }
             }
         }
-        //if there is no class level security annotation, it will delegate to ejb's security check
+        //if there is no class level security annotation, it will delegate to Jakarta Enterprise Beans's security check
         if (securityRoles.isEmpty()) {
             securityRoles.add("*");
         }

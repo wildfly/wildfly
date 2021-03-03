@@ -71,7 +71,7 @@ public class ComponentConfiguration {
     private final OrderedItemContainer<List<InterceptorFactory>> postActivateInterceptors = new OrderedItemContainer<>();
     private final Map<Method, OrderedItemContainer<List<InterceptorFactory>>> componentInterceptors = new IdentityHashMap<>();
 
-    //TODO: move this into an EJB specific configuration
+    //TODO: move this into an Jakarta Enterprise Beans specific configuration
     private final Map<Method, OrderedItemContainer<InterceptorFactory>> timeoutInterceptors = new IdentityHashMap<>();
 
     // Component instance management

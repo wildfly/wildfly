@@ -23,7 +23,7 @@
 package org.jboss.as.ejb3.component.allowedmethods;
 
 /**
- * Enum of ejb methods controlled by {@link AllowedMethodsInformation}
+ * Enum of Jakarta Enterprise Beans methods controlled by {@link AllowedMethodsInformation}
  *
  * @author Stuart Douglas
  */

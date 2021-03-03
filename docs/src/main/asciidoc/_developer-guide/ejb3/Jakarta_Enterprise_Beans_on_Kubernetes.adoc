@@ -1,5 +1,5 @@
-[[EJB_on_Kubernetes]]
-= EJB on Kubernetes
+[[Jakarta_Enterprise_Beans_on_Kubernetes]]
+= Jakarta Enterprise Beans on Kubernetes
 
 If the WildFly server is deployed on Kubernetes then there are several
 points that you need to bear in mind when you use EJBs.
@@ -104,3 +104,5 @@ on your application.
   </authentication-client>
 </configuration>
 ----
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

@@ -86,11 +86,11 @@ Note, it is also possible to generate the abstract contract off line
 using JBossWS tools. For details of that please see Bottom-Up (Java to
 WSDL).
 
-[[ejb3-stateless-session-bean-slsb]]
-=== EJB3 Stateless Session Bean (SLSB)
+[[Jakarta-Enterprise-Beans-3-stateless-session-bean-slsb]]
+=== Jakarta Enterprise Beans 3 Stateless Session Bean (SLSB)
 
 The Jakarta XML Web Services programming model supports the same set of annotations on
-EJB3 stateless session beans as on POJO endpoints.
+Jakarta Enterprise Beans 3 stateless session beans as on POJO endpoints.
 
 ....
 @Stateless
@@ -109,13 +109,13 @@ public class EJB3Bean01 implements EJB3RemoteInterface
 }
 ....
 
-Above you see an EJB-3.0 stateless session bean that exposes one method
+Above you see an Enterprise Beans-3.0 stateless session bean that exposes one method
 both on the remote interface and as an endpoint operation.
 
 [[packaging-the-endpoint-1]]
 ==== Packaging the endpoint
 
-A JSR-181 EJB service endpoint is packaged as an ordinary ejb
+A JSR-181 Jakarta Enterprise Beans service endpoint is packaged as an ordinary ejb
 deployment.
 
 ....

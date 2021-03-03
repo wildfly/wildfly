@@ -49,7 +49,7 @@ import org.jboss.security.SimplePrincipal;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * EJB authorization interceptor responsible for handling invocation on EJB methods and doing the necessary authorization
+ * Jakarta Enterprise Beans authorization interceptor responsible for handling invocation on Jakarta Enterprise Beans methods and doing the necessary authorization
  * checks on the invoked method.
  * <p/>
  * User: Jaikiran Pai
@@ -57,7 +57,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class AuthorizationInterceptor implements Interceptor {
 
     /**
-     * EJB method security metadata
+     * Jakarta Enterprise Beans method security metadata
      */
     private final EJBMethodSecurityAttribute ejbMethodSecurityMetaData;
 

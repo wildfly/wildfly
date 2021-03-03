@@ -51,7 +51,7 @@ subsystem (e.g org.jboss.as.test.integration.ejb.async). When a test +
 impacts multiple subsystems this is a bit of a judgement call, but in +
 general the tests should go into the package of +
 the spec that defines the functionality (e.g. Jakarta Contexts and Dependency Injection based constructor +
-injection into an EJB, even though this involves Jakarta Contexts and Dependency Injection and EJB, +
+injection into an Jakarta Enterprise Beans, even though this involves Jakarta Contexts and Dependency Injection and Jakarta Enterprise Beans, +
 the Jakarta Contexts and Dependency Injection spec defines this behaviour)
 
 == Explain non-obvious spec behavior in comments

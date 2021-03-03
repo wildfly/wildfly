@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
 
 
 /**
- * Simple ejb client reconnection test case.
+ * Simple Jakarta Enterprise Beans client reconnection test case.
  * See AS7-3215.
  *
  * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
@@ -166,7 +166,7 @@ public class EJBClientReconnectionTestCase {
     }
 
     /**
-     * Sets up the EJB client properties based on this testcase specific jboss-ejb-client.properties file
+     * Sets up the Jakarta Enterprise Beans client properties based on this testcase specific jboss-ejb-client.properties file
      *
      * @return
      * @throws java.io.IOException

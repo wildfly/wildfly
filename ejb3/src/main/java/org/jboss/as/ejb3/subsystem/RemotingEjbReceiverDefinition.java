@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for remoting ejb receiver in remoting profile.
+ * {@link org.jboss.as.controller.ResourceDefinition} for remoting Jakarta Enterprise Beans receiver in remoting profile.
  *
  * This is deprecated, but is still required for domain most support for older servers.
  *

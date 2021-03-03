@@ -61,7 +61,7 @@ import java.util.Properties;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
- * Tests that clustered EJB remote invocations between the server and client, where the client itself
+ * Tests that clustered Jakarta Enterprise Beans remote invocations between the server and client, where the client itself
  * is another server instance, work correctly and the clustering failover capabilities are available. This
  * further tests that the cluster configurations in the jboss-ejb-client.xml are honoured.
  *
@@ -149,7 +149,7 @@ public class EJBClientClusterConfigurationTestCase {
         ModelControllerClient serverAClient = null;
 
         try {
-            // deploy a deployment which contains a clustered EJB
+            // deploy a deployment which contains a clustered Jakarta Enterprise Beans
             this.deployer.deploy(DEFAULT_AS_DEPLOYMENT);
 
             // start the other server
@@ -165,7 +165,7 @@ public class EJBClientClusterConfigurationTestCase {
             // invoke on the non-clustered bean which internally calls the clustered bean on a remote server
             final NodeNameEcho nonClusteredBean = (NodeNameEcho) this.context.lookup("ejb:/" + MODULE_NAME + "//" + NonClusteredStatefulNodeNameEcho.class.getSimpleName() + "!" + NodeNameEcho.class.getName() + "?stateful");
             final String nodeNameBeforeShutdown = nonClusteredBean.getNodeName(true);
-            Assert.assertEquals("EJB invocation ended up on unexpected node", DEFAULT_JBOSSAS_NODE_NAME, nodeNameBeforeShutdown);
+            Assert.assertEquals("Jakarta Enterprise Beans invocation ended up on unexpected node", DEFAULT_JBOSSAS_NODE_NAME, nodeNameBeforeShutdown);
 
             // now shutdown the default server
             this.container.stop(DEFAULT_JBOSSAS);
@@ -173,7 +173,7 @@ public class EJBClientClusterConfigurationTestCase {
             // now invoke again. this time the internal invocation on the clustered bean should end up on
             // one of the cluster nodes instead of the default server, since it was shutdown
             final String nodeNameAfterShutdown = nonClusteredBean.getNodeName(false);
-            Assert.assertEquals("EJB invocation ended up on unexpected node after shutdown", JBOSSAS_WITH_OUTBOUND_CONNECTION_NODE_NAME, nodeNameAfterShutdown);
+            Assert.assertEquals("Jakarta Enterprise Beans invocation ended up on unexpected node after shutdown", JBOSSAS_WITH_OUTBOUND_CONNECTION_NODE_NAME, nodeNameAfterShutdown);
 
         } finally {
             try {
@@ -204,7 +204,7 @@ public class EJBClientClusterConfigurationTestCase {
     }
 
     /**
-     * Sets up the EJB client properties based on this testcase specific jboss-ejb-client.properties file
+     * Sets up the Jakarta Enterprise Beans client properties based on this testcase specific jboss-ejb-client.properties file
      *
      * @return
      * @throws java.io.IOException

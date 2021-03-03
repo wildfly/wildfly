@@ -150,7 +150,7 @@ public class ServerInterceptorCache {
         // The managed reference is going to be ConstructedValue, using the container-interceptor's constructor
         final ConstructedValue interceptorInstanceValue = new ConstructedValue(interceptorConstructor, Collections.<Value<?>>emptyList());
         // we *don't* create multiple instances of the container-interceptor class, but we just reuse a single instance and it's *not*
-        // tied to the EJB component instance lifecycle.
+        // tied to the Jakarta Enterprise Beans component instance lifecycle.
         final CachedValue cachedInterceptorInstanceValue = new CachedValue(interceptorInstanceValue);
         // ultimately create the managed reference which is backed by the CachedValue
         final ManagedReference interceptorInstanceRef = new ValueManagedReference(cachedInterceptorInstanceValue);

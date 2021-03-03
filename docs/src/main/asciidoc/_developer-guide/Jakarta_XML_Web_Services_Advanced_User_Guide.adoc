@@ -147,9 +147,9 @@ The `jboss-webservices.xml` deployment descriptor can be used to provide
 additional configuration for a given deployment. The expected location
 of it is:
 
-* `META-INF/jboss-webservices.xml` for EJB webservice deployments
+* `META-INF/jboss-webservices.xml` for Jakarta Enterprise Beans webservice deployments
 * `WEB-INF/jboss-webservices.xml` for POJO webservice deployments and
-EJB webservice endpoints bundled in `war` archives
+Jakarta Enterprise Beans webservice endpoints bundled in `war` archives
 
 The structure of file is the following (schemas are available
 http://anonsvn.jboss.org/repos/jbossws/spi/trunk/src/main/resources/schema/[here]):
@@ -230,7 +230,7 @@ mentioned in the guide under related topics.
 [[port-component-element]]
 === port-component element
 
-Element `<port-component>` can be used to customize EJB endpoint target
+Element `<port-component>` can be used to customize Jakarta Enterprise Beans endpoint target
 URI or to configure security related properties.
 
 [source,java,options="nowrap"]

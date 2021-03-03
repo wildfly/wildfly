@@ -30,7 +30,7 @@ import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Parser for <code>urn:ejb-pool</code> namespace. The <code>urn:ejb-pool</code> namespace elements
- * can be used to configure pool names for EJBs.
+ * can be used to configure pool names for Jakarta Enterprise Beans.
  *
  * @author Jaikiran Pai
  */

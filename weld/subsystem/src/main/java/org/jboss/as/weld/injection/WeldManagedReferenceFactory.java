@@ -51,7 +51,7 @@ public class WeldManagedReferenceFactory implements ComponentFactory {
             Object instance = ctx.proceed(context.getParameters(), context.getContextData()); // let Weld create the instance now
             return new WeldManagedReference(weldCtx.getContext(), instance);
         } else {
-            // @AroundConstructor interception handled by Weld alone - no integration with EJB interceptors
+            // @AroundConstructor interception handled by Weld alone - no integration with Jakarta Enterprise Beans interceptors
             return new WeldManagedReference(weldCtx.getContext(), weldCtx.produce());
         }
     }
