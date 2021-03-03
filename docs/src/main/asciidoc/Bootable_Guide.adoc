@@ -171,6 +171,9 @@ The following arguments can be used when starting the bootable JAR:
 |--help
 |Display help then exit
 
+|--cli-script=<path to CLI script file>
+|Path to a CLI script to execute when starting the Bootable JAR
+
 |--deployment=<path to WAR/JAR/EAR file or exploded deployment directory>
 |Application to install in the hollow JAR. Adding a deployment to an bootable JAR already containing a deployment is invalid.
 
