@@ -24,10 +24,13 @@ package org.jboss.as.weld.services.bootstrap;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.Services;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
@@ -35,6 +38,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
+import org.jboss.weld.Container;
+import org.jboss.weld.ContainerState;
 import org.jboss.weld.executor.AbstractExecutorServices;
 import org.jboss.weld.manager.api.ExecutorServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -70,7 +75,7 @@ public class WeldExecutorServices extends AbstractExecutorServices implements Se
         final ThreadFactory factory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, THREAD_NAME_PATTERN, null, null);
         // set TCCL to null for new threads to make sure no deployment classloader leaks through this executor's TCCL
         // Weld does not mind having null TCCL in this executor
-        this.executor = Executors.newFixedThreadPool(bound, runnable -> {
+        this.executor = new WeldExecutor(bound, runnable -> {
             Thread thread = factory.newThread(runnable);
             if (WildFlySecurityManager.isChecking()) {
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
@@ -114,5 +119,55 @@ public class WeldExecutorServices extends AbstractExecutorServices implements Se
     @Override
     public void cleanup() {
         // noop on undeploy - the executor is a service shared across multiple deployments
+    }
+
+    static class WeldExecutor extends ThreadPoolExecutor {
+
+        WeldExecutor(int nThreads, ThreadFactory threadFactory) {
+            super(nThreads, nThreads,
+                               0L, TimeUnit.MILLISECONDS,
+                               new LinkedBlockingQueue<Runnable>(),
+                               threadFactory);
+        }
+
+        @Override
+        protected void beforeExecute(Thread t, Runnable r) {
+            if (r instanceof WeldTaskWrapper) {
+                NamespaceContextSelector.pushCurrentSelector(((WeldTaskWrapper) r).currentSelector);
+            }
+        }
+
+        @Override
+        protected void afterExecute(Runnable r, Throwable t) {
+            if (r instanceof WeldTaskWrapper) {
+                NamespaceContextSelector.popCurrentSelector();
+            }
+        }
+
+        @Override
+        public void execute(Runnable command) {
+            if (Container.instance().getState() == ContainerState.INITIALIZED) {
+                WeldTaskWrapper task = new WeldTaskWrapper(command, NamespaceContextSelector.getCurrentSelector());
+                super.execute(task);
+            } else {
+                super.execute(command);
+            }
+        }
+    }
+
+    static class WeldTaskWrapper implements Runnable {
+
+        private final Runnable runnable;
+        private final NamespaceContextSelector currentSelector;
+
+        public WeldTaskWrapper(Runnable runnable, NamespaceContextSelector currentSelector) {
+            this.runnable = runnable;
+            this.currentSelector = currentSelector;
+        }
+
+        @Override
+        public void run() {
+            runnable.run();
+        }
     }
 }
