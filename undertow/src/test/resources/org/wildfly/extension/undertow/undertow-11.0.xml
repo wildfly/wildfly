@@ -69,6 +69,7 @@
             <filter-ref name="static-gzip" predicate="path-suffix('.js') or path-suffix('.css') or path-prefix('/resources')"/>
             <filter-ref name="404-handler"/>
             <filter-ref name="mod-cluster"/>
+            <filter-ref name="mod-cluster-other"/>
          </location>
          <filter-ref name="headers"/>
          <http-invoker http-authentication-factory="factory" path="services"/>
@@ -106,6 +107,9 @@
                    max-request-time="1000" max-retries="10" name="mod-cluster"
                    security-key="password" ssl-context="TestContext" max-ajp-packet-size="10000">
          <ranked-affinity delimiter="."/>
+      </mod-cluster>
+      <mod-cluster name="mod-cluster-other" management-socket-binding="test3">
+         <single-affinity/>
       </mod-cluster>
       <filter class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" name="custom-filter"/>
       <expression-filter expression="dump-request" name="requestDumper"/>
