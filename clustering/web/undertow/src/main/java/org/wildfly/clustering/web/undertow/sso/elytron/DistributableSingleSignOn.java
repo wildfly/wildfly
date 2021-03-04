@@ -65,6 +65,7 @@ public class DistributableSingleSignOn implements SingleSignOn {
         }
     }
 
+    @Override
     public boolean isProgrammatic() {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
             return this.sso.getAuthentication().isProgrammatic();

@@ -45,7 +45,7 @@ public class ElytronAuthentication implements Serializable {
     }
 
     public boolean isProgrammatic() {
-        return programmatic;
+        return this.programmatic;
     }
 
     public String getName() {
