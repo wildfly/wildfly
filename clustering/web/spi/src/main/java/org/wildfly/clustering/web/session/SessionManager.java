@@ -90,7 +90,7 @@ public interface SessionManager<L, B extends Batch> extends IdentifierFactory<St
      * @param id a unique session identifier
      * @return a read-only session or null if none exists
      */
-    ImmutableSession viewSession(String id);
+    ImmutableSession readSession(String id);
 
     /**
      * The maximum duration of time to wait for the completion of requests before the session manager can be stopped.

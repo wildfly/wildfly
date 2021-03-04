@@ -330,7 +330,7 @@ public class DistributableSessionManagerTestCase {
         Duration maxInactiveInterval = Duration.ofMinutes(30L);
 
         when(this.manager.getBatcher()).thenReturn(batcher);
-        when(this.manager.viewSession(id)).thenReturn(session);
+        when(this.manager.readSession(id)).thenReturn(session);
         when(session.getId()).thenReturn(id);
         when(session.getAttributes()).thenReturn(attributes);
         when(attributes.getAttributeNames()).thenReturn(names);
@@ -361,7 +361,7 @@ public class DistributableSessionManagerTestCase {
         Batch batch = mock(Batch.class);
 
         when(this.manager.getBatcher()).thenReturn(batcher);
-        when(this.manager.viewSession(id)).thenReturn(null);
+        when(this.manager.readSession(id)).thenReturn(null);
         when(batcher.createBatch()).thenReturn(batch);
 
         io.undertow.server.session.Session result = this.adapter.getSession(id);

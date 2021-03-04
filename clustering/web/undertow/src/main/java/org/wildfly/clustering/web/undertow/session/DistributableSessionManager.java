@@ -290,7 +290,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Cons
         }
         try (Batch batch = this.manager.getBatcher().createBatch()) {
             try {
-                ImmutableSession session = this.manager.viewSession(sessionId);
+                ImmutableSession session = this.manager.readSession(sessionId);
                 return (session != null) ? new DistributableImmutableSession(this, session) : null;
             } catch (RuntimeException | Error e) {
                 batch.discard();
