@@ -22,7 +22,10 @@
 
 package org.wildfly.clustering.ee.infinispan;
 
+import java.util.function.Predicate;
+
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.wildfly.clustering.ee.cache.CacheProperties;
@@ -31,13 +34,14 @@ import org.wildfly.clustering.ee.cache.CacheProperties;
  * Eagerly calculates the properties of a cache configuration.
  * @author Paul Ferraro
  */
-public class InfinispanCacheProperties implements CacheProperties {
+public class InfinispanCacheProperties implements CacheProperties, Predicate<StoreConfiguration> {
 
     private final boolean lockOnRead;
     private final boolean lockOnWrite;
     private final boolean marshalling;
     private final boolean persistent;
     private final boolean transactional;
+    private final boolean passivating;
 
     public InfinispanCacheProperties(Configuration config) {
         this.transactional = config.transaction().transactionMode().isTransactional();
@@ -47,6 +51,7 @@ public class InfinispanCacheProperties implements CacheProperties {
         boolean hasStore = config.persistence().usingStores();
         this.marshalling = clustered || hasStore;
         this.persistent = clustered || (hasStore && !config.persistence().passivation()) || config.memory().isOffHeap();
+        this.passivating = !this.persistent && hasStore && config.persistence().passivation() && config.persistence().stores().stream().anyMatch(this);
     }
 
     @Override
@@ -72,5 +77,15 @@ public class InfinispanCacheProperties implements CacheProperties {
     @Override
     public boolean isMarshalling() {
         return this.marshalling;
+    }
+
+    @Override
+    public boolean isPassivating() {
+        return this.passivating;
+    }
+
+    @Override
+    public boolean test(StoreConfiguration store) {
+        return !store.purgeOnStartup();
     }
 }

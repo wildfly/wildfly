@@ -56,4 +56,10 @@ public interface CacheProperties {
      * @return true, if this cache is transactional, false otherwise.
      */
     boolean isTransactional();
+
+    /**
+     * Indicates whether cache operations should *not* assume immediate marshalling/unmarshalling of the value.
+     * @return true, if the cache client will need to handle passivation/activation notifications asynchronously and on start/stop, false otherwise
+     */
+    boolean isPassivating();
 }
