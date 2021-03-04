@@ -23,6 +23,9 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.EnumSet;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 
 import javax.transaction.SystemException;
 
@@ -32,6 +35,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
 import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
@@ -53,7 +57,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 /**
  * @author Paul Ferraro
  */
-@Listener(sync = false)
+@Listener
 public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> {
 
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
@@ -62,6 +66,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
     private final MutatorFactory<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataMutatorFactory;
     private final CacheProperties properties;
+    private final Executor executor;
 
     public InfinispanSessionMetaDataFactory(InfinispanSessionMetaDataFactoryConfiguration configuration) {
         this.properties = configuration.getCacheProperties();
@@ -70,6 +75,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
         this.findCreationMetaDataCache = this.properties.isLockOnRead() ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
         this.accessMetaDataCache = configuration.getCache();
         this.accessMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.accessMetaDataCache, this.properties);
+        this.executor = configuration.getExecutor();
     }
 
     @Override
@@ -154,8 +160,8 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     }
 
     @CacheEntriesEvicted
-    public void evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
-        if (!event.isPre()) {
+    public CompletionStage<Void> evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
+        return event.isPre() ? CompletableFutures.completedNull() : CompletableFuture.runAsync(() -> {
             Cache<SessionAccessMetaDataKey, SessionAccessMetaData> cache = this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
             for (GroupedKey<String> key : event.getEntries().keySet()) {
                 // Workaround for ISPN-8324
@@ -163,6 +169,6 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
                     cache.evict(new SessionAccessMetaDataKey(key.getId()));
                 }
             }
-        }
+        }, this.executor);
     }
 }

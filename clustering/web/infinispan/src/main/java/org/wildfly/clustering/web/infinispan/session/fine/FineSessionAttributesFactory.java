@@ -29,6 +29,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -37,6 +40,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
 import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
@@ -63,7 +67,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-@Listener(sync = false)
+@Listener
 public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, AtomicReference<Map<String, UUID>>> {
 
     private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
@@ -73,6 +77,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     private final CacheProperties properties;
     private final MutatorFactory<SessionAttributeKey, V> mutatorFactory;
     private final HttpSessionActivationListenerProvider<S, C, L> provider;
+    private final Executor executor;
 
     public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.namesCache = configuration.getCache();
@@ -82,6 +87,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
         this.properties = configuration.getCacheProperties();
         this.mutatorFactory = new InfinispanMutatorFactory<>(this.attributeCache, this.properties);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
+        this.executor = configuration.getExecutor();
     }
 
     @Override
@@ -165,8 +171,8 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @CacheEntriesEvicted
-    public void evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
-        if (!event.isPre()) {
+    public CompletionStage<Void> evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
+        return event.isPre() ? CompletableFutures.completedNull() : CompletableFuture.runAsync(() -> {
             Set<SessionAttributeNamesKey> keys = new HashSet<>();
             for (GroupedKey<String> key : event.getEntries().keySet()) {
                 // Workaround for ISPN-8324
@@ -187,6 +193,6 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
                     this.namesCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION).evict(entry.getKey());
                 }
             }
-        }
+        }, this.executor);
     }
 }

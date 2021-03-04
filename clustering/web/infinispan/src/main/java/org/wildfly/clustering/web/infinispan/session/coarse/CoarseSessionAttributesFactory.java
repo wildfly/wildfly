@@ -26,13 +26,17 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
 import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
@@ -58,7 +62,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * {@link SessionAttributesFactory} for coarse granularity sessions, where all session attributes are stored in a single cache entry.
  * @author Paul Ferraro
  */
-@Listener(sync = false)
+@Listener
 public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 
     private final Cache<SessionAttributesKey, V> cache;
@@ -67,6 +71,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     private final Immutability immutability;
     private final MutatorFactory<SessionAttributesKey, V> mutatorFactory;
     private final HttpSessionActivationListenerProvider<S, C, L> provider;
+    private final Executor executor;
 
     public CoarseSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration) {
         this.cache = configuration.getCache();
@@ -75,6 +80,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         this.properties = configuration.getCacheProperties();
         this.mutatorFactory = new InfinispanMutatorFactory<>(this.cache, this.properties);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
+        this.executor = configuration.getExecutor();
     }
 
     @Override
@@ -146,8 +152,8 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     }
 
     @CacheEntriesEvicted
-    public void evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
-        if (!event.isPre()) {
+    public CompletionStage<Void> evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
+        return event.isPre() ? CompletableFutures.completedNull() : CompletableFuture.runAsync(() -> {
             Cache<SessionAttributesKey, V> cache = this.cache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
             for (GroupedKey<String> key : event.getEntries().keySet()) {
                 // Workaround for ISPN-8324
@@ -155,6 +161,6 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
                     cache.evict(new SessionAttributesKey(key.getId()));
                 }
             }
-        }
+        }, this.executor);
     }
 }
