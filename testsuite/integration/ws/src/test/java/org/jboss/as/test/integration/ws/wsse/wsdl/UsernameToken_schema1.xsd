@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy"
+           xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="sayHello" type="tns:sayHello"/>
+
+    <xs:element name="sayHelloResponse" type="tns:sayHelloResponse"/>
+
+    <xs:complexType name="sayHello">
+        <xs:sequence/>
+    </xs:complexType>
+
+    <xs:complexType name="sayHelloResponse">
+        <xs:sequence>
+            <xs:element name="return" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
+

@@ -484,6 +484,7 @@
                                         <exclude>org/jboss/as/test/integration/ws/serviceref/ServiceRefSevletTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ws/serviceref/ServiceRefTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSBearerElytronSecurityPropagationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsse/usernametoken/UsernameTokenElytronTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -529,6 +530,7 @@
                                         <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefSevletTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ws/wsse/trust/WSBearerElytronSecurityPropagationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ws/wsse/usernametoken/UsernameTokenElytronTestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
