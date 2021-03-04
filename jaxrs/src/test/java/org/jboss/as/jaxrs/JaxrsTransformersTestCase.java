@@ -46,53 +46,56 @@ import org.junit.Test;
  */
 public class JaxrsTransformersTestCase extends AbstractSubsystemBaseTest {
 
+    private static final String JAXRS_1_0 = "jaxrs-1.0.xml";
+    private static final String JAXRS_2_0 = "jaxrs-2.0-expressions.xml";
+
     public JaxrsTransformersTestCase() {
         super(JaxrsExtension.SUBSYSTEM_NAME, new JaxrsExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jaxrs-2.0.xml");
+        return readResource(JAXRS_2_0);
     }
 
     @Test
     public void testTransformers700() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_0_0, "jaxrs-1.0.xml");
+        testTransformers(ModelTestControllerVersion.EAP_7_0_0, JAXRS_1_0);
     }
 
     @Test
     public void testTransformers710() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_1_0, "jaxrs-1.0.xml");
+        testTransformers(ModelTestControllerVersion.EAP_7_1_0, JAXRS_1_0);
     }
 
     @Test
     public void testTransformers720() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_2_0, "jaxrs-1.0.xml");
+        testTransformers(ModelTestControllerVersion.EAP_7_2_0, JAXRS_1_0);
     }
 
     @Test
     public void testTransformers730() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_3_0, "jaxrs-1.0.xml");
+        testTransformers(ModelTestControllerVersion.EAP_7_3_0, JAXRS_1_0);
     }
 
     @Test
     public void testRejections700() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_0_0, "jaxrs-2.0.xml", getFailedTransformationConfig());
+        testRejections(ModelTestControllerVersion.EAP_7_0_0, JAXRS_2_0, getFailedTransformationConfig());
     }
 
     @Test
     public void testRejections710() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_1_0, "jaxrs-2.0.xml", getFailedTransformationConfig());
+        testRejections(ModelTestControllerVersion.EAP_7_1_0, JAXRS_2_0, getFailedTransformationConfig());
     }
 
     @Test
     public void testRejections720() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_2_0, "jaxrs-2.0.xml", getFailedTransformationConfig());
+        testRejections(ModelTestControllerVersion.EAP_7_2_0, JAXRS_2_0, getFailedTransformationConfig());
     }
 
     @Test
     public void testRejections730() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_3_0, "jaxrs-2.0.xml", getFailedTransformationConfig());
+        testRejections(ModelTestControllerVersion.EAP_7_3_0, "jaxrs-2.0-expressions.xml", getFailedTransformationConfig());
     }
 
     @SuppressWarnings("SameParameterValue")
