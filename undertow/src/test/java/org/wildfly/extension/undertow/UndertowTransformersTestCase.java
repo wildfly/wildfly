@@ -137,7 +137,7 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                 .addFailedAttribute(ajpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ALLOW_UNESCAPED_CHARACTERS_IN_URL, RFC6265_COOKIE_VALIDATION))
-                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, "console-access-log")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG)), FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
 
@@ -178,7 +178,7 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                 .addFailedAttribute(ajpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ALLOW_UNESCAPED_CHARACTERS_IN_URL))
-                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, "console-access-log")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG)), FailedOperationTransformationConfig.REJECTED_RESOURCE)
                 .addFailedAttribute(subsystemAddress.append(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN).append(UndertowExtension.PATH_SSO),
                         FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
@@ -194,7 +194,7 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
         PathAddress servletContainer = subsystemAddress.append(UndertowExtension.PATH_SERVLET_CONTAINER);
 
         doRejectTest(ModelTestControllerVersion.EAP_7_2_0, EAP7_2_0, new FailedOperationTransformationConfig()
-                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, "console-access-log")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG)), FailedOperationTransformationConfig.REJECTED_RESOURCE)
                  .addFailedAttribute(servletContainer,
                          new FailedOperationTransformationConfig.NewAttributesConfig(
                                  ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD

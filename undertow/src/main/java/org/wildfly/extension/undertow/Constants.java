@@ -28,6 +28,7 @@ package org.wildfly.extension.undertow;
 
 public interface Constants {
     String ACCESS_LOG = "access-log";
+    String CONSOLE_ACCESS_LOG = "console-access-log";
     String AJP_LISTENER = "ajp-listener";
     String BUFFER_CACHE = "buffer-cache";
     String BUFFER_CACHES = "buffer-caches";

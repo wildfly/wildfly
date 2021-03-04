@@ -78,8 +78,8 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
 
 
     private ConsoleAccessLogDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(Constants.SETTING, "console-access-log"),
-                UndertowExtension.getResolver("console-access-log"))
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG),
+                UndertowExtension.getResolver(Constants.CONSOLE_ACCESS_LOG))
                 .setAddHandler(AddHandler.INSTANCE)
                 .setRemoveHandler(RemoveHandler.INSTANCE)
                 .addCapabilities(CONSOLE_ACCESS_LOG_CAPABILITY)
