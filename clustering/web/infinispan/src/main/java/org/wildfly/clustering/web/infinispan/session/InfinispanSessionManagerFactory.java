@@ -22,9 +22,15 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.time.Duration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 import org.infinispan.Cache;
+import org.jboss.as.clustering.context.DefaultExecutorService;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
@@ -64,6 +70,7 @@ import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SpecificationProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Factory for creating session managers.
@@ -82,6 +89,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
     final Cache<Key<String>, ?> cache;
     final org.wildfly.clustering.ee.Scheduler<String, ImmutableSessionMetaData> scheduler;
     final SpecificationProvider<S, SC, AL> provider;
+    final ExecutorService executor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
 
     private final KeyAffinityServiceFactory affinityFactory;
     private final SessionFactory<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> factory;
@@ -94,7 +102,17 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
         this.batcher = new InfinispanBatcher(this.cache);
         this.properties = config.getCacheProperties();
         this.provider = config.getSpecificationProvider();
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(config);
+        SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(new InfinispanSessionMetaDataFactoryConfiguration() {
+            @Override
+            public <K, V> Cache<K, V> getCache() {
+                return config.getCache();
+            }
+
+            @Override
+            public Executor getExecutor() {
+                return InfinispanSessionManagerFactory.this.executor;
+            }
+        });
         this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         ExpiredSessionRemover<SC, ?, ?, LC> remover = new ExpiredSessionRemover<>(this.factory);
         this.expirationRegistrar = remover;
@@ -170,6 +188,11 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
             public Runnable getStartTask() {
                 return InfinispanSessionManagerFactory.this;
             }
+
+            @Override
+            public Executor getExecutor() {
+                return InfinispanSessionManagerFactory.this.executor;
+            }
         };
         return new ConcurrentSessionManager<>(new InfinispanSessionManager<>(this.factory, config), this.properties.isTransactional() ? SimpleManager::new : ConcurrentManager::new);
     }
@@ -177,10 +200,10 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
     private SessionAttributesFactory<SC, ?> createSessionAttributesFactory(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration) {
         switch (configuration.getAttributePersistenceStrategy()) {
             case FINE: {
-                return new FineSessionAttributesFactory<>(new InfinispanMarshalledValueSessionAttributesFactoryConfiguration<>(configuration));
+                return new FineSessionAttributesFactory<>(new InfinispanMarshalledValueSessionAttributesFactoryConfiguration<>(configuration, this.executor));
             }
             case COARSE: {
-                return new CoarseSessionAttributesFactory<>(new InfinispanMarshalledValueSessionAttributesFactoryConfiguration<>(configuration));
+                return new CoarseSessionAttributesFactory<>(new InfinispanMarshalledValueSessionAttributesFactoryConfiguration<>(configuration, this.executor));
             }
             default: {
                 // Impossible
@@ -194,19 +217,32 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
         this.listener.close();
         this.scheduler.close();
         this.factory.close();
+        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_ACTION);
+        try {
+            this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private static class InfinispanMarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> extends MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements InfinispanSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
         private final InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration;
+        private final Executor executor;
 
-        InfinispanMarshalledValueSessionAttributesFactoryConfiguration(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration) {
+        InfinispanMarshalledValueSessionAttributesFactoryConfiguration(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration, Executor executor) {
             super(configuration);
             this.configuration = configuration;
+            this.executor = executor;
         }
 
         @Override
         public <CK, CV> Cache<CK, CV> getCache() {
             return this.configuration.getCache();
+        }
+
+        @Override
+        public Executor getExecutor() {
+            return this.executor;
         }
     }
 }

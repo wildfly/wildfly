@@ -26,9 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,8 +43,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEven
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.util.concurrent.CompletableFutures;
-import org.jboss.as.clustering.context.DefaultExecutorService;
-import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.BatchContext;
@@ -71,7 +68,6 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SpecificationProvider;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Generic session manager implementation - independent of cache mapping strategy.
@@ -99,10 +95,10 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     private final SpecificationProvider<S, SC, AL> provider;
     private final Runnable startTask;
     private final Consumer<ImmutableSession> closeTask;
+    private final Executor executor;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
-    private volatile ExecutorService executor;
 
     public InfinispanSessionManager(SessionFactory<SC, MV, AV, LC> factory, InfinispanSessionManagerConfiguration<S, SC, AL> configuration) {
         this.factory = factory;
@@ -117,6 +113,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         this.context = configuration.getServletContext();
         this.provider = configuration.getSpecificationProvider();
         this.startTask = configuration.getStartTask();
+        this.executor = configuration.getExecutor();
         this.closeTask = new Consumer<ImmutableSession>() {
             @Override
             public void accept(ImmutableSession session) {
@@ -129,7 +126,6 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
 
     @Override
     public void start() {
-        this.executor = new DefaultExecutorService(this.getClass(), ExecutorServiceFactory.CACHED_THREAD);
         if (this.recorder != null) {
             this.recorder.reset();
         }
@@ -149,12 +145,6 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         this.cache.removeListener(this.factory.getMetaDataFactory());
         this.cache.removeListener(this.factory.getAttributesFactory());
         this.identifierFactory.stop();
-        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
-        try {
-            this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 
     @Override

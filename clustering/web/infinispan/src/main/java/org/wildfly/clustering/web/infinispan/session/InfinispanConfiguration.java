@@ -22,25 +22,18 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.concurrent.Executor;
-
+import org.infinispan.Cache;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 
 /**
- * @param <S> the HttpSession specification type
- * @param <C> the ServletContext specification type
- * @param <L> the HttpSessionActivationListener specification type
- * @param <V> attributes cache entry type
- * @param <SV> attributes serialized form type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionAttributesFactoryConfiguration<S, C, L, V, SV> extends InfinispanConfiguration, SessionAttributesFactoryConfiguration<S, C, L, V, SV> {
+public interface InfinispanConfiguration {
 
-    @Override
+    <K, V> Cache<K, V> getCache();
+
     default CacheProperties getCacheProperties() {
-        return InfinispanConfiguration.super.getCacheProperties();
+        return new InfinispanCacheProperties(this.getCache().getCacheConfiguration());
     }
-
-    Executor getExecutor();
 }

@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.concurrent.Executor;
+
 import org.infinispan.Cache;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.ee.Batcher;
@@ -53,4 +55,5 @@ public interface InfinispanSessionManagerConfiguration<S, C, AL> {
     Registrar<SessionExpirationListener> getExpirationRegistar();
     SpecificationProvider<S, C, AL> getSpecificationProvider();
     Runnable getStartTask();
+    Executor getExecutor();
 }
