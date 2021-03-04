@@ -68,7 +68,7 @@ public class SessionManagerNearCacheFactory<K, V> implements NearCacheFactory<K,
 
     @Override
     public NearCacheMode getMode() {
-        return (this.maxActiveSessions != null) && (this.maxActiveSessions.intValue() == 0) ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED;
+        return (this.maxActiveSessions == null) || (this.maxActiveSessions.intValue() == 0) ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED;
     }
 
     @Override
