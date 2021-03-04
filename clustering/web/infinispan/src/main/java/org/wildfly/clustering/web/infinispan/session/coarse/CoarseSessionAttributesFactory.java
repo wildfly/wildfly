@@ -41,7 +41,7 @@ import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
+import org.wildfly.clustering.web.cache.session.PersistentImmutableSessionActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
@@ -133,7 +133,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
         try {
             Mutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? Mutator.PASSIVE : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
-            SessionActivationNotifier notifier = this.properties.isPersistent() ? new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
+            SessionActivationNotifier notifier = this.properties.isPersistent() ? new PersistentImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
             return new CoarseSessionAttributes(attributes, mutator, this.marshaller, this.immutability, this.properties, notifier);
         } catch (IOException e) {
             throw new IllegalStateException(e);

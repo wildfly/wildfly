@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,12 +22,7 @@
 
 package org.wildfly.clustering.web.cache.session;
 
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,7 +37,7 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 /**
  * @author Paul Ferraro
  */
-public class ImmutableSessionActivationNotifierTestCase {
+public class PersistentImmutableSessionActivationNotifierTestCase {
     interface Session {
     }
     interface Context {
@@ -57,7 +52,7 @@ public class ImmutableSessionActivationNotifierTestCase {
     private final Listener listener1 = mock(Listener.class);
     private final Listener listener2 = mock(Listener.class);
 
-    private final SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.provider, this.session, this.context, this.filter);
+    private final SessionActivationNotifier notifier = new PersistentImmutableSessionActivationNotifier<>(this.provider, this.session, this.context, this.filter);
 
     @After
     public void destroy() {
@@ -86,27 +81,15 @@ public class ImmutableSessionActivationNotifierTestCase {
         when(this.provider.postActivateNotifier(same(this.listener1))).thenReturn(postActivateNotifier1);
         when(this.provider.postActivateNotifier(same(this.listener2))).thenReturn(postActivateNotifier2);
 
-        // We should be able to trigger an initial pre-passivate event
+        // verify pre-passivate before post-activate is a no-op
         this.notifier.prePassivate();
 
-        verify(prePassivateNotifier1).accept(session);
-        verify(prePassivateNotifier2).accept(session);
+        verify(prePassivateNotifier1, never()).accept(session);
+        verify(prePassivateNotifier2, never()).accept(session);
         verify(postActivateNotifier1, never()).accept(session);
         verify(postActivateNotifier2, never()).accept(session);
 
-        reset(postActivateNotifier1, postActivateNotifier2, prePassivateNotifier1, prePassivateNotifier2);
-
-        // We should be able to trigger a second pre-passivate event
-        this.notifier.prePassivate();
-
-        verify(prePassivateNotifier1).accept(session);
-        verify(prePassivateNotifier2).accept(session);
-        verify(postActivateNotifier1, never()).accept(session);
-        verify(postActivateNotifier2, never()).accept(session);
-
-        reset(postActivateNotifier1, postActivateNotifier2, prePassivateNotifier1, prePassivateNotifier2);
-
-        // We should be able to trigger an initial post-activate event
+        // verify initial post-activate
         this.notifier.postActivate();
 
         verify(prePassivateNotifier1, never()).accept(session);
@@ -114,9 +97,35 @@ public class ImmutableSessionActivationNotifierTestCase {
         verify(postActivateNotifier1).accept(session);
         verify(postActivateNotifier2).accept(session);
 
-        reset(postActivateNotifier1, postActivateNotifier2, prePassivateNotifier1, prePassivateNotifier2);
+        reset(postActivateNotifier1, postActivateNotifier2);
 
-        // We should be able to trigger a second post-activate event
+        // verify subsequent post-activate is a no-op
+        this.notifier.postActivate();
+
+        verify(prePassivateNotifier1, never()).accept(session);
+        verify(prePassivateNotifier2, never()).accept(session);
+        verify(postActivateNotifier1, never()).accept(session);
+        verify(postActivateNotifier2, never()).accept(session);
+
+        // verify pre-passivate following post-activate
+        this.notifier.prePassivate();
+
+        verify(prePassivateNotifier1).accept(session);
+        verify(prePassivateNotifier2).accept(session);
+        verify(postActivateNotifier1, never()).accept(session);
+        verify(postActivateNotifier2, never()).accept(session);
+
+        reset(prePassivateNotifier1, prePassivateNotifier2);
+
+        // verify subsequent pre-passivate is a no-op
+        this.notifier.prePassivate();
+
+        verify(prePassivateNotifier1, never()).accept(session);
+        verify(prePassivateNotifier2, never()).accept(session);
+        verify(postActivateNotifier1, never()).accept(session);
+        verify(postActivateNotifier2, never()).accept(session);
+
+        // verify post-activate following pre-passivate
         this.notifier.postActivate();
 
         verify(prePassivateNotifier1, never()).accept(session);
