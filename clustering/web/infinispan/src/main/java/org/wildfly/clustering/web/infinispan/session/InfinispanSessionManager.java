@@ -178,6 +178,10 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
 
     @Override
     public void stop() {
+        if (this.properties.isPassivating()) {
+            // Manually evict all creation meta data keys in memory, ensuring passivation listeners are triggered prior to shutdown
+            this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream().filter(SessionCreationMetaDataKeyFilter.INSTANCE).forEach(this.cache::evict);
+        }
         this.expirationRegistration.close();
         if (this.recorderListener != null) {
             this.cache.removeListener(this.recorderListener);

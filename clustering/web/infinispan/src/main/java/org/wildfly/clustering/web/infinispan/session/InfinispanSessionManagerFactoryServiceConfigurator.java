@@ -138,7 +138,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, L
         }
 
         Integer size = this.factoryConfiguration.getMaxActiveSessions();
-        EvictionStrategy strategy = (size != null) ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
+        EvictionStrategy strategy = (size != null) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
         builder.memory().storage(StorageType.HEAP)
                 .whenFull(strategy)
                 .maxCount((size != null) ? size.longValue() : 0)

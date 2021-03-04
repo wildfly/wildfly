@@ -25,7 +25,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Mutable implements Serializable {
+import javax.servlet.http.HttpSessionActivationListener;
+import javax.servlet.http.HttpSessionEvent;
+
+public class Mutable implements Serializable, HttpSessionActivationListener {
     private static final long serialVersionUID = -5129400250276547619L;
     private transient boolean serialized = false;
     private final AtomicInteger value;
@@ -66,5 +69,15 @@ public class Mutable implements Serializable {
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         this.serialized = true;
+    }
+
+    @Override
+    public void sessionWillPassivate(HttpSessionEvent event) {
+        System.out.println(String.format("Passivating session %s", event.getSession().getId()));
+    }
+
+    @Override
+    public void sessionDidActivate(HttpSessionEvent event) {
+        System.out.println(String.format("Activated session %s", event.getSession().getId()));
     }
 }
