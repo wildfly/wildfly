@@ -70,9 +70,11 @@
                 <property name="name2"
                           value="${property2:value2}"/>
             </load-metric>
-            <custom-load-metric class="SomeFakeLoadMetricClass1"
+            <custom-load-metric capacity="${modcluster.custom-load-metric.capacity:1.1}"
+                                class="SomeFakeLoadMetricClass1"
+                                module="com.radoslavhusar.mod_cluster"
                                 weight="${modcluster.custom-load-metric.weight:5}"
-                                capacity="${modcluster.custom-load-metric.capacity:1.1}"/>
+            />
             <custom-load-metric class="SomeFakeLoadMetricClass2"
                                 capacity="${modcluster.custom-load-metric.capacity:1.1}"/>
             <custom-load-metric class="SomeFakeLoadMetricClass3"
