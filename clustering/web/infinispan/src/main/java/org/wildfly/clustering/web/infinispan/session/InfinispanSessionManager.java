@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
@@ -173,6 +175,20 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         }
         this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
         this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
+
+        if (this.properties.isPassivating() && this.cache.getCacheConfiguration().persistence().stores().stream().anyMatch(StoreConfiguration::preload)) {
+            // Ensure activation listeners are triggered on startup if passivating cache was preloaded.
+            try (TransactionBatch batch = this.batcher.createBatch()) {
+                try (Stream<Key<String>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream().filter(SessionCreationMetaDataKeyFilter.INSTANCE)) {
+                    Iterator<Key<String>> keys = stream.iterator();
+                    while (keys.hasNext()) {
+                        String id = keys.next().getId();
+                        this.notify(id, SessionActivationNotifier::postActivate);
+                    }
+                }
+            }
+        }
+
         this.startTask.run();
     }
 
@@ -282,7 +298,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         if (!event.isPre()) {
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
-            return this.notify(id, SessionActivationNotifier::postActivate);
+            return this.notifyAsync(id, SessionActivationNotifier::postActivate);
         }
         return CompletableFutures.completedNull();
     }
@@ -292,25 +308,29 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         if (event.isPre()) {
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-            return this.notify(id, SessionActivationNotifier::prePassivate);
+            return this.notifyAsync(id, SessionActivationNotifier::prePassivate);
         }
         return CompletableFutures.completedNull();
     }
 
-    private CompletionStage<Void> notify(String id, Consumer<SessionActivationNotifier> notification) {
+    private CompletionStage<Void> notifyAsync(String id, Consumer<SessionActivationNotifier> notification) {
         try (TransactionBatch batch = this.batcher.suspendBatch()) {
             return CompletableFuture.runAsync(() -> {
                 try (BatchContext context = this.batcher.resumeBatch(batch)) {
-                    Map.Entry<MV, AV> value = this.factory.tryValue(id);
-                    if (value != null) {
-                        ImmutableSession session = this.factory.createImmutableSession(id, value);
-                        notification.accept(new ImmutableSessionActivationNotifier<>(this.provider, session, this.context));
-                    }
+                    this.notify(id, notification);
                 }
             }, this.executor);
         } catch (RejectedExecutionException e) {
             // Session manager is stopped
             return CompletableFutures.completedNull();
+        }
+    }
+
+    private void notify(String id, Consumer<SessionActivationNotifier> notification) {
+        Map.Entry<MV, AV> value = this.factory.tryValue(id);
+        if (value != null) {
+            ImmutableSession session = this.factory.createImmutableSession(id, value);
+            notification.accept(new ImmutableSessionActivationNotifier<>(this.provider, session, this.context));
         }
     }
 
