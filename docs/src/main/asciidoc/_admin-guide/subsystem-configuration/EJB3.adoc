@@ -48,7 +48,7 @@ of each
   </timer-service>
   <remote connectors="remoting-connector" thread-pool-name="default">
     <profiles>
-        <profile name="profile">
+        <profile name="profile" exclude-local-receiver="false" local-receiver-pass-by-value="false">
           <remoting-ejb-receiver name="receiver" outbound-connection-ref="remote-ejb-connection"/>
           <remote-http-connection name="connection" uri="http://localhost:8180/wildfly-services"/>
           <static-ejb-discovery>
@@ -197,6 +197,10 @@ provided by the administrator.
 Dynamic discovery is responsible for monitoring the available EJBs on all the
 nodes to which connections are configured and decides which remote node to
 connect to based on the gathered data.
+
+* `name` the name of the profile
+* `exclude-local-receiver` If set, no local receiver is used in this profile
+* `local-receiver-pass-by-value` If set, local receiver will pass ejb beans by value
 
 [[static-ejb-discovery]]
 ==== <static-ejb-discovery>

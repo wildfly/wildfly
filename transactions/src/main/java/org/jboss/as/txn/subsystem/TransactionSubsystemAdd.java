@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -148,6 +148,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.validateAndSet(operation, model);
+
+        TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME.validateAndSet(operation, model);
     }
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
@@ -443,7 +445,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
-        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService();
+        final int staleTransactionTime = TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME.resolveModelAttribute(context, model).asInt();
+        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService(staleTransactionTime);
         serviceTarget.addService(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, localTransactionContextService)
                 .addDependency(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, ExtendedJBossXATerminator.class, localTransactionContextService.getExtendedJBossXATerminatorInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, localTransactionContextService.getTransactionManagerInjector())

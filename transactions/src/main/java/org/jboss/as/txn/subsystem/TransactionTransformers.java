@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc.
+ * Copyright 2020 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
 import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME;
 
 /**
  * @author Emmanuel Hugonnet (c) 2017 Red Hat, inc.
@@ -40,6 +41,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     static final ModelVersion MODEL_VERSION_EAP71 = ModelVersion.create(4, 0);
     static final ModelVersion MODEL_VERSION_EAP72 = ModelVersion.create(5, 0);
     static final ModelVersion MODEL_VERSION_EAP73 = ModelVersion.create(5, 1);
+    static final ModelVersion MODEL_VERSION_5_2_0 = ModelVersion.create(5, 2);
 
 
     @Override
@@ -51,9 +53,16 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
 
+        // 6.0.0 --> 5.2.0
+        ResourceTransformationDescriptionBuilder builder52 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_5_2_0);
+        builder52.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, STALE_TRANSACTION_TIME)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, STALE_TRANSACTION_TIME)
+                .end();
+
         // 5.2.0 --> 5.1.0
         // CMR resources adds/removes requires restart of JVM
-        chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP73);
+        chainedBuilder.createBuilder(MODEL_VERSION_5_2_0, MODEL_VERSION_EAP73);
 
         // 5.1.0 --> 5.0.0
         ResourceTransformationDescriptionBuilder builderEap72 = chainedBuilder.createBuilder(MODEL_VERSION_EAP73, MODEL_VERSION_EAP72);
@@ -108,7 +117,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
                 MODEL_VERSION_EAP71,
                 MODEL_VERSION_EAP72,
                 MODEL_VERSION_EAP73,
-                // v5_2_0
+                MODEL_VERSION_5_2_0
         });
     }
 }

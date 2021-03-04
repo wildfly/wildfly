@@ -59,7 +59,7 @@ public class JaegerTracerConfigurationAddHandler extends AbstractAddStepHandler 
         } else {
             outboundSocketBindingSupplier = () -> null;
         }
-        TracerConfiguration config = new JaegerTracerConfiguration(context, operation, outboundSocketBindingSupplier);
+        TracerConfiguration config = new JaegerTracerConfiguration(context, context.getCurrentAddressValue(), operation, outboundSocketBindingSupplier);
         Consumer<TracerConfiguration> injector = builder.provides(TRACER_CAPABILITY);
         builder.setInstance(new Service() {
             @Override
