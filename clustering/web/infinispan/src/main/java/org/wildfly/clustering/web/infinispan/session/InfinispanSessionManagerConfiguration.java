@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import org.infinispan.Cache;
@@ -34,17 +35,16 @@ import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
-import org.wildfly.clustering.web.session.SpecificationProvider;
+import org.wildfly.clustering.web.session.SessionManager;
 
 /**
  * Configuration for an {@link InfinispanSessionManager}.
- * @param <S> the HttpSession specification type
- * @param <C> the ServletContext specification type
- * @param <AL> the HttpSessionAttributeListener specification type
+ * @param <SC> the ServletContext specification type
+ * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionManagerConfiguration<S, C, AL> {
-    C getServletContext();
+public interface InfinispanSessionManagerConfiguration<SC, LC> {
+    SC getServletContext();
     SessionExpirationListener getExpirationListener();
     Cache<Key<String>, ?> getCache();
     CacheProperties getProperties();
@@ -53,7 +53,7 @@ public interface InfinispanSessionManagerConfiguration<S, C, AL> {
     Scheduler<String, ImmutableSessionMetaData> getExpirationScheduler();
     Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder();
     Registrar<SessionExpirationListener> getExpirationRegistar();
-    SpecificationProvider<S, C, AL> getSpecificationProvider();
     Runnable getStartTask();
+    Registrar<Map.Entry<SC, SessionManager<LC, TransactionBatch>>> getContextRegistrar();
     Executor getExecutor();
 }
