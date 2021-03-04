@@ -113,7 +113,7 @@ public class KeystoreRealmTestCase extends CommonBase {
     @ArquillianResource
     protected URL webAppURL;
 
-    @Deployment
+    @Deployment(testable = false)
     protected static WebArchive createDeployment() {
         final Package currentPackage = KeystoreRealmTestCase.class.getPackage();
         return ShrinkWrap.create(WebArchive.class, KeystoreRealmTestCase.class.getSimpleName() + ".war")
