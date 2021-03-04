@@ -29,6 +29,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -79,7 +80,7 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-@Listener(primaryOnly = true)
+@Listener
 public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
 
     private final Registrar<SessionExpirationListener> expirationRegistrar;
@@ -99,6 +100,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
+    private volatile Object recorderListener;
 
     public InfinispanSessionManager(SessionFactory<SC, MV, AV, LC> factory, InfinispanSessionManagerConfiguration<S, SC, AL> configuration) {
         this.factory = factory;
@@ -132,6 +134,24 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         this.identifierFactory.start();
         this.expirationRegistration = this.expirationRegistrar.register(this.expirationListener);
         CacheEventFilter<Object, Object> filter = new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE);
+        this.recorderListener = (this.recorder != null) ? new RecorderListener(id -> {
+            SessionMetaDataFactory<MV> factory = this.factory.getMetaDataFactory();
+            MV value = factory.tryValue(id);
+            if (value != null) {
+                try {
+                    return CompletableFuture.runAsync(() -> {
+                        ImmutableSessionMetaData metaData = factory.createImmutableSessionMetaData(id, value);
+                        this.recorder.record(metaData);
+                    }, this.executor);
+                } catch (RejectedExecutionException e) {
+                    // Session manager is stopped
+                }
+            }
+            return CompletableFutures.completedNull();
+        }) : null;
+        if (this.recorderListener != null) {
+            this.cache.addListener(this.recorderListener, filter, null);
+        }
         this.cache.addListener(this, filter, null);
         this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
         this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
@@ -141,6 +161,9 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     @Override
     public void stop() {
         this.expirationRegistration.close();
+        if (this.recorderListener != null) {
+            this.cache.removeListener(this.recorderListener);
+        }
         this.cache.removeListener(this);
         this.cache.removeListener(this.factory.getMetaDataFactory());
         this.cache.removeListener(this.factory.getAttributesFactory());
@@ -274,26 +297,17 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         return CompletableFutures.completedNull();
     }
 
-    @CacheEntryRemoved
-    public CompletionStage<Void> removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre()) {
-            String id = event.getKey().getId();
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-            if (this.recorder != null) {
-                SessionMetaDataFactory<MV> factory = this.factory.getMetaDataFactory();
-                MV value = factory.tryValue(id);
-                if (value != null) {
-                    try {
-                        return CompletableFuture.runAsync(() -> {
-                            ImmutableSessionMetaData metaData = factory.createImmutableSessionMetaData(id, value);
-                            this.recorder.record(metaData);
-                        }, this.executor);
-                    } catch (RejectedExecutionException e) {
-                        // Session manager is stopped
-                    }
-                }
-            }
+    @Listener(primaryOnly = true)
+    private static class RecorderListener {
+        private final Function<String, CompletionStage<Void>> listener;
+
+        RecorderListener(Function<String, CompletionStage<Void>> listener) {
+            this.listener = listener;
         }
-        return CompletableFutures.completedNull();
+
+        @CacheEntryRemoved
+        public CompletionStage<Void> removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
+            return event.isPre() ? this.listener.apply(event.getKey().getId()) : CompletableFutures.completedNull();
+        }
     }
 }
