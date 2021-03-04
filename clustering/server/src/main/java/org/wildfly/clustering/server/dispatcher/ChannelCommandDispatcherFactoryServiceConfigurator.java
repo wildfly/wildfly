@@ -31,6 +31,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.jboss.as.clustering.context.Contextualizer;
+import org.jboss.as.clustering.context.DefaultContextualizer;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.clustering.function.Functions;
@@ -92,6 +94,7 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     }
 
     private final String group;
+    private final Function<ClassLoader, Contextualizer> contextualizerFactory = DefaultContextualizer::new;
 
     private volatile SupplierDependency<ChannelFactory> channelFactory;
     private volatile SupplierDependency<JChannel> channel;
@@ -134,6 +137,11 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     @Override
     public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
         return this;
+    }
+
+    @Override
+    public Function<ClassLoader, Contextualizer> getContextualizerFactory() {
+        return this.contextualizerFactory;
     }
 
     @Override

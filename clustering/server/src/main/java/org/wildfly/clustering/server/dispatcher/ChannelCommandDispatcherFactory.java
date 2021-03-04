@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.context.Contextualizer;
-import org.jboss.as.clustering.context.DefaultContextualizer;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.context.ExecutorServiceFactory;
@@ -96,12 +95,14 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     private final MessageDispatcher dispatcher;
     private final Duration timeout;
     private final Function<ClassLoader, ByteBufferMarshaller> marshallerFactory;
+    private final Function<ClassLoader, Contextualizer> contextualizerFactory;
 
     @SuppressWarnings("resource")
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
         this.marshaller = config.getMarshaller();
         this.timeout = config.getTimeout();
         this.marshallerFactory = config.getMarshallerFactory();
+        this.contextualizerFactory = config.getContextualizerFactory();
         JChannel channel = config.getChannel();
         RequestCorrelator correlator = new RequestCorrelator(channel.getProtocolStack(), this, channel.getAddress()).setMarshaller(new CommandResponseMarshaller(config));
         this.dispatcher = new MessageDispatcher()
@@ -201,7 +202,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C commandContext, ClassLoader loader) {
         ByteBufferMarshaller dispatcherMarshaller = this.marshallerFactory.apply(loader);
         MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(dispatcherMarshaller);
-        Contextualizer contextualizer = new DefaultContextualizer();
+        Contextualizer contextualizer = this.contextualizerFactory.apply(loader);
         CommandDispatcherContext<C, ByteBufferMarshaller> context = new CommandDispatcherContext<C, ByteBufferMarshaller>() {
             @Override
             public C getCommandContext() {
