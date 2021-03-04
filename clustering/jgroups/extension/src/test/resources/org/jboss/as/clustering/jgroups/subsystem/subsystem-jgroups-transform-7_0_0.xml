@@ -1,0 +1,84 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2021, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:jgroups:8.0">
+    <channels default="ee">
+        <channel name="ee" stack="maximal" cluster="${test.expr:mycluster}">
+            <fork name="web">
+                <protocol type="CENTRAL_LOCK" statistics-enabled="true">
+                    <property name="num_backups">1</property>
+                </protocol>
+            </fork>
+        </channel>
+        <channel name="bridge" stack="minimal"/>
+    </channels>
+    <stacks>
+        <stack name="minimal" statistics-enabled="true">
+            <transport type="UDP" socket-binding="some-binding" statistics-enabled="false"/>
+        </stack>
+        <stack name="maximal">
+            <transport type="TCP"
+                       module="org.jgroups"
+                       socket-binding="some-binding"
+                       client-socket-binding="some-other-binding"
+                       diagnostics-socket-binding="jgroups-diagnostics"
+                       shared="${test.expr:false}"
+                       machine="${test.expr:machine1}"
+                       rack="${test.expr:rack1}"
+                       site="${test.expr:site1}">
+                <property name="enable_bundling">${test.expr:true}</property>
+                <default-thread-pool min-threads="11"
+                                     max-threads="12"
+                                     keepalive-time="13"/>
+            </transport>
+            <socket-protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping">
+                <property name="name">${test.expr:value}</property>
+            </socket-protocol>
+            <jdbc-protocol type="JDBC_PING" data-source="ExampleDS"/>
+            <protocol type="MERGE3"/>
+            <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd" client-socket-binding="jgroups-client-fd"/>
+            <protocol type="FD"/>
+            <protocol type="VERIFY_SUSPECT"/>
+            <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="alias">
+                <key-credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>
+            </encrypt-protocol>
+            <protocol type="pbcast.NAKACK2"/>
+            <protocol type="UNICAST3"/>
+            <protocol type="pbcast.STABLE"/>
+            <protocol type="pbcast.GMS"/>
+            <auth-protocol type="AUTH">
+                <cipher-token algorithm="RSA" key-store="my-key-store" key-alias="alias">
+                    <shared-secret-reference clear-text="changeme"/>
+                    <key-credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>
+                </cipher-token>
+            </auth-protocol>
+            <protocol type="UFC"/>
+            <protocol type="MFC"/>
+            <protocol type="FRAG2"/>
+            <protocol type="RSVP"/>
+            <relay site="LON">
+                <remote-site name="SFO" channel="bridge"/>
+                <remote-site name="NYC" channel="bridge"/>
+            </relay>
+        </stack>
+    </stacks>
+</subsystem>
