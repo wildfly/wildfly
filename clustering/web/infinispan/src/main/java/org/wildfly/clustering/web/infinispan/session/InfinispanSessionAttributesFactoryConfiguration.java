@@ -23,8 +23,10 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfiguration;
 
 /**
@@ -43,4 +45,6 @@ public interface InfinispanSessionAttributesFactoryConfiguration<S, C, L, V, SV>
     }
 
     Executor getExecutor();
+
+    Function<String, SessionAttributeActivationNotifier> getActivationNotifierFactory();
 }
